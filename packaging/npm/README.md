@@ -1,7 +1,7 @@
 # filens Agent CLI
 
 <!-- agent-cli-size:npm:start -->
-**v0.4.1 · MIT · CLI 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB** (macOS arm64, installed; Full includes OCR models).
+**v0.4.2 · MIT · CLI executable 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
 
 | Platform | CLI executable | Lite installed / download | Full installed / download |
 | --- | ---: | ---: | ---: |
@@ -196,4 +196,4 @@ one profile at a time. Platform packages are implementation components.
 [Protocol, limitations and source build](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
-`npm install -g /path/to/filens-cli-0.4.1.tgz /path/to/filens-cli-PLATFORM-0.4.1.tgz /path/to/filens-ocr-PLATFORM-0.4.1.tgz`.
+`npm install -g /path/to/filens-cli-0.4.2.tgz /path/to/filens-cli-PLATFORM-0.4.2.tgz /path/to/filens-ocr-PLATFORM-0.4.2.tgz`.

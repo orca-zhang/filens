@@ -27,14 +27,17 @@ const t = (zh: string, en: string) => (isEnglish.value ? en : zh);
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 const demoAsset = (file: string) => `${asset(`home/${file}`)}?v=${demoMedia.version}`;
 const repo = 'https://github.com/IceWhaleTech/filens';
-const skillInstallCommand = 'npx --yes skills add IceWhaleTech/filens --skill filens --global --yes';
+const skillInstallPrompt = computed(() => t(
+  `帮我安装 filens，去 ${repo} 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。`,
+  `Install filens for me. Find skills/filens/SKILL.md at ${repo} and follow it to set up the CLI and skill.`
+));
 const skillCopyState = ref<'idle' | 'copied' | 'error'>('idle');
 let skillCopyTimer: ReturnType<typeof setTimeout> | undefined;
 async function copySkillInstall(): Promise<void> {
   clearTimeout(skillCopyTimer);
   skillCopyState.value = 'idle';
   try {
-    await navigator.clipboard.writeText(skillInstallCommand);
+    await navigator.clipboard.writeText(skillInstallPrompt.value);
     skillCopyState.value = 'copied';
     skillCopyTimer = setTimeout(() => { skillCopyState.value = 'idle'; }, 5000);
   } catch {
@@ -428,7 +431,7 @@ async function playDemo(): Promise<void> {
       <section id="skill" class="skill-install-section section-width" aria-labelledby="skill-install-title">
         <div class="skill-install-copy">
           <p class="eyebrow">FILENS FOR AGENTS</p>
-          <h2 id="skill-install-title">{{ t('一键安装 FiLens Skill', 'Install the FiLens Skill') }}</h2>
+          <h2 id="skill-install-title">{{ t('一句话，让 Agent 装好 FiLens', 'Ask your agent to install FiLens') }}</h2>
           <p>{{ t('让 Agent 在本地读取、搜索、OCR 与转换你的文件。', 'Give your agent local file reading, search, OCR, and conversion.') }}</p>
           <a class="text-link" :href="`${asset('')}?view=agent`" @click.prevent="emit('agent')">
             {{ t('查看能力与安装选项', 'Explore capabilities and setup') }} <span aria-hidden="true">↗</span>
@@ -437,18 +440,18 @@ async function playDemo(): Promise<void> {
         <div class="skill-install-terminal">
           <div class="skill-install-terminal-heading"><WorkbenchIcon name="terminal" /><span>Codex · Claude Code · Cursor · OpenCode</span></div>
           <div class="skill-install-command">
-            <code>{{ skillInstallCommand }}</code>
+            <p class="skill-install-prompt">{{ skillInstallPrompt }}</p>
             <button class="button button-dark button-small" type="button" @click="copySkillInstall">
               <WorkbenchIcon :name="skillCopyState === 'copied' ? 'check' : 'copy'" />
-              {{ skillCopyState === 'copied' ? t('已复制', 'Copied') : t('复制安装命令', 'Copy install command') }}
+              {{ skillCopyState === 'copied' ? t('已复制', 'Copied') : t('复制给 Agent', 'Copy for your agent') }}
             </button>
           </div>
           <p class="skill-install-note" :class="{ 'is-error': skillCopyState === 'error' }" role="status">
             {{ skillCopyState === 'error'
-              ? t('复制失败，请手动复制上方命令。', 'Could not copy. Select and copy the command above.')
+              ? t('复制失败，请手动复制上方文字。', 'Could not copy. Select and copy the text above.')
               : skillCopyState === 'copied'
-                ? t('已复制，在本机终端粘贴运行即可。', 'Copied. Paste and run it in your terminal.')
-                : t('在本机终端运行，自动识别已安装的 Agent。', 'Run in your terminal to detect your installed agents.') }}
+                ? t('已复制，粘贴给你的 Agent 即可。', 'Copied. Paste it into your agent chat.')
+                : t('把这句话发给你的 Agent，让它完成安装。', 'Send this to your agent to complete setup.') }}
           </p>
         </div>
       </section>
@@ -544,7 +547,7 @@ async function playDemo(): Promise<void> {
             </a>
           </article>
           <article class="principle">
-            <p class="principle-proof"><strong>≈<!-- bundle-size:converter-core -->318.3<!-- /bundle-size --><span class="proof-unit"> KiB</span></strong><span>{{ t('文档转换 WASM · Brotli', 'document conversion WASM · Brotli') }}</span></p>
+            <p class="principle-proof"><strong>≈<!-- bundle-size:converter-core -->395.8<!-- /bundle-size --><span class="proof-unit"> KiB</span></strong><span>{{ t('文档转换 WASM · Brotli', 'document conversion WASM · Brotli') }}</span></p>
             <h2>{{ t('高性能，极致小巧', 'Fast, tiny, loaded on demand') }}</h2>
             <p>{{ t('按格式分包、按需加载，配合 Worker 解析与页面虚拟化，减少下载与渲染负担。', 'Format-based bundles and lazy loading, with worker parsing and page virtualization to reduce download and rendering work.') }}</p>
             <a :href="`${repo}/blob/main/docs/bundle-sizes.md`" target="_blank" rel="noopener noreferrer">

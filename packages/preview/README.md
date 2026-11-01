@@ -4,7 +4,7 @@ Build the same preview engines as a single JavaScript file or split modules. Bot
 include Vue, styles, PDF/iWork workers and the document, image/RAW and STEP WASM
 engines. No conversion server or host Vue installation is needed.
 
-Version 0.1.3 uses native HEIC/HEIF decoding first, with a small dedicated WASM
+Version 0.1.4 uses native HEIC/HEIF decoding first, with a small dedicated WASM
 decoder as fallback. MOV plays through browser codecs; full FFmpeg is excluded.
 Applications can supply an optional `mediaConverter` for unsupported MOV codecs.
 Both builds preserve the same image and video support boundaries.
@@ -31,8 +31,14 @@ npm run build:preview
 
 | Build | Deploy | Approximate runtime size |
 | --- | --- | --- |
-| Split | Entire `packages/preview/dist/split/` directory | 13.5 MB raw / 4.2 MB gzip / 3.3 MB Brotli, across all runtime files |
-| All in one | `packages/preview/dist/all-in-one/filens.js` | 16.3 MB raw / 5.2 MB gzip / 3.9 MB Brotli |
+| Split | Entire `packages/preview/dist/split/` directory | 10.82 MB raw / 3.11 MB gzip / 2.44 MB Brotli, across all runtime files |
+| All in one | `packages/preview/dist/all-in-one/filens.js` | 12.70 MB raw / 3.79 MB gzip / 2.84 MB Brotli |
+
+These are the 0.1.4 builds (MB = 1,000,000 bytes). STEP uses
+the truck Rust core; neither build includes OCCT. The npm package contains
+both directories, about **7.0 MB packed / 24.34 MB installed**, including notices,
+types and documentation.
+[Package measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-package-sizes.json).
 
 Both directories contain an `index.html` with a local file picker. Serve either
 directory over HTTP(S). To integrate into another page:
@@ -63,8 +69,8 @@ direct Vue component integration.
 Split chunks can range from a few KB to hundreds of KB after compression. Those
 figures exclude shared dependencies and engines; a chunk is not a complete
 per-format download. The all-in-one file embeds CSS, base64 WASM and workers; it
-needs no additional runtime files. Its larger initial download includes optional
-OCCT as well as the default Rust STEP engine. A separate notices file accompanies
+needs no additional runtime files. Both builds include only truck for STEP.
+A separate notices file accompanies
 both builds and should be distributed with them. [Exact measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-build-sizes.json).
 
 Single-file embedding still requires browser support for WebAssembly and workers.
@@ -112,7 +118,7 @@ filens preview report.pdf --port 8080 --assets /path/to/preview/dist/all-in-one
 `FILENS_PREVIEW_DIR` overrides the default `<binary-directory>/preview` asset
 directory. Source npm packaging can include the assets with
 `node scripts/package-agent-npm.mjs --with-preview`; they are optional and add
-about 13.5 MB on disk, measured separately from the document-reading CLI.
+about 11.2 MB on disk for the current source build, measured separately from the document-reading CLI.
 
 The server exposes one selected file, not its parent directory. Models or media
 with external sidecars need a supported ZIP bundle or a host-provided resource
@@ -128,9 +134,13 @@ macOS; Windows/Linux browser launching still needs native validation.
 另附第三方许可文件。单文件部署更简单，初次下载也更大。
 
 `filens preview 文件路径` 会启动本地浏览器预览，由前端完成格式解析与渲染。
-CLI 0.4.1 首次预览时自动安装 filens-preview 0.1.3，也可先运行 `filens setup-preview`；
+CLI 0.4.2 首次预览时自动安装 filens-preview 0.1.4，也可先运行 `filens setup-preview`；
 源码版先运行 `npm run build:agent:preview`。
-独立前端包同时包含单文件和分包产物，完整安装约 31 MB，包含专用 HEIC/HEIF 解码器，不含完整 FFmpeg，不混入 CLI 的
-约 2 MB / Lite 8 MB / Full 30 多 MB 安装体积。源码仅附带分包时约 13.5 MB。图片先尝试原生显示，分包版仅在失败时加载 HEIF 解码器；视频使用浏览器编解码器，不支持的编码可通过可选 mediaConverter 接入转换器。`--no-open --json` 返回本地地址，`--assets` 可切换单文件或分包版，
+0.1.4 默认使用 truck，已移除 OCCT，保留专用 HEIC/HEIF 解码器。
+分包运行时合计 2.44 MB Brotli，单文件为 2.84 MB Brotli / 3.79 MB gzip / 12.70 MB 原始体积。
+独立 npm 包同时包含两种产物，约 7.0 MB 压缩包 / 24.34 MB 安装体积。
+CLI 的安装体积另计：Lite 7.7–8.1 MiB，Full 31.1–36.8 MiB（含 OCR 运行时与模型）；
+其中原生可执行文件为 1.8–2.2 MiB，不含 Node.js、缓存及预览包。
+源码仅附带分包目录时约 11.2 MB（含许可文件与 HTML）。图片先尝试原生显示，分包版仅在失败时加载 HEIF 解码器；视频使用浏览器编解码器，不支持的编码可通过可选 mediaConverter 接入转换器。`--no-open --json` 返回本地地址，`--assets` 可切换单文件或分包版，
 Ctrl-C 退出。仅提供选中的文件，不开放整个父目录；伴随文件需要打成受支持的 ZIP
 或由宿主配置解析器。

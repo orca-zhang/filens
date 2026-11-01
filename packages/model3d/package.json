@@ -32,8 +32,8 @@
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",
     "dev": "vite build --watch",
-    "test": "vitest run && node ../../scripts/test-occt-wasm.mjs",
-    "test:unit": "vitest run && node ../../scripts/test-occt-wasm.mjs"
+    "test": "vitest run",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "filens-step": "0.1.0-rc.1",

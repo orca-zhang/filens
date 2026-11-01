@@ -19,6 +19,11 @@ for (const mode of ['split', 'all-in-one']) {
   await assertReleaseDirectory(dist);
   const files = await measure(dist);
   const runtime = files.filter(file => /\.(js|mjs|wasm)$/.test(file.file));
+  for (const file of runtime) {
+    if (/occt/i.test(file.file) || (/\.js$/.test(file.file) && (await readFile(path.join(dist, file.file), 'utf8')).includes('occt-import-js'))) {
+      throw new Error(`Default preview must exclude OCCT: ${mode}/${file.file}`);
+    }
+  }
   if (mode === 'all-in-one' && (runtime.length !== 1 || runtime[0].file !== 'filens.js')) {
     throw new Error('All-in-one build contains external runtime files');
   }
@@ -47,7 +52,7 @@ await mkdir(path.join(root, 'dist/preview'), { recursive: true });
 await cp(path.join(directory, 'dist/split'), path.join(root, 'dist/preview'), { recursive: true });
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));
 await cp(path.join(root, 'LICENSE'), path.join(directory, 'LICENSE'));
-await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), unit:'bytes', scope:'Standalone runtime, including Vue, CSS, workers and document/image/STEP WASM; excludes HTML, notices, maps and source files.', builds:measurements }, null, 2)}\n`);
+await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), unit:'bytes', scope:'Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM; excludes OCCT, HTML, notices, maps and source files. MB in documentation = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
 
 async function measure(directory, prefix = '') {
   const files = [];

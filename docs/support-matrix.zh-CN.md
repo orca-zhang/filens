@@ -73,7 +73,7 @@ filens 在现代浏览器中提供只读文件预览。支持某种格式，不�
 | 格式 | 扩展名 | 预览路径 | 支持范围 | 限制 |
 | --- | --- | --- | --- | --- |
 | 二维 CAD | `dxf` | 直接预览 | SVG 几何图形、文本、图层、块与栅格图像引用。 | 实体与文本保真度仅部分支持；见[DXF 矩阵](#dxf-cad)。 |
-| CAD 实体 | `step`, `stp` | 直接预览 + OpenCascade WASM | 按需加载并三角化，用于查看。 | 不提供 CAD 编辑。 |
+| CAD 实体 | `step`, `stp` | 直接预览 + truck Rust WASM | 按需加载并三角化，用于查看。 | 不提供 CAD 编辑。 |
 | 3D 模型与场景 | `stl`, `obj`, `ply`, `gltf`, `glb`, `3mf` 等，[完整列表](#3d-模型与检查) | 直接预览 | Three.js 网格、材质与场景。 | 材质与资源限制因格式而异。 |
 | 刀路、点云、体素、动作与分子 | `gcode`, `gco`, `nc`, `pcd`, `xyz`, `vtk`, `vox`, `bvh`, `pdb`, `nrrd`, `nhdr` | 直接预览 | 支持部分数据子集。 | 见[导入与检查矩阵](#3d-模型与检查)。 |
 | 思维导图 | `mm`, `opml`, `xmind`, `mmap` | 直接预览 | FreeMind、OPML、XMind、MindManager 主题树。 | 布局保真度有限；仅提供只读交互。 |
@@ -302,7 +302,7 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 
 | 格式 | 导入范围 | 要求与限制 |
 | --- | --- | --- |
-| `step`, `stp` | 三角化的 CAD 实体。 | 按需加载前端 OpenCascade WASM 导入器；仅用于查看。 |
+| `step`, `stp` | 三角化的 CAD 实体。 | 按需加载 truck Rust WASM，近似几何预览；省略源颜色、名称和装配树，不支持外部零件引用；既有几何筛查 43/44。 |
 | `stl`, `obj`, `ply` | ASCII/二进制 STL；OBJ 几何与常见内联顶点颜色；ASCII/小端二进制 PLY 及常见顶点颜色。 | OBJ MTL 库与纹理可使用应用解析的配套资源。 |
 | `gltf`, `glb` | 内嵌/data URI glTF、URL 加载的缓冲区/纹理、单文件 GLB。 | 外部缓冲区与纹理可由应用解析。 |
 | `3mf`, `amf` | 核心 3MF 网格、构建/组件项、基础材质、颜色组对象/三角形顶点颜色；AMF 对象。 | 不支持的 3MF 纹理、复合材质、多属性与非调色板引用会产生回退警告。 |

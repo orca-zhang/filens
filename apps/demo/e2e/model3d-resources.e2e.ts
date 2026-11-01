@@ -7,12 +7,12 @@ async function prepare(page: Page) {
   await page.route('**/model3d-resources-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('resource-core/index.js', base).href, three: new URL('resource-three/three.module.js', base).href
+      'filens-step': new URL('resource-step/index.js', base).href, '@filens/core': new URL('resource-core/index.js', base).href, three: new URL('resource-three/three.module.js', base).href
     } })}</script>` });
   });
   for (const [prefix, directory] of [
     ['resource-model', 'packages/model3d/dist'], ['resource-baseline', 'tmp/continued-review/model3d-resources-baseline/dist'],
-    ['resource-core', 'packages/core/dist'], ['resource-three', 'node_modules/three/build']
+    ['resource-step', 'packages/step/dist'], ['resource-core', 'packages/core/dist'], ['resource-three', 'node_modules/three/build']
   ]) await page.route(`**/${prefix}/*`, route => {
     const name = basename(new URL(route.request().url()).pathname);
     return route.fulfill({ contentType: name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript', path: resolve(directory, name) });
@@ -120,30 +120,30 @@ test('cancels a non-cooperative sidecar resolver and releases resources before i
 test('recovers after actual STEP WASM download failure and reuses the successful importer', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await prepare(page);
   let requests = 0;
-  await page.route('**/resource-model/*.wasm', async route => {
+  await page.route('**/resource-step/*.wasm', async route => {
     requests++;
-    // Emscripten retries the failed streaming request using an ArrayBuffer fetch.
-    if (requests <= 2) return route.fulfill({ status: 503, contentType: 'text/plain', body: 'temporary outage' });
-    return route.fulfill({ contentType: 'application/wasm', path: resolve('packages/model3d/dist/occt-import-js.wasm') });
+    // The shared WASI loader retries on the next read.
+    if (requests === 1) return route.fulfill({ status: 503, contentType: 'text/plain', body: 'temporary outage' });
+    return route.fulfill({ contentType: 'application/wasm', path: resolve('packages/step/vendor/filens-step.wasm') });
   });
   const bytes = [...await readFile('packages/model3d/test/fixtures/occt/cube.stp')];
   const first = await page.evaluate(async bytes => {
     const state = (window as any).modelResources; state.bytes = new Uint8Array(bytes).buffer;
     return state.lib.loadStepObject(state.bytes).then(() => 'unexpected success', (error: Error) => String(error));
   }, bytes);
-  expect(first).toMatch(/503|abort|failed|fetch/i); expect(requests).toBe(2);
+  expect(first).toMatch(/503|abort|failed|fetch/i); expect(requests).toBe(1);
   const result = await page.evaluate(async () => {
     const { lib, bytes } = (window as any).modelResources, counts: number[] = [];
     for (let i = 0; i < 2; i++) {
       const object = await lib.loadStepObject(bytes); let triangles = 0;
       object.traverse((node: any) => {
         if (!node.isMesh) return;
-        triangles += node.geometry.index.count / 3; node.geometry.dispose(); node.material.dispose();
+        triangles += (node.geometry.index?.count ?? node.geometry.getAttribute('position').count) / 3; node.geometry.dispose(); node.material.dispose();
       }); counts.push(triangles);
     }
     return counts;
   });
-  expect(result).toEqual([12, 12]); expect(requests).toBe(3); expect(errors).toEqual([]);
+  expect(result).toEqual([12, 12]); expect(requests).toBe(2); expect(errors).toEqual([]);
 });
 
 test('disposes a real glTF scene when its texture finishes after cancellation', async ({ page }) => {

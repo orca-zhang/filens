@@ -1,0 +1,321 @@
+{
+  "date": "2026-11-01",
+  "cpu": "Apple M4 Pro",
+  "platform": "darwin-arm64",
+  "browser": "147.0.7727.15",
+  "iterations": 7,
+  "peer": "occt-import-js 0.0.23",
+  "method": "Fresh browser context per read; rotating engine order. Inputs, JS and compiled WASM ready before timing. truck uses the shipped createStepReader, including fresh WASI instantiation, parsing, meshing, binary Float32 mesh I/O and typed-array validation. Optional truck-baseline uses the previous JSON reader/core on the same inputs and is an engineering comparison, excluded from peer rankings. OCCT operation is ReadStepFile; its initialization is separately recorded and included in initializedReadMs. Absolute tolerance 0.1 mm; OCCT angular deflection 0.5. No network, compilation, Three.js scene construction or rendering in timings. Seven paired reads, 10000 paired percentile bootstrap resamples, LCG seed 12345. SOTA is scoped to these fixtures, this peer and approximate geometry import: lower 95% ratio bound >1, peer >10 ms, repeatable finite meshes, no missing truck faces and independent geometry screen pass. Screen is bounds <1%, area <3%, signed volume <5%, bidirectional sampled distance P95 <= max(0.2 mm, 0.1% diagonal); not a maximum-error guarantee or exact mesh/metadata equivalence.",
+  "samples": [
+    {
+      "id": "simple-basic-cube/cube.stp",
+      "sha256": "cfa52db7eab6fe6a73986a87aff8702d24431bdb7da6382afdd94234deb3f648"
+    },
+    {
+      "id": "rounded-cube/rounded-cube.step",
+      "sha256": "370c5474e50dc94923f0dacb5113f7258233601620ab530d937c18571869d49e"
+    },
+    {
+      "id": "cax-if/as1_pe_203.stp",
+      "sha256": "be1254354f6929a08ce1c8049d4a0a2f4406da4ea283fc4247d009c81976641c"
+    },
+    {
+      "id": "cax-if/as1-oc-214.stp",
+      "sha256": "bc7964773fa00c1ddedc80b58930ae531f91cfc5f1f42d693f903b4dc88c21ca"
+    },
+    {
+      "id": "cax-if/dm1-oc-214.stp",
+      "sha256": "ae08c9bafcf8939875aa5e09d02c7cc40e6f70c26a06aca7b9e3135eec24e2b5"
+    },
+    {
+      "id": "cax-if/s1-tu-203/tailturbine.stp",
+      "sha256": "9eb2dc63eed19b5d89b6ea45106d7e1aeb5933bf85bbee424b72327c0201f4b7"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "scripts/benchmark-step-default.mjs",
+      "sha256": "80f297fe48b92f2b97dc6367aafad008c7f61ad13b69c03eca444eb58ff3946a",
+      "raw": 12220
+    },
+    {
+      "file": "benchmarks/rust-engines/step-metrics.mjs",
+      "sha256": "1a03342c56490e9aa03b791aca5274c1b7f534a6575ce11b4bc720112ecba4c6",
+      "raw": 2743
+    },
+    {
+      "file": "packages/step/dist/index.js",
+      "sha256": "88e112dac7532cc849e1a679c3079c07dc26de8d3562252b060af6344b85d926",
+      "raw": 16554
+    },
+    {
+      "file": "packages/step/vendor/filens-step.wasm",
+      "sha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc",
+      "raw": 947729
+    },
+    {
+      "file": "node_modules/occt-import-js/dist/occt-import-js.js",
+      "sha256": "3fb44ce11d00611f9b3f3c5775d520ebab48930c1f08279b7b1316f05f0d3379",
+      "raw": 96871
+    },
+    {
+      "file": "node_modules/occt-import-js/dist/occt-import-js.wasm",
+      "sha256": "33391fc9d94ea5c869a6718488bf0a9a464222bac9bdc764dfe1690cef281952",
+      "raw": 7604031
+    },
+    {
+      "file": "tmp/step-assembly-opt/baseline-reader.mjs",
+      "sha256": "921377714533cebf611b646756cf10a09446b09bad46f735d71f16e65f37a553",
+      "raw": 16579
+    },
+    {
+      "file": "tmp/step-assembly-opt/baseline.wasm",
+      "sha256": "d192785227f33bbb3ab135dabfe80ea936e5e2f18f42b9478271bc51d2ff5aa6",
+      "raw": 947225
+    }
+  ],
+  "comparisons": [
+    {
+      "sample": "simple-basic-cube/cube.stp",
+      "truckTriangles": 12,
+      "occtTriangles": 12,
+      "filensMs": 11.900000005960464,
+      "peerMs": 62,
+      "ratio": 5.210084031003822,
+      "ratio95PercentBootstrapInterval": [
+        4.9999999975965865,
+        5.30769231513799
+      ],
+      "truckInitializedReadMs": 11.900000005960464,
+      "occtInitializedReadMs": 65.80000001192093,
+      "repeatableMeshes": true,
+      "completeFaces": true,
+      "geometryScreenPass": true,
+      "screen": {
+        "boundsRelativeError": 1.9144161855551904e-15,
+        "areaRelativeError": 1.2935035758548296e-15,
+        "volumeRelativeError": 1.6556845770941812e-15,
+        "referenceToCandidate": {
+          "samples": 24,
+          "p95": 9.947598300641403e-13,
+          "max": 9.947598300641403e-13
+        },
+        "candidateToReference": {
+          "samples": 24,
+          "p95": 0,
+          "max": 0
+        }
+      },
+      "scopedSota": true,
+      "baselineMs": 11.900000005960464,
+      "baselineSpeedup": 1,
+      "baselineSpeedup95PercentBootstrapInterval": [
+        0.9516129013263348,
+        1.0598290614183428
+      ],
+      "baselineMeshMatches": true
+    },
+    {
+      "sample": "rounded-cube/rounded-cube.step",
+      "truckTriangles": 28,
+      "occtTriangles": 40,
+      "filensMs": 15.399999976158142,
+      "peerMs": 69.7999999821186,
+      "ratio": 4.532467538323445,
+      "ratio95PercentBootstrapInterval": [
+        4.461038958538261,
+        4.625000004411528
+      ],
+      "truckInitializedReadMs": 15.399999976158142,
+      "occtInitializedReadMs": 73.7999999821186,
+      "repeatableMeshes": true,
+      "completeFaces": true,
+      "geometryScreenPass": true,
+      "screen": {
+        "boundsRelativeError": 0,
+        "areaRelativeError": 0.0017835150282080967,
+        "volumeRelativeError": 0.003560984090122634,
+        "referenceToCandidate": {
+          "samples": 80,
+          "p95": 0.09410645516549589,
+          "max": 0.09410645516549762
+        },
+        "candidateToReference": {
+          "samples": 56,
+          "p95": 0.06733246495675417,
+          "max": 0.07568301340604562
+        }
+      },
+      "scopedSota": true,
+      "baselineMs": 15.400000005960464,
+      "baselineSpeedup": 1.0000000019352158,
+      "baselineSpeedup95PercentBootstrapInterval": [
+        0.9807692319081263,
+        1.013157895923569
+      ],
+      "baselineMeshMatches": true
+    },
+    {
+      "sample": "cax-if/as1_pe_203.stp",
+      "truckTriangles": 11840,
+      "occtTriangles": 16512,
+      "filensMs": 61.19999998807907,
+      "peerMs": 195,
+      "ratio": 3.1862745104245644,
+      "ratio95PercentBootstrapInterval": [
+        3.1488673132120084,
+        3.2105263149639245
+      ],
+      "truckInitializedReadMs": 61.19999998807907,
+      "occtInitializedReadMs": 198.80000001192093,
+      "repeatableMeshes": true,
+      "completeFaces": true,
+      "geometryScreenPass": true,
+      "screen": {
+        "boundsRelativeError": 1.8155715904636269e-9,
+        "areaRelativeError": 0.000011905036771528793,
+        "volumeRelativeError": 0.000011629450093410457,
+        "referenceToCandidate": {
+          "samples": 2048,
+          "p95": 0.056252832646468715,
+          "max": 0.09627298966971293
+        },
+        "candidateToReference": {
+          "samples": 2048,
+          "p95": 0.06396402479965717,
+          "max": 0.08696214299660218
+        }
+      },
+      "scopedSota": true,
+      "baselineMs": 80.69999998807907,
+      "baselineSpeedup": 1.3186274510424565,
+      "baselineSpeedup95PercentBootstrapInterval": [
+        1.3025889965124908,
+        1.3322368418440542
+      ],
+      "baselineMeshMatches": true
+    },
+    {
+      "sample": "cax-if/as1-oc-214.stp",
+      "truckTriangles": 28716,
+      "occtTriangles": 5180,
+      "filensMs": 224.2000000178814,
+      "peerMs": 243.80000001192093,
+      "ratio": 1.087421944658681,
+      "ratio95PercentBootstrapInterval": [
+        1.0791111110316383,
+        1.0998201438286155
+      ],
+      "truckInitializedReadMs": 224.2000000178814,
+      "occtInitializedReadMs": 247.60000002384186,
+      "repeatableMeshes": true,
+      "completeFaces": true,
+      "geometryScreenPass": true,
+      "screen": {
+        "boundsRelativeError": 1.616494215172779e-16,
+        "areaRelativeError": 0.00008467072413668145,
+        "volumeRelativeError": 0.00015280828715817245,
+        "referenceToCandidate": {
+          "samples": 2048,
+          "p95": 0.031594366873414645,
+          "max": 0.08746246373036017
+        },
+        "candidateToReference": {
+          "samples": 2048,
+          "p95": 0.05103503188057523,
+          "max": 0.06933704508650536
+        }
+      },
+      "scopedSota": true,
+      "baselineMs": 278.90000000596046,
+      "baselineSpeedup": 1.2439785904715273,
+      "baselineSpeedup95PercentBootstrapInterval": [
+        1.2395555555820466,
+        1.2540467625831195
+      ],
+      "baselineMeshMatches": true
+    },
+    {
+      "sample": "cax-if/dm1-oc-214.stp",
+      "truckTriangles": 8988,
+      "occtTriangles": 1928,
+      "filensMs": 117.7999999821186,
+      "peerMs": 168.59999999403954,
+      "ratio": 1.4312393889612232,
+      "ratio95PercentBootstrapInterval": [
+        1.4154751890133028,
+        1.4440649018159422
+      ],
+      "truckInitializedReadMs": 117.7999999821186,
+      "occtInitializedReadMs": 172.5,
+      "repeatableMeshes": true,
+      "completeFaces": true,
+      "geometryScreenPass": true,
+      "screen": {
+        "boundsRelativeError": 3.0288276022485903e-16,
+        "areaRelativeError": 0.000054289866236206444,
+        "volumeRelativeError": 0.00031335345789736894,
+        "referenceToCandidate": {
+          "samples": 2048,
+          "p95": 0.03766933059413002,
+          "max": 0.08014361806994195
+        },
+        "candidateToReference": {
+          "samples": 2048,
+          "p95": 0.05004680277202488,
+          "max": 0.06949514568952624
+        }
+      },
+      "scopedSota": true,
+      "baselineMs": 136.10000002384186,
+      "baselineSpeedup": 1.1553480479159686,
+      "baselineSpeedup95PercentBootstrapInterval": [
+        1.1438183346777318,
+        1.1690862509233684
+      ],
+      "baselineMeshMatches": true
+    },
+    {
+      "sample": "cax-if/s1-tu-203/tailturbine.stp",
+      "truckTriangles": 3592,
+      "occtTriangles": 4416,
+      "filensMs": 50.60000002384186,
+      "peerMs": 153.90000000596046,
+      "ratio": 3.0415019749692767,
+      "ratio95PercentBootstrapInterval": [
+        3.0335305729405015,
+        3.0553359686215567
+      ],
+      "truckInitializedReadMs": 50.60000002384186,
+      "occtInitializedReadMs": 157.7000000178814,
+      "repeatableMeshes": true,
+      "completeFaces": true,
+      "geometryScreenPass": true,
+      "screen": {
+        "boundsRelativeError": 2.807748190938e-10,
+        "areaRelativeError": 0.00022592657433616773,
+        "volumeRelativeError": 0.0002570238871224626,
+        "referenceToCandidate": {
+          "samples": 2048,
+          "p95": 0.06022804113448225,
+          "max": 0.088080388363591
+        },
+        "candidateToReference": {
+          "samples": 2048,
+          "p95": 0.05472551925651849,
+          "max": 0.09422355178796735
+        }
+      },
+      "scopedSota": true,
+      "baselineMs": 58.400000005960464,
+      "baselineSpeedup": 1.1541501972024384,
+      "baselineSpeedup95PercentBootstrapInterval": [
+        1.1501976282699318,
+        1.1581027668170427
+      ],
+      "baselineMeshMatches": true
+    }
+  ],
+  "totalRuns": 126,
+  "sourceSha256": "92f40fc1080075c35e142288607df58a6256cc7bb7bff259c6c82cd7e2311951"
+}

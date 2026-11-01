@@ -73,7 +73,7 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Format | Extensions | Path | Preview coverage | Limits |
 | --- | --- | --- | --- | --- |
 | 2D CAD | `dxf` | Direct | SVG geometry, text, layers, blocks, raster references. | Partial entity and text fidelity; [DXF matrix](#dxf-cad). |
-| CAD solids | `step`, `stp` | Direct + OpenCascade WASM | Lazy-loaded triangulation for viewing. | CAD editing is unavailable. |
+| CAD solids | `step`, `stp` | Direct + truck Rust WASM | Lazy-loaded triangulation for viewing. | CAD editing is unavailable. |
 | 3D models and scenes | `stl`, `obj`, `ply`, `gltf`, `glb`, `3mf`, and [more](#3d-models-and-inspection) | Direct | Three.js meshes, materials, and scenes. | Format-specific material and resource limits. |
 | Toolpaths, point clouds, voxels, motion, molecules | `gcode`, `gco`, `nc`, `pcd`, `xyz`, `vtk`, `vox`, `bvh`, `pdb`, `nrrd`, `nhdr` | Direct | Supported data subsets. | [Import and inspection matrix](#3d-models-and-inspection). |
 | Mind maps | `mm`, `opml`, `xmind`, `mmap` | Direct | FreeMind, OPML, XMind, MindManager topic trees. | Partial layout fidelity; read-only interaction. |
@@ -303,7 +303,7 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 
 | Formats | Import coverage | Requirements and limits |
 | --- | --- | --- |
-| `step`, `stp` | Triangulated CAD solids. | Lazy-loaded front-end OpenCascade WASM importer; viewing only. |
+| `step`, `stp` | Triangulated CAD solids. | Lazy-loaded truck Rust WASM; approximate geometry, source colors/names/assembly tree omitted. External part references unsupported; recorded geometry screen 43/44. |
 | `stl`, `obj`, `ply` | ASCII/binary STL; OBJ geometry and common inline vertex colors; ASCII/binary-little-endian PLY with common vertex colors. | OBJ MTL libraries/textures can use app-resolved sidecars. |
 | `gltf`, `glb` | Embedded/data-URI glTF, URL-loaded buffers/textures, single-file GLB. | External buffers/textures can use app resolution. |
 | `3mf`, `amf` | Core 3MF meshes, build/component items, base materials, color-group object/triangle vertex colors; AMF objects. | Unsupported 3MF textures, composite materials, multi-properties, and non-color-palette references emit fallback warnings. |

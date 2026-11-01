@@ -40,15 +40,15 @@ npx --yes filens-cli 'what can you do as json'
 npx --yes filens-cli-lite '你能做什么？以 JSON 输出'
 ```
 
-Version 0.4.1 on macOS arm64: **2.15 MiB** native executable; Lite **8.04 MiB installed / 6.14 MiB download**; Full **31.25 MiB installed / 20.34 MiB download**, including OCR models. Optional frontend preview assets are measured separately. Totals combine the launcher and selected platform packages, excluding Node.js, npm caches and filesystem overhead. See [all platform sizes and exact bytes](agent-cli-npm-release.json). FiLens code and npm package metadata use [MIT](../LICENSE); dependencies retain their own licenses.
+Version 0.4.2 on macOS arm64: **2.15 MiB** native executable; Lite **8.04 MiB installed / 6.14 MiB download**; Full **31.25 MiB installed / 20.34 MiB download**, including OCR models. Optional frontend preview assets are measured separately. Totals combine the launcher and selected platform packages, excluding Node.js, npm caches and filesystem overhead. See [all platform sizes and exact bytes](agent-cli-npm-release.json). FiLens code and npm package metadata use [MIT](../LICENSE); dependencies retain their own licenses.
 
 For offline distribution, locally generated tarballs can also be installed in one command, for example on macOS arm64:
 
 ```sh
-npm install -g ./dist/npm/filens-cli-0.4.1.tgz ./dist/npm/filens-cli-darwin-arm64-0.4.1.tgz ./dist/npm/filens-ocr-darwin-arm64-0.4.1.tgz
+npm install -g ./dist/npm/filens-cli-0.4.2.tgz ./dist/npm/filens-cli-darwin-arm64-0.4.2.tgz ./dist/npm/filens-ocr-darwin-arm64-0.4.2.tgz
 ```
 
-Historical [Rust migration measurements](agent-cli-rust-size.json) and [similarity feature costs](agent-cli-similarity-size.json) describe earlier local builds; use the 0.4.1 report above for current installation sizes.
+Historical [Rust migration measurements](agent-cli-rust-size.json) and [similarity feature costs](agent-cli-similarity-size.json) describe earlier local builds; use the 0.4.2 report above for current installation sizes.
 
 ## Source build and release packaging
 
@@ -89,7 +89,7 @@ Reading and pruning accept one local file or archive-member path per request; `s
 ## Browser preview (0.4.0)
 
 `filens preview FILE` starts a loopback server and opens the shared frontend viewer.
-CLI 0.4.1 installs `filens-preview@0.1.3` into the versioned cache on first use;
+CLI 0.4.2 installs `filens-preview@0.1.4` into the versioned cache on first use;
 `filens setup-preview` installs it in advance. Later previews work offline.
 The separate frontend package includes both builds and uses about 31 MB installed,
 excluded from base CLI installation sizes.
@@ -226,6 +226,6 @@ Models use ModelScope, HF Mirror and Hugging Face; a fourth route uses the Model
 
 See the [model manifest](../converter/rapidocr/models.json) and [runtime provenance](../converter/rapidocr/runtime.json). Model measurements and selected sources are saved under `dist/models/rapidocr-ncnn/download-report.json` (Lite: `dist/agent-lite/models/rapidocr-ncnn/`). npm OCR setup/refresh uses `~/.cache/filens/<version>/<platform>/`; `FILENS_CACHE_DIR` selects another location. Refresh changes the model cache and leaves installed package files intact.
 
-Overrides: `FILENS_TEXT_WASM`, `FILENS_PDFIUM_WASM`, `FILENS_IMAGE_WASM`, `FILENS_OCR_LIBRARY`, `FILENS_OCR_MODEL_DIR`. Source builders may supply a portable macOS NCNN companion with `FILENS_NCNN_LIBRARY`. `--no-ocr` disables OCR. `npm run test:agent` covers real PNG/scan-PDF/embedded-DOCX OCR, transparency/EXIF/180-degree preprocessing, JSON/evidence, cancellation/restart, and downloader concurrency, corruption, fallback and caching. `npm run test:agent:npm` tests offline Full/Lite tarball installation and one-command OCR addition without Python. Add `-- --registry` to test public npm installation with a fresh cache, automatic platform selection and temporary invocation. Version 0.4.1 passed offline and fresh-cache anonymous public npm Full/Lite installation checks on macOS arm64, including real OCR, conversion, nested archive search/read, layouts, one-command OCR addition and first-use preview installation. All eleven public packages have matching downloaded tarball checksums and MIT metadata; CLI components use latest=0.4.1 and filens-preview uses latest=0.1.3.
+Overrides: `FILENS_TEXT_WASM`, `FILENS_PDFIUM_WASM`, `FILENS_IMAGE_WASM`, `FILENS_OCR_LIBRARY`, `FILENS_OCR_MODEL_DIR`. Source builders may supply a portable macOS NCNN companion with `FILENS_NCNN_LIBRARY`. `--no-ocr` disables OCR. `npm run test:agent` covers real PNG/scan-PDF/embedded-DOCX OCR, transparency/EXIF/180-degree preprocessing, JSON/evidence, cancellation/restart, and downloader concurrency, corruption, fallback and caching. `npm run test:agent:npm` tests offline Full/Lite tarball installation and one-command OCR addition without Python. Add `-- --registry` to test public npm installation with a fresh cache, automatic platform selection and temporary invocation. Version 0.4.2 passed offline and fresh-cache anonymous public npm Full/Lite installation checks on macOS arm64, including real OCR, conversion, nested archive search/read, layouts, one-command OCR addition and first-use preview installation. All eleven public packages have matching downloaded tarball checksums and MIT metadata; CLI components use latest=0.4.2 and filens-preview uses latest=0.1.4.
 
-The frontend package passed 28 direct and ten Vite-bundled browser previews, with both TypeScript exports checked in an isolated consumer. Native WAV audio, HEIC decoding and native MOV playback passed in Chrome for both builds. Default media preview excludes full FFmpeg, and packaging/publication enforce the 2.2 MiB native executable limit. See the [publication and validation record](agent-cli-npm-publish.json). Windows tarballs passed forced installation and scoped dependency resolution on macOS; Windows/Linux native execution remains unverified.
+The frontend package passed 28 direct and ten Vite-bundled browser previews, with both TypeScript exports checked in an isolated consumer. Native WAV audio, HEIC decoding, and MOV playback or explicit codec errors passed for both builds. Default media preview excludes full FFmpeg, and packaging/publication enforce the 2.2 MiB native executable limit. See the [publication and validation record](agent-cli-npm-publish.json). Windows/Linux native execution remains unverified.

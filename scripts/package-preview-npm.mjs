@@ -26,4 +26,9 @@ const release = {name:packed.name, version:packed.version, file:packed.filename,
   sha256:createHash('sha256').update(bytes).digest('hex'), integrity:packed.integrity,
   files:packed.files.map(({path,size}) => ({path,bytes:size})), privacyChecked:true};
 await writeFile(path.join(directory,'release.json'), `${JSON.stringify(release,null,2)}\n`);
+await writeFile(path.join(root, 'docs/preview-package-sizes.json'), `${JSON.stringify({
+  date: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai' }).format(new Date()),
+  scope: 'Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.',
+  ...release
+}, null, 2)}\n`);
 console.log(`${release.name}@${release.version}: ${(release.bytes/1048576).toFixed(2)} MiB download, ${(release.unpackedBytes/1048576).toFixed(2)} MiB installed.`);

@@ -41,7 +41,16 @@ async function update(){
     ['README.md','en','  <p>Local file tools for Agents and browsers. Read, search, OCR, and preview files without uploading them.</p>'],
     ['README.zh-CN.md','zh','  <p>面向 Agent 与浏览器的本地文件工具：读取、搜索、OCR 与多格式预览。文件无需上传。</p>'],
   ]){
-    const text=await readFile(path.join(root,file),'utf8');
+    let text=await readFile(path.join(root,file),'utf8');
+    const range=values=>`${Math.min(...values).toFixed(2)}–${Math.max(...values).toFixed(2)}`;
+    const liteRange=range(rows.map(r=>r.lite.installedBytes/1048576));
+    const fullRange=range(rows.map(r=>r.full.installedBytes/1048576));
+    const binaryRange=range(rows.map(r=>r.binaryBytes/1048576));
+    text=language==='zh'
+      ? text.replace(/(\| 大概多大 \| ).*?( \|)/,`$1**Lite 安装后 ${liteRange} MiB · Full 安装后 ${fullRange} MiB**，完整版含 OCR 运行时与模型。$2`)
+        .replace(/原生可执行文件为 \*\*[^*]+\*\*/,`原生可执行文件为 **${binaryRange} MiB**`)
+      : text.replace(/(\| Approximate size \| ).*?( \|)/,`$1**Lite: ${liteRange} MiB installed · Full: ${fullRange} MiB installed**, including OCR runtime and models.$2`)
+        .replace(/The native executable is \*\*[^*]+\*\*/,`The native executable is **${binaryRange} MiB**`);
     const body=language==='zh'
       ? `  <p><strong>CLI 可执行文件 ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>`
       : `  <p><strong>CLI executable ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>`;

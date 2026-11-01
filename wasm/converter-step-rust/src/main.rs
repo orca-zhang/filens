@@ -119,10 +119,14 @@ fn run() -> Result<(), String> {
             }
         }
     }
-    let geometry = json!({"positions": positions, "normals": normals});
+    let geometry = if args.iter().any(|arg| arg == "--binary") {
+        encode_mesh(&positions, &normals)?
+    } else {
+        serde_json::to_vec(&json!({"positions": positions, "normals": normals})).unwrap()
+    };
     fs::write(
         args.get(2).ok_or("output required")?,
-        serde_json::to_vec(&geometry).unwrap(),
+        geometry,
     )
     .map_err(|e| e.to_string())?;
     println!(
@@ -130,6 +134,28 @@ fn run() -> Result<(), String> {
         json!({"success": !positions.is_empty(), "instances": instances, "shellFallback": shell_fallback, "sourceFaceReferences": source_face_references, "faces": faces, "missingFaces": missing_faces, "triangles": positions.len()/3, "parseMs": parsed_ms, "meshMs": meshing_ms, "preparation": preparation})
     );
     Ok(())
+}
+
+// Browser ABI: magic, little-endian version and vertex count, then contiguous
+// Float32 positions and normals. Keep the JSON route for numerical diagnostics.
+fn encode_mesh(positions: &[[f64; 3]], normals: &[[f64; 3]]) -> Result<Vec<u8>, String> {
+    let vertices = u32::try_from(positions.len()).map_err(|_| "STEP mesh is too large")?;
+    let mut bytes = Vec::with_capacity(16 + positions.len() * 24);
+    bytes.extend_from_slice(b"FLNSMESH");
+    bytes.extend_from_slice(&1u32.to_le_bytes());
+    bytes.extend_from_slice(&vertices.to_le_bytes());
+    for values in [positions, normals] {
+        for point in values {
+            for value in point {
+                let value = *value as f32;
+                if !value.is_finite() {
+                    return Err("nonfinite Float32 STEP mesh coordinate or normal".into());
+                }
+                bytes.extend_from_slice(&value.to_le_bytes());
+            }
+        }
+    }
+    Ok(bytes)
 }
 
 fn mesh_shell(shell: &InputShell, tolerance: f64, trace: bool) -> MeshShell {

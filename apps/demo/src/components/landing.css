@@ -78,7 +78,7 @@
 .landing .skill-install-terminal-heading { display: flex; align-items: center; gap: 9px; color: #aaa79f; font-size: 10px; }
 .landing .skill-install-terminal-heading .wb-icon { width: 15px; height: 15px; color: var(--home-accent); }
 .landing .skill-install-command { display: flex; align-items: center; gap: 16px; margin-top: 13px; padding: 15px; border: 1px solid var(--home-line); border-radius: 8px; background: #090909; }
-.landing .skill-install-command code { min-width: 0; color: #d3d6c6; font: 11px/1.9 'SFMono-Regular', Consolas, monospace; overflow-wrap: anywhere; user-select: all; }
+.landing .skill-install-prompt { min-width: 0; margin: 0; color: #d3d6c6; font-size: 13px; line-height: 1.9; overflow-wrap: anywhere; user-select: all; }
 .landing .skill-install-command button { flex-shrink: 0; gap: 8px; }
 .landing .skill-install-command .wb-icon { width: 14px; height: 14px; }
 .landing .skill-install-note { min-height: 32px; margin-top: 10px; color: var(--home-muted); font-size: 10px; }

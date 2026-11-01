@@ -5,7 +5,7 @@
   "upstreamCommit": "78d699b0792b39e27c2bf073b682986701644e91",
   "upstreamPullRequest": "https://github.com/ricosjp/truck/pull/141",
   "inputs": {
-    "wasm/converter-step-rust/src/main.rs": "db4e00aba117377b486367f70f60942735a6d1569f53c90d52e6a807a829ae48",
+    "wasm/converter-step-rust/src/main.rs": "bdb8040d1cd720943b7d82148953ce29e4591e0bacc73e5eea655de3e26130b2",
     "wasm/converter-step-rust/src/step_prepare.rs": "20d78e5d926886b8ed3e0de434566db87973c5f7f26de7c7f27900c176b4c4cc",
     "wasm/converter-step-rust/src/step_units.rs": "129077266d588f00346296c3d80b51a27ca82b8334bbf08c917fd717f1fadf3a",
     "docs/upstream/truck/0004-refine-trimmed-surfaces-and-poles.patch": "b4e554bfeeddcdd6b85c8313d19f628c857d860151893d499b87834cddd093ab",
@@ -14,10 +14,10 @@
     "benchmarks/rust-engines/build-step-refined.mjs": "a970881039e8b53ae266eb267a60d35ff8e76aee630e51723ae971993a23ca88"
   },
   "wasm": {
-    "sha256": "d192785227f33bbb3ab135dabfe80ea936e5e2f18f42b9478271bc51d2ff5aa6",
-    "raw": 947225,
-    "gzip": 334093,
-    "brotli": 260639
+    "sha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc",
+    "raw": 947729,
+    "gzip": 334212,
+    "brotli": 261101
   },
   "limitations": [
     "Approximate preview; unresolved trimmed sphere region/orientation difference on HEAD_BACK.stp.",

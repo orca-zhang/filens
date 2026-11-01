@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
-import { occtWasmAsset } from '../../scripts/occt-wasm-plugin';
 
 export default defineConfig({
   base: './',
@@ -28,7 +27,6 @@ export default defineConfig({
     globals: true
   },
   plugins: [
-    occtWasmAsset(),
     dts({
       include: ['src/**/*.ts'],
       outDir: 'dist',

@@ -42,9 +42,7 @@ function embeddedAssets() {
       }
     },
     async generateBundle() {
-      const notices = ['LICENSE', 'packages/step/vendor/THIRD-PARTY-NOTICES.txt',
-        'packages/model3d/vendor/occt-import-js/license.occt.txt',
-        'packages/model3d/vendor/occt-import-js/license.occt-import-js.txt'];
+      const notices = ['LICENSE', 'packages/step/vendor/THIRD-PARTY-NOTICES.txt'];
       const texts = await Promise.all(notices.map(file => readFile(path.join(root, file), 'utf8')));
       // Worker-only dependencies are absent from the main Rollup module graph.
       const dependencyRoots = new Set<string>(['libheif-js'].map(name => path.join(root, 'node_modules', name)));

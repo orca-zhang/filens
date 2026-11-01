@@ -15,16 +15,20 @@
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
-| Approximate size | **2 MB executable → 8 MB Lite → 30+ MB Full**, including OCR models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Approximate size | **Lite: 7.68–8.04 MiB installed · Full: 31.10–36.74 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The 2 MB figure measures the native executable; Lite and Full figures measure installed v0.4.1 packages, including document WASM (platform-dependent, excluding Node.js and optional preview assets). Frontend chunk figures describe compressed build artifacts. The full standalone runtime is about **3.3 MB Brotli** across split files, or **3.9 MB Brotli / 5.2 MB gzip / 16.3 MB raw** as one JS file, including Vue, styles, workers and WASM. Version 0.1.3 uses native media support with a small HEIC/HEIF decoder fallback; full FFmpeg is excluded. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **1.78–2.15 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.1.4 uses truck for STEP and excludes OCCT: **2.44 MB Brotli** across split runtime files, or **2.84 MB Brotli / 3.79 MB gzip / 12.70 MB raw** as one JS file, including Vue, styles, workers and WASM. Media uses browser codecs with a small HEIC/HEIF decoder fallback; full FFmpeg is excluded. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
 Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Paraphrasing, translation and question answering belong to the calling Agent.
 
-**Install the Agent Skill:** `npx --yes skills add IceWhaleTech/filens --skill filens --global --yes` · [Skill guide](skills/filens/SKILL.md)
+**Ask your Agent to install it:**
+
+> Install filens for me. Find skills/filens/SKILL.md at https://github.com/IceWhaleTech/filens and follow it to set up the CLI and skill.
+
+[Skill guide](skills/filens/SKILL.md) · Or install the CLI yourself:
 
 ```sh
 # Full: native RapidOCR and Chinese/English models; no Python
@@ -38,13 +42,13 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**Browser preview from the CLI:** `filens preview report.pdf` opens the shared frontend viewer. The first use installs the separate `filens-preview` package; `filens setup-preview` prepares it in advance. `--no-open --json` prints a local URL and keeps the server running until stopped. The optional frontend package includes both builds (about **31 MB installed**), measured separately from CLI sizes. [Preview setup and limits](packages/preview/README.md#cli-preview).
+**Browser preview from the CLI:** `filens preview report.pdf` opens the shared frontend viewer. The first use installs the separate `filens-preview` package; `filens setup-preview` prepares it in advance. `--no-open --json` prints a local URL and keeps the server running until stopped. Preview 0.1.4 includes both builds (about **7.0 MB download / 24.34 MB installed**), measured separately from CLI sizes. CLI 0.4.2 downloads this version automatically; earlier CLI releases retain their pinned preview version. See [package measurements](docs/preview-package-sizes.json). [Preview setup and limits](packages/preview/README.md#cli-preview).
 
 <details>
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.4.1 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.4.2 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -103,35 +107,37 @@ Use a bundler for npm imports, or deploy the package runtime directory and impor
 <!-- bundle-sizes:en:start -->
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM | 872.1 KiB | 395.6 KiB | **318.3 KiB** |
-| Image / RAW core WASM | 1072.2 KiB | 293.0 KiB | **210.7 KiB** |
-| Media / panorama preview | 216.9 KiB | 64.1 KiB | **54.7 KiB** |
-| Rust STEP WASM (default) | 925.0 KiB | 326.3 KiB | **254.5 KiB** |
-| OCCT STEP WASM (explicit option) | 2625.8 KiB | 1020.2 KiB | **797.0 KiB** |
+| Conversion core WASM | 1123.1 KiB | 497.8 KiB | **395.8 KiB** |
+| Image / RAW core WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
+| Media / panorama preview | 229.0 KiB | 67.1 KiB | **57.2 KiB** |
+| truck STEP WASM (default) | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
-Document, image / RAW, and STEP WASM modules load independently on demand. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
+Document, image / RAW, and STEP WASM modules load independently on demand. STEP uses truck; OCCT is excluded from the build. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
 
 <details>
 <summary>All modules and initial loading cost</summary>
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Demo entry | 173.1 KiB | 48.9 KiB | **40.8 KiB** |
-| Shared vendor dependencies | 1319.8 KiB | 369.6 KiB | **305.2 KiB** |
-| PPTX / core runtime | 288.6 KiB | 76.1 KiB | **65.4 KiB** |
-| Vue preview host | 69.9 KiB | 16.3 KiB | **14.4 KiB** |
-| DOCX / XLSX / PDF | 32.5 KiB | 9.8 KiB | **8.8 KiB** |
+| HEIC / HEIF decoder WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
+| Demo entry | 212.9 KiB | 61.0 KiB | **51.3 KiB** |
+| Agent CLI demo UI | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
+| Shared vendor dependencies | 1329.1 KiB | 373.3 KiB | **308.2 KiB** |
+| PPTX / core runtime | 336.6 KiB | 93.0 KiB | **78.9 KiB** |
+| Vue preview host | 78.7 KiB | 18.6 KiB | **16.5 KiB** |
+| DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork preview | 26.8 KiB | 8.7 KiB | **7.7 KiB** |
-| CAD / mind maps / diagrams | 90.2 KiB | 25.2 KiB | **21.6 KiB** |
-| 3D preview | 133.4 KiB | 37.9 KiB | **32.9 KiB** |
-| Archive preview | 24.7 KiB | 7.9 KiB | **7.0 KiB** |
-| Text / ebooks | 22.9 KiB | 8.2 KiB | **7.3 KiB** |
+| iWork preview | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
+| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.1 KiB** |
+| 3D preview | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
+| Media decoder loader | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
+| Archive preview | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
+| Text / ebooks | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
 | iWork worker | 894.1 KiB | 186.7 KiB | **156.2 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
-| OCCT STEP loader (explicit option) | 23.0 KiB | 9.5 KiB | **8.7 KiB** |
+| truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Entry, preloaded JS, and CSS total **499.0 KiB Brotli** (2131.8 KiB raw / 596.6 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Entry, preloaded JS, and CSS total **495.6 KiB Brotli** (2107.6 KiB raw / 594.3 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
 
 </details>
 
@@ -208,17 +214,19 @@ If the module is not found, run `sudo zpkg update` to refresh the store index, t
 | 11.1 MB, 13-slide PPTX parse | **28.5 ms** | pptx-preview 1.0.7: 56.6 ms | **1.99×** |
 | 11.1 MB, 13-slide PPTX first preview | **48.8 ms** | pptx-preview 1.0.7: 71.8 ms | **1.47×** |
 | 3840×1920 panorama JPEG preview | **154.9 ms** | Photo Sphere Viewer 5.15.1: 205.2 ms | **1.32×** |
-| 11904×5952 original X5 INSP panorama preview | **369.4 ms** | Photo Sphere Viewer 5.15.1 dual fisheye: 414.5 ms | **1.12×** |
+| X5 INSP preview, input/modules/WASM ready (Oct 27) | **354.5 ms** | Photo Sphere Viewer 5.15.1 dual fisheye: 383.0 ms | **1.08×** |
 | NEF without embedded JPEG → preview canvas | **152.7 ms** | LibRaw-Wasm 1.6.0 half-size: 326.7 ms | **2.14×** |
 | DNG without embedded JPEG → preview canvas | **167.7 ms** | LibRaw-Wasm 1.6.0 fast half-size: 314.4 ms | **1.87×** |
-| STEP geometry import: cube (prior OCCT baseline) | **46.5 ms** | occt-import-js 0.0.23: 67.6 ms | 1.45× |
+| STEP truck geometry import: cube (Nov 1) | **11.9 ms** | occt-import-js 0.0.23: 62.0 ms | **5.21×** |
+| STEP truck geometry import: as1_pe_203 (Nov 1) | **61.2 ms** | occt-import-js 0.0.23: 195.0 ms | **3.19×** |
+| STEP truck geometry import: as1-oc-214 (Nov 1) | **224.2 ms** | occt-import-js 0.0.23: 243.8 ms | **1.09×** |
 | XLSX data read (80,000 cells) | **42.3 ms** | SheetJS CE 0.20.3: 109.6 ms | 2.59× |
 | XLS → XLSX preview conversion (6 sheets) | **12.3 ms** | x2t WASM v9.3.2+3: 49.1 ms | 4.00× |
 | 20,000×8 numeric CSV → XLSX | **137.6 ms** | x2t WASM v9.3.2+3: 198.8 ms | 1.44× |
 
 **Stable leads against specialized frontend libraries.** At least seven runs per configuration, with 21 for the X5 original; sensor development and preview drawing on five RAW inputs without embedded JPEGs are **1.11–2.14×** faster than the measured LibRaw paths.
 
-<sub>\* Limited to this machine, measured inputs and listed peers, supported by paired bootstrap 95% intervals; downloads and library cold loading excluded. Apple M4 Pro / Chromium 147; **panoramas use SwiftShader software rendering**. On the X5 original, PSV's generic dual-fisheye projection visibly repeats scene content across hard seams; filens has lighter, localized ghosting. The speed label covers readable previews of this original. RAW measures development and drawing to a common canvas with different intermediate sizes; STEP targets geometry previews; XLSX compares data reading; XLS compares the main displayed content in the same viewer. [Full results, scope and reproduction](docs/performance-comparison.md).</sub>
+<sub>\* Limited to this machine, measured inputs and listed peers, supported by paired bootstrap 95% intervals; downloads and library cold loading excluded. Apple M4 Pro / Chromium 147; **panoramas use SwiftShader software rendering**. On the X5 original, PSV's generic dual-fisheye projection visibly repeats scene content across hard seams; filens has lighter, localized ghosting. The speed label covers readable previews of this original. RAW measures development and drawing to a common canvas with different intermediate sizes; STEP uses the current truck reader: all six tested files lead after lossless binary mesh transport; as1-oc-214 takes 224.2 vs 243.8 ms. Meshes differ and pass an approximate geometry screen; this excludes scene construction and rendering; XLSX compares data reading; XLS compares the main displayed content in the same viewer. [Full results, scope and reproduction](docs/performance-comparison.md).</sub>
 
 </details>
 

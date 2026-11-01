@@ -1,6 +1,6 @@
 # Browser frontend performance comparison
 
-October 23–24 historical comparisons, October 27 final-build recheck, 2026 · Apple M4 Pro · Chromium 147 · **2,709 cumulative comparison measurements, at least 7 per configuration and 21 for the X5 original; all 1,106 filens runs succeeded.** Another 28 pruned-CR3 diagnostics and 28 exploratory panorama measurements are retained outside these totals and current rankings.
+October 23–24 historical comparisons, October 27 final-build recheck and November 1 truck STEP recheck, 2026 · Apple M4 Pro · Chromium 147 · **2,877 cumulative comparison measurements, at least 7 per configuration and 21 for the X5 original; all 1,190 filens runs succeeded.** Another 28 pruned-CR3 diagnostics and 28 exploratory panorama measurements are retained outside these totals and current rankings.
 
 PPTX, panorama, RAW without embedded JPEGs, STEP, XLSX and document preview conversion have stable leading cases. Tasks under 10 ms are omitted from the comparison tables. The target is readable previews; converted files need not preserve identical editable internal structures.
 
@@ -12,14 +12,16 @@ PPTX, panorama, RAW without embedded JPEGs, STEP, XLSX and document preview conv
 | X5 INSP preview, input/modules/WASM ready (Oct 27) | **354.5 ms** | Photo Sphere Viewer 5.15.1 dual fisheye: 383.0 ms | 1.08× (1.05–1.10) | **Scoped preview SOTA\*** |
 | NEF without embedded JPEG → preview canvas | **152.7 ms** | LibRaw half-size: 326.7 ms | 2.14× (2.10–2.17) | **SOTA\*** |
 | DNG without embedded JPEG → preview canvas | **167.7 ms** | LibRaw fast half-size: 314.4 ms | 1.87× (1.78–1.91) | **SOTA\*** |
-| STEP geometry import: cube | **46.5 ms** | occt-import-js: 67.6 ms | 1.45× (1.43–1.63) | **SOTA\*** |
+| STEP truck geometry import: cube (Nov 1) | **11.9 ms** | occt-import-js: 62.0 ms | 5.21× (5.00–5.31) | **Scoped geometry SOTA\*** |
+| STEP truck geometry import: as1_pe_203 (Nov 1) | **61.2 ms** | occt-import-js: 195.0 ms | 3.19× (3.15–3.21) | **Scoped geometry SOTA\*** |
+| STEP truck geometry import: as1-oc-214 (Nov 1) | **224.2 ms** | occt-import-js: 243.8 ms | 1.09× (1.08–1.10) | **Scoped geometry SOTA\*** |
 | XLSX data read (80,000 cells) | **42.3 ms** | sheetjs: 109.6 ms | 2.59× (2.38–2.71) | **SOTA\*** |
 | XLS → XLSX preview conversion (6 sheets) | **12.3 ms** | x2t: 49.1 ms | 4.00× (3.91–4.13) | **SOTA\*** |
 | 20,000×8 numeric CSV → XLSX | **137.6 ms** | x2t: 198.8 ms | 1.44× (1.41–1.46) | **SOTA\*** |
 
 <sub>\* SOTA is limited to this machine, measured inputs, listed peers and task: the paired bootstrap 95% ratio interval stays above 1. XLSX data reading does not cover complete style parsing; XLS conversion compares displayed results in the same viewer. **Panoramas use SwiftShader software rendering.** Downloads and library cold loading are excluded. Full records retain slower cases and failures.</sub>
 
-**Final end-to-end verdict, October 27: no SOTA label.** Including local HTTP input transfer, JS loading and WASM fetch/compilation, the same X5 original takes **426.8 ms** with filens versus **424.1 ms** with PSV: **0.994× peer / filens, 95% interval 0.938–1.019**, with no stable lead. Both metrics come from the same 42 runs and are counted once. Other rows retain their October 23–24 scoped results. This local metric still excludes HTML/CSS shell navigation, browser startup, remote NAS and the Photos backend/database; it does not establish application-wide end-to-end performance. [Final verdict and evidence](../benchmarks/frontend/2026-10-27/end-to-end-sota-verdict.json).
+**Final end-to-end verdict, October 27: no SOTA label.** Including local HTTP input transfer, JS loading and WASM fetch/compilation, the same X5 original takes **426.8 ms** with filens versus **424.1 ms** with PSV: **0.994× peer / filens, 95% interval 0.938–1.019**, with no stable lead. Both metrics come from the same 42 runs and are counted once. STEP uses the November 1 truck recheck below; other rows retain their October 23–24 scoped results. This local metric still excludes HTML/CSS shell navigation, browser startup, remote NAS and the Photos backend/database; it does not establish application-wide end-to-end performance. [Final verdict and evidence](../benchmarks/frontend/2026-10-27/end-to-end-sota-verdict.json).
 
 ## X5 originals: native calibration and more natural seams
 
@@ -122,20 +124,26 @@ The peer is [x2t v9.3.2+3](https://github.com/cryptpad/onlyoffice-x2t-wasm/relea
 
 </details>
 
-## STEP: a smaller geometry preview core
+## STEP: default truck geometry import
 
-All six geometry imports lead [occt-import-js 0.0.23](https://github.com/kovacsv/occt-import-js), the core used by Online 3D Viewer.
+The November 1 recheck uses the shipped `filens-step` truck reader against [occt-import-js 0.0.23](https://github.com/kovacsv/occt-import-js), with seven rotating paired reads per file. **All six cases now qualify for a scoped geometry-import SOTA label after lossless binary mesh transport.** OCCT is excluded from the default demo and standalone runtime builds.
 
-| File | Triangles | filens (ms) | Upstream (ms) | Upstream / filens |
-| --- | ---: | ---: | ---: | ---: |
-| cube.stp | 12 | 46.5 | 67.6 | 1.45× |
-| rounded-cube.step | 84 | 52.2 | 79.2 | 1.52× |
-| as1_pe_203.stp | 3,848 | 147.7 | 180.5 | 1.22× |
-| as1-oc-214.stp | 5,040 | 266.7 | 289.5 | 1.09× |
-| dm1-oc-214.stp | 1,904 | 171.9 | 196.8 | 1.15× |
-| tailturbine.stp | 3,622 | 148.9 | 175.1 | 1.18× |
+| File | truck / OCCT triangles | truck (ms) | OCCT (ms) | OCCT / truck (95% interval) | Result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| cube.stp | 12 / 12 | 11.9 | 62.0 | 5.21× (5.00–5.31) | **Scoped SOTA\*** |
+| rounded-cube.step | 28 / 40 | 15.4 | 69.8 | 4.53× (4.46–4.63) | **Scoped SOTA\*** |
+| as1_pe_203.stp | 11,840 / 16,512 | 61.2 | 195.0 | 3.19× (3.15–3.21) | **Scoped SOTA\*** |
+| as1-oc-214.stp | 28,716 / 5,180 | 224.2 | 243.8 | 1.09× (1.08–1.10) | **Scoped SOTA\*** |
+| dm1-oc-214.stp | 8,988 / 1,928 | 117.8 | 168.6 | 1.43× (1.42–1.44) | **Scoped SOTA\*** |
+| tailturbine.stp | 3,592 / 4,416 | 50.6 | 153.9 | 3.04× (3.03–3.06) | **Scoped SOTA\*** |
 
-<sub>World-space triangle/normal signatures match, backed by a separate 55-fixture / 165-import numerical regression. filens targets geometry preview and omits original colors, names and assembly trees. Brotli WASM falls from 2,315,009 upstream to **816,177 bytes, 64.7% smaller**. This is not a complete CAD metadata-import ranking.</sub>
+The assembly optimization changes only the core/host mesh transport. In the same rotating run group, `as1-oc-214.stp` falls from **278.9 ms with JSON to 224.2 ms with binary Float32 (19.6% less time)**, versus **243.8 ms for OCCT**. The old/new speedup is **1.24× (95% interval 1.24–1.25)**; OCCT / current truck is **1.09× (1.08–1.10)**. Tolerance, tessellation, all 28,716 triangles and every Float32 vertex/normal bit are unchanged. The intermediate mesh falls from 9,140,975 to 2,067,568 bytes (77.4% smaller). Across the full corpus, all 44 meshes match the prior core exactly after Float32 projection, and the same 11 external-only inputs are rejected. [Exact-output regression](assets/rust-engines/binary-transport-regression.json).
+
+All six pass the independent approximate geometry screen: bounds error <1%, area <3%, signed volume <5%, and sampled bidirectional surface-distance P95 ≤ max(0.2 mm, 0.1% of the reference diagonal). Every repeated mesh is finite and repeatable, and truck reports no missing faces. The engines produce different triangulations; exact triangle/normal signatures are not equivalent. This screen does not guarantee maximum surface error. The wider recorded corpus remains 43/44; `HEAD_BACK.stp` still has a trimmed-sphere region/orientation disagreement. Source colors, names, assembly trees and external part loading remain outside the truck preview scope.
+
+Both engines receive a 0.1 mm tolerance; OCCT angular deflection is 0.5. Inputs, modules and compiled WASM are ready before timing. truck timing includes the actual browser reader's fresh WASI instance, parsing, tessellation, binary Float32 mesh I/O and typed-array validation. OCCT timing covers `ReadStepFile`; its initialization is recorded separately, with initialization-inclusive read totals also retained. Network, compilation, scene construction and drawing are excluded. These results replace the historical OCCT-based STEP rankings; changed tessellation settings and output prevent interpreting old/new timings as a direct implementation speedup.
+
+The truck WASM is **261,101 bytes / 254.98 KiB Brotli**, 68.0% below the historical pruned OCCT WASM (816,177 bytes); the default builds no longer ship the latter. WASM size excludes the JS loader, WASI host, Three.js and UI. [Current raw measurements](../benchmarks/frontend/2026-11-01/step-default.json.gz) · [summary, hashes, geometry checks and confidence intervals](../benchmarks/frontend/2026-11-01/step-default-summary.json) · [bundle sizes](bundle-sizes.md).
 
 ## Other categories and slower cases
 
@@ -263,6 +271,8 @@ All six geometry imports lead [occt-import-js 0.0.23](https://github.com/kovacsv
 </details>
 
 ## Data and reproduction
+
+The initial November 1 truck STEP recheck and the subsequent binary-transport recheck each add **84 peer measurements / 42 successful filens reads**. The final run group also includes **42 previous-JSON engineering reads**, excluded from peer totals; current reads are reused for both comparisons and counted once. [Initial JSON results](../benchmarks/frontend/2026-11-01/step-default-json-baseline-summary.json). [Preparation, commands and scope](../benchmarks/frontend/2026-11-01/README.md).
 
 The October 27 final-build recheck adds **105 peer measurements / 42 successful filens runs**: 42 X5 runs and 63 ZIP runs across three inputs, three engines and seven repeats. [End-to-end verdict](../benchmarks/frontend/2026-10-27/end-to-end-sota-verdict.json) · [complete ZIP extraction summary](../benchmarks/frontend/2026-10-27/zip-final-summary.json) · [ZIP raw data](../benchmarks/frontend/2026-10-27/zip-final.json.gz). fflate remains faster for 1,000 small files. filens takes 8.6 ms for the generated 16 MiB single-entry ZIP, below this report's 10 ms labeling threshold; no new SOTA is added or inferred for directory navigation or first preview.
 

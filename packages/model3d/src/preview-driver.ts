@@ -122,7 +122,6 @@ export interface ModelGeometryLoadResult {
 
 export interface ModelLoadOptions {
   signal?: AbortSignal;
-  stepEngine?: 'rust' | 'occt';
 }
 
 interface Model3dPreviewMetadata {
@@ -220,7 +219,6 @@ const VTK_HEADER_PROBE_BYTES = 250;
 const MAX_SECTION_HELPER_TRIANGLES = 12000;
 const MAX_SECTION_HELPER_CACHE_ENTRIES = 24;
 const SECTION_HELPER_MIN_UPDATE_MS = 33;
-let occtImporterPromise: Promise<StepImporter> | null = null;
 let rustStepImporterPromise: Promise<StepImporter> | null = null;
 
 export const MODEL3D_FORMAT_ROUTES: FormatDefinition[] = [
@@ -3649,37 +3647,22 @@ export async function loadUsdzObject(source: ArrayBuffer): Promise<Object3D> {
 
 export async function loadStepObject(source: ArrayBuffer, options: ModelLoadOptions = {}): Promise<Object3D> {
   checkModelLoadAborted(options.signal);
-  const engine = options.stepEngine ?? 'rust';
-  if (engine === 'rust' && !rustStepImporterPromise) {
+  if (!rustStepImporterPromise) {
     const attempt = import('./rust-step-importer').then(({ createRustStepImporter }) => createRustStepImporter());
     rustStepImporterPromise = attempt;
     void attempt.catch(() => { if (rustStepImporterPromise === attempt) rustStepImporterPromise = null; });
   }
-  if (engine === 'occt' && !occtImporterPromise) {
-    const attempt = Promise.all([
-      import('../vendor/occt-import-js/occt-import-js.js'),
-      import('../vendor/occt-import-js/occt-import-js.wasm?url')
-    ]).then(([{ default: createOcctImporter }, { default: wasmUrl }]) =>
-      createOcctImporter({ locateFile: () => wasmUrl })
-    );
-    occtImporterPromise = attempt;
-    void attempt.catch(() => {
-      if (occtImporterPromise === attempt) occtImporterPromise = null;
-    });
-  }
-  const importer = await waitForModelLoad((engine === 'rust' ? rustStepImporterPromise : occtImporterPromise)!, options.signal);
+  const importer = await waitForModelLoad(rustStepImporterPromise, options.signal);
   checkModelLoadAborted(options.signal);
-  const pending = engine === 'rust'
-    ? importer.ReadStepFile(new Uint8Array(source), { linearUnit: 'millimeter' }, options.signal)
-    : importer.ReadStepFile(new Uint8Array(source), { linearUnit: 'millimeter' });
+  const pending = importer.ReadStepFile(new Uint8Array(source), { linearUnit: 'millimeter' }, options.signal);
   const result = await waitForModelLoad(Promise.resolve(pending), options.signal);
   checkModelLoadAborted(options.signal);
   if (!result.success || !result.root || !result.meshes?.length) {
-    throw new Error(`${engine === 'rust' ? 'Rust STEP' : 'OpenCascade'} could not read this STEP file.`);
+    throw new Error('Rust STEP could not read this STEP file.');
   }
 
   const object = new Group();
-  object.userData.stepEngine = engine;
+  object.userData.stepEngine = 'rust';
   object.userData.previewWarnings = result.warnings ?? [];
   for (const meshIndex of result.root.meshes) {
     const sourceMesh = result.meshes[meshIndex];

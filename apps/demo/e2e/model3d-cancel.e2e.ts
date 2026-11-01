@@ -26,11 +26,11 @@ async function prepare(page: Page) {
   await page.route('**/model3d-cancel-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('cancel-core/index.js', base).href, three: new URL('cancel-three/three.module.js', base).href
+      'filens-step': new URL('cancel-step/index.js', base).href, '@filens/core': new URL('cancel-core/index.js', base).href, three: new URL('cancel-three/three.module.js', base).href
     } })}</script>` });
   });
   for (const [prefix, directory] of [['cancel-model', 'packages/model3d/dist'], ['cancel-baseline', 'tmp/continued-review/model3d-cancel-baseline/dist'],
-    ['cancel-core', 'packages/core/dist'], ['cancel-three', 'node_modules/three/build']]) {
+    ['cancel-step', 'packages/step/dist'], ['cancel-core', 'packages/core/dist'], ['cancel-three', 'node_modules/three/build']]) {
     await page.route(`**/${prefix}/*`, async route => {
       const name = basename(new URL(route.request().url()).pathname);
       const contentType = name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
@@ -119,7 +119,7 @@ test('keeps real STEP WASM initialization usable by another caller after cancell
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await prepare(page);
   let release!: () => void, requested = 0;
   const held = new Promise<void>(resolve => { release = resolve; });
-  await page.route('**/cancel-model/occt-import-js.wasm', async route => { requested++; await held; await route.fulfill({ contentType: 'application/wasm', path: resolve('packages/model3d/dist/occt-import-js.wasm') }); });
+  await page.route('**/cancel-step/*.wasm', async route => { requested++; await held; await route.fulfill({ contentType: 'application/wasm', path: resolve('packages/step/vendor/filens-step.wasm') }); });
   const bytes = await readFile('packages/model3d/test/fixtures/occt/cube.stp');
   await page.evaluate(bytes => {
     const state = (window as any).cancelCheck, source = new Uint8Array(bytes); state.controller = new AbortController();
@@ -134,7 +134,7 @@ test('keeps real STEP WASM initialization usable by another caller after cancell
   } finally { release(); }
   const result = await page.evaluate(async bytes => {
     const state = (window as any).cancelCheck, object = await state.live, next = await state.lib.loadStepObject(new Uint8Array(bytes).buffer);
-    const summarize = (object: any) => { let triangles = 0; object.traverse((node: any) => { if (node.isMesh) triangles += node.geometry.index.count / 3; }); return triangles; };
+    const summarize = (object: any) => { let triangles = 0; object.traverse((node: any) => { if (node.isMesh) triangles += (node.geometry.index?.count ?? node.geometry.getAttribute('position').count) / 3; }); return triangles; };
     return { live: summarize(object), next: summarize(next), canvases: state.host.querySelectorAll('canvas').length, rendered: state.rendered, errors: state.errors };
   }, [...bytes]);
   expect(result).toEqual({ live: 12, next: 12, canvases: 0, rendered: 0, errors: [] }); expect(requested).toBe(1); expect(errors).toEqual([]);
@@ -147,10 +147,13 @@ for (const format of ['stl', 'glb', 'step', '3mf'] as const) {
     const bytes = format === 'stl' ? createBinaryStlFixture(1000) : format === 'glb' ? createTexturedGlbFixture(`data:image/png;base64,${texture.png.toString('base64')}`)
       : format === '3mf' ? await createCancellation3mfFixture() : await readFile('packages/model3d/test/fixtures/occt/cube.stp');
     const rows = await page.evaluate(async ({ format, bytes, texturePixels }) => {
-      const { lib, three } = (window as any).cancelCheck, baseline = await import(/* @vite-ignore */ new URL('cancel-baseline/index.js', location.href).href);
+      const { lib, three } = (window as any).cancelCheck;
+      const baseline = format === 'step' ? null : await import(/* @vite-ignore */ new URL('cancel-baseline/index.js', location.href).href);
       const renderer = new three.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true }); renderer.setSize(128, 128); renderer.setClearColor(0);
       const rows = [], hash = async (data: any) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))].map(v => v.toString(16).padStart(2, '0')).join('');
-      for (const [name, engine, options] of [['original', baseline, undefined], ['current', lib, undefined], ['signal', lib, { signal: new AbortController().signal }]] as const) {
+      const current = [['current', lib, undefined], ['signal', lib, { signal: new AbortController().signal }]] as const;
+      const engines = baseline ? [['original', baseline, undefined] as const, ...current] : current;
+      for (const [name, engine, options] of engines) {
         const buffer = new Uint8Array(bytes).buffer; let object: any;
         if (format === 'glb') object = await engine.loadGlbObject(buffer, options);
         else if (format === 'step') object = await engine.loadStepObject(buffer, options);

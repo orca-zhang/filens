@@ -18,5 +18,14 @@ those committed inputs and need no Rust toolchain. The initial promotion uses
 `node scripts/build-step-wasm.mjs --from-validated`, which accepts only the
 already evaluated adapter/lock/patch hashes.
 
+Browser reads use `--binary`: the core writes a 16-byte `FLNSMESH` header
+(little-endian uint32 version 1 and vertex count), followed by contiguous
+little-endian Float32 positions and normals. The browser host validates the
+header, length and finite values and returns typed arrays. Parsing, tessellation,
+tolerance and geometry stay in this core. Omitting `--binary` retains the JSON
+diagnostic output. All 44 solid fixtures match the previous reader's exact
+Float32 vertices/normals and winding; 11 external-only inputs remain rejected.
+[Regression evidence](../../docs/assets/rust-engines/binary-transport-regression.json).
+
 This remains an approximate preview core. See
 [the geometry checks and remaining sphere discrepancy](../../docs/rust-step-refined.zh-CN.md).

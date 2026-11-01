@@ -46,8 +46,8 @@ export function createStepReader(options: StepReaderOptions = {}): StepReader {
         : ArrayBuffer.isView(source) ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength) : new Uint8Array(source);
       if (input.byteLength > 64 << 20) throw new RangeError('STEP input exceeds 64 MiB.');
       const result = await run({
-        args: ['filens-step', '/work/input.step', '/work/mesh.json', String(tolerance), '--reviewed'],
-        files: { '/work/input.step': input }, readFiles: ['/work/mesh.json'], signal, captureStdio: true
+        args: ['filens-step', '/work/input.step', '/work/mesh.bin', String(tolerance), '--reviewed', '--binary'],
+        files: { '/work/input.step': input }, readFiles: ['/work/mesh.bin'], signal, captureStdio: true
       });
       const lines = (result.stdout ?? '').trim().split('\n');
       let metadata: StepMetadata & { success?: boolean; error?: string };
@@ -56,11 +56,9 @@ export function createStepReader(options: StepReaderOptions = {}): StepReader {
       if (result.exitCode || metadata.error) throw new StepReadError('invalid_step', metadata.error || 'Rust STEP could not read this file.');
       if (!metadata.success) throw new StepReadError('empty_geometry', 'STEP contains no displayable geometry; external assemblies require their referenced part files.');
       if (metadata.missingFaces > 0) throw new StepReadError('incomplete_mesh', `STEP tessellation left ${metadata.missingFaces} faces without geometry.`);
-      const bytes = result.files['/work/mesh.json'];
+      const bytes = result.files['/work/mesh.bin'];
       if (!bytes) throw new StepReadError('invalid_mesh', 'Rust STEP did not produce a mesh.');
-      const raw = JSON.parse(new TextDecoder().decode(bytes)) as { positions: unknown; normals: unknown };
-      const positions = coordinates(raw.positions), normals = coordinates(raw.normals);
-      if (!positions.length || positions.length % 9 || normals.length !== positions.length) throw new StepReadError('invalid_mesh', 'Invalid STEP triangle or normal count.');
+      const { positions, normals } = decodeMesh(bytes);
       const warnings = ['STEP preview omits source colors, names and the assembly tree.'];
       if (metadata.shellFallback) warnings.push('Shells were imported without a resolved assembly hierarchy; instance placement may be incomplete.');
       return { positions, normals, triangleCount: positions.length / 9, metadata, warnings };
@@ -68,20 +66,23 @@ export function createStepReader(options: StepReaderOptions = {}): StepReader {
   };
 }
 
-function coordinates(value: unknown): Float32Array {
-  if (!Array.isArray(value)) throw new StepReadError('invalid_mesh', 'Invalid STEP mesh coordinates.');
-  const result = new Float32Array(value.length * 3);
-  for (let row = 0; row < value.length; row++) {
-    const point = value[row];
-    if (!Array.isArray(point) || point.length !== 3) throw new StepReadError('invalid_mesh', 'Invalid STEP vertex.');
-    for (let axis = 0; axis < 3; axis++) {
-      const number = point[axis];
-      if (typeof number !== 'number' || !Number.isFinite(number)) throw new StepReadError('invalid_mesh', 'Nonfinite STEP coordinate.');
-      result[row * 3 + axis] = number;
-      if (!Number.isFinite(result[row * 3 + axis])) throw new StepReadError('invalid_mesh', 'STEP coordinate exceeds Float32 range.');
-    }
+// Decode only the core's mesh ABI; STEP parsing and tessellation stay in WASM.
+function decodeMesh(bytes: Uint8Array): { positions: Float32Array; normals: Float32Array } {
+  if (bytes.byteLength < 16 || new TextDecoder().decode(bytes.subarray(0, 8)) !== 'FLNSMESH') {
+    throw new StepReadError('invalid_mesh', 'Invalid STEP mesh header.');
   }
-  return result;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const vertices = view.getUint32(12, true), count = vertices * 3;
+  if (view.getUint32(8, true) !== 1 || !vertices || vertices % 3 || bytes.byteLength !== 16 + count * 8) {
+    throw new StepReadError('invalid_mesh', 'Invalid STEP mesh version or triangle count.');
+  }
+  const positions = new Float32Array(count), normals = new Float32Array(count);
+  for (let index = 0; index < count; index++) {
+    const position = view.getFloat32(16 + index * 4, true), normal = view.getFloat32(16 + (count + index) * 4, true);
+    if (!Number.isFinite(position) || !Number.isFinite(normal)) throw new StepReadError('invalid_mesh', 'Nonfinite STEP coordinate or normal.');
+    positions[index] = position; normals[index] = normal;
+  }
+  return { positions, normals };
 }
 
 const defaultReader = createStepReader();

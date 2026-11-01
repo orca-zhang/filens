@@ -1,26 +1,19 @@
 {
-  "version": "0.4.1",
+  "version": "0.4.2",
   "tests": {
     "offline": {
       "command": "node scripts/test-agent-npm.mjs",
       "platform": "darwin-arm64",
       "passed": true,
-      "observedAt": "2026-10-30T11:25:04.052Z",
+      "observedAt": "2026-11-01T02:52:25.992Z",
       "freshNpmCache": false,
       "preview": true
-    },
-    "windowsPackaging": {
-      "platform": "darwin-arm64",
-      "passed": true,
-      "method": "Forced offline npm installation of Windows tarballs and scoped dependency resolution; no Windows binary executed",
-      "scope": "Packaging check only; Windows native execution remains unverified.",
-      "date": "2026-10-30"
     },
     "registry": {
       "command": "node scripts/test-agent-npm.mjs --registry",
       "platform": "darwin-arm64",
       "passed": true,
-      "observedAt": "2026-10-30T11:56:18.098Z",
+      "observedAt": "2026-11-01T03:07:27.215Z",
       "freshNpmCache": true,
       "preview": true
     }

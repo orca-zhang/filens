@@ -5,7 +5,7 @@ package has no runtime dependencies, CLI, Python, server or CAD installation.
 Parsing, units, assembly placement and tessellation run inside WASM. The
 TypeScript adapter supplies an isolated in-memory WASI host and typed mesh data.
 
-Release candidates use the npm `next` tag after publication:
+Install the release candidate from the npm `next` tag:
 
 ```sh
 npm install filens-step@next
@@ -48,15 +48,20 @@ assembly references need their part files; multi-file assembly loading is not
 implemented. Empty geometry and incomplete faces are reported as errors rather
 than silently accepted as a complete model.
 
-The bundled WASM is **947,225 bytes** raw, **334,093 bytes** with gzip level 9,
-or **260,639 bytes (254.53 KiB)** with Brotli 11. Those are WASM-only sizes, not
+The bundled WASM is **947,729 bytes** raw, **334,212 bytes** with gzip level 9,
+or **261,101 bytes (254.98 KiB)** with Brotli 11. Those are WASM-only sizes, not
 the npm tarball or complete download. JavaScript, TypeScript declarations,
 provenance and dependency notices are also included. See
 [the size and geometry evidence](https://github.com/IceWhaleTech/filens/blob/main/docs/rust-step-browser.zh-CN.md).
 
+Mesh transport uses a compact binary Float32 payload, preserving the previous
+reader's exact vertex and normal values. On the tested `as1-oc-214.stp` assembly,
+browser reading falls from 278.9 to 224.2 ms with unchanged tessellation and
+tolerance; this excludes downloads, WASM compilation and rendering.
+
 Build inputs, the pinned upstream commit and exact WASM hash are shipped in
 `dist/filens-step-manifest.json`; dependency license texts are in
-`dist/filens-step-THIRD-PARTY-NOTICES.txt`. The patched truck core is Apache-2.0;
+`dist/filens-step-THIRD-PARTY-NOTICES.txt`. FiLens first-party code is MIT. The patched truck core is Apache-2.0;
 see [upstream PR #141](https://github.com/ricosjp/truck/pull/141). In the FiLens
 workspace, `npm run build:step` builds the browser package without a Rust
 toolchain; `npm run build:step:wasm` rebuilds the pinned Rust core.

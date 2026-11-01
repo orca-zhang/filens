@@ -15,16 +15,20 @@
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
-| 大概多大 | **可执行文件约 2 MB → Lite 约 8 MB → Full 约 30 多 MB**，完整版含 OCR 模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 大概多大 | **Lite 安装后 7.68–8.04 MiB · Full 安装后 31.10–36.74 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-约 2 MB 指原生可执行文件；Lite 和 Full 指包含文档 WASM 的 v0.4.1 包安装体积，随平台变化，不含 Node.js 和可选预览资源。前端分包说的是压缩产物。完整独立预览运行时按分包合计约 **3.3 MB Brotli**，单文件版约 **3.9 MB Brotli / 5.2 MB gzip / 16.3 MB 原始体积**，已包含 Vue、样式、Worker 与 WASM。0.1.3 优先使用原生媒体支持，HEIC/HEIF 使用小型解码器兜底，默认包不含完整 FFmpeg。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **1.78–2.15 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览包 0.1.4 的 STEP 默认使用 truck，构建不含 OCCT：独立预览运行时按分包合计约 **2.44 MB Brotli**，单文件版约 **2.84 MB Brotli / 3.79 MB gzip / 12.70 MB 原始体积**，已包含 Vue、样式、Worker 与 WASM。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底，默认包不含完整 FFmpeg。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
 本地读取 PDF、Office、表格、扫描件和图片；搜索目录与嵌套压缩包、提取关键原文、查找重复文件与相似图片。输出 text、JSON、Markdown、HTML、YAML、XML、CSV 或 TSV，保留可用的页码坐标与文档结构。改写总结、翻译和问答由调用它的 Agent 完成。
 
-**一键安装 Agent Skill：** `npx --yes skills add IceWhaleTech/filens --skill filens --global --yes` · [使用说明](skills/filens/SKILL.md)
+**把这句话发给你的 Agent：**
+
+> 帮我安装 filens，去 https://github.com/IceWhaleTech/filens 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。
+
+[Skill 使用说明](skills/filens/SKILL.md) · 也可手动安装 CLI：
 
 ```sh
 # 完整版：自带原生 RapidOCR 与中英文模型，无需 Python
@@ -38,13 +42,13 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**用 CLI 打开预览：**`filens preview report.pdf` 打开共享前端预览器；首次运行自动安装独立的 `filens-preview` 包，也可先运行 `filens setup-preview`。`--no-open --json` 返回本地地址，服务保持运行直到退出。可选前端包同时包含两种构建，完整安装约 **31 MB**，与 CLI 体积分开计量。[预览配置与限制](packages/preview/README.md#cli-preview)。
+**用 CLI 打开预览：**`filens preview report.pdf` 打开共享前端预览器；首次运行自动安装独立的 `filens-preview` 包，也可先运行 `filens setup-preview`。`--no-open --json` 返回本地地址，服务保持运行直到退出。预览包 0.1.4 同时包含两种构建，约 **7.0 MB 下载 / 24.34 MB 安装体积**，与 CLI 分开计量。CLI 0.4.2 首次预览会自动下载此版本；旧版 CLI 保留原来固定的预览版本。见[包体积实测](docs/preview-package-sizes.json)。[预览配置与限制](packages/preview/README.md#cli-preview)。
 
 <details>
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.4.1 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.4.2 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -103,35 +107,37 @@ npm 导入需配合打包器；也可直接部署包内运行时目录，通过 
 <!-- bundle-sizes:zh:start -->
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| 转换核心 WASM | 872.1 KiB | 395.6 KiB | **318.3 KiB** |
-| 图像 / RAW 核心 WASM | 1072.2 KiB | 293.0 KiB | **210.7 KiB** |
-| 媒体 / 全景预览 | 216.9 KiB | 64.1 KiB | **54.7 KiB** |
-| STEP Rust WASM（默认） | 925.0 KiB | 326.3 KiB | **254.5 KiB** |
-| STEP OCCT WASM（显式可选） | 2625.8 KiB | 1020.2 KiB | **797.0 KiB** |
+| 转换核心 WASM | 1123.1 KiB | 497.8 KiB | **395.8 KiB** |
+| 图像 / RAW 核心 WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
+| 媒体 / 全景预览 | 229.0 KiB | 67.1 KiB | **57.2 KiB** |
+| STEP truck WASM（默认） | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
-文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载；媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
+文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载；STEP 默认使用 truck，构建不包含 OCCT。媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
 
 <details>
 <summary>展开查看全部分包及首屏成本</summary>
 
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| 演示站入口 | 173.1 KiB | 48.9 KiB | **40.8 KiB** |
-| 共享第三方依赖 | 1319.8 KiB | 369.6 KiB | **305.2 KiB** |
-| PPTX / 核心运行时 | 288.6 KiB | 76.1 KiB | **65.4 KiB** |
-| Vue 预览容器 | 69.9 KiB | 16.3 KiB | **14.4 KiB** |
-| DOCX / XLSX / PDF | 32.5 KiB | 9.8 KiB | **8.8 KiB** |
+| HEIC / HEIF 解码 WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
+| 演示站入口 | 212.9 KiB | 61.0 KiB | **51.3 KiB** |
+| Agent CLI 演示界面 | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
+| 共享第三方依赖 | 1329.1 KiB | 373.3 KiB | **308.2 KiB** |
+| PPTX / 核心运行时 | 336.6 KiB | 93.0 KiB | **78.9 KiB** |
+| Vue 预览容器 | 78.7 KiB | 18.6 KiB | **16.5 KiB** |
+| DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
 | PDF 按需引擎 | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork 预览 | 26.8 KiB | 8.7 KiB | **7.7 KiB** |
-| CAD / 思维导图 / 流程图 | 90.2 KiB | 25.2 KiB | **21.6 KiB** |
-| 3D 预览 | 133.4 KiB | 37.9 KiB | **32.9 KiB** |
-| 压缩包预览 | 24.7 KiB | 7.9 KiB | **7.0 KiB** |
-| 文本 / 电子书 | 22.9 KiB | 8.2 KiB | **7.3 KiB** |
+| iWork 预览 | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
+| CAD / 思维导图 / 流程图 | 92.1 KiB | 25.7 KiB | **22.1 KiB** |
+| 3D 预览 | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
+| 媒体解码加载器 | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
+| 压缩包预览 | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
+| 文本 / 电子书 | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
 | iWork Worker | 894.1 KiB | 186.7 KiB | **156.2 KiB** |
 | PDF Worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
-| STEP OCCT 加载器（显式可选） | 23.0 KiB | 9.5 KiB | **8.7 KiB** |
+| STEP truck 加载器 | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-本次构建的入口、预加载 JS 与 CSS 合计 **499.0 KiB Brotli**（原始 2131.8 KiB / gzip 596.6 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
+本次构建的入口、预加载 JS 与 CSS 合计 **495.6 KiB Brotli**（原始 2107.6 KiB / gzip 594.3 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
 
 </details>
 
@@ -208,17 +214,19 @@ sudo zpkg install filens
 | 11.1 MB、13 页 PPTX 解析 | **28.5 ms** | pptx-preview 1.0.7：56.6 ms | **1.99×** |
 | 11.1 MB、13 页 PPTX 首屏 | **48.8 ms** | pptx-preview 1.0.7：71.8 ms | **1.47×** |
 | 3840×1920 全景 JPEG 首屏 | **154.9 ms** | Photo Sphere Viewer 5.15.1：205.2 ms | **1.32×** |
-| 11904×5952 X5 INSP 原片全景首屏 | **369.4 ms** | Photo Sphere Viewer 5.15.1 双鱼眼：414.5 ms | **1.12×** |
+| X5 INSP 首屏，输入/模块/WASM 已就绪（10-27） | **354.5 ms** | Photo Sphere Viewer 5.15.1 双鱼眼：383.0 ms | **1.08×** |
 | 无内嵌 JPEG 的 NEF → 预览画布 | **152.7 ms** | LibRaw-Wasm 1.6.0 半尺寸：326.7 ms | **2.14×** |
 | 无内嵌 JPEG 的 DNG → 预览画布 | **167.7 ms** | LibRaw-Wasm 1.6.0 快速半尺寸：314.4 ms | **1.87×** |
-| STEP 几何导入：cube（旧 OCCT 基线） | **46.5 ms** | occt-import-js 0.0.23: 67.6 ms | 1.45× |
+| STEP truck 几何导入：cube（11-01） | **11.9 ms** | occt-import-js 0.0.23: 62.0 ms | **5.21×** |
+| STEP truck 几何导入：as1_pe_203（11-01） | **61.2 ms** | occt-import-js 0.0.23: 195.0 ms | **3.19×** |
+| STEP truck 几何导入：as1-oc-214（11-01） | **224.2 ms** | occt-import-js 0.0.23: 243.8 ms | **1.09×** |
 | XLSX 数据读取（80,000 单元格） | **42.3 ms** | SheetJS CE 0.20.3: 109.6 ms | 2.59× |
 | XLS → XLSX 预览转换（6 工作表） | **12.3 ms** | x2t WASM v9.3.2+3: 49.1 ms | 4.00× |
 | 20,000×8 数值 CSV → XLSX | **137.6 ms** | x2t WASM v9.3.2+3: 198.8 ms | 1.44× |
 
 **与专业前端方案同场实测，多条路径稳定领先。** 每组重复至少 7 次；X5 原片重复 21 次。无内嵌 JPEG 的 5 份 RAW 样例，显影并绘制预览比所测 LibRaw 方案快 **1.11–2.14×**。
 
-<sub>\* 仅指本机、已测样例及表列对手，配对 bootstrap 95% 区间支持的领先；不含下载和库冷加载。Apple M4 Pro / Chromium 147；**全景使用 SwiftShader 软件渲染**。X5 原片中，PSV 通用双鱼眼投影有明显画面重复与硬接缝，filens 的局部重影更轻；速度标注限于这份原片的可读预览。RAW 比较统一画布上的显影与绘制，中间输出尺寸不同；STEP 面向几何预览；XLSX 仅比较数据读取；XLS 以相同预览器中的主要显示内容为准。[完整结果、边界与复现](docs/performance-comparison.zh-CN.md)。</sub>
+<sub>\* 仅指本机、已测样例及表列对手，配对 bootstrap 95% 区间支持的领先；不含下载和库冷加载。Apple M4 Pro / Chromium 147；**全景使用 SwiftShader 软件渲染**。X5 原片中，PSV 通用双鱼眼投影有明显画面重复与硬接缝，filens 的局部重影更轻；速度标注限于这份原片的可读预览。RAW 比较统一画布上的显影与绘制，中间输出尺寸不同；STEP 使用当前 truck 读取器，无损二进制网格传递优化后 6 份均领先，as1-oc-214 为 224.2 对 243.8 ms；网格不同且通过近似几何筛查，不含场景构建与绘制；XLSX 仅比较数据读取；XLS 以相同预览器中的主要显示内容为准。[完整结果、边界与复现](docs/performance-comparison.zh-CN.md)。</sub>
 
 </details>
 

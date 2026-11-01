@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-01",
+  "scope": "Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.",
+  "name": "filens-preview",
+  "version": "0.1.4",
+  "file": "filens-preview-0.1.4.tgz",
+  "bytes": 6970203,
+  "unpackedBytes": 24343452,
+  "sha256": "f4aaf95a2a6d079e0ca839cf3d0f06085ea049be88513c753abfe25fbc72432b",
+  "integrity": "sha512-577RdxymFWRgnTtlcajwPRF9QuYdfvh0kAM1hoo/ntdbUSwP3ScaZeBNeyJGbdvQg5w5o6YQgRQ8bX4nAAfAIg==",
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1076
+    },
+    {
+      "path": "README.md",
+      "bytes": 7206
+    },
+    {
+      "path": "dist/all-in-one/filens.js",
+      "bytes": 12696653
+    },
+    {
+      "path": "dist/all-in-one/index.html",
+      "bytes": 1374
+    },
+    {
+      "path": "dist/all-in-one/THIRD-PARTY-NOTICES.txt",
+      "bytes": 404921
+    },
+    {
+      "path": "dist/index.d.ts",
+      "bytes": 1166
+    },
+    {
+      "path": "dist/split/assets/iwork-worker-D64s_rsm.js",
+      "bytes": 915578
+    },
+    {
+      "path": "dist/split/chunks/archive-Drem4a-o.js",
+      "bytes": 27335
+    },
+    {
+      "path": "dist/split/chunks/cad-CsU3TiHK.js",
+      "bytes": 74581
+    },
+    {
+      "path": "dist/split/chunks/core-BvtuMqS1.js",
+      "bytes": 446106
+    },
+    {
+      "path": "dist/split/chunks/diagram-BxRNHzmO.js",
+      "bytes": 27188
+    },
+    {
+      "path": "dist/split/chunks/docx-Ch1AvEUX.js",
+      "bytes": 11766
+    },
+    {
+      "path": "dist/split/chunks/ebook-P42eILp5.js",
+      "bytes": 21804
+    },
+    {
+      "path": "dist/split/chunks/iwork-HnghW_EB.js",
+      "bytes": 29712
+    },
+    {
+      "path": "dist/split/chunks/media-runtime-kbzoW8bd.js",
+      "bytes": 122761
+    },
+    {
+      "path": "dist/split/chunks/mindmap-vFlOJSIq.js",
+      "bytes": 20032
+    },
+    {
+      "path": "dist/split/chunks/model3d-DoNu7iyY.js",
+      "bytes": 188044
+    },
+    {
+      "path": "dist/split/chunks/panorama-Bw_8HQsv.js",
+      "bytes": 271762
+    },
+    {
+      "path": "dist/split/chunks/pdf-CecYOWld.js",
+      "bytes": 604243
+    },
+    {
+      "path": "dist/split/chunks/vendor-Cv2Fxtsf.js",
+      "bytes": 2138881
+    },
+    {
+      "path": "dist/split/chunks/xlsx-ypLtJxeq.js",
+      "bytes": 29666
+    },
+    {
+      "path": "dist/split/converter-core.wasm",
+      "bytes": 1150080
+    },
+    {
+      "path": "dist/split/converter-image.wasm",
+      "bytes": 1126286
+    },
+    {
+      "path": "dist/split/filens-step.wasm",
+      "bytes": 947729
+    },
+    {
+      "path": "dist/split/filens.js",
+      "bytes": 127929
+    },
+    {
+      "path": "dist/split/index.html",
+      "bytes": 1374
+    },
+    {
+      "path": "dist/split/libheif.wasm",
+      "bytes": 1463506
+    },
+    {
+      "path": "dist/split/pdf.worker.min.mjs",
+      "bytes": 1078612
+    },
+    {
+      "path": "dist/split/THIRD-PARTY-NOTICES.txt",
+      "bytes": 404921
+    },
+    {
+      "path": "package.json",
+      "bytes": 1160
+    }
+  ],
+  "privacyChecked": true,
+  "published": true,
+  "registry": "https://registry.npmjs.org/",
+  "publishedAt": "2026-11-01T02:53:19.819Z",
+  "registryIntegrityMatches": true,
+  "verifiedAt": "2026-11-01T02:53:46.130Z"
+}

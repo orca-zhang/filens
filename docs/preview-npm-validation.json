@@ -1,7 +1,7 @@
 {
-  "observedAt": "2026-10-30T11:32:22.972Z",
+  "observedAt": "2026-11-01T02:54:13.700Z",
   "name": "filens-preview",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "source": "public registry with fresh npm cache",
   "platform": "darwin-arm64",
   "passed": true,
@@ -16,6 +16,6 @@
     "Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg",
     "10 PDF/iWork/RAW/STEP/HEIF previews after Vite production bundling of npm exports"
   ],
-  "mediaBrowser": "chrome",
+  "mediaBrowser": "chromium",
   "browserReport": "preview-validation.json"
 }

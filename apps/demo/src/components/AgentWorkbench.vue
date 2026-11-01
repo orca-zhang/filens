@@ -20,7 +20,7 @@ const installCommand = computed(() => [
   '--yes'
 ].filter(Boolean).join(' '));
 const cliCommand = computed(() => `npm install -g ${profile.value === 'full' ? 'filens-cli' : 'filens-cli-lite'}`);
-const installPrompt = computed(() => `请为我安装 FiLens CLI 和 Skill。\n\n1. 安装 CLI：\n${cliCommand.value}\n\n2. ${scope.value === 'global' ? '在用户技能目录安装' : '在当前项目目录安装'} FiLens Skill${target.value === 'auto' ? '（自动检测 Agent）' : `（${target.value}）`}：\n${installCommand.value}\n\n3. 运行 filens capacity --json，检查实际支持的操作、格式与 OCR 状态，再按需读取文件。\n\nSkill 原文：${new URL(skillUrl, window.location.href).href}\n安装完成后告诉我结果；如需重新加载技能，请说明。`);
+const installPrompt = computed(() => `帮我安装 filens，去 ${repo} 找 skills/filens/SKILL.md，按里面的说明配置 ${profile.value === 'full' ? 'Full 版 CLI（含中英文 OCR）' : 'Lite 版 CLI（按需安装 OCR）'} 和 Skill。${scope.value === 'global' ? '把 Skill 装到用户目录，供所有项目使用' : '把 Skill 装到当前项目'}${target.value === 'auto' ? '，适配当前 Agent' : `，供 ${target.value} 使用`}。装好后运行 filens capacity --json 检查是否可用，并告诉我结果。`);
 watch([installCommand, cliCommand], () => {
   if (['install', 'cli', 'prompt'].includes(copied.value)) copied.value = '';
 });
@@ -56,10 +56,9 @@ onUnmounted(() => clearTimeout(feedbackTimer));
         <h2>让 Agent 读懂你的文件。</h2>
         <p>读取、搜索、识别与转换，在本地完成。把有出处的原文交给 Agent，继续分析与问答。</p>
         <div class="agent-intro-actions">
-          <button type="button" class="wb-button agent-primary" @click="copy(installCommand, 'install')"><WorkbenchIcon :name="copied === 'install' ? 'check' : 'download'" />{{ copied === 'install' ? '安装命令已复制' : '一键安装 Skill' }}</button>
-          <button type="button" class="wb-button" @click="copy(installPrompt, 'prompt')"><WorkbenchIcon :name="copied === 'prompt' ? 'check' : 'copy'" />{{ copied === 'prompt' ? '安装提示已复制' : '复制给 Agent 的安装提示' }}</button>
+          <button type="button" class="wb-button agent-primary" @click="copy(installPrompt, 'prompt')"><WorkbenchIcon :name="copied === 'prompt' ? 'check' : 'copy'" />{{ copied === 'prompt' ? '安装提示已复制' : '复制给 Agent 安装' }}</button>
         </div>
-        <p class="agent-install-note">安装按钮会复制命令，请在本机终端运行；也可以把安装提示发给你的 Agent。</p>
+        <p class="agent-install-note">复制一句话发给你的 Agent，让它完成安装；下方也提供手动安装选项。</p>
       </header>
 
       <div class="agent-audience" role="group" aria-label="说明阅读方式">

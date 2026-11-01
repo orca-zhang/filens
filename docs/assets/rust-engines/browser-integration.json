@@ -1,7 +1,7 @@
 {
-  "date": "2026-10-29T18:34:45.594Z",
+  "date": "2026-11-01T02:10:46.433Z",
   "host": "Node running the shared browser WASI host; not a full browser geometry-quality screen",
-  "wasmSha256": "d192785227f33bbb3ab135dabfe80ea936e5e2f18f42b9478271bc51d2ff5aa6",
+  "wasmSha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc",
   "fixtureCount": 55,
   "displayable": 44,
   "rejectedExternalOnly": 11,

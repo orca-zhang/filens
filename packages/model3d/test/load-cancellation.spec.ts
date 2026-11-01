@@ -10,9 +10,7 @@ vi.mock('three', async () => ({ ...await vi.importActual<typeof import('three')>
   constructor() { mocks.renderers.push(this); }
 } }));
 vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({ GLTFLoader: class { parseAsync = mocks.parse; } }));
-vi.mock('../vendor/occt-import-js/occt-import-js.js', () => ({ default: mocks.factory }));
 vi.mock('../src/rust-step-importer', () => ({ createRustStepImporter: mocks.factory }));
-vi.mock('../vendor/occt-import-js/occt-import-js.wasm?url', () => ({ default: '/occt.wasm' }));
 vi.mock('jszip', () => ({ default: { loadAsync: mocks.zip } }));
 
 const deferred = <T>() => {

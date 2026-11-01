@@ -11,14 +11,24 @@ import { npmInvocation } from './agent-platforms.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const release = JSON.parse(await readFile(path.join(root, 'dist/step-npm/release.json'), 'utf8'));
+const registry = process.argv.includes('--registry');
 const work = await mkdtemp(path.join(os.tmpdir(), 'filens-step-install-'));
 let server, browser;
 try {
-  const npm = npmInvocation(['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--prefix', work, path.join(root, 'dist/step-npm', release.file)]);
-  const installed = spawnSync(npm.command, npm.args, { encoding: 'utf8' });
+  const npm = npmInvocation(['install', ...(registry ? ['--registry=https://registry.npmjs.org/'] : ['--offline']), '--ignore-scripts', '--no-audit', '--no-fund', '--prefix', work, registry ? `${release.name}@${release.version}` : path.join(root, 'dist/step-npm', release.file)]);
+  const installed = spawnSync(npm.command, npm.args, { encoding: 'utf8', env: { ...process.env,
+    npm_config_userconfig: path.join(work, '.npmrc'),
+    ...(registry ? { npm_config_cache: path.join(work, 'npm-cache') } : {}) } });
   assert.equal(installed.status, 0, installed.stderr);
+  const lock = JSON.parse(await readFile(path.join(work, 'package-lock.json'), 'utf8'));
+  const locked = Object.entries(lock.packages).filter(([name]) => name.endsWith('node_modules/filens-step'));
+  assert.equal(locked.length, 1);
+  assert.equal(locked[0][1].integrity, release.integrity);
   const moduleRoot = path.join(work, 'node_modules/filens-step');
   const metadata = JSON.parse(await readFile(path.join(moduleRoot, 'package.json'), 'utf8'));
+  assert.equal(metadata.version, release.version);
+  assert.equal(metadata.license, 'MIT');
+  assert.match(await readFile(path.join(moduleRoot, 'LICENSE'), 'utf8'), /^MIT License/);
   assert.deepEqual(metadata.dependencies ?? {}, {});
   const lib = await import(pathToFileURL(path.join(moduleRoot, 'dist/index.js')).href);
   const wasm = new Uint8Array(await readFile(fileURLToPath(lib.stepWasmUrl)));
@@ -66,9 +76,9 @@ try {
   assert.deepEqual(errors, []);
   for (const row of observed.results) { assert.ok(row.triangles > 0 && row.faces > 0 && row.finite); assert.equal(row.missingFaces, 0); }
   assert.equal(observed.recoveredTriangles, observed.results[0].triangles);
-  const report = { name: release.name, version: release.version, tarballSha256: release.sha256, wasmSha256: build.wasm.sha256, offlineInstall: true, zeroRuntimeDependencies: true, standaloneTypeScriptConsumer: true, realBrowserWasm: true, lazyWasmRequests: wasmRequests.length, invalidFileRecovery: true, ...observed };
-  await writeFile(path.join(root, 'dist/step-npm/install-check.json'), JSON.stringify(report, null, 2) + '\n');
-  console.log('STEP tarball: offline install, standalone TypeScript, real Chromium reads, one lazy WASM download and invalid-file recovery passed.');
+  const report = { name: release.name, version: release.version, tarballSha256: release.sha256, wasmSha256: build.wasm.sha256, source: registry ? 'public registry with fresh npm cache' : 'offline npm tarball', integrityMatches: true, offlineInstall: !registry, zeroRuntimeDependencies: true, standaloneTypeScriptConsumer: true, realBrowserWasm: true, lazyWasmRequests: wasmRequests.length, invalidFileRecovery: true, ...observed };
+  await writeFile(path.join(root, 'dist/step-npm', registry ? 'registry-install-check.json' : 'install-check.json'), JSON.stringify(report, null, 2) + '\n');
+  console.log(`STEP ${registry ? 'public package' : 'tarball'}: isolated install, standalone TypeScript, real Chromium reads, one lazy WASM download and invalid-file recovery passed.`);
 } finally {
   await browser?.close();
   if (server) await new Promise(resolve => server.close(resolve));

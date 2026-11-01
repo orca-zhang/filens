@@ -44,7 +44,7 @@ import {
   loadXyzObject
 } from '../src';
 
-const { MockWebGLRenderer, amfParseMock, bvhParseMock, colladaParseMock, fbxParseMock, gcodeParseMock, gltfParseAsyncMock, kmzParseMock, ldrawParseMock, lwoParseMock, md2ParseMock, nrrdParseMock, objParseMock, objSetMaterialsMock, mtlParseMock, materialsPreloadMock, occtFactoryMock, occtReadStepFileMock, pcdParseMock, pdbParseMock, tdsParseMock, usdzParseMock, voxParseMock, vrmlParseMock, vtkParseMock, xyzParseMock } = vi.hoisted(() => ({
+const { MockWebGLRenderer, amfParseMock, bvhParseMock, colladaParseMock, fbxParseMock, gcodeParseMock, gltfParseAsyncMock, kmzParseMock, ldrawParseMock, lwoParseMock, md2ParseMock, nrrdParseMock, objParseMock, objSetMaterialsMock, mtlParseMock, materialsPreloadMock, stepFactoryMock, stepReadStepFileMock, pcdParseMock, pdbParseMock, tdsParseMock, usdzParseMock, voxParseMock, vrmlParseMock, vtkParseMock, xyzParseMock } = vi.hoisted(() => ({
   amfParseMock: vi.fn(),
   bvhParseMock: vi.fn(),
   colladaParseMock: vi.fn(),
@@ -60,8 +60,8 @@ const { MockWebGLRenderer, amfParseMock, bvhParseMock, colladaParseMock, fbxPars
   objSetMaterialsMock: vi.fn(),
   mtlParseMock: vi.fn(),
   materialsPreloadMock: vi.fn(),
-  occtFactoryMock: vi.fn(),
-  occtReadStepFileMock: vi.fn(),
+  stepFactoryMock: vi.fn(),
+  stepReadStepFileMock: vi.fn(),
   pcdParseMock: vi.fn(),
   pdbParseMock: vi.fn(),
   tdsParseMock: vi.fn(),
@@ -88,14 +88,7 @@ vi.mock('three', async () => {
   };
 });
 
-vi.mock('../vendor/occt-import-js/occt-import-js.js', () => ({
-  default: occtFactoryMock
-}));
-vi.mock('../src/rust-step-importer', () => ({ createRustStepImporter: occtFactoryMock }));
-
-vi.mock('../vendor/occt-import-js/occt-import-js.wasm?url', () => ({
-  default: '/assets/occt-import-js.wasm'
-}));
+vi.mock('../src/rust-step-importer', () => ({ createRustStepImporter: stepFactoryMock }));
 
 vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({
   GLTFLoader: class {
@@ -270,9 +263,9 @@ beforeEach(() => {
   }));
   materialsPreloadMock.mockReset();
   materialsPreloadMock.mockImplementation(() => undefined);
-  occtReadStepFileMock.mockReset();
-  occtFactoryMock.mockReset();
-  occtFactoryMock.mockResolvedValue({ ReadStepFile: occtReadStepFileMock });
+  stepReadStepFileMock.mockReset();
+  stepFactoryMock.mockReset();
+  stepFactoryMock.mockResolvedValue({ ReadStepFile: stepReadStepFileMock });
   amfParseMock.mockReset();
   amfParseMock.mockImplementation(() => new Group());
   bvhParseMock.mockReset();
@@ -622,8 +615,8 @@ describe('model3d preview driver', () => {
     expect(result.warnings).toContain('3MF material resource "9" is not a supported color palette; fallback vertex colors were used.');
   });
 
-  it.each(['rust', 'occt'] as const)('loads flat STEP preview geometry through the %s WASM importer', async stepEngine => {
-    occtReadStepFileMock.mockReturnValue({
+  it('loads flat STEP preview geometry through the default truck WASM importer', async () => {
+    stepReadStepFileMock.mockReturnValue({
       success: true,
       root: { meshes: [0] },
       meshes: [{
@@ -635,16 +628,15 @@ describe('model3d preview driver', () => {
       }]
     });
 
-    const object = await loadStepObject(new Uint8Array([1, 2, 3]).buffer, { stepEngine });
+    const object = await loadStepObject(new Uint8Array([1, 2, 3]).buffer);
     const mesh = object.children[0] as Mesh;
 
     expect(object.children).toHaveLength(1);
     expect((mesh.material as MeshStandardMaterial).color.toArray()).toEqual([0.72, 0.76, 0.82]);
     expect(Array.from(mesh.geometry.getAttribute('position').array)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     expect(mesh.geometry.getIndex()?.array).toEqual(new Uint16Array([0, 1, 2]));
-    expect(object.userData.stepEngine).toBe(stepEngine);
-    if (stepEngine === 'rust') expect(occtReadStepFileMock).toHaveBeenCalledWith(expect.any(Uint8Array), { linearUnit: 'millimeter' }, undefined);
-    else expect(occtReadStepFileMock).toHaveBeenCalledWith(expect.any(Uint8Array), { linearUnit: 'millimeter' });
+    expect(object.userData.stepEngine).toBe('rust');
+    expect(stepReadStepFileMock).toHaveBeenCalledWith(expect.any(Uint8Array), { linearUnit: 'millimeter' }, undefined);
   });
 
   it('exposes direct STEP/STP/STL/OBJ/PLY/glTF/GLB/3MF/AMF/DAE/FBX/3DS/USDZ/G-code/VRML/PCD/XYZ/VTK/VOX/LDraw/KMZ/MD2/LWO/BVH/PDB/NRRD/NHDR routes and driver support', () => {

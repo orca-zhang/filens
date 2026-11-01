@@ -1,7 +1,7 @@
 {
-  "date": "2026-10-30",
+  "date": "2026-11-01",
   "unit": "bytes",
-  "scope": "Standalone runtime, including Vue, CSS, workers and document/image/STEP WASM; excludes HTML, notices, maps and source files.",
+  "scope": "Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM; excludes OCCT, HTML, notices, maps and source files. MB in documentation = 1000000 bytes. Package version and registry verification are recorded separately.",
   "builds": {
     "split": {
       "files": [
@@ -66,10 +66,10 @@
           "brotli": 4976
         },
         {
-          "file": "chunks/model3d-BBFXmxkf.js",
-          "raw": 223801,
-          "gzip": 56064,
-          "brotli": 48034
+          "file": "chunks/model3d-DoNu7iyY.js",
+          "raw": 188044,
+          "gzip": 45127,
+          "brotli": 38478
         },
         {
           "file": "chunks/panorama-Bw_8HQsv.js",
@@ -109,27 +109,21 @@
         },
         {
           "file": "filens-step.wasm",
-          "raw": 947225,
-          "gzip": 334093,
-          "brotli": 260639
+          "raw": 947729,
+          "gzip": 334212,
+          "brotli": 261101
         },
         {
           "file": "filens.js",
           "raw": 127929,
           "gzip": 26354,
-          "brotli": 23016
+          "brotli": 22992
         },
         {
           "file": "libheif.wasm",
           "raw": 1463506,
           "gzip": 485813,
           "brotli": 355714
-        },
-        {
-          "file": "occt-import-js.wasm",
-          "raw": 2688776,
-          "gzip": 1044639,
-          "brotli": 816177
         },
         {
           "file": "pdf.worker.min.mjs",
@@ -139,24 +133,24 @@
         }
       ],
       "total": {
-        "raw": 13547630,
-        "gzip": 4164502,
-        "brotli": 3268971
+        "raw": 10823601,
+        "gzip": 3109045,
+        "brotli": 2443676
       }
     },
     "all-in-one": {
       "files": [
         {
           "file": "filens.js",
-          "raw": 16318483,
-          "gzip": 5197318,
-          "brotli": 3893902
+          "raw": 12696653,
+          "gzip": 3786972,
+          "brotli": 2840197
         }
       ],
       "total": {
-        "raw": 16318483,
-        "gzip": 5197318,
-        "brotli": 3893902
+        "raw": 12696653,
+        "gzip": 3786972,
+        "brotli": 2840197
       }
     }
   }

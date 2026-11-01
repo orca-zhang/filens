@@ -6,67 +6,86 @@
       "files": [
         "externals/converter-core.wasm"
       ],
-      "raw": 893007,
-      "gzip": 405104,
-      "brotli": 325977
+      "raw": 1150080,
+      "gzip": 509793,
+      "brotli": 405336
     },
     {
       "name": "converter-image",
       "files": [
         "externals/converter-image.wasm"
       ],
-      "raw": 1097979,
-      "gzip": 300052,
-      "brotli": 215789
+      "raw": 1126286,
+      "gzip": 305601,
+      "brotli": 221453
+    },
+    {
+      "name": "libheif",
+      "files": [
+        "assets/libheif-BfiPCEgt.wasm"
+      ],
+      "raw": 1463506,
+      "gzip": 485813,
+      "brotli": 355714
     },
     {
       "name": "index",
       "files": [
-        "assets/index-BiDVv_jB.js",
-        "assets/index-D5zSLHLT.css"
+        "assets/index-Sirc_DVT.js",
+        "assets/index-uEQh4Kmi.css"
       ],
-      "raw": 177214,
-      "gzip": 50091,
-      "brotli": 41827
+      "raw": 217994,
+      "gzip": 62456,
+      "brotli": 52523
+    },
+    {
+      "name": "AgentWorkbench",
+      "files": [
+        "assets/AgentWorkbench-DBTuznrs.css",
+        "assets/AgentWorkbench-XLz7OWL5.js"
+      ],
+      "raw": 29535,
+      "gzip": 11681,
+      "brotli": 9505
     },
     {
       "name": "vendor",
       "files": [
-        "assets/vendor-C6Nqiibm.js"
+        "assets/vendor-MURmiM2D.js"
       ],
-      "raw": 1351468,
-      "gzip": 378455,
-      "brotli": 312479
+      "raw": 1360974,
+      "gzip": 382250,
+      "brotli": 315588
     },
     {
       "name": "core",
       "files": [
-        "assets/core-Bae27ngP.js",
-        "assets/core-CEn7YOnF.css"
+        "assets/core-CMzkQvH0.css",
+        "assets/core-ztMn38KX.js"
       ],
-      "raw": 295569,
-      "gzip": 77924,
-      "brotli": 66966
+      "raw": 344706,
+      "gzip": 95214,
+      "brotli": 80755
     },
     {
       "name": "preview",
       "files": [
-        "assets/preview-Df5Rcfss.css",
-        "assets/preview-Dj48Nwt-.js"
+        "assets/preview-ai_fHMGA.js",
+        "assets/preview-kd9yjReb.css"
       ],
-      "raw": 71562,
-      "gzip": 16657,
-      "brotli": 14722
+      "raw": 80575,
+      "gzip": 19094,
+      "brotli": 16874
     },
     {
       "name": "office",
       "files": [
         "assets/office-AsRk-lze.css",
-        "assets/office-BQoGDJO6.js"
+        "assets/office-DzrST411.js"
       ],
-      "raw": 33311,
-      "gzip": 10086,
-      "brotli": 9023
+      "raw": 43861,
+      "gzip": 13228,
+      "brotli": 11861
     },
     {
       "name": "pdf-runtime",
@@ -80,62 +99,71 @@
     {
       "name": "iwork",
       "files": [
-        "assets/iwork-CEvyIqEJ.js",
-        "assets/iwork-CH87Z9W-.css"
+        "assets/iwork-6Ohz2uH0.css",
+        "assets/iwork-BBhCnUE0.js"
       ],
-      "raw": 27458,
-      "gzip": 8868,
-      "brotli": 7894
+      "raw": 36280,
+      "gzip": 11236,
+      "brotli": 9992
     },
     {
       "name": "design",
       "files": [
-        "assets/design-8HOSZOrd.js",
-        "assets/design-DMErPUwf.css"
+        "assets/design-DMErPUwf.css",
+        "assets/design-DzcXC8y4.js"
       ],
-      "raw": 92326,
-      "gzip": 25795,
-      "brotli": 22068
+      "raw": 94359,
+      "gzip": 26347,
+      "brotli": 22584
     },
     {
       "name": "model3d",
       "files": [
         "assets/model3d-B1myDZRM.css",
-        "assets/model3d-eI1aTCBW.js"
+        "assets/model3d-Bn_4NBKO.js"
       ],
-      "raw": 136623,
-      "gzip": 38815,
-      "brotli": 33684
+      "raw": 136049,
+      "gzip": 38377,
+      "brotli": 33391
     },
     {
       "name": "media",
       "files": [
-        "assets/media-B-fNgiss.js",
-        "assets/media-BrueUWFI.css"
+        "assets/media-BWiQgMeH.css",
+        "assets/media-PHXIiqks.js"
       ],
-      "raw": 222060,
-      "gzip": 65600,
-      "brotli": 55972
+      "raw": 234512,
+      "gzip": 68660,
+      "brotli": 58604
+    },
+    {
+      "name": "media-runtime",
+      "files": [
+        "assets/media-runtime-CGjtusmE.js"
+      ],
+      "raw": 122394,
+      "gzip": 43837,
+      "brotli": 38288
     },
     {
       "name": "archive",
       "files": [
         "assets/archive-CeCayQ4R.css",
-        "assets/archive-kraIhtA0.js"
+        "assets/archive-fRI0VwcO.js"
       ],
-      "raw": 25277,
-      "gzip": 8122,
-      "brotli": 7166
+      "raw": 25641,
+      "gzip": 8240,
+      "brotli": 7280
     },
     {
       "name": "text",
       "files": [
-        "assets/text-C2xon5Lq.js",
-        "assets/text-DPa2hhg5.css"
+        "assets/text-DQQoVV1q.js",
+        "assets/text-DwkSONco.css"
       ],
-      "raw": 23461,
-      "gzip": 8404,
-      "brotli": 7453
+      "raw": 29294,
+      "gzip": 9952,
+      "brotli": 8795
     },
     {
       "name": "iwork-worker",
@@ -156,38 +184,36 @@
       "brotli": 238652
     },
     {
-      "name": "occt-import-js",
+      "name": "filens-step",
       "files": [
-        "assets/occt-import-js-Dtw92Kro.wasm"
+        "assets/filens-step-RsAohCTm.wasm"
       ],
-      "raw": 2688776,
-      "gzip": 1044639,
-      "brotli": 816177
+      "raw": 947729,
+      "gzip": 334212,
+      "brotli": 261101
     },
     {
-      "name": "occt-runtime",
+      "name": "step-runtime",
       "files": [
-        "assets/occt-runtime-B6y5lcOh.js"
+        "assets/step-runtime-DXfSjRRU.js"
       ],
-      "raw": 23593,
-      "gzip": 9772,
-      "brotli": 8866
+      "raw": 2825,
+      "gzip": 1424,
+      "brotli": 1249
     }
   ],
   "initial": {
-    "raw": 2182934,
-    "gzip": 610885,
-    "brotli": 510928,
+    "raw": 2158186,
+    "gzip": 608580,
+    "brotli": 507470,
     "files": [
-      "assets/index-BiDVv_jB.js",
-      "assets/vendor-C6Nqiibm.js",
-      "assets/core-Bae27ngP.js",
-      "assets/model3d-eI1aTCBW.js",
-      "assets/media-B-fNgiss.js",
-      "assets/core-CEn7YOnF.css",
-      "assets/model3d-B1myDZRM.css",
-      "assets/media-BrueUWFI.css",
-      "assets/index-D5zSLHLT.css"
+      "assets/index-Sirc_DVT.js",
+      "assets/vendor-MURmiM2D.js",
+      "assets/core-ztMn38KX.js",
+      "assets/media-PHXIiqks.js",
+      "assets/core-CMzkQvH0.css",
+      "assets/media-BWiQgMeH.css",
+      "assets/index-uEQh4Kmi.css"
     ]
   }
 }

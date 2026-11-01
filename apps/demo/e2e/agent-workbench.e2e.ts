@@ -30,9 +30,13 @@ test('opens the Agent console from the homepage and serves the distributable ski
 test('copies installation commands, a matching Agent prompt and the original skill', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('./?view=agent');
-  await page.getByRole('button', { name: '一键安装 Skill', exact: true }).click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npx --yes skills add IceWhaleTech/filens --skill filens --global --yes');
-  await expect(page.locator('.agent-feedback')).toHaveText('安装命令已复制，请在终端运行。');
+  await page.getByRole('button', { name: '复制给 Agent 安装', exact: true }).click();
+  const defaultPrompt = await page.evaluate(() => navigator.clipboard.readText());
+  expect(defaultPrompt).toContain('帮我安装 filens');
+  expect(defaultPrompt).toContain('https://github.com/IceWhaleTech/filens');
+  expect(defaultPrompt).toContain('skills/filens/SKILL.md');
+  expect(defaultPrompt).toContain('Full 版 CLI');
+  await expect(page.locator('.agent-feedback')).toHaveText('安装提示已复制，粘贴给你的 Agent 即可。');
   await page.getByRole('combobox', { name: '目标 Agent', exact: true }).selectOption('codex');
   await page.getByRole('combobox', { name: '安装范围', exact: true }).selectOption('project');
   await page.getByRole('button', { name: '复制 Skill 安装命令', exact: true }).click();
@@ -40,13 +44,15 @@ test('copies installation commands, a matching Agent prompt and the original ski
   await page.getByRole('combobox', { name: 'CLI 版本', exact: true }).selectOption('lite');
   await page.getByRole('button', { name: '复制 CLI 安装命令', exact: true }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npm install -g filens-cli-lite');
-  await page.getByRole('button', { name: '复制给 Agent 的安装提示', exact: true }).click();
+  await page.getByRole('button', { name: '复制给 Agent 安装', exact: true }).click();
   const prompt = await page.evaluate(() => navigator.clipboard.readText());
-  expect(prompt).toContain('npm install -g filens-cli-lite');
-  expect(prompt).toContain('--skill filens --agent codex --yes');
-  expect(prompt).not.toContain('--global');
+  expect(prompt).toContain('Lite 版 CLI');
+  expect(prompt).toContain('供 codex 使用');
+  expect(prompt).toContain('装到当前项目');
+  expect(prompt).not.toContain('npx');
   expect(prompt).toContain('filens capacity --json');
-  expect(prompt).toContain(new URL('./skills/filens/SKILL.md', page.url()).href);
+  expect(prompt).toContain('https://github.com/IceWhaleTech/filens');
+  expect(prompt).toContain('skills/filens/SKILL.md');
   await page.getByRole('button', { name: '复制跨文件搜索命令', exact: true }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('filens search "./documents" --query "预算 风险" --json');
   await page.getByRole('button', { name: '给 Agent 看 SKILL.md 原文', exact: true }).click();
@@ -78,9 +84,9 @@ test('keeps installation available if clipboard access is denied', async ({ page
     value: { writeText: () => Promise.reject(new Error('Clipboard denied')) }
   }));
   await page.goto('./?view=agent');
-  await page.getByRole('button', { name: '一键安装 Skill', exact: true }).click();
+  await page.getByRole('button', { name: '复制给 Agent 安装', exact: true }).click();
   await expect(page.locator('.agent-feedback')).toHaveText('复制失败，请手动选择命令或原文复制。');
-  await expect(page.getByRole('button', { name: '一键安装 Skill', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '复制给 Agent 安装', exact: true })).toBeVisible();
   await expect(page.locator('.agent-command').filter({ hasText: 'npx --yes skills add' })).toBeVisible();
 });
 
@@ -89,7 +95,7 @@ test('fits mobile screens and opens dropped files from the Agent console', async
   await page.goto('./?view=agent');
   for (const width of [320, 390, 760]) {
     await page.setViewportSize({ width, height: 844 });
-    await expect(page.getByRole('button', { name: '一键安装 Skill', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: '复制给 Agent 安装', exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     expect(await page.locator('.agent-workbench').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
     await page.getByRole('button', { name: /给 Agent 看/, exact: false }).click();
