@@ -1,3 +1,4 @@
+import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
 
@@ -9,7 +10,8 @@ export default defineConfig({
       fileName: (_format, entryName) => `${entryName}.js`
     },
     cssCodeSplit: false,
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: { external: packageExternals(import.meta.url) }
   },
   test: {
     environment: 'jsdom',

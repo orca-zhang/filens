@@ -31,15 +31,19 @@ recompressed WebP; its distances come from the real WASM scan.
 `prune-meeting.en.txt` and `prune-meeting.txt` are fictional
 meeting notes used by the excerpt scene.
 The side panel visualizes returned OCR geometry over the actual fictional
-invoice input. JSON responses are excerpts, search paths and preview URL tokens are shortened,
+invoice input. JSON responses are excerpts, and archive paths and preview HTML paths are shortened,
 and typing/response timings are edited. Retrieval uses BM25, without an embedding
 model. No hosted language model or generated reasoning is depicted.
 The ZIP contains a second ZIP with a fictional DOCX agreement. Returned UTF-8
 evidence offsets are verified against a fresh read of that exact archive member.
 The CSV budget is fictional; the CLI converts it through the shared WASM core.
-The resulting XLSX is read back and opened using the actual CLI loopback server.
-The workbook and STEP panels replay real captures from that server's shared
-frontend viewer, with external network requests blocked. Model rotation is a real
+The resulting XLSX is read back, then exported with
+`filens preview budget.xlsx --output budget.html --no-open --json`; STEP uses
+the same command with `drawing.step` and `drawing.html`. Both commands exit
+before the generated `file:` HTML is opened. The workbook and STEP panels replay
+real captures of those self-contained HTML files, with the browser offline and
+requests to other files or external resources blocked. The terminal shows the
+actual HTML-mode JSON fields with shortened paths. No HTTP server is used. Model rotation is a real
 pointer drag sampled into 60 frames; its playback timing is edited. The STEP
 assembly is the unmodified `cax-if/as1_pe_203.stp` fixture from
 [occt-import-js 0.0.23](../../../packages/model3d/test/fixtures/occt/README.md),

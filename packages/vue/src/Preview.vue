@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePreviewI18n, type PreviewMessages } from './i18n';
 import {
   createPreviewer,
   type CadPreviewState,
@@ -95,6 +96,8 @@ const props = withDefaults(
     minScale?: number;
     maxScale?: number;
     toolbar?: boolean;
+    locale?: string;
+    messages?: PreviewMessages;
     drivers?: PreviewDriver[];
     routes?: FormatDefinition[];
     converter?: ConverterClient;
@@ -120,6 +123,8 @@ const props = withDefaults(
     panoramaProcessor: undefined
   }
 );
+
+const { locale, t } = usePreviewI18n(props);
 
 const emit = defineEmits<{
   (event: 'rendered', state: PreviewItemState): void;
@@ -394,10 +399,10 @@ const model3dExplodePercent = computed(() => Math.round((model3dState.value?.exp
 const layerLabel = computed(() => {
   const total = previewLayers.value.length;
   const active = activeLayerIds.value.size;
-  return total ? `${active} / ${total}` : 'Layers';
+  return total ? `${active} / ${total}` : t('Layers');
 });
 const warningLabel = computed(() =>
-  previewState.value.warnings.length ? `${previewState.value.warnings.length} warning${previewState.value.warnings.length > 1 ? 's' : ''}` : ''
+  previewState.value.warnings.length ? t('Warnings: {count}', { count: previewState.value.warnings.length }) : ''
 );
 const familyLabel = computed(() => previewState.value.family === 'unsupported' ? 'Preview' : previewState.value.family);
 const positionLabel = computed(() => {
@@ -405,13 +410,13 @@ const positionLabel = computed(() => {
     return `${activeIndex.value + 1} / ${activeCount.value || 1}`;
   }
   if (isWorkbook.value) {
-    return `${workbookState.value?.sheets[activeIndex.value]?.name ?? 'Sheet'} ${activeIndex.value + 1} / ${activeCount.value || 1}`;
+    return `${workbookState.value?.sheets[activeIndex.value]?.name ?? t('Sheet')} ${activeIndex.value + 1} / ${activeCount.value || 1}`;
   }
   if (isEbook.value) {
-    return `${ebookState.value?.chapterTitle ?? 'Chapter'} ${activeIndex.value + 1} / ${activeCount.value || 1}`;
+    return `${ebookState.value?.chapterTitle ?? t('Chapter')} ${activeIndex.value + 1} / ${activeCount.value || 1}`;
   }
   if (diagramState.value) {
-    return `Page ${activeIndex.value + 1} / ${activeCount.value || 1}`;
+    return `${t('Page')} ${activeIndex.value + 1} / ${activeCount.value || 1}`;
   }
   return familyLabel.value;
 });
@@ -977,7 +982,7 @@ function measurementStatusLabel(
 }
 
 function measurementSnapLabel(mode: 'surface' | 'vertex'): string {
-  return mode === 'vertex' ? 'Vertex' : 'Surface';
+  return mode === 'vertex' ? t('Vertex') : t('Surface');
 }
 
 function measurementAxisLabel(axis: 'free' | 'x' | 'y' | 'z'): string {
@@ -985,24 +990,24 @@ function measurementAxisLabel(axis: 'free' | 'x' | 'y' | 'z'): string {
     case 'x': return 'X';
     case 'y': return 'Y';
     case 'z': return 'Z';
-    default: return 'Free';
+    default: return t('Free');
   }
 }
 
 function displayModeLabel(mode: PreviewDisplayMode): string {
   switch (mode) {
-    case 'shaded': return 'Shaded';
-    case 'wireframe': return 'Wireframe';
-    case 'xray': return 'X-Ray';
-    default: return 'Solid + edge';
+    case 'shaded': return t('Shaded');
+    case 'wireframe': return t('Wireframe');
+    case 'xray': return t('X-Ray');
+    default: return t('Solid + edge');
   }
 }
 
 function snapshotBackgroundLabel(background: PreviewSnapshotBackground): string {
   switch (background) {
-    case 'white': return 'White';
-    case 'transparent': return 'Transparent';
-    default: return 'Scene';
+    case 'white': return t('White');
+    case 'transparent': return t('Transparent');
+    default: return t('Scene');
   }
 }
 
@@ -1014,8 +1019,8 @@ function materialDetailRows(material: PreviewMaterialInfo): Array<{ label: strin
     ...(material.emissiveColor ? [{ label: 'Emissive', value: material.emissiveColor }] : []),
     ...(typeof material.opacity === 'number' ? [{ label: 'Opacity', value: formatCompactNumber(material.opacity) }] : []),
     ...(typeof material.alphaTest === 'number' ? [{ label: 'Alpha test', value: formatCompactNumber(material.alphaTest) }] : []),
-    ...(typeof material.transparent === 'boolean' ? [{ label: 'Transparent', value: material.transparent ? 'Yes' : 'No' }] : []),
-    ...(typeof material.wireframe === 'boolean' ? [{ label: 'Wireframe', value: material.wireframe ? 'Yes' : 'No' }] : []),
+    ...(typeof material.transparent === 'boolean' ? [{ label: t('Transparent'), value: material.transparent ? 'Yes' : 'No' }] : []),
+    ...(typeof material.wireframe === 'boolean' ? [{ label: t('Wireframe'), value: material.wireframe ? 'Yes' : 'No' }] : []),
     ...(typeof material.vertexColors === 'boolean' ? [{ label: 'Vertex colors', value: material.vertexColors ? 'Yes' : 'No' }] : []),
     ...(typeof material.flatShading === 'boolean' ? [{ label: 'Flat shading', value: material.flatShading ? 'Yes' : 'No' }] : []),
     ...(typeof material.depthWrite === 'boolean' ? [{ label: 'Depth write', value: material.depthWrite ? 'Yes' : 'No' }] : []),
@@ -1037,7 +1042,7 @@ function materialColorSwatches(material: PreviewMaterialInfo): Array<{ label: st
 }
 
 function materialActionLabel(material: PreviewMaterialInfo): string {
-  return activeModelMaterialKey.value === material.key ? 'Clear isolate' : 'Isolate';
+  return activeModelMaterialKey.value === material.key ? t('Clear isolate') : t('Isolate');
 }
 
 function modelNodeKindLabel(kind: Model3dPreviewNode['kind']): string {
@@ -1233,23 +1238,24 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
   <div
     ref="shellRef"
     class="pptxv-shell pptxv-generic-shell"
+    :lang="locale.replace('_', '-')"
     tabindex="0"
     role="region"
-    :aria-label="`${familyLabel} preview`"
+    :aria-label="t('{family} preview', { family: familyLabel })"
     @keydown="onShellKeydown"
   >
     <div v-if="toolbar" class="pptxv-toolbar">
       <div class="pptxv-toolbar-group">
-        <button type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousPage">Prev</button>
-        <button type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextPage">Next</button>
+        <button type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousPage">{{ t('Prev') }}</button>
+        <button type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextPage">{{ t('Next') }}</button>
         <span class="pptxv-status">{{ positionLabel }}</span>
-        <span class="pptxv-pill" :class="{ 'pptxv-pill--hidden': !warningLabel }">{{ warningLabel || '0 warnings' }}</span>
+        <span class="pptxv-pill" :class="{ 'pptxv-pill--hidden': !warningLabel }">{{ warningLabel || t('Warnings: {count}', { count: 0 }) }}</span>
         <details class="pptxv-layer-menu" :class="{ 'pptxv-layer-menu--hidden': !canControlLayers }">
-          <summary class="pptxv-button pptxv-layer-summary">Layers {{ layerLabel }}</summary>
+          <summary class="pptxv-button pptxv-layer-summary">{{ t('Layers') }} {{ layerLabel }}</summary>
           <div class="pptxv-layer-popover">
             <div class="pptxv-layer-actions">
-              <button type="button" class="pptxv-layer-action" @click="showAllLayers">All</button>
-              <button type="button" class="pptxv-layer-action" @click="hideAllLayers">None</button>
+              <button type="button" class="pptxv-layer-action" @click="showAllLayers">{{ t('All') }}</button>
+              <button type="button" class="pptxv-layer-action" @click="hideAllLayers">{{ t('None') }}</button>
             </div>
             <label v-for="layer in previewLayers" :key="layer.id" class="pptxv-layer-row">
               <input
@@ -1264,19 +1270,19 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
         </details>
       </div>
       <div class="pptxv-toolbar-group">
-        <button type="button" class="pptxv-button" :disabled="!canZoomOut" @click="zoomOut">-</button>
+        <button type="button" class="pptxv-button" :disabled="!canZoomOut" :aria-label="t('Zoom out')" @click="zoomOut">-</button>
         <span class="pptxv-status">{{ scaleLabel }}</span>
-        <button type="button" class="pptxv-button" :disabled="!canZoomIn" @click="zoomIn">+</button>
+        <button type="button" class="pptxv-button" :disabled="!canZoomIn" :aria-label="t('Zoom in')" @click="zoomIn">+</button>
         <button type="button" class="pptxv-button" :disabled="isLoading || !previewState.capabilities.fit" @click="fitContain">
-          Fit
+          {{ t('Fit') }}
         </button>
         <button type="button" class="pptxv-button" :disabled="isLoading || !previewState.capabilities.fit" @click="fitWidth">
-          Width
+          {{ t('Width') }}
         </button>
         <button type="button" class="pptxv-button" :disabled="isLoading || !previewState.capabilities.fit" @click="fitHeight">
-          Height
+          {{ t('Height') }}
         </button>
-        <button type="button" class="pptxv-button" :disabled="!canRotate" @click="rotateClockwise">Rotate</button>
+        <button type="button" class="pptxv-button" :disabled="!canRotate" @click="rotateClockwise">{{ t('Rotate') }}</button>
         <button
           v-if="canMeasureModel"
           type="button"
@@ -1284,7 +1290,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': isModelMeasurementActive }"
           @click="toggleModelMeasurement"
         >
-          Measure
+          {{ t('Measure') }}
         </button>
         <button
           v-if="canMeasureModel"
@@ -1293,7 +1299,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :disabled="!hasModelMeasurement"
           @click="clearModelMeasurement"
         >
-          Clear
+          {{ t('Clear') }}
         </button>
         <button
           v-if="canSectionModel"
@@ -1302,7 +1308,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': isModelSectionActive }"
           @click="toggleModelSection"
         >
-          Section
+          {{ t('Section') }}
         </button>
         <button
           v-if="canSectionModel"
@@ -1311,7 +1317,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :disabled="!isModelSectionActive && Math.abs(model3dSectionOffset) < 0.0005"
           @click="clearModelSection"
         >
-          Reset cut
+          {{ t('Reset cut') }}
         </button>
         <button
           v-if="canControlModelCamera"
@@ -1320,7 +1326,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': model3dProjection === 'perspective' }"
           @click="setModelProjection('perspective')"
         >
-          Persp
+          {{ t('Persp') }}
         </button>
         <button
           v-if="canControlModelCamera"
@@ -1329,7 +1335,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': model3dProjection === 'orthographic' }"
           @click="setModelProjection('orthographic')"
         >
-          Ortho
+          {{ t('Ortho') }}
         </button>
         <button
           v-if="canControlModelDisplay"
@@ -1338,7 +1344,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': model3dDisplayMode === 'shaded' }"
           @click="setModelDisplayMode('shaded')"
         >
-          Shade
+          {{ t('Shade') }}
         </button>
         <button
           v-if="canControlModelDisplay"
@@ -1347,7 +1353,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': model3dDisplayMode === 'solid-edge' }"
           @click="setModelDisplayMode('solid-edge')"
         >
-          Edge
+          {{ t('Edge') }}
         </button>
         <button
           v-if="canControlModelDisplay"
@@ -1356,7 +1362,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': model3dDisplayMode === 'wireframe' }"
           @click="setModelDisplayMode('wireframe')"
         >
-          Wire
+          {{ t('Wire') }}
         </button>
         <button
           v-if="canControlModelDisplay"
@@ -1365,7 +1371,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           :class="{ 'is-active': model3dDisplayMode === 'xray' }"
           @click="setModelDisplayMode('xray')"
         >
-          X-Ray
+          {{ t('X-Ray') }}
         </button>
         <button
           v-if="canDownloadSnapshot"
@@ -1383,7 +1389,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
         >
           {{ snapshotBackgroundLabel(model3dSnapshotBackground) }}
         </button>
-        <button type="button" class="pptxv-button" :disabled="!canFullscreen" @click="toggleFullscreen">Full</button>
+        <button type="button" class="pptxv-button" :disabled="!canFullscreen" @click="toggleFullscreen">{{ t('Full') }}</button>
       </div>
     </div>
 
@@ -1397,16 +1403,16 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
         <aside class="pptxv-sidebar pptxv-tree-sidebar">
           <div class="pptxv-meta-panel">
             <template v-if="showModel3dTree">
-              <div class="pptxv-meta-heading">Model tree</div>
+              <div class="pptxv-meta-heading">{{ t('Model tree') }}</div>
               <div class="pptxv-tree-actions">
                 <button type="button" class="pptxv-button pptxv-tree-reset" :disabled="!selectedModelNodeId" @click="selectModelNode(undefined)">
-                  Show all
+                  {{ t('Show all') }}
                 </button>
                 <button type="button" class="pptxv-button pptxv-tree-reset" :disabled="!selectedModelNodeId" @click="refocusSelectedModelNode">
-                  Refocus
+                  {{ t('Refocus') }}
                 </button>
                 <button type="button" class="pptxv-button pptxv-tree-reset" @click="resetModelView">
-                  Reset view
+                  {{ t('Reset view') }}
                 </button>
               </div>
               <div class="pptxv-tree-search">
@@ -1414,7 +1420,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                   v-model.trim="model3dTreeQuery"
                   type="search"
                   class="pptxv-tree-search-input"
-                  placeholder="Search nodes, kinds, materials"
+                  :placeholder="t('Search nodes, kinds, materials')"
                 />
                 <button
                   type="button"
@@ -1422,12 +1428,12 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                   :disabled="!hasModel3dTreeQuery"
                   @click="clearModelTreeSearch"
                 >
-                  Clear
+                  {{ t('Clear') }}
                 </button>
               </div>
               <div class="pptxv-tree-search-status">{{ model3dTreeSearchLabel }}</div>
               <div v-if="canExplodeModel" class="pptxv-tree-explode">
-                <span class="pptxv-tree-explode-label">Explode</span>
+                <span class="pptxv-tree-explode-label">{{ t('Explode') }}</span>
                 <input
                   type="range"
                   min="0"
@@ -1447,30 +1453,30 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
               </div>
               <div v-if="canControlModelCamera" class="pptxv-measurement-controls">
                 <div class="pptxv-measurement-group">
-                  <span class="pptxv-measurement-label">View</span>
+                  <span class="pptxv-measurement-label">{{ t('View') }}</span>
                   <div class="pptxv-measurement-buttons">
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'isometric' }" @click="setModelViewPreset('isometric')">Iso</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'front' }" @click="setModelViewPreset('front')">Front</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'back' }" @click="setModelViewPreset('back')">Back</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'left' }" @click="setModelViewPreset('left')">Left</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'right' }" @click="setModelViewPreset('right')">Right</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'top' }" @click="setModelViewPreset('top')">Top</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'bottom' }" @click="setModelViewPreset('bottom')">Bottom</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'isometric' }" @click="setModelViewPreset('isometric')">{{ t('Iso') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'front' }" @click="setModelViewPreset('front')">{{ t('Front') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'back' }" @click="setModelViewPreset('back')">{{ t('Back') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'left' }" @click="setModelViewPreset('left')">{{ t('Left') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'right' }" @click="setModelViewPreset('right')">{{ t('Right') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'top' }" @click="setModelViewPreset('top')">{{ t('Top') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dViewPreset === 'bottom' }" @click="setModelViewPreset('bottom')">{{ t('Bottom') }}</button>
                   </div>
                 </div>
                 <div v-if="canControlModelDisplay" class="pptxv-measurement-group">
-                  <span class="pptxv-measurement-label">Display</span>
+                  <span class="pptxv-measurement-label">{{ t('Display') }}</span>
                   <div class="pptxv-measurement-buttons">
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'shaded' }" @click="setModelDisplayMode('shaded')">Shaded</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'solid-edge' }" @click="setModelDisplayMode('solid-edge')">Solid+Edge</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'wireframe' }" @click="setModelDisplayMode('wireframe')">Wireframe</button>
-                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'xray' }" @click="setModelDisplayMode('xray')">X-Ray</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'shaded' }" @click="setModelDisplayMode('shaded')">{{ t('Shaded') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'solid-edge' }" @click="setModelDisplayMode('solid-edge')">{{ t('Solid+Edge') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'wireframe' }" @click="setModelDisplayMode('wireframe')">{{ t('Wireframe') }}</button>
+                    <button type="button" class="pptxv-button" :class="{ 'is-active': model3dDisplayMode === 'xray' }" @click="setModelDisplayMode('xray')">{{ t('X-Ray') }}</button>
                   </div>
                 </div>
               </div>
               <dl v-if="selectedModelNodeSummary.length" class="pptxv-tree-detail-list">
                 <div v-for="row in selectedModelNodeSummary" :key="row.label" class="pptxv-tree-detail-row">
-                  <dt>{{ row.label }}</dt>
+                  <dt>{{ t(row.label) }}</dt>
                   <dd>{{ row.value }}</dd>
                 </div>
               </dl>
@@ -1485,7 +1491,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     v-if="node.children.length"
                     type="button"
                     class="pptxv-tree-toggle"
-                    :aria-label="node.collapsed ? 'Expand node' : 'Collapse node'"
+                    :aria-label="node.collapsed ? t('Expand node') : t('Collapse node')"
                     @click="toggleModelNodeCollapsed(node.id)"
                   >
                     {{ node.collapsed ? '+' : '-' }}
@@ -1495,7 +1501,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     type="checkbox"
                     class="pptxv-tree-visibility"
                     :checked="node.visible"
-                    :aria-label="node.visible ? 'Hide node' : 'Show node'"
+                    :aria-label="node.visible ? t('Hide node') : t('Show node')"
                     @click.stop
                     @change="setModelNodeVisibility(node.id, $event)"
                   />
@@ -1515,28 +1521,28 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                 </div>
               </div>
               <div v-if="showModel3dTreeEmpty" class="pptxv-tree-empty">
-                No nodes matched the current filter.
+                {{ t('No nodes matched the current filter.') }}
               </div>
             </template>
             <template v-else>
-              <div class="pptxv-meta-heading">Model tree</div>
-              <div class="pptxv-meta-muted">{{ isLoading ? 'Loading model...' : 'No model tree available.' }}</div>
+              <div class="pptxv-meta-heading">{{ t('Model tree') }}</div>
+              <div class="pptxv-meta-muted">{{ isLoading ? t('Loading model...') : t('No model tree available.') }}</div>
             </template>
           </div>
         </aside>
         <aside class="pptxv-sidebar pptxv-meta-sidebar">
           <div class="pptxv-meta-panel">
-            <div class="pptxv-meta-heading">Model info</div>
+            <div class="pptxv-meta-heading">{{ t('Model info') }}</div>
             <template v-if="showModel3dMetadata">
               <dl class="pptxv-meta-list">
                 <div v-for="row in model3dMetadataRows" :key="row.label" class="pptxv-meta-row">
-                  <dt>{{ row.label }}</dt>
+                  <dt>{{ t(row.label) }}</dt>
                   <dd>{{ row.value }}</dd>
                 </div>
               </dl>
             </template>
             <template v-else>
-              <div class="pptxv-meta-muted">{{ isLoading ? 'Loading model...' : 'No model metadata available.' }}</div>
+              <div class="pptxv-meta-muted">{{ isLoading ? t('Loading model...') : t('No model metadata available.') }}</div>
             </template>
             <div v-if="model3dMaterialDetails.length" class="pptxv-meta-heading pptxv-meta-heading-split">
               <span>{{ model3dMaterialHeading }}</span>
@@ -1547,7 +1553,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                   class="pptxv-button pptxv-material-clear"
                   @click="toggleActiveMaterial(undefined)"
                 >
-                  Clear isolate
+                  {{ t('Clear isolate') }}
                 </button>
                 <span class="pptxv-meta-count">{{ model3dMaterialCountLabel }}</span>
               </div>
@@ -1589,27 +1595,27 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :key="row.label"
                     class="pptxv-material-detail-row"
                   >
-                    <dt>{{ row.label }}</dt>
+                    <dt>{{ t(row.label) }}</dt>
                     <dd>{{ row.value }}</dd>
                   </div>
                 </dl>
               </section>
             </div>
-            <div v-if="canMeasureModel" class="pptxv-meta-heading">Measurement</div>
-            <div v-if="canControlModelDisplay" class="pptxv-meta-heading">Display</div>
+            <div v-if="canMeasureModel" class="pptxv-meta-heading">{{ t('Measurement') }}</div>
+            <div v-if="canControlModelDisplay" class="pptxv-meta-heading">{{ t('Display') }}</div>
             <dl v-if="canControlModelDisplay" class="pptxv-meta-list">
               <div class="pptxv-meta-row">
-                <dt>Mode</dt>
+                <dt>{{ t('Mode') }}</dt>
                 <dd>{{ displayModeLabel(model3dDisplayMode) }}</dd>
               </div>
               <div class="pptxv-meta-row">
-                <dt>Snapshot bg</dt>
+                <dt>{{ t('Snapshot bg') }}</dt>
                 <dd>{{ snapshotBackgroundLabel(model3dSnapshotBackground) }}</dd>
               </div>
             </dl>
             <div v-if="canDownloadSnapshot" class="pptxv-measurement-controls">
               <div class="pptxv-measurement-group">
-                <span class="pptxv-measurement-label">Snapshot</span>
+                <span class="pptxv-measurement-label">{{ t('Snapshot') }}</span>
                 <div class="pptxv-measurement-buttons">
                   <button
                     type="button"
@@ -1617,7 +1623,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dSnapshotBackground === 'scene' }"
                     @click="setModelSnapshotBackground('scene')"
                   >
-                    Scene
+                    {{ t('Scene') }}
                   </button>
                   <button
                     type="button"
@@ -1625,7 +1631,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dSnapshotBackground === 'white' }"
                     @click="setModelSnapshotBackground('white')"
                   >
-                    White
+                    {{ t('White') }}
                   </button>
                   <button
                     type="button"
@@ -1633,14 +1639,14 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dSnapshotBackground === 'transparent' }"
                     @click="setModelSnapshotBackground('transparent')"
                   >
-                    Clear
+                    {{ t('Clear') }}
                   </button>
                 </div>
               </div>
             </div>
             <div v-if="canMeasureModel" class="pptxv-measurement-controls">
               <div class="pptxv-measurement-group">
-                <span class="pptxv-measurement-label">Snap</span>
+                <span class="pptxv-measurement-label">{{ t('Snap') }}</span>
                 <div class="pptxv-measurement-buttons">
                   <button
                     type="button"
@@ -1648,7 +1654,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dMeasurementSnapMode === 'surface' }"
                     @click="setModelMeasurementSnapMode('surface')"
                   >
-                    Surface
+                    {{ t('Surface') }}
                   </button>
                   <button
                     type="button"
@@ -1656,12 +1662,12 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dMeasurementSnapMode === 'vertex' }"
                     @click="setModelMeasurementSnapMode('vertex')"
                   >
-                    Vertex
+                    {{ t('Vertex') }}
                   </button>
                 </div>
               </div>
               <div class="pptxv-measurement-group">
-                <span class="pptxv-measurement-label">Axis</span>
+                <span class="pptxv-measurement-label">{{ t('Axis') }}</span>
                 <div class="pptxv-measurement-buttons">
                   <button
                     type="button"
@@ -1669,7 +1675,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dMeasurementAxisLock === 'free' }"
                     @click="setModelMeasurementAxisLock('free')"
                   >
-                    Free
+                    {{ t('Free') }}
                   </button>
                   <button
                     type="button"
@@ -1700,14 +1706,14 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
             </div>
             <dl v-if="canMeasureModel" class="pptxv-meta-list">
               <div v-for="row in model3dMeasurementRows" :key="row.label" class="pptxv-meta-row">
-                <dt>{{ row.label }}</dt>
+                <dt>{{ t(row.label) }}</dt>
                 <dd>{{ row.value }}</dd>
               </div>
             </dl>
-            <div v-if="canSectionModel" class="pptxv-meta-heading">Section</div>
+            <div v-if="canSectionModel" class="pptxv-meta-heading">{{ t('Section') }}</div>
             <div v-if="canSectionModel" class="pptxv-measurement-controls">
               <div class="pptxv-measurement-group">
-                <span class="pptxv-measurement-label">Mode</span>
+                <span class="pptxv-measurement-label">{{ t('Mode') }}</span>
                 <div class="pptxv-measurement-buttons">
                   <button
                     type="button"
@@ -1715,7 +1721,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dSectionMode === 'single' }"
                     @click="setModelSectionMode('single')"
                   >
-                    Plane
+                    {{ t('Plane') }}
                   </button>
                   <button
                     type="button"
@@ -1723,12 +1729,12 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
                     :class="{ 'is-active': model3dSectionMode === 'box' }"
                     @click="setModelSectionMode('box')"
                   >
-                    Box
+                    {{ t('Box') }}
                   </button>
                 </div>
               </div>
               <div class="pptxv-measurement-group">
-                <span class="pptxv-measurement-label">Axis</span>
+                <span class="pptxv-measurement-label">{{ t('Axis') }}</span>
                 <div class="pptxv-measurement-buttons">
                   <button
                     type="button"
@@ -1758,7 +1764,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
               </div>
               <div v-if="model3dSectionMode === 'single'" class="pptxv-measurement-group">
                 <div class="pptxv-section-header">
-                  <span class="pptxv-measurement-label">Offset</span>
+                  <span class="pptxv-measurement-label">{{ t('Offset') }}</span>
                   <strong class="pptxv-section-value">{{ formatCompactNumber(model3dSectionOffset) }}</strong>
                 </div>
                 <input
@@ -1778,7 +1784,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
               <div v-else class="pptxv-section-box">
                 <div v-for="axis in ['x', 'y', 'z']" :key="axis" class="pptxv-measurement-group">
                   <div class="pptxv-section-header">
-                    <span class="pptxv-measurement-label">Box {{ axis.toUpperCase() }}</span>
+                    <span class="pptxv-measurement-label">{{ t('Box') }} {{ axis.toUpperCase() }}</span>
                     <strong class="pptxv-section-value">
                       {{ formatRange(model3dSectionRange[axis as 'x' | 'y' | 'z']) }}
                     </strong>
@@ -1810,7 +1816,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
             </div>
             <dl v-if="canSectionModel" class="pptxv-meta-list">
               <div v-for="row in model3dSectionRows" :key="row.label" class="pptxv-meta-row">
-                <dt>{{ row.label }}</dt>
+                <dt>{{ t(row.label) }}</dt>
                 <dd>{{ row.value }}</dd>
               </div>
             </dl>
@@ -1824,8 +1830,8 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
             v-if="previewState.family === 'model3d'"
             type="button"
             class="pptxv-button pptxv-model-tools-toggle"
-            :aria-label="modelToolsExpanded ? 'Hide model tools' : 'Show model tools'"
-            :title="modelToolsExpanded ? 'Hide model tools' : 'Show model tools'"
+            :aria-label="modelToolsExpanded ? t('Hide model tools') : t('Show model tools')"
+            :title="modelToolsExpanded ? t('Hide model tools') : t('Show model tools')"
             :aria-expanded="modelToolsExpanded"
             :aria-controls="modelToolsId"
             @click="modelToolsExpanded = !modelToolsExpanded"
@@ -1838,20 +1844,20 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           </button>
           <div v-if="passwordRequest" class="pptxv-overlay">
             <form class="pptxv-password-form" :aria-labelledby="passwordId + '-title'" @submit.prevent="submitPassword" @keydown.esc.stop="cancelPassword">
-              <h2 :id="passwordId + '-title'">此文档已加密</h2>
-              <p>请输入密码以打开文档。</p>
-              <p v-if="passwordRequest.reason === 'password_invalid'" :id="passwordId + '-error'" class="pptxv-password-error" role="alert">密码不正确，请重试。</p>
-              <label :for="passwordId">文档密码</label>
+              <h2 :id="passwordId + '-title'">{{ t('Document is encrypted') }}</h2>
+              <p>{{ t('Enter the password to open this document.') }}</p>
+              <p v-if="passwordRequest.reason === 'password_invalid'" :id="passwordId + '-error'" class="pptxv-password-error" role="alert">{{ t('Incorrect password. Please try again.') }}</p>
+              <label :for="passwordId">{{ t('Document password') }}</label>
               <input :id="passwordId" ref="passwordField" v-model="passwordInput" type="password" autocomplete="off" :aria-invalid="passwordRequest.reason === 'password_invalid'" :aria-describedby="passwordRequest.reason === 'password_invalid' ? passwordId + '-error' : undefined" />
               <div class="pptxv-password-actions">
-                <button type="button" class="pptxv-button" @click="cancelPassword">取消</button>
-                <button type="submit" class="pptxv-button" :disabled="!passwordInput.length">打开文档</button>
+                <button type="button" class="pptxv-button" @click="cancelPassword">{{ t('Cancel') }}</button>
+                <button type="submit" class="pptxv-button" :disabled="!passwordInput.length">{{ t('Open document') }}</button>
               </div>
             </form>
           </div>
-          <div v-else-if="isLoading" class="pptxv-overlay">Loading preview...</div>
+          <div v-else-if="isLoading" class="pptxv-overlay">{{ t('Loading preview...') }}</div>
           <div v-else-if="errorMessage" class="pptxv-overlay is-error">
-            <div v-if="passwordCancelled" class="pptxv-password-form"><p>已取消打开文档。</p><button type="button" class="pptxv-button" @click="loadSource">重新输入密码</button></div>
+            <div v-if="passwordCancelled" class="pptxv-password-form"><p>{{ t('Opening cancelled.') }}</p><button type="button" class="pptxv-button" @click="loadSource">{{ t('Enter password again') }}</button></div>
             <template v-else>{{ errorMessage }}</template>
           </div>
         </div>

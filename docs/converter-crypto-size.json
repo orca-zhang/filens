@@ -1,0 +1,42 @@
+{
+  "unit": "bytes",
+  "scope": "Combined WASM with all Office algorithms and conversion routes retained. Compare the upstream RustCrypto compact AES and SHA-2 backends; Binaryen -Oz --converge. These are size candidates, not production configuration.",
+  "rows": [
+    {
+      "name": "default crypto",
+      "file": "wasm/converter-core-rust/target/crypto-size/default-crypto.wasm",
+      "raw": 1122703,
+      "gzip": 496055,
+      "brotli": 397043
+    },
+    {
+      "name": "compact AES",
+      "file": "wasm/converter-core-rust/target/crypto-size/compact-aes.wasm",
+      "raw": 1121341,
+      "gzip": 495722,
+      "brotli": 396580
+    },
+    {
+      "name": "compact SHA-2",
+      "file": "wasm/converter-core-rust/target/crypto-size/compact-sha-2.wasm",
+      "raw": 1106113,
+      "gzip": 491529,
+      "brotli": 393873
+    },
+    {
+      "name": "compact AES and SHA-2",
+      "file": "wasm/converter-core-rust/target/crypto-size/compact-aes-and-sha-2.wasm",
+      "raw": 1104751,
+      "gzip": 491022,
+      "brotli": 393638
+    },
+    {
+      "name": "compact AES and SHA-2, LLVM s",
+      "file": "wasm/converter-core-rust/target/crypto-size/compact-aes-and-sha-2-llvm-s.wasm",
+      "raw": 1222756,
+      "gzip": 535972,
+      "brotli": 418810
+    }
+  ],
+  "sourceStage": "First-stage source after dependency sharing and Binaryen convergence, before parser and ASCII case-conversion optimizations. Compact crypto backends were not adopted."
+}

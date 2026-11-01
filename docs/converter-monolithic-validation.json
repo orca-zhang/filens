@@ -1,0 +1,8 @@
+{
+  "scope": "Original and optimized combined WASM, all controlled conversion fixtures. OpenXML member bytes compared after decompression; PNG non-IDAT chunks and inflated scanlines compared; other outputs compared byte for byte. Archive metadata and compression bytes may differ.",
+  "conversions": 306,
+  "originalOutputBytes": 636167,
+  "optimizedOutputBytes": 632050,
+  "outputChangePercent": -0.65,
+  "ok": true
+}

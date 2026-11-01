@@ -1,0 +1,42 @@
+{
+  "unit": "bytes",
+  "scope": "Historical first-stage dependency comparison, measured before sharing ZIP readers, XML rewriting and normalization, and before removing unnecessary Unicode case conversion. Single WASM with modern/legacy Office cryptography and application icons. Same source within this experiment, release profile and full features; no production artifacts overwritten. Rerunning the script measures the source at execution time.",
+  "rows": [
+    {
+      "name": "original dependencies / -Oz",
+      "raw": 1220359,
+      "gzip": 542228,
+      "brotli": 427685
+    },
+    {
+      "name": "shared miniz deflate / -Oz",
+      "raw": 1129926,
+      "gzip": 498146,
+      "brotli": 398690
+    },
+    {
+      "name": "shared XML parser / -Oz",
+      "raw": 1213739,
+      "gzip": 539188,
+      "brotli": 426918
+    },
+    {
+      "name": "shared miniz and XML / -Oz",
+      "raw": 1123480,
+      "gzip": 496227,
+      "brotli": 397886
+    },
+    {
+      "name": "shared miniz and XML / -Oz converge",
+      "raw": 1122703,
+      "gzip": 496055,
+      "brotli": 397043
+    },
+    {
+      "name": "shared miniz and XML / -Os",
+      "raw": 1128692,
+      "gzip": 496604,
+      "brotli": 397546
+    }
+  ]
+}

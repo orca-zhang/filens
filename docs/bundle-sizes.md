@@ -4,29 +4,30 @@ Generated from the production demo by `npm run report:bundle-sizes`. Units are K
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM | 1123.1 KiB | 497.8 KiB | **395.8 KiB** |
+| Conversion core WASM (Office detection) | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
+| Office decryption WASM (optional) | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
 | Image / RAW core WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
 | HEIC / HEIF decoder WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| Demo entry | 212.9 KiB | 61.0 KiB | **51.3 KiB** |
+| Demo entry | 213.2 KiB | 61.1 KiB | **51.3 KiB** |
 | Agent CLI demo UI | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| Shared vendor dependencies | 1329.1 KiB | 373.3 KiB | **308.2 KiB** |
-| PPTX / core runtime | 336.6 KiB | 93.0 KiB | **78.9 KiB** |
-| Vue preview host | 78.7 KiB | 18.6 KiB | **16.5 KiB** |
+| Shared vendor dependencies | 1323.0 KiB | 370.4 KiB | **307.7 KiB** |
+| PPTX / core runtime | 337.2 KiB | 93.1 KiB | **78.9 KiB** |
+| Vue preview host | 162.0 KiB | 47.3 KiB | **37.7 KiB** |
 | DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
 | iWork preview | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
-| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.1 KiB** |
+| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
 | 3D preview | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
-| Media / panorama preview | 229.0 KiB | 67.1 KiB | **57.2 KiB** |
+| Media / panorama preview | 229.3 KiB | 67.2 KiB | **57.4 KiB** |
 | Media decoder loader | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
 | Archive preview | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
 | Text / ebooks | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
-| iWork worker | 894.1 KiB | 186.7 KiB | **156.2 KiB** |
+| iWork worker | 882.4 KiB | 182.6 KiB | **152.3 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
-| truck STEP WASM (default) | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
+| truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Initial entry, preload, and CSS: **2107.6 KiB raw / 594.3 KiB gzip / 495.6 KiB Brotli**. This excludes HTML, imagery, video, sample files, and later requests. Shared vendor dependencies are included here and must be considered when reading individual module sizes. STEP uses a separate truck WASM asset and excludes OCCT; PDF and iWork have separate workers.
+Initial entry, preload, and CSS: **2102.6 KiB raw / 591.8 KiB gzip / 495.3 KiB Brotli**. This excludes HTML, imagery, video, sample files, and later requests. Shared vendor dependencies are included here and must be considered when reading individual module sizes. PDF and iWork have separate workers.
 
 [Exact byte counts and file names](assets/bundle-sizes.json). Compression measurements use the actual build's gzip and Brotli artifacts; server negotiation and caching determine real network transfer. This is a build snapshot, not the size of a published npm tarball.
 

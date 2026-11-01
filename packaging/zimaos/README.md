@@ -10,10 +10,43 @@ filens read report.pdf --json
 
 If the module is not found, run `sudo zpkg update` and retry. To update an
 installed version, run `sudo zpkg update` followed by `sudo zpkg upgrade filens`.
+If the CDN store index still lists an older release, current `zpkg` versions
+also support installing the versioned image directly. `--force` replaces the
+installed FiLens module:
+
+```sh
+sudo zpkg install --force https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/builtin/filens/0.5.1/filens.raw
+```
 
 The raw package installs `/usr/bin/filens` and Linux x64/arm64 native binaries
 with their shared WASM conversion engines under `/usr/lib/filens/`. It needs no
 Node.js, npm, Python or background service. The module has no desktop UI.
+The package bundles the shared all-in-one browser preview engine. Since 0.5.1,
+the ZimaOS launcher always disables browser launching, including HTTP mode.
+`filens preview FILE` generates an offline HTML, prints its local file URL and
+exits. Download or copy that HTML to your computer and open it there. The
+ZimaOS `file:` URL refers to the server's filesystem, not your computer.
+
+Use `--output` to save in a shared folder and `--json` for the server-side path:
+
+```sh
+filens preview report.pdf --output /path/to/shared/report-preview.html --json
+```
+
+The HTML includes the source file and works offline. No browser resources are
+downloaded on first use. Without `--output`, the HTML is saved to a temporary
+file that remains after the command exits.
+
+For interactive HTTP compatibility mode, forward its loopback port over SSH
+from your computer:
+
+```sh
+ssh -L 8080:127.0.0.1:8080 user@zimaos 'filens preview /path/to/report.pdf --mode serve --port 8080 --json'
+```
+
+Open the printed `http://127.0.0.1:8080/...` URL in your computer's browser.
+Keep the SSH session open; Ctrl-C stops the preview. The service remains bound
+to the ZimaOS loopback interface and needs no desktop UI.
 
 OCR uses Photos' existing NCNN v7 runtime and RapidOCR models. The launcher
 looks for `libzima_ncnn_runtime_v7.so` and its sibling `libncnn.so` in the
@@ -53,7 +86,7 @@ in `packaging/zimaos/release.json`, then package them:
 ```sh
 mkdir -p dist/npm
 cd dist/npm
-npm pack filens-cli-linux-x64@0.4.0 filens-cli-linux-arm64@0.4.0 filens-ocr-linux-x64@0.4.0 filens-ocr-linux-arm64@0.4.0 --registry=https://registry.npmjs.org/
+npm pack filens-cli-linux-x64@0.5.0 filens-cli-linux-arm64@0.5.0 filens-ocr-linux-x64@0.5.0 filens-ocr-linux-arm64@0.5.0 filens-preview@0.2.0 --registry=https://registry.npmjs.org/
 cd ../..
 npm run package:zimaos:filens
 ```
@@ -63,7 +96,8 @@ Alternatively, source builds can prepare these tarballs with
 `scripts/package-zimaos-filens.sh` also accepts a tarball directory and output
 path as its first and second arguments. It validates the package versions and
 ELF architectures, and writes `dist/filens.raw` as a `systemd-sysext` SquashFS
-image. Runtime/model files and browser preview assets are excluded. Both
+image. OCR runtime/model files are excluded; one shared all-in-one preview
+runtime, HTML shell and third-party notices are included. Both
 architectures share identical WASM data through SquashFS deduplication.
 The OCR tarballs supply pinned checksums for optional setup and are excluded
 from the raw image. `packaging/zimaos/release.json` tracks the system-extension

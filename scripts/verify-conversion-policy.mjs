@@ -82,6 +82,7 @@ const expectedConversions = [
   ...['dng', 'cr2', 'cr3', 'nef', 'nrw', 'arw', 'sr2', 'srf', 'orf', 'rw2', 'rwl', 'raf', 'kdc', 'x3f', 'pef', 'srw', 'erf', 'mef', 'mos', 'mrw', '3fr', 'iiq']
     .map((sourceFormat) => [sourceFormat, 'jpg']),
   ['icns', 'png'],
+  ...['apk', 'ipa', 'exe', 'dll', 'mui', 'mun', 'ico'].map(source => [source, 'png']),
   ['ppm', 'png']
 ];
 

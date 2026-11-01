@@ -28,7 +28,7 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
-      include: ['src/**/*.ts', 'src/**/*.vue'],
+      include: ['src/**/*.ts', 'src/**/*.vue', 'src/**/*.json'],
       outDir: 'dist',
       entryRoot: 'src',
       insertTypesEntry: true

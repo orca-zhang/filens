@@ -4,8 +4,9 @@ Build the same preview engines as a single JavaScript file or split modules. Bot
 include Vue, styles, PDF/iWork workers and the document, image/RAW and STEP WASM
 engines. No conversion server or host Vue installation is needed.
 
-Version 0.1.4 uses native HEIC/HEIF decoding first, with a small dedicated WASM
-decoder as fallback. MOV plays through browser codecs; full FFmpeg is excluded.
+Version 0.2.0 adds 28 toolbar languages, application-icon previews and the
+runtime fixes used by CLI 0.5.0's offline HTML preview. It uses native HEIC/HEIF decoding first, with a small dedicated WASM
+decoder as fallback. MOV plays through browser codecs.
 Applications can supply an optional `mediaConverter` for unsupported MOV codecs.
 Both builds preserve the same image and video support boundaries.
 
@@ -31,13 +32,13 @@ npm run build:preview
 
 | Build | Deploy | Approximate runtime size |
 | --- | --- | --- |
-| Split | Entire `packages/preview/dist/split/` directory | 10.82 MB raw / 3.11 MB gzip / 2.44 MB Brotli, across all runtime files |
-| All in one | `packages/preview/dist/all-in-one/filens.js` | 12.70 MB raw / 3.79 MB gzip / 2.84 MB Brotli |
+| Split | Entire `packages/preview/dist/split/` directory | 11.05 MB raw / 3.20 MB gzip / 2.52 MB Brotli, across all runtime files |
+| All in one | `packages/preview/dist/all-in-one/filens.js` | 12.68 MB raw / 3.77 MB gzip / 2.83 MB Brotli |
 
-These are the 0.1.4 builds (MB = 1,000,000 bytes). STEP uses
-the truck Rust core; neither build includes OCCT. The npm package contains
-both directories, about **7.0 MB packed / 24.34 MB installed**, including notices,
-types and documentation.
+These are current source build measurements (MB = 1,000,000 bytes), including
+application icons, optional Office decryption and 28 locale dictionaries. The
+npm package contains both directories, including notices, types and
+documentation. Packed and installed bytes are recorded for each release.
 [Package measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-package-sizes.json).
 
 Both directories contain an `index.html` with a local file picker. Serve either
@@ -69,15 +70,43 @@ direct Vue component integration.
 Split chunks can range from a few KB to hundreds of KB after compression. Those
 figures exclude shared dependencies and engines; a chunk is not a complete
 per-format download. The all-in-one file embeds CSS, base64 WASM and workers; it
-needs no additional runtime files. Both builds include only truck for STEP.
+needs no additional runtime files.
 A separate notices file accompanies
 both builds and should be distributed with them. [Exact measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-build-sizes.json).
 
 Single-file embedding still requires browser support for WebAssembly and workers.
 Pages with a Content Security Policy must permit the generated inline styles,
 `blob:` workers and `data:` WASM. Use an HTTP(S) server for module imports, rather
-than opening `index.html` as a `file:` URL. The supported formats and fidelity
+than opening the module-importing `index.html` as a `file:` URL. The CLI's
+self-contained HTML embeds the module instead and supports `file:` URLs.
+The supported formats and fidelity
 limits are shared with the [demo](https://github.com/IceWhaleTech/filens/blob/main/docs/support-matrix.md).
+
+## Languages and application icons (0.2.0)
+
+Preview toolbars, common prompts and model controls include the same 28 locale
+codes as ZimaOS. Pass `locale: 'zh_CN'` (or `zh-CN`); omit it for browser language
+detection. Switch language with `viewer.update({ locale: 'de_DE' })`. Optional
+`messages: { Next: 'Forward' }` overrides English source phrases per instance.
+Both split and all-in-one builds contain these dictionaries for offline use.
+See the [locale list and API notes](../vue/README.md#languages-source-build).
+
+APK/IPA packages and Windows EXE/DLL/MUI/MUN resource files can be previewed as
+application icons using the included WASM converter. Icon extraction supports
+compiled Android icon resources, XML/binary iOS plist metadata, iOS CgBI PNGs,
+and Windows PNG/DIB icon frames. These additions are included in 0.2.0.
+See the [supported icon representations
+and limits](../vue/README.md#application-icons-source-build).
+
+The split build loads `converter-office.wasm` only when an encrypted Office
+document has a supplied password; a password prompt alone does not download it.
+The core is about 413 KB gzip, and the optional decryptor about 164 KB gzip.
+Splitting saves about 64 KB gzip on ordinary converted previews, while downloading
+both costs about 100 KB gzip more than the combined core due to shared code.
+The all-in-one file uses the combined core (477 KB gzip / 387 KB Brotli) to avoid
+that duplication; its download includes decryption. See the
+[same-source measurements](../../docs/converter-size-impact.md) and the
+[format package audit](../../docs/format-package-sizes.md).
 
 ## CLI preview
 
@@ -105,20 +134,60 @@ npm run filens -- preview report.pdf
 ./dist/filens preview report.pdf --no-open --json
 ```
 
-Preview serves the selected file and built assets on `127.0.0.1`, chooses a free
-port, and opens the browser. Parsing, conversion and rendering happen in the
-browser. Ctrl-C stops the server. `--no-open --json` prints a URL for an Agent or a
-terminal without a browser; the command keeps running until stopped.
+CLI 0.4.x used a loopback HTTP server. **CLI 0.5.0 defaults to a self-contained
+HTML instead**: the shared all-in-one frontend runtime and a
+copy of the selected file are embedded, the browser opens a `file:` URL, and the
+CLI exits. No HTTP server is started. Parsing, conversion and rendering happen
+in the browser, with no external runtime dependencies. The page checks WASM and
+local Worker support and displays compatibility instructions on failure. It also
+includes a GitHub link and third-party notices. Browser launch success does not
+certify rendering; the CLI cannot automatically detect every browser failure.
+
+```sh
+# Generate and open an offline HTML, or save it without opening a browser
+filens preview report.pdf
+filens preview report.pdf --output report-preview.html --no-open
+filens preview report.pdf --no-open --json
+
+# Compatibility mode: serve only on this machine; Ctrl-C stops it
+filens preview report.pdf --mode serve
+```
+
+HTML mode returns a `file:` URL and a filesystem `path`; the command exits even
+with `--no-open --json`. Default HTML files remain in the system temporary
+directory so the browser can finish loading after CLI exit. **The HTML contains
+the original file bytes**; delete it when no longer needed. `--output` never
+overwrites existing files. Base64 embedding adds about one third to the source
+file size, plus the runtime and notices. Prefer HTTP mode or the browser file
+picker for very large files. The HTML's Content Security Policy blocks external
+connections and resource loads; linked images/fonts are unavailable unless
+embedded or supplied locally. The GitHub link opens only when clicked.
+
+On `file:` pages PDF.js uses its supported main-thread worker implementation to
+avoid opaque-origin module-worker restrictions in WebKit. Large PDFs can occupy
+the UI thread; HTTP mode keeps the usual worker loading path.
+WebKit currently cannot load the embedded iWork parser worker from a `file:`
+page. Its error panel offers `--mode serve`; the same Keynote sample was verified
+with the split runtime in that compatibility mode. Chromium and Firefox support
+the tested iWork HTML previews directly.
+
+`--mode serve --no-open --json` retains the previous URL/server lifecycle. Its
+command keeps running until Ctrl-C. `--port` implies serve mode unless an explicit
+`--mode` is given. To choose a port or built runtime:
 
 ```sh
 # Choose a port or another built runtime (including the all-in-one build)
-filens preview report.pdf --port 8080 --assets /path/to/preview/dist/all-in-one
+filens preview report.pdf --mode serve --port 8080 --assets /path/to/preview/dist/all-in-one
 ```
 
 `FILENS_PREVIEW_DIR` overrides the default `<binary-directory>/preview` asset
-directory. Source npm packaging can include the assets with
-`node scripts/package-agent-npm.mjs --with-preview`; they are optional and add
-about 11.2 MB on disk for the current source build, measured separately from the document-reading CLI.
+directory. An asset directory can be the package's `dist/` root or a specific
+`split/` / `all-in-one/` directory; HTML mode needs the all-in-one runtime (a
+`split/` directory also works when its `all-in-one/` sibling is present).
+Source npm packaging can include the assets with
+`node scripts/package-agent-npm.mjs --with-preview`. These optional resources
+include both split assets and the all-in-one runtime, measured separately from
+the document-reading CLI.
 
 The server exposes one selected file, not its parent directory. Models or media
 with external sidecars need a supported ZIP bundle or a host-provided resource
@@ -134,13 +203,19 @@ macOS; Windows/Linux browser launching still needs native validation.
 另附第三方许可文件。单文件部署更简单，初次下载也更大。
 
 `filens preview 文件路径` 会启动本地浏览器预览，由前端完成格式解析与渲染。
-CLI 0.4.2 首次预览时自动安装 filens-preview 0.1.4，也可先运行 `filens setup-preview`；
+CLI 0.5.0 首次预览时自动安装 filens-preview 0.2.0，也可先运行 `filens setup-preview`；
 源码版先运行 `npm run build:agent:preview`。
-0.1.4 默认使用 truck，已移除 OCCT，保留专用 HEIC/HEIF 解码器。
-分包运行时合计 2.44 MB Brotli，单文件为 2.84 MB Brotli / 3.79 MB gzip / 12.70 MB 原始体积。
-独立 npm 包同时包含两种产物，约 7.0 MB 压缩包 / 24.34 MB 安装体积。
+当前源码构建中，分包运行时合计 2.52 MB Brotli，单文件为 2.83 MB Brotli / 3.77 MB gzip / 12.68 MB 原始体积，已包含安装包图标、可选 Office 解密模块和 28 个语言包。分包版仅在加密 Office 文档提交密码后加载解密模块；单文件版使用含解密功能的合并核心，避免重复代码。合并核心为 477 KB gzip / 387 KB Brotli，尚未达到约 300 KB 的目标。
+独立 npm 包同时包含两种产物，[各版本包体积记录](../../docs/preview-package-sizes.json)。
 CLI 的安装体积另计：Lite 7.7–8.1 MiB，Full 31.1–36.8 MiB（含 OCR 运行时与模型）；
 其中原生可执行文件为 1.8–2.2 MiB，不含 Node.js、缓存及预览包。
-源码仅附带分包目录时约 11.2 MB（含许可文件与 HTML）。图片先尝试原生显示，分包版仅在失败时加载 HEIF 解码器；视频使用浏览器编解码器，不支持的编码可通过可选 mediaConverter 接入转换器。`--no-open --json` 返回本地地址，`--assets` 可切换单文件或分包版，
-Ctrl-C 退出。仅提供选中的文件，不开放整个父目录；伴随文件需要打成受支持的 ZIP
+源码仅附带分包目录时约 11.6 MB（含许可文件与 HTML）。图片先尝试原生显示，分包版仅在失败时加载 HEIF 解码器；视频使用浏览器编解码器，不支持的编码可通过可选 mediaConverter 接入转换器。`--no-open --json` 返回本地地址，`--assets` 可切换单文件或分包版，
+HTTP 模式下 Ctrl-C 退出。**CLI 0.5.0 默认生成携带原文件、预览引擎和许可说明的独立 HTML**，
+通过 `file://` 打开，生成后 CLI 退出，无需本地服务器，可完全离线使用。
+`--output preview.html` 保存到指定路径且不覆盖已有文件；默认临时 HTML 不会随 CLI
+退出而删除，其中包含原文件副本，使用后可自行删除。`--no-open --json` 返回本地文件
+URL 和路径；`--mode serve` 保留原来的本地 HTTP 模式和 Ctrl-C 生命周期。
+页面检测 WASM / Worker 能力，失败时显示兼容模式命令，并通过 CSP 禁止外部连接及
+资源加载；右上角提供 GitHub 链接。浏览器启动成功不等于渲染成功，无法保证自动检测
+所有浏览器失败。仅嵌入选中的文件，不开放整个父目录；伴随文件需要打成受支持的 ZIP
 或由宿主配置解析器。

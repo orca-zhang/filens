@@ -1,0 +1,22 @@
+{
+  "scope": "Local Node/V8, cached WASM module with a fresh WASI instance per conversion, independent agile DOCX fixture with its declared KDF. 2 warm-up conversions and 10 measured samples per variant; not a cross-device browser benchmark.",
+  "rows": [
+    {
+      "file": "default-crypto.wasm",
+      "medianMs": 28.66
+    },
+    {
+      "file": "compact-aes.wasm",
+      "medianMs": 28.41
+    },
+    {
+      "file": "compact-sha-2.wasm",
+      "medianMs": 41.87
+    },
+    {
+      "file": "compact-aes-and-sha-2.wasm",
+      "medianMs": 40.94
+    }
+  ],
+  "sourceStage": "First-stage source after dependency sharing and Binaryen convergence, before parser and ASCII case-conversion optimizations. Compact crypto backends were not adopted."
+}

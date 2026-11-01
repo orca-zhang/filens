@@ -91,6 +91,7 @@ const conversionKindBySource = new Map<string, DemoKind>(
 // Keep conversion modules outside the main graph; each module is fetched on its first matching route.
 const brandIconUrl = `${import.meta.env.BASE_URL}brand/filens-icon.svg`;
 const converterCoreWasmUrl = `${import.meta.env.BASE_URL}externals/converter-core.wasm`;
+const converterOfficeWasmUrl = `${import.meta.env.BASE_URL}externals/converter-office.wasm`;
 const converterImageWasmUrl = `${import.meta.env.BASE_URL}externals/converter-image.wasm`;
 
 const staticSamples: DemoSource[] = [
@@ -1560,10 +1561,17 @@ const lastError = ref<string | null>(null);
 const workbenchSection = ref<'preview' | 'agent'>(new URLSearchParams(window.location.search).get('view') === 'agent' ? 'agent' : 'preview');
 const showWorkbench = ref(['preview', 'agent'].includes(new URLSearchParams(window.location.search).get('view') ?? ''));
 const showPreviewToolbar = ref(false);
+const previewLocale = ref<string>();
+function readPreviewLocale(): string | undefined {
+  const requested = new URLSearchParams(window.location.search).get('lang');
+  if (requested) return requested;
+  try { return localStorage.getItem('filens-locale') ?? undefined; } catch { return undefined; }
+}
 let appliedUrlFormat: string | null = null;
 
 function syncPageFromUrl(): void {
   const params = new URLSearchParams(window.location.search);
+  previewLocale.value = readPreviewLocale();
   showWorkbench.value = ['preview', 'agent'].includes(params.get('view') ?? '');
   workbenchSection.value = params.get('view') === 'agent' ? 'agent' : 'preview';
   const format = params.get('format');
@@ -1629,7 +1637,8 @@ let pendingDownloadTimeMs: number | null = null;
 let measurementGeneration = 0;
 const converterCore = createWasmConverterClient({
   wasm: converterCoreWasmUrl,
-  imageWasm: converterImageWasmUrl
+  imageWasm: converterImageWasmUrl,
+  officeWasm: converterOfficeWasmUrl
 });
 const converter: ConverterClient = {
   async convert(request, context) {
@@ -2132,7 +2141,7 @@ function detectKind(name: string): DemoKind | null {
   if (/\.(html?|shtml|xhtml)$/.test(normalized)) return 'html';
   if (/\.epub$/.test(normalized)) return 'epub';
   if (/\.cbz$/.test(normalized)) return 'cbz';
-  if (/\.(zip|jar|war|ear|apk|tar|tgz|gz)$/.test(normalized)) return 'zip';
+  if (/\.(zip|jar|war|ear|tar|tgz|gz)$/.test(normalized)) return 'zip';
   if (/\.(mp3|wav|aac|m4a|flac|ogg|oga|opus)$/.test(normalized)) return 'audio';
   if (/\.(mp4|webm|mov|m4v|ogv|mkv|avi|mpeg|mpg|3gp)$/.test(normalized)) return 'video';
   if (/\.(ts|tsx|js|jsx|vue|css|json|md|py|go|rs)$/.test(normalized)) return 'code';
@@ -3623,6 +3632,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     v-else
     v-model:remote-url="remoteUrl"
     v-model:toolbar="showPreviewToolbar"
+            :locale="previewLocale"
     :section="workbenchSection"
     :brand-icon="brandIconUrl"
     :name="current.name"
@@ -3669,6 +3679,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
             :resource-resolver="uploadResourceResolver"
             :fit="previewFit"
             :toolbar="showPreviewToolbar"
+            :locale="previewLocale"
             style="height: 100%;"
             @rendered="onRendered"
             @state-change="renderedState = $event"

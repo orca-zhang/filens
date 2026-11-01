@@ -1,5 +1,7 @@
+import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
+import { pdfWorkerAsset } from '../../scripts/media-wasm-plugin';
 
 export default defineConfig({
   base: './',
@@ -12,7 +14,7 @@ export default defineConfig({
     cssCodeSplit: false,
     sourcemap: true,
     rollupOptions: {
-      external: ['@filens/core']
+      external: packageExternals(import.meta.url)
     }
   },
   test: {
@@ -20,6 +22,7 @@ export default defineConfig({
     globals: true
   },
   plugins: [
+    pdfWorkerAsset(),
     dts({
       include: ['src/**/*.ts'],
       outDir: 'dist',

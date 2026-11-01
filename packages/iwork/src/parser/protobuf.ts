@@ -1,13 +1,17 @@
-import { Reader, Root, Type } from 'protobufjs';
+// Schemas are generated as JSON; the .proto text parser is unnecessary at runtime.
+import protobuf from 'protobufjs/light.js';
+import type { Reader, Root, Type } from 'protobufjs/light.js';
 import descriptorJson from '../generated/iwork-proto';
 import { commonTypeMap, keynoteTypeMap, numbersTypeMap, pagesTypeMap } from '../generated/type-maps';
 import type { IworkType } from '../types';
 
 type TypeMap = Record<string, string>;
 
-const root = Root.fromJSON(descriptorJson as Parameters<typeof Root.fromJSON>[0]);
+const { Reader: ProtobufReader, Root: ProtobufRoot, Type: ProtobufType } = protobuf;
+// Worker-based viewers do not need the main-thread parser. Delaying schema
+// initialization lets application bundlers remove that unused exported API.
+let root: Root | undefined;
 const typeCache = new Map<string, Type>();
-const archiveInfoType = lookupType('TSP.ArchiveInfo');
 const typeMaps: Record<IworkType, TypeMap> = {
   key: {
     ...(commonTypeMap as TypeMap),
@@ -24,7 +28,7 @@ const typeMaps: Record<IworkType, TypeMap> = {
 };
 
 export function getArchiveInfoType(): Type {
-  return archiveInfoType;
+  return lookupType('TSP.ArchiveInfo');
 }
 
 export function getTypeName(type: IworkType, typeId: number): string | null {
@@ -34,7 +38,7 @@ export function getTypeName(type: IworkType, typeId: number): string | null {
 export function decodeTypedMessage(typeName: string, payload: Uint8Array): unknown {
   const messageType = lookupType(typeName);
   try {
-    return decodeMessage(messageType, Reader.create(payload), payload.length);
+    return decodeMessage(messageType, ProtobufReader.create(payload), payload.length);
   } catch (error) {
     // Some older schemas misidentify newer style payloads. Retain the
     // existing decoder's permissive interpretation for those records.
@@ -78,7 +82,7 @@ function messageLayout(type: Type): MessageLayout {
     layout.fallback ||= field.map;
     if (field.repeated) layout.repeated.push(field.name);
     if (field.required) layout.required.push(field.name);
-    const message = field.resolvedType instanceof Type ? field.resolvedType : undefined;
+    const message = field.resolvedType instanceof ProtobufType ? field.resolvedType : undefined;
     layout.fields[field.id] = {
       name: field.name, repeated: field.repeated, message,
       scalar: message ? undefined : field.resolvedType ? 'int32' : field.type as ScalarType
@@ -89,7 +93,7 @@ function messageLayout(type: Type): MessageLayout {
 }
 
 function decodeMessage(type: Type, reader: Reader, end: number, depth = 0): Record<string, unknown> {
-  if (depth > Reader.recursionLimit) throw new Error('maximum nesting depth exceeded');
+  if (depth > ProtobufReader.recursionLimit) throw new Error('maximum nesting depth exceeded');
   const layout = messageLayout(type);
   // Preserve protobufjs handling for map/group schemas, which ordinary iWork
   // archive records do not use.
@@ -165,6 +169,7 @@ function lookupType(typeName: string): Type {
     return cached;
   }
 
+  root ??= ProtobufRoot.fromJSON(descriptorJson as Parameters<typeof ProtobufRoot.fromJSON>[0]);
   const resolved = root.lookupType(typeName);
   typeCache.set(typeName, resolved);
   return resolved;

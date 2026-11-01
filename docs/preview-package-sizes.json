@@ -2,12 +2,12 @@
   "date": "2026-11-01",
   "scope": "Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.",
   "name": "filens-preview",
-  "version": "0.1.4",
-  "file": "filens-preview-0.1.4.tgz",
-  "bytes": 6970203,
-  "unpackedBytes": 24343452,
-  "sha256": "f4aaf95a2a6d079e0ca839cf3d0f06085ea049be88513c753abfe25fbc72432b",
-  "integrity": "sha512-577RdxymFWRgnTtlcajwPRF9QuYdfvh0kAM1hoo/ntdbUSwP3ScaZeBNeyJGbdvQg5w5o6YQgRQ8bX4nAAfAIg==",
+  "version": "0.2.0",
+  "file": "filens-preview-0.2.0.tgz",
+  "bytes": 7041835,
+  "unpackedBytes": 24557391,
+  "sha256": "ff2d40c705f21fea7816444264a1a137734ac3345e153c4ac8eeb2eb9e5f19a8",
+  "integrity": "sha512-WLeVfi2ews7coH+Q++sh6nAp6mfonJR6gAKqCQc1d2fQesESIEPjxSFj/iOqWDd6eerQHV17T7Pu7jM5zLriwQ==",
   "files": [
     {
       "path": "LICENSE",
@@ -15,11 +15,11 @@
     },
     {
       "path": "README.md",
-      "bytes": 7206
+      "bytes": 12323
     },
     {
       "path": "dist/all-in-one/filens.js",
-      "bytes": 12696653
+      "bytes": 12680146
     },
     {
       "path": "dist/all-in-one/index.html",
@@ -31,75 +31,79 @@
     },
     {
       "path": "dist/index.d.ts",
-      "bytes": 1166
+      "bytes": 1378
     },
     {
-      "path": "dist/split/assets/iwork-worker-D64s_rsm.js",
-      "bytes": 915578
+      "path": "dist/split/assets/iwork-worker-DiTOJG8f.js",
+      "bytes": 903593
     },
     {
-      "path": "dist/split/chunks/archive-Drem4a-o.js",
+      "path": "dist/split/chunks/archive-_cUUL2-3.js",
       "bytes": 27335
     },
     {
-      "path": "dist/split/chunks/cad-CsU3TiHK.js",
+      "path": "dist/split/chunks/cad-Cyh8aipO.js",
       "bytes": 74581
     },
     {
-      "path": "dist/split/chunks/core-BvtuMqS1.js",
-      "bytes": 446106
+      "path": "dist/split/chunks/core-gp02JQ3r.js",
+      "bytes": 446885
     },
     {
-      "path": "dist/split/chunks/diagram-BxRNHzmO.js",
+      "path": "dist/split/chunks/diagram-rxvArV-1.js",
       "bytes": 27188
     },
     {
-      "path": "dist/split/chunks/docx-Ch1AvEUX.js",
+      "path": "dist/split/chunks/docx-ecvZsSWm.js",
       "bytes": 11766
     },
     {
-      "path": "dist/split/chunks/ebook-P42eILp5.js",
+      "path": "dist/split/chunks/ebook-5FyKWZ8s.js",
       "bytes": 21804
     },
     {
-      "path": "dist/split/chunks/iwork-HnghW_EB.js",
+      "path": "dist/split/chunks/iwork-DlaehzuR.js",
       "bytes": 29712
     },
     {
-      "path": "dist/split/chunks/media-runtime-kbzoW8bd.js",
+      "path": "dist/split/chunks/media-runtime-DwW7eq4g.js",
       "bytes": 122761
     },
     {
-      "path": "dist/split/chunks/mindmap-vFlOJSIq.js",
+      "path": "dist/split/chunks/mindmap-D9lNNDoa.js",
       "bytes": 20032
     },
     {
-      "path": "dist/split/chunks/model3d-DoNu7iyY.js",
+      "path": "dist/split/chunks/model3d-BtFT01ZH.js",
       "bytes": 188044
     },
     {
-      "path": "dist/split/chunks/panorama-Bw_8HQsv.js",
-      "bytes": 271762
+      "path": "dist/split/chunks/panorama-Ci6DK6sa.js",
+      "bytes": 272063
     },
     {
       "path": "dist/split/chunks/pdf-CecYOWld.js",
       "bytes": 604243
     },
     {
-      "path": "dist/split/chunks/vendor-Cv2Fxtsf.js",
-      "bytes": 2138881
+      "path": "dist/split/chunks/vendor-DvWhw-zP.js",
+      "bytes": 2129190
     },
     {
-      "path": "dist/split/chunks/xlsx-ypLtJxeq.js",
+      "path": "dist/split/chunks/xlsx-VJTu9XNS.js",
       "bytes": 29666
     },
     {
       "path": "dist/split/converter-core.wasm",
-      "bytes": 1150080
+      "bytes": 916303
     },
     {
       "path": "dist/split/converter-image.wasm",
       "bytes": 1126286
+    },
+    {
+      "path": "dist/split/converter-office.wasm",
+      "bytes": 379079
     },
     {
       "path": "dist/split/filens-step.wasm",
@@ -107,7 +111,7 @@
     },
     {
       "path": "dist/split/filens.js",
-      "bytes": 127929
+      "bytes": 228340
     },
     {
       "path": "dist/split/index.html",
@@ -130,10 +134,5 @@
       "bytes": 1160
     }
   ],
-  "privacyChecked": true,
-  "published": true,
-  "registry": "https://registry.npmjs.org/",
-  "publishedAt": "2026-11-01T02:53:19.819Z",
-  "registryIntegrityMatches": true,
-  "verifiedAt": "2026-11-01T02:53:46.130Z"
+  "privacyChecked": true
 }

@@ -297,5 +297,12 @@
   { "sourceFormat": "3fr", "targetFormat": "jpg" },
   { "sourceFormat": "iiq", "targetFormat": "jpg" },
   { "sourceFormat": "icns", "targetFormat": "png" },
+  { "sourceFormat": "apk", "targetFormat": "png" },
+  { "sourceFormat": "ipa", "targetFormat": "png" },
+  { "sourceFormat": "exe", "targetFormat": "png" },
+  { "sourceFormat": "dll", "targetFormat": "png" },
+  { "sourceFormat": "mui", "targetFormat": "png" },
+  { "sourceFormat": "mun", "targetFormat": "png" },
+  { "sourceFormat": "ico", "targetFormat": "png" },
   { "sourceFormat": "ppm", "targetFormat": "png" }
 ]

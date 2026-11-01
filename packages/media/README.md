@@ -8,7 +8,7 @@ only after native decoding fails in the split build. Decoding runs in a worker
 that stops when the source changes or the preview is destroyed. HEIF sequences
 show the primary image. No upload or cross-origin isolation is required.
 
-MOV videos use browser codecs without a bundled FFmpeg engine. Codec support
+MOV videos use browser codecs. Codec support
 depends on the browser, operating system and hardware; unsupported video reports
 an error, including containers whose audio plays but video cannot be decoded.
 Applications that need transcoding can supply an optional `mediaConverter` to

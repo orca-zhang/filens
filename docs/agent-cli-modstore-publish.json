@@ -1,0 +1,198 @@
+{
+  "observedAt": "2026-11-01T13:29:16.071Z",
+  "version": "0.5.1",
+  "cliVersion": "0.5.0",
+  "previewVersion": "0.2.0",
+  "status": "published-cdn-propagation-pending",
+  "repository": "https://github.com/IceWhaleTech/Mod-Store",
+  "commits": {
+    "artifact": "7ec6bce",
+    "index": "d012ab4"
+  },
+  "artifact": {
+    "verifiedAt": "2026-11-01T13:17:17.800Z",
+    "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/builtin/filens/0.5.1/filens.raw",
+    "status": 200,
+    "bytes": 12611584,
+    "sha256": "14ca9b01d07adee5140de9ab77f0db12ac2d475e3e66279ffe2c302371dde320",
+    "integrityMatches": true
+  },
+  "indices": {
+    "checkedAt": "2026-11-01T13:29:16.069Z",
+    "passed": false,
+    "checks": [
+      {
+        "source": "github",
+        "url": "https://raw.githubusercontent.com/IceWhaleTech/Mod-Store/main/mod.json",
+        "encoding": "identity",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod.json",
+        "encoding": "identity",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod.json",
+        "encoding": "gzip",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod.json",
+        "encoding": "br",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "github",
+        "url": "https://raw.githubusercontent.com/IceWhaleTech/Mod-Store/main/mod-v2.json",
+        "encoding": "identity",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod-v2.json",
+        "encoding": "identity",
+        "version": "0.5.0",
+        "passed": false
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod-v2.json",
+        "encoding": "gzip",
+        "version": "0.5.0",
+        "passed": false
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod-v2.json",
+        "encoding": "br",
+        "version": "0.5.0",
+        "passed": false
+      },
+      {
+        "source": "github",
+        "url": "https://raw.githubusercontent.com/IceWhaleTech/Mod-Store/main/builtin/filens/filens.meta.json",
+        "encoding": "identity",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/builtin/filens/filens.meta.json",
+        "encoding": "identity",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/builtin/filens/filens.meta.json",
+        "encoding": "gzip",
+        "version": "0.5.1",
+        "passed": true
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/builtin/filens/filens.meta.json",
+        "encoding": "br",
+        "version": "0.5.1",
+        "passed": true
+      }
+    ]
+  },
+  "sourcePackages": [
+    {
+      "name": "filens-cli-linux-x64",
+      "version": "0.5.0",
+      "integrity": "sha512-NF+IDUJ/2DY0zzt4iTgbJVq2SM59BKaSnIljkL5SGPCAEqmVTThmehLjd2YvDPxCR78HQhXnpHS8q5c9OjzyZQ==",
+      "bundled": true
+    },
+    {
+      "name": "filens-cli-linux-arm64",
+      "version": "0.5.0",
+      "integrity": "sha512-O7EAfKBwnYNyDJy6prLWPdCNUggrGjgw6ZySczTRC06sO4D6AqeEl1QbRMMWHPlt2yfGW9ABNZzpfSeo+igoqQ==",
+      "bundled": true
+    },
+    {
+      "name": "filens-ocr-linux-x64",
+      "version": "0.5.0",
+      "integrity": "sha512-gzVCfIFoLKyS3HOjSL3rKAUDycpypM+JZdtFZVNenbS7bBrWQqJIKjnxGYtGMMdpiiF7LunDpmHdQFa1SXTkjQ==",
+      "bundled": false
+    },
+    {
+      "name": "filens-ocr-linux-arm64",
+      "version": "0.5.0",
+      "integrity": "sha512-7QH7t1EIwyiLLSQ+YjctsMXTBUS24QA/lDnAF18LogJD5JptFI+0maU39n8ZhkXLA7UG7siJx73KtEXy1UZzPw==",
+      "bundled": false
+    },
+    {
+      "name": "filens-preview",
+      "version": "0.2.0",
+      "integrity": "sha512-WLeVfi2ews7coH+Q++sh6nAp6mfonJR6gAKqCQc1d2fQesESIEPjxSFj/iOqWDd6eerQHV17T7Pu7jM5zLriwQ==",
+      "bundled": true
+    }
+  ],
+  "preview": {
+    "browserLaunch": false,
+    "defaultMode": "html",
+    "outputLocation": "ZimaOS filesystem; download or copy the HTML to a computer",
+    "httpMode": "Explicit loopback server accessed through SSH forwarding"
+  },
+  "packageValidation": {
+    "passed": true,
+    "command": "npm run test:zimaos:filens",
+    "host": "darwin-arm64",
+    "nativeZimaOSExecution": false,
+    "checks": [
+      "SquashFS extraction, manifest and 15 MB CDN budget",
+      "Linux x64/arm64 ELF headers and embedded WASM",
+      "Shared all-in-one preview runtime and notices",
+      "Real host CLI through packaged headless launcher: temporary and saved HTML, clean JSON, source bytes, spaces and option-like filenames",
+      "Browser launch sentinels remain uninvoked without DISPLAY or WAYLAND_DISPLAY",
+      "Existing HTML is never overwritten",
+      "Launcher preserves explicit asset overrides",
+      "Photos OCR reuse and private verified fallback",
+      "Corrupt mirror rejection and fallback",
+      "Failed download or native health check preserves previous install"
+    ]
+  },
+  "cdnPropagation": {
+    "pendingVariants": [
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod-v2.json",
+        "encoding": "identity",
+        "version": "0.5.0",
+        "passed": false
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod-v2.json",
+        "encoding": "gzip",
+        "version": "0.5.0",
+        "passed": false
+      },
+      {
+        "source": "cdn",
+        "url": "https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/mod-v2.json",
+        "encoding": "br",
+        "version": "0.5.0",
+        "passed": false
+      }
+    ],
+    "purgeStatus": "Purge API was throttled; some mod-v2.json responses remain cached at 0.5.0"
+  },
+  "install": "sudo zpkg install filens",
+  "upgrade": [
+    "sudo zpkg update",
+    "sudo zpkg upgrade filens"
+  ],
+  "directInstall": "sudo zpkg install --force https://cdn.jsdelivr.net/gh/IceWhaleTech/Mod-Store@main/builtin/filens/0.5.1/filens.raw"
+}

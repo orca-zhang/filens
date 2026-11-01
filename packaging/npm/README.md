@@ -1,14 +1,14 @@
 # filens Agent CLI
 
 <!-- agent-cli-size:npm:start -->
-**v0.4.2 · MIT · CLI executable 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
+**v0.5.0 · MIT · CLI executable 2.17 MiB · Lite 8.05 MiB · Full 31.25 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
 
 | Platform | CLI executable | Lite installed / download | Full installed / download |
 | --- | ---: | ---: | ---: |
-| darwin-arm64 | 2.15 MiB | 8.04 / 6.14 MiB | 31.25 / 20.34 MiB |
-| linux-x64 | 1.89 MiB | 7.78 / 6.86 MiB | 36.74 / 22.84 MiB |
-| linux-arm64 | 1.78 MiB | 7.68 / 6.75 MiB | 31.10 / 20.54 MiB |
-| win32-x64 | 1.81 MiB | 7.71 / 6.78 MiB | 36.48 / 23.01 MiB |
+| darwin-arm64 | 2.17 MiB | 8.05 / 6.14 MiB | 31.25 / 20.34 MiB |
+| linux-x64 | 1.90 MiB | 7.78 / 6.86 MiB | 36.74 / 22.84 MiB |
+| linux-arm64 | 1.80 MiB | 7.68 / 6.75 MiB | 31.10 / 20.53 MiB |
+| win32-x64 | 1.82 MiB | 7.70 / 6.78 MiB | 36.48 / 23.01 MiB |
 
 Totals add the launcher and selected platform packages from npm pack. Node.js, npm caches, filesystem overhead and the optional frontend preview package are excluded. Bundled dependencies retain their own licenses; see THIRD-PARTY-NOTICES.md in the platform packages.
 <!-- agent-cli-size:npm:end -->
@@ -54,6 +54,16 @@ The first preview installs the separate `filens-preview` package; run
 `filens setup-preview` to prepare it in advance. Subsequent previews work offline.
 Frontend assets are measured separately from the CLI installation. See the [preview guide](https://github.com/IceWhaleTech/filens/blob/main/packages/preview/README.md#cli-preview)
 for building the single-file/split runtime and packaging it with `--with-preview`.
+
+Version 0.5.0 generates a self-contained offline HTML by default and exits
+after opening it. `filens preview FILE --output preview.html --no-open` saves a
+portable copy without overwriting an existing file. The HTML contains the source
+file; delete temporary copies when no longer needed. `--no-open --json` returns a
+`file:` URL and path. Use `--mode serve` for the previous loopback HTTP mode and
+Ctrl-C lifecycle. The page checks browser support, blocks external requests and
+includes a GitHub icon linking to the repository. Preview 0.2.0 includes 28
+toolbar languages and application-icon previews; capabilities and fidelity
+limits are shared by the split and all-in-one builds.
 
 ```sh
 filens '支持哪些格式？用 JSON 返回'
@@ -196,4 +206,4 @@ one profile at a time. Platform packages are implementation components.
 [Protocol, limitations and source build](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
-`npm install -g /path/to/filens-cli-0.4.2.tgz /path/to/filens-cli-PLATFORM-0.4.2.tgz /path/to/filens-ocr-PLATFORM-0.4.2.tgz`.
+`npm install -g /path/to/filens-cli-0.5.0.tgz /path/to/filens-cli-PLATFORM-0.5.0.tgz /path/to/filens-ocr-PLATFORM-0.5.0.tgz`.

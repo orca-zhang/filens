@@ -10,11 +10,15 @@ use std::path::Path;
 use std::process;
 use std::time::Instant;
 use zip::write::SimpleFileOptions;
-use zip::{CompressionMethod, ZipArchive, ZipWriter};
+use zip::{CompressionMethod, ZipWriter};
+#[cfg(any(test, feature = "text-extraction"))]
+use zip::ZipArchive;
 
 mod panorama;
 mod ppm;
+mod icons;
 mod office;
+mod zip_io;
 #[path = "text/plain.rs"]
 mod plain;
 use plain::{decode_text, decode_utf16, windows_1252_char};
@@ -350,6 +354,8 @@ struct ResultContract {
     error_code: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     error_message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    required_module: Option<&'static str>,
     metrics: Metrics,
     #[serde(skip_serializing_if = "Option::is_none")]
     payload: Option<serde_json::Value>,
@@ -363,7 +369,7 @@ struct ConvertError {
     message: String,
 }
 
-fn main() {
+fn converter_main() {
     let started = Instant::now();
     let mut request = Request::default();
     let parse_error = parse_request(&mut request).err();
@@ -539,6 +545,8 @@ fn main() {
                 RAW_PREVIEW_WARNING,
                 convert_raw_preview(&request.input, &request.output, &request.target),
             )
+        } else if icons::supports(&request.source) {
+            ("application-icon", "", icons::convert(&request.input, &request.output, &request.source))
         } else if request.source == "ppm" {
             ("ppm", "", ppm::convert(&request.input, &request.output))
         } else if is_icns_source(&request.source) {
@@ -738,6 +746,9 @@ fn validate_input(request: &Request, input_size: u64) -> Result<(), ConvertError
             "RAW input is too large for embedded preview extraction".into(),
         ));
     }
+    if icons::supports(&request.source) && input_size > MAX_PACKAGE_BYTES {
+        return Err(parse_error("Application package exceeds the 256 MiB limit".into()));
+    }
     if request.source == "ppm" && input_size > MAX_RAW_BYTES {
         return Err(io_error("PPM input is too large for conversion".into()));
     }
@@ -859,6 +870,11 @@ fn failure(
         warnings: Vec::new(),
         error_code: code.into(),
         error_message: message,
+        required_module: if code == "engine_unavailable" && backend == Some("office-encryption") {
+            Some("office")
+        } else {
+            None
+        },
         metrics: Metrics {
             elapsed_ms: 0,
             input_size,
@@ -6419,7 +6435,9 @@ fn word_binary_heading(text: &str) -> bool {
     if text.is_empty() || text.chars().count() > 80 || text.contains(['\n', '\t']) {
         return false;
     }
-    let lower = text.to_lowercase();
+    // These heading markers are ASCII; keep Unicode casing for the actual
+    // heading letters below without linking a second Unicode case conversion.
+    let lower = text.to_ascii_lowercase();
     if ["chapter ", "section ", "part ", "heading ", "title:"]
         .iter()
         .any(|prefix| lower.starts_with(prefix))
@@ -6546,7 +6564,7 @@ fn convert_odf(input: &str, output: &str, source: &str, target: &str) -> Result<
     } else {
         let file =
             File::open(input).map_err(|error| parse_error(format!("open ODF package: {error}")))?;
-        let mut archive = ZipArchive::new(file)
+        let mut archive = zip_io::open(file)
             .map_err(|error| parse_error(format!("open ODF package: {error}")))?;
         read_odf_content(&mut archive)?
     };
@@ -6565,7 +6583,7 @@ fn convert_odf(input: &str, output: &str, source: &str, target: &str) -> Result<
     }
 }
 
-fn read_odf_content(archive: &mut ZipArchive<File>) -> Result<String, ConvertError> {
+fn read_odf_content(archive: &mut zip_io::Archive<'_>) -> Result<String, ConvertError> {
     if archive.len() > MAX_PACKAGE_ENTRIES {
         return Err(parse_error("ODF package has too many entries".into()));
     }
@@ -8784,7 +8802,7 @@ fn hex_value(value: u8) -> Option<u8> {
 fn extract_epub_paragraphs(input: &str) -> Result<Vec<DocxParagraph>, ConvertError> {
     let file =
         File::open(input).map_err(|error| parse_error(format!("open EPUB package: {error}")))?;
-    let mut archive = ZipArchive::new(file)
+    let mut archive = zip_io::open(file)
         .map_err(|error| parse_error(format!("open EPUB package: {error}")))?;
     if archive.len() > MAX_PACKAGE_ENTRIES {
         return Err(parse_error("EPUB package has too many entries".into()));
@@ -8823,7 +8841,7 @@ fn extract_epub_paragraphs(input: &str) -> Result<Vec<DocxParagraph>, ConvertErr
     }
 }
 
-fn read_epub_entry(archive: &mut ZipArchive<File>, name: &str) -> Result<String, ConvertError> {
+fn read_epub_entry(archive: &mut zip_io::Archive<'_>, name: &str) -> Result<String, ConvertError> {
     let mut entry = archive
         .by_name(name)
         .map_err(|error| parse_error(format!("read EPUB entry {name}: {error}")))?;
@@ -11019,8 +11037,16 @@ fn normalize_package_reader(
     output: &str,
     target: &str,
 ) -> Result<(), ConvertError> {
-    let mut archive = ZipArchive::new(input)
+    let archive = zip_io::open(input)
         .map_err(|error| parse_error(format!("open OpenXML package: {error}")))?;
+    normalize_archive(archive, output, target)
+}
+
+fn normalize_archive(
+    mut archive: zip_io::Archive<'_>,
+    output: &str,
+    target: &str,
+) -> Result<(), ConvertError> {
     if let Some(parent) = Path::new(output).parent() {
         fs::create_dir_all(parent)
             .map_err(|error| io_error(format!("create output directory: {error}")))?;
@@ -11097,7 +11123,7 @@ fn normalize_content_types(
     rewrite_xml(
         content,
         "content types",
-        |start| {
+        &mut |start| {
             if local_name(start.name().as_ref()) == b"Default"
                 && forbidden_content_type(attribute(start, b"ContentType").as_deref().unwrap_or(""))
             {
@@ -11128,7 +11154,7 @@ fn normalize_relationships(content: &[u8]) -> Result<Vec<u8>, ConvertError> {
     rewrite_xml(
         content,
         "relationships",
-        |start| {
+        &mut |start| {
             if local_name(start.name().as_ref()) == b"Relationship" && forbidden_relationship(start)
             {
                 Ok(Action::Skip)
@@ -11146,15 +11172,12 @@ enum Action {
     Skip,
 }
 
-fn rewrite_xml<F>(
+fn rewrite_xml(
     content: &[u8],
     label: &str,
-    mut transform: F,
+    transform: &mut dyn FnMut(&BytesStart<'_>) -> Result<Action, ConvertError>,
     required_part: Option<&str>,
-) -> Result<Vec<u8>, ConvertError>
-where
-    F: FnMut(&BytesStart<'_>) -> Result<Action, ConvertError>,
-{
+) -> Result<Vec<u8>, ConvertError> {
     let mut reader = Reader::from_reader(content);
     reader.config_mut().trim_text(false);
     let mut writer = Writer::new(Vec::new());
@@ -11233,7 +11256,7 @@ fn validate_output(path: &str, target: &str) -> Result<(), ConvertError> {
     }
     let input = File::open(path)
         .map_err(|error| conversion_error(format!("open {path} as OpenXML zip: {error}")))?;
-    let mut archive = ZipArchive::new(input)
+    let mut archive = zip_io::open(input)
         .map_err(|error| conversion_error(format!("open {path} as OpenXML zip: {error}")))?;
     let required = required_entries(target);
     let mut names = HashSet::new();

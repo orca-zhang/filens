@@ -1,6 +1,6 @@
 [package]
 name = "filens-cli"
-version = "0.4.2"
+version = "0.5.0"
 license = "MIT"
 edition = "2024"
 publish = false
@@ -16,6 +16,7 @@ hdrw-wasi = []
 
 [dependencies]
 anyhow = "1.0"
+base64 = "0.22"
 ctrlc = { version = "3.5", features = ["termination"] }
 libc = "0.2"
 libloading = "0.8.9"

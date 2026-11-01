@@ -9,6 +9,20 @@ const wasmOpt = path.join(rootDir, 'node_modules', 'binaryen', 'bin', 'wasm-opt'
 const converters = [
   {
     name: 'converter-core',
+    cargoArgs: ['--no-default-features'],
+    crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
+    outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
+  },
+  {
+    name: 'converter-office',
+    cargoArgs: ['--no-default-features', '--features', 'office-crypto'],
+    crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
+    outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
+  },
+  {
+    name: 'converter-core',
+    outputName: 'converter-core-full',
+    cargoArgs: ['--features', 'office-crypto'],
     crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
     outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
   },
@@ -28,17 +42,18 @@ for (const converter of converters) {
     'release',
     `${converter.name}.wasm`
   );
-  const outputPath = path.join(converter.outputDir, `${converter.name}.wasm`);
+  const outputPath = path.join(converter.outputDir, `${converter.outputName ?? converter.name}.wasm`);
   await mkdir(converter.outputDir, { recursive: true });
   await run(
     process.platform === 'win32' ? 'cargo.exe' : 'cargo',
-    ['build', '--locked', '--release', '--target', 'wasm32-wasip1'],
+    ['build', '--locked', '--release', '--target', 'wasm32-wasip1', '--bin', converter.name, ...(converter.cargoArgs ?? [])],
     converter.crateDir
   );
   await run(process.execPath, [
     wasmOpt,
     inputPath,
     converter.optimization ?? '-Oz',
+    ...(converter.optimization ? [] : ['--converge']),
     '--enable-bulk-memory',
     '--enable-nontrapping-float-to-int',
     '--strip-debug',

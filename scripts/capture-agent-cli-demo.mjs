@@ -1,8 +1,7 @@
 // Actual CLI results, deterministic typing replay. Authoring tools only.
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
-import { spawn, spawnSync } from 'node:child_process';
-import { createInterface } from 'node:readline';
+import { spawnSync } from 'node:child_process';
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { zipSync, strToU8 } from 'fflate';
@@ -42,28 +41,25 @@ function docx(zh, contract = false) {
 const browser = await chromium.launch({ headless: true });
 async function capturePreview(args, directory, stem, runs, { orbit = false, expectedCells } = {}) {
   const started = performance.now();
-  const child = spawn(binary, args, { cwd: directory, env: { ...process.env, FILENS_PREVIEW_DIR: previewAssets } });
-  let stderr = '';
-  child.stderr.on('data', chunk => { stderr += chunk; });
-  const closed = new Promise(resolve => child.once('close', resolve));
-  const page = await browser.newPage({ viewport: { width: orbit ? 800 : 520, height: 600 }, reducedMotion: 'reduce' });
+  const outputName = args[args.indexOf('--output') + 1];
+  await rm(path.join(directory, outputName), { force: true });
+  // The real CLI must finish exporting before the browser opens the HTML.
+  const stdout = run(binary, args, directory);
+  const response = JSON.parse(stdout);
+  assert.equal(response.ok, true);
+  assert.equal(response.mode, 'html');
+  assert.equal(response.transport, 'file');
+  assert.equal(response.temporary, false);
+  assert.equal(response.containsSource, true);
+  assert.equal(new URL(response.url).protocol, 'file:');
+  runs.push({ intent: args.join(' '), args, stdout, ms: Math.round(performance.now() - started) });
+  const page = await browser.newPage({ viewport: { width: orbit ? 800 : 520, height: 600 }, reducedMotion: 'reduce', offline: true });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   try {
-    const stdout = await new Promise((resolve, reject) => {
-      const lines = createInterface({ input: child.stdout });
-      const timer = setTimeout(() => { child.kill(); reject(new Error(`Preview startup timed out: ${stderr}`)); }, 10000);
-      child.once('error', error => { clearTimeout(timer); reject(error); });
-      child.once('exit', code => { clearTimeout(timer); reject(new Error(`Preview exited ${code}: ${stderr}`)); });
-      lines.once('line', line => { clearTimeout(timer); lines.close(); resolve(line); });
-    });
-    const response = JSON.parse(stdout);
-    assert.equal(response.ok, true);
-    runs.push({ intent: args.join(' '), args, stdout, ms: Math.round(performance.now() - started) });
-    const origin = new URL(response.url).origin;
     await page.route('**/*', route => {
       const url = route.request().url();
-      if (!url.startsWith(`${origin}/`) && !url.startsWith('blob:') && !url.startsWith('data:')) {
+      if (url !== response.url && !url.startsWith('blob:') && !url.startsWith('data:')) {
         errors.push(`External preview request: ${url}`);
         return route.abort();
       }
@@ -72,6 +68,7 @@ async function capturePreview(args, directory, stem, runs, { orbit = false, expe
     await page.goto(response.url);
     await page.waitForFunction(() => ['ready', 'error'].includes(document.body.dataset.state), null, { timeout: 30000 });
     assert.equal(await page.evaluate(() => document.body.dataset.state), 'ready', await page.locator('body').innerText());
+    assert.equal(await page.evaluate(() => navigator.onLine), false);
     if (expectedCells) assert.deepEqual(await page.locator('.xlsxv-cell').allTextContents(), expectedCells);
     const target = page.locator(orbit ? '.model3dv-preview' : '.xlsxv-preview');
     await target.waitFor();
@@ -103,11 +100,11 @@ async function capturePreview(args, directory, stem, runs, { orbit = false, expe
       assert.ok(new Set(captures.map(capture => capture.sha256)).size > 10, 'The model must actually rotate.');
     }
     assert.deepEqual(errors, []);
-    return { command: `filens ${args.join(' ')}`, name: response.source.name, origin, output: JSON.stringify({ ...response, url: response.url.replace(/\/[0-9a-f]{32}\//, '/…/') }, null, 2), frames, captures };
+    const url = response.url.replace(new URL('.', response.url).href, 'file:///…/');
+    const excerpt = { ok: response.ok, mode: response.mode, transport: response.transport, url, path: `…/${outputName}`, containsSource: response.containsSource };
+    return { command: `filens ${args.join(' ')}`, name: response.source.name, url, output: JSON.stringify(excerpt, null, 2), cliExited: true, offline: true, frames, captures };
   } finally {
     await page.close();
-    child.kill('SIGTERM');
-    await closed;
   }
 }
 try {
@@ -185,8 +182,8 @@ try {
     assert.equal((await readFile(path.join(directory, 'budget.xlsx'))).length, converted.output.bytes);
     const workbookRead = JSON.parse(cli(['read', 'budget.xlsx', '--json']));
     assert.match(workbookRead.content.text, /12345\.67/);
-    const workbookPreview = await capturePreview(['preview', 'budget.xlsx', '--no-open', '--json'], directory, 'workbook-preview', runs, { expectedCells: budgetRows.flatMap(row => row.split(',')) });
-    const modelPreview = await capturePreview(['preview', 'drawing.step', '--no-open', '--json'], directory, 'model-preview', runs, { orbit: true });
+    const workbookPreview = await capturePreview(['preview', 'budget.xlsx', '--output', 'budget.html', '--no-open', '--json'], directory, 'workbook-preview', runs, { expectedCells: budgetRows.flatMap(row => row.split(',')) });
+    const modelPreview = await capturePreview(['preview', 'drawing.step', '--output', 'drawing.html', '--no-open', '--json'], directory, 'model-preview', runs, { orbit: true });
     const document = JSON.parse(cli(intents[5]));
     const yaml = cli(intents[6]);
     const duplicates = JSON.parse(cli(intents[7])).similarity;
@@ -265,7 +262,7 @@ try {
         const gif = path.join(output, `${stem}.gif`);
         run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-framerate', String(fps), '-i', pattern, '-i', palette, '-lavfi', 'paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle', '-gifflags', '+transdiff', '-loop', '0', gif]);
         const bytes = await readFile(gif);
-        await writeFile(path.join(directory, 'receipt.json'), JSON.stringify({ createdAt: new Date().toISOString(), locale, width, height, duration, fps, frames: count, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), requests: runs.map(({ intent, ms }) => ({ intent, ms })), previewCaptures: { workbook: workbookPreview.captures, model: modelPreview.captures }, notes: 'Actual CLI responses and browser previews served by the CLI; excerpts shown, paths and URL tokens shortened. Typing, response timing and orbit capture playback edited. Nested ZIP search evidence verified against member text. CSV converted by WASM and the resulting XLSX rendered by the shared viewer. STEP orbit uses actual renderer captures. No embedding or generated reasoning. Image distances are not confidence percentages.' }, null, 2) + '\n');
+        await writeFile(path.join(directory, 'receipt.json'), JSON.stringify({ createdAt: new Date().toISOString(), locale, width, height, duration, fps, frames: count, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), requests: runs.map(({ intent, ms }) => ({ intent, ms })), previewMode: 'offline-html', previewCLIExited: workbookPreview.cliExited && modelPreview.cliExited, previewOffline: workbookPreview.offline && modelPreview.offline, previewCaptures: { workbook: workbookPreview.captures, model: modelPreview.captures }, notes: 'Actual CLI responses and self-contained HTML previews opened after the CLI exited, with the browser offline; excerpts shown and file paths shortened. Typing, response timing and orbit capture playback edited. Nested ZIP search evidence verified against member text. CSV converted by WASM and the resulting XLSX rendered by the shared viewer. STEP orbit uses actual renderer captures. No embedding or generated reasoning. Image distances are not confidence percentages.' }, null, 2) + '\n');
         console.log(`Created ${stem}.gif (${(bytes.length / 1048576).toFixed(2)} MiB, ${duration}s).`);
       } finally { await rm(frames, { recursive: true, force: true }); }
     }

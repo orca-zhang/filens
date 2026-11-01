@@ -1,3 +1,4 @@
+import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
 
@@ -12,7 +13,7 @@ export default defineConfig({
     cssCodeSplit: false,
     sourcemap: true,
     rollupOptions: {
-      external: ['@filens/core', '@filens/core/zip', '@filens/xlsx']
+      external: packageExternals(import.meta.url)
     }
   },
   test: {

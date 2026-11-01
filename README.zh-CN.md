@@ -6,7 +6,7 @@
   <p><a href="README.md">English</a> · 简体中文 · <a href="LICENSE">MIT</a></p>
 </div>
 
-![真实 CLI 演示：OCR 坐标、关键摘录、嵌套压缩包搜索与读取、重复文件、相似图片、CSV 转 XLSX、表格和 STEP 预览](docs/assets/agent-cli/terminal-demo.zh-CN.gif)
+![真实 CLI 演示：OCR 坐标、关键摘录、嵌套压缩包搜索与读取、重复文件、相似图片、CSV 转 XLSX、离线 HTML 表格和 STEP 预览](docs/assets/agent-cli/terminal-demo.zh-CN.gif)
 
 [![八种真实预览：Office、PDF、iWork、CAD、3D 与全景](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
@@ -15,10 +15,10 @@
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
-| 大概多大 | **Lite 安装后 7.68–8.04 MiB · Full 安装后 31.10–36.74 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 大概多大 | **Lite 安装后 7.68–8.05 MiB · Full 安装后 31.10–36.74 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **1.78–2.15 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览包 0.1.4 的 STEP 默认使用 truck，构建不含 OCCT：独立预览运行时按分包合计约 **2.44 MB Brotli**，单文件版约 **2.84 MB Brotli / 3.79 MB gzip / 12.70 MB 原始体积**，已包含 Vue、样式、Worker 与 WASM。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底，默认包不含完整 FFmpeg。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **1.80–2.17 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.2.0 运行时按分包合计约 **2.52 MB Brotli**，单文件版约 **2.83 MB Brotli / 3.77 MB gzip / 12.68 MB 原始体积**，已包含 Vue、样式、Worker 与 WASM。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
@@ -42,13 +42,26 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**用 CLI 打开预览：**`filens preview report.pdf` 打开共享前端预览器；首次运行自动安装独立的 `filens-preview` 包，也可先运行 `filens setup-preview`。`--no-open --json` 返回本地地址，服务保持运行直到退出。预览包 0.1.4 同时包含两种构建，约 **7.0 MB 下载 / 24.34 MB 安装体积**，与 CLI 分开计量。CLI 0.4.2 首次预览会自动下载此版本；旧版 CLI 保留原来固定的预览版本。见[包体积实测](docs/preview-package-sizes.json)。[预览配置与限制](packages/preview/README.md#cli-preview)。
+**离线浏览器预览（CLI 0.5.0）：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。首次使用会安装 `filens-preview@0.2.0`；可提前运行 `filens setup-preview`，之后离线使用。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+
+```sh
+# 导出可携带的离线预览，不覆盖已有文件
+filens preview report.pdf --output report-preview.html --no-open
+# 返回生成文件的 URL 和路径
+filens preview report.pdf --no-open --json
+# 浏览器兼容模式：回环 HTTP 服务，Ctrl-C 退出
+filens preview report.pdf --mode serve
+```
+
+页面检测浏览器能力，并禁止外部资源请求。HTML 含原文件副本，临时 HTML 在退出后保留。Safari / WebKit 的 iWork 预览需使用 HTTP 兼容模式。[预览配置与限制](packages/preview/README.md#cli-preview) · [浏览器验证](docs/preview-html-validation.json)。
+
+**[ZimaOS ModStore](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens)：**运行 `sudo zpkg install filens` 安装；已有版本先执行 `sudo zpkg update`，再执行 `sudo zpkg upgrade filens`。ModStore 0.5.1 为 Linux x64 / arm64 内置离线 HTML 预览引擎，固定关闭自动打开浏览器。将生成的 HTML 下载或复制到电脑后查看，`--json` 返回 ZimaOS 上的文件路径；无需 Node.js 或 npm。[安装、导出预览和 OCR 配置](packaging/zimaos/README.md)。
 
 <details>
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.4.2 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.17 MiB · Lite 8.05 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.0 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -107,42 +120,45 @@ npm 导入需配合打包器；也可直接部署包内运行时目录，通过 
 <!-- bundle-sizes:zh:start -->
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| 转换核心 WASM | 1123.1 KiB | 497.8 KiB | **395.8 KiB** |
+| 转换核心 WASM（Office 加密检测） | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
 | 图像 / RAW 核心 WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| 媒体 / 全景预览 | 229.0 KiB | 67.1 KiB | **57.2 KiB** |
-| STEP truck WASM（默认） | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
+| 媒体 / 全景预览 | 229.3 KiB | 67.2 KiB | **57.4 KiB** |
+| STEP truck WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
-文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载；STEP 默认使用 truck，构建不包含 OCCT。媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
+文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载。媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
 
 <details>
 <summary>展开查看全部分包及首屏成本</summary>
 
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
+| Office 解密 WASM（可选） | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
 | HEIC / HEIF 解码 WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| 演示站入口 | 212.9 KiB | 61.0 KiB | **51.3 KiB** |
+| 演示站入口 | 213.2 KiB | 61.1 KiB | **51.3 KiB** |
 | Agent CLI 演示界面 | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| 共享第三方依赖 | 1329.1 KiB | 373.3 KiB | **308.2 KiB** |
-| PPTX / 核心运行时 | 336.6 KiB | 93.0 KiB | **78.9 KiB** |
-| Vue 预览容器 | 78.7 KiB | 18.6 KiB | **16.5 KiB** |
+| 共享第三方依赖 | 1323.0 KiB | 370.4 KiB | **307.7 KiB** |
+| PPTX / 核心运行时 | 337.2 KiB | 93.1 KiB | **78.9 KiB** |
+| Vue 预览容器 | 162.0 KiB | 47.3 KiB | **37.7 KiB** |
 | DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
 | PDF 按需引擎 | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
 | iWork 预览 | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
-| CAD / 思维导图 / 流程图 | 92.1 KiB | 25.7 KiB | **22.1 KiB** |
+| CAD / 思维导图 / 流程图 | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
 | 3D 预览 | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
 | 媒体解码加载器 | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
 | 压缩包预览 | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
 | 文本 / 电子书 | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
-| iWork Worker | 894.1 KiB | 186.7 KiB | **156.2 KiB** |
+| iWork Worker | 882.4 KiB | 182.6 KiB | **152.3 KiB** |
 | PDF Worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | STEP truck 加载器 | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-本次构建的入口、预加载 JS 与 CSS 合计 **495.6 KiB Brotli**（原始 2107.6 KiB / gzip 594.3 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
+本次构建的入口、预加载 JS 与 CSS 合计 **495.3 KiB Brotli**（原始 2102.6 KiB / gzip 591.8 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
 
 </details>
 
 数据来自实际演示站构建。压缩列是产物体积，实际传输取决于托管配置。[完整报告与复现方式](docs/bundle-sizes.md)。
 <!-- bundle-sizes:zh:end -->
+
+[格式包体积审计](docs/format-package-sizes.md) 记录了依赖去重、Worker 资源输出，以及组合使用 npm 格式包时的实测收益。
 
 上表为已记录的演示站构建快照；新增独立构建的[完整实测](docs/preview-build-sizes.json)另外计量，已包含内嵌依赖。单个分包不代表该格式全部下载成本。
 
@@ -201,6 +217,8 @@ sudo zpkg install filens
 ```
 
 安装包包含 Linux x64 / arm64 原生 CLI 和共享 WASM 引擎，无需 Node.js。安装后运行 `filens capacity --json` 检查能力，再用 `filens read report.pdf --json` 读取文件。OCR 自动复用 Photos 已安装的 NCNN v7 运行库与 RapidOCR 模型；缺少组件或版本不兼容时，运行 `filens setup-ocr` 安装 FiLens 私有的兼容组件，不改动 Photos。文档读取和转换也可在没有 OCR 时使用。
+
+ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`，只导出 HTML，不启动浏览器。将 HTML 下载或复制到电脑后打开；HTTP 兼容模式通过 SSH 转发回环端口访问。
 
 如果提示找不到模块，先执行 `sudo zpkg update` 刷新商店索引，再重试安装。构建、发布及更新方法见 [ZimaOS 打包说明](packaging/zimaos/README.md)。
 

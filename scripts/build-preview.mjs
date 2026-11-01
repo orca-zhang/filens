@@ -50,6 +50,9 @@ if (new URL(location.href).searchParams.has('cli')) {
 await rm(path.join(root, 'dist/preview'), { recursive: true, force: true });
 await mkdir(path.join(root, 'dist/preview'), { recursive: true });
 await cp(path.join(directory, 'dist/split'), path.join(root, 'dist/preview'), { recursive: true });
+// Native preview defaults to a self-contained HTML; keep the ESM all-in-one
+// runtime alongside split assets for the optional HTTP compatibility mode.
+await cp(path.join(directory, 'dist/all-in-one/filens.js'), path.join(root, 'dist/preview/filens-all-in-one.js'));
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));
 await cp(path.join(root, 'LICENSE'), path.join(directory, 'LICENSE'));
 await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), unit:'bytes', scope:'Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM; excludes OCCT, HTML, notices, maps and source files. MB in documentation = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);

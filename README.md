@@ -6,7 +6,7 @@
   <p>English · <a href="README.zh-CN.md">简体中文</a> · <a href="LICENSE">MIT</a></p>
 </div>
 
-![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicate files, similar images, CSV-to-XLSX conversion, workbook and STEP previews](docs/assets/agent-cli/terminal-demo.gif)
+![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicate files, similar images, CSV-to-XLSX conversion, offline HTML workbook and STEP previews](docs/assets/agent-cli/terminal-demo.gif)
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
@@ -15,10 +15,10 @@
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
-| Approximate size | **Lite: 7.68–8.04 MiB installed · Full: 31.10–36.74 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Approximate size | **Lite: 7.68–8.05 MiB installed · Full: 31.10–36.74 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **1.78–2.15 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.1.4 uses truck for STEP and excludes OCCT: **2.44 MB Brotli** across split runtime files, or **2.84 MB Brotli / 3.79 MB gzip / 12.70 MB raw** as one JS file, including Vue, styles, workers and WASM. Media uses browser codecs with a small HEIC/HEIF decoder fallback; full FFmpeg is excluded. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **1.80–2.17 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.2.0 runtime: **2.52 MB Brotli** across split runtime files, or **2.83 MB Brotli / 3.77 MB gzip / 12.68 MB raw** as one JS file, including Vue, styles, workers and WASM. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -42,13 +42,26 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**Browser preview from the CLI:** `filens preview report.pdf` opens the shared frontend viewer. The first use installs the separate `filens-preview` package; `filens setup-preview` prepares it in advance. `--no-open --json` prints a local URL and keeps the server running until stopped. Preview 0.1.4 includes both builds (about **7.0 MB download / 24.34 MB installed**), measured separately from CLI sizes. CLI 0.4.2 downloads this version automatically; earlier CLI releases retain their pinned preview version. See [package measurements](docs/preview-package-sizes.json). [Preview setup and limits](packages/preview/README.md#cli-preview).
+**Offline browser preview (CLI 0.5.0):** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The first preview installs `filens-preview@0.2.0`; run `filens setup-preview` in advance for offline use. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+
+```sh
+# Export a portable offline preview; existing files are never overwritten
+filens preview report.pdf --output report-preview.html --no-open
+# Return the generated file URL and path as JSON
+filens preview report.pdf --no-open --json
+# Browser compatibility mode: loopback HTTP server, Ctrl-C to stop
+filens preview report.pdf --mode serve
+```
+
+The HTML checks browser capabilities and blocks external resource requests. It contains a copy of the original file; temporary HTML files remain after exit. Safari/WebKit iWork previews require HTTP compatibility mode. [Preview setup and limits](packages/preview/README.md#cli-preview) · [Browser validation](docs/preview-html-validation.json).
+
+**[ZimaOS ModStore](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens):** install with `sudo zpkg install filens`. To upgrade, run `sudo zpkg update` and `sudo zpkg upgrade filens`. ModStore 0.5.1 includes the offline HTML preview engine for Linux x64/arm64 and always skips browser launching. Download or copy the generated HTML to your computer; `--json` returns its path on ZimaOS. Node.js and npm are not required. [Install, export previews and configure OCR](packaging/zimaos/README.md).
 
 <details>
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.15 MiB · Lite 8.04 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.4.2 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.17 MiB · Lite 8.05 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.0 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -107,42 +120,46 @@ Use a bundler for npm imports, or deploy the package runtime directory and impor
 <!-- bundle-sizes:en:start -->
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM | 1123.1 KiB | 497.8 KiB | **395.8 KiB** |
+| Conversion core WASM (Office detection) | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
 | Image / RAW core WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| Media / panorama preview | 229.0 KiB | 67.1 KiB | **57.2 KiB** |
-| truck STEP WASM (default) | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
+| Media / panorama preview | 229.3 KiB | 67.2 KiB | **57.4 KiB** |
+| truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
-Document, image / RAW, and STEP WASM modules load independently on demand. STEP uses truck; OCCT is excluded from the build. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
+Document, image / RAW, and STEP WASM modules load independently on demand. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
 
 <details>
 <summary>All modules and initial loading cost</summary>
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
+| Office decryption WASM (optional) | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
 | HEIC / HEIF decoder WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| Demo entry | 212.9 KiB | 61.0 KiB | **51.3 KiB** |
+| Demo entry | 213.2 KiB | 61.1 KiB | **51.3 KiB** |
 | Agent CLI demo UI | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| Shared vendor dependencies | 1329.1 KiB | 373.3 KiB | **308.2 KiB** |
-| PPTX / core runtime | 336.6 KiB | 93.0 KiB | **78.9 KiB** |
-| Vue preview host | 78.7 KiB | 18.6 KiB | **16.5 KiB** |
+| Shared vendor dependencies | 1323.0 KiB | 370.4 KiB | **307.7 KiB** |
+| PPTX / core runtime | 337.2 KiB | 93.1 KiB | **78.9 KiB** |
+| Vue preview host | 162.0 KiB | 47.3 KiB | **37.7 KiB** |
 | DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
 | iWork preview | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
-| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.1 KiB** |
+| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
 | 3D preview | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
 | Media decoder loader | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
 | Archive preview | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
 | Text / ebooks | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
-| iWork worker | 894.1 KiB | 186.7 KiB | **156.2 KiB** |
+| iWork worker | 882.4 KiB | 182.6 KiB | **152.3 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Entry, preloaded JS, and CSS total **495.6 KiB Brotli** (2107.6 KiB raw / 594.3 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Entry, preloaded JS, and CSS total **495.3 KiB Brotli** (2102.6 KiB raw / 591.8 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
 
 </details>
 
 Measured from the demo build. Compression columns describe artifacts; actual transfer depends on hosting. [Full report and reproduction](docs/bundle-sizes.md).
 <!-- bundle-sizes:en:end -->
+
+The [format package audit](docs/format-package-sizes.md) records dependency sharing,
+worker packaging and measured savings for applications combining the npm libraries.
 
 The table above is the recorded demo-build snapshot. The new standalone builds have their own [complete measurements](docs/preview-build-sizes.json), including embedded dependencies. Individual chunks are not independent per-format download totals.
 
@@ -201,6 +218,8 @@ sudo zpkg install filens
 ```
 
 This installs the native CLI and shared WASM engines for Linux x64/arm64, with no Node.js dependency. Run `filens capacity --json`, then `filens read report.pdf --json`. OCR reuses Photos' installed NCNN v7 runtime and RapidOCR models. If they are absent or incompatible, `filens setup-ocr` installs a compatible private copy; document reading and conversion work without OCR.
+
+On ZimaOS, `filens preview report.pdf --output report-preview.html --json` exports an HTML without launching a browser. Download or copy it to your computer to open it. HTTP compatibility mode requires an SSH tunnel to the loopback port.
 
 If the module is not found, run `sudo zpkg update` to refresh the store index, then retry. See the [ZimaOS packaging guide](packaging/zimaos/README.md) for building, publishing and updating the package.
 

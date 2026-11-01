@@ -4,6 +4,15 @@ import path from 'node:path';
 const fixtures = path.resolve('packages/converter-client/test/fixtures/password');
 const officePassword = ' filens 密码🔐 ';
 
+test('previews an unencrypted legacy Office document without downloading the decryptor', async ({ page }) => {
+  const officeRequests: string[] = [];
+  page.on('request', request => { if (request.url().includes('converter-office.wasm')) officeRequests.push(request.url()); });
+  await page.goto('./?view=preview&lang=zh_CN');
+  await page.locator('input[type=file]').setInputFiles(path.resolve('examples/go-wazero-converter/fixtures/doc/sample.doc'));
+  await expect(page.locator('section.docx').first()).toBeVisible();
+  expect(officeRequests).toHaveLength(0);
+});
+
 for (const [fixture, selector, text, password] of [
   ['agile.docx', 'section.docx', 'Fixture DOCX document', officePassword],
   ['agile.xlsx', '.xlsxv-preview', 'Fixture XLSX workbook', officePassword],
@@ -13,12 +22,15 @@ for (const [fixture, selector, text, password] of [
 ]) {
   test(`opens encrypted ${fixture} after correcting a wrong password`, async ({ page }) => {
     const errors: string[] = [];
+    const officeRequests: string[] = [];
+    page.on('request', request => { if (request.url().includes('converter-office.wasm')) officeRequests.push(request.url()); });
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto('./?view=preview');
+    await page.goto('./?view=preview&lang=zh_CN');
     await page.locator('input[type=file]').setInputFiles(path.join(fixtures, fixture));
     const field = page.getByLabel('文档密码', { exact: true });
     await expect(field).toBeVisible();
     await expect(field).toBeFocused();
+    expect(officeRequests).toHaveLength(0);
     await field.fill('wrong');
     await field.press('Enter');
     await expect(page.getByRole('alert')).toContainText('密码不正确，请重试。');
@@ -30,11 +42,12 @@ for (const [fixture, selector, text, password] of [
     if (text) await expect(page.locator(selector).first()).toContainText(text);
     await expect(page.locator('.wb-note.is-error')).toHaveCount(0);
     expect(errors).toEqual([]);
+    expect(officeRequests).toHaveLength(fixture.endsWith('.pdf') ? 0 : 1);
   });
 }
 
 test('cancels password entry, reopens it and clears it when switching documents', async ({ page }) => {
-  await page.goto('./?view=preview');
+  await page.goto('./?view=preview&lang=zh_CN');
   await page.locator('input[type=file]').setInputFiles(path.join(fixtures, 'agile.docx'));
   const field = page.getByLabel('文档密码', { exact: true });
   await expect(field).toBeVisible();

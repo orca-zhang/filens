@@ -2,20 +2,27 @@ import { readFile } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { createGltfSidecarFixture } from '../../../packages/model3d/test/fixtures/gltf.mjs';
+import { bundledPackage, cleanupPackageFixtures, archivedPackageAsset } from './package-fixtures';
+
+test.afterAll(cleanupPackageFixtures);
 
 async function prepare(page: Page) {
+  const modelDirectory = await bundledPackage();
   await page.route('**/model3d-resources-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      'filens-step': new URL('resource-step/index.js', base).href, '@filens/core': new URL('resource-core/index.js', base).href, three: new URL('resource-three/three.module.js', base).href
+      'filens-step': new URL('resource-step/index.js', base).href, '@filens/core': new URL('resource-model/core.js', base).href, three: new URL('resource-three/three.module.js', base).href
     } })}</script>` });
   });
   for (const [prefix, directory] of [
-    ['resource-model', 'packages/model3d/dist'], ['resource-baseline', 'tmp/continued-review/model3d-resources-baseline/dist'],
+    ['resource-model', modelDirectory], ['resource-baseline', 'tmp/continued-review/model3d-resources-baseline/dist'],
     ['resource-step', 'packages/step/dist'], ['resource-core', 'packages/core/dist'], ['resource-three', 'node_modules/three/build']
-  ]) await page.route(`**/${prefix}/*`, route => {
+  ]) await page.route(`**/${prefix}/*`, async route => {
     const name = basename(new URL(route.request().url()).pathname);
-    return route.fulfill({ contentType: name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript', path: resolve(directory, name) });
+    const contentType = name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
+    return prefix === 'resource-baseline'
+      ? route.fulfill({ contentType, body: await archivedPackageAsset('model3d-resources', name) })
+      : route.fulfill({ contentType, path: resolve(directory, name) });
   });
   await page.goto('./model3d-resources-check');
   await page.evaluate(async () => {

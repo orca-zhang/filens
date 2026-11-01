@@ -50,8 +50,8 @@ waiting is reported separately. See the
 and [reproduction instructions](../../benchmarks/frontend/README.md).
 
 Current optimized size (Rust release optimization 3, LTO, `wasm-opt -O3`;
-gzip level 6 and Brotli quality 11):
+gzip level 9 and Brotli quality 11):
 
 | Artifact | Raw | Gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| `converter-image.wasm` | 1,126,174 | 307,362 | 221,235 |
+| `converter-image.wasm` | 1,126,286 | 305,601 | 221,453 |

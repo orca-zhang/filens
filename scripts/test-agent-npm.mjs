@@ -77,6 +77,7 @@ try {
     const {spawn}=await import('node:child_process');
     const {createInterface}=await import('node:readline');
     const child=spawn(process.execPath,[executable,'preview',text,'--no-open','--json'],{cwd:work,env});
+    const closed=new Promise(resolve=>child.once('close',resolve));
     let stderr='';child.stderr.on('data',bytes=>{stderr+=bytes;});
     const ready=await new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>{child.kill('SIGTERM');reject(new Error('Installed preview startup timeout'));},120000);
@@ -85,11 +86,22 @@ try {
     });
     try{
       assert.equal(ready.operation,'preview');
-      const response=await fetch(ready.url);assert.equal(response.status,200);
-      assert.match(await response.text(),/createPreview/);
-      const source=await (await fetch(new URL('./source.json',ready.url))).json();
-      assert.match(await (await fetch(new URL(source.url,ready.url))).text(),/文档证据 42/);
-    }finally{const closed=new Promise(resolve=>child.once('close',resolve));child.kill('SIGTERM');await closed;}
+      if(ready.mode==='html'){
+        const html=await readFile(new URL(ready.url),'utf8');
+        assert.equal(ready.transport,'file');
+        assert.match(html,/https:\/\/github.com\/IceWhaleTech\/filens/);
+        const source=JSON.parse(html.split('<script id="filens-source" type="application/json">')[1].split('</script>')[0]);
+        assert.match(Buffer.from(source.data,'base64').toString('utf8'),/文档证据 42/);
+        assert.equal(await closed,0);
+        await rm(new URL(ready.url));
+      }else{
+        // Public releases before HTML preview use the loopback transport.
+        const response=await fetch(ready.url);assert.equal(response.status,200);
+        assert.match(await response.text(),/createPreview/);
+        const source=await (await fetch(new URL('./source.json',ready.url))).json();
+        assert.match(await (await fetch(new URL(source.url,ready.url))).text(),/文档证据 42/);
+      }
+    }finally{child.kill('SIGTERM');await closed;}
     run(executable,['setup-preview']);
     const previewCapacity=JSON.parse(run(executable,['capacity','--json']).stdout).capacity.preview;
     assert.equal(previewCapacity.available,true);

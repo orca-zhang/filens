@@ -1,18 +1,25 @@
+import { bundledPackage, cleanupPackageFixtures, archivedPackageAsset } from './package-fixtures';
 import { basename, resolve } from 'node:path';
 import crypto from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import { createKmzDae, createKmzFixture } from '../../../packages/model3d/test/fixtures/kmz.mjs';
 
+test.afterAll(cleanupPackageFixtures);
+
 async function prepare(page: Page) {
+  const modelDirectory = await bundledPackage();
   await page.route('**/kmz-resources-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('kmz-core/index.js', base).href, three: new URL('kmz-three/three.module.js', base).href
+      '@filens/core': new URL('kmz-model/core.js', base).href, three: new URL('kmz-three/three.module.js', base).href
     } })}</script>` });
   });
-  for (const [prefix, directory] of [['kmz-model', 'packages/model3d/dist'], ['kmz-baseline', 'tmp/continued-review/kmz-resources-baseline/dist'],
+  for (const [prefix, directory] of [['kmz-model', modelDirectory], ['kmz-baseline', 'tmp/continued-review/kmz-resources-baseline/dist'],
     ['kmz-core', 'packages/core/dist'], ['kmz-three', 'node_modules/three/build']]) {
-    await page.route(`**/${prefix}/*`, route => route.fulfill({ contentType: 'text/javascript', path: resolve(directory, basename(new URL(route.request().url()).pathname)) }));
+    await page.route(`**/${prefix}/*`, async route => {
+      const name = basename(new URL(route.request().url()).pathname), contentType = 'text/javascript';
+      return prefix === 'kmz-baseline' ? route.fulfill({ contentType, body: await archivedPackageAsset('kmz-resources', name) }) : route.fulfill({ contentType, path: resolve(directory, name) });
+    });
   }
   await page.goto('./kmz-resources-check');
   await page.evaluate(async () => {

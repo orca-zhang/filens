@@ -661,7 +661,7 @@ fn inspect_iso_bmff(
         "imu": imu,
         "fileGroup": insta_info.as_ref().and_then(|value| value.get("fileGroup")).cloned().unwrap_or(Value::Null),
         "lenses": lenses,
-        "warnings": if calibrated { Vec::<String>::new() } else if partial_calibration { vec!["This INSV contains one calibrated lens; open its matching companion file to stitch the panorama.".into()] } else if stitched_proxy { vec!["INSV contains a single 2:1 pre-stitched proxy track; lens seams are already embedded and this is not an accurate raw stitch.".into()] } else if source == "insv" { vec!["INSV calibration was not found; X5 requires its matching .insv.pb sidecar plus dimension and window_crop_info metadata.".into()] } else { vec![format!("{} calibration was not found; accurate stitching is unavailable.", source.to_uppercase())] }
+        "warnings": if calibrated { Vec::<String>::new() } else if partial_calibration { vec!["This INSV contains one calibrated lens; open its matching companion file to stitch the panorama.".into()] } else if stitched_proxy { vec!["INSV contains a single 2:1 pre-stitched proxy track; lens seams are already embedded and this is not an accurate raw stitch.".into()] } else if source == "insv" { vec!["INSV calibration was not found; X5 requires its matching .insv.pb sidecar plus dimension and window_crop_info metadata.".into()] } else { vec![format!("{} calibration was not found; accurate stitching is unavailable.", source.to_ascii_uppercase())] }
     })))
 }
 

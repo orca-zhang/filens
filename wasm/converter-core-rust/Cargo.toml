@@ -3,10 +3,17 @@ name = "converter-core-rust"
 version = "0.1.0"
 license = "MIT"
 edition = "2024"
+autobins = false
 
 [[bin]]
 name = "converter-core"
-path = "src/main.rs"
+path = "src/core_main.rs"
+
+[[bin]]
+name = "converter-office"
+path = "src/office_main.rs"
+required-features = ["office-crypto"]
+test = false
 
 [[bin]]
 name = "converter-text"
@@ -14,15 +21,19 @@ path = "src/text_main.rs"
 required-features = ["text-extraction"]
 
 [features]
-text-extraction = ["dep:calamine", "dep:iwork", "dep:djvu-rs", "dep:sha2", "dep:acadrust", "dep:cadkit-core", "dep:raster-codec", "dep:matfile", "dep:fitsrs", "dep:lopdf", "dep:ttf-parser", "dep:unicode-normalization", "dep:flate2", "dep:tar"]
+default = ["office-crypto"]
+office-crypto = ["msoffice-crypto/legacy-binary"]
+text-extraction = ["dep:calamine", "dep:iwork", "dep:djvu-rs", "dep:sha2", "dep:acadrust", "dep:cadkit-core", "dep:raster-codec", "dep:matfile", "dep:fitsrs", "dep:lopdf", "dep:ttf-parser", "dep:unicode-normalization", "dep:tar"]
 
 [dependencies]
-msoffice-crypto = { version = "=0.1.0-rc.13", features = ["legacy-binary"] }
+msoffice-crypto = { version = "=0.1.0-rc.13", default-features = false }
 png = "0.18.0"
-quick-xml = "0.38.3"
+quick-xml = "0.41.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.142"
-zip = { version = "4.3.0", default-features = false, features = ["deflate"] }
+# Share flate2's Rust/miniz backend with PNG and CgBI. zip's broad "deflate"
+# feature also links zopfli and zlib-rs, which preview conversions do not need.
+zip = { version = "4.3.0", default-features = false, features = ["deflate-flate2"] }
 calamine = { version = "=0.37.0", optional = true }
 iwork = { version = "=0.4.0", optional = true }
 djvu-rs = { version = "=0.43.0", optional = true }
@@ -35,7 +46,7 @@ fitsrs = { version = "=0.4.1", optional = true }
 lopdf = { version = "=0.46.0", default-features = false, optional = true }
 ttf-parser = { version = "=0.25.1", default-features = false, features = ["std"], optional = true }
 unicode-normalization = { version = "=0.1.26", optional = true }
-flate2 = { version = "=1.1.9", optional = true }
+flate2 = "=1.1.9"
 tar = { version = "=0.4.44", default-features = false, optional = true }
 
 [profile.release]

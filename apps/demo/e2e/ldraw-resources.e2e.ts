@@ -1,17 +1,24 @@
+import { bundledPackage, cleanupPackageFixtures, archivedPackageAsset } from './package-fixtures';
 import { basename, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { createLDrawPartsFixture, createLDrawSmoothingFixture, ldrawReference } from '../../../packages/model3d/test/fixtures/ldraw.mjs';
 
+test.afterAll(cleanupPackageFixtures);
+
 async function prepare(page: Page) {
+  const modelDirectory = await bundledPackage();
   await page.route('**/ldraw-resources-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('ldraw-core/index.js', base).href, three: new URL('ldraw-three/three.module.js', base).href
+      '@filens/core': new URL('ldraw-model/core.js', base).href, three: new URL('ldraw-three/three.module.js', base).href
     } })}</script>` });
   });
-  for (const [prefix, directory] of [['ldraw-model', 'packages/model3d/dist'], ['ldraw-baseline', 'tmp/continued-review/ldraw-resources-baseline/dist'],
+  for (const [prefix, directory] of [['ldraw-model', modelDirectory], ['ldraw-baseline', 'tmp/continued-review/ldraw-resources-baseline/dist'],
     ['ldraw-core', 'packages/core/dist'], ['ldraw-three', 'node_modules/three/build']]) {
-    await page.route(`**/${prefix}/*`, route => route.fulfill({ contentType: 'text/javascript', path: resolve(directory, basename(new URL(route.request().url()).pathname)) }));
+    await page.route(`**/${prefix}/*`, async route => {
+      const name = basename(new URL(route.request().url()).pathname), contentType = 'text/javascript';
+      return prefix === 'ldraw-baseline' ? route.fulfill({ contentType, body: await archivedPackageAsset('ldraw-resources', name) }) : route.fulfill({ contentType, path: resolve(directory, name) });
+    });
   }
   await page.goto('./ldraw-resources-check');
   await page.evaluate(async () => {

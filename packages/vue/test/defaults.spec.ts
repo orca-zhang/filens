@@ -4,6 +4,17 @@ import { createVueDefaultPreviewRoutes } from '../src/defaults';
 import conversionManifest from '../../../wasm/converter-core/manifest/conversions.json';
 
 describe('createVueDefaultPreviewRoutes', () => {
+  it('previews application packages and PE resources as PNG icons', () => {
+    const routes = createVueDefaultPreviewRoutes();
+    for (const extension of ['apk', 'ipa', 'exe', 'dll', 'mui', 'mun']) {
+      expect(resolveFormatRoute({ name: `app.${extension}` }, { routes })).toMatchObject({
+        family: 'image', driverId: 'image', targetFormat: 'png', conversion: { required: true }
+      });
+    }
+    expect(resolveFormatRoute({ contentType: 'application/vnd.android.package-archive' }, { routes })).toMatchObject({ sourceFormat: 'apk', targetFormat: 'png' });
+    expect(resolveFormatRoute({ name: 'archive.zip' }, { routes })).toMatchObject({ family: 'archive' });
+  });
+
   it('preserves DNG calibration before conversion when RAW panorama preview is enabled', () => {
     expect(resolveFormatRoute({ name: 'camera.dng' }, { routes: createVueDefaultPreviewRoutes({ rawPreview: true }) })).toMatchObject({
       driverId: 'raw-image', family: 'image', sourceFormat: 'dng', targetFormat: 'jpg'
@@ -19,10 +30,10 @@ describe('createVueDefaultPreviewRoutes', () => {
     const routes = createVueDefaultPreviewRoutes();
     const conversionFormats = listPreviewFormats({ routes, includeDirect: false, includeConversion: true });
 
-    expect(conversionFormats.map((format) => `${format.extension}->${format.targetFormat}`)).toEqual(
+    expect(conversionFormats.map((format) => `${format.extension}->${format.targetFormat}`).sort()).toEqual(
       conversionManifest
         .filter((pair) => pair.sourceFormat !== 'epub' && pair.sourceFormat !== pair.targetFormat)
-        .map((pair) => `${pair.sourceFormat}->${pair.targetFormat}`)
+        .map((pair) => `${pair.sourceFormat}->${pair.targetFormat}`).sort()
     );
     expect(resolveFormatRoute({ name: 'book.epub' }, { routes })).toMatchObject({ driverId: 'ebook', targetFormat: 'epub' });
 

@@ -12,6 +12,11 @@ version=$(cat "$bundle/cli-version")
 cache_base=${FILENS_CACHE_DIR:-${XDG_CACHE_HOME:-${HOME:-/tmp}/.cache}/filens}
 private_ocr=$cache_base/zimaos-ocr/$version/$platform
 
+if [ -z "${FILENS_PREVIEW_DIR:-}" ] && [ -r "$bundle/preview/filens.js" ]; then
+  FILENS_PREVIEW_DIR=$bundle/preview
+  export FILENS_PREVIEW_DIR
+fi
+
 # Reuse Photos' downloaded runtime and models without changing its files.
 photos_cache=${ZIMAOS_MODEL_CACHE_DIR:-/media/ZimaOS-HD/AppData/photos/models}
 if [ -z "${FILENS_OCR_LIBRARY:-}" ]; then
@@ -47,5 +52,10 @@ fi
 if [ "${1:-}" = setup-ocr ]; then
   shift
   exec "$bundle/setup-ocr" "$platform" "$@"
+fi
+if [ "${1:-}" = preview ]; then
+  shift
+  # ZimaOS is headless. Keep this option before user arguments, including --.
+  exec "$bundle/$platform/filens" preview --no-open "$@"
 fi
 exec "$prefix/lib/filens/$platform/filens" "$@"

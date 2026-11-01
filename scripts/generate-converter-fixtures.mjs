@@ -1,3 +1,4 @@
+import { applicationIconFixtures } from './application-icon-fixtures.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -286,6 +287,7 @@ async function buildFixtureEntries() {
     ...TABULAR_BACKEND_FIXTURES,
     ...RAW_SOURCE_FORMATS.map((sourceFormat) => [`raw/sample.${sourceFormat}`, sourceFormat === 'x3f' ? x3fFixtureBytes() : rawFixtureBytes()]),
     ...ICNS_FIXTURES,
+    ...applicationIconFixtures(buildStoreZip),
     ['image/sample.ppm', utf8Bytes('P3\n# RGB test image\n2 1\n255\n255 0 0 0 255 0\n')],
     ...PPT_FIXTURES.map(([relativePath, title, bullet]) => [relativePath, buildPPTBinaryCompoundFile(title, bullet)])
   ]) {
@@ -324,6 +326,7 @@ async function buildBatchManifest() {
 }
 
 function fixturePathForSource(sourceFormat) {
+  if (['apk', 'ipa', 'ico', 'exe', 'dll', 'mui', 'mun'].includes(sourceFormat)) return `icons/sample.${sourceFormat}`;
   if (DOC_TEXT_SOURCE_FORMAT_SET.has(sourceFormat)) {
     return `doc/sample.${sourceFormat}`;
   }

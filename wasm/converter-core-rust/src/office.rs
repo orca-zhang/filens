@@ -1,8 +1,29 @@
 //! Office decryption belongs to the shared WASM core, including legacy formats.
 use super::*;
-use msoffice_crypto::{Error, Family, classify, decrypt_binary_office, decrypt_ooxml};
+use msoffice_crypto::{Family, classify};
+#[cfg(feature = "office-crypto")]
+use msoffice_crypto::{Error, decrypt_binary_office, decrypt_ooxml};
 
 pub(super) fn convert_encrypted(request: &Request) -> Option<Result<(), ConvertError>> {
+    decrypt(request).map(|result| {
+        let (decrypted, envelope) = result?;
+        if envelope {
+            normalize_package_reader(
+                std::io::Cursor::new(&decrypted),
+                &request.output,
+                &request.target,
+            )
+        } else if is_word_binary_source(&request.source) {
+            convert_word_binary_bytes(&decrypted, &request.output)
+        } else if is_biff_source(&request.source) {
+            convert_biff_bytes(&decrypted, &request.output)
+        } else {
+            convert_ppt_binary_bytes(&decrypted, &request.output)
+        }
+    })
+}
+
+fn decrypt(request: &Request) -> Option<Result<(Vec<u8>, bool), ConvertError>> {
     if !(is_openxml_source(&request.source)
         || is_word_binary_source(&request.source)
         || is_biff_source(&request.source)
@@ -88,33 +109,30 @@ pub(super) fn convert_encrypted(request: &Request) -> Option<Result<(), ConvertE
                 ));
             }
         }
-        let decrypted = if envelope {
-            decrypt_ooxml(&input, &request.password)
-        } else {
-            decrypt_binary_office(&input, &request.password)
-        }
-        .map_err(map_error)?;
-        if decrypted.len() as u64 > MAX_PACKAGE_BYTES {
-            return Err(parse_error(
-                "Decrypted document exceeds the 256 MiB limit.".into(),
-            ));
-        }
-        if envelope {
-            normalize_package_reader(
-                std::io::Cursor::new(&decrypted),
-                &request.output,
-                &request.target,
-            )
-        } else if is_word_binary_source(&request.source) {
-            convert_word_binary_bytes(&decrypted, &request.output)
-        } else if is_biff_source(&request.source) {
-            convert_biff_bytes(&decrypted, &request.output)
-        } else {
-            convert_ppt_binary_bytes(&decrypted, &request.output)
+        #[cfg(not(feature = "office-crypto"))]
+        return Err(ConvertError {
+            code: "engine_unavailable",
+            message: "Office decryption requires the optional converter-office WASM module.".into(),
+        });
+        #[cfg(feature = "office-crypto")]
+        {
+            let decrypted = if envelope {
+                decrypt_ooxml(&input, &request.password)
+            } else {
+                decrypt_binary_office(&input, &request.password)
+            }
+            .map_err(map_error)?;
+            if decrypted.len() as u64 > MAX_PACKAGE_BYTES {
+                return Err(parse_error(
+                    "Decrypted document exceeds the 256 MiB limit.".into(),
+                ));
+            }
+            Ok((decrypted, envelope))
         }
     })())
 }
 
+#[cfg(feature = "office-crypto")]
 fn map_error(error: Error) -> ConvertError {
     match error {
         Error::WrongPassword => ConvertError {
@@ -134,4 +152,34 @@ fn map_error(error: Error) -> ConvertError {
             parse_error("The encrypted document is damaged or has invalid encryption data.".into())
         }
     }
+}
+
+/// WASI entry for the optional decrypt-only engine. Parsing and cryptography stay
+/// in Rust; hosts simply pass its output back through the ordinary converter.
+#[cfg(feature = "office-crypto")]
+pub(super) fn decrypt_main() {
+    let started = Instant::now();
+    let mut request = Request::default();
+    let parsed = parse_request(&mut request);
+    let input_size = fs::metadata(&request.input).map_or(0, |metadata| metadata.len());
+    let converted = match parsed {
+        Err(message) => Err(io_error(message)),
+        Ok(()) => decrypt(&request)
+            .unwrap_or_else(|| Err(ConvertError {
+                code: "unsupported_format",
+                message: "The Office decryption module requires an encrypted Office document.".into(),
+            }))
+            .and_then(|(bytes, _)| fs::write(&request.output, bytes)
+                .map_err(|_| io_error("Could not write decrypted document.".into()))),
+    };
+    let result = match converted {
+        Ok(()) => success(&request, input_size, "office-encryption", ""),
+        Err(error) => failure(&request, error.code, error.message, input_size, Some("office-encryption")),
+    };
+    let ok = result.ok;
+    if let Err(error) = write_result(&request.result, result, started.elapsed().as_millis()) {
+        eprintln!("{error}");
+        process::exit(1);
+    }
+    process::exit(if ok { 0 } else { 1 });
 }

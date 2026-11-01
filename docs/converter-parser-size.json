@@ -1,0 +1,34 @@
+{
+  "unit": "bytes",
+  "scope": "Historical optimization stages of the combined WASM. All conversion routes and Office algorithms retained. Dependency sharing and Binaryen convergence precede the parser changes. Ignored intermediate artifacts are local snapshots, not shipped files.",
+  "rows": [
+    {
+      "name": "Dependency sharing and Binaryen convergence",
+      "file": "wasm/converter-core-rust/target/monolithic-size/before-compact.wasm",
+      "raw": 1122703,
+      "gzip": 496055,
+      "brotli": 397043
+    },
+    {
+      "name": "Shared ZIP readers",
+      "file": "wasm/converter-core-rust/target/reader-size/shared-zip.wasm",
+      "raw": 1104698,
+      "gzip": 487990,
+      "brotli": 390766
+    },
+    {
+      "name": "Shared ZIP/XML parsers and normalization",
+      "file": "wasm/converter-core-rust/target/reader-size/shared-parsers.wasm",
+      "raw": 1098906,
+      "gzip": 486074,
+      "brotli": 390245
+    },
+    {
+      "name": "ASCII case conversion for markers and format names",
+      "file": "wasm/converter-core/dist/converter-core-full.wasm",
+      "raw": 1078852,
+      "gzip": 476846,
+      "brotli": 386568
+    }
+  ]
+}

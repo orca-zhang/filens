@@ -1,3 +1,4 @@
+import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
 import { mediaWasmAsset } from '../../scripts/media-wasm-plugin';
@@ -12,7 +13,7 @@ export default defineConfig({
     },
     sourcemap: true,
     rollupOptions: {
-      external: ['@filens/core']
+      external: packageExternals(import.meta.url)
     }
   },
   test: {

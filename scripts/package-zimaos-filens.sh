@@ -6,6 +6,7 @@ packages_dir="${1:-${repo_root}/dist/npm}"
 output_path="${2:-${repo_root}/dist/filens.raw}"
 version="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).cliVersion" "${repo_root}/packaging/zimaos/release.json")"
 package_version="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).version" "${repo_root}/packaging/zimaos/release.json")"
+preview_version="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).previewVersion" "${repo_root}/packaging/zimaos/release.json")"
 stage_dir="$(mktemp -d)"
 trap 'rm -rf "${stage_dir}"' EXIT
 
@@ -42,6 +43,20 @@ for platform in linux-x64 linux-arm64; do
     fs.appendFileSync(out, `${platform} ${sha} ${require("path").basename(archive)}\n`);
   ' "${ocr_archive}" "${platform}" "${stage_dir}/usr/lib/filens/ocr-packages.sha256"
 done
+
+preview_archive="${packages_dir}/filens-preview-${preview_version}.tgz"
+node -e '
+  const {spawnSync} = require("child_process");
+  const result = spawnSync("tar", ["-xzOf", process.argv[1], "package/package.json"], {encoding:"utf8"});
+  if (result.status !== 0) throw new Error("Missing preview package");
+  const pkg = JSON.parse(result.stdout);
+  if (pkg.name !== "filens-preview" || pkg.version !== process.argv[2]) throw new Error("Preview package identity mismatch");
+' "${preview_archive}" "${preview_version}"
+mkdir -p "${stage_dir}/usr/lib/filens/preview"
+tar -xzf "${preview_archive}" -C "${stage_dir}/usr/lib/filens/preview" --strip-components 3 \
+  package/dist/all-in-one/filens.js package/dist/all-in-one/index.html \
+  package/dist/all-in-one/THIRD-PARTY-NOTICES.txt
+printf '%s\n' "${preview_version}" > "${stage_dir}/usr/lib/filens/preview-version"
 
 cp "${repo_root}/packaging/zimaos/filens" "${stage_dir}/usr/bin/filens"
 cp "${repo_root}/packaging/zimaos/setup-ocr" "${stage_dir}/usr/lib/filens/setup-ocr"

@@ -33,6 +33,8 @@ const imageConversionPairs = new Set(
 export interface WasmConverterClientOptions {
   wasm: WasmModuleSource;
   imageWasm?: WasmModuleSource;
+  /** Loaded only when the core requests Office password decryption. */
+  officeWasm?: WasmModuleSource;
   fetch?: typeof fetch;
 }
 
@@ -51,6 +53,7 @@ export interface WasmCoreResult {
   warnings?: string[];
   errorCode?: string;
   errorMessage?: string;
+  requiredModule?: string;
   metrics?: WasmCoreMetrics;
 }
 
@@ -63,6 +66,9 @@ export class WasmConversionError extends Error {
 
 export function createWasmConverterClient(options: WasmConverterClientOptions): ConverterClient {
   const runCore = createWasmCoreRunner(options);
+  const runOffice = options.officeWasm
+    ? createWasmCoreRunner({ wasm: options.officeWasm, fetch: options.fetch })
+    : undefined;
   const imageModule = options.imageWasm
     ? retryableLoader(() => loadWasmModule(options.imageWasm!, options.fetch))
     : undefined;
@@ -95,7 +101,7 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
         if (preview) return preview;
       }
       const runConverter = useImageConverter ? runImage! : runCore;
-      const invocation = await runConverter({
+      const invoke = (runner: typeof runCore, bytes: Uint8Array) => runner({
         args: [
           useImageConverter ? 'converter-image' : 'converter-core',
           '--input',
@@ -112,26 +118,23 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
           resultPath
         ],
         files: {
-          [inputPath]: input,
+          [inputPath]: bytes,
           [optionsPath]: new TextEncoder().encode(requestOptions)
         },
         readFiles: [resultPath, outputPath],
         signal: context.signal
       });
+      let invocation = await invoke(runConverter, input);
+      let coreResult = parseCoreResult(invocation.files[resultPath]);
+      if (!coreResult.ok && coreResult.errorCode === 'engine_unavailable'
+        && coreResult.requiredModule === 'office' && runOffice) {
+        const decrypted = await invoke(runOffice, input);
+        assertSuccessfulInvocation(parseCoreResult(decrypted.files[resultPath]), decrypted.exitCode);
+        invocation = await invoke(runCore, decrypted.files[outputPath]);
+        coreResult = parseCoreResult(invocation.files[resultPath]);
+      }
       throwIfAborted(context.signal);
-
-      const coreResult = parseCoreResult(invocation.files[resultPath]);
-      if (!coreResult.ok) {
-        throw new WasmConversionError(coreResult);
-      }
-      if (invocation.exitCode !== 0) {
-        throw new WasmConversionError({
-          ...coreResult,
-          ok: false,
-          errorCode: coreResult.errorCode || 'conversion_failed',
-          errorMessage: coreResult.errorMessage || `converter WASM exited with code ${invocation.exitCode}`
-        });
-      }
+      assertSuccessfulInvocation(coreResult, invocation.exitCode);
 
       const output = invocation.files[outputPath];
       return {
@@ -142,6 +145,17 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
       } satisfies ConversionResult;
     }
   };
+}
+
+function assertSuccessfulInvocation(result: WasmCoreResult, exitCode: number): void {
+  if (!result.ok) throw new WasmConversionError(result);
+  if (exitCode !== 0) {
+    throw new WasmConversionError({
+      ...result, ok: false,
+      errorCode: result.errorCode || 'conversion_failed',
+      errorMessage: result.errorMessage || `converter WASM exited with code ${exitCode}`
+    });
+  }
 }
 
 interface ImagePreviewExports {

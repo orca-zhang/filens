@@ -228,6 +228,20 @@ afterAll(() => {
 });
 
 describe('PptxPreview', () => {
+  it('switches toolbar language without reloading the presentation', async () => {
+    const bytes = new Uint8Array(await readFile(fixturePath));
+    const wrapper = mount(PptxPreview, { props: { src: bytes, locale: 'zh_CN' } });
+    await waitFor(() => expect(wrapper.emitted('rendered')).toBeTruthy());
+    expect(wrapper.find('.pptxv-toolbar').text()).toContain('适合窗口');
+    expect(wrapper.find('[aria-label="放大"]').exists()).toBe(true);
+    const renderedCount = wrapper.emitted('rendered')?.length;
+    await wrapper.setProps({ locale: 'de_DE' });
+    expect(wrapper.find('.pptxv-toolbar').text()).toContain('Einpassen');
+    expect(wrapper.attributes('lang')).toBe('de-DE');
+    expect(wrapper.emitted('rendered')?.length).toBe(renderedCount);
+    wrapper.unmount();
+  });
+
   it('renders and emits events for a local fixture source', async () => {
     const bytes = await readFile(fixturePath);
     const wrapper = mount(PptxPreview, {

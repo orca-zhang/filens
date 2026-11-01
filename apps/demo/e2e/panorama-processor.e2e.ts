@@ -1,15 +1,20 @@
+import { bundledPackage, cleanupPackageFixtures } from './package-fixtures';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { dngFixture } from '../../../packages/panorama/test/fixtures/dng';
 
 const x5 = Buffer.from(dngFixture('x5')), oneRs = [...dngFixture('one-rs')];
+test.afterAll(cleanupPackageFixtures);
+
 async function prepare(page: Page) {
+  const directory = await bundledPackage('panorama');
   await page.route('**/processor-check', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Panorama processor checks</title>' }));
   await page.route('**/processor-library.js', async route => route.fulfill({ contentType: 'text/javascript',
-    body: (await readFile('packages/panorama/dist/index.js', 'utf8')).replace('from "@filens/core"', 'from "./processor-core/index.js"') }));
+    body: (await readFile(resolve(directory, 'index.js'), 'utf8')).replace('from "@filens/core"', 'from "./processor-core/index.js"') }));
+  await page.route('**/core*.js', route => route.fulfill({ contentType: 'text/javascript', path: resolve(directory, new URL(route.request().url()).pathname.split('/').at(-1)!) }));
   await page.route('**/processor-core/*', route => route.fulfill({ contentType: 'text/javascript',
-    path: resolve('packages/core/dist', new URL(route.request().url()).pathname.split('/').at(-1)!) }));
+    path: resolve(directory, new URL(route.request().url()).pathname.split('/').at(-1)!) }));
   await page.route('**/processor-source.dng', route => {
     const range = route.request().headers().range!.match(/^bytes=(\d+)-(\d+)$/)!;
     const start = +range[1], end = +range[2];

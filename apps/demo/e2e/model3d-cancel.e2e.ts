@@ -3,6 +3,9 @@ import { createHash } from 'node:crypto';
 import { basename, resolve } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
+import { bundledPackage, cleanupPackageFixtures } from './package-fixtures';
+
+test.afterAll(cleanupPackageFixtures);
 import { createBinaryStlFixture, createGlbFixture } from '../../../packages/model3d/test/fixtures/mesh.mjs';
 import { createObjTexture } from '../../../packages/model3d/test/fixtures/obj.mjs';
 import { createCancellation3mfFixture, createTexturedGlbFixture } from '../../../packages/model3d/test/fixtures/cancellation.mjs';
@@ -23,13 +26,14 @@ async function baselineRuntime(name: string): Promise<Buffer> {
 }
 
 async function prepare(page: Page) {
+  const modelDirectory = await bundledPackage();
   await page.route('**/model3d-cancel-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      'filens-step': new URL('cancel-step/index.js', base).href, '@filens/core': new URL('cancel-core/index.js', base).href, three: new URL('cancel-three/three.module.js', base).href
+      'filens-step': new URL('cancel-step/index.js', base).href, '@filens/core': new URL('cancel-model/core.js', base).href, three: new URL('cancel-three/three.module.js', base).href
     } })}</script>` });
   });
-  for (const [prefix, directory] of [['cancel-model', 'packages/model3d/dist'], ['cancel-baseline', 'tmp/continued-review/model3d-cancel-baseline/dist'],
+  for (const [prefix, directory] of [['cancel-model', modelDirectory], ['cancel-baseline', 'tmp/continued-review/model3d-cancel-baseline/dist'],
     ['cancel-step', 'packages/step/dist'], ['cancel-core', 'packages/core/dist'], ['cancel-three', 'node_modules/three/build']]) {
     await page.route(`**/${prefix}/*`, async route => {
       const name = basename(new URL(route.request().url()).pathname);

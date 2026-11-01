@@ -1792,6 +1792,48 @@
       "targetFormat": "png"
     },
     {
+      "inputPath": "./fixtures/icons/sample.apk",
+      "outputPath": "./tmp/sample.apk.png",
+      "sourceFormat": "apk",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/icons/sample.ipa",
+      "outputPath": "./tmp/sample.ipa.png",
+      "sourceFormat": "ipa",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/icons/sample.exe",
+      "outputPath": "./tmp/sample.exe.png",
+      "sourceFormat": "exe",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/icons/sample.dll",
+      "outputPath": "./tmp/sample.dll.png",
+      "sourceFormat": "dll",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/icons/sample.mui",
+      "outputPath": "./tmp/sample.mui.png",
+      "sourceFormat": "mui",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/icons/sample.mun",
+      "outputPath": "./tmp/sample.mun.png",
+      "sourceFormat": "mun",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/icons/sample.ico",
+      "outputPath": "./tmp/sample.ico.png",
+      "sourceFormat": "ico",
+      "targetFormat": "png"
+    },
+    {
       "inputPath": "./fixtures/image/sample.ppm",
       "outputPath": "./tmp/sample.ppm.png",
       "sourceFormat": "ppm",

@@ -27,18 +27,19 @@ type Metrics struct {
 }
 
 type Result struct {
-	OK           bool     `json:"ok"`
-	SourceFormat string   `json:"sourceFormat"`
-	TargetFormat string   `json:"targetFormat"`
-	Backend      string   `json:"backend,omitempty"`
-	Fidelity     string   `json:"fidelity,omitempty"`
-	ContentType  string   `json:"contentType,omitempty"`
-	Warnings     []string `json:"warnings"`
-	ErrorCode    string   `json:"errorCode,omitempty"`
-	ErrorMessage string   `json:"errorMessage,omitempty"`
-	Metrics      Metrics  `json:"metrics"`
-	OutputPath   string   `json:"-"`
-	ExitCode     uint32   `json:"-"`
+	OK             bool     `json:"ok"`
+	SourceFormat   string   `json:"sourceFormat"`
+	TargetFormat   string   `json:"targetFormat"`
+	Backend        string   `json:"backend,omitempty"`
+	Fidelity       string   `json:"fidelity,omitempty"`
+	ContentType    string   `json:"contentType,omitempty"`
+	Warnings       []string `json:"warnings"`
+	ErrorCode      string   `json:"errorCode,omitempty"`
+	ErrorMessage   string   `json:"errorMessage,omitempty"`
+	RequiredModule string   `json:"requiredModule,omitempty"`
+	Metrics        Metrics  `json:"metrics"`
+	OutputPath     string   `json:"-"`
+	ExitCode       uint32   `json:"-"`
 }
 
 func Convert(ctx context.Context, wasmPath string, inputPath string, outputPath string, opts Options) (Result, error) {
@@ -67,8 +68,10 @@ type cachedWASIModule struct {
 }
 
 type WASIBackend struct {
-	mu      sync.Mutex
-	modules map[string]*cachedWASIModule
+	// Defaults to converter-office.wasm beside the configured conversion core.
+	OfficeWasmPath string
+	mu             sync.Mutex
+	modules        map[string]*cachedWASIModule
 }
 
 func NewWASIBackend() *WASIBackend {
@@ -159,33 +162,46 @@ func (backend *WASIBackend) convertWithFormats(
 		return Result{}, fmt.Errorf("write options: %w", err)
 	}
 
-	config := wazero.NewModuleConfig().
-		WithArgs(
-			"converter-core",
-			"--input", "/work/"+filepath.Base(workInput),
-			"--output", "/work/"+filepath.Base(workOutput),
-			"--source", sourceFormat,
-			"--target", targetFormat,
-			"--options", "/work/"+filepath.Base(workOptions),
-			"--result", "/work/"+filepath.Base(workResult),
-		).
-		WithFSConfig(wazero.NewFSConfig().WithDirMount(workDir, "/work")).
-		WithStdout(os.Stdout).
-		WithStderr(os.Stderr)
-
-	instantiateErr := backend.instantiate(ctx, wasmPath, config)
-	exitCode, runErr := normalizeRunError(instantiateErr)
-
-	res, readErr := readResult(workResult)
-	if readErr != nil {
-		if runErr != nil {
-			return Result{Backend: "wasi", Fidelity: ConversionFidelityWASI, ExitCode: exitCode}, fmt.Errorf("%w; also failed reading result: %v", runErr, readErr)
-		}
-		return Result{Backend: "wasi", Fidelity: ConversionFidelityWASI, ExitCode: exitCode}, readErr
+	configFor := func(input, output string) wazero.ModuleConfig {
+		return wazero.NewModuleConfig().
+			WithArgs(
+				"converter-core",
+				"--input", "/work/"+filepath.Base(input),
+				"--output", "/work/"+filepath.Base(output),
+				"--source", sourceFormat,
+				"--target", targetFormat,
+				"--options", "/work/"+filepath.Base(workOptions),
+				"--result", "/work/"+filepath.Base(workResult),
+			).
+			WithFSConfig(wazero.NewFSConfig().WithDirMount(workDir, "/work")).
+			WithStdout(os.Stdout).
+			WithStderr(os.Stderr)
 	}
-	res.Backend = "wasi"
-	res = markResultFidelity(res)
-	res.ExitCode = exitCode
+
+	res, runErr := backend.run(ctx, wasmPath, configFor(workInput, workOutput), workResult)
+	if runErr != nil {
+		return res, runErr
+	}
+	// Module selection comes from the WASM result. The shell never inspects the
+	// document or implements format-specific parsing or decryption.
+	if !res.OK && res.ErrorCode == ErrorCodeEngineUnavailable && res.RequiredModule == "office" {
+		officePath := backend.OfficeWasmPath
+		if officePath == "" {
+			officePath = filepath.Join(filepath.Dir(wasmPath), "converter-office.wasm")
+		}
+		if _, err := os.Stat(officePath); err != nil {
+			res.ErrorMessage = "Office decryption requires converter-office.wasm beside the conversion core."
+			return res, nil
+		}
+		decrypted := filepath.Join(workDir, "decrypted."+sourceFormat)
+		res, runErr = backend.run(ctx, officePath, configFor(workInput, decrypted), workResult)
+		if res.OK && runErr == nil {
+			res, runErr = backend.run(ctx, wasmPath, configFor(decrypted, workOutput), workResult)
+		}
+	}
+	if runErr != nil {
+		return res, runErr
+	}
 
 	if res.OK {
 		if err := copyFile(workOutput, outputPath); err != nil {
@@ -196,10 +212,26 @@ func (backend *WASIBackend) convertWithFormats(
 		}
 		res.OutputPath = outputPath
 	}
-	if runErr != nil && res.OK {
-		return res, runErr
-	}
 	return res, nil
+}
+
+func (backend *WASIBackend) run(ctx context.Context, wasmPath string, config wazero.ModuleConfig, resultPath string) (Result, error) {
+	// Never reuse a previous module's result if instantiation or execution fails.
+	if err := os.Remove(resultPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return Result{}, err
+	}
+	exitCode, runErr := normalizeRunError(backend.instantiate(ctx, wasmPath, config))
+	res, readErr := readResult(resultPath)
+	if readErr != nil {
+		if runErr != nil {
+			return Result{Backend: "wasi", Fidelity: ConversionFidelityWASI, ExitCode: exitCode}, fmt.Errorf("%w; also failed reading result: %v", runErr, readErr)
+		}
+		return Result{Backend: "wasi", Fidelity: ConversionFidelityWASI, ExitCode: exitCode}, readErr
+	}
+	res.Backend = "wasi"
+	res = markResultFidelity(res)
+	res.ExitCode = exitCode
+	return res, runErr
 }
 
 func (backend *WASIBackend) instantiate(ctx context.Context, wasmPath string, config wazero.ModuleConfig) error {

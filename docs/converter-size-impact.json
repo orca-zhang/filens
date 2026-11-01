@@ -1,0 +1,56 @@
+{
+  "unit": "bytes",
+  "method": "Split production core excludes the office-crypto feature and ships a separate decrypt-only module. All-in-one uses the combined core with office-crypto and omits the addon. Analysis variants remove icon dispatch/manifest entries, then stub the Office handler. Identical release settings and Binaryen -Oz --converge; probe uses a temporary source tree, so small path-related codegen differences are possible.",
+  "rows": [
+    {
+      "name": "production core (Office detection only)",
+      "raw": 916303,
+      "gzip": 412942,
+      "brotli": 335464
+    },
+    {
+      "name": "optional Office decrypt-only module",
+      "raw": 379079,
+      "gzip": 163967,
+      "brotli": 130417
+    },
+    {
+      "name": "combined core (all-in-one alternative)",
+      "raw": 1078852,
+      "gzip": 476846,
+      "brotli": 386568
+    },
+    {
+      "name": "without application icons",
+      "raw": 1018601,
+      "gzip": 450070,
+      "brotli": 363631
+    },
+    {
+      "name": "without application icons or Office decryption",
+      "raw": 772569,
+      "gzip": 346461,
+      "brotli": 287497
+    }
+  ],
+  "addedByApplicationIcons": {
+    "raw": 60251,
+    "gzip": 26776,
+    "brotli": 22937
+  },
+  "addedByOfficeDecryption": {
+    "raw": 246032,
+    "gzip": 103609,
+    "brotli": 76134
+  },
+  "savedOnOrdinaryPreviews": {
+    "raw": 162549,
+    "gzip": 63904,
+    "brotli": 51104
+  },
+  "overheadWhenOfficeModuleIsLoaded": {
+    "raw": 216530,
+    "gzip": 100063,
+    "brotli": 79313
+  }
+}

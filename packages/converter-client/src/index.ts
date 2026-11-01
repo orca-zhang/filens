@@ -340,6 +340,17 @@ function inferContentType(name: string | undefined, fallbackFormat?: string): st
     case '3fr':
     case 'iiq':
       return 'application/octet-stream';
+    case 'apk':
+      return 'application/vnd.android.package-archive';
+    case 'ipa':
+      return 'application/x-ios-app';
+    case 'exe':
+    case 'dll':
+    case 'mui':
+    case 'mun':
+      return 'application/vnd.microsoft.portable-executable';
+    case 'ico':
+      return 'image/x-icon';
     case 'icns':
       return 'application/x-icns';
     case 'ppm':

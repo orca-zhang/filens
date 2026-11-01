@@ -1,0 +1,284 @@
+{
+  "date": "2026-11-01",
+  "unit": "bytes",
+  "scope": "Controlled before/after audit of category library builds and a complete browser preview consumer using those compiled libraries, with the same supported formats and engines. Baseline captured before dependency, parser-initialization and asset optimizations. Category totals exclude external npm dependencies and cannot be treated as complete download sizes. Consumer includes dependencies, JS, workers, CSS embedded in JS and WASM; each runtime file compressed separately at gzip 9 / Brotli 11. Excludes HTML, source maps, declarations and notices. Staging paths can cause small codegen differences.",
+  "packages": [
+    {
+      "name": "@filens/core",
+      "before": {
+        "raw": 800309,
+        "gzip": 189360,
+        "brotli": 159696
+      },
+      "after": {
+        "raw": 461955,
+        "gzip": 104746,
+        "brotli": 87471
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "pako": 227255,
+        "jszip": 97718,
+        "fast-xml-parser": 83858,
+        "utif": 59377,
+        "fflate": 16866,
+        "strnum": 4306
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/archive",
+      "before": {
+        "raw": 36643,
+        "gzip": 10528,
+        "brotli": 9339
+      },
+      "after": {
+        "raw": 29893,
+        "gzip": 8073,
+        "brotli": 7168
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "fflate": 13612
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/diagram",
+      "before": {
+        "raw": 174465,
+        "gzip": 43939,
+        "brotli": 37989
+      },
+      "after": {
+        "raw": 27461,
+        "gzip": 7804,
+        "brotli": 6875
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "jszip": 97718,
+        "fflate": 14819
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/ebook",
+      "before": {
+        "raw": 161611,
+        "gzip": 40595,
+        "brotli": 35157
+      },
+      "after": {
+        "raw": 21942,
+        "gzip": 7087,
+        "brotli": 6262
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "jszip": 97718
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/mindmap",
+      "before": {
+        "raw": 159964,
+        "gzip": 39285,
+        "brotli": 33943
+      },
+      "after": {
+        "raw": 20223,
+        "gzip": 5723,
+        "brotli": 5040
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "jszip": 97718
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/xlsx",
+      "before": {
+        "raw": 69244,
+        "gzip": 19025,
+        "brotli": 16986
+      },
+      "after": {
+        "raw": 30044,
+        "gzip": 8923,
+        "brotli": 7957
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "fast-xml-parser": 68990,
+        "strnum": 4306
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/docx",
+      "before": {
+        "raw": 255307,
+        "gzip": 59988,
+        "brotli": 51880
+      },
+      "after": {
+        "raw": 12056,
+        "gzip": 3843,
+        "brotli": 3368
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "docx-preview": 149986,
+        "jszip": 97718
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/iwork",
+      "before": {
+        "raw": 1934895,
+        "gzip": 371250,
+        "brotli": 307333
+      },
+      "after": {
+        "raw": 1791631,
+        "gzip": 334668,
+        "brotli": 275830
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "protobufjs": 270765,
+        "@protobufjs/float": 11460,
+        "snappyjs": 9918,
+        "@protobufjs/codegen": 4477,
+        "@protobufjs/base64": 4115,
+        "@protobufjs/fetch": 3959,
+        "@protobufjs/utf8": 3503,
+        "@protobufjs/path": 2144,
+        "@protobufjs/eventemitter": 2073,
+        "@protobufjs/aspromise": 1578,
+        "@protobufjs/pool": 1219,
+        "@protobufjs/inquire": 542
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/model3d",
+      "before": {
+        "raw": 983629,
+        "gzip": 224765,
+        "brotli": 184562
+      },
+      "after": {
+        "raw": 189047,
+        "gzip": 45163,
+        "brotli": 38701
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "three": 866355,
+        "jszip": 97718
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/panorama",
+      "before": {
+        "raw": 1048353,
+        "gzip": 231010,
+        "brotli": 182164
+      },
+      "after": {
+        "raw": 250825,
+        "gzip": 64796,
+        "brotli": 54330
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "three": 1156878
+      },
+      "embeddedDependencyRenderedBytesAfter": {}
+    },
+    {
+      "name": "@filens/pdf",
+      "before": {
+        "raw": 2056287,
+        "gzip": 611493,
+        "brotli": 465537
+      },
+      "after": {
+        "raw": 1092786,
+        "gzip": 302335,
+        "brotli": 242405
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "pdfjs-dist": 2226118
+      },
+      "embeddedDependencyRenderedBytesAfter": {
+        "pdfjs-dist": 75
+      }
+    },
+    {
+      "name": "@filens/converter-client",
+      "before": {
+        "raw": 1647618,
+        "gzip": 541919,
+        "brotli": 404558
+      },
+      "after": {
+        "raw": 1647618,
+        "gzip": 541919,
+        "brotli": 404558
+      },
+      "embeddedDependencyRenderedBytesBefore": {
+        "libheif-js": 66
+      },
+      "embeddedDependencyRenderedBytesAfter": {
+        "libheif-js": 66
+      }
+    }
+  ],
+  "consumer": {
+    "before": {
+      "raw": 14850023,
+      "gzip": 4250834,
+      "brotli": 3000421
+    },
+    "after": {
+      "raw": 12618357,
+      "gzip": 3798183,
+      "brotli": 2907767
+    },
+    "saved": {
+      "raw": 2231666,
+      "gzip": 452651,
+      "brotli": 92654
+    }
+  },
+  "findings": [
+    "Category packages embedded JSZip, fflate, fast-xml-parser, docx-preview and Three.js, leading to duplicate implementations when combined. Declared npm dependencies and their subpaths are now left for the application bundler to share.",
+    "PDF library worker URL was Base64-encoded. Its existing worker is now emitted as its original MJS file.",
+    "iWork used full protobufjs despite JSON schemas. It now uses the light runtime and initializes the schema on demand, allowing consumers using only worker viewers to eliminate the main-thread parser.",
+    "Three.js vendors the same fflate 0.8.2 implementation. Source demo/standalone builds now resolve that code to the shared fflate dependency.",
+    "RAW image duplicate syn versions are build-time procedural macros, not runtime WASM duplication. STEP has mixed runtime itertools versions and build-time derive/syn versions; no changes were made to these or HEIF in this audit."
+  ],
+  "artifacts": "Intermediate builds are under ignored tmp/format-size-audit; production library and standalone builds are regenerated separately.",
+  "sourceStandalone": {
+    "before": {
+      "raw": 11070175,
+      "gzip": 3206724,
+      "brotli": 2526777
+    },
+    "after": {
+      "raw": 11048487,
+      "gzip": 3199014,
+      "brotli": 2522435
+    }
+  },
+  "sourceAllInOne": {
+    "before": {
+      "raw": 12705691,
+      "gzip": 3777416,
+      "brotli": 2833571
+    },
+    "after": {
+      "raw": 12679915,
+      "gzip": 3767869,
+      "brotli": 2828157
+    }
+  }
+}

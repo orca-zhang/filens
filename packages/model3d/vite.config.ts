@@ -1,3 +1,4 @@
+import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
 
@@ -15,11 +16,7 @@ export default defineConfig({
     cssCodeSplit: false,
     sourcemap: true,
     rollupOptions: {
-      external: [
-        '@filens/core',
-        'filens-step',
-        'three'
-      ]
+      external: packageExternals(import.meta.url)
     }
   },
   test: {

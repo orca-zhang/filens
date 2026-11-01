@@ -46,6 +46,7 @@ if (args[0] === 'setup-preview' || previewRequested) {
   const preview = findPreview();
   if (!preview) throw new Error('Preview package installation did not produce the expected package');
   await access(path.join(preview,'dist/split/index.html'));
+  await access(path.join(preview,'dist/all-in-one/filens.js'));
   if (args[0] === 'setup-preview') {
     console.error('Browser previews are ready; use filens preview FILE.');
     process.exit(0);
@@ -98,7 +99,7 @@ if (!core) {
 }
 const env = { ...process.env, FILENS_PROFILE: profile };
 const preview = findPreview();
-if (preview) env.FILENS_PREVIEW_DIR ||= path.join(preview,'dist/split');
+if (preview) env.FILENS_PREVIEW_DIR ||= path.join(preview,'dist');
 const ocr = findOCR();
 if (ocr) {
   env.FILENS_OCR_LIBRARY ||= path.join(ocr, 'native', libraryName);

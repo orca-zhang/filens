@@ -2,7 +2,38 @@
   "date": "2026-11-01",
   "platform": "darwin-arm64",
   "browser": "147.0.7727.15",
-  "scope": "Actual CLI loopback server and real shared engines. External network requests blocked. Render readiness and source text checked; no pixel-fidelity claim.",
+  "scope": "Actual CLI loopback server and real shared engines. External network requests blocked. Render readiness and source text checked; no pixel-fidelity claim. Encrypted DOCX/XLSX/PPTX tested with wrong and correct passwords; split Office module loaded only after password submission and reused on retry.",
+  "localeChecks": [
+    "ca_ES",
+    "cs_CZ",
+    "da_DK",
+    "de_DE",
+    "el_GR",
+    "en_GB",
+    "en_US",
+    "es_ES",
+    "fr_FR",
+    "ga_IE",
+    "hr_HR",
+    "hu_HU",
+    "it_IT",
+    "ja_JP",
+    "ko_KR",
+    "ml_IN",
+    "nb_NO",
+    "nl_NL",
+    "pl_PL",
+    "pt_BR",
+    "pt_PT",
+    "ro_RO",
+    "ru_RU",
+    "sk_SK",
+    "sv_SE",
+    "tr_TR",
+    "zh_CN",
+    "zh_TW"
+  ],
+  "localeChecksScope": "split, all-in-one: switch all 28 toolbar languages without reloading the source, then verify an instance message override.",
   "httpChecks": [
     "GET",
     "HEAD",
@@ -115,6 +146,76 @@
       "runtimeRequests": 14
     },
     {
+      "mode": "split",
+      "file": "sample.apk",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 14
+    },
+    {
+      "mode": "split",
+      "file": "sample.ipa",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 14
+    },
+    {
+      "mode": "split",
+      "file": "sample.exe",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 14
+    },
+    {
+      "mode": "split",
+      "file": "sample.dll",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 14
+    },
+    {
+      "mode": "split",
+      "file": "sample.mui",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 14
+    },
+    {
+      "mode": "split",
+      "file": "sample.mun",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 14
+    },
+    {
+      "mode": "split",
+      "file": "sample.ico",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 13
+    },
+    {
+      "mode": "split",
+      "file": "agile.docx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 15
+    },
+    {
+      "mode": "split",
+      "file": "agile.xlsx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 15
+    },
+    {
+      "mode": "split",
+      "file": "agile.pptx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 15
+    },
+    {
       "mode": "all-in-one",
       "file": "中文 preview.txt",
       "state": "ready",
@@ -210,6 +311,76 @@
       "file": "cube.stp",
       "state": "ready",
       "canvases": 1,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.apk",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.ipa",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.exe",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.dll",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.mui",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.mun",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.ico",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "agile.docx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "agile.xlsx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "agile.pptx",
+      "state": "ready",
+      "canvases": 0,
       "runtimeRequests": 1
     }
   ]

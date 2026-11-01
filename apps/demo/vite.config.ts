@@ -5,6 +5,7 @@ import path from 'node:path';
 import vue from '@vitejs/plugin-vue';
 import { stepWasmAsset } from '../../scripts/step-wasm-plugin';
 import { agentSkillAsset } from './agent-assets';
+import { sharedThreeCompression } from '../../scripts/shared-compression';
 
 const compressibleAssets = /\.(?:css|html|js|json|mjs|wasm)$/;
 
@@ -45,10 +46,13 @@ function precompressAssets() {
 
 const converterCoreWasmSource = path.resolve(__dirname, '../../wasm/converter-core/dist/converter-core.wasm');
 const converterCoreWasmOutput = 'externals/converter-core.wasm';
+const converterOfficeWasmSource = path.resolve(__dirname, '../../wasm/converter-core/dist/converter-office.wasm');
+const converterOfficeWasmOutput = 'externals/converter-office.wasm';
 const converterImageWasmSource = path.resolve(__dirname, '../../wasm/converter-image/dist/converter-image.wasm');
 const converterImageWasmOutput = 'externals/converter-image.wasm';
 const externalConverterAssets = [
   { source: converterCoreWasmSource, output: converterCoreWasmOutput },
+  { source: converterOfficeWasmSource, output: converterOfficeWasmOutput },
   { source: converterImageWasmSource, output: converterImageWasmOutput }
 ];
 
@@ -120,6 +124,7 @@ async function writeBuildInfo(outputDir: string): Promise<void> {
   const runtimeFiles = rawFiles.filter(({ path: filePath }) => !filePath.startsWith('samples/'));
   const wasm = rawFiles.find(({ path: filePath }) => filePath === converterCoreWasmOutput);
   const imageWasm = rawFiles.find(({ path: filePath }) => filePath === converterImageWasmOutput);
+  const officeWasm = rawFiles.find(({ path: filePath }) => filePath === converterOfficeWasmOutput);
   const entryReference = (await readFile(path.join(outputDir, 'index.html'), 'utf8')).match(/src="([^"]+\.js)"/)?.[1]?.match(/assets\/[^/]+\.js$/)?.[0];
   const entry = entryReference ? rawFiles.find(({ path: filePath }) => filePath === entryReference) : undefined;
   const compressedSize = (filePath: string | undefined, suffix: '.gz' | '.br'): number | undefined => {
@@ -144,6 +149,14 @@ async function writeBuildInfo(outputDir: string): Promise<void> {
       bytes: wasm.bytes,
       gzipBytes: compressedSize(wasm.path, '.gz'),
       brotliBytes: compressedSize(wasm.path, '.br')
+    } : undefined,
+    converterOfficeWasm: officeWasm ? {
+      file: officeWasm.path,
+      external: true,
+      loading: 'on-demand',
+      bytes: officeWasm.bytes,
+      gzipBytes: compressedSize(officeWasm.path, '.gz'),
+      brotliBytes: compressedSize(officeWasm.path, '.br')
     } : undefined,
     converterImageWasm: imageWasm ? {
       file: imageWasm.path,
@@ -251,7 +264,7 @@ const externalSampleProxy = {
 
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/modules/filens/',
-  plugins: [vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
+  plugins: [sharedThreeCompression(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
   // Discover lazy worker dependencies at startup so first use does not reload an uploaded file.
   optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js'] },
   server: { proxy: externalSampleProxy },

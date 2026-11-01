@@ -15,6 +15,10 @@ export interface BrowserPreviewOptions {
   password?: string;
   fit?: 'contain' | 'width' | 'height' | 'none';
   toolbar?: boolean;
+  /** ZimaOS codes (zh_CN) and BCP 47 tags (zh-CN); defaults to browser language. */
+  locale?: string;
+  /** English source phrases mapped to host translations. */
+  messages?: Readonly<Record<string, string>>;
   initialScale?: number;
   minScale?: number;
   maxScale?: number;

@@ -1,4 +1,6 @@
-//! Loopback HTTP/file plumbing only. The browser uses the shared frontend engines.
+//! Local HTML/HTTP plumbing only. The browser uses the shared frontend engines.
+mod html;
+
 use anyhow::{Result, bail, ensure};
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -15,8 +17,11 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-const HELP: &str = "filens preview FILE [--port 0] [--no-open] [--json] [--assets DIR]\n\
-Serves one file on 127.0.0.1 and opens its browser-local preview. Ctrl-C stops it.\n\
+const HELP: &str = "filens preview FILE [--mode html|serve] [--output FILE.html] [--no-open] [--json] [--assets DIR]\n\
+Default: embeds the file and frontend runtime in an offline HTML file, opens it, and exits.\n\
+--output saves the HTML at a chosen path without overwriting an existing file.\n\
+--mode serve uses the compatibility server on 127.0.0.1; Ctrl-C stops it.\n\
+--port PORT selects the HTTP port and implies serve mode unless --mode is given.\n\
 Build assets with npm run build:preview, or set FILENS_PREVIEW_DIR.\n\
 External companion files must be bundled into a supported ZIP or selected in the demo.\n";
 
@@ -24,14 +29,18 @@ pub fn capacity(bundle: &Path) -> serde_json::Value {
     let assets = std::env::var_os("FILENS_PREVIEW_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| bundle.join("preview"));
-    json!({"available":assets.join("index.html").is_file() && assets.join("filens.js").is_file(),
-        "command":"filens preview FILE", "transport":"loopback-http", "engine":"frontend",
+    let html = html::runtime(&assets).is_some();
+    json!({"available":html,
+        "command":"filens preview FILE", "transport":"file", "engine":"frontend",
+        "modes":{"html":html,"serve":serve_assets(&assets).is_some()},
         "optionalAssets":true, "setup":"npm run build:preview", "structuredRequests":false})
 }
 
 pub fn run(args: &[String]) -> Result<i32> {
     let mut input = None;
-    let mut port: u16 = 0;
+    let mut port: Option<u16> = None;
+    let mut mode = None;
+    let mut output = None;
     let mut open = true;
     let mut structured = false;
     let mut assets = std::env::var_os("FILENS_PREVIEW_DIR").map(PathBuf::from);
@@ -56,20 +65,36 @@ pub fn run(args: &[String]) -> Result<i32> {
             }
             "--no-open" => open = false,
             "--json" => structured = true,
-            "--port" | "--assets" => {
+            "--port" | "--assets" | "--mode" | "--output" => {
                 let value = args
                     .get(i)
                     .ok_or_else(|| anyhow::anyhow!("{arg} needs a value"))?;
                 i += 1;
-                if arg == "--port" {
-                    port = value.parse()?;
-                } else {
-                    assets = Some(PathBuf::from(value));
+                match arg.as_str() {
+                    "--port" => port = Some(value.parse()?),
+                    "--assets" => assets = Some(PathBuf::from(value)),
+                    "--output" => output = Some(PathBuf::from(value)),
+                    _ => {
+                        ensure!(
+                            matches!(value.as_str(), "html" | "serve"),
+                            "--mode must be html or serve"
+                        );
+                        mode = Some(value.as_str());
+                    }
                 }
             }
             _ => bail!("unknown preview option {arg}"),
         }
     }
+    let mode = mode.unwrap_or(if port.is_some() { "serve" } else { "html" });
+    ensure!(
+        mode == "html" || output.is_none(),
+        "--output requires html mode"
+    );
+    ensure!(
+        mode == "serve" || port.is_none(),
+        "--port requires serve mode"
+    );
     let input =
         std::fs::canonicalize(input.ok_or_else(|| {
             anyhow::anyhow!("preview requires a file; use filens preview --help")
@@ -82,12 +107,14 @@ pub fn run(args: &[String]) -> Result<i32> {
             .unwrap()
             .join("preview")
     });
-    ensure!(
-        assets.join("index.html").is_file() && assets.join("filens.js").is_file(),
-        "preview assets are missing; run npm run build:preview in the source checkout, or use --assets DIR / FILENS_PREVIEW_DIR with a built preview directory"
-    );
+    if mode == "html" {
+        return html::run(&input, &assets, output.as_deref(), open, structured);
+    }
+    let assets = serve_assets(&assets).ok_or_else(|| anyhow::anyhow!(
+        "preview assets are missing; run npm run build:preview, or use --assets DIR / FILENS_PREVIEW_DIR with a built preview directory"
+    ))?;
     let assets = std::fs::canonicalize(assets)?;
-    let listener = TcpListener::bind(("127.0.0.1", port))?;
+    let listener = TcpListener::bind(("127.0.0.1", port.unwrap_or(0)))?;
     listener.set_nonblocking(true)?;
     let address = listener.local_addr()?;
     let seed = tempfile::Builder::new()
@@ -105,14 +132,14 @@ pub fn run(args: &[String]) -> Result<i32> {
     if structured {
         println!(
             "{}",
-            json!({"ok":true,"operation":"preview","url":url,"source":{"name":input.file_name().unwrap().to_string_lossy()},"stop":"Ctrl-C"})
+            json!({"ok":true,"operation":"preview","mode":"serve","transport":"loopback-http","url":url,"source":{"name":input.file_name().unwrap().to_string_lossy()},"stop":"Ctrl-C"})
         );
     } else {
         println!("{url}\nBrowser-local preview. Press Ctrl-C to stop.");
     }
     std::io::stdout().flush()?;
-    if open {
-        open_browser(&url);
+    if open && let Err(error) = open_browser(&url) {
+        eprintln!("Open the URL in a browser: {error}");
     }
     let state = Arc::new(Server {
         input,
@@ -144,7 +171,13 @@ pub fn run(args: &[String]) -> Result<i32> {
     Ok(0)
 }
 
-fn open_browser(url: &str) {
+fn serve_assets(assets: &Path) -> Option<PathBuf> {
+    [assets.join("split"), assets.to_path_buf()]
+        .into_iter()
+        .find(|path| path.join("index.html").is_file() && path.join("filens.js").is_file())
+}
+
+fn open_browser(url: &str) -> Result<()> {
     #[cfg(target_os = "macos")]
     let result = Command::new("open").arg(url).spawn();
     #[cfg(target_os = "windows")]
@@ -153,9 +186,17 @@ fn open_browser(url: &str) {
         .spawn();
     #[cfg(all(unix, not(target_os = "macos")))]
     let result = Command::new("xdg-open").arg(url).spawn();
-    if let Err(error) = result {
-        eprintln!("Open the URL in a browser: {error}");
+    let mut child = result?;
+    // Some Linux browser launchers stay alive. Only wait briefly for immediate
+    // failures; a successful launch cannot certify that the page rendered.
+    for _ in 0..25 {
+        if let Some(status) = child.try_wait()? {
+            ensure!(status.success(), "browser launcher exited with {status}");
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(20));
     }
+    Ok(())
 }
 
 struct Server {

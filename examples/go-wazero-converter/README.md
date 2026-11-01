@@ -9,6 +9,16 @@ converter-core --input /work/in.doc --output /work/out.docx --source doc --targe
 
 The Go code is intentionally thin. It handles CLI/HTTP plumbing, temporary files, request validation, stable error/result mapping, OpenXML output validation, and invoking WASM. File parsing and conversion logic live in `converter-core.wasm`; do not add format-specific conversion algorithms to this Go wrapper.
 
+The current build separates Office decryption into `converter-office.wasm`.
+Deploy it beside `converter-core.wasm` to retain password support. The core's
+`engine_unavailable` result with `requiredModule: "office"` triggers the host to
+invoke the decryptor, then convert its output with the core. Both compiled modules
+are cached. No Office parsing or cryptography is implemented in Go.
+`WASIBackend.OfficeWasmPath` overrides the sibling path for library callers.
+Without the addon, ordinary documents and missing-password prompts still work;
+supplied-password conversions return `engine_unavailable`. Older monolithic cores
+remain supported without the addon.
+
 ## Build And Test
 
 From the repository root:

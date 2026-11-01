@@ -1,16 +1,20 @@
+import { bundledPackage, cleanupPackageFixtures } from './package-fixtures';
 import { basename, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
 import { createVolumeFixture, inlineVolume } from '../../../packages/model3d/test/fixtures/volume.mjs';
 
+test.afterAll(cleanupPackageFixtures);
+
 async function prepare(page: Page) {
+  const modelDirectory = await bundledPackage();
   await page.route('**/volume-preview-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('volume-core/index.js', base).href, three: new URL('volume-three/three.module.js', base).href
+      '@filens/core': new URL('volume-model/core.js', base).href, three: new URL('volume-three/three.module.js', base).href
     } })}</script>` });
   });
-  for (const [prefix, directory] of [['volume-model', 'packages/model3d/dist'], ['volume-core', 'packages/core/dist'], ['volume-three', 'node_modules/three/build']]) {
+  for (const [prefix, directory] of [['volume-model', modelDirectory], ['volume-core', 'packages/core/dist'], ['volume-three', 'node_modules/three/build']]) {
     await page.route(`**/${prefix}/*`, route => route.fulfill({ contentType: 'text/javascript', path: resolve(directory, basename(new URL(route.request().url()).pathname)) }));
   }
   await page.goto('./volume-preview-check');

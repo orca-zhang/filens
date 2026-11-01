@@ -1099,7 +1099,8 @@ describe('converter client adapters', () => {
     async () => {
       const wasm = await readFile(path.join(repoRoot, 'wasm/converter-core/dist/converter-core.wasm'));
       const client = createWasmConverterClient({
-        wasm: new Uint8Array(wasm)
+        wasm: new Uint8Array(wasm),
+        officeWasm: new Uint8Array(await readFile(path.join(repoRoot, 'wasm/converter-core/dist/converter-office.wasm')))
       });
       const encryptedDoc = buildEncryptedCompoundFile();
 

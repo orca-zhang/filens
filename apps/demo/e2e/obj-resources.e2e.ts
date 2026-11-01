@@ -1,17 +1,24 @@
+import { bundledPackage, cleanupPackageFixtures, archivedPackageAsset } from './package-fixtures';
 import { basename, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { createObjMaterialFixture, createObjTexture } from '../../../packages/model3d/test/fixtures/obj.mjs';
 
+test.afterAll(cleanupPackageFixtures);
+
 async function prepare(page: Page) {
+  const modelDirectory = await bundledPackage();
   await page.route('**/obj-resources-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('obj-core/index.js', base).href, three: new URL('obj-three/three.module.js', base).href
+      '@filens/core': new URL('obj-model/core.js', base).href, three: new URL('obj-three/three.module.js', base).href
     } })}</script>` });
   });
-  for (const [prefix, directory] of [['obj-model', 'packages/model3d/dist'], ['obj-baseline', 'tmp/continued-review/obj-resources-baseline/dist'],
+  for (const [prefix, directory] of [['obj-model', modelDirectory], ['obj-baseline', 'tmp/continued-review/obj-resources-baseline/dist'],
     ['obj-core', 'packages/core/dist'], ['obj-three', 'node_modules/three/build']]) {
-    await page.route(`**/${prefix}/*`, route => route.fulfill({ contentType: 'text/javascript', path: resolve(directory, basename(new URL(route.request().url()).pathname)) }));
+    await page.route(`**/${prefix}/*`, async route => {
+      const name = basename(new URL(route.request().url()).pathname), contentType = 'text/javascript';
+      return prefix === 'obj-baseline' ? route.fulfill({ contentType, body: await archivedPackageAsset('obj-resources', name) }) : route.fulfill({ contentType, path: resolve(directory, name) });
+    });
   }
   await page.goto('./obj-resources-check');
   await page.evaluate(async () => {

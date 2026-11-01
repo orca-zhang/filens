@@ -11,6 +11,35 @@ import (
 	"unicode/utf16"
 )
 
+func TestOptionalOfficeDecryptionModule(t *testing.T) {
+	wasmPath := buildConverterCoreWASM(t)
+	ctx := context.Background()
+	backend := NewWASIBackend()
+	defer backend.Close(ctx)
+	input := filepath.Join(findRepoRoot(t), "packages", "converter-client", "test", "fixtures", "password", "agile.docx")
+	output := filepath.Join(t.TempDir(), "out.docx")
+	backend.OfficeWasmPath = filepath.Join(t.TempDir(), "omitted-office.wasm")
+	res, err := backend.convertWithFormats(ctx, wasmPath, input, output, "docx", "docx", Options{})
+	if err != nil || res.ErrorCode != ErrorCodePasswordRequired {
+		t.Fatalf("expected a password prompt without loading Office WASM: %+v, %v", res, err)
+	}
+	res, err = backend.convertWithFormats(ctx, wasmPath, input, output, "docx", "docx", Options{Password: "wrong"})
+	if err != nil || res.ErrorCode != ErrorCodeEngineUnavailable || res.RequiredModule != "office" {
+		t.Fatalf("expected an explicit missing Office module result: %+v, %v", res, err)
+	}
+	backend.OfficeWasmPath = ""
+	res, err = backend.convertWithFormats(ctx, wasmPath, input, output, "docx", "docx", Options{Password: " filens 密码🔐 "})
+	if err != nil || !res.OK {
+		t.Fatalf("expected decryption through the sibling module: %+v, %v", res, err)
+	}
+	if err := ValidateOpenXMLOutput(output, "docx"); err != nil {
+		t.Fatal(err)
+	}
+	if len(backend.modules) != 2 {
+		t.Fatalf("expected core and Office modules to be cached, got %d", len(backend.modules))
+	}
+}
+
 func TestConvertUsesWASIConverterCore(t *testing.T) {
 	wasmPath := buildConverterCoreWASM(t)
 

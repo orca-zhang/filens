@@ -136,6 +136,14 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       if (signal?.aborted) throw abortError();
       if (generation !== this.loadGeneration) return;
       pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+      if (typeof location !== 'undefined' && location.protocol === 'file:') {
+        // WebKit can silently hang on a module worker importing another blob
+        // from an opaque file: origin. Preload the same worker module locally;
+        // PDF.js then uses its supported main-thread worker implementation.
+        await import(/* @vite-ignore */ pdfWorkerUrl);
+        if (signal?.aborted) throw abortError();
+        if (generation !== this.loadGeneration) return;
+      }
       const task = pdfjs.getDocument({
         ...(typeof input === 'string' ? { url: input } : { data: input }),
         password: context.descriptor.password

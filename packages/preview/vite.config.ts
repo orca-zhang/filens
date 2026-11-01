@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { sharedThreeCompression } from '../../scripts/shared-compression';
 
 const root = path.resolve(__dirname, '../..');
 const single = process.env.FILENS_PREVIEW_BUILD === 'all-in-one';
@@ -21,7 +22,15 @@ function embeddedAssets() {
       if (!id.endsWith('?url')) return;
       const file = id.slice(0, -4);
       if (!/\.(wasm|mjs)$/.test(file)) return;
-      const bytes = await readFile(file);
+      // A single file downloads every embedded engine anyway. Use the combined
+      // core there to avoid shipping duplicate WASI/CFB code with the decryptor.
+      const converterDir = path.join(root, 'wasm/converter-core/dist');
+      if (single && file === path.join(converterDir, 'converter-office.wasm')) {
+        return 'export default undefined;';
+      }
+      const asset = single && file === path.join(converterDir, 'converter-core.wasm')
+        ? path.join(converterDir, 'converter-core-full.wasm') : file;
+      const bytes = await readFile(asset);
       if (single) {
         const mime = file.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
         // Blob workers work offline and need no relative imports. WASM stays a data URL
@@ -79,7 +88,7 @@ function embeddedStyles() {
 
 export default defineConfig({
   base: './',
-  plugins: [embeddedAssets(), vue(), embeddedStyles()],
+  plugins: [sharedThreeCompression(), embeddedAssets(), vue(), embeddedStyles()],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
   build: {

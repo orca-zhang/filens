@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePreviewI18n, type PreviewMessages } from './i18n';
 import {
   createViewer,
   type FitMode,
@@ -18,6 +19,8 @@ const props = withDefaults(
     minScale?: number;
     maxScale?: number;
     toolbar?: boolean;
+    locale?: string;
+    messages?: PreviewMessages;
     thumbnails?: boolean;
   }>(),
   {
@@ -29,6 +32,8 @@ const props = withDefaults(
     thumbnails: true
   }
 );
+
+const { locale, t } = usePreviewI18n(props);
 
 const emit = defineEmits<{
   (event: 'rendered', presentation: ParsedPresentation | null): void;
@@ -67,7 +72,7 @@ const canGoNext = computed(() => !isLoading.value && currentSlide.value < slideC
 const canZoomOut = computed(() => !isLoading.value && viewerState.value.scale > props.minScale + 0.001);
 const canZoomIn = computed(() => !isLoading.value && viewerState.value.scale < props.maxScale - 0.001);
 const warningLabel = computed(() =>
-  viewerState.value.warnings.length ? `${viewerState.value.warnings.length} warning${viewerState.value.warnings.length > 1 ? 's' : ''}` : ''
+  viewerState.value.warnings.length ? t('Warnings: {count}', { count: viewerState.value.warnings.length }) : ''
 );
 const thumbnailRefs = new Map<number, HTMLButtonElement>();
 
@@ -311,25 +316,25 @@ function getPreferredScrollBehavior(): ScrollBehavior {
 <template>
   <div
     ref="shellRef"
-    class="pptxv-shell"
+    class="pptxv-shell" :lang="locale.replace('_', '-')"
     tabindex="0"
     role="region"
-    aria-label="PPTX preview"
+    :aria-label="t('PPTX preview')"
     @keydown="onShellKeydown"
   >
     <div v-if="toolbar" class="pptxv-toolbar">
       <div class="pptxv-toolbar-group">
-        <button type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousSlide">Prev</button>
-        <button type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextSlide">Next</button>
+        <button type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousSlide">{{ t('Prev') }}</button>
+        <button type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextSlide">{{ t('Next') }}</button>
         <span class="pptxv-status">{{ currentSlide + 1 }} / {{ slideCount || 1 }}</span>
         <span v-if="warningLabel" class="pptxv-pill">{{ warningLabel }}</span>
       </div>
       <div class="pptxv-toolbar-group">
-        <button type="button" class="pptxv-button" :disabled="!canZoomOut" @click="zoomOut">-</button>
+        <button type="button" class="pptxv-button" :disabled="!canZoomOut" :aria-label="t('Zoom out')" @click="zoomOut">-</button>
         <span class="pptxv-status">{{ scaleLabel }}</span>
-        <button type="button" class="pptxv-button" :disabled="!canZoomIn" @click="zoomIn">+</button>
-        <button type="button" class="pptxv-button" :disabled="isLoading" @click="fitContain">Fit</button>
-        <button type="button" class="pptxv-button" :disabled="isLoading" @click="fitWidth">Width</button>
+        <button type="button" class="pptxv-button" :disabled="!canZoomIn" :aria-label="t('Zoom in')" @click="zoomIn">+</button>
+        <button type="button" class="pptxv-button" :disabled="isLoading" @click="fitContain">{{ t('Fit') }}</button>
+        <button type="button" class="pptxv-button" :disabled="isLoading" @click="fitWidth">{{ t('Width') }}</button>
       </div>
     </div>
     <div class="pptxv-layout">
@@ -342,7 +347,7 @@ function getPreferredScrollBehavior(): ScrollBehavior {
           :class="{ 'is-active': slide.index === currentSlide }"
           :ref="(element) => setThumbnailRef(slide.index, element)"
           :aria-current="slide.index === currentSlide ? 'true' : undefined"
-          :aria-label="`Slide ${slide.index + 1}: ${slide.title || 'Untitled slide'}`"
+          :aria-label="`${t('Slide')} ${slide.index + 1}: ${slide.title || t('Untitled slide')}`"
           @click="goToSlide(slide.index)"
         >
           <SlideThumbnail
@@ -356,7 +361,7 @@ function getPreferredScrollBehavior(): ScrollBehavior {
       <div class="pptxv-main">
         <div class="pptxv-main-stage">
           <div ref="viewerHost" class="pptxv-main-view" />
-          <div v-if="isLoading" class="pptxv-overlay">Loading presentation...</div>
+          <div v-if="isLoading" class="pptxv-overlay">{{ t('Loading presentation...') }}</div>
           <div v-else-if="errorMessage" class="pptxv-overlay is-error">{{ errorMessage }}</div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { bundledPackage, cleanupPackageFixtures } from './package-fixtures';
 import { readFile } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
@@ -15,15 +16,19 @@ async function baselineRuntime(name: string): Promise<Buffer> {
   return Buffer.from(source);
 }
 
+test.afterAll(cleanupPackageFixtures);
+
 async function prepare(page: Page, factory = false) {
+  const archiveDirectory = await bundledPackage('archive');
+  const modelDirectory = await bundledPackage();
   await page.route('**/archive-lifecycle-check', route => {
     const base = new URL('.', route.request().url());
     return route.fulfill({ contentType: 'text/html', body: `<!doctype html><script type="importmap">${JSON.stringify({ imports: {
-      '@filens/core': new URL('archive-core/index.js', base).href, three: new URL('archive-three/three.module.js', base).href
+      '@filens/core': new URL('archive-current/core.js', base).href, three: new URL('archive-three/three.module.js', base).href
     } })}</script>` });
   });
-  for (const [prefix, directory] of [['archive-current', 'packages/archive/dist'], ['archive-original', 'tmp/continued-review/archive-lifecycle-baseline/dist'],
-    ['archive-core', 'packages/core/dist'], ['archive-model', 'packages/model3d/dist'], ['archive-three', 'node_modules/three/build']]) {
+  for (const [prefix, directory] of [['archive-current', archiveDirectory], ['archive-original', 'tmp/continued-review/archive-lifecycle-baseline/dist'],
+    ['archive-core', 'packages/core/dist'], ['archive-model', modelDirectory], ['archive-three', 'node_modules/three/build']]) {
     await page.route(`**/${prefix}/*`, async route => {
       const name = basename(new URL(route.request().url()).pathname), contentType = name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
       return prefix === 'archive-original' ? route.fulfill({ contentType, body: await baselineRuntime(name) }) : route.fulfill({ contentType, path: resolve(directory, name) });

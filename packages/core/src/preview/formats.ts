@@ -761,6 +761,8 @@ function createConversionRoutes(
           required: true,
           reason: sourceFormat === 'ppm'
             ? 'PPM images are decoded to PNG in the WASM conversion core'
+            : ['apk', 'ipa', 'exe', 'dll', 'mui', 'mun', 'ico'].includes(sourceFormat)
+            ? 'application icons are extracted to PNG in the WASM conversion core'
             : targetFormat === 'png'
             ? 'ICNS files use their embedded PNG icon preview'
             : 'camera RAW files use their embedded JPEG preview'
@@ -805,6 +807,12 @@ function legacyContentTypesForSource(sourceFormat: string): string[] {
   switch (sourceFormat) {
     case 'ppm':
       return ['image/x-portable-pixmap'];
+    case 'apk':
+      return ['application/vnd.android.package-archive'];
+    case 'ipa':
+      return ['application/x-ios-app'];
+    case 'exe':
+      return ['application/vnd.microsoft.portable-executable', 'application/x-msdownload'];
     case 'icns':
       return ['image/icns', 'image/x-icns', 'application/x-icns'];
     case 'ppt':

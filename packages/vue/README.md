@@ -19,8 +19,60 @@ import '@filens/vue/style.css';
 
 `src` also accepts a `File`, `Blob` or byte array; provide `name` or `extension`
 when the source has no filename. Legacy Office and RAW previews need a
-`converter` configured with `createWasmConverterClient({ wasm, imageWasm })`
+`converter` configured with `createWasmConverterClient({ wasm, imageWasm, officeWasm })`
 from `@filens/converter-client`. See the demo for complete WASM asset wiring.
+
+`officeWasm` points to the optional `converter-office.wasm` asset. The current
+core detects encrypted Office documents itself and loads this module only after
+password submission. Omitting it retains ordinary conversions and password
+prompts; encrypted conversions with a supplied password return `engine_unavailable`.
+The standalone `@filens/preview` builds wire the module automatically.
+
+## Languages (source build)
+
+All three preview components accept `locale` and `messages`. Toolbars, model
+controls, loading states and password prompts include 28 locale dictionaries,
+using the same codes as ZimaOS:
+
+```text
+en_US en_GB it_IT nb_NO zh_CN zh_TW ja_JP ko_KR fr_FR de_DE sv_SE da_DK
+nl_NL es_ES ca_ES pt_PT pt_BR pl_PL cs_CZ sk_SK hu_HU ro_RO hr_HR ru_RU
+tr_TR el_GR ga_IE ml_IN
+```
+
+BCP 47 tags such as `zh-CN`, `zh-Hant` and `pt-BR` also work. Omit `locale` to
+use the browser's preferred supported language; unsupported languages fall back
+to English. Locale changes update controls without reopening the document.
+Translations are ordinary strings rendered as text, with no `vue-i18n` dependency.
+Document content, source warnings and driver errors retain their original text.
+
+```vue
+<Preview :src="file" :locale="zimaosLocale" :messages="{ Next: 'Forward' }" />
+```
+
+`messages` maps English source phrases to host strings for that component only.
+For example, `Warnings: {count}` preserves its named placeholder. Exported
+`previewLocales` lists available codes; `resolvePreviewLocale()` normalizes host
+locale tags. Standalone `createPreview()` accepts the same options and supports
+`viewer.update({ locale: 'ja_JP' })`.
+
+## Application icons (source build)
+
+APK and IPA packages and Windows EXE/DLL/MUI/MUN resource containers use the
+shared WASM core to extract their application icon as PNG, then display it with
+the normal image controls. The core also converts ICO to PNG; browser-native ICO
+preview and existing ICNS preview remain available. No application is executed.
+Configure `converter` as for legacy Office previews. APK archive browsing remains
+available through explicit `@filens/archive` routes.
+
+APK extraction follows the application's compiled manifest icon resource through
+`resources.arsc`, including obfuscated paths and raster-backed adaptive XML. IPA
+extraction uses the main `.app` bundle's XML or binary plist icon declarations,
+selects the largest raster and normalizes iOS CgBI PNGs. PE extraction uses resource
+RVA mapping and icon group IDs, with PNG and 1/4/8/24/32-bit DIB frames and masks.
+Vector-only Android icons, asset-catalog-only IPA icons, legacy ICNS planes,
+JPEG 2000 icons and OS-resolved `.app`/`.desktop` folder icons are not decoded.
+Missing or unsupported icons produce a parse error.
 
 ## Install
 

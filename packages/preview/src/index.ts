@@ -5,12 +5,17 @@ import { createWasmConverterClient } from '@filens/converter-client';
 import { createWasmPanoramaProcessor, type PanoramaProcessor } from '@filens/panorama';
 import coreWasm from '../../../wasm/converter-core/dist/converter-core.wasm?url';
 import imageWasm from '../../../wasm/converter-image/dist/converter-image.wasm?url';
+import officeWasm from '../../../wasm/converter-core/dist/converter-office.wasm?url';
 
 export interface BrowserPreviewOptions extends PreviewOptions {
   src: PreviewSource | SourceDescriptor;
   name?: string;
   extension?: string;
   toolbar?: boolean;
+  /** ZimaOS codes (zh_CN) and BCP 47 tags (zh-CN); defaults to browser language. */
+  locale?: string;
+  /** English source phrases mapped to host translations. */
+  messages?: Readonly<Record<string, string>>;
   converter?: ConverterClient;
   mediaConverter?: ConverterClient;
   panoramaProcessor?: PanoramaProcessor;
@@ -22,7 +27,7 @@ export interface BrowserPreviewOptions extends PreviewOptions {
 export function createPreview(element: Element | string, options: BrowserPreviewOptions) {
   const props = shallowReactive({
     ...options,
-    converter: options.converter ?? createWasmConverterClient({ wasm: coreWasm, imageWasm }),
+    converter: options.converter ?? createWasmConverterClient({ wasm: coreWasm, imageWasm, officeWasm }),
     panoramaProcessor: options.panoramaProcessor ?? createWasmPanoramaProcessor({ wasm: coreWasm, imageWasm })
   });
   const app = createApp({ render: () => h(Preview, props) });

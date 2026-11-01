@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <!-- The shared protobuf engine generates local decoders at runtime. Dynamic
+       code is allowed, while HTTP(S) connections and resources remain blocked. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; style-src 'unsafe-inline'; connect-src data: blob:; worker-src blob: data:; img-src data: blob:; font-src data: blob:; media-src data: blob:; frame-src data: blob:; base-uri 'none'; form-action 'none'">
+  <title>FiLens preview</title>
+  <style>
+    html, body { height: 100%; margin: 0; font-family: system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; background: #f5f6f8; color: #172b40; }
+    header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding: 12px 20px; background: #112235; color: #e4eff9; font-size: 14px; }
+    #name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 100px; }
+    #privacy { color: #a5c9c4; font-size: 12px; }
+    #github { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 32px; border-radius: 8px; color: #c4d3e2; transition: color .15s, background .15s; }
+    #github svg { width: 22px; height: 22px; }
+    #github:hover { color: #fff; background: #ffffff12; }
+    #github:focus-visible { outline: 2px solid #a5c9e9; outline-offset: 3px; }
+    #preview { flex: 1; min-height: 0; }
+    #status, #help { margin: 0; padding: 12px 20px; background: #fff; }
+    #status[data-error] { color: #a12222; }
+    #help { font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body data-state="loading">
+  <header>
+    <strong>FiLens</strong><span id="name"></span>
+    <span id="privacy">Offline preview · Files stay on this device</span>
+    <a id="github" href="https://github.com/IceWhaleTech/filens" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.77-.24.77-.54v-2.1c-3.13.68-3.79-1.33-3.79-1.33-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.15 1.72 1.15 1 1.71 2.62 1.22 3.26.93.1-.73.39-1.22.71-1.5-2.5-.29-5.13-1.25-5.13-5.54 0-1.22.44-2.22 1.15-3-.11-.29-.5-1.43.11-2.97 0 0 .94-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.54.22 2.68.1 2.97.72.78 1.16 1.78 1.16 3 0 4.3-2.64 5.25-5.15 5.53.4.35.76 1.03.76 2.08v3.08c0 .3.2.65.78.54A11.2 11.2 0 0 0 12 .8Z"/>
+      </svg>
+    </a>
+  </header>
+  <template id="filens-notices"><!--FILENS_NOTICES--></template>
+  <p id="status" role="status">Opening embedded file…</p>
+  <p id="help">If this page cannot open, try a current browser or run <code>filens preview YOUR_FILE --mode serve</code>.</p>
+  <noscript>This preview requires JavaScript. Enable it or use another browser.</noscript>
+  <div id="preview"></div>
+  <script>
+    // Keep the error handler usable even when the browser cannot parse modules.
+    window.filensPreviewError = function (error) {
+      var message = error && error.message ? error.message : String(error);
+      document.body.dataset.state = 'error';
+      document.body.dataset.error = message;
+      var status = document.getElementById('status');
+      status.hidden = false;
+      status.setAttribute('data-error', '');
+      status.textContent = 'Cannot open preview: ' + message;
+      document.getElementById('help').hidden = false;
+    };
+    window.addEventListener('error', function (event) {
+      // ResizeObserver defers excess layout notifications to the next frame;
+      // this browser diagnostic is not a failed document preview.
+      if (event.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+          event.message === 'ResizeObserver loop limit exceeded') {
+        event.preventDefault();
+        return;
+      }
+      window.filensPreviewError(event.error || event.message);
+    });
+    window.addEventListener('unhandledrejection', function (event) { window.filensPreviewError(event.reason); });
+  </script>
+  <!--FILENS_SOURCE-->
+  <template id="filens-runtime"><!--FILENS_RUNTIME--></template>
+  <script type="module">
+    async function checkBrowser() {
+      if (typeof WebAssembly !== 'object' || typeof Worker !== 'function' ||
+          typeof File !== 'function' || typeof Blob !== 'function' || !URL.createObjectURL) {
+        throw new Error('This browser needs WebAssembly, Web Workers and local File support.');
+      }
+      await WebAssembly.compile(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+      const url = URL.createObjectURL(new Blob(['postMessage("ready")'], { type: 'text/javascript' }));
+      let worker, timer;
+      try {
+        await new Promise((resolve, reject) => {
+          timer = setTimeout(() => reject(new Error('Local Web Workers are unavailable.')), 5000);
+          // Some browsers block module workers on file: pages while supporting
+          // classic blob workers (used by the bundled inline worker engine).
+          worker = new Worker(url);
+          worker.onmessage = () => resolve();
+          worker.onerror = event => { event.preventDefault(); reject(new Error('The browser blocked a local Web Worker.')); };
+        });
+      } finally {
+        clearTimeout(timer);
+        worker?.terminate();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    try {
+      await checkBrowser();
+      const sourceElement = document.getElementById('filens-source');
+      const source = JSON.parse(sourceElement.textContent);
+      sourceElement.remove();
+      document.getElementById('name').textContent = source.name;
+      document.title = source.name + ' · FiLens';
+      const parts = [];
+      // Decode in chunks so a large file does not also need one large binary string.
+      for (let start = 0; start < source.data.length; start += 65536) {
+        const binary = atob(source.data.slice(start, start + 65536));
+        parts.push(Uint8Array.from(binary, character => character.charCodeAt(0)));
+      }
+      source.data = '';
+      const file = new File(parts, source.name);
+      parts.length = 0;
+      const runtimeElement = document.getElementById('filens-runtime');
+      const runtimeUrl = URL.createObjectURL(new Blob([runtimeElement.content.textContent], { type: 'text/javascript' }));
+      runtimeElement.remove();
+      let createPreview;
+      try { ({ createPreview } = await import(runtimeUrl)); }
+      finally { URL.revokeObjectURL(runtimeUrl); }
+      createPreview('#preview', {
+        src: file, name: file.name,
+        // This is a filename, so literal #/? characters are not URL delimiters.
+        extension: file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.') + 1) : undefined,
+        onRendered: () => {
+          document.body.dataset.state = 'ready';
+          delete document.body.dataset.error;
+          document.getElementById('status').hidden = true;
+          document.getElementById('help').hidden = true;
+        },
+        onError: window.filensPreviewError
+      });
+    } catch (error) { window.filensPreviewError(error); }
+  </script>
+</body>
+</html>

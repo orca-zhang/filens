@@ -6,11 +6,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
+import { executableName, platformPackageName } from './agent-platforms.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const raw = path.join(root, 'dist/filens.raw');
 const work = await mkdtemp(path.join(os.tmpdir(), 'filens-zimaos-test-'));
-const { version, cliVersion } = JSON.parse(await readFile(path.join(root, 'packaging/zimaos/release.json'), 'utf8'));
+const { version, cliVersion, previewVersion } = JSON.parse(await readFile(path.join(root, 'packaging/zimaos/release.json'), 'utf8'));
 try {
   assert.ok((await stat(raw)).size <= 15_000_000, 'raw package exceeds CDN budget');
   const extracted = path.join(work, 'extracted');
@@ -23,6 +24,11 @@ try {
   assert.equal(manifest.ui, undefined);
   assert.deepEqual(manifest.services, []);
   await assert.rejects(stat(path.join(extracted, 'usr/share/casaos/www')));
+  assert.equal((await readFile(path.join(extracted, 'usr/lib/filens/preview-version'), 'utf8')).trim(), previewVersion);
+  for (const name of ['index.html', 'filens.js', 'THIRD-PARTY-NOTICES.txt']) {
+    assert.ok((await stat(path.join(extracted, 'usr/lib/filens/preview', name))).size > 0);
+  }
+  assert.match(await readFile(path.join(extracted, 'usr/lib/filens/preview/filens.js'), 'utf8'), /data:application\/wasm;base64,/);
   for (const [platform, machine] of [['linux-x64', 62], ['linux-arm64', 183]]) {
     const bundle = path.join(extracted, 'usr/lib/filens', platform);
     const binary = await readFile(path.join(bundle, 'filens'));
@@ -46,7 +52,7 @@ try {
   await writeFile(path.join(commands, 'uname'), '#!/bin/sh\nprintf "%s\\n" "$FILENS_TEST_ARCH"\n', { mode: 0o755 });
   for (const platform of ['linux-x64', 'linux-arm64']) {
     await mkdir(path.join(prefix, 'lib/filens', platform), { recursive: true });
-    await writeFile(path.join(prefix, 'lib/filens', platform, 'filens'), '#!/bin/sh\nif [ "${1:-}" = --ocr-worker ] && [ "${FILENS_TEST_FAIL_HEALTH:-}" = yes ]; then exit 1; fi\nprintf "%s\\n" "$FILENS_PROFILE" "${FILENS_OCR_LIBRARY-}" "${FILENS_OCR_MODEL_DIR-}" "$@"\n', { mode: 0o755 });
+    await writeFile(path.join(prefix, 'lib/filens', platform, 'filens'), '#!/bin/sh\nif [ "${1:-}" = --ocr-worker ] && [ "${FILENS_TEST_FAIL_HEALTH:-}" = yes ]; then exit 1; fi\nif [ "${1:-}" = --preview-test ]; then printf "%s\\n" "${FILENS_PREVIEW_DIR-}"; exit 0; fi\nprintf "%s\\n" "$FILENS_PROFILE" "${FILENS_OCR_LIBRARY-}" "${FILENS_OCR_MODEL_DIR-}" "$@"\n', { mode: 0o755 });
   }
   const fixtureBundle = path.join(prefix, 'lib/filens');
   for (const file of ['setup-ocr', 'cli-version', 'ocr-packages.sha256']) {
@@ -55,7 +61,14 @@ try {
   await chmod(path.join(fixtureBundle, 'setup-ocr'), 0o755);
   assert.equal((await readFile(path.join(fixtureBundle, 'cli-version'), 'utf8')).trim(), cliVersion);
   const env = { ...process.env, PATH: `${commands}${path.delimiter}${process.env.PATH}`, ZIMAOS_MODEL_CACHE_DIR: cache, FILENS_CACHE_DIR: path.join(work, 'private-cache') };
-  for (const key of ['FILENS_OCR_LIBRARY', 'FILENS_OCR_MODEL_DIR', 'FILENS_PROFILE']) delete env[key];
+  for (const key of ['FILENS_OCR_LIBRARY', 'FILENS_OCR_MODEL_DIR', 'FILENS_PROFILE', 'FILENS_PREVIEW_DIR']) delete env[key];
+  const previewDirectory = path.join(fixtureBundle, 'preview');
+  await mkdir(previewDirectory);
+  await writeFile(path.join(previewDirectory, 'filens.js'), 'fixture');
+  const previewEnv = { ...env, FILENS_TEST_ARCH: 'x86_64' };
+  const previewLaunch = extra => spawnSync(path.join(prefix, 'bin/filens'), ['--preview-test'], { env: { ...previewEnv, ...extra }, encoding: 'utf8' });
+  assert.equal(previewLaunch({}).stdout.trim(), previewDirectory);
+  assert.equal(previewLaunch({ FILENS_PREVIEW_DIR: '/custom/preview' }).stdout.trim(), '/custom/preview');
   const launch = (arch, overrides = {}) => spawnSync(path.join(prefix, 'bin/filens'), ['read', 'a file.pdf', '--json'], {
     env: { ...env, FILENS_TEST_ARCH: arch, ...overrides }, encoding: 'utf8'
   });
@@ -125,7 +138,51 @@ esac
   assert.equal(unhealthy.status, 1);
   assert.match(unhealthy.stderr, /health check/);
   assert.equal(await readFile(path.join(privateOCR, 'native/libncnn.so'), 'utf8'), 'fixture');
-  console.log('ZimaOS package verified: ELF/WASM payloads, CDN size, architecture dispatch, Photos OCR reuse, private fallback, mirror switching, checksum rejection and failed-update preservation.');
+
+  // Run the packaged shell with the real host CLI. This exercises headless
+  // behavior on the host; the Linux binaries above are checked, not executed.
+  const hostPlatform = `${process.platform}-${process.arch}`;
+  const hostBinary = path.join(root, 'dist/npm', platformPackageName('cli', hostPlatform), executableName(hostPlatform));
+  await copyFile(hostBinary, path.join(fixtureBundle, 'linux-x64/filens'));
+  await chmod(path.join(fixtureBundle, 'linux-x64/filens'), 0o755);
+  for (const name of ['filens.js', 'THIRD-PARTY-NOTICES.txt']) {
+    await copyFile(path.join(extracted, 'usr/lib/filens/preview', name), path.join(previewDirectory, name));
+  }
+  const browserLog = path.join(work, 'browser.log');
+  for (const opener of ['open', 'xdg-open', 'rundll32.exe']) {
+    await writeFile(path.join(commands, opener), '#!/bin/sh\nprintf "browser launched\\n" >> "$FILENS_TEST_BROWSER_LOG"\nexit 1\n', { mode: 0o755 });
+  }
+  const headlessEnv = { ...env, FILENS_TEST_ARCH: 'x86_64', FILENS_TEST_BROWSER_LOG: browserLog };
+  delete headlessEnv.DISPLAY;
+  delete headlessEnv.WAYLAND_DISPLAY;
+  const sourceName = '--report with spaces.txt';
+  await writeFile(path.join(work, sourceName), 'ZIMAOS_HEADLESS_PREVIEW_2026');
+  const preview = args => spawnSync(path.join(prefix, 'bin/filens'), ['preview', ...args], {
+    cwd: work, env: headlessEnv, encoding: 'utf8', timeout: 15000
+  });
+  const temporary = preview(['--', sourceName]);
+  assert.equal(temporary.status, 0, temporary.stderr);
+  assert.equal(temporary.stderr, '');
+  const temporaryUrl = new URL(temporary.stdout.split('\n')[0]);
+  assert.equal(temporaryUrl.protocol, 'file:');
+  assert.match(await readFile(temporaryUrl, 'utf8'), /filens-source/);
+  await rm(temporaryUrl);
+  const savedPath = path.join(work, 'shared preview.html');
+  const saved = preview(['--output', savedPath, '--json', '--', sourceName]);
+  assert.equal(saved.status, 0, saved.stderr);
+  assert.equal(saved.stderr, '');
+  const result = JSON.parse(saved.stdout);
+  assert.equal(result.mode, 'html');
+  assert.equal(result.temporary, false);
+  assert.equal(result.containsSource, true);
+  const html = await readFile(new URL(result.url), 'utf8');
+  const source = JSON.parse(html.split('<script id="filens-source" type="application/json">')[1].split('</script>')[0]);
+  assert.equal(source.name, sourceName);
+  assert.equal(Buffer.from(source.data, 'base64').toString(), 'ZIMAOS_HEADLESS_PREVIEW_2026');
+  await assert.rejects(stat(browserLog), { code: 'ENOENT' });
+  assert.notEqual(preview(['--output', savedPath, '--', sourceName]).status, 0);
+  assert.equal(await readFile(savedPath, 'utf8'), html);
+  console.log('ZimaOS package verified: ELF/WASM payloads, CDN size, headless HTML export without a browser, JSON paths, architecture dispatch, Photos OCR reuse, private fallback, mirror switching, checksum rejection and failed-update preservation.');
 } finally {
   await rm(work, { recursive: true, force: true });
 }

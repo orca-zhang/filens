@@ -57,6 +57,7 @@
     "test:go-wazero": "node ./scripts/run-go-tests.mjs examples/go-wazero-converter",
     "test:wasm-smoke": "npm run fixtures:converter:check && node ./scripts/run-converter-fixture-smoke.mjs",
     "report:occt-wasm": "node ./scripts/report-occt-wasm.mjs",
+    "report:converter-size-impact": "node ./scripts/report-converter-size-impact.mjs",
     "report:wasm-sizes": "node ./scripts/report-wasm-sizes.mjs",
     "report:bundle-sizes": "node ./scripts/report-bundle-sizes.mjs",
     "test:unit": "npm run build:wasm && npm run test:policy && npm run test:unit --workspaces --if-present && npm run test:go && npm run test:wasm-smoke",
@@ -102,9 +103,11 @@
     "build:preview": "node ./scripts/build-preview.mjs",
     "build:agent:preview": "node ./scripts/build-agent-cli.mjs --with-preview",
     "benchmark:ocr:macos": "node ./scripts/benchmark-macos-ocr.mjs",
-    "test:preview": "node ./scripts/test-preview.mjs",
+    "test:preview": "node ./scripts/test-preview.mjs && node ./scripts/test-preview-html.mjs",
+    "test:preview:html": "node ./scripts/test-preview-html.mjs",
     "package:preview:npm": "node ./scripts/package-preview-npm.mjs",
-    "test:preview:npm": "node ./scripts/test-preview-npm.mjs"
+    "test:preview:npm": "node ./scripts/test-preview-npm.mjs",
+    "report:converter-monolithic-size": "node ./scripts/report-converter-monolithic-size.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.0",
