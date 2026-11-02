@@ -5,6 +5,9 @@
 默认 truck 预览随 `filens-preview@0.1.4` 分发，CLI 0.4.2 首次预览自动安装该版本。
 公开仓库校验状态与精确产物见[发布记录](rust-step-browser-release.json)。
 
+本页保留 STEP 候选版本的接入与测量记录。当前预览 **0.3.0**、移动 SDK **0.1.0**
+的运行时、下载包与安装体积统一见[发布体积报告](preview-sizes.md)。
+
 ## 接入范围
 
 `packages/step` 提供 `readStep`、`createStepReader`，无运行时 npm 依赖。
@@ -39,11 +42,11 @@ Rust 的独立 JS + WASM 两文件分别压缩后，Brotli 合计 **259.49 KiB**
 不含 Three.js、预览界面、HTTP 开销及宿主已有共享依赖。
 Rust WASM 本身比旧 OCCT 的 Brotli WASM 小约 **68.0%**。
 
-11-01 重建后，独立预览分包运行时合计 **2.44 MB Brotli**，单文件为
+以下是 11-01 候选构建的历史数据：独立预览分包运行时合计 **2.44 MB Brotli**，单文件为
 **2.84 MB Brotli / 3.79 MB gzip / 12.70 MB 原始体积**；两种构建均包含 Vue、
 样式、Worker 与文档/图像/STEP WASM。完整 npm 包约 **7.0 MB 压缩包 /
-24.34 MB 安装体积**。[运行时精确体积](preview-build-sizes.json) ·
-[完整预览包体积](preview-package-sizes.json)。
+24.34 MB 安装体积**。后续版本的[运行时精确体积](preview-build-sizes.json)与
+[完整预览包体积](preview-package-sizes.json)已随新版更新。
 
 最终运行组共 126 次浏览器读取（当前 truck、OCCT 与旧 JSON 版各 42 次），
 6 份均稳定领先并通过近似几何筛查。`as1-oc-214.stp` 同场从 278.9 降至

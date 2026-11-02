@@ -57,7 +57,7 @@ filens '理解 "report.pages"，以 JSON 输出'
 
 ## filens 的独特能力
 
-- **超小的传统 Office/WPS 标准化核心**：DOC/WPS 及相关传统格式可以通过面向预览的 WASM 核心标准化为 OpenXML。当前 `converter-core.wasm` 原始体积为 **871.0 KiB**，Brotli 后为 **317.6 KiB**。
+- **超小的传统 Office/WPS 标准化核心**：DOC/WPS 及相关传统格式可以通过面向预览的 WASM 核心标准化为 OpenXML。预览 0.3.0 的 `converter-core.wasm` 原始体积为 **894.8 KiB**，Brotli 后为 **327.6 KiB**。
 - **PPTX 原生预览**：直接解析 PPTX，并通过 HTML/SVG 渲染文本、图片、形状、表格及已支持的二维柱状图和饼图。本地演示文稿无需上传，也无需等待转换服务；同一个查看器还能打开 iWork、CAD、RAW 与全景原片。
 - **iWork 原生解析与预览**：在端侧直接解码 Keynote、Pages 和 Numbers，包括当前版本的 iWork 协议结构。早期协议研究与代码基础来自 [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork)，当前实现明确保留这项贡献说明，并在其部分工作之上继续扩展。
 - **有开源传承的浏览器原生 CAD**：CAD 转换部分来源于 [`orcastor/cad2x-converter`](https://github.com/orcastor/cad2x-converter)，它是一个紧凑的 DXF/DWG 到 DXF/PDF/PNG/SVG 转换工具。filens 在此基础上增加了 DXF 纯浏览器解析与 SVG 渲染路径，让常见图纸无需启动原生进程或转换服务器即可预览。
@@ -140,10 +140,12 @@ filens 数据来自 macOS/Darwin arm64、Apple M4 Pro、24 GiB 内存、Node.js 
 | --- | ---: | --- | --- |
 | ONLYOFFICE x2t 原生完整版（含字体） | 约 **560+ MB** 压缩包 | 原生进程，Office 转换覆盖和排版保真更完整；字体、资源和部署成本也最高 | 服务端高保真转换、批处理 |
 | [`onlyoffice-x2t-wasm`](https://github.com/cryptpad/onlyoffice-x2t-wasm/releases/tag/v9.3.0%2B0) `v9.3.0+0` | 发布 ZIP **15.79 MiB**；`x2t.wasm` **34.32 MiB**，Brotli **6.49 MiB** | 使用 Emscripten glue 的浏览器侧高保真候选，初始化和内存成本高于轻量 WASI core | 浏览器内 Office 转换、无需服务端的高保真场景 |
-| **filens converter-core** | `converter-core.wasm` **871.0 KiB**；gzip **395.0 KiB**；Brotli **317.6 KiB** | 纯 WASI，可由浏览器或 wazero 执行；优先预览标准化、结构化提取和安全降级 | 本地预览、索引、Agent 文件理解和边缘设备 |
-| **filens converter-image** | 可选 `converter-image.wasm` **909.3 KiB**；gzip **281.9 KiB**；Brotli **204.1 KiB** | 仅在 RAW/ICNS 图片转换时加载 | 相机 RAW 缩略图和 ICNS 预览 |
+| **filens converter-core** | `converter-core.wasm` **894.8 KiB**；gzip **403.3 KiB**；Brotli **327.6 KiB** | 纯 WASI，可由浏览器或 wazero 执行；优先预览标准化、结构化提取和安全降级 | 本地预览、索引、Agent 文件理解和边缘设备 |
+| **filens converter-image** | 可选 `converter-image.wasm` **1099.9 KiB**；gzip **298.4 KiB**；Brotli **216.3 KiB** | 仅在 RAW/ICNS 图片转换时加载 | 相机 RAW 缩略图和 ICNS 预览 |
 
-以当前核心产物计算，x2t-wasm 原始 WASM 约为 filens 的 **40 倍**，Brotli 传输体积约为 **21 倍**。这些数字用于说明部署成本，不代表功能完全等价：filens 有意处理更轻量的预览与提取任务，x2t 则追求更广泛的 Office 重建保真。
+filens 两行使用 2026-11-02 的预览 0.3.0 构建实测。完整运行时、npm 包与移动 SDK 体积见[发布体积报告](preview-sizes.md)；上表仅计量单个 WASM 文件。
+
+以当前核心产物计算，x2t-wasm 原始 WASM 约为 filens 的 **39 倍**，Brotli 传输体积约为 **20 倍**。这些数字用于说明部署成本，不代表功能完全等价：filens 有意处理更轻量的预览与提取任务，x2t 则追求更广泛的 Office 重建保真。
 
 iWork 是文档生态中的另一处空白。传统方案通常只能调用 macOS/iOS 原生文档组件，或依赖 iCloud 在线转换。ONLYOFFICE 最近也加入了 iWork 转换，但对当前 iWork 文件的兼容性和渲染保真仍然有限。filens 选择直接在端侧解析和渲染现代 Keynote、Pages 和 Numbers 文件。
 

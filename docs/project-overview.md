@@ -55,7 +55,7 @@ The similarity implementation's macOS arm64 local build comparison added about *
 
 ## What Makes filens Different
 
-- **Tiny legacy Office/WPS normalization**: DOC/WPS and related legacy inputs can be normalized to OpenXML by a preview-focused WASM core. The current `converter-core.wasm` is **871.0 KiB raw and 317.6 KiB Brotli**.
+- **Tiny legacy Office/WPS normalization**: DOC/WPS and related legacy inputs can be normalized to OpenXML by a preview-focused WASM core. Preview 0.3.0's `converter-core.wasm` is **894.8 KiB raw and 327.6 KiB Brotli**.
 - **Native PPTX preview**: presentations are parsed directly and rendered with HTML/SVG, including text, images, shapes, tables, and supported 2D column and pie charts. Local decks need no upload or conversion service; the same viewer also opens iWork, CAD, RAW, and panorama originals.
 - **Native iWork parsing and preview**: Keynote, Pages, and Numbers are decoded on the client, including current iWork protocol structures. Earlier protocol research and code are credited to [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork), on which part of this work builds.
 - **Browser-native CAD with an open-source lineage**: the CAD conversion work is derived from [`orcastor/cad2x-converter`](https://github.com/orcastor/cad2x-converter), a compact DXF/DWG-to-DXF/PDF/PNG/SVG tool. filens adds a direct pure-browser DXF parsing and SVG rendering path for supported drawings, so common previews need no native process or conversion server.
@@ -138,10 +138,12 @@ The following sizes compare representative converter artifacts and packages. The
 | --- | ---: | --- | --- |
 | Full native ONLYOFFICE x2t with fonts | About **560+ MB** compressed | Native process with broad Office conversion coverage and higher layout fidelity; also the highest font, resource, and deployment cost | High-fidelity server conversion and batch processing |
 | [`onlyoffice-x2t-wasm`](https://github.com/cryptpad/onlyoffice-x2t-wasm/releases/tag/v9.3.0%2B0) `v9.3.0+0` | Release ZIP **15.79 MiB**; `x2t.wasm` **34.32 MiB**, Brotli **6.49 MiB** | A higher-fidelity browser candidate using Emscripten glue, with higher initialization and memory costs than a lightweight WASI core | In-browser Office conversion without a server |
-| **filens converter-core** | `converter-core.wasm` **871.0 KiB**; gzip **395.0 KiB**; Brotli **317.6 KiB** | Pure WASI for browser or wazero execution; optimized for preview normalization, structured extraction, and safe fallback | Local previews, indexing, Agent file understanding, and edge devices |
-| **filens converter-image** | Optional `converter-image.wasm` **909.3 KiB**; gzip **281.9 KiB**; Brotli **204.1 KiB** | Loaded only for RAW/ICNS image conversion | Camera RAW thumbnails and ICNS previews |
+| **filens converter-core** | `converter-core.wasm` **894.8 KiB**; gzip **403.3 KiB**; Brotli **327.6 KiB** | Pure WASI for browser or wazero execution; optimized for preview normalization, structured extraction, and safe fallback | Local previews, indexing, Agent file understanding, and edge devices |
+| **filens converter-image** | Optional `converter-image.wasm` **1099.9 KiB**; gzip **298.4 KiB**; Brotli **216.3 KiB** | Loaded only for RAW/ICNS image conversion | Camera RAW thumbnails and ICNS previews |
 
-The x2t-wasm artifact is about **40×** the size of the current filens core, or **21×** with Brotli. These figures describe deployment cost, not equivalent capability: filens deliberately targets a lighter preview and extraction job, while x2t targets broader Office reconstruction fidelity.
+The filens rows use the 2026-11-02 Preview 0.3.0 build. Complete runtime, npm and mobile SDK sizes are in the [release size report](preview-sizes.md); the table above measures individual WASM files.
+
+The x2t-wasm artifact is about **39×** the size of the current filens core, or **20×** with Brotli. These figures describe deployment cost, not equivalent capability: filens deliberately targets a lighter preview and extraction job, while x2t targets broader Office reconstruction fidelity.
 
 iWork is a separate gap in the document ecosystem. Traditionally, applications have had to rely on native macOS/iOS document components or iCloud-based online conversion. ONLYOFFICE has more recently added iWork conversion, but compatibility with current iWork files and rendering fidelity remain limited. filens instead follows a direct, client-native parser and renderer path for modern Keynote, Pages, and Numbers files.
 

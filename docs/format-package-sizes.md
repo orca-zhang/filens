@@ -1,6 +1,12 @@
 # Format package size audit
 
-## 2026-11-02 throughput-oriented engine and embedded WASM
+Current **Preview 0.3.0 / mobile SDK 0.1.0** measurements are in the
+[release size report](preview-sizes.md), including exact runtime, npm and SDK
+bytes. The optimization comparisons below retain their original development
+snapshots; their tarball and generated JavaScript sizes can differ from the
+final versioned packages.
+
+## 2026-11-02 throughput-oriented engine and embedded WASM (development snapshot)
 
 The archive engine now builds from pinned 7-Zip 24.09 source with Emscripten
 4.0.10, **-O3 and LTO**. It keeps RAR/RAR5, 7z, ZIP and Split handlers, their
@@ -36,7 +42,7 @@ smaller decoded WASM or faster conversion for every document.
 | Split | 13,036,454 / 3,981,755 / 3,148,491 | 12,111,592 / 3,605,254 / 2,847,871 |
 | All in one | 14,704,453 / 4,569,944 / 3,467,177 | 9,726,728 / 3,603,632 / 3,177,720 |
 
-Current main runtimes without the optional engine are 3,256,448 bytes gzip
+At this snapshot, main runtimes without the optional engine are 3,256,448 bytes gzip
 (split) and 3,254,826 (all in one). Compared with the pre-feature baseline,
 all-in-one including the engine is below its former 3,767,906 bytes gzip;
 split including the new optional engine is above its former 3,199,077 bytes.
@@ -51,7 +57,7 @@ checks, 48 actual standalone previews, and 17 offline HTML checks. These validat
 loading, content/extraction and lifecycle behavior; performance measurements are
 reported separately and do not imply universal speedups.
 
-The local unpublished npm tarball is **7,318,499 bytes**, down from 8,655,935
+The unpublished npm tarball at this snapshot is **7,318,499 bytes**, down from 8,655,935
 at the start of this round (15.5%); installed files total 22,770,717 bytes.
 The tarball is 3.9% above the pre-feature published package, while installed
 bytes are lower. Both modes pass isolated npm installation and production Vite
