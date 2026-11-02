@@ -5,6 +5,9 @@ with an optional external archive engine in either build. Both
 include Vue, styles, PDF/iWork workers and the document, image/RAW and STEP WASM
 engines. No conversion server or host Vue installation is needed.
 
+For iOS and Android application embedding, the [source SDKs](../../sdk/README.zh-CN.md)
+wrap this same runtime in native views, with local file loading and lifecycle callbacks.
+
 Version 0.2.0 adds 28 toolbar languages, application-icon previews and the
 runtime fixes used by CLI 0.5.0's offline HTML preview. It uses native HEIC/HEIF decoding first, with a small dedicated WASM
 decoder as fallback. MOV plays through browser codecs.
@@ -76,6 +79,9 @@ directory over HTTP(S). To integrate into another page:
 `resourceResolver`, `fontResolver`, `onRendered` and `onError`. The default converter
 uses the bundled frontend WASM engines. Use [`@filens/vue`](https://github.com/IceWhaleTech/filens/tree/main/packages/vue) for
 direct Vue component integration.
+
+Previews display a translucent `FiLens © IceWhale` watermark at the bottom right,
+including when the toolbar is hidden and in preview fullscreen mode.
 
 Split chunks can range from a few KB to hundreds of KB after compression. Those
 figures exclude shared dependencies and engines; a chunk is not a complete

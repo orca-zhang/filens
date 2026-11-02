@@ -102,6 +102,8 @@
     "benchmark:agent:search": "node --test scripts/search-benchmark-metrics.test.mjs && node ./scripts/benchmark-agent-search.mjs && node ./scripts/write-search-benchmark-docs.mjs",
     "test:agent:similarity": "node ./scripts/test-agent-similarity.mjs",
     "build:preview": "node ./scripts/build-preview.mjs",
+    "build:sdk:mobile": "node ./scripts/build-mobile-sdk.mjs",
+    "test:sdk:mobile": "node ./scripts/test-mobile-sdk.mjs",
     "build:agent:preview": "node ./scripts/build-agent-cli.mjs --with-preview",
     "benchmark:ocr:macos": "node ./scripts/benchmark-macos-ocr.mjs",
     "test:preview": "node ./scripts/test-preview.mjs && node ./scripts/test-preview-html.mjs",

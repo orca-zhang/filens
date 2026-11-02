@@ -26,3 +26,12 @@ examples/go-wazero-converter/batch-report.json
 findings.md
 progress.md
 task_plan.md
+sdk/ios/.build/
+sdk/ios/.swiftpm/
+sdk/ios/Sources/FilensPreview/Resources/filens/*
+!sdk/ios/Sources/FilensPreview/Resources/filens/README.txt
+sdk/android/.gradle/
+sdk/android/local.properties
+sdk/android/**/build/
+sdk/android/filens-preview/src/main/assets/filens/*
+!sdk/android/filens-preview/src/main/assets/filens/README.txt

@@ -86,6 +86,9 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 npm install filens-preview
 ```
 
+**iOS / Android 应用接入：**提供 Swift Package 与 Android Library 源码 SDK，封装同一份
+前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md)。
+
 两种构建使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。
 
 ```html

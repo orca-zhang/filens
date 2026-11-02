@@ -86,6 +86,10 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 npm install filens-preview
 ```
 
+**iOS / Android:** source SDKs are available as a local Swift Package and an Android
+Library, sharing the offline frontend and WASM runtime. See the
+[mobile SDK integration guide (Chinese)](sdk/README.zh-CN.md).
+
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
 
 ```html
