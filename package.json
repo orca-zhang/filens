@@ -19,6 +19,7 @@
     "test:agent": "node --test scripts/model-download.test.mjs && npm run build:agent && npm run build:agent:lite && cargo test --locked --manifest-path cli/Cargo.toml && node ./scripts/test-agent-cli.mjs && node ./scripts/test-agent-rust.mjs && node ./scripts/test-agent-convert.mjs && node ./scripts/test-agent-prune.mjs && node ./scripts/test-agent-search.mjs && node ./scripts/test-agent-search-archives.mjs --ocr",
     "test:agent:convert": "node ./scripts/test-agent-convert.mjs",
     "build": "npm run build:wasm && npm run build:core && npm run build:converter-client && npm run build:xlsx && npm run build:archive && npm run build:ebook && npm run build:pdf && npm run build:docx && npm run build:cad && npm run build:model3d && npm run build:mindmap && npm run build:diagram && npm run build:panorama && npm run build:iwork && npm run build:design && npm run build:media && npm run build:office && npm run build:text && npm run build:vue && npm run build:demo",
+    "build:archive:wasm": "node ./scripts/build-archive-wasm.mjs",
     "build:archive": "npm run build --workspace @filens/archive",
     "build:wasm": "npm run build:wasm:rust",
     "build:wasm:rust": "node ./scripts/build-converter-wasm.mjs",
@@ -105,6 +106,7 @@
     "benchmark:ocr:macos": "node ./scripts/benchmark-macos-ocr.mjs",
     "test:preview": "node ./scripts/test-preview.mjs && node ./scripts/test-preview-html.mjs",
     "test:preview:html": "node ./scripts/test-preview-html.mjs",
+    "test:preview:archives": "node ./scripts/test-archive-assets.mjs",
     "package:preview:npm": "node ./scripts/package-preview-npm.mjs",
     "test:preview:npm": "node ./scripts/test-preview-npm.mjs",
     "report:converter-monolithic-size": "node ./scripts/report-converter-monolithic-size.mjs"

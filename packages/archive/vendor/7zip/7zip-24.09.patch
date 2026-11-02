@@ -1,0 +1,155 @@
+diff --git a/CPP/7zip/7zip_gcc.mak b/CPP/7zip/7zip_gcc.mak
+index bcb06a0..2e19081 100644
+--- a/CPP/7zip/7zip_gcc.mak
++++ b/CPP/7zip/7zip_gcc.mak
+@@ -23,9 +23,11 @@ PROGPATH = $(O)/$(PROG)
+ PROGPATH_STATIC = $(O)/$(PROG)s
+ 
+ 
++ifndef EMSCRIPTEN
+ ifneq ($(CC), xlc)
+ CFLAGS_WARN_WALL = -Werror -Wall -Wextra
+ endif
++endif
+ 
+ # for object file
+ # -Wa,-aln=test.s
+@@ -111,7 +113,11 @@ endif
+ 
+ else
+ 
++ifdef EMSCRIPTEN
++LDFLAGS = $(LDFLAGS_STATIC) $(LDFLAGS_EMCC)
++else
+ LDFLAGS = $(LDFLAGS_STATIC)
++endif
+ # -z force-bti
+ # -s is not required for clang, do we need it for GCC ???
+ 
+diff --git a/CPP/7zip/Archive/Zip/ZipCompressionMode.h b/CPP/7zip/Archive/Zip/ZipCompressionMode.h
+index 8974261..16cb8f3 100644
+--- a/CPP/7zip/Archive/Zip/ZipCompressionMode.h
++++ b/CPP/7zip/Archive/Zip/ZipCompressionMode.h
+@@ -17,6 +17,7 @@ namespace NZip {
+ const CMethodId kMethodId_ZipBase = 0x040100;
+ const CMethodId kMethodId_BZip2   = 0x040202;
+ 
++#ifndef Z7_EXTRACT_ONLY
+ struct CBaseProps: public CMultiMethodProps
+ {
+   bool IsAesMode;
+@@ -57,6 +58,8 @@ struct CCompressionMethodMode: public CBaseProps
+   ~CCompressionMethodMode() { Password.Wipe_and_Empty(); }
+ };
+ 
++#endif // Z7_EXTRACT_ONLY
++
+ }}
+ 
+ #endif
+diff --git a/CPP/7zip/Archive/Zip/ZipHandler.h b/CPP/7zip/Archive/Zip/ZipHandler.h
+index 1f38bff..c7f06f2 100644
+--- a/CPP/7zip/Archive/Zip/ZipHandler.h
++++ b/CPP/7zip/Archive/Zip/ZipHandler.h
+@@ -26,30 +26,40 @@ extern const char * const kMethodNames2[kNumMethodNames2];
+ class CHandler Z7_final:
+   public IInArchive,
+   // public IArchiveGetRawProps,
++  #ifndef Z7_EXTRACT_ONLY
+   public IOutArchive,
+   public ISetProperties,
++  #endif
+   Z7_PUBLIC_ISetCompressCodecsInfo_IFEC
+   public CMyUnknownImp
+ {
+   Z7_COM_QI_BEGIN2(IInArchive)
+   // Z7_COM_QI_ENTRY(IArchiveGetRawProps)
++  #ifndef Z7_EXTRACT_ONLY
+   Z7_COM_QI_ENTRY(IOutArchive)
+   Z7_COM_QI_ENTRY(ISetProperties)
++  #endif
+   Z7_COM_QI_ENTRY_ISetCompressCodecsInfo_IFEC
+   Z7_COM_QI_END
+   Z7_COM_ADDREF_RELEASE
+ 
+   Z7_IFACE_COM7_IMP(IInArchive)
+   // Z7_IFACE_COM7_IMP(IArchiveGetRawProps)
++  #ifndef Z7_EXTRACT_ONLY
+   Z7_IFACE_COM7_IMP(IOutArchive)
+   Z7_IFACE_COM7_IMP(ISetProperties)
++  #endif
+   DECL_ISetCompressCodecsInfo
+ 
+ private:
+   CObjectVector<CItemEx> m_Items;
+   CInArchive m_Archive;
+ 
++  #ifndef Z7_EXTRACT_ONLY
+   CBaseProps _props;
++  #else
++  CCommonMethodProps _props;
++  #endif
+   CHandlerTimeOptions TimeOptions;
+ 
+   int m_MainMethod;
+@@ -67,7 +77,9 @@ private:
+ 
+   void InitMethodProps()
+   {
++    #ifndef Z7_EXTRACT_ONLY
+     _props.Init();
++    #endif
+     TimeOptions.Init();
+     TimeOptions.Prec = k_PropVar_TimePrec_0;
+     m_MainMethod = -1;
+diff --git a/CPP/Windows/System.cpp b/CPP/Windows/System.cpp
+index 5fa87f3..c52ff09 100644
+--- a/CPP/Windows/System.cpp
++++ b/CPP/Windows/System.cpp
+@@ -8,6 +8,7 @@
+ #if defined(__APPLE__) || defined(__DragonFly__) || \
+     defined(BSD) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+ #include <sys/sysctl.h>
++#elif __EMSCRIPTEN__
+ #else
+ #include <sys/sysinfo.h>
+ #endif
+@@ -262,6 +263,7 @@ bool GetRamSize(size_t &size)
+   #elif defined(__FreeBSD_kernel__) && defined(__GLIBC__)
+   // GNU/kFreeBSD Debian
+   // fixme
++  #elif defined(__EMSCRIPTEN__)
+   #else
+ 
+   struct sysinfo info;
+diff --git a/CPP/Windows/SystemInfo.cpp b/CPP/Windows/SystemInfo.cpp
+index 35846e0..84ee373 100644
+--- a/CPP/Windows/SystemInfo.cpp
++++ b/CPP/Windows/SystemInfo.cpp
+@@ -35,7 +35,9 @@
+ #ifdef Z7_GETAUXV_AVAILABLE
+ // #if defined __has_include
+ // #if __has_include (<sys/auxv.h>)
++#ifndef __EMSCRIPTEN__
+ #include <sys/auxv.h>
++#endif
+ #define USE_HWCAP
+ // #endif
+ // #endif
+@@ -803,6 +805,7 @@ void AddCpuFeatures(AString &s)
+ 
+   #endif
+ 
++  #ifndef __EMSCRIPTEN__
+ 
+   #ifdef AT_HWCAP
+   s.Add_OptSpaced("hwcap:");
+@@ -848,6 +851,8 @@ void AddCpuFeatures(AString &s)
+     }
+   }
+   #endif // AT_HWCAP2
++  
++  #endif // __EMSCRIPTEN__
+   #endif // _AIX
+   #endif // _WIN32
+ }

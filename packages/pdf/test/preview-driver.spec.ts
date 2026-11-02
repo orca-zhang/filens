@@ -32,6 +32,23 @@ afterAll(() => {
 });
 
 describe('PDF preview driver', () => {
+  it('exposes attachment payloads and rejects reads after the parent PDF closes', async () => {
+    const content = new TextEncoder().encode('PDF attachment text');
+    const page = { getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }), render };
+    const getAttachments = vi.fn(async () => ({ attachment: { filename: 'C:\\temp\\notes.txt', content } }));
+    vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve({ numPages: 1, destroy, getPage: async () => page, getAttachments }), destroy } as never);
+    const session = createPdfPreviewDriver().createSession(document.createElement('div'));
+    try {
+      await session.load(new Uint8Array(), { descriptor: { source: new Uint8Array() } });
+      expect(getAttachments).not.toHaveBeenCalled();
+      const attachments = await session.getAttachments!();
+      expect(attachments).toMatchObject([{ name: 'notes.txt', size: content.length }]);
+      expect(await attachments[0].read()).toMatchObject({ name: 'notes.txt', source: content });
+      session.destroy();
+      await expect(attachments[0].read()).rejects.toMatchObject({ name: 'AbortError' });
+    } finally { session.destroy(); }
+  });
+
   it('passes document passwords to PDF.js without trimming them', async () => {
     const session = createPdfPreviewDriver().createSession(document.createElement('div'));
     try {

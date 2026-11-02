@@ -4,6 +4,9 @@ import dts from 'vite-plugin-dts';
 
 export default defineConfig({
   base: './',
+  // The shared ZIP reader can import encryption support. Keep worker bundles
+  // self-contained, including in hosts that use classic/inline workers.
+  worker: { rollupOptions: { output: { inlineDynamicImports: true } } },
   build: {
     lib: {
       entry: './src/index.ts',

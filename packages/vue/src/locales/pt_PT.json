@@ -87,5 +87,12 @@
   "Isolate": "Isolar",
   "No nodes matched the current filter.": "Nenhum nó corresponde ao filtro atual.",
   "No model tree available.": "Árvore do modelo indisponível.",
-  "No model metadata available.": "Metadados do modelo indisponíveis."
+  "No model metadata available.": "Metadados do modelo indisponíveis.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

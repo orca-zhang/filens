@@ -4,6 +4,8 @@ import { createPptxPreviewDriver } from './pptx-driver';
 import { createPreviewRegistry, type PreviewRegistry } from './registry';
 import { loadSourceBytes } from '../parser/load-source';
 import { PreviewPasswordError, previewPasswordErrorCode } from './password';
+import { createPreviewContainerContext } from './containers';
+import { createAttachmentPreviewSession } from './attachment-session';
 import type {
   ConverterClient,
   FormatRoute,
@@ -57,6 +59,8 @@ export class Previewer implements PreviewerInstance {
       });
     this.converter = options.converter;
     this.previewOptions = {
+      containerContext: options.containerContext,
+      translate: options.translate,
       requestPassword: options.requestPassword,
       fit: options.fit,
       initialScale: options.initialScale,
@@ -67,7 +71,9 @@ export class Previewer implements PreviewerInstance {
       fontLoading: options.fontLoading,
       resourceResolver: options.resourceResolver,
       audio: options.audio,
-      previewerFactory: options.previewerFactory
+      previewerFactory: options.previewerFactory ?? ((host, childOptions) => new Previewer(host, {
+        ...childOptions, registry: this.registry, converter: this.converter
+      }))
     };
   }
 
@@ -87,6 +93,9 @@ export class Previewer implements PreviewerInstance {
       if (token !== this.requestToken) return;
 
       let initialDescriptor = normalizeSourceDescriptor(source, descriptor);
+      if (!this.previewOptions.containerContext || this.previewOptions.containerContext.depth === 0) {
+        this.previewOptions.containerContext = createPreviewContainerContext();
+      }
       this.setState({ ...createIdleState(), loading: true });
       this.emit('loading', this.state);
       if (token !== this.requestToken) return;
@@ -101,7 +110,11 @@ export class Previewer implements PreviewerInstance {
             return;
           }
 
-          const session = resolved.driver.createSession(this.host, this.previewOptions);
+          const format = resolved.route.targetFormat;
+          const session = ['docx', 'xlsx', 'pptx', 'pdf'].includes(format)
+            ? createAttachmentPreviewSession(this.host, this.previewOptions, format,
+              documentHost => resolved.driver.createSession(documentHost, this.previewOptions))
+            : resolved.driver.createSession(this.host, this.previewOptions);
           if (token !== this.requestToken) {
             session.destroy();
             return;

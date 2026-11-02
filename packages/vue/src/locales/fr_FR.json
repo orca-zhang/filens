@@ -87,5 +87,12 @@
   "Isolate": "Isoler",
   "No nodes matched the current filter.": "Aucun nœud ne correspond au filtre actuel.",
   "No model tree available.": "Aucune arborescence disponible.",
-  "No model metadata available.": "Aucune métadonnée disponible."
+  "No model metadata available.": "Aucune métadonnée disponible.",
+  "Back to document": "Revenir au document",
+  "Document": "Document",
+  "Attachments": "Pièces jointes",
+  "Download attachment": "Télécharger la pièce jointe",
+  "Retry": "Réessayer",
+  "No previewer is configured for this attachment.": "Aucun aperçu n’est configuré pour cette pièce jointe.",
+  "Some document attachments could not be read.": "Certaines pièces jointes du document n’ont pas pu être lues."
 }

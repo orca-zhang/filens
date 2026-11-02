@@ -151,12 +151,20 @@ describe('createVueDefaultPreviewRoutes', () => {
       driverId: 'text'
     });
 
+    for (const [contentType, format] of [
+      ['application/x-rar-compressed', 'rar'], ['application/vnd.rar', 'rar'], ['application/x-7z-compressed', '7z']
+    ]) {
+      const route = resolveFormatRoute({ contentType }, { routes });
+      expect(route).toMatchObject({ sourceFormat: format, targetFormat: format, driverId: 'archive' });
+      expect(route?.conversion?.required).not.toBe(true);
+      expect(accept).toContain(contentType);
+    }
+
     for (const forbidden of [
       'application/vnd.oasis.opendocument.text-master',
       'application/vnd.oasis.opendocument.text-web',
       'application/vnd.sun.xml.writer.global',
       'application/vnd.ms-excel.addin.macroenabled.12',
-      'application/x-rar-compressed',
       'application/vnd.apple.pages',
       'application/vnd.apple.keynote',
       'application/vnd.apple.numbers'

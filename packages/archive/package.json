@@ -1,7 +1,7 @@
 {
   "name": "@filens/archive",
   "version": "0.1.0",
-  "description": "Read-only ZIP, TAR, and GZIP preview and extraction for the @filens runtime.",
+  "description": "Read-only ZIP, RAR, 7z, TAR, and GZIP preview and extraction for the @filens runtime.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -12,6 +12,8 @@
   "keywords": [
     "archive",
     "zip",
+    "rar",
+    "7z",
     "tar",
     "gzip",
     "preview",
@@ -27,7 +29,8 @@
     "./style.css": "./dist/index.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "THIRD-PARTY-NOTICES.txt"
   ],
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",
@@ -43,6 +46,7 @@
     "@filens/core": "^0.1.0"
   },
   "devDependencies": {
+    "7z-wasm": "^1.2.0",
     "@filens/core": "file:../core"
   }
 }

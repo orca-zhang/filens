@@ -2,7 +2,9 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { sharedThreeCompression } from '../../scripts/shared-compression';
+import { gzipSync } from 'node:zlib';
+import { sharedCompression } from '../../scripts/shared-compression';
+import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 
 const root = path.resolve(__dirname, '../..');
 const single = process.env.FILENS_PREVIEW_BUILD === 'all-in-one';
@@ -11,6 +13,7 @@ const packages = ['archive', 'cad', 'core', 'converter-client', 'design', 'diagr
 const alias = packages.flatMap(name => [
   { find: `@filens/${name}/style.css`, replacement: path.join(root, `packages/${name}/src/${['design', 'media', 'office', 'text', 'vue'].includes(name) ? 'style.css' : 'styles/index.css'}`) },
   ...(name === 'core' ? [{ find: '@filens/core/zip', replacement: path.join(root, 'packages/core/src/zip.ts') }] : []),
+  ...(name === 'core' ? [{ find: '@filens/core/archive-volumes', replacement: path.join(root, 'packages/core/src/archive-volumes.ts') }] : []),
   { find: `@filens/${name}`, replacement: path.join(root, `packages/${name}/src/index.ts`) }
 ]);
 alias.push({ find: 'filens-step', replacement: path.join(root, 'packages/step/src/index.ts') });
@@ -33,10 +36,10 @@ function embeddedAssets() {
       const bytes = await readFile(asset);
       if (single) {
         const mime = file.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
-        // Blob workers work offline and need no relative imports. WASM stays a data URL
-        // so the core's existing lazy loader controls compilation and lifetime.
+        // Compress before base64 to avoid its large transfer and parse overhead.
+        // The shared WASM loader inflates lazily, retaining offline HTML support.
         return file.endsWith('.wasm')
-          ? `export default ${JSON.stringify(`data:${mime};base64,${bytes.toString('base64')}`)};`
+          ? `export default ${JSON.stringify(`data:application/wasm+gzip;base64,${gzipSync(bytes, { level: 9 }).toString('base64')}`)};`
           : `export default URL.createObjectURL(new Blob([${JSON.stringify(bytes.toString())}], {type:${JSON.stringify(mime)}}));`;
       }
       const reference = this.emitFile({ type: 'asset', name: path.basename(file), source: bytes });
@@ -51,7 +54,7 @@ function embeddedAssets() {
       }
     },
     async generateBundle() {
-      const notices = ['LICENSE', 'packages/step/vendor/THIRD-PARTY-NOTICES.txt'];
+      const notices = ['LICENSE', 'packages/step/vendor/THIRD-PARTY-NOTICES.txt', 'packages/archive/THIRD-PARTY-NOTICES.txt'];
       const texts = await Promise.all(notices.map(file => readFile(path.join(root, file), 'utf8')));
       // Worker-only dependencies are absent from the main Rollup module graph.
       const dependencyRoots = new Set<string>(['libheif-js'].map(name => path.join(root, 'node_modules', name)));
@@ -88,7 +91,8 @@ function embeddedStyles() {
 
 export default defineConfig({
   base: './',
-  plugins: [sharedThreeCompression(), embeddedAssets(), vue(), embeddedStyles()],
+  worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
+  plugins: [archiveEngineAssets(), sharedCompression(), embeddedAssets(), vue(), embeddedStyles()],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
   build: {

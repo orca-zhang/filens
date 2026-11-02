@@ -1,4 +1,4 @@
-import { openZipArchive, type ZipEntry } from '@filens/core/zip';
+import { openUnencryptedZipArchive, type ZipEntry } from '@filens/core/zip';
 import { uncompress as snappyUncompress } from 'snappyjs';
 import type { DetectIworkTypeOptions, IworkSource, IworkType } from '../types';
 import { loadSourceBytes } from './load-source';
@@ -23,7 +23,7 @@ export async function detectIworkType(source: IworkSource, options: DetectIworkT
   const bytes = await loadSourceBytes(source, {
     signal: options.signal
   });
-  const zip = await openZipArchive(bytes);
+  const zip = await openUnencryptedZipArchive(bytes);
   const entryNames = [...zip.keys()];
 
   const byArchiveTypes = await detectIworkTypeByArchiveTypes(zip);

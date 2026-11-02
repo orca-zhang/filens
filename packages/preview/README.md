@@ -1,6 +1,7 @@
 # Standalone browser previews / 独立前端预览
 
-Build the same preview engines as a single JavaScript file or split modules. Both
+Build the same preview engines as one main JavaScript file or split modules,
+with an optional external archive engine in either build. Both
 include Vue, styles, PDF/iWork workers and the document, image/RAW and STEP WASM
 engines. No conversion server or host Vue installation is needed.
 
@@ -32,12 +33,21 @@ npm run build:preview
 
 | Build | Deploy | Approximate runtime size |
 | --- | --- | --- |
-| Split | Entire `packages/preview/dist/split/` directory | 11.05 MB raw / 3.20 MB gzip / 2.52 MB Brotli, across all runtime files |
-| All in one | `packages/preview/dist/all-in-one/filens.js` | 12.68 MB raw / 3.77 MB gzip / 2.83 MB Brotli |
+| Split | Entire `packages/preview/dist/split/` directory | Main runtime: 11.23 MB raw / 3.26 MB gzip / 2.57 MB Brotli |
+| All in one | `packages/preview/dist/all-in-one/filens.js`, plus archive sidecars when needed | Main JS: 8.84 MB raw / 3.25 MB gzip / 2.90 MB Brotli |
+| Optional archive engine, either build | `archive/7zz.wasm` and `assets/archive-worker-*.js` | 0.88 MB raw / 0.35 MB gzip / 0.28 MB Brotli |
 
 These are current source build measurements (MB = 1,000,000 bytes), including
 application icons, optional Office decryption and 28 locale dictionaries. The
-npm package contains both directories, including notices, types and
+archive engine always stays external, including all-in-one builds, and is loaded
+only for RAR, 7z or multi-volume ZIP. Ordinary ZIP and ZIP-based document formats
+share the existing JSZip/fflate dependencies. The extraction-only engine uses
+-O3 and LTO, retains encryption and all supported decoders, and shares its compiled
+WASM module between fresh per-operation workers. iWork uses the ordinary ZIP
+reader without duplicating the ZIP encryption library. Including the optional engine, the
+split total is 12.11 MB raw / 3.61 MB gzip / 2.85 MB Brotli; the all-in-one directory
+totals 9.73 MB raw / 3.60 MB gzip / 3.18 MB Brotli. These totals exclude notices.
+The npm package contains both directories, including notices, types and
 documentation. Packed and installed bytes are recorded for each release.
 [Package measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-package-sizes.json).
 
@@ -69,8 +79,10 @@ direct Vue component integration.
 
 Split chunks can range from a few KB to hundreds of KB after compression. Those
 figures exclude shared dependencies and engines; a chunk is not a complete
-per-format download. The all-in-one file embeds CSS, base64 WASM and workers; it
-needs no additional runtime files.
+per-format download. The all-in-one file embeds CSS and document/image engines.
+The RAR/7z engine and its worker are always separate files, never base64-embedded;
+deploy both sidecars alongside the main JS to enable RAR, 7z and multi-volume ZIP.
+They can be omitted when those formats are not required.
 A separate notices file accompanies
 both builds and should be distributed with them. [Exact measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-build-sizes.json).
 
@@ -79,6 +91,8 @@ Pages with a Content Security Policy must permit the generated inline styles,
 `blob:` workers and `data:` WASM. Use an HTTP(S) server for module imports, rather
 than opening the module-importing `index.html` as a `file:` URL. The CLI's
 self-contained HTML embeds the module instead and supports `file:` URLs.
+RAR, 7z and multi-volume ZIP require the separate archive assets over HTTP(S);
+CLI HTML shows a `--mode serve` fallback for them instead of embedding the engine.
 The supported formats and fidelity
 limits are shared with the [demo](https://github.com/IceWhaleTech/filens/blob/main/docs/support-matrix.md).
 
@@ -98,13 +112,27 @@ and Windows PNG/DIB icon frames. These additions are included in 0.2.0.
 See the [supported icon representations
 and limits](../vue/README.md#application-icons-source-build).
 
+The browser file picker accepts multi-volume RAR (`.part01.rar` or `.rar`/`.r00`),
+7z (`.7z.001`) and ZIP (`.zip.001` or `.z01`/`.zip`) archives. Select every part
+together; picker order does not matter. Password prompts and nested previews
+work across the parts. Missing first/intermediate volumes identify the filename;
+the engine validates completeness. Limits are 256 parts and 512 MiB compressed
+input per set, with 128 MiB per expanded entry. Both HTTP(S)-served builds support
+this workflow with local archive sidecars; no remote service or CDN is used.
+Programmatic callers supply the other
+parts as `src.archiveVolumes: [{ name, source }]`; see the
+[core API example](../core/README.md).
+
 The split build loads `converter-office.wasm` only when an encrypted Office
 document has a supplied password; a password prompt alone does not download it.
 The core is about 413 KB gzip, and the optional decryptor about 164 KB gzip.
 Splitting saves about 64 KB gzip on ordinary converted previews, while downloading
 both costs about 100 KB gzip more than the combined core due to shared code.
 The all-in-one file uses the combined core (477 KB gzip / 387 KB Brotli) to avoid
-that duplication; its download includes decryption. See the
+that duplication; its download includes decryption. Embedded WASM is gzipped
+before base64 encoding and decompressed on first use, with a JavaScript fallback
+for browsers without DecompressionStream. HTTP split assets remain ordinary WASM
+and use streaming compilation when the server supplies the correct MIME. See the
 [same-source measurements](../../docs/converter-size-impact.md) and the
 [format package audit](../../docs/format-package-sizes.md).
 
@@ -199,17 +227,18 @@ macOS; Windows/Linux browser launching still needs native validation.
 ## 中文说明
 
 两种产物使用相同 API：分包版部署整个 `split/` 目录，WASM 与重型引擎按需加载；
-单文件版仅需部署 `all-in-one/filens.js`，其中包含 Vue、样式、Worker 和 WASM，
-另附第三方许可文件。单文件部署更简单，初次下载也更大。
+单文件版的 `all-in-one/filens.js` 包含 Vue、样式和文档/图片引擎，另附第三方许可文件。
+RAR/7z 和分卷 ZIP 始终使用独立的 `archive/7zz.wasm` 与 `assets/archive-worker-*.js`，
+按需加载，任何构建都不合并进主 JS。无需这些格式时可以省略这两个资源。
 
 `filens preview 文件路径` 会启动本地浏览器预览，由前端完成格式解析与渲染。
 CLI 0.5.0 首次预览时自动安装 filens-preview 0.2.0，也可先运行 `filens setup-preview`；
 源码版先运行 `npm run build:agent:preview`。
-当前源码构建中，分包运行时合计 2.52 MB Brotli，单文件为 2.83 MB Brotli / 3.77 MB gzip / 12.68 MB 原始体积，已包含安装包图标、可选 Office 解密模块和 28 个语言包。分包版仅在加密 Office 文档提交密码后加载解密模块；单文件版使用含解密功能的合并核心，避免重复代码。合并核心为 477 KB gzip / 387 KB Brotli，尚未达到约 300 KB 的目标。
+当前源码构建中，分包主运行时合计 3.26 MB gzip，单文件主 JS 为 3.25 MB gzip / 8.84 MB 原始体积，已包含安装包图标、可选 Office 解密模块和 28 个语言包。独立压缩引擎及 Worker 合计 0.35 MB gzip；计入后分包合计 3.61 MB、单文件目录合计 3.60 MB gzip。压缩引擎采用 O3 加 LTO，保留密码、固实压缩、分卷和所有原有解码器，移除写入功能及未使用的格式；复用编译模块，各操作仍使用独立 Worker 和内存。iWork 不再重复内嵌 ZIP 解密库。JSZip 使用源模块，让 ZIP 文档和 TIFF 共享同一份 pako，Three.js 与文档解析器共享 fflate。分包版仅在加密 Office 文档提交密码后加载解密模块；单文件版使用含解密功能的合并核心。自包含 HTML 不嵌入压缩引擎，RAR/7z 和分卷 ZIP 使用 `--mode serve`。
 独立 npm 包同时包含两种产物，[各版本包体积记录](../../docs/preview-package-sizes.json)。
 CLI 的安装体积另计：Lite 7.7–8.1 MiB，Full 31.1–36.8 MiB（含 OCR 运行时与模型）；
 其中原生可执行文件为 1.8–2.2 MiB，不含 Node.js、缓存及预览包。
-源码仅附带分包目录时约 11.6 MB（含许可文件与 HTML）。图片先尝试原生显示，分包版仅在失败时加载 HEIF 解码器；视频使用浏览器编解码器，不支持的编码可通过可选 mediaConverter 接入转换器。`--no-open --json` 返回本地地址，`--assets` 可切换单文件或分包版，
+源码分包目录的运行时约 13.04 MB（不含许可文件与 HTML）。图片先尝试原生显示，分包版仅在失败时加载 HEIF 解码器；视频使用浏览器编解码器，不支持的编码可通过可选 mediaConverter 接入转换器。`--no-open --json` 返回本地地址，`--assets` 可切换单文件或分包版，
 HTTP 模式下 Ctrl-C 退出。**CLI 0.5.0 默认生成携带原文件、预览引擎和许可说明的独立 HTML**，
 通过 `file://` 打开，生成后 CLI 退出，无需本地服务器，可完全离线使用。
 `--output preview.html` 保存到指定路径且不覆盖已有文件；默认临时 HTML 不会随 CLI

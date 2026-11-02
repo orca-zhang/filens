@@ -87,5 +87,12 @@
   "Isolate": "Elkülönítés",
   "No nodes matched the current filter.": "Nincs a jelenlegi szűrőnek megfelelő csomópont.",
   "No model tree available.": "Nincs elérhető modellfa.",
-  "No model metadata available.": "Nincsenek elérhető modellmetaadatok."
+  "No model metadata available.": "Nincsenek elérhető modellmetaadatok.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

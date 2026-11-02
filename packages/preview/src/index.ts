@@ -6,6 +6,7 @@ import { createWasmPanoramaProcessor, type PanoramaProcessor } from '@filens/pan
 import coreWasm from '../../../wasm/converter-core/dist/converter-core.wasm?url';
 import imageWasm from '../../../wasm/converter-image/dist/converter-image.wasm?url';
 import officeWasm from '../../../wasm/converter-core/dist/converter-office.wasm?url';
+export { isArchiveVolumeName, selectArchiveVolumes } from '@filens/core/archive-volumes';
 
 export interface BrowserPreviewOptions extends PreviewOptions {
   src: PreviewSource | SourceDescriptor;

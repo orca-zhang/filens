@@ -1,0 +1,814 @@
+{
+  "date": "2026-11-02",
+  "unit": "bytes",
+  "scope": "Local unpublished source builds. Runtime sizes exclude HTML, notices and declarations; npm sizes include both independently deployable layouts and all shipped files. gzip level 9 and Brotli quality 11. Historical pre-feature numbers have fewer supported features. MB = 1000000 bytes.",
+  "beforeThisOptimization": {
+    "runtimes": {
+      "split": {
+        "main": {
+          "raw": 11324604,
+          "gzip": 3291032,
+          "brotli": 2601112
+        },
+        "archive": {
+          "raw": 1711850,
+          "gzip": 690723,
+          "brotli": 547379
+        },
+        "total": {
+          "raw": 13036454,
+          "gzip": 3981755,
+          "brotli": 3148491
+        }
+      },
+      "all-in-one": {
+        "main": {
+          "raw": 12992603,
+          "gzip": 3879221,
+          "brotli": 2919798
+        },
+        "archive": {
+          "raw": 1711850,
+          "gzip": 690723,
+          "brotli": 547379
+        },
+        "total": {
+          "raw": 14704453,
+          "gzip": 4569944,
+          "brotli": 3467177
+        }
+      }
+    },
+    "npm": {
+      "packed": 8655935,
+      "unpacked": 28666824
+    }
+  },
+  "preFeatureBaseline": {
+    "commit": "daf83d8dedf7b5836ab7f23aaa8e30ddbb3aeaea",
+    "runtimes": {
+      "split": {
+        "total": {
+          "raw": 11048718,
+          "gzip": 3199077,
+          "brotli": 2522450
+        }
+      },
+      "all-in-one": {
+        "total": {
+          "raw": 12680146,
+          "gzip": 3767906,
+          "brotli": 2827093
+        }
+      }
+    },
+    "npm": {
+      "name": "filens-preview",
+      "version": "0.2.0",
+      "packed": 7041835,
+      "unpacked": 24557391
+    }
+  },
+  "current": {
+    "runtimes": {
+      "split": {
+        "main": {
+          "raw": 11229472,
+          "gzip": 3256448,
+          "brotli": 2571841
+        },
+        "archive": {
+          "raw": 882120,
+          "gzip": 348806,
+          "brotli": 276030
+        },
+        "total": {
+          "raw": 12111592,
+          "gzip": 3605254,
+          "brotli": 2847871
+        }
+      },
+      "all-in-one": {
+        "main": {
+          "raw": 8844608,
+          "gzip": 3254826,
+          "brotli": 2901690
+        },
+        "archive": {
+          "raw": 882120,
+          "gzip": 348806,
+          "brotli": 276030
+        },
+        "total": {
+          "raw": 9726728,
+          "gzip": 3603632,
+          "brotli": 3177720
+        }
+      }
+    },
+    "npm": {
+      "name": "filens-preview",
+      "version": "0.2.0",
+      "localUnpublished": true,
+      "packed": 7318499,
+      "unpacked": 22770717,
+      "sha256": "26d9f7711b933755b5df80904cc136c07080918b079e6e81a4ef8df3f9b2c1ac",
+      "files": 35
+    }
+  },
+  "archiveEngine": {
+    "engine": "7-Zip",
+    "version": "24.09",
+    "repository": "https://github.com/ip7z/7zip.git",
+    "commit": "e5431fa6f5505e385c6f9367260717e9c47dc2ee",
+    "emscripten": "4.0.10",
+    "optimization": "-O3 -flto",
+    "extractOnly": true,
+    "formats": [
+      "7z",
+      "rar",
+      "rar5",
+      "zip",
+      "split"
+    ],
+    "sha256": {
+      "7zz.js": "2e1d433c3ee7284fc941e1fa4408eaa0a70d61cb2d0b64ce07637c96ffbe44f5",
+      "7zz.wasm": "57cbbfa6db900551728338f54fb812a122584cacc2c07ea098b29a86d647e5d1",
+      "7zip-24.09.patch": "6b9b07e838c6edf898dce5e4de9ba4882f82ce0bc2b6a2fb7d9b17a6e681ec9a"
+    }
+  },
+  "performance": {
+    "date": "2026-11-01T17:15:47.021Z",
+    "platform": "darwin-arm64",
+    "browser": "147.0.7727.15",
+    "iterations": 5,
+    "scope": "Actual previews, fresh browser context per case, gzip HTTP, 4 MB/s and 20 ms latency; normal HTTP caching retained within each case. Alternating before/after order. Median wall times include browser/UI scheduling. No claim for other devices or formats.",
+    "summary": [
+      {
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "before": {
+          "pageLoadMs": 347.8,
+          "openMs": 210.5
+        },
+        "after": {
+          "pageLoadMs": 348.9,
+          "openMs": 205.2
+        }
+      },
+      {
+        "mode": "split",
+        "fixture": "raw-image",
+        "before": {
+          "pageLoadMs": 345,
+          "openMs": 287.9
+        },
+        "after": {
+          "pageLoadMs": 345.9,
+          "openMs": 287.7
+        }
+      },
+      {
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "before": {
+          "pageLoadMs": 344.6,
+          "openMs": 292.2,
+          "passwordRetryMs": 107,
+          "unlockMs": 78,
+          "extractMs": 128,
+          "wasmRequests": 4
+        },
+        "after": {
+          "pageLoadMs": 344.2,
+          "openMs": 188.8,
+          "passwordRetryMs": 107.3,
+          "unlockMs": 79.2,
+          "extractMs": 128.5,
+          "wasmRequests": 1
+        }
+      },
+      {
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "before": {
+          "pageLoadMs": 1211.8,
+          "openMs": 98.7
+        },
+        "after": {
+          "pageLoadMs": 1025.4,
+          "openMs": 91.5
+        }
+      },
+      {
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "before": {
+          "pageLoadMs": 1209.6,
+          "openMs": 97.5
+        },
+        "after": {
+          "pageLoadMs": 1019.8,
+          "openMs": 77.4
+        }
+      },
+      {
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "before": {
+          "pageLoadMs": 1206.6,
+          "openMs": 292.3,
+          "passwordRetryMs": 108.2,
+          "unlockMs": 78,
+          "extractMs": 136.7,
+          "wasmRequests": 4
+        },
+        "after": {
+          "pageLoadMs": 1021.9,
+          "openMs": 191.7,
+          "passwordRetryMs": 107.6,
+          "unlockMs": 77.5,
+          "extractMs": 130,
+          "wasmRequests": 1
+        }
+      }
+    ],
+    "observations": [
+      {
+        "iteration": 0,
+        "build": "before",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 417.456958,
+        "openMs": 232.5545840000001
+      },
+      {
+        "iteration": 0,
+        "build": "before",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 344.418958,
+        "openMs": 287.5110830000001
+      },
+      {
+        "iteration": 0,
+        "build": "before",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 360.71158300000025,
+        "openMs": 359.58854199999996,
+        "passwordRetryMs": 113.81616600000007,
+        "unlockMs": 88.57312499999989,
+        "extractMs": 150.78812500000004,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 0,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1528.7459170000002,
+        "openMs": 111.26237499999934
+      },
+      {
+        "iteration": 0,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1210.1849999999995,
+        "openMs": 99.27075000000059
+      },
+      {
+        "iteration": 0,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1208.5061669999996,
+        "openMs": 312.8903330000003,
+        "passwordRetryMs": 107.21858300000076,
+        "unlockMs": 81.45220900000004,
+        "extractMs": 129.9774579999994,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 0,
+        "build": "after",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 360.94816699999956,
+        "openMs": 198.81925000000047
+      },
+      {
+        "iteration": 0,
+        "build": "after",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 345.72604200000023,
+        "openMs": 288.012917
+      },
+      {
+        "iteration": 0,
+        "build": "after",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 347.08716600000116,
+        "openMs": 188.51829199999884,
+        "passwordRetryMs": 107.67508300000009,
+        "unlockMs": 78.93112500000097,
+        "extractMs": 128.54283299999952,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 0,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1185.3843749999996,
+        "openMs": 91.02737499999967
+      },
+      {
+        "iteration": 0,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1011.375333,
+        "openMs": 71.69712499999878
+      },
+      {
+        "iteration": 0,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1009.5172920000005,
+        "openMs": 190.42116600000008,
+        "passwordRetryMs": 107.16975000000093,
+        "unlockMs": 79.21750000000065,
+        "extractMs": 111.73374999999942,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 1,
+        "build": "after",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 352.39737499999865,
+        "openMs": 204.6482500000002
+      },
+      {
+        "iteration": 1,
+        "build": "after",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 345.93333299999904,
+        "openMs": 287.0966669999998
+      },
+      {
+        "iteration": 1,
+        "build": "after",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 343.7052079999994,
+        "openMs": 191.93487500000083,
+        "passwordRetryMs": 106.8099170000005,
+        "unlockMs": 79.37462500000038,
+        "extractMs": 128.23025000000052,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 1,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1018.4742500000011,
+        "openMs": 89.4989170000008
+      },
+      {
+        "iteration": 1,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1019.7649579999998,
+        "openMs": 78.19408399999884
+      },
+      {
+        "iteration": 1,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1025.1175000000003,
+        "openMs": 191.93212499999936,
+        "passwordRetryMs": 106.96062499999971,
+        "unlockMs": 79.77754199999981,
+        "extractMs": 128.7335839999978,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 1,
+        "build": "before",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 347.79237499999726,
+        "openMs": 209.37162499999977
+      },
+      {
+        "iteration": 1,
+        "build": "before",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 345.21054099999674,
+        "openMs": 287.945334
+      },
+      {
+        "iteration": 1,
+        "build": "before",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 344.283875000001,
+        "openMs": 291.3982920000017,
+        "passwordRetryMs": 106.60162500000297,
+        "unlockMs": 79.94504199999938,
+        "extractMs": 127.96670900000026,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 1,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1211.836625,
+        "openMs": 98.08616699999766
+      },
+      {
+        "iteration": 1,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1216.0254999999997,
+        "openMs": 97.52870800000164
+      },
+      {
+        "iteration": 1,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1206.5844590000015,
+        "openMs": 292.25183299999844,
+        "passwordRetryMs": 107.65124999999898,
+        "unlockMs": 77.78370800000266,
+        "extractMs": 113.24324999999953,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 2,
+        "build": "before",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 347.7138750000013,
+        "openMs": 210.66866700000173
+      },
+      {
+        "iteration": 2,
+        "build": "before",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 349.4050419999985,
+        "openMs": 284.15341700000135
+      },
+      {
+        "iteration": 2,
+        "build": "before",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 343.6398749999971,
+        "openMs": 292.4629160000004,
+        "passwordRetryMs": 107.21583299999838,
+        "unlockMs": 78.00737500000105,
+        "extractMs": 127.13025000000198,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 2,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1211.8567079999993,
+        "openMs": 98.72379200000069
+      },
+      {
+        "iteration": 2,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1199.9215000000004,
+        "openMs": 98.31945899999846
+      },
+      {
+        "iteration": 2,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1196.3372920000038,
+        "openMs": 292.29770799999824,
+        "passwordRetryMs": 108.29158299999835,
+        "unlockMs": 78.24358300000313,
+        "extractMs": 140.8970410000038,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 2,
+        "build": "after",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 344.82337499999994,
+        "openMs": 213.67662500000006
+      },
+      {
+        "iteration": 2,
+        "build": "after",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 345.2040829999969,
+        "openMs": 287.9045000000042
+      },
+      {
+        "iteration": 2,
+        "build": "after",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 344.1660000000047,
+        "openMs": 188.4766249999957,
+        "passwordRetryMs": 107.73487500000192,
+        "unlockMs": 79.17133299999841,
+        "extractMs": 129.39154199999757,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 2,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1026.5694159999985,
+        "openMs": 99.57679199999984
+      },
+      {
+        "iteration": 2,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1018.4835830000011,
+        "openMs": 78.87541699999565
+      },
+      {
+        "iteration": 2,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1026.529125000001,
+        "openMs": 191.67041700000118,
+        "passwordRetryMs": 107.9755409999998,
+        "unlockMs": 77.47662500000297,
+        "extractMs": 130.0144169999985,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 3,
+        "build": "after",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 348.87966700000106,
+        "openMs": 205.15870799999539
+      },
+      {
+        "iteration": 3,
+        "build": "after",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 347.30458299999736,
+        "openMs": 287.705833
+      },
+      {
+        "iteration": 3,
+        "build": "after",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 344.2116670000032,
+        "openMs": 191.36370799999713,
+        "passwordRetryMs": 107.32733300000109,
+        "unlockMs": 79.45579199999338,
+        "extractMs": 127.24224999999569,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 3,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1025.387499999997,
+        "openMs": 100.87312500000553
+      },
+      {
+        "iteration": 3,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1020.7268750000003,
+        "openMs": 77.35041700000147
+      },
+      {
+        "iteration": 3,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1019.6615420000016,
+        "openMs": 190.68079099999886,
+        "passwordRetryMs": 108.07800000000134,
+        "unlockMs": 29.786417000002984,
+        "extractMs": 134.46229100000346,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 3,
+        "build": "before",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 348.23099999999977,
+        "openMs": 209.19416700000147
+      },
+      {
+        "iteration": 3,
+        "build": "before",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 344.9802500000005,
+        "openMs": 288.35750000000553
+      },
+      {
+        "iteration": 3,
+        "build": "before",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 345.5293329999986,
+        "openMs": 292.15812500000175,
+        "passwordRetryMs": 107.01187499999651,
+        "unlockMs": 77.24991699999373,
+        "extractMs": 112.29550000000017,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 3,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1210.0982079999958,
+        "openMs": 100.4389580000061
+      },
+      {
+        "iteration": 3,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1200.3882909999957,
+        "openMs": 83.40791700000409
+      },
+      {
+        "iteration": 3,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1199.7240410000013,
+        "openMs": 290.9309590000048,
+        "passwordRetryMs": 110.66012500000215,
+        "unlockMs": 77.14091699999699,
+        "extractMs": 137.4546249999985,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 4,
+        "build": "before",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 346.60262499999953,
+        "openMs": 210.4788750000007
+      },
+      {
+        "iteration": 4,
+        "build": "before",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 343.47875000000204,
+        "openMs": 289.88195899999846
+      },
+      {
+        "iteration": 4,
+        "build": "before",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 344.64620899999863,
+        "openMs": 290.87975000000006,
+        "passwordRetryMs": 106.44758300000103,
+        "unlockMs": 77.4390840000051,
+        "extractMs": 129.5802079999994,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 4,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1201.0166250000038,
+        "openMs": 93.08774999999878
+      },
+      {
+        "iteration": 4,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1209.5670830000017,
+        "openMs": 87.83620900000096
+      },
+      {
+        "iteration": 4,
+        "build": "before",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1217.2344999999987,
+        "openMs": 292.0485839999965,
+        "passwordRetryMs": 108.22720800000388,
+        "unlockMs": 78.01291700000002,
+        "extractMs": 136.721292000002,
+        "wasmRequests": 4
+      },
+      {
+        "iteration": 4,
+        "build": "after",
+        "mode": "split",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 347.88133400000515,
+        "openMs": 211.6780409999992
+      },
+      {
+        "iteration": 4,
+        "build": "after",
+        "mode": "split",
+        "fixture": "raw-image",
+        "pageLoadMs": 348.20537499999773,
+        "openMs": 284.44104200000584
+      },
+      {
+        "iteration": 4,
+        "build": "after",
+        "mode": "split",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 345.80249999999796,
+        "openMs": 188.79624999999942,
+        "passwordRetryMs": 106.60174999999435,
+        "unlockMs": 28.614207999999053,
+        "extractMs": 130.91937499999767,
+        "wasmRequests": 1
+      },
+      {
+        "iteration": 4,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "legacy-doc",
+        "pageLoadMs": 1018.8995000000068,
+        "openMs": 91.52091599999403
+      },
+      {
+        "iteration": 4,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "raw-image",
+        "pageLoadMs": 1022.5217080000002,
+        "openMs": 75.73466699999699
+      },
+      {
+        "iteration": 4,
+        "build": "after",
+        "mode": "all-in-one",
+        "fixture": "encrypted-rar",
+        "pageLoadMs": 1021.861834000003,
+        "openMs": 191.88891599999624,
+        "passwordRetryMs": 107.61691699999938,
+        "unlockMs": 30.55800000000454,
+        "extractMs": 130.84145899999567,
+        "wasmRequests": 1
+      }
+    ]
+  },
+  "verification": {
+    "archiveUnitTests": 146,
+    "iworkUnitTests": 336,
+    "zipAndAttachmentTests": 20,
+    "archiveAssetBrowserChecks": 12,
+    "standaloneBrowserPreviews": 48,
+    "offlineHtmlChecks": 17,
+    "demoAttachmentAndPasswordTests": 31,
+    "isolatedNpmInstallationAndTypes": true,
+    "npmViteRebundlePreviews": 12,
+    "nativeAudioAndHeifChecks": true,
+    "sourceAndBinaryHashesReproduced": true,
+    "conversionPolicyChecks": 1691,
+    "artifactPrivacyChecks": true
+  }
+}

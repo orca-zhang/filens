@@ -1,7 +1,14 @@
-import { gunzipSync } from 'fflate';
+import { Gunzip } from 'fflate';
+import { ARCHIVE_VOLUME_LIMITS, isArchiveVolumeName, selectArchiveVolumes } from './volumes';
 import {
   createDefaultPreviewRoutes,
   openZipArchive,
+  createPreviewContainerContext,
+  descendPreviewContainer,
+  PREVIEW_CONTAINER_LIMITS,
+  readPreviewContainerEntry,
+  readWithPreviewPassword,
+  previewPasswordErrorCode,
   type ArchivePreviewState,
   type FormatDefinition,
   type PreviewDriver,
@@ -9,11 +16,14 @@ import {
   type PreviewEventName,
   type PreviewLoadContext,
   type PreviewOptions,
+  type PreviewContainerContext,
   type PreviewResourceResolver,
   type PreviewSession,
   type PreviewerInstance,
   type PreviewSource
 } from '@filens/core';
+
+type ArchiveVolumeBytes = { name: string; bytes: Uint8Array };
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -23,6 +33,8 @@ export interface ArchiveResourceResolverOptions {
   root?: string;
   contentTypes?: Record<string, string>;
   preferBlob?: boolean;
+  requestPassword?: PreviewOptions['requestPassword'];
+  containerContext?: PreviewContainerContext;
 }
 
 export type ZipResourceResolverOptions = ArchiveResourceResolverOptions;
@@ -32,6 +44,7 @@ export interface ArchiveResource {
   type: 'file' | 'directory';
   size?: number;
   modified?: number;
+  encrypted?: boolean;
   contentType?: string;
   readAsArrayBuffer(): Promise<ArrayBuffer>;
   readAsBlob(): Promise<Blob>;
@@ -54,18 +67,28 @@ type ArchiveEntryRecord = {
   type: 'file' | 'directory';
   size?: number;
   modified?: number;
-  read(): Promise<Uint8Array>;
+  encrypted?: boolean;
+  read(signal?: AbortSignal): Promise<Uint8Array>;
 };
 
 type ArchiveFrame = {
   label: string;
   entries: ArchiveEntryRecord[];
+  containerContext: PreviewContainerContext;
   resources?: Map<string, ArchiveEntryRecord>;
   listings?: Map<string, ArchivePreviewState['entries']>;
   directories?: Map<string, ArchiveEntryRecord[]>;
 };
 
 export const ARCHIVE_FORMAT_ROUTES: FormatDefinition[] = [
+  {
+    extensions: ['rar'], family: 'archive', driverId: 'archive', targetFormat: 'rar',
+    contentTypes: ['application/vnd.rar', 'application/x-rar-compressed']
+  },
+  {
+    extensions: ['7z'], family: 'archive', driverId: 'archive', targetFormat: '7z',
+    contentTypes: ['application/x-7z-compressed']
+  },
   {
     extensions: ['zip', 'jar', 'war', 'ear', 'apk'],
     family: 'archive',
@@ -158,11 +181,12 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     try {
       if (context.signal?.aborted) controller.abort();
       checkArchiveLoadAborted(signal);
-      const bytes = new Uint8Array(await sourceToArrayBuffer(source, { ...context, signal }));
+      const { bytes, volumes } = await readArchiveInput(source, { ...context, signal });
       checkArchiveLoadAborted(signal);
       const label = context.descriptor.name ?? 'archive';
       const format = detectArchiveFormat(label, context.route?.sourceFormat ?? context.descriptor.extension);
-      const archive = await readArchive(bytes, format, label, signal);
+      const archive = await readArchive(bytes, format, label, signal, this.options,
+        this.options.containerContext ?? createPreviewContainerContext(), context.descriptor.password, volumes);
       checkArchiveLoadAborted(signal);
       this.archiveStack = [archive];
 
@@ -259,6 +283,17 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     });
 
     toolbar.append(closeNestedButton, upButton, rootButton);
+    if (this.activeEntry && typeof URL.createObjectURL === 'function') {
+      this.entryObjectUrl ??= URL.createObjectURL(new Blob([copyBytesToArrayBuffer(this.activeEntry.source)], {
+        type: this.activeEntry.contentType ?? 'application/octet-stream'
+      }));
+      const download = document.createElement('a');
+      download.className = 'archivev-button';
+      download.textContent = this.options.translate?.('Download attachment') ?? 'Download attachment';
+      download.href = this.entryObjectUrl;
+      download.download = this.activeEntry.name.split('/').pop() ?? 'attachment.bin';
+      toolbar.append(download);
+    }
 
     if (this.activeEntry && this.entryPreviewHost) {
       this.root.replaceChildren(summary, toolbar, this.entryPreviewHost);
@@ -393,7 +428,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     this.render();
 
     try {
-      const source = await waitForArchiveLoad(entry.read(), signal);
+      const source = await waitForArchiveLoad(entry.read(signal), signal);
       checkArchiveLoadAborted(signal);
       this.activeEntry = {
         name,
@@ -408,6 +443,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       if (previewerFactory) {
         const previewer = previewerFactory(this.entryPreviewHost, {
           ...this.options,
+          containerContext: descendPreviewContainer(frame.containerContext),
           resourceResolver: this.createEntryResourceResolver(frame, entry.name, signal)
         });
         this.entryPreviewer = previewer;
@@ -433,21 +469,27 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       this.state = {
         ...this.state,
         loading: false,
-        error: this.entryPreviewer?.getState().error ?? null
+        error: null
       };
       this.emit('statechange', this.state);
     } catch (error) {
       if (!isCurrent()) return;
+      if (previewPasswordErrorCode(error) === 'password_cancelled') { this.closeEntryPreview(); return; }
       const normalizedError = error instanceof Error ? error : new Error(String(error));
-      this.state = { ...this.state, loading: false, error: normalizedError.message };
-      this.emit('error', normalizedError);
-      this.emit('statechange', this.state);
+      this.setEntryPreviewError(normalizedError);
     }
   }
 
   private setEntryPreviewError(error: Error): void {
-    this.state = { ...this.state, loading: false, error: error.message };
-    this.emit('error', error);
+    if (previewPasswordErrorCode(error) === 'password_cancelled') { this.closeEntryPreview(); return; }
+    this.state = { ...this.state, loading: false, error: null };
+    const host = this.entryPreviewHost ?? this.root;
+    host.querySelector('.archivev-entry-error')?.remove();
+    const message = document.createElement('p');
+    message.className = 'archivev-entry-error';
+    message.setAttribute('role', 'alert');
+    message.textContent = error.message;
+    host.append(message);
     this.emit('statechange', this.state);
   }
 
@@ -556,7 +598,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
         const entry = (!rooted ? entries.get(normalizeZipEntryName(directory + source)) : undefined)
           ?? entries.get(normalizeZipEntryName(source));
         if (entry) {
-          const bytes = await waitForArchiveLoad(entry.read(), signal);
+          const bytes = await waitForArchiveLoad(entry.read(signal), signal);
           checkArchiveLoadAborted(signal);
           return {
             source: bytes,
@@ -630,10 +672,23 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     this.render();
 
     try {
-      const label = name.split('/').pop() ?? name;
-      const bytes = await waitForArchiveLoad(archiveEntry.read(), signal);
+      const set = selectArchiveVolumes(archiveEntry.name, current.entries.filter(entry => entry.type === 'file'));
+      const primary = set?.primary ?? archiveEntry;
+      const label = primary.name.split('/').pop() ?? primary.name;
+      const nestedContext = descendPreviewContainer(current.containerContext);
+      const bytes = await waitForArchiveLoad(primary.read(signal), signal);
+      const volumes: ArchiveVolumeBytes[] = [];
+      let total = bytes.byteLength;
+      for (const part of set?.files.slice(1) ?? []) {
+        if (total + (part.size ?? 0) > ARCHIVE_VOLUME_LIMITS.maxBytes) throw new Error('Archive volumes exceed the preview input size limit.');
+        const data = await waitForArchiveLoad(part.read(signal), signal);
+        total += data.byteLength;
+        if (total > ARCHIVE_VOLUME_LIMITS.maxBytes) throw new Error('Archive volumes exceed the preview input size limit.');
+        volumes.push({ name: part.name.split('/').pop()!, bytes: data });
+      }
       checkArchiveLoadAborted(signal);
-      const archive = await readArchive(bytes, detectArchiveFormat(label), label, signal);
+      const archive = await readArchive(bytes, detectArchiveFormat(label), label, signal,
+        this.options, nestedContext, undefined, volumes);
       checkArchiveLoadAborted(signal);
       this.closeEntryPreview(false);
       this.archiveStack.push(archive);
@@ -646,11 +701,9 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       this.emit('rendered', this.state);
     } catch (error) {
       if (signal.aborted) return;
+      if (previewPasswordErrorCode(error) === 'password_cancelled') { this.closeEntryPreview(); return; }
       const normalizedError = error instanceof Error ? error : new Error(String(error));
-      this.state.loading = false;
-      this.state.error = normalizedError.message;
-      this.emit('error', normalizedError);
-      this.emit('statechange', this.state);
+      this.setEntryPreviewError(normalizedError);
     }
   }
 
@@ -697,7 +750,9 @@ export async function createArchiveResourceIndex(
 ): Promise<ArchiveResourceIndex> {
   const label = context.descriptor.name ?? 'archive';
   const format = detectArchiveFormat(label, context.route?.sourceFormat ?? context.descriptor.extension);
-  const archive = await readArchive(new Uint8Array(await sourceToArrayBuffer(source, context)), format, label, context.signal);
+  const { bytes, volumes } = await readArchiveInput(source, context);
+  const archive = await readArchive(bytes, format, label, context.signal,
+    options, options.containerContext ?? createPreviewContainerContext(), context.descriptor.password, volumes);
   checkArchiveLoadAborted(context.signal);
   const root = normalizeZipEntryName(options.root ?? '');
   // readArchive already sorts entries. Build every lookup from the same
@@ -762,39 +817,75 @@ export async function createZipResourceResolver(
   return index.resolve;
 }
 
-async function readArchive(bytes: Uint8Array, format: string, label: string, signal?: AbortSignal): Promise<ArchiveFrame> {
+async function readArchive(
+  bytes: Uint8Array, format: string, label: string, signal: AbortSignal | undefined,
+  options: Pick<PreviewOptions, 'requestPassword'>, containerContext: PreviewContainerContext, password?: string,
+  volumes: readonly ArchiveVolumeBytes[] = []
+): Promise<ArchiveFrame> {
   checkArchiveLoadAborted(signal);
+  const frame = (entries: ArchiveEntryRecord[]): ArchiveFrame => {
+    if (entries.length > PREVIEW_CONTAINER_LIMITS.maxEntries) throw new Error('Archive contains too many entries.');
+    return { label, containerContext, entries: entries.map(entry => ({ ...entry,
+      read: (readSignal = signal) => readPreviewContainerEntry(() => entry.read(readSignal), entry.size, containerContext, readSignal)
+    })) };
+  };
+  const volumeSet = selectArchiveVolumes(label, [{ name: label, bytes }, ...volumes]);
+  if (format === 'rar' || format === '7z' || volumeSet) {
+    const { runArchiveWorker } = await import('./sevenzip/client');
+    const primary = volumeSet?.primary ?? { name: label, bytes };
+    const archiveFormat = volumeSet?.format ?? format as 'rar' | '7z';
+    const input = { bytes: primary.bytes, format: archiveFormat,
+      ...(volumeSet ? { name: primary.name, volumes: volumeSet.files.slice(1) } : {}) };
+    let archivePassword = password;
+    const result = await readWithPreviewPassword(async value => {
+      const listing = await runArchiveWorker({ ...input, password: value }, signal);
+      archivePassword = value;
+      return listing;
+    }, options, label, signal, password);
+    return frame(result.entries!.map(entry => ({
+      name: entry.directory ? `${entry.path.replace(/\/+$/, '')}/` : entry.path,
+      type: entry.directory ? 'directory' as const : 'file' as const,
+      size: entry.directory ? undefined : entry.size,
+      modified: entry.modified,
+      encrypted: entry.encrypted,
+      read: (readSignal = signal) => readWithPreviewPassword(async value => {
+        const extracted = await runArchiveWorker({ ...input, entry, password: value }, readSignal);
+        return extracted.bytes!;
+      }, options, `${label} › ${entry.path}`, readSignal, archivePassword)
+    })).sort(compareArchiveEntries));
+  }
   if (isZipFormat(format)) {
-    const zip = await waitForArchiveLoad(openZipArchive(bytes), signal);
+    const zip = await waitForArchiveLoad(openZipArchive(bytes, {
+      password, signal, maxEntryBytes: PREVIEW_CONTAINER_LIMITS.maxEntryBytes
+    }).catch(error => {
+      if (error instanceof Error && /multi.?volume|multi.?disk/i.test(error.message)) {
+        throw new Error('Archive volumes are missing. Select the .zip file and all .z01, .z02 parts together.');
+      }
+      throw error;
+    }), signal);
     checkArchiveLoadAborted(signal);
-    return {
-      label,
-      entries: [...zip.values()].map((entry) => ({
+    return frame([...zip.values()].map((entry) => ({
         name: entry.name,
         type: entry.directory ? 'directory' as const : 'file' as const,
         size: entry.directory ? undefined : entry.size,
         modified: entry.modified,
-        read: () => entry.bytes()
-      })).sort(compareArchiveEntries)
-    };
+        encrypted: entry.encrypted,
+        read: (readSignal = signal) => readWithPreviewPassword(value => entry.bytes(value, readSignal), options, `${label} › ${entry.name}`, readSignal, password)
+      })).sort(compareArchiveEntries));
   }
 
   if (format === 'tar') {
-    return { label, entries: readTarEntries(bytes) };
+    return frame(readTarEntries(bytes));
   }
 
   if (format === 'gz' || format === 'tgz') {
-    // ponytail: gzip is expanded in memory; switch to streaming if huge archives become an explicit requirement.
-    const expanded = await waitForArchiveLoad(decompressGzip(bytes), signal);
+    const expanded = await readPreviewContainerEntry(() => decompressGzip(bytes), undefined, containerContext, signal);
     checkArchiveLoadAborted(signal);
     if (format === 'tgz' || looksLikeTar(expanded)) {
-      return { label, entries: readTarEntries(expanded) };
+      return frame(readTarEntries(expanded));
     }
     const name = label.replace(/\.gz$/i, '') || 'file';
-    return {
-      label,
-      entries: [{ name, type: 'file', size: expanded.byteLength, read: async () => expanded.slice() }]
-    };
+    return frame([{ name, type: 'file', size: expanded.byteLength, read: async () => expanded.slice() }]);
   }
 
   throw new Error(`Archive preview does not support ${format || 'unknown'} files.`);
@@ -806,6 +897,7 @@ function readTarEntries(bytes: Uint8Array): ArchiveEntryRecord[] {
   let localAttributes = new Map<string, string>();
   let longName: string | undefined;
   for (let offset = 0; offset + 512 <= bytes.byteLength;) {
+    if (entries.length > PREVIEW_CONTAINER_LIMITS.maxEntries) throw new Error('Archive contains too many entries.');
     const header = bytes.subarray(offset, offset + 512);
     if (header.every((value) => value === 0)) break;
     if (!hasValidTarChecksum(header)) throw new Error('Invalid TAR header checksum.');
@@ -890,7 +982,20 @@ function readPaxNumber(value: string, integer: boolean): number {
 }
 
 async function decompressGzip(bytes: Uint8Array): Promise<Uint8Array> {
-  return gunzipSync(bytes);
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  const gzip = new Gunzip(chunk => {
+    size += chunk.byteLength;
+    if (size > PREVIEW_CONTAINER_LIMITS.maxEntryBytes) throw new Error('Expanded GZIP exceeds the preview size limit.');
+    chunks.push(chunk);
+  });
+  for (let offset = 0; offset < bytes.length; offset += 4096) {
+    gzip.push(bytes.subarray(offset, offset + 4096), offset + 4096 >= bytes.length);
+  }
+  const result = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.byteLength; }
+  return result;
 }
 
 function looksLikeTar(bytes: Uint8Array): boolean {
@@ -1023,15 +1128,44 @@ function listEntriesForRoute(
 function detectArchiveFormat(name: string, format?: string): string {
   const normalizedName = String(name).trim().toLowerCase().split(/[?#]/, 1)[0] ?? '';
   if (normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.tgz')) return 'tgz';
+  const split = /\.(7z|zip)\.\d{3,}$/.exec(normalizedName);
+  if (split) return split[1];
+  if (/\.[r-y]\d{2}$/.test(normalizedName)) return 'rar';
+  if (/\.z\d{2,}$/.test(normalizedName)) return 'zip';
   return normalizeFormat(format || normalizedName.split('.').pop());
 }
 
 function isSupportedArchiveFile(name: string): boolean {
-  return isSupportedArchiveFormat(detectArchiveFormat(name));
+  return isArchiveVolumeName(name) || isSupportedArchiveFormat(detectArchiveFormat(name));
+}
+
+async function readArchiveInput(source: PreviewSource, context: PreviewLoadContext): Promise<{ bytes: Uint8Array; volumes: ArchiveVolumeBytes[] }> {
+  checkArchiveLoadAborted(context.signal);
+  const companions = context.descriptor.archiveVolumes ?? [];
+  if (companions.length >= ARCHIVE_VOLUME_LIMITS.maxVolumes) throw new Error('Archive contains too many volumes.');
+  const label = context.descriptor.name ?? 'archive';
+  const sources = [{ name: label, source }, ...companions];
+  const sourceSize = (value: PreviewSource) => value instanceof Blob ? value.size : typeof value === 'string' ? 0 : value.byteLength;
+  if (sources.reduce((sum, part) => sum + sourceSize(part.source), 0) > ARCHIVE_VOLUME_LIMITS.maxBytes) throw new Error('Archive volumes exceed the preview input size limit.');
+  const set = selectArchiveVolumes(label, sources);
+  if (companions.length && (!set || set.files.length !== sources.length)) throw new Error('Archive volumes do not belong to the same archive.');
+  const read = async (part: { source: PreviewSource }) => new Uint8Array(await sourceToArrayBuffer(part.source, context));
+  const bytes = await read(sources[0]);
+  let total = bytes.byteLength;
+  const volumes: ArchiveVolumeBytes[] = [];
+  for (const part of companions) {
+    const size = sourceSize(part.source);
+    if (total + size > ARCHIVE_VOLUME_LIMITS.maxBytes) throw new Error('Archive volumes exceed the preview input size limit.');
+    const data = await read(part);
+    total += data.byteLength;
+    if (total > ARCHIVE_VOLUME_LIMITS.maxBytes) throw new Error('Archive volumes exceed the preview input size limit.');
+    volumes.push({ name: part.name, bytes: data });
+  }
+  return { bytes, volumes };
 }
 
 function isSupportedArchiveFormat(format: string): boolean {
-  return isZipFormat(format) || format === 'tar' || format === 'tgz' || format === 'gz';
+  return isZipFormat(format) || ['tar', 'tgz', 'gz', 'rar', '7z'].includes(format);
 }
 
 function isZipFormat(format: string): boolean {
@@ -1167,10 +1301,11 @@ function createArchiveResource(
     type: entry.type,
     size: entry.size,
     modified: entry.modified,
+    encrypted: entry.encrypted,
     contentType,
     readAsArrayBuffer: async () => {
       checkArchiveLoadAborted(signal);
-      const bytes = await waitForArchiveLoad(entry.read(), signal);
+      const bytes = await waitForArchiveLoad(entry.read(signal), signal);
       checkArchiveLoadAborted(signal);
       const copy = new Uint8Array(bytes.byteLength);
       copy.set(bytes);
@@ -1178,13 +1313,13 @@ function createArchiveResource(
     },
     readAsBlob: async () => {
       checkArchiveLoadAborted(signal);
-      const bytes = await waitForArchiveLoad(entry.read(), signal);
+      const bytes = await waitForArchiveLoad(entry.read(signal), signal);
       checkArchiveLoadAborted(signal);
       return new Blob([copyBytesToArrayBuffer(bytes)], contentType ? { type: contentType } : undefined);
     },
     readAsText: async () => {
       checkArchiveLoadAborted(signal);
-      const bytes = await waitForArchiveLoad(entry.read(), signal);
+      const bytes = await waitForArchiveLoad(entry.read(signal), signal);
       checkArchiveLoadAborted(signal);
       return new TextDecoder().decode(bytes);
     }

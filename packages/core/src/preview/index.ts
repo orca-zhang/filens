@@ -11,6 +11,7 @@ export * from './audio-lyrics';
 export * from './pptx-driver';
 export * from './previewer';
 export * from './password';
+export * from './containers';
 export * from './registry';
 export * from './resource-resolver';
 export type * from './types';

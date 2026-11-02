@@ -87,5 +87,12 @@
   "Isolate": "Izoluj",
   "No nodes matched the current filter.": "Żaden węzeł nie pasuje do bieżącego filtra.",
   "No model tree available.": "Brak drzewa modelu.",
-  "No model metadata available.": "Brak metadanych modelu."
+  "No model metadata available.": "Brak metadanych modelu.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

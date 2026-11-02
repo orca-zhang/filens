@@ -87,5 +87,12 @@
   "Isolate": "Isolieren",
   "No nodes matched the current filter.": "Keine Knoten entsprechen dem aktuellen Filter.",
   "No model tree available.": "Kein Modellbaum verfügbar.",
-  "No model metadata available.": "Keine Modellmetadaten verfügbar."
+  "No model metadata available.": "Keine Modellmetadaten verfügbar.",
+  "Back to document": "Zurück zum Dokument",
+  "Document": "Dokument",
+  "Attachments": "Anhänge",
+  "Download attachment": "Anhang herunterladen",
+  "Retry": "Erneut versuchen",
+  "No previewer is configured for this attachment.": "Für diesen Anhang ist keine Vorschau eingerichtet.",
+  "Some document attachments could not be read.": "Einige Dokumentanhänge konnten nicht gelesen werden."
 }

@@ -4,6 +4,12 @@ import {
   PreviewPasswordError,
   createDefaultPreviewRoutes,
   classifyPreviewFont,
+  PREVIEW_CONTAINER_LIMITS,
+  createPreviewContainerContext,
+  readPreviewContainerEntry,
+  attachmentFilename,
+  unwrapOfficeAttachment,
+  type PreviewAttachment,
   type FormatDefinition,
   type PagedPreviewState,
   type PreviewDriver,
@@ -61,11 +67,13 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private removeAbortListener?: () => void;
   private dimensions = '';
   private readonly virtual: boolean;
+  private readonly containerContext;
   private state: PagedPreviewState;
   private readonly inspectedFontPages = new Set<number>();
   private readonly fonts = new Map<string, PreviewFontDiagnostic>();
 
   constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
+    this.containerContext = options.containerContext ?? createPreviewContainerContext();
     this.root = document.createElement('div');
     this.root.className = 'pdfv-preview';
     this.host.replaceChildren(this.root);
@@ -95,6 +103,29 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       scale: options.initialScale ?? 1,
       fit: options.fit ?? 'contain'
     };
+  }
+
+  async getAttachments(): Promise<PreviewAttachment[]> {
+    const pdf = this.document;
+    if (!pdf) return [];
+    const attachments: Record<string, { filename: string; content: Uint8Array }> | null = await pdf.getAttachments();
+    if (pdf !== this.document || !attachments) return [];
+    const entries = Object.entries(attachments);
+    if (entries.length > PREVIEW_CONTAINER_LIMITS.maxEntries) throw new Error('PDF contains too many attachments.');
+    return entries.map(([id, attachment]) => {
+      const readRaw: NonNullable<PreviewAttachment['readRaw']> = async signal => {
+        if (pdf !== this.document) throw new DOMException('PDF preview closed.', 'AbortError');
+        const bytes = await readPreviewContainerEntry(async () => attachment.content, attachment.content.byteLength, this.containerContext, signal);
+        return { source: bytes, name: attachmentFilename(attachment.filename), size: bytes.byteLength };
+      };
+      return {
+        id, name: attachmentFilename(attachment.filename), size: attachment.content.byteLength, readRaw,
+        read: async signal => {
+          const raw = await readRaw(signal);
+          return unwrapOfficeAttachment(raw.source as Uint8Array, raw.name!);
+        }
+      };
+    });
   }
 
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {

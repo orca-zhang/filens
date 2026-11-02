@@ -19,3 +19,16 @@ for format, label in [(tarfile.PAX_FORMAT, 'pax'), (tarfile.GNU_FORMAT, 'gnu')]:
             entry.size, entry.mtime = len(data), modified
             archive.addfile(entry, io.BytesIO(data))
 ```
+
+## RAR password fixtures
+
+RAR 4/5 fixtures are decoded from libarchive's `libarchive/test/test_read_format_rar{4,5}_*.rar.uu`, at commit `348e5a2e27503f5bf114e298e2bd9ddcd59ab48e`:
+https://github.com/libarchive/libarchive/tree/348e5a2e27503f5bf114e298e2bd9ddcd59ab48e/libarchive/test
+
+Their accompanying BSD license is reproduced in `LICENSE.libarchive.txt`.
+
+Each archive contains a.txt, b.txt, c.txt and d.txt; their content is `This is from X.txt`. Solid archives and archives with encrypted filenames use `password` for every file. Other archives leave a.txt and c.txt unencrypted, use `password` for b.txt and `password2` for d.txt.
+
+`multivolume/` contains the RAR 4 `test_rar_multivolume_single_file.part{1,2,3}.rar` and RAR 5 solid `test_read_format_rar5_multiarchive_solid.part{01,02,03,04}.rar` fixtures, decoded from the same libarchive commit. Copyright notices for their accompanying tests are reproduced in `multivolume/LICENSE.libarchive.txt`.
+
+`multivolume/classic.z01` and `classic.zip` are independent Info-ZIP fixtures: create `binary.dat` with 70,000 bytes (`byte[i] = i % 256`), then run `zip -0 -s 64k classic.zip binary.dat`. They exercise ZIP disk-relative offsets rather than byte-split ZIP streams.

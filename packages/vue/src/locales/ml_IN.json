@@ -87,5 +87,12 @@
   "Isolate": "ഒറ്റപ്പെടുത്തുക",
   "No nodes matched the current filter.": "നിലവിലെ ഫിൽട്ടറുമായി പൊരുത്തപ്പെടുന്ന നോഡുകളില്ല.",
   "No model tree available.": "മോഡൽ ട്രീ ലഭ്യമല്ല.",
-  "No model metadata available.": "മോഡൽ മെറ്റാഡാറ്റ ലഭ്യമല്ല."
+  "No model metadata available.": "മോഡൽ മെറ്റാഡാറ്റ ലഭ്യമല്ല.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

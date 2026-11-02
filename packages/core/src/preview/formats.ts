@@ -672,6 +672,10 @@ export function inferExtensionFromName(name: string | undefined): string | undef
 
   const trimmedName = name.split(/[?#]/, 1)[0]?.trim() ?? '';
   const lastSegment = trimmedName.split(/[\\/]/).pop() ?? '';
+  const splitArchive = /\.(7z|zip)\.\d{3,}$/i.exec(lastSegment);
+  if (splitArchive) return splitArchive[1].toLowerCase();
+  if (/\.[r-y]\d{2}$/i.test(lastSegment)) return 'rar';
+  if (/\.z\d{2,}$/i.test(lastSegment)) return 'zip';
   const specialFormat = inferSpecialFileFormat(lastSegment);
   if (specialFormat) {
     return specialFormat;

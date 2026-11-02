@@ -519,14 +519,18 @@ async function verifyDemoEntrypoints() {
     'xltm',
     'xlam',
     'dwg',
-    'graffle',
-    'rar'
+    'graffle'
   ]) {
     check(
       !new RegExp(`\\b${source}\\b`, 'i').test(detectKindSource),
       `demo detectKind() must not route ${source} through default conversion or standalone image preview`
     );
   }
+
+  check(
+    /if \(\/.*\brar\b.*\b7z\b.*return 'zip';/.test(detectKindSource),
+    'demo must route RAR/7z to the frontend archive driver'
+  );
 
   check(
     /kind:\s*'ppt'[\s\S]{0,200}name:\s*'[^']+\.ppt'/.test(appSource),

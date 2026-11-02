@@ -24,6 +24,8 @@ export type PreviewFitMode = 'contain' | 'width' | 'height' | 'none';
 
 export interface SourceDescriptor {
   source: PreviewSource;
+  /** Additional named parts of the same split archive, excluding this source. */
+  archiveVolumes?: readonly { name: string; source: PreviewSource }[];
   /** Password to open this document. Kept in memory for this load only. */
   password?: string;
   name?: string;
@@ -198,6 +200,10 @@ export interface AudioPreviewOptions {
 }
 
 export interface PreviewOptions {
+  /** Shared by nested previews; hosts should pass it through unchanged. */
+  containerContext?: PreviewContainerContext;
+  /** Optional translation for container/attachment controls. */
+  translate?: (message: string) => string;
   /** Return null to cancel. Called again when the supplied password is incorrect. */
   requestPassword?: (request: PreviewPasswordRequest) => string | null | Promise<string | null>;
   fit?: PreviewFitMode;
@@ -211,6 +217,21 @@ export interface PreviewOptions {
   resourceResolver?: PreviewResourceResolver;
   audio?: AudioPreviewOptions;
   previewerFactory?: PreviewerFactory;
+}
+
+export interface PreviewContainerContext {
+  depth: number;
+  budget: { expandedBytes: number };
+}
+
+export interface PreviewAttachment {
+  id: string;
+  name: string;
+  size?: number;
+  /** Read only when the user opens or downloads the attachment. */
+  read(signal?: AbortSignal): Promise<SourceDescriptor>;
+  /** Original embedded bytes, available even if an OLE wrapper cannot be parsed. */
+  readRaw?(signal?: AbortSignal): Promise<SourceDescriptor>;
 }
 
 export interface PreviewPasswordRequest {
@@ -509,6 +530,7 @@ export interface PreviewEventMap {
 }
 
 export interface PreviewSession<TState extends PreviewItemState = PreviewItemState> {
+  getAttachments?(): Promise<PreviewAttachment[]>;
   getFontReferences?(): readonly PreviewFontReference[];
   refreshFonts?(update: PreviewFontRefresh): Promise<void> | void;
   load(source: PreviewSource, context: PreviewLoadContext): Promise<void>;

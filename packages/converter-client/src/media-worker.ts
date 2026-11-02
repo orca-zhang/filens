@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import createHeif from 'libheif-js/libheif-wasm/libheif.js';
+import { wasmResponse } from './wasm-response';
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 scope.onmessage = async ({ data }: MessageEvent<{ input: Uint8Array; format: string; wasmUrl: string }>) => {
@@ -15,7 +16,7 @@ scope.onmessage = async ({ data }: MessageEvent<{ input: Uint8Array; format: str
 async function decodeHeif(input: Uint8Array, wasmUrl: string): Promise<Uint8Array<ArrayBuffer>> {
   const response = await fetch(wasmUrl);
   if (!response.ok) throw new Error(`Failed to load the HEIF decoder: ${response.status}.`);
-  const heif = await createHeif({ wasmBinary: new Uint8Array(await response.arrayBuffer()) });
+  const heif = await createHeif({ wasmBinary: new Uint8Array(await (await wasmResponse(response)).arrayBuffer()) });
   const images = new heif.HeifDecoder().decode(input);
   try {
     const image = images.find(image => image.is_primary()) ?? images[0];

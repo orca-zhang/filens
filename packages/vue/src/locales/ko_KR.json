@@ -87,5 +87,12 @@
   "Isolate": "분리",
   "No nodes matched the current filter.": "현재 필터와 일치하는 노드가 없습니다.",
   "No model tree available.": "모델 트리가 없습니다.",
-  "No model metadata available.": "모델 메타데이터가 없습니다."
+  "No model metadata available.": "모델 메타데이터가 없습니다.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

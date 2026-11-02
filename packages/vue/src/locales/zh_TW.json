@@ -87,5 +87,12 @@
   "Isolate": "隔離",
   "No nodes matched the current filter.": "沒有符合目前篩選條件的節點。",
   "No model tree available.": "沒有可用的模型樹。",
-  "No model metadata available.": "沒有可用的模型中繼資料。"
+  "No model metadata available.": "沒有可用的模型中繼資料。",
+  "Back to document": "返回文件",
+  "Document": "文件",
+  "Attachments": "附件",
+  "Download attachment": "下載附件",
+  "Retry": "重試",
+  "No previewer is configured for this attachment.": "未設定此附件的預覽器。",
+  "Some document attachments could not be read.": "部分文件附件無法讀取。"
 }

@@ -550,6 +550,8 @@ async function recreatePreviewer(): Promise<void> {
   const drivers = props.drivers ?? createVueDefaultPreviewDrivers(props.panoramaProcessor, props.converter, props.mediaConverter);
   const routes = props.routes ?? createVueDefaultPreviewRoutes({ rawPreview: Boolean(props.panoramaProcessor && props.converter) });
   const createNestedPreviewer = (host: HTMLElement, childOptions: PreviewOptions = {}) => createPreviewer(host, {
+    containerContext: childOptions.containerContext,
+    translate: childOptions.translate ?? (message => t(message)),
     fit: childOptions.fit ?? props.fit,
     initialScale: childOptions.initialScale ?? props.initialScale,
     minScale: childOptions.minScale ?? props.minScale,
@@ -1845,6 +1847,7 @@ function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOp
           <div v-if="passwordRequest" class="pptxv-overlay">
             <form class="pptxv-password-form" :aria-labelledby="passwordId + '-title'" @submit.prevent="submitPassword" @keydown.esc.stop="cancelPassword">
               <h2 :id="passwordId + '-title'">{{ t('Document is encrypted') }}</h2>
+              <p v-if="passwordRequest.name" class="pptxv-password-filename">{{ passwordRequest.name }}</p>
               <p>{{ t('Enter the password to open this document.') }}</p>
               <p v-if="passwordRequest.reason === 'password_invalid'" :id="passwordId + '-error'" class="pptxv-password-error" role="alert">{{ t('Incorrect password. Please try again.') }}</p>
               <label :for="passwordId">{{ t('Document password') }}</label>

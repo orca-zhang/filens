@@ -1,5 +1,116 @@
 # Format package size audit
 
+## 2026-11-02 throughput-oriented engine and embedded WASM
+
+The archive engine now builds from pinned 7-Zip 24.09 source with Emscripten
+4.0.10, **-O3 and LTO**. It keeps RAR/RAR5, 7z, ZIP and Split handlers, their
+complete upstream decoders and crypto. Extraction-only guards remove writers;
+unrelated archive handlers and unused NODEFS/WORKERFS adapters are omitted.
+The WASM is **829,684 bytes raw / 330,277 gzip / 259,432 Brotli**, compared with
+1,651,931 / 669,463 / 528,497 in the full upstream CLI. This uses a throughput
+configuration, not the smallest -Oz build. The source patch, hashes and rebuild
+instructions are in [the vendor directory](../packages/archive/vendor/7zip/README.md).
+An independent rebuild with the pinned toolchain reproduces both JS and WASM
+hashes exactly.
+
+Compiled archive code is cached once and cloned to fresh operation workers;
+passwords, files, solid buffers and linear memory remain isolated and are released
+on termination. Failed downloads/compiles are retryable. Browsers unable to clone
+a WebAssembly.Module retain the external URL-loading path. Browser checks verify
+one WASM request across password retries and extraction of several archive types.
+
+The ordinary document ZIP reader is now separate from its lazy encryption
+wrapper. iWork never supplied archive passwords; it uses that ordinary reader
+and retains its ZIP64/Unicode fallback. Its worker falls from **225,759 to 187,398
+bytes gzip**, without bringing in another ZIP encryption implementation. Password
+ZIP preview continues using the full wrapper and its existing retry behavior.
+
+All-in-one WASM is gzipped before base64 and inflated on first use, including
+HEIF workers. Split HTTP assets stay uncompressed WASM and use streaming
+compilation when correctly typed. Native and JavaScript decompression paths are
+tested. This reduces embedded base64/JavaScript overhead; it does not imply a
+smaller decoded WASM or faster conversion for every document.
+
+| Runtime, including optional archive engine | Before this round raw / gzip / Brotli | Current raw / gzip / Brotli |
+| --- | ---: | ---: |
+| Split | 13,036,454 / 3,981,755 / 3,148,491 | 12,111,592 / 3,605,254 / 2,847,871 |
+| All in one | 14,704,453 / 4,569,944 / 3,467,177 | 9,726,728 / 3,603,632 / 3,177,720 |
+
+Current main runtimes without the optional engine are 3,256,448 bytes gzip
+(split) and 3,254,826 (all in one). Compared with the pre-feature baseline,
+all-in-one including the engine is below its former 3,767,906 bytes gzip;
+split including the new optional engine is above its former 3,199,077 bytes.
+The main split runtime is 57,371 bytes gzip larger than that historical baseline.
+RAR/7z and multi-volume ZIP remain external in every build and are never embedded
+in offline HTML. Each independently deployable directory still contains its own
+engine sidecars; npm tarball measurements include both copies.
+
+Validation: 146 archive tests (including additional decoder/filter coverage),
+336 iWork tests, password ZIP and attachment tests, 12 archive asset browser
+checks, 48 actual standalone previews, and 17 offline HTML checks. These validate
+loading, content/extraction and lifecycle behavior; performance measurements are
+reported separately and do not imply universal speedups.
+
+The local unpublished npm tarball is **7,318,499 bytes**, down from 8,655,935
+at the start of this round (15.5%); installed files total 22,770,717 bytes.
+The tarball is 3.9% above the pre-feature published package, while installed
+bytes are lower. Both modes pass isolated npm installation and production Vite
+re-bundling, including actual RAR password and extraction behavior.
+
+Five alternating Chromium runs per case on macOS arm64, gzip HTTP at 4 MB/s
+and 20 ms latency, produced these median timings. Each case uses a fresh
+browser context; HTTP caching is retained within a case.
+
+| Measurement | Before | Current |
+| --- | ---: | ---: |
+| All-in-one page initialization, legacy DOC case | 1,211.8 ms | 1,025.4 ms |
+| Split RAR first password prompt | 292.2 ms | 188.8 ms |
+| All-in-one RAR first password prompt | 292.3 ms | 191.7 ms |
+| Split RAW opening | 287.9 ms | 287.7 ms |
+| All-in-one RAW opening | 97.5 ms | 77.4 ms |
+| Archive WASM requests, prompt/retry/unlock/extract | 4 | 1 |
+
+Password retry and subsequent entry opening timings are broadly unchanged in
+these UI measurements. This is a small fixture set on one machine; the complete
+samples and exact size snapshots are in [the optimization report](preview-size-optimization.json).
+Compare other build directories with
+`FILENS_BENCH_BEFORE=/path/to/before FILENS_BENCH_AFTER=/path/to/after node scripts/benchmark-preview-runtime.mjs`.
+
+## 2026-11-02 archive engine and compression dependencies (earlier snapshot)
+
+RAR/7z and multi-volume ZIP now use the same optional frontend engine. Its worker
+and WASM always ship separately, including the all-in-one build. The former
+worker accidentally contained a base64 WASM fallback in addition to the external
+WASM; an inline worker added another base64 layer. The host now supplies the
+external URL, and build checks reject embedded archive WASM or a missing sidecar.
+The engine and worker together are **690,723 bytes gzip / 547,379 bytes Brotli**.
+Ordinary ZIP and ZIP-based document previews do not request them.
+
+The format packages already declare shared JSZip/fflate dependencies rather than
+embedding a copy per package. One further duplication remained inside JSZip's
+prebundled browser distribution: it embedded pako while TIFF used the installed
+pako. Demo and standalone builds now select JSZip's original modules, sharing
+that installed pako. Three.js continues to share the installed fflate 0.8.2.
+No compression algorithms or compatibility fallbacks were replaced.
+
+| Current source build | ZIP dependency sharing saves (gzip / Brotli) | Main runtime gzip | External archive assets gzip | Total gzip |
+| --- | ---: | ---: | ---: | ---: |
+| Split | 14,531 / 10,314 bytes | 3,291,032 | 690,723 | 3,981,755 |
+| All in one | 13,724 / 7,467 bytes | 3,879,221 | 690,723 | 4,569,944 |
+
+The ZIP savings compare otherwise identical builds with the archive engine
+already external. The main runtime includes attachments and encryption added
+since the historical audit below, so these totals have a different feature set.
+CLI self-contained HTML retains ordinary document and ZIP support; RAR/7z or
+multi-volume ZIP require the local HTTP `--mode serve` path and separate assets.
+Current [measurements](preview-build-sizes.json) distinguish main and archive bytes.
+
+Validation includes 125 archive unit tests, 31 attachment/password browser
+regressions, 12 built archive asset browser checks, 48 real previews from the two
+standalone builds, and 17 offline HTML checks including the RAR HTTP fallback.
+
+## 2026-11-01 historical audit
+
 The 2026-11-01 audit found avoidable dependency bundling in the individual npm
 format packages. The complete preview consumer built from those libraries fell
 from **4,250,834 to 3,798,183 bytes gzip** (452,651 bytes / 10.6% smaller), with

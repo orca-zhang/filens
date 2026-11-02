@@ -46,6 +46,7 @@
 }
 .pptxv-password-form h2 { margin: 0; font-size: 20px; }
 .pptxv-password-form p { margin: 0; font-size: 14px; }
+.pptxv-password-filename { overflow-wrap: anywhere; }
 .pptxv-password-form label { font-size: 14px; }
 .pptxv-password-form input {
   min-width: 0;

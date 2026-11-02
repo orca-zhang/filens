@@ -1,4 +1,6 @@
 import './styles/index.css';
+export { ARCHIVE_VOLUME_LIMITS, isArchiveVolumeName, selectArchiveVolumes } from './volumes';
+export type { ArchiveVolumeSet } from './volumes';
 
 export {
   ARCHIVE_FORMAT_ROUTES,

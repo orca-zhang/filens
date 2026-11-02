@@ -52,7 +52,7 @@ single(document.body, {src: {source: new Blob(['test']), name:'sample.txt'}}).de
   },files:['consumer.mts']}));
   run(process.execPath,[path.join(root,'node_modules/typescript/bin/tsc'),'--project',path.join(work,'tsconfig.json')]);
   run(process.execPath,[path.join(root,'scripts/test-preview.mjs')],{cwd:root,
-    env:{...env,FILENS_PREVIEW_TEST_DIR:path.join(installed,'dist')}});
+    env:{...env,FILENS_PREVIEW_TEST_DIR:path.join(installed,'dist'),FILENS_PREVIEW_TEST_REPORT:path.join(work,'preview-validation.json')}});
   run(process.execPath,[path.join(root,'scripts/test-media-preview.mjs')],{cwd:root,
     env:{...env,FILENS_PREVIEW_TEST_DIR:path.join(installed,'dist')}});
   // npm users also re-bundle the ESM exports. Check workers and WASM URLs after
@@ -92,27 +92,34 @@ document.querySelector('#file').onchange = event => {
         await page.goto(`http://127.0.0.1:${server.address().port}/`);
         for (const file of ['apps/demo/public/samples/filens-cosmic-atlas.pdf','apps/demo/public/samples/a.pages',
           'apps/demo/public/samples/raw/pentax-k-r.dng','packages/model3d/test/fixtures/occt/cube.stp',
-          'apps/demo/public/samples/live-photo/apple-iphone-15-live-photo.HEIC']) {
+          'apps/demo/public/samples/live-photo/apple-iphone-15-live-photo.HEIC',
+          'packages/archive/test/fixtures/rar5-encrypted-filenames.rar']) {
           await page.locator('#file').setInputFiles(path.join(root,file));
+          if (file.endsWith('.rar')) {
+            const password = page.locator('input[type=password]');
+            await password.fill('password'); await password.press('Enter');
+            await page.locator('tr.archivev-row').filter({hasText:'c.txt'}).click();
+            await page.locator('.archivev-entry-preview').filter({hasText:'This is from c.txt'}).waitFor();
+          }
           await page.waitForFunction(()=>['ready','error'].includes(document.body.dataset.state),null,{timeout:30000});
           const result = await page.evaluate(()=>({state:document.body.dataset.state,error:document.body.dataset.error}));
           assert.equal(result.state,'ready',`${entry}: ${file}: ${result.error}`);
           assert.deepEqual(errors,[],`${entry}: ${file}`);
         }
-        console.log(`${entry}: PDF/iWork/RAW/STEP/HEIF rendered after production Vite bundling.`);
+        console.log(`${entry}: PDF/iWork/RAW/STEP/HEIF/RAR rendered after production Vite bundling.`);
       } finally {await page.close();await new Promise(resolve=>server.close(resolve));}
     }
   } finally {await browser.close();}
-  const browserReport = JSON.parse(await readFile(path.join(root,'docs/preview-validation.json'),'utf8'));
+  const browserReport = JSON.parse(await readFile(path.join(work,'preview-validation.json'),'utf8'));
   const report = {observedAt:new Date().toISOString(),name:release.name,version:release.version,
     source:registry?'public registry with fresh npm cache':'offline npm tarball',platform:`${process.platform}-${process.arch}`,
     passed:true,checks:['Standalone installation without runtime dependencies','MIT license and third-party notices',
       'TypeScript consumer imports of split and all-in-one exports',`${browserReport.observations.length} real browser previews from installed assets`,
       'No external runtime requests','Single JavaScript runtime request for all-in-one','CLI loopback HTTP restrictions',
       'Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg',
-      '10 PDF/iWork/RAW/STEP/HEIF previews after Vite production bundling of npm exports'],
+      '12 PDF/iWork/RAW/STEP/HEIF/RAR previews after Vite production bundling of npm exports'],
     mediaBrowser:process.env.FILENS_MEDIA_TEST_BROWSER || 'chromium',
     browserReport:'preview-validation.json'};
-  await writeFile(path.join(root,'docs/preview-npm-validation.json'),JSON.stringify(report,null,2)+'\n');
+  await writeFile(process.env.FILENS_PREVIEW_NPM_TEST_REPORT || path.join(root,'docs/preview-npm-validation.json'),JSON.stringify(report,null,2)+'\n');
   console.log(`${release.name}@${release.version}: isolated installation, public types and both browser builds passed.`);
 } finally { await rm(work,{recursive:true,force:true}); }

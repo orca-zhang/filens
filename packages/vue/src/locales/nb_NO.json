@@ -87,5 +87,12 @@
   "Isolate": "Isoler",
   "No nodes matched the current filter.": "Ingen noder samsvarer med gjeldende filter.",
   "No model tree available.": "Ingen modelltre tilgjengelig.",
-  "No model metadata available.": "Ingen modellmetadata tilgjengelig."
+  "No model metadata available.": "Ingen modellmetadata tilgjengelig.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

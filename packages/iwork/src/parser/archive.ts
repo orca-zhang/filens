@@ -1,4 +1,4 @@
-import { openZipArchive, type ZipEntry } from '@filens/core/zip';
+import { openUnencryptedZipArchive, type ZipEntry } from '@filens/core/zip';
 import { uncompress as snappyUncompress } from 'snappyjs';
 import type {
   IworkArchiveDataEntry,
@@ -36,7 +36,7 @@ export async function loadArchivePackage(
   type: IworkType,
   options: LoadArchivePackageOptions = {}
 ): Promise<LoadedArchivePackage> {
-  const zip = await openZipArchive(bytes);
+  const zip = await openUnencryptedZipArchive(bytes);
   const archive = await decodeArchiveZip(zip, type, options);
   const media = await buildMediaMap(zip, archive);
   return {

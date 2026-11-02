@@ -87,5 +87,12 @@
   "Isolate": "Izoliraj",
   "No nodes matched the current filter.": "Nijedan čvor ne odgovara trenutačnom filtru.",
   "No model tree available.": "Stablo modela nije dostupno.",
-  "No model metadata available.": "Metapodaci modela nisu dostupni."
+  "No model metadata available.": "Metapodaci modela nisu dostupni.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

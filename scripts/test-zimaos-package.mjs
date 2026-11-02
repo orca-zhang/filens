@@ -28,7 +28,7 @@ try {
   for (const name of ['index.html', 'filens.js', 'THIRD-PARTY-NOTICES.txt']) {
     assert.ok((await stat(path.join(extracted, 'usr/lib/filens/preview', name))).size > 0);
   }
-  assert.match(await readFile(path.join(extracted, 'usr/lib/filens/preview/filens.js'), 'utf8'), /data:application\/wasm;base64,/);
+  assert.match(await readFile(path.join(extracted, 'usr/lib/filens/preview/filens.js'), 'utf8'), /data:application\/wasm(?:\+gzip)?;base64,/);
   for (const [platform, machine] of [['linux-x64', 62], ['linux-arm64', 183]]) {
     const bundle = path.join(extracted, 'usr/lib/filens', platform);
     const binary = await readFile(path.join(bundle, 'filens'));

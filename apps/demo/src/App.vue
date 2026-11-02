@@ -11,7 +11,6 @@ import conversionManifest from '../../../wasm/converter-core/manifest/conversion
 import {
   DEFAULT_FORMAT_ROUTES,
   createFileSetResourceResolver,
-  createPreviewAcceptAttribute,
   inferExtensionFromName,
   listPreviewFormats,
   previewPasswordErrorCode,
@@ -22,6 +21,7 @@ import {
   type PreviewItemState,
   type Model3dPreviewState,
   type PreviewResourceResolver,
+  type SourceDescriptor,
   type PreviewSource
 } from '@filens/core';
 
@@ -67,6 +67,7 @@ interface DemoSource {
   label: string;
   name: string;
   source: PreviewSource;
+  archiveVolumes?: SourceDescriptor['archiveVolumes'];
   /** Optional browser-compatible bytes used when a legacy sample codec is unavailable. */
   previewSource?: PreviewSource;
   previewContentType?: string;
@@ -1352,7 +1353,9 @@ void fetch(`${import.meta.env.BASE_URL}build-info.json`, { cache: 'no-store' })
   .then((info) => { buildInfo.value = info; })
   .catch(() => undefined);
 const demoRoutes = shallowRef(DEFAULT_FORMAT_ROUTES);
-const uploadAccept = computed(() => `${createPreviewAcceptAttribute({ routes: demoRoutes.value })},.lrc`);
+// Numeric volume suffixes and arbitrary sidecar names cannot be enumerated in
+// an accept filter. Keep every part selectable; routes validate the primary.
+const uploadAccept = '';
 const supportedFormats = computed(() => listPreviewFormats({ routes: demoRoutes.value }));
 const formatSupportByExtension = computed(() => new Map(supportedFormats.value.map((format) => [format.extension, format])));
 // Format buttons use the last catalog entry by default.
@@ -1551,6 +1554,9 @@ const current = shallowRef<DemoSource>({
   ...initialSample,
   source: resolveSampleSource(initialSample.source)
 });
+const previewInput = computed(() => current.value.archiveVolumes
+  ? { source: current.value.source, archiveVolumes: current.value.archiveVolumes }
+  : current.value.source);
 const selectedFormatFamilyId = ref<BusinessFormatFamilyId>(
   'office'
 );
@@ -1854,6 +1860,18 @@ async function previewFiles(files: File[]): Promise<void> {
   pendingDownloadTimeMs = null;
 
   try {
+    const volume = files.find(part => /(?:\.part\d+\.rar|\.(?:7z|zip)\.\d{3,}|\.[r-y]\d{2}|\.z\d{2,})$/i.test(part.name));
+    if (volume) {
+      const { selectArchiveVolumes } = await import('@filens/archive');
+      const set = selectArchiveVolumes(volume.name, files)!;
+      current.value = {
+        kind: 'zip', label: set.format.toUpperCase(), name: set.primary.name, source: set.primary,
+        extension: set.format, mode: 'upload',
+        archiveVolumes: set.files.slice(1).map(part => ({ name: part.name, source: part }))
+      };
+      uploadResourceResolver.value = undefined;
+      return;
+    }
     if (files.length === 1 && isZipBundleCandidate(file.name)) {
       const bundle = await materializeZipBundleUpload(file);
       if (bundle) {
@@ -2141,7 +2159,7 @@ function detectKind(name: string): DemoKind | null {
   if (/\.(html?|shtml|xhtml)$/.test(normalized)) return 'html';
   if (/\.epub$/.test(normalized)) return 'epub';
   if (/\.cbz$/.test(normalized)) return 'cbz';
-  if (/\.(zip|jar|war|ear|tar|tgz|gz)$/.test(normalized)) return 'zip';
+  if (/\.(zip|jar|war|ear|tar|tgz|gz|rar|7z)$/.test(normalized)) return 'zip';
   if (/\.(mp3|wav|aac|m4a|flac|ogg|oga|opus)$/.test(normalized)) return 'audio';
   if (/\.(mp4|webm|mov|m4v|ogv|mkv|avi|mpeg|mpg|3gp)$/.test(normalized)) return 'video';
   if (/\.(ts|tsx|js|jsx|vue|css|json|md|py|go|rs)$/.test(normalized)) return 'code';
@@ -2183,6 +2201,9 @@ async function materializeZipBundleUpload(
   };
   const { createZipArchiveResourceIndex } = await import('@filens/archive');
   const index = await createZipArchiveResourceIndex(file, context);
+  // Encrypted entries must go through the archive browser's password flow,
+  // including packages whose files use different passwords.
+  if (index.files.some(entry => entry.encrypted)) return undefined;
   const entry = chooseZipBundlePrimaryEntry(index.files);
   if (!entry) {
     return undefined;
@@ -2210,6 +2231,13 @@ function chooseZipBundlePrimaryEntry(entries: ZipArchiveResource[]): ZipArchiveR
     .sort(compareBundlePrimaryEntries);
   const primary = candidates[0];
   if (!primary) {
+    return undefined;
+  }
+
+  // README/code files do not identify a compound bundle. Keep the archive
+  // browsable even when sidecars or unknown formats leave only one candidate.
+  const primaryKind = detectKind(primary.name);
+  if (primaryKind === 'text' || primaryKind === 'code') {
     return undefined;
   }
 
@@ -3668,7 +3696,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
           <Preview
             v-else
             :key="current.name"
-            :src="current.source"
+            :src="previewInput"
             :name="current.name"
             :extension="current.extension"
             :content-type="current.contentType"

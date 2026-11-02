@@ -103,6 +103,7 @@ try {
     'apps/demo/public/samples/a.numbers',
     'apps/demo/public/samples/raw/pentax-k-r.dng',
     'apps/demo/public/samples/sample-nested-archives.zip',
+    'packages/archive/test/fixtures/rar5-encrypted.rar',
     'packages/model3d/test/fixtures/occt/cube.stp',
     'examples/go-wazero-converter/fixtures/icons/sample.apk',
     'packages/converter-client/test/fixtures/password/agile.docx',
@@ -143,6 +144,15 @@ try {
           }
           await page.waitForFunction(() => ['ready', 'error'].includes(document.body.dataset.state), null, { timeout: 30000 });
           const state = await page.evaluate(() => ({ state: document.body.dataset.state, error: document.body.dataset.error, text: document.body.innerText, injected: window.filensInjected }));
+          if (document.source.name.endsWith('.rar')) {
+            assert.equal(state.state, 'error');
+            assert.match(state.error, /separate archive engine files/);
+            assert.deepEqual(network, []);
+            await verifyCompatibility(browser, document.input);
+            observations.push({ browser: browserName, file: document.source.name, state: 'external-archive-engine-required', compatibilityMode: 'serve', compatibilityState: 'ready' });
+            console.log(`${browserName}: embedded HTML keeps RAR external and HTTP compatibility renders locally`);
+            continue;
+          }
           if (browserName === 'webkit' && /\.(key|pages|numbers)$/.test(document.source.name) && state.state === 'error') {
             assert.match(state.error, /iWork parser worker failed|Script error/);
             assert.equal(await page.locator('#help').isVisible(), true);

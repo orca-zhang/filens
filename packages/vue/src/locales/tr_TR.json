@@ -87,5 +87,12 @@
   "Isolate": "Yalıt",
   "No nodes matched the current filter.": "Geçerli filtreyle eşleşen düğüm yok.",
   "No model tree available.": "Model ağacı yok.",
-  "No model metadata available.": "Model meta verisi yok."
+  "No model metadata available.": "Model meta verisi yok.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

@@ -87,5 +87,12 @@
   "Isolate": "Изолировать",
   "No nodes matched the current filter.": "Нет узлов, соответствующих текущему фильтру.",
   "No model tree available.": "Дерево модели недоступно.",
-  "No model metadata available.": "Метаданные модели недоступны."
+  "No model metadata available.": "Метаданные модели недоступны.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

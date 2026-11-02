@@ -87,5 +87,12 @@
   "Isolate": "Aislar",
   "No nodes matched the current filter.": "Ningún nodo coincide con el filtro actual.",
   "No model tree available.": "No hay árbol del modelo.",
-  "No model metadata available.": "No hay metadatos del modelo."
+  "No model metadata available.": "No hay metadatos del modelo.",
+  "Back to document": "Volver al documento",
+  "Document": "Documento",
+  "Attachments": "Archivos adjuntos",
+  "Download attachment": "Descargar archivo adjunto",
+  "Retry": "Reintentar",
+  "No previewer is configured for this attachment.": "No se ha configurado una vista previa para este archivo adjunto.",
+  "Some document attachments could not be read.": "No se pudieron leer algunos archivos adjuntos."
 }

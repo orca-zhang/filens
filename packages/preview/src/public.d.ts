@@ -1,6 +1,7 @@
 export type PreviewSource = string | ArrayBuffer | Uint8Array | Blob | File;
 export interface SourceDescriptor {
   source: PreviewSource;
+  archiveVolumes?: readonly { name: string; source: PreviewSource }[];
   name?: string;
   extension?: string;
   contentType?: string;
@@ -38,3 +39,7 @@ export interface BrowserPreview {
   destroy(): void;
 }
 export declare function createPreview(element: Element | string, options: BrowserPreviewOptions): BrowserPreview;
+export declare function isArchiveVolumeName(name: string): boolean;
+export declare function selectArchiveVolumes<T extends { name: string }>(name: string, candidates: readonly T[]): {
+  format: 'rar' | '7z' | 'zip'; primary: T; files: T[];
+} | undefined;

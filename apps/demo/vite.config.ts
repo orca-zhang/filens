@@ -5,7 +5,8 @@ import path from 'node:path';
 import vue from '@vitejs/plugin-vue';
 import { stepWasmAsset } from '../../scripts/step-wasm-plugin';
 import { agentSkillAsset } from './agent-assets';
-import { sharedThreeCompression } from '../../scripts/shared-compression';
+import { sharedCompression } from '../../scripts/shared-compression';
+import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 
 const compressibleAssets = /\.(?:css|html|js|json|mjs|wasm)$/;
 
@@ -263,8 +264,9 @@ const externalSampleProxy = {
 };
 
 export default defineConfig({
+  worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
   base: process.env.VITE_BASE_PATH || '/modules/filens/',
-  plugins: [sharedThreeCompression(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
+  plugins: [archiveEngineAssets(), sharedCompression(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
   // Discover lazy worker dependencies at startup so first use does not reload an uploaded file.
   optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js'] },
   server: { proxy: externalSampleProxy },
@@ -279,6 +281,7 @@ export default defineConfig({
       '@filens/cad': path.resolve(__dirname, '../../packages/cad/src/index.ts'),
       '@filens/core/style.css': path.resolve(__dirname, '../../packages/core/src/styles/index.css'),
       '@filens/core/zip': path.resolve(__dirname, '../../packages/core/src/zip.ts'),
+      '@filens/core/archive-volumes': path.resolve(__dirname, '../../packages/core/src/archive-volumes.ts'),
       '@filens/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
       '@filens/converter-client': path.resolve(__dirname, '../../packages/converter-client/src/index.ts'),
       '@filens/diagram/style.css': path.resolve(__dirname, '../../packages/diagram/src/styles/index.css'),

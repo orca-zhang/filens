@@ -22,6 +22,8 @@ test('detect personal paths and credentials without treating normal URLs or virt
   for (const prefix of ['npm', 'hf']) assert.deepEqual(privacyIssues(Buffer.from(prefix + '_' + 'a'.repeat(36))), ['secret material']);
   assert.deepEqual(privacyIssues(Buffer.from(['-----BEGIN', 'ENCRYPTED PRIVATE KEY-----'].join(' '))), ['secret material']);
   assert.deepEqual(privacyIssues(Buffer.from('https://github.com/project/parser /filens-source/src/text.rs /home/web_user/runtime')), []);
+  assert.deepEqual(privacyIssues(Buffer.from('FS.mkdir("/home/web_user"); FS.mkdir("/dev");')), []);
+  assert.deepEqual(privacyIssues(Buffer.from('FS.mkdir("/home/web_user_other/build");')), ['personal build path']);
 });
 
 test('release directory and tarball checks reject a binary containing private build paths', async () => {

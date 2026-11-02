@@ -1,81 +1,93 @@
 {
-  "date": "2026-11-01",
+  "date": "2026-11-02",
   "unit": "bytes",
-  "scope": "Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM; excludes OCCT, HTML, notices, maps and source files. MB in documentation = 1000000 bytes. Package version and registry verification are recorded separately.",
+  "scope": "Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
   "builds": {
     "split": {
       "files": [
         {
-          "file": "assets/iwork-worker-DiTOJG8f.js",
-          "raw": 903593,
-          "gzip": 186962,
-          "brotli": 155999
+          "file": "archive/7zz.wasm",
+          "raw": 829684,
+          "gzip": 330277,
+          "brotli": 259432
         },
         {
-          "file": "chunks/archive-_cUUL2-3.js",
-          "raw": 27335,
-          "gzip": 7415,
-          "brotli": 6594
+          "file": "assets/archive-worker-Cy3bEdVg.js",
+          "raw": 52436,
+          "gzip": 18529,
+          "brotli": 16598
         },
         {
-          "file": "chunks/cad-Cyh8aipO.js",
+          "file": "assets/iwork-worker-B9KPoDW3.js",
+          "raw": 904676,
+          "gzip": 187398,
+          "brotli": 156346
+        },
+        {
+          "file": "chunks/archive-B4jVwD9o.js",
+          "raw": 36002,
+          "gzip": 9954,
+          "brotli": 8854
+        },
+        {
+          "file": "chunks/cad-DMg-lGJX.js",
           "raw": 74581,
-          "gzip": 18714,
-          "brotli": 16043
+          "gzip": 18719,
+          "brotli": 16038
         },
         {
-          "file": "chunks/core-gp02JQ3r.js",
-          "raw": 446885,
-          "gzip": 99872,
-          "brotli": 83172
+          "file": "chunks/core--zVW212C.js",
+          "raw": 466402,
+          "gzip": 105498,
+          "brotli": 87556
         },
         {
-          "file": "chunks/diagram-rxvArV-1.js",
+          "file": "chunks/diagram-CDwCA6LZ.js",
           "raw": 27188,
-          "gzip": 7692,
-          "brotli": 6783
+          "gzip": 7693,
+          "brotli": 6779
         },
         {
-          "file": "chunks/docx-ecvZsSWm.js",
+          "file": "chunks/docx-CuQfFJqr.js",
           "raw": 11766,
           "gzip": 3745,
-          "brotli": 3282
+          "brotli": 3283
         },
         {
-          "file": "chunks/ebook-5FyKWZ8s.js",
+          "file": "chunks/ebook-CLlJ8KX3.js",
           "raw": 21804,
-          "gzip": 7022,
+          "gzip": 7024,
           "brotli": 6217
         },
         {
-          "file": "chunks/iwork-DlaehzuR.js",
+          "file": "chunks/iwork-dNVC0X8j.js",
           "raw": 29712,
           "gzip": 8285,
-          "brotli": 7401
+          "brotli": 7404
         },
         {
-          "file": "chunks/media-runtime-DwW7eq4g.js",
-          "raw": 122761,
-          "gzip": 43939,
-          "brotli": 38353
+          "file": "chunks/media-runtime-gcsBQMuo.js",
+          "raw": 128941,
+          "gzip": 47268,
+          "brotli": 41123
         },
         {
-          "file": "chunks/mindmap-D9lNNDoa.js",
+          "file": "chunks/mindmap-g0-VoK-K.js",
           "raw": 20032,
           "gzip": 5650,
-          "brotli": 4978
+          "brotli": 4976
         },
         {
-          "file": "chunks/model3d-BtFT01ZH.js",
-          "raw": 188044,
+          "file": "chunks/model3d-1G1CC52V.js",
+          "raw": 188045,
           "gzip": 45127,
-          "brotli": 38506
+          "brotli": 38471
         },
         {
-          "file": "chunks/panorama-Ci6DK6sa.js",
-          "raw": 272063,
-          "gzip": 70099,
-          "brotli": 58974
+          "file": "chunks/panorama-D7GVivtM.js",
+          "raw": 272775,
+          "gzip": 70294,
+          "brotli": 59107
         },
         {
           "file": "chunks/pdf-CecYOWld.js",
@@ -84,16 +96,16 @@
           "brotli": 119439
         },
         {
-          "file": "chunks/vendor-DvWhw-zP.js",
-          "raw": 2129190,
-          "gzip": 480298,
-          "brotli": 380824
+          "file": "chunks/vendor-DPFNKNkh.js",
+          "raw": 2260126,
+          "gzip": 523632,
+          "brotli": 418863
         },
         {
-          "file": "chunks/xlsx-VJTu9XNS.js",
+          "file": "chunks/xlsx-Co26yo-R.js",
           "raw": 29666,
           "gzip": 8762,
-          "brotli": 7815
+          "brotli": 7816
         },
         {
           "file": "converter-core.wasm",
@@ -121,9 +133,9 @@
         },
         {
           "file": "filens.js",
-          "raw": 228340,
-          "gzip": 56702,
-          "brotli": 45269
+          "raw": 241998,
+          "gzip": 58606,
+          "brotli": 46768
         },
         {
           "file": "libheif.wasm",
@@ -138,25 +150,57 @@
           "brotli": 238652
         }
       ],
+      "main": {
+        "raw": 11229472,
+        "gzip": 3256448,
+        "brotli": 2571841
+      },
+      "archive": {
+        "raw": 882120,
+        "gzip": 348806,
+        "brotli": 276030
+      },
       "total": {
-        "raw": 11048718,
-        "gzip": 3199077,
-        "brotli": 2522450
+        "raw": 12111592,
+        "gzip": 3605254,
+        "brotli": 2847871
       }
     },
     "all-in-one": {
       "files": [
         {
+          "file": "archive/7zz.wasm",
+          "raw": 829684,
+          "gzip": 330277,
+          "brotli": 259432
+        },
+        {
+          "file": "assets/archive-worker-Cy3bEdVg.js",
+          "raw": 52436,
+          "gzip": 18529,
+          "brotli": 16598
+        },
+        {
           "file": "filens.js",
-          "raw": 12680146,
-          "gzip": 3767906,
-          "brotli": 2827093
+          "raw": 8844608,
+          "gzip": 3254826,
+          "brotli": 2901690
         }
       ],
+      "main": {
+        "raw": 8844608,
+        "gzip": 3254826,
+        "brotli": 2901690
+      },
+      "archive": {
+        "raw": 882120,
+        "gzip": 348806,
+        "brotli": 276030
+      },
       "total": {
-        "raw": 12680146,
-        "gzip": 3767906,
-        "brotli": 2827093
+        "raw": 9726728,
+        "gzip": 3603632,
+        "brotli": 3177720
       }
     }
   }

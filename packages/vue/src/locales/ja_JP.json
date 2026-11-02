@@ -87,5 +87,12 @@
   "Isolate": "分離",
   "No nodes matched the current filter.": "現在のフィルターに一致するノードはありません。",
   "No model tree available.": "モデルツリーはありません。",
-  "No model metadata available.": "モデルのメタデータはありません。"
+  "No model metadata available.": "モデルのメタデータはありません。",
+  "Back to document": "文書に戻る",
+  "Document": "文書",
+  "Attachments": "添付ファイル",
+  "Download attachment": "添付ファイルをダウンロード",
+  "Retry": "再試行",
+  "No previewer is configured for this attachment.": "この添付ファイルのプレビューは設定されていません。",
+  "Some document attachments could not be read.": "一部の添付ファイルを読み取れませんでした。"
 }

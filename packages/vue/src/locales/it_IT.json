@@ -87,5 +87,12 @@
   "Isolate": "Isola",
   "No nodes matched the current filter.": "Nessun nodo corrisponde al filtro attuale.",
   "No model tree available.": "Nessun albero del modello disponibile.",
-  "No model metadata available.": "Nessun metadato del modello disponibile."
+  "No model metadata available.": "Nessun metadato del modello disponibile.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

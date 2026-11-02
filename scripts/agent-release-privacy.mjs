@@ -19,7 +19,7 @@ export function privateRustBuildEnv(root, env = process.env) {
 export function privacyIssues(bytes) {
   const value = bytes.toString('latin1');
   const issues = [];
-  if (/\/Users\/[^/\s\0]+\/|\/home\/(?!web_user(?:\/|\0|$))[^/\s\0]+\/|[A-Za-z]:[\\/]Users[\\/][^\\/\s\0]+[\\/]/.test(value)) issues.push('personal build path');
+  if (/\/Users\/[^/\s\0]+\/|\/home\/(?!web_user(?:[\/\0"']|$))[^/\s\0]+\/|[A-Za-z]:[\\/]Users[\\/][^\\/\s\0]+[\\/]/.test(value)) issues.push('personal build path');
   if (/X-Amz-(?:Credential|Signature)=|X-Goog-(?:Credential|Signature)=|[?&](?:access_token|api_key|token)=[A-Za-z0-9._~%+/-]{16,}/.test(value)) issues.push('signed URL or access credential');
   if (/-----BEGIN (?:(?:RSA|EC|DSA|OPENSSH|ENCRYPTED) )?PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|npm_[A-Za-z0-9]{30,}|hf_[A-Za-z0-9]{30,}|AKIA[A-Z0-9]{16}|sk-(?:proj-)?[A-Za-z0-9_-]{32,})\b/.test(value)) issues.push('secret material');
   return issues;

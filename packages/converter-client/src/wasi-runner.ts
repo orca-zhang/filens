@@ -1,5 +1,6 @@
 // Shared, format-independent browser WASI host. Each call owns its files and instance.
 import { retryableLoader, throwIfAborted, waitForConversion } from './source';
+import { wasmResponse } from './wasm-response';
 
 export type WasmModuleSource =
   | BufferSource
@@ -91,7 +92,11 @@ async function compileWasmResponse(response: Response): Promise<WebAssembly.Modu
   if (!response.ok) {
     throw new Error(`Failed to fetch converter WASM: ${response.status} ${response.statusText}`.trim());
   }
-  return WebAssembly.compile(await response.arrayBuffer());
+  const decoded = await wasmResponse(response);
+  if (typeof WebAssembly.compileStreaming === 'function' && decoded.headers.get('content-type')?.split(';', 1)[0] === 'application/wasm') {
+    return WebAssembly.compileStreaming(decoded);
+  }
+  return WebAssembly.compile(await decoded.arrayBuffer());
 }
 
 class WasiExit extends Error {

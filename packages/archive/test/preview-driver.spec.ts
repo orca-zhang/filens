@@ -13,6 +13,10 @@ import {
 } from '../src';
 
 describe('Archive preview driver', () => {
+  it('asks for companion volumes when only the final traditional ZIP part is supplied', async () => {
+    const bytes = await readFile(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'multivolume', 'classic.zip'));
+    await expect(createArchiveResourceIndex(bytes, createLoadContext('classic.zip'))).rejects.toThrow('Select the .zip file');
+  });
   it.each(['pax', 'gnu'])('reads a %s archive written by Python tarfile', async format => {
     const bytes = await readFile(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', `${format}-long-path.tar`));
     const index = await createArchiveResourceIndex(bytes, createLoadContext(`${format}.tar`));
@@ -40,7 +44,8 @@ describe('Archive preview driver', () => {
     expect(driver.supports('tgz')).toBe(true);
     expect(driver.supports('gz')).toBe(true);
     expect(driver.supports('jar')).toBe(true);
-    expect(driver.supports('rar')).toBe(false);
+    expect(driver.supports('rar')).toBe(true);
+    expect(driver.supports('7z')).toBe(true);
   });
 
   it('lists and extracts TAR, TGZ, and single-file GZIP entries', async () => {

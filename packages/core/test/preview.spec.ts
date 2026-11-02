@@ -232,6 +232,10 @@ describe('preview format routing', () => {
   it('infers normalized extensions from names and URLs', () => {
     expect(inferExtensionFromName('Quarterly Report.PPTX')).toBe('pptx');
     expect(inferExtensionFromName('/files/archive.tar.gz?token=abc')).toBe('gz');
+    expect(inferExtensionFromName('/files/bundle.7Z.002?token=abc')).toBe('7z');
+    expect(inferExtensionFromName('bundle.zip.001')).toBe('zip');
+    expect(inferExtensionFromName('bundle.r00')).toBe('rar');
+    expect(inferExtensionFromName('bundle.z01')).toBe('zip');
     expect(inferExtensionFromName('README')).toBeUndefined();
     expect(inferExtensionFromName('.env')).toBe('env');
     expect(inferExtensionFromName('Dockerfile')).toBe('dockerfile');
@@ -1866,7 +1870,7 @@ describe('Previewer runtime', () => {
 
   it('converts legacy documents before loading the OpenXML target driver', async () => {
     const source = new Uint8Array([1, 2, 3]);
-    const converted = new Uint8Array([4, 5, 6]);
+    const converted = await readFixture('fixtures-text-theme.pptx');
     const driver = createRecordingDriver('pptx', 'paged');
     const converter: ConverterClient = {
       convert: async (request) => {

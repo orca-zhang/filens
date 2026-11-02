@@ -87,5 +87,12 @@
   "Isolate": "Izolovať",
   "No nodes matched the current filter.": "Žiadne uzly nezodpovedajú aktuálnemu filtru.",
   "No model tree available.": "Strom modelu nie je k dispozícii.",
-  "No model metadata available.": "Metadáta modelu nie sú k dispozícii."
+  "No model metadata available.": "Metadáta modelu nie sú k dispozícii.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

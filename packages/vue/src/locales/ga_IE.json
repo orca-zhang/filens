@@ -87,5 +87,12 @@
   "Isolate": "Aonraigh",
   "No nodes matched the current filter.": "Níor aimsíodh nóid a mheaitseálann an scagaire reatha.",
   "No model tree available.": "Níl crann samhla ar fáil.",
-  "No model metadata available.": "Níl meiteashonraí samhla ar fáil."
+  "No model metadata available.": "Níl meiteashonraí samhla ar fáil.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

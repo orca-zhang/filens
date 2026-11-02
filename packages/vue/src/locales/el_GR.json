@@ -87,5 +87,12 @@
   "Isolate": "Απομόνωση",
   "No nodes matched the current filter.": "Κανένας κόμβος δεν ταιριάζει με το τρέχον φίλτρο.",
   "No model tree available.": "Δεν υπάρχει διαθέσιμο δέντρο μοντέλου.",
-  "No model metadata available.": "Δεν υπάρχουν διαθέσιμα μεταδεδομένα μοντέλου."
+  "No model metadata available.": "Δεν υπάρχουν διαθέσιμα μεταδεδομένα μοντέλου.",
+  "Back to document": "Back to document",
+  "Document": "Document",
+  "Attachments": "Attachments",
+  "Download attachment": "Download attachment",
+  "Retry": "Retry",
+  "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
+  "Some document attachments could not be read.": "Some document attachments could not be read."
 }

@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "license": "MIT",
   "type": "module",
-  "description": "Browser-local Office, iWork, PDF, CAD, 3D, RAW and panorama previews, as split modules or one JavaScript file.",
+  "description": "Browser-local document and media previews, as split modules or one main JS with an optional external archive engine.",
   "main": "./dist/split/filens.js",
   "module": "./dist/split/filens.js",
   "types": "./dist/index.d.ts",

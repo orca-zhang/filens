@@ -1,6 +1,7 @@
 import { Blob as NativeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PreviewLoadContext, PreviewOptions, PreviewSource } from '@filens/core';
+import type { PreviewLoadContext, PreviewOptions, PreviewSource, PreviewPasswordRequest } from '@filens/core';
+import { PreviewPasswordError } from '@filens/core';
 import { ArchivePreviewSession, createArchiveResourceIndex } from '../src';
 
 const mocks = vi.hoisted(() => ({ open: vi.fn() }));
@@ -30,7 +31,7 @@ function setup(options: PreviewOptions = {}) {
 }
 function childFactory(held?: Promise<void>) {
   const children: any[] = [], options: PreviewOptions[] = [];
-  const factory = vi.fn((_host: HTMLElement, value: PreviewOptions) => {
+  const factory = vi.fn((_host: HTMLElement, value: PreviewOptions = {}) => {
     options.push(value); const callbacks: Record<string, (value: any) => void> = {}, unsubscribes: any[] = [];
     const child = { preview: vi.fn(() => held ?? Promise.resolve()), destroy: vi.fn(), getState: () => ({ error: null }),
       on: vi.fn((event: string, callback: any) => { callbacks[event] = callback; const unsubscribe = vi.fn(); unsubscribes.push(unsubscribe); return unsubscribe; }), callbacks, unsubscribes };
@@ -50,6 +51,26 @@ beforeEach(() => {
 afterEach(() => { sessions.splice(0).forEach(session => session.destroy()); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
 describe('archive source lifetime', () => {
+  it.each(['replace', 'destroy', 'abort'] as const)('cancels a held companion volume on %s and ignores its late bytes', async action => {
+    const { session, errors } = setup(), held = deferred<ArrayBuffer>(), controller = new AbortController();
+    const companion = new Blob(), read = vi.fn(() => held.promise);
+    Object.defineProperty(companion, 'arrayBuffer', { value: read });
+    const source = new Uint8Array([1]);
+    const result = observe(session.load(source, { signal: controller.signal, descriptor: {
+      source, name: 'bundle.7z.001', extension: '7z', archiveVolumes: [{ name: 'bundle.7z.002', source: companion }]
+    } }));
+    await vi.waitFor(() => expect(read).toHaveBeenCalledOnce());
+    try {
+      if (action === 'replace') await load(session);
+      else if (action === 'destroy') session.destroy();
+      else controller.abort();
+      await vi.waitFor(() => expect(result.done).toBe(true), { timeout: 500, interval: 5 });
+    } finally { held.resolve(new ArrayBuffer(10)); await flush(); }
+    expect(errors).not.toHaveBeenCalled();
+    expect(result.error?.name).not.toBe('Error');
+    if (action === 'replace') expect(session.getState().title).toBe('current.zip');
+  });
+
   for (const stage of ['blob', 'fetch', 'body', 'index'] as const) {
     it.each(['replace', 'destroy', 'abort'] as const)(`settles a held ${stage} before %s releases the old archive`, async action => {
       const { session, host, errors, rendered } = setup(), held = deferred<any>(), controller = new AbortController(), cancel = vi.fn(async () => {});
@@ -111,6 +132,49 @@ describe('archive source lifetime', () => {
 });
 
 describe('archive navigation and embedded previews', () => {
+  it('aborts a password request when leaving an entry and ignores a late answer', async () => {
+    const held = deferred<string | null>();
+    const requestPassword = vi.fn((_request: PreviewPasswordRequest) => held.promise);
+    const read = vi.fn(async (password?: string) => {
+      if (!password) throw new PreviewPasswordError('password_required');
+      return encode('Secret payload');
+    });
+    const { session, raw, host, errors } = setup({ requestPassword });
+    mocks.open.mockResolvedValue(archive({ 'secret.txt': read }));
+    await load(session);
+    const result = observe(raw.openEntryPreview('secret.txt'));
+    await vi.waitFor(() => expect(requestPassword).toHaveBeenCalledOnce());
+    const request = requestPassword.mock.calls[0][0];
+    raw.closeEntryPreview();
+    expect(request.signal?.aborted).toBe(true);
+    await vi.waitFor(() => expect(result.done).toBe(true));
+    held.resolve('secret'); await flush();
+    expect(read).toHaveBeenCalledOnce();
+    expect(host.querySelector('.archivev-entry-preview')).toBeNull();
+    expect(session.getState().error).toBeNull();
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it('retries a wrong archive entry password and returns to the table on cancellation', async () => {
+    const requestPassword = vi.fn().mockResolvedValueOnce('wrong').mockResolvedValueOnce(' secret ').mockResolvedValueOnce(null);
+    const read = vi.fn(async (password?: string) => {
+      if (!password) throw new PreviewPasswordError('password_required');
+      if (password !== ' secret ') throw new PreviewPasswordError('password_invalid');
+      return encode('Secret payload');
+    });
+    const { session, raw, host, errors } = setup({ requestPassword });
+    mocks.open.mockResolvedValue(archive({ 'secret.txt': read }));
+    await load(session);
+    await raw.openEntryPreview('secret.txt');
+    expect(host.querySelector('.archivev-entry-text')?.textContent).toBe('Secret payload');
+    expect(requestPassword.mock.calls.map(([request]) => request.reason)).toEqual(['password_required', 'password_invalid']);
+    raw.closeEntryPreview();
+    await raw.openEntryPreview('secret.txt');
+    expect(host.querySelector('.archivev-table')).not.toBeNull();
+    expect(session.getState().error).toBeNull();
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it.each(['back', 'directory', 'replace', 'destroy', 'abort', 'second'] as const)('settles an entry read before %s and cannot restore the old preview', async action => {
     const held = deferred<Uint8Array>(), read = vi.fn(() => held.promise), { host, session, raw, errors } = setup(), controller = new AbortController();
     mocks.open.mockResolvedValue(archive({ 'old.txt': read, 'next.txt': 'new entry', 'docs/readme.txt': 'docs' })); await load(session, 'bundle.zip', controller.signal);
