@@ -4,6 +4,10 @@
 前端运行时与 WASM，不上传文件，也不在 Swift / Java 内实现格式解析或转换。
 这是预览组件；目前不提供原生读取、OCR、搜索或独立转换结果 API。
 
+SDK 版本 **0.1.0**，共享预览运行时 **0.3.0**。Release 中的 SDK ZIP 已携带离线资源，
+解压后可直接接入对应的 `sdk/ios` 或 `sdk/android` 模块。源码构建和打包方式见下文。
+[下载包与解压体积](../docs/mobile-sdk-sizes.json) · [运行时与 npm 包体积](../docs/preview-sizes.md)。
+
 ## 构建共享资源
 
 在仓库根目录执行（需要 Node.js、npm 和 WASM 构建工具链）：
@@ -14,6 +18,9 @@ npm run build:wasm
 npm run build:preview
 npm run build:sdk:mobile
 ```
+
+生成携带离线资源的两个源码 SDK ZIP：`npm run package:sdk:mobile`，输出到
+`dist/mobile-sdk/`；该命令不生成预编译 AAR / XCFramework。
 
 最后一步把分包预览运行时、独立压缩包引擎及 Worker、移动端入口、MIT 和第三方
 许可复制到两个 SDK 的资源目录。生成的资源不提交 Git；发布 SDK 时必须包含它们。

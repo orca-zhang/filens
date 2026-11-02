@@ -1,6 +1,6 @@
 {
   "name": "filens-preview",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "type": "module",
   "description": "Browser-local document and media previews, as split modules or one main JS with an optional external archive engine.",

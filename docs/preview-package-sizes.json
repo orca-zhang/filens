@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-01",
+  "date": "2026-11-02",
   "scope": "Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.",
   "name": "filens-preview",
-  "version": "0.2.0",
-  "file": "filens-preview-0.2.0.tgz",
-  "bytes": 7041835,
-  "unpackedBytes": 24557391,
-  "sha256": "ff2d40c705f21fea7816444264a1a137734ac3345e153c4ac8eeb2eb9e5f19a8",
-  "integrity": "sha512-WLeVfi2ews7coH+Q++sh6nAp6mfonJR6gAKqCQc1d2fQesESIEPjxSFj/iOqWDd6eerQHV17T7Pu7jM5zLriwQ==",
+  "version": "0.3.0",
+  "file": "filens-preview-0.3.0.tgz",
+  "bytes": 7319003,
+  "unpackedBytes": 22772131,
+  "sha256": "b1df1ecf9b97f9a18f27eb2f4bf6c39c68e82e2afdd2e3a09067f921ef0e1534",
+  "integrity": "sha512-2oQaG0mKKTmcEaG2QlZFFiCfm7Z4G/a1IgKuQliVCjoxJtA46o4zp7ZT2zJQR9trxgDhz9H88C2DjhPjVNh1JA==",
   "files": [
     {
       "path": "LICENSE",
@@ -15,82 +15,98 @@
     },
     {
       "path": "README.md",
-      "bytes": 12323
+      "bytes": 15625
+    },
+    {
+      "path": "dist/all-in-one/archive/7zz.wasm",
+      "bytes": 829684
+    },
+    {
+      "path": "dist/all-in-one/assets/archive-worker-Cy3bEdVg.js",
+      "bytes": 52436
     },
     {
       "path": "dist/all-in-one/filens.js",
-      "bytes": 12680146
+      "bytes": 8845059
     },
     {
       "path": "dist/all-in-one/index.html",
-      "bytes": 1374
+      "bytes": 1921
     },
     {
       "path": "dist/all-in-one/THIRD-PARTY-NOTICES.txt",
-      "bytes": 404921
+      "bytes": 454748
     },
     {
       "path": "dist/index.d.ts",
-      "bytes": 1378
+      "bytes": 1704
     },
     {
-      "path": "dist/split/assets/iwork-worker-DiTOJG8f.js",
-      "bytes": 903593
+      "path": "dist/split/archive/7zz.wasm",
+      "bytes": 829684
     },
     {
-      "path": "dist/split/chunks/archive-_cUUL2-3.js",
-      "bytes": 27335
+      "path": "dist/split/assets/archive-worker-Cy3bEdVg.js",
+      "bytes": 52436
     },
     {
-      "path": "dist/split/chunks/cad-Cyh8aipO.js",
+      "path": "dist/split/assets/iwork-worker-B9KPoDW3.js",
+      "bytes": 904676
+    },
+    {
+      "path": "dist/split/chunks/archive-B4jVwD9o.js",
+      "bytes": 36002
+    },
+    {
+      "path": "dist/split/chunks/cad-DMg-lGJX.js",
       "bytes": 74581
     },
     {
-      "path": "dist/split/chunks/core-gp02JQ3r.js",
-      "bytes": 446885
+      "path": "dist/split/chunks/core--zVW212C.js",
+      "bytes": 466402
     },
     {
-      "path": "dist/split/chunks/diagram-rxvArV-1.js",
+      "path": "dist/split/chunks/diagram-CDwCA6LZ.js",
       "bytes": 27188
     },
     {
-      "path": "dist/split/chunks/docx-ecvZsSWm.js",
+      "path": "dist/split/chunks/docx-CuQfFJqr.js",
       "bytes": 11766
     },
     {
-      "path": "dist/split/chunks/ebook-5FyKWZ8s.js",
+      "path": "dist/split/chunks/ebook-CLlJ8KX3.js",
       "bytes": 21804
     },
     {
-      "path": "dist/split/chunks/iwork-DlaehzuR.js",
+      "path": "dist/split/chunks/iwork-dNVC0X8j.js",
       "bytes": 29712
     },
     {
-      "path": "dist/split/chunks/media-runtime-DwW7eq4g.js",
-      "bytes": 122761
+      "path": "dist/split/chunks/media-runtime-gcsBQMuo.js",
+      "bytes": 128941
     },
     {
-      "path": "dist/split/chunks/mindmap-D9lNNDoa.js",
+      "path": "dist/split/chunks/mindmap-g0-VoK-K.js",
       "bytes": 20032
     },
     {
-      "path": "dist/split/chunks/model3d-BtFT01ZH.js",
-      "bytes": 188044
+      "path": "dist/split/chunks/model3d-1G1CC52V.js",
+      "bytes": 188045
     },
     {
-      "path": "dist/split/chunks/panorama-Ci6DK6sa.js",
-      "bytes": 272063
+      "path": "dist/split/chunks/panorama-D7GVivtM.js",
+      "bytes": 272775
     },
     {
       "path": "dist/split/chunks/pdf-CecYOWld.js",
       "bytes": 604243
     },
     {
-      "path": "dist/split/chunks/vendor-DvWhw-zP.js",
-      "bytes": 2129190
+      "path": "dist/split/chunks/vendor-DPFNKNkh.js",
+      "bytes": 2260126
     },
     {
-      "path": "dist/split/chunks/xlsx-VJTu9XNS.js",
+      "path": "dist/split/chunks/xlsx-Co26yo-R.js",
       "bytes": 29666
     },
     {
@@ -111,11 +127,11 @@
     },
     {
       "path": "dist/split/filens.js",
-      "bytes": 228340
+      "bytes": 242449
     },
     {
       "path": "dist/split/index.html",
-      "bytes": 1374
+      "bytes": 1921
     },
     {
       "path": "dist/split/libheif.wasm",
@@ -127,11 +143,11 @@
     },
     {
       "path": "dist/split/THIRD-PARTY-NOTICES.txt",
-      "bytes": 404921
+      "bytes": 454748
     },
     {
       "path": "package.json",
-      "bytes": 1160
+      "bytes": 1166
     }
   ],
   "privacyChecked": true

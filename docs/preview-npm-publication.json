@@ -1,0 +1,13 @@
+{
+  "name": "filens-preview",
+  "version": "0.3.0",
+  "registry": "https://registry.npmjs.org/",
+  "status": "upload-accepted-awaiting-public-registry",
+  "observedAt": "2026-11-02T02:28:46.760Z",
+  "sha256": "b1df1ecf9b97f9a18f27eb2f4bf6c39c68e82e2afdd2e3a09067f921ef0e1534",
+  "integrity": "sha512-2oQaG0mKKTmcEaG2QlZFFiCfm7Z4G/a1IgKuQliVCjoxJtA46o4zp7ZT2zJQR9trxgDhz9H88C2DjhPjVNh1JA==",
+  "bytes": 7319003,
+  "unpackedBytes": 22772131,
+  "uploadHttpStatus": 202,
+  "publicRegistryStatus": 404
+}

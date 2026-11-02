@@ -18,7 +18,7 @@
 | Approximate size | **Lite: 7.68–8.05 MiB installed · Full: 31.10–36.74 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **1.80–2.17 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.2.0 runtime: **2.52 MB Brotli** across split runtime files, or **2.83 MB Brotli / 3.77 MB gzip / 12.68 MB raw** as one JS file, including Vue, styles, workers and WASM. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **1.80–2.17 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.0 main runtimes: **2.57 MB Brotli** summed across split files, or **2.90 MB Brotli / 3.26 MB gzip / 8.85 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -88,7 +88,8 @@ npm install filens-preview
 
 **iOS / Android:** source SDKs are available as a local Swift Package and an Android
 Library, sharing the offline frontend and WASM runtime. See the
-[mobile SDK integration guide (Chinese)](sdk/README.zh-CN.md).
+[mobile SDK integration guide (Chinese)](sdk/README.zh-CN.md) and
+[runtime, npm and SDK sizes](docs/preview-sizes.md).
 
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
 
@@ -126,7 +127,7 @@ Use a bundler for npm imports, or deploy the package runtime directory and impor
 | --- | ---: | ---: | ---: |
 | Conversion core WASM (Office detection) | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
 | Image / RAW core WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| Media / panorama preview | 229.3 KiB | 67.2 KiB | **57.4 KiB** |
+| Media / panorama preview | 230.0 KiB | 67.1 KiB | **57.3 KiB** |
 | truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
 Document, image / RAW, and STEP WASM modules load independently on demand. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
@@ -138,24 +139,26 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 | --- | ---: | ---: | ---: |
 | Office decryption WASM (optional) | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
 | HEIC / HEIF decoder WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| Demo entry | 213.2 KiB | 61.1 KiB | **51.3 KiB** |
+| Demo entry | 213.6 KiB | 61.3 KiB | **51.6 KiB** |
 | Agent CLI demo UI | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| Shared vendor dependencies | 1323.0 KiB | 370.4 KiB | **307.7 KiB** |
-| PPTX / core runtime | 337.2 KiB | 93.1 KiB | **78.9 KiB** |
-| Vue preview host | 162.0 KiB | 47.3 KiB | **37.7 KiB** |
-| DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
+| Shared vendor dependencies | 1407.1 KiB | 406.1 KiB | **339.8 KiB** |
+| PPTX / core runtime | 353.8 KiB | 98.8 KiB | **83.6 KiB** |
+| Vue preview host | 173.6 KiB | 49.2 KiB | **38.9 KiB** |
+| DOCX / XLSX / PDF | 43.7 KiB | 13.2 KiB | **11.8 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork preview | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
+| iWork preview | 36.6 KiB | 11.2 KiB | **10.0 KiB** |
 | CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
-| 3D preview | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
-| Media decoder loader | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
-| Archive preview | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
-| Text / ebooks | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
-| iWork worker | 882.4 KiB | 182.6 KiB | **152.3 KiB** |
+| 3D preview | 132.8 KiB | 37.5 KiB | **32.6 KiB** |
+| Media decoder loader | 125.6 KiB | 46.1 KiB | **40.1 KiB** |
+| Archive preview | 32.2 KiB | 10.4 KiB | **9.2 KiB** |
+| RAR / 7z extraction WASM (optional) | 810.2 KiB | 322.5 KiB | **253.4 KiB** |
+| Archive worker (optional) | 51.2 KiB | 18.1 KiB | **16.2 KiB** |
+| Text / ebooks | 29.8 KiB | 9.9 KiB | **8.8 KiB** |
+| iWork worker | 883.5 KiB | 183.0 KiB | **152.7 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Entry, preloaded JS, and CSS total **495.3 KiB Brotli** (2102.6 KiB raw / 591.8 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Entry, preloaded JS, and CSS total **532.2 KiB Brotli** (2204.5 KiB raw / 633.2 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
 
 </details>
 

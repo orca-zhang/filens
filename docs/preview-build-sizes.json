@@ -1,5 +1,6 @@
 {
   "date": "2026-11-02",
+  "version": "0.3.0",
   "unit": "bytes",
   "scope": "Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
   "builds": {

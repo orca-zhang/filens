@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-02",
+  "tag": "v0.6.0",
+  "components": {
+    "preview": "0.3.0",
+    "mobileSdk": "0.1.0"
+  },
+  "scope": "Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.",
+  "assets": [
+    {
+      "file": "filens-preview-0.3.0-split.zip",
+      "kind": "browser-split",
+      "bytes": 3659205,
+      "unpackedBytes": 12570313,
+      "sha256": "1b1d883e8dfca5acfebb4c3fea20d5354dcfbedfb018af5792a8f74fe833f364"
+    },
+    {
+      "file": "filens-preview-0.3.0-all-in-one.zip",
+      "kind": "browser-all-in-one",
+      "bytes": 3674890,
+      "unpackedBytes": 10185454,
+      "sha256": "9cbccfcccebda859c786550029d348d7d73111ca4188af9399533b2222643677"
+    },
+    {
+      "file": "filens-preview-0.3.0.tgz",
+      "kind": "npm",
+      "bytes": 7319003,
+      "unpackedBytes": 22772131,
+      "sha256": "b1df1ecf9b97f9a18f27eb2f4bf6c39c68e82e2afdd2e3a09067f921ef0e1534"
+    },
+    {
+      "file": "filens-ios-sdk-0.1.0.zip",
+      "kind": "source-sdk-ios",
+      "bytes": 3679002,
+      "unpackedBytes": 12606947,
+      "sha256": "9512a2bc95af1bbaf18a65c9af3514d906f03b6090fadcf0523fe155d1c7148a"
+    },
+    {
+      "file": "filens-android-sdk-0.1.0.zip",
+      "kind": "source-sdk-android",
+      "bytes": 3681378,
+      "unpackedBytes": 12602789,
+      "sha256": "5ee5e2b77066ca1bf8aaa689518d5e5dd0b2f5d242cce567f18368823b77ab19"
+    }
+  ]
+}

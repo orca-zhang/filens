@@ -18,7 +18,7 @@
 | 大概多大 | **Lite 安装后 7.68–8.05 MiB · Full 安装后 31.10–36.74 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **1.80–2.17 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.2.0 运行时按分包合计约 **2.52 MB Brotli**，单文件版约 **2.83 MB Brotli / 3.77 MB gzip / 12.68 MB 原始体积**，已包含 Vue、样式、Worker 与 WASM。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **1.80–2.17 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.0 主运行时按分包合计 **2.57 MB Brotli**，单 JS 版为 **2.90 MB Brotli / 3.26 MB gzip / 8.85 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
@@ -87,7 +87,7 @@ npm install filens-preview
 ```
 
 **iOS / Android 应用接入：**提供 Swift Package 与 Android Library 源码 SDK，封装同一份
-前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md)。
+前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md) · [运行时与 SDK 体积](docs/preview-sizes.md)。
 
 两种构建使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。
 
@@ -125,7 +125,7 @@ npm 导入需配合打包器；也可直接部署包内运行时目录，通过 
 | --- | ---: | ---: | ---: |
 | 转换核心 WASM（Office 加密检测） | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
 | 图像 / RAW 核心 WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| 媒体 / 全景预览 | 229.3 KiB | 67.2 KiB | **57.4 KiB** |
+| 媒体 / 全景预览 | 230.0 KiB | 67.1 KiB | **57.3 KiB** |
 | STEP truck WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
 文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载。媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
@@ -137,24 +137,26 @@ npm 导入需配合打包器；也可直接部署包内运行时目录，通过 
 | --- | ---: | ---: | ---: |
 | Office 解密 WASM（可选） | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
 | HEIC / HEIF 解码 WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| 演示站入口 | 213.2 KiB | 61.1 KiB | **51.3 KiB** |
+| 演示站入口 | 213.6 KiB | 61.3 KiB | **51.6 KiB** |
 | Agent CLI 演示界面 | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| 共享第三方依赖 | 1323.0 KiB | 370.4 KiB | **307.7 KiB** |
-| PPTX / 核心运行时 | 337.2 KiB | 93.1 KiB | **78.9 KiB** |
-| Vue 预览容器 | 162.0 KiB | 47.3 KiB | **37.7 KiB** |
-| DOCX / XLSX / PDF | 42.8 KiB | 12.9 KiB | **11.6 KiB** |
+| 共享第三方依赖 | 1407.1 KiB | 406.1 KiB | **339.8 KiB** |
+| PPTX / 核心运行时 | 353.8 KiB | 98.8 KiB | **83.6 KiB** |
+| Vue 预览容器 | 173.6 KiB | 49.2 KiB | **38.9 KiB** |
+| DOCX / XLSX / PDF | 43.7 KiB | 13.2 KiB | **11.8 KiB** |
 | PDF 按需引擎 | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork 预览 | 35.4 KiB | 11.0 KiB | **9.8 KiB** |
+| iWork 预览 | 36.6 KiB | 11.2 KiB | **10.0 KiB** |
 | CAD / 思维导图 / 流程图 | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
-| 3D 预览 | 132.9 KiB | 37.5 KiB | **32.6 KiB** |
-| 媒体解码加载器 | 119.5 KiB | 42.8 KiB | **37.4 KiB** |
-| 压缩包预览 | 25.0 KiB | 8.0 KiB | **7.1 KiB** |
-| 文本 / 电子书 | 28.6 KiB | 9.7 KiB | **8.6 KiB** |
-| iWork Worker | 882.4 KiB | 182.6 KiB | **152.3 KiB** |
+| 3D 预览 | 132.8 KiB | 37.5 KiB | **32.6 KiB** |
+| 媒体解码加载器 | 125.6 KiB | 46.1 KiB | **40.1 KiB** |
+| 压缩包预览 | 32.2 KiB | 10.4 KiB | **9.2 KiB** |
+| RAR / 7z 解压 WASM（可选） | 810.2 KiB | 322.5 KiB | **253.4 KiB** |
+| 压缩包 Worker（可选） | 51.2 KiB | 18.1 KiB | **16.2 KiB** |
+| 文本 / 电子书 | 29.8 KiB | 9.9 KiB | **8.8 KiB** |
+| iWork Worker | 883.5 KiB | 183.0 KiB | **152.7 KiB** |
 | PDF Worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | STEP truck 加载器 | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-本次构建的入口、预加载 JS 与 CSS 合计 **495.3 KiB Brotli**（原始 2102.6 KiB / gzip 591.8 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
+本次构建的入口、预加载 JS 与 CSS 合计 **532.2 KiB Brotli**（原始 2204.5 KiB / gzip 633.2 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
 
 </details>
 

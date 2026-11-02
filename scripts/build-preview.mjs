@@ -7,6 +7,7 @@ import { assertReleaseDirectory } from './agent-release-privacy.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const directory = path.join(root, 'packages/preview');
+const { version } = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
 const measurements = {};
 for (const mode of ['split', 'all-in-one']) {
   await new Promise((resolve, reject) => {
@@ -74,7 +75,7 @@ await cp(path.join(directory, 'dist/all-in-one/filens.js'), path.join(root, 'dis
 await cp(path.join(directory, 'dist/all-in-one/assets'), path.join(root, 'dist/preview/assets'), { recursive: true });
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));
 await cp(path.join(root, 'LICENSE'), path.join(directory, 'LICENSE'));
-await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), unit:'bytes', scope:'Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
+await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), version, unit:'bytes', scope:'Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
 
 async function measure(directory, prefix = '') {
   const files = [];

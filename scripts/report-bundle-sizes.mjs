@@ -22,6 +22,8 @@ const labels = {
   media: ['媒体 / 全景预览', 'Media / panorama preview'],
   'media-runtime': ['媒体解码加载器', 'Media decoder loader'],
   archive: ['压缩包预览', 'Archive preview'],
+  'archive-engine': ['RAR / 7z 解压 WASM（可选）', 'RAR / 7z extraction WASM (optional)'],
+  'archive-worker': ['压缩包 Worker（可选）', 'Archive worker (optional)'],
   text: ['文本 / 电子书', 'Text / ebooks'],
   'iwork-worker': ['iWork Worker', 'iWork worker'],
   'pdf.worker.min': ['PDF Worker', 'PDF worker'],
@@ -32,8 +34,8 @@ const order = Object.keys(labels);
 const groups = new Map();
 const assets = (await readdir(path.join(dist, 'assets'))).filter(file => /\.(?:js|mjs|css|wasm)$/.test(file));
 if (assets.some(file => /occt/i.test(file))) throw new Error('Default demo must exclude OCCT; rebuild before reporting sizes.');
-for (const file of [...assets.map(file => `assets/${file}`), 'externals/converter-core.wasm', 'externals/converter-office.wasm', 'externals/converter-image.wasm']) {
-  const name = path.basename(file).replace(/-[\w-]{8}(?=\.)/, '').replace(/\.(?:js|mjs|css|wasm)$/, '');
+for (const file of [...assets.map(file => `assets/${file}`), 'archive/7zz.wasm', 'externals/converter-core.wasm', 'externals/converter-office.wasm', 'externals/converter-image.wasm']) {
+  const name = file === 'archive/7zz.wasm' ? 'archive-engine' : path.basename(file).replace(/-[\w-]{8}(?=\.)/, '').replace(/\.(?:js|mjs|css|wasm)$/, '');
   const row = groups.get(name) ?? { name, files: [], raw: 0, gzip: 0, brotli: 0 };
   row.files.push(file);
   row.raw += (await stat(path.join(dist, file))).size;
