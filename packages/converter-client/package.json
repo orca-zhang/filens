@@ -38,5 +38,15 @@
   "dependencies": {
     "fflate": "0.8.2",
     "libheif-js": "1.23.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/converter-client"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

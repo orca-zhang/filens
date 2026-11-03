@@ -69,20 +69,37 @@ try {
         } finally { session.destroy(); window.VideoEncoder = nativeEncoder; window.VideoDecoder = nativeDecoder; window.fetch = fetch; }
       });
       assert.equal(direct.codecs, 0); assert.equal(direct.fetches, 0); assert.ok(direct.width > 0 && direct.time > 0);
-      const recovery = await page.evaluate(async () => {
+      const recovery = [];
+      for (const paused of [true, false]) recovery.push(await page.evaluate(async paused => {
         const session = window.filensMedia.createMediaPreviewDrivers({ browserMedia: true }).find(driver => driver.id === 'media').createSession(document.querySelector('#host'));
         try {
+          const nativeReady = new Promise((resolve, reject) => { session.on('rendered', resolve); session.on('error', reject); });
+          await session.load('/original.mp4', { descriptor: { source: '/original.mp4', name: 'remux.mov', extension: 'mov' } });
+          await nativeReady;
+          const original = document.querySelector('#host video');
+          original.volume = .35; original.muted = true; original.playbackRate = 1.5;
+          const sought = new Promise(resolve => original.addEventListener('seeked', resolve, { once: true }));
+          original.currentTime = 6; await sought;
+          if (!paused) await original.play();
+          const startTime = original.currentTime;
           const at = performance.now();
           const ready = new Promise((resolve, reject) => { session.on('rendered', resolve); session.on('error', reject); });
-          await session.load('/original.mp4', { descriptor: { source: '/original.mp4', name: 'remux.mov', extension: 'mov' } });
           // Deterministically emulate rejection of the original container, then use real demux + MSE.
           document.querySelector('#host source').dispatchEvent(new Event('error'));
           await ready;
           const video = document.querySelector('#host video');
-          return { width: video.videoWidth, src: video.currentSrc, firstFrameMs: performance.now() - at };
+          // A frame can render while recovery still prepares autoplay.
+          const deadline = performance.now() + 5000;
+          while (video.paused !== paused && performance.now() < deadline) await new Promise(resolve => setTimeout(resolve, 25));
+          return { width: video.videoWidth, src: video.currentSrc, firstFrameMs: performance.now() - at,
+            startTime, time: video.currentTime, paused: video.paused, volume: video.volume, muted: video.muted, rate: video.playbackRate };
         } finally { session.destroy(); }
-      });
-      assert.equal(recovery.width, 640); assert.ok(recovery.src.startsWith('blob:'));
+      }, paused));
+      for (const [index, result] of recovery.entries()) {
+        assert.equal(result.width, 640); assert.ok(result.src.startsWith('blob:'));
+        assert.equal(result.paused, index === 0); assert.equal(result.volume, .35); assert.equal(result.muted, true); assert.equal(result.rate, 1.5);
+        assert.ok(Math.abs(result.time - result.startTime) < .5, JSON.stringify(result));
+      }
       const transcoding = await page.evaluate(async () => {
         if (!window.VideoEncoder || !window.VideoDecoder) return { unsupported: 'WebCodecs unavailable' };
         const support = MediaSource.isTypeSupported;

@@ -97,6 +97,25 @@ test('nearby displaced content cannot override a visibly unobstructed lens with 
 });
 
 
+for (const row of [10, 53]) for (const winner of [0, 1]) test(`static polar ownership keeps neighboring features together at row ${row}, lens ${winner}`, () => {
+  const count = 128 * 64, seed = row * 128 + 127;
+  const colors = [new Float32Array(count * 3).fill(100), new Float32Array(count * 3).fill(100)];
+  const weights = [new Float32Array(count).fill(.1), new Float32Array(count).fill(.1)];
+  colors[winner].fill(180, seed * 3, seed * 3 + 3);
+  weights[winner][seed] = .3;
+  const mask = new Uint8Array(count).fill(winner ? 0 : 255);
+  const context: any = { colors, weights, mask };
+  runInNewContext(`${source.replace(/^export /gm, '')}
+    this.result = protectDualFisheyeDisplacedContent(mask, colors, weights, [1, 1], true);
+    this.ordinary = protectDualFisheyeDisplacedContent(mask, colors, weights, [1, 1]);`, context);
+  assert.equal(context.result[row * 128 + 3], winner ? 255 : 0);
+  assert.equal(context.ordinary[row * 128 + 3], winner ? 0 : 255, 'video retains its existing local support');
+  const target = row * 128 + 3;
+  weights[winner][target] = 0;
+  runInNewContext('this.result = protectDualFisheyeDisplacedContent(mask, colors, weights, [1, 1], true);', context);
+  assert.equal(context.result[target], mask[target], 'expanded support must never select an invalid lens');
+});
+
 for (const swapLenses of [false,true]) test(`video preserves the displaced subject visible in the ${swapLenses?'front':'back'} lens`, () => {
   const {mask} = analyzeOccludedSubject(true,false,swapLenses,1,true,true);
   assert.ok(mask);

@@ -8,7 +8,7 @@ code does not implement format parsing or conversion. These are preview componen
 they currently do not expose native APIs for reading, OCR, search, or standalone
 conversion results.
 
-SDK version: **0.1.0**. Shared preview runtime: **0.3.0**. The SDK ZIPs in Releases
+SDK version: **0.1.1**. Shared preview runtime: **0.3.1**. The SDK ZIPs in Releases
 already include the offline assets. Extract an archive and integrate its `sdk/ios`
 or `sdk/android` module directly. See below for building and packaging from source.
 [Download and extracted sizes](../docs/mobile-sdk-sizes.json) ·

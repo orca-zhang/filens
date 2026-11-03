@@ -155,6 +155,22 @@ test('video horizon corrections fade continuously before either pole and wrap in
   assert.ok(Math.hypot(...a.map((value:number,i:number)=>value-b[i]))<1e-6);
 });
 
+test('static registration leaves polar rays intact before near-field correction takes over', () => {
+  const context: any = {};
+  runInNewContext(`${source.replace(/^export /gm, '')}\nthis.offset = registeredDualFisheyeVideoDirection;`, context);
+  const offsets = [.06, .01, -.04, -.02];
+  for (const latitude of [-90, -70, -50, 50, 70, 90]) {
+    const angle = latitude * Math.PI / 180;
+    const ray = [Math.cos(angle), Math.sin(angle), 0];
+    assert.deepEqual(Array.from(context.offset(ray, offsets, true)), ray,
+      `static overlap registration moved the polar ray at ${latitude} degrees`);
+  }
+  const angle = 50 * Math.PI / 180;
+  const videoRay = [Math.cos(angle), Math.sin(angle), 0];
+  assert.ok(Math.hypot(...context.offset(videoRay, offsets).map((value: number, axis: number) => value - videoRay[axis])) > .02,
+    'video registration must keep its existing transition');
+});
+
 
 test('video polar depth preserves existing horizontal and mid-latitude registration', () => {
   const context=runtime();

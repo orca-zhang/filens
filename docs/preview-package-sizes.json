@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-03",
   "scope": "Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.",
   "name": "filens-preview",
-  "version": "0.3.0",
-  "file": "filens-preview-0.3.0.tgz",
-  "bytes": 7319003,
-  "unpackedBytes": 22772131,
-  "sha256": "b1df1ecf9b97f9a18f27eb2f4bf6c39c68e82e2afdd2e3a09067f921ef0e1534",
-  "integrity": "sha512-2oQaG0mKKTmcEaG2QlZFFiCfm7Z4G/a1IgKuQliVCjoxJtA46o4zp7ZT2zJQR9trxgDhz9H88C2DjhPjVNh1JA==",
+  "version": "0.3.1",
+  "file": "filens-preview-0.3.1.tgz",
+  "bytes": 7486577,
+  "unpackedBytes": 21387817,
+  "sha256": "83ab0c5abb1bfbdebb86fcd3aa2217517bd8c1c93ad86d0644f923acb435deee",
+  "integrity": "sha512-qI+Mflo3N/EZb9TIWk6njQ84Jo/Lfw75Kcv2u01TDUDP23DEbw0GHekDtRpzZ8gX+H44lmyjh/beQpz8JHZFgw==",
   "files": [
     {
       "path": "LICENSE",
@@ -15,7 +15,7 @@
     },
     {
       "path": "README.md",
-      "bytes": 15625
+      "bytes": 16083
     },
     {
       "path": "dist/all-in-one/archive/7zz.wasm",
@@ -27,7 +27,7 @@
     },
     {
       "path": "dist/all-in-one/filens.js",
-      "bytes": 8845059
+      "bytes": 8051917
     },
     {
       "path": "dist/all-in-one/index.html",
@@ -35,11 +35,11 @@
     },
     {
       "path": "dist/all-in-one/THIRD-PARTY-NOTICES.txt",
-      "bytes": 454748
+      "bytes": 497279
     },
     {
       "path": "dist/index.d.ts",
-      "bytes": 1704
+      "bytes": 1888
     },
     {
       "path": "dist/split/archive/7zz.wasm",
@@ -54,60 +54,76 @@
       "bytes": 904676
     },
     {
-      "path": "dist/split/chunks/archive-B4jVwD9o.js",
-      "bytes": 36002
+      "path": "dist/split/chunks/archive-DMapcEqq.js",
+      "bytes": 28003
     },
     {
-      "path": "dist/split/chunks/cad-DMg-lGJX.js",
-      "bytes": 74581
+      "path": "dist/split/chunks/browser-video-session-CGI8FpX_.js",
+      "bytes": 36000
     },
     {
-      "path": "dist/split/chunks/core--zVW212C.js",
-      "bytes": 466402
+      "path": "dist/split/chunks/cad-BvXJNqHR.js",
+      "bytes": 54506
     },
     {
-      "path": "dist/split/chunks/diagram-CDwCA6LZ.js",
-      "bytes": 27188
+      "path": "dist/split/chunks/core-BLayEJn5.js",
+      "bytes": 359804
     },
     {
-      "path": "dist/split/chunks/docx-CuQfFJqr.js",
-      "bytes": 11766
+      "path": "dist/split/chunks/diagram-DlpgioZ9.js",
+      "bytes": 21866
     },
     {
-      "path": "dist/split/chunks/ebook-CLlJ8KX3.js",
-      "bytes": 21804
+      "path": "dist/split/chunks/docx-Sii3GNtE.js",
+      "bytes": 8850
     },
     {
-      "path": "dist/split/chunks/iwork-dNVC0X8j.js",
-      "bytes": 29712
+      "path": "dist/split/chunks/ebook-CLCQfska.js",
+      "bytes": 17385
     },
     {
-      "path": "dist/split/chunks/media-runtime-gcsBQMuo.js",
-      "bytes": 128941
+      "path": "dist/split/chunks/index-BPK_cNTp.js",
+      "bytes": 15372
     },
     {
-      "path": "dist/split/chunks/mindmap-g0-VoK-K.js",
-      "bytes": 20032
+      "path": "dist/split/chunks/index-DI_GyFX1.js",
+      "bytes": 176799
     },
     {
-      "path": "dist/split/chunks/model3d-1G1CC52V.js",
-      "bytes": 188045
+      "path": "dist/split/chunks/iwork-Datv3D5d.js",
+      "bytes": 22895
     },
     {
-      "path": "dist/split/chunks/panorama-D7GVivtM.js",
-      "bytes": 272775
+      "path": "dist/split/chunks/media-runtime-tb-Q4Sah.js",
+      "bytes": 147241
     },
     {
-      "path": "dist/split/chunks/pdf-CecYOWld.js",
-      "bytes": 604243
+      "path": "dist/split/chunks/mindmap-B_GYpiFO.js",
+      "bytes": 16012
     },
     {
-      "path": "dist/split/chunks/vendor-DPFNKNkh.js",
-      "bytes": 2260126
+      "path": "dist/split/chunks/model3d-BsIQNF2D.js",
+      "bytes": 138906
     },
     {
-      "path": "dist/split/chunks/xlsx-Co26yo-R.js",
-      "bytes": 29666
+      "path": "dist/split/chunks/mp4box.all-Bw_Tlr0T-D0URDfA1.js",
+      "bytes": 182354
+    },
+    {
+      "path": "dist/split/chunks/panorama-CIdiLIwD.js",
+      "bytes": 219482
+    },
+    {
+      "path": "dist/split/chunks/pdf-Dzzffz3p.js",
+      "bytes": 448320
+    },
+    {
+      "path": "dist/split/chunks/vendor-CBCxJuSg.js",
+      "bytes": 1436367
+    },
+    {
+      "path": "dist/split/chunks/xlsx-D2NFYc3n.js",
+      "bytes": 22707
     },
     {
       "path": "dist/split/converter-core.wasm",
@@ -115,7 +131,7 @@
     },
     {
       "path": "dist/split/converter-image.wasm",
-      "bytes": 1126286
+      "bytes": 1467839
     },
     {
       "path": "dist/split/converter-office.wasm",
@@ -127,7 +143,7 @@
     },
     {
       "path": "dist/split/filens.js",
-      "bytes": 242449
+      "bytes": 42434
     },
     {
       "path": "dist/split/index.html",
@@ -143,7 +159,7 @@
     },
     {
       "path": "dist/split/THIRD-PARTY-NOTICES.txt",
-      "bytes": 454748
+      "bytes": 497279
     },
     {
       "path": "package.json",

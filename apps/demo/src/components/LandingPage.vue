@@ -383,7 +383,7 @@ async function playDemo(): Promise<void> {
               'Ideas in a document. Places in a photo. Possibilities in a model.'
             )
           }}<br />
-          {{ t('用探微，在浏览器里打开。本地文件，无需上传。', 'Open them in your browser with filens. Local files stay with you.') }}
+          {{ t('支持 397 种格式，在浏览器里打开。本地文件，无需上传。', 'Preview 397 file formats in your browser. Local files stay with you.') }}
         </p>
         <div class="hero-actions">
           <label class="button button-dark upload-button"
@@ -408,7 +408,7 @@ async function playDemo(): Promise<void> {
         <div class="skill-install-copy">
           <p class="eyebrow">FILENS FOR AGENTS</p>
           <h2 id="skill-install-title">{{ t('一句话，让 Agent 装好 FiLens', 'Ask your agent to install FiLens') }}</h2>
-          <p>{{ t('让 Agent 在本地读取、搜索、OCR 与转换你的文件。', 'Give your agent local file reading, search, OCR, and conversion.') }}</p>
+          <p>{{ t('Agent CLI 支持 334 种文件格式（按扩展名统计），让 Agent 在本地读取、搜索、OCR 与转换你的文件。', 'The Agent CLI supports 334 file formats (counted by extension), with local file reading, search, OCR, and conversion for your agent.') }}</p>
           <a class="text-link" :href="`${asset('')}?view=agent`" @click.prevent="emit('agent')">
             {{ t('查看能力与安装选项', 'Explore capabilities and setup') }} <span aria-hidden="true">↗</span>
           </a>
@@ -541,7 +541,7 @@ async function playDemo(): Promise<void> {
             <h2 id="formats-title">{{ t('更多文件，也能打开。', 'More files. More possibilities.') }}</h2>
           </div>
           <p>
-            {{ t('从传统文档到相机原片、CAD 实体，选一类，打开真实样例。', 'From legacy documents to camera originals and CAD solids. Pick a category to try a real sample.') }}
+            {{ t('覆盖 397 种格式，按扩展名统计，包含直接预览与本地转换后预览。从传统文档到相机原片、CAD 实体，选一类，打开真实样例。', '397 formats, counted by extension, including direct previews and previews after local conversion. From legacy documents to camera originals and CAD solids, pick a category to try a real sample.') }}
           </p>
         </div>
         <ul class="format-family-grid">

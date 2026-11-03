@@ -13,6 +13,10 @@ const preview = await read('dist/preview-npm/release.json');
 const sdk = await read('dist/mobile-sdk/release.json');
 const build = await read('docs/preview-build-sizes.json');
 const packageMetadata = await read('packages/preview/package.json');
+let native;
+try { native = await read(`dist/github-release-native/${tag}/release.json`); }
+catch (error) { if (error.code !== 'ENOENT') throw error; }
+if (native && native.previewVersion !== preview.version) throw new Error('Native CLI bundles use a different preview runtime');
 if (preview.version !== packageMetadata.version || sdk.previewVersion !== preview.version || build.version !== preview.version) {
   throw new Error('Preview, mobile SDK and size reports must use the same runtime version');
 }
@@ -60,7 +64,17 @@ for (const item of sdk.packages) {
   if (artifact.sha256 !== item.sha256) throw new Error('SDK ZIP differs from the measured artifact');
   assets.push(artifact);
 }
-const report = { date: build.date, tag, components: { preview: preview.version, mobileSdk: sdk.version },
+for (const item of native?.assets ?? []) {
+  await cp(path.join(root, 'dist/github-release-native', tag, item.file), path.join(directory, item.file));
+  const artifact = await measure(item.file, item.kind, item.unpackedBytes);
+  if (artifact.sha256 !== item.sha256) throw new Error('Native CLI archive differs from the measured artifact');
+  assets.push({ ...artifact, platform: item.platform, binaryBytes: item.binaryBytes });
+}
+const tags = spawnSync('git', ['tag', '--list', '--sort=-v:refname'], { cwd: root, encoding: 'utf8' });
+if (tags.status !== 0) throw new Error('Cannot identify the previous release');
+const previousRelease = tags.stdout.trim().split('\n').find(value => value && value !== tag);
+const report = { date: build.date, tag, previousRelease,
+  components: { preview: preview.version, mobileSdk: sdk.version, ...(native ? { cli: native.version } : {}) },
   scope: 'Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.', assets };
 await writeFile(path.join(root, 'docs/preview-release-sizes.json'), `${JSON.stringify(report, null, 2)}\n`);
 await writeManifest(report);
@@ -75,10 +89,12 @@ async function writeManifest(report) {
   const commit = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
   if (commit.status !== 0) throw new Error('Cannot identify release source commit');
   const manifestName = `filens-release-${tag}.json`;
-  const manifest = { ...report, sourceCommit: commit.stdout.trim(), previousRelease: 'v0.5.0',
-    unchangedComponents: { cli: '0.5.0', zimaos: '0.5.1', downloads: 'https://github.com/IceWhaleTech/filens/releases/tag/v0.5.0' },
+  const manifest = { ...report, sourceCommit: commit.stdout.trim(),
     validation: await read('docs/preview-npm-validation.json') };
-  try { manifest.npmPublication = await read('docs/preview-npm-publication.json'); }
+  try {
+    const publication = await read('docs/preview-npm-publication.json');
+    if (publication.version === preview.version) manifest.npmPublication = publication;
+  }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
   await writeFile(path.join(directory, manifestName), `${JSON.stringify(manifest, null, 2)}\n`);
   const manifestAsset = await measure(manifestName, 'manifest');

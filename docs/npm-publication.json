@@ -1,0 +1,139 @@
+{
+  "registry": "https://registry.npmjs.org/",
+  "observedAt": "2026-11-03T13:53:37.765Z",
+  "packages": [
+    {
+      "name": "filens-cli-darwin-arm64",
+      "version": "0.5.1",
+      "file": "filens-cli-darwin-arm64-0.5.1.tgz",
+      "bytes": 6223765,
+      "unpackedBytes": 8185207,
+      "sha256": "ea0a8542894fffe9e02803d8f95089d85e71fff2ed98131700f3b1e81aa13c0a",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-JDuX5XEJyA8r1OrQhi82HXbxX6lhz21QA/9o8msGxaXrQEZWrIOGxX8TFYk5b+sCI+GvxlAmvhf6LrBYzZSgQw=="
+    },
+    {
+      "name": "filens-ocr-darwin-arm64",
+      "version": "0.5.1",
+      "file": "filens-ocr-darwin-arm64-0.5.1.tgz",
+      "bytes": 14893460,
+      "unpackedBytes": 24331679,
+      "sha256": "f980fa658a8412b41dedc48946468a8ed8e80bf5da69cc4733694664156ec609",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-YwA38DQhknLRNKBt3ifM8l+7hzLv7vSJMJ6KEQ9EagNqvtzvtD/+auiiPsHZP21YOzZgpfsu2zimwMncLRpiLg=="
+    },
+    {
+      "name": "filens-cli-linux-x64",
+      "version": "0.5.1",
+      "file": "filens-cli-linux-x64-0.5.1.tgz",
+      "bytes": 6975026,
+      "unpackedBytes": 7908294,
+      "sha256": "892238d3a3a3a6b3968d4ace4fcd2bed1c970142094d1d9323cdbf7a6268c27f",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-DiN9YVbs2S1Z7Wt7QrfQlE1n1D30QVbiXXC3UVXCiHwZHjG9MJY3fKtIRNPtqtsJme97VfqHlvIZzRg/7XvrTg=="
+    },
+    {
+      "name": "filens-ocr-linux-x64",
+      "version": "0.5.1",
+      "file": "filens-ocr-linux-x64-0.5.1.tgz",
+      "bytes": 16755415,
+      "unpackedBytes": 30360114,
+      "sha256": "6f4bd6dc66d203f81cdfdb0c619502d5523346eab73073af2c910bd59535ef24",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-NxqaxqW00gp/fqJf78DGcAlQqeUzr+QXffhg3ovcjW0fY39toINK6JAhh3kpR6gtS1dHl3qGF6uv8EDOiCOGwA=="
+    },
+    {
+      "name": "filens-cli-linux-arm64",
+      "version": "0.5.1",
+      "file": "filens-cli-linux-arm64-0.5.1.tgz",
+      "bytes": 6863519,
+      "unpackedBytes": 7796710,
+      "sha256": "b1b2361b15e44612b317a9e8c928ae33f785b38a992c1660525000ae3a908da9",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-0boP8uIERFmP2V0NzqOpPaZd9gbv+0pbW83TjS2eTlIJ9hfYpI2CUhDbpXuCCgI+Z9AKT2BuOinwA+hR++GJ0g=="
+    },
+    {
+      "name": "filens-ocr-linux-arm64",
+      "version": "0.5.1",
+      "file": "filens-ocr-linux-arm64-0.5.1.tgz",
+      "bytes": 14452763,
+      "unpackedBytes": 24565170,
+      "sha256": "7cbd089706d91f9818c5885561dc8f69094a7a7ed17950cda5da7deae286aa1a",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-RkgGjuLg6Kuc6KW/A6SiQpUG4hBSS1YFHBnCiuYBbLAXDOG5hlupUWe0IdCXiCTskyLdoK14O0wMbgBS+rLmmQ=="
+    },
+    {
+      "name": "@orca.zhang/filens-cli-win32-x64",
+      "version": "0.5.1",
+      "file": "orca.zhang-filens-cli-win32-x64-0.5.1.tgz",
+      "bytes": 6889687,
+      "unpackedBytes": 7825697,
+      "sha256": "5abb429fb82329a9d858146fc0e15930173df4484ad6aacfe3bccd910380f444",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-OGKaqzTXjMLFZqtNIvQfTi3zuUTBI4MvGNCVokk/U9oPoofGkksNvie75tBf0A844Jq0MbpODOvtXkNdKxss6Q=="
+    },
+    {
+      "name": "@orca.zhang/filens-ocr-win32-x64",
+      "version": "0.5.1",
+      "file": "orca.zhang-filens-ocr-win32-x64-0.5.1.tgz",
+      "bytes": 17021561,
+      "unpackedBytes": 30173879,
+      "sha256": "6c61acb3044a20c0986b0ce9e4467adc82251171698e15fa0cc709313df21971",
+      "registryHttpStatus": 200,
+      "uploadAccepted": true,
+      "status": "publicly-available-integrity-verified",
+      "integrity": "sha512-hTpz7WLQNEBcLKJI3GJYbsCxb1I05XLPji11YJX/CrMXhrpT4SBzqEj202Cxx5QqBBDWkw0wzR/3BzKf34be1A=="
+    },
+    {
+      "name": "filens-cli",
+      "version": "0.5.1",
+      "file": "filens-cli-0.5.1.tgz",
+      "bytes": 18535,
+      "unpackedBytes": 51769,
+      "sha256": "dae7c54b99191554fa3f4863c19bb0f53729c2e55a13e41ff9448ab4fe32e0aa",
+      "registryHttpStatus": 404,
+      "uploadAccepted": false,
+      "status": "waiting-for-preview-publication"
+    },
+    {
+      "name": "filens-cli-lite",
+      "version": "0.5.1",
+      "file": "filens-cli-lite-0.5.1.tgz",
+      "bytes": 18517,
+      "unpackedBytes": 51603,
+      "sha256": "2c6aa7fd034800b805f15aff138d0898ec73df9bb7796955ffa76da6e03d32ab",
+      "registryHttpStatus": 404,
+      "uploadAccepted": false,
+      "status": "waiting-for-preview-publication"
+    },
+    {
+      "name": "filens-preview",
+      "version": "0.3.1",
+      "file": "filens-preview-0.3.1.tgz",
+      "bytes": 7486577,
+      "unpackedBytes": 21387817,
+      "sha256": "83ab0c5abb1bfbdebb86fcd3aa2217517bd8c1c93ad86d0644f923acb435deee",
+      "registryHttpStatus": 404,
+      "uploadAccepted": true,
+      "status": "upload-accepted-awaiting-public-registry"
+    }
+  ],
+  "modules": {
+    "status": "awaiting-filens-organization-publish-permission",
+    "count": 18
+  }
+}

@@ -66,9 +66,9 @@ export async function compressAgentWASM(bundle) {
   for (const name of ['converter-text.wasm','converter-image.wasm','pdfium.wasm']) {
     const bytes = await readFile(path.join(bundle,name));
     const start = performance.now();
-    // gzip level 1 minimizes build CPU and remains directly readable by Rust.
-    // npm tarballs add transport compression; no executable unpacker is needed.
-    const compressed = gzipSync(bytes,{level:constants.Z_BEST_SPEED,mtime:0});
+    // Compress once at build time to reduce every installed CLI bundle.
+    // Rust reads gzip directly; no executable unpacker is needed.
+    const compressed = gzipSync(bytes,{level:constants.Z_BEST_COMPRESSION,mtime:0});
     await writeFile(path.join(bundle,`${name}.gz`),compressed);
     report.push({name,bytes:bytes.length,gzipBytes:compressed.length,compressionMs:Math.round(performance.now()-start)});
   }

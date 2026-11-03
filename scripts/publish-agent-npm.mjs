@@ -7,9 +7,10 @@ import { assertReleaseArchive } from './agent-release-privacy.mjs';
 import { supportedPlatforms, npmInvocation } from './agent-platforms.mjs';
 import { checkAgentReleaseLimits } from './agent-release-limits.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const directory=path.join(root,'dist/npm');
+const modules=process.argv.includes('--modules');
+const directory=path.join(root,modules?'dist/workspace-npm':'dist/npm');
 const release=JSON.parse(await readFile(path.join(directory,'release.json'),'utf8'));
-if(supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
+if(!modules&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
 const integrities=new Map();
 for(const pkg of release.packages){
  const bytes=await readFile(path.join(directory,pkg.file));
@@ -18,16 +19,17 @@ for(const pkg of release.packages){
  integrities.set(pkg.name,`sha512-${createHash('sha512').update(bytes).digest('base64')}`);
 }
 const dry=process.argv.includes('--dry-run');
-console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
+if(!modules)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
 const versionOf=pkg=>pkg.version??release.version;
 const keyOf=pkg=>`${pkg.name}@${versionOf(pkg)}`;
 const tagOf=pkg=>versionOf(pkg).includes('-')?'next':'latest';
 const entryNames=['filens-cli','filens-cli-lite'];
 const existing=new Set();
-const receiptFile=path.join(directory,`publication-state-${release.version}.json`);
-let receipt={version:release.version,accepted:[]};
+const releaseKey=release.version??'workspace';
+const receiptFile=path.join(directory,`publication-state-${releaseKey}.json`);
+let receipt={version:releaseKey,accepted:[]};
 try{receipt=JSON.parse(await readFile(receiptFile,'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
-if(receipt.version!==release.version)throw new Error('Publication receipt version mismatch');
+if(receipt.version!==releaseKey)throw new Error('Publication receipt version mismatch');
 const accepted=new Map(receipt.accepted.map(pkg=>[keyOf(pkg),pkg]));
 for(const pkg of receipt.accepted){
  const target=release.packages.find(target=>keyOf(target)===keyOf(pkg));
@@ -98,7 +100,7 @@ async function publish(pkg){
   // HTTP 202 is a successful npm upload, but the immutable version may still be
   // under review. Persist the receipt so a retry never submits it again.
   accepted.set(keyOf(pkg),{name:pkg.name,version:versionOf(pkg),integrity:integrities.get(pkg.name),acceptedAt:new Date().toISOString()});
-  const data=JSON.stringify({version:release.version,accepted:[...accepted.values()]},null,2)+'\n';
+  const data=JSON.stringify({version:releaseKey,accepted:[...accepted.values()]},null,2)+'\n';
   receiptWrites=receiptWrites.then(()=>writeFile(receiptFile,data));
   await receiptWrites;
  }

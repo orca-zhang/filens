@@ -14,16 +14,16 @@ let root: Root | undefined;
 const typeCache = new Map<string, Type>();
 const typeMaps: Record<IworkType, TypeMap> = {
   key: {
-    ...(commonTypeMap as TypeMap),
-    ...(keynoteTypeMap as TypeMap)
+    ...commonTypeMap,
+    ...keynoteTypeMap
   },
   pages: {
-    ...(commonTypeMap as TypeMap),
-    ...(pagesTypeMap as TypeMap)
+    ...commonTypeMap,
+    ...pagesTypeMap
   },
   numbers: {
-    ...(commonTypeMap as TypeMap),
-    ...(numbersTypeMap as TypeMap)
+    ...commonTypeMap,
+    ...numbersTypeMap
   }
 };
 
@@ -169,7 +169,7 @@ function lookupType(typeName: string): Type {
     return cached;
   }
 
-  root ??= ProtobufRoot.fromJSON(descriptorJson as Parameters<typeof ProtobufRoot.fromJSON>[0]);
+  root ??= ProtobufRoot.fromJSON(descriptorJson);
   const resolved = root.lookupType(typeName);
   typeCache.set(typeName, resolved);
   return resolved;

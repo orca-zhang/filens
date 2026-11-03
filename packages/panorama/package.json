@@ -37,13 +37,23 @@
   },
   "dependencies": {
     "@filens/converter-client": "^0.1.0",
-    "three": "^0.176.0"
+    "three": "^0.176.0",
+    "@types/three": "^0.176.0"
   },
   "peerDependencies": {
     "@filens/core": "^0.1.0"
   },
   "devDependencies": {
-    "@filens/core": "file:../core",
-    "@types/three": "^0.176.0"
+    "@filens/core": "file:../core"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/panorama"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

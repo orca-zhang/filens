@@ -42,5 +42,15 @@
   },
   "devDependencies": {
     "@filens/core": "file:../core"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/mindmap"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

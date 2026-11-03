@@ -1,0 +1,167 @@
+{
+  "packages": [
+    {
+      "name": "@filens/archive",
+      "version": "0.1.0",
+      "file": "filens-archive-0.1.0.tgz",
+      "bytes": 375383,
+      "unpackedBytes": 967312,
+      "sha256": "b11944bd3d833e5b8876432753cf0b6edb4bfd94000f6fff4a5cecffd42fc9f3",
+      "integrity": "sha512-AUwANKHLPV1/nj8MQdq+hL6nZAS3C6lpdX+PxpdQAanFmwLs64yFHZAts2UN3ifBVQBq/4wL1lLjtvKCL1PnrA=="
+    },
+    {
+      "name": "@filens/cad",
+      "version": "0.1.0",
+      "file": "filens-cad-0.1.0.tgz",
+      "bytes": 22967,
+      "unpackedBytes": 88950,
+      "sha256": "e76e10446434e6e0840a8d3ecaa380f034f633f4d5c151841944df9debf94720",
+      "integrity": "sha512-0HE0yM2QzoGzPEhCw568vkI1kNn3Dmrt0QcrB3k/4dMEy0/G19kQYuHOg4vIQDLd9nGabydW0cWxyImlKx4xSg=="
+    },
+    {
+      "name": "@filens/converter-client",
+      "version": "0.1.0",
+      "file": "filens-converter-client-0.1.0.tgz",
+      "bytes": 1037196,
+      "unpackedBytes": 3195650,
+      "sha256": "77cde71ff1f88456846ada245cadcd4cbe0820500475208f427960efbe04c287",
+      "integrity": "sha512-ZYbN69SEM/wDyhiO6CG7haHZTMSn1PYGNY7OA8/CP1DrsWSIJzb2rkLc0pFwFLB0XYc1dwYHMYyoei+h/jJjDw=="
+    },
+    {
+      "name": "@filens/core",
+      "version": "0.1.0",
+      "file": "filens-core-0.1.0.tgz",
+      "bytes": 141226,
+      "unpackedBytes": 597977,
+      "sha256": "bbf42e79cd95836ada159524e2d6bc292e5705928816fc1df9b45569710d333d",
+      "integrity": "sha512-Rglx/fgTOYIc4y2ckFw8kh+EOacXq36fLlZzqP/00KicDbVsa9fGP22Qwz34EcQhIiNJcFOMcDDwAplvjMBUoQ=="
+    },
+    {
+      "name": "@filens/design",
+      "version": "0.1.0",
+      "file": "filens-design-0.1.0.tgz",
+      "bytes": 2523,
+      "unpackedBytes": 6441,
+      "sha256": "0da4c83e773595d9d0f974e8e330d20937b03b4098bb4d308d0dbe27f7a834f4",
+      "integrity": "sha512-ul4RlYh9XxOWqIDNtqLNfHvWjAKjNLaTEIJZXbCfasMI20pCShHXmd4ePj/piIIAvy3jdxTWCLnnhSQTlngklg=="
+    },
+    {
+      "name": "@filens/diagram",
+      "version": "0.1.0",
+      "file": "filens-diagram-0.1.0.tgz",
+      "bytes": 10337,
+      "unpackedBytes": 33934,
+      "sha256": "54db864ec7333748079cbfe4905b80cf25bf85a49e93f1ef8e69ca82b341e9d1",
+      "integrity": "sha512-qtm1nOTtj0SZ5yqllIRQlpZZBue2ylI26kZ3gWEHTG+D7tfgbE8OxciyPlrSQT8cfbCBHgV6cNk2u2h1vuyCAA=="
+    },
+    {
+      "name": "@filens/docx",
+      "version": "0.1.0",
+      "file": "filens-docx-0.1.0.tgz",
+      "bytes": 6158,
+      "unpackedBytes": 17337,
+      "sha256": "f101dcc18a8bcb17139e46af25f5f3b3325e18b7aa22eca1c9956cafae97001b",
+      "integrity": "sha512-v3DWSIsIjZDS3U0sBQSFq535A66gNh7kPBqHaq9oRfYtPZzy/dedk8dKcwuTeckxyTtBRdaV/zHkB+EnpIGKMQ=="
+    },
+    {
+      "name": "@filens/ebook",
+      "version": "0.1.0",
+      "file": "filens-ebook-0.1.0.tgz",
+      "bytes": 9959,
+      "unpackedBytes": 29401,
+      "sha256": "cace5f049d05fb20afcbf2eb35cd1ac8dcb4636c3d2e6b0b36a92e5c047587ab",
+      "integrity": "sha512-Kxuy4BgWNzHU0KeHCUujRKHXd7ccy9ci5Y2uhXT6b8mpxMRb0S8W2MrAktZXaYsAaTUoweUwXAFLN9e49du7Ww=="
+    },
+    {
+      "name": "@filens/iwork",
+      "version": "0.1.0",
+      "file": "filens-iwork-0.1.0.tgz",
+      "bytes": 1547653,
+      "unpackedBytes": 3689683,
+      "sha256": "f25280dc62ea3099dd2f439db53f16f655e290cc0d5ad077187a7df006df4e77",
+      "integrity": "sha512-nCr5S0EIWteiGmQO5D/a8ZqLefXaD65TRUrNlpRM2VPUyNM20lvs13IchetIlxleNEAw+ZUBF5j2BRwvjA42IQ=="
+    },
+    {
+      "name": "@filens/media",
+      "version": "0.1.0",
+      "file": "filens-media-0.1.0.tgz",
+      "bytes": 114409,
+      "unpackedBytes": 513098,
+      "sha256": "b4ba340347155f12525e1dbe0ff25930e5956d86114a5000a7b2aac552d091b5",
+      "integrity": "sha512-Y7qmyCe5ZpzVpIX0azlZZwEbXedfQlWeJjDxDYTVHtW9X5hZXumgPghiR2xvytJLdHTPe7kwSZz8lqZyVuo2FA=="
+    },
+    {
+      "name": "@filens/mindmap",
+      "version": "0.1.0",
+      "file": "filens-mindmap-0.1.0.tgz",
+      "bytes": 8091,
+      "unpackedBytes": 25826,
+      "sha256": "efb6de511d832452ccc37d2a3ed9ab21e3afbe00e458305b1abe63f92daa18c6",
+      "integrity": "sha512-pMkHxm1C8/bhVPrLHLAv66TfOrkocave0Ny5FttOh0dOeukkWHFGgJDBEuONLvgk6TngXgR1QTjELQjGbl8/NA=="
+    },
+    {
+      "name": "@filens/model3d",
+      "version": "0.1.0",
+      "file": "filens-model3d-0.1.0.tgz",
+      "bytes": 49013,
+      "unpackedBytes": 206431,
+      "sha256": "470865b1d4d141b09d6bc59c57f22f4fe1b2dcf00c8ed30c8f539f16fab539e7",
+      "integrity": "sha512-tlVHW7frPE6zf08TdowXBjJTNQPgRwxl23prGWOhJrMVQd+7X4a43X/be43/6LSEv29KiLTuYnvGJmzoRg2nhQ=="
+    },
+    {
+      "name": "@filens/office",
+      "version": "0.1.0",
+      "file": "filens-office-0.1.0.tgz",
+      "bytes": 6626,
+      "unpackedBytes": 22189,
+      "sha256": "e66a75a7c19f0880dedbf8f8e2c51d491909a6f802ccb1417bd3bb14910b9023",
+      "integrity": "sha512-ag8SShBBRJRBVwyHInZAPCW02e+5VxO1msxbkhCQm6rcRX+kI19ZIJ7atVyV3jGhweFi/PoH0oS5CSQohlEj0w=="
+    },
+    {
+      "name": "@filens/panorama",
+      "version": "0.1.0",
+      "file": "filens-panorama-0.1.0.tgz",
+      "bytes": 77946,
+      "unpackedBytes": 298095,
+      "sha256": "129e58035f9ad3e0b00001b492801c073f684cc9204e4c418977c85a42249f9d",
+      "integrity": "sha512-zTLLXVfH3x05VIHEbWmM07a+jqI8nF0JRmHamgouyXmLe477HRvnM8XEdmoxGTDH9s0aj//dWf/o7y+ShWap5A=="
+    },
+    {
+      "name": "@filens/pdf",
+      "version": "0.1.0",
+      "file": "filens-pdf-0.1.0.tgz",
+      "bytes": 303791,
+      "unpackedBytes": 1099319,
+      "sha256": "6d50b8bb510c2f009574f8f7a0eac9fcf5c20e3f8b70696254100783457e8bf5",
+      "integrity": "sha512-BYgeXj11lFEe1gIviZGGV/vFXt6HdHd1Pc1+RoK9SfYA+i8Yk5FC2UXvUIUGAVMTUhyUELqQDF9O974y7T7mCQ=="
+    },
+    {
+      "name": "@filens/text",
+      "version": "0.1.0",
+      "file": "filens-text-0.1.0.tgz",
+      "bytes": 6049,
+      "unpackedBytes": 19695,
+      "sha256": "aa0a1155ba9cdd58294c9683a21480972713d7404ff55142dd8c99dfbe82dee8",
+      "integrity": "sha512-Ry5Ehs380cYviTeV+S2CCmGE1YfFf6007nOCJpXs33tK3WxaLeB+rHm6dDw0KxyciB5qRLyQTmslc6Den6WH/g=="
+    },
+    {
+      "name": "@filens/vue",
+      "version": "0.1.0",
+      "file": "filens-vue-0.1.0.tgz",
+      "bytes": 90672,
+      "unpackedBytes": 444673,
+      "sha256": "232556082fcca01e4571d6b9f81a6588b4bdcc38a108411cc94fcece2357eae7",
+      "integrity": "sha512-qm+/Xbi9+JdFCLijC3TY1nGdMXp55vNT27yx4Vwp5dzcR3Z4BgM8JO6CAJsU3ssVIq3cbk/i/BXwF0gGmTp57w=="
+    },
+    {
+      "name": "@filens/xlsx",
+      "version": "0.1.0",
+      "file": "filens-xlsx-0.1.0.tgz",
+      "bytes": 11903,
+      "unpackedBytes": 37360,
+      "sha256": "62bbfa43338bcb8faf46e7a668dd5133b4ef8245334f030c5e82fc49a5e0e75c",
+      "integrity": "sha512-01PMbygIbiuajhxuOYtOKM/AdOxOBGZawxiwczvxFo6TYCXjCox2uWNdWoMo2w6TEUVcheazaYBcYr8bj69vsA=="
+    }
+  ],
+  "privacyChecked": true
+}

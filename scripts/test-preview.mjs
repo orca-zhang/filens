@@ -118,7 +118,11 @@ try {
         assert.deepEqual(errors, [], `${mode}: ${file}`);
         if (mode === 'split') assert.equal(requests.filter(url => url.includes('converter-office.wasm')).length, encrypted ? 1 : 0);
         if (encrypted) assert.match(state.text, /Fixture (DOCX document|XLSX workbook|PPTX presentation slide)/);
-        if (path.dirname(file) === path.join(root, 'examples/go-wazero-converter/fixtures/icons')) {
+        if (/\.(apk|ipa)$/.test(file)) {
+          // Mobile app packages expose their ZIP contents in the current UI.
+          const entry = page.locator('tr.archivev-row').filter({ hasText: file.endsWith('.apk') ? 'AndroidManifest.xml' : 'Payload/' });
+          await entry.waitFor();
+        } else if (path.dirname(file) === path.join(root, 'examples/go-wazero-converter/fixtures/icons')) {
           const icon = page.locator('img.pptxv-native-image');
           await icon.waitFor();
           assert.equal(await icon.evaluate(img => img.naturalWidth), 1, `${mode}: ${file}`);

@@ -15,14 +15,15 @@
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
-| Approximate size | **Lite: 7.68–8.05 MiB installed · Full: 31.10–36.74 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Supported formats (by extension) | **334**. | **397**, including direct previews and previews after local WASM conversion. |
+| Approximate size | **Lite: 7.48–7.86 MiB installed · Full: 30.91–36.54 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **1.80–2.17 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.0 main runtimes: **2.57 MB Brotli** summed across split files, or **2.90 MB Brotli / 3.26 MB gzip / 8.85 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **1.79–2.17 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.1 main runtimes: **2.67 MB Brotli** summed across split files, or **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
-Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Paraphrasing, translation and question answering belong to the calling Agent.
+**Supports 334 file formats (counted by extension).** Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Check `filens capacity --json` for your installation's capabilities; extraction fidelity varies by format. Paraphrasing, translation and question answering belong to the calling Agent.
 
 **Ask your Agent to install it:**
 
@@ -42,7 +43,7 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**Offline browser preview (CLI 0.5.0):** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The first preview installs `filens-preview@0.2.0`; run `filens setup-preview` in advance for offline use. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**Offline browser preview (CLI 0.5.1):** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The first preview installs `filens-preview@0.3.1`; run `filens setup-preview` in advance for offline use. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -61,7 +62,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.17 MiB · Lite 8.05 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.0 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.17 MiB · Lite 7.86 MiB · Full 31.06 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.1 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -78,7 +79,7 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ## Pure frontend previews
 
-**Complex formats, processed in the browser with no upload or conversion server.** Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video.
+**Preview 397 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
 
 ### Single file or split modules
 

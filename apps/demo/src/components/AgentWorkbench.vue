@@ -60,7 +60,7 @@ onUnmounted(() => clearTimeout(feedbackTimer));
       <header class="agent-intro">
         <p class="wb-eyebrow">FILENS FOR AGENTS</p>
         <h2>{{ t('让 Agent 读懂你的文件。', 'Help your Agent understand your files.') }}</h2>
-        <p>{{ t('读取、搜索、识别与转换，在本地完成。把有出处的原文交给 Agent，继续分析与问答。', 'Read, search, recognize, and convert locally. Give your Agent source text with references for further analysis and answers.') }}</p>
+        <p>{{ t('支持 334 种文件格式（按扩展名统计），读取、搜索、识别与转换，在本地完成。把有出处的原文交给 Agent，继续分析与问答。', 'Supports 334 file formats (counted by extension). Read, search, recognize, and convert locally. Give your Agent source text with references for further analysis and answers.') }}</p>
         <div class="agent-intro-actions">
           <button type="button" class="wb-button agent-primary" @click="copy(installPrompt, 'prompt')"><WorkbenchIcon :name="copied === 'prompt' ? 'check' : 'copy'" />{{ copied === 'prompt' ? t('安装提示已复制', 'Install prompt copied') : t('复制给 Agent 安装', 'Copy install prompt for Agent') }}</button>
         </div>

@@ -17,10 +17,10 @@ const offsets = [.035, -.008, -.025, .01];
 
 // Render a common spherical scene through an independent inverse MEI model.
 // The rear sensor has different small angular errors at the two overlaps.
-function scene(width: number, height: number, textured: boolean) {
+function scene(width: number, height: number, textured: boolean, coarse = false) {
   const pixels = new Uint8ClampedArray(width * height * 4);
   const noise = (x: number, y: number) => {
-    x *= 160; y *= 80;
+    x *= coarse ? 16 : 160; y *= coarse ? 8 : 80;
     const ix = Math.floor(x), iy = Math.floor(y);
     const smooth = (value: number) => value * value * (3 - 2 * value);
     const a = smooth(x - ix), b = smooth(y - iy);
@@ -91,6 +91,28 @@ test('flat scenes, fixed remaps and other lens models retain their static calibr
   const profile = { ...calibration, front: { ...front, distortionModel: 'radtan_pro', distortionCoeffs: Array(13).fill(0) },
     back: { ...back, distortionModel: 'radtan_pro', distortionCoeffs: Array(13).fill(0) } };
   assert.deepEqual(Array.from(analyze(runtime(), profile)?.imageOffsets || []), [0, 0, 0, 0]);
+});
+
+test('static DNG retries filtered matching once when fine detail has no consensus', () => {
+  const sizes: number[] = [], quality: string[] = [];
+  class Surface {
+    constructor(private width: number, private height: number) { sizes.push(width); }
+    getContext() {
+      const width = this.width, height = this.height;
+      return { imageSmoothingQuality: 'low',
+        drawImage() { quality.push(this.imageSmoothingQuality); },
+        getImageData: () => ({ data: scene(width, height, width === 512, true) }) };
+    }
+  }
+  const context: any = { HTMLVideoElement: class {}, HTMLImageElement: class {}, OffscreenCanvas: Surface };
+  runInNewContext(`${source.replace(/^export /gm, '')}
+    this.analyze = acceptStaticDualFisheyeImage; this.defaults = DEFAULT_OPTIONS;`, context);
+  const result = analyze(context);
+  offsets.forEach((value, index) => assert.ok(Math.abs(result.imageOffsets[index] - value) < .005,
+    `coarse overlap component ${index}: ${result.imageOffsets[index]} vs ${value}`));
+  assert.equal(sizes.filter(size => size === 512).length, 1, 'coarse retry must run only once');
+  assert.ok(Math.max(...sizes) <= 2048, 'retry must retain the static analysis size limit');
+  assert.ok(quality.length > 0 && quality.every(value => value === 'high'), 'static analysis requires filtered reduction');
 });
 
 test('static seam sampling uses the image correction and keeps the static polar transition', () => {

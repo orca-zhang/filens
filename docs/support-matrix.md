@@ -2,7 +2,7 @@
 
 English | [简体中文](support-matrix.zh-CN.md)
 
-filens provides read-only file previews in modern browsers. Format support does not imply full compatibility with its authoring application.
+filens provides read-only file previews in modern browsers. The complete preview host currently covers **397 file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
 
 | Find | Go to |
 | --- | --- |

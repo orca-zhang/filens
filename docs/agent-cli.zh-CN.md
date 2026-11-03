@@ -50,7 +50,7 @@ npm install -g ./dist/npm/filens-cli-0.5.0.tgz ./dist/npm/filens-cli-darwin-arm6
 
 ## 从源码构建和发布
 
-`cli/` 中的 CLI 已改为 Rust，文档解析仍复用前端 WASM 核心。Release 开启体积优化、LTO、单 codegen unit、panic abort 和符号 strip；Windows/Linux 的 CLI 使用 UPX `--best --lzma`，并通过 `upx --test` 校验。macOS arm64 的可执行格式不受 UPX 支持，因此跳过。文本 WASM 使用 Binaryen `-Oz` 并移除 debug / producers 信息；WASM 引擎使用 gzip level 1 快速压缩，运行时按需在本机解压，无需外部解压工具。构建机器可运行 `node scripts/setup-agent-upx.mjs` 安装经 SHA-256 校验的固定版本 UPX；构建/打包脚本的 `--no-upx` 可生成未压缩对照。
+`cli/` 中的 CLI 已改为 Rust，文档解析仍复用前端 WASM 核心。Release 开启体积优化、LTO、单 codegen unit、panic abort 和符号 strip；Windows/Linux 的 CLI 使用 UPX `--best --lzma`，并通过 `upx --test` 校验。macOS arm64 的可执行格式不受 UPX 支持，因此跳过。文本 WASM 使用 Binaryen `-Oz` 并移除 debug / producers 信息；WASM 引擎使用 gzip level 9 压缩，运行时按需在本机解压，无需外部解压工具。构建机器可运行 `node scripts/setup-agent-upx.mjs` 安装经 SHA-256 校验的固定版本 UPX；构建/打包脚本的 `--no-upx` 可生成未压缩对照。
 
 0.3.0 提供 Windows x64 安装包。见 [Windows 测试包、实机检查和可复制的 Agent 提示词](agent-cli-windows.zh-CN.md)，实际 Windows 运行结果仍待补充。
 

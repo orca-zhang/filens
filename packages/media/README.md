@@ -89,7 +89,8 @@ depends on the browser. Remote resources must permit browser access (CORS).
 Enable `createMediaPreviewDrivers({ browserMedia: true })`, `<Preview :browser-media="true" />`
 or `createPreview(host, { src: file, browserMedia: true })`. Native playback is always
 attempted first. Recovery is opt-in and bypasses `mediaConverter` for video, even
-when one is configured. Image conversion is unchanged.
+when one is configured. Recovery retains the last playback position, paused state,
+volume, mute and playback speed. Image conversion is unchanged.
 
 The first adapter supports bounded MP4/MOV remuxing, preserving one video and up
 to one compatible audio track. It can convert incompatible SDR video to AVC at

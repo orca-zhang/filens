@@ -54,6 +54,21 @@ describe('optional browser recovery', () => {
     expect(session.getState().capabilities.download).toBe(true);
   });
 
+  it.each([true, false])('preserves playback settings when native recovery begins (paused=%s)', async paused => {
+    const { host, session } = setup(); const load = context('resume.mov');
+    await session.load(load.descriptor.source, load);
+    const original = host.querySelector('video')!;
+    Object.defineProperty(original, 'paused', { value: paused });
+    original.currentTime = 42; original.volume = .35; original.muted = true; original.playbackRate = 1.5;
+    for (const event of ['timeupdate', 'volumechange', 'ratechange', paused ? 'pause' : 'play']) original.dispatchEvent(new Event(event));
+    original.querySelector('source')!.dispatchEvent(new Event('error'));
+    await vi.waitFor(() => expect(recover).toHaveBeenCalledOnce());
+    const recovered = host.querySelector('video')!;
+    expect(recovered).not.toBe(original);
+    expect(recovered.volume).toBe(.35); expect(recovered.muted).toBe(true); expect(recovered.playbackRate).toBe(1.5);
+    expect(recover.mock.calls[0][2]).toMatchObject({ startTime: 42, autoplay: !paused });
+  });
+
   it('closes late recovery on replacement and never removes the next native player', async () => {
     let complete!: (value: { close: () => Promise<void> }) => void;
     recover.mockImplementation(() => new Promise(resolve => { complete = resolve; }));

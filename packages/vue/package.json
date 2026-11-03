@@ -51,5 +51,15 @@
     "@filens/media": "file:../media",
     "@filens/office": "file:../office",
     "@filens/text": "file:../text"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/vue"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

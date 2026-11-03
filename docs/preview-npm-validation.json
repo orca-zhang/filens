@@ -1,7 +1,7 @@
 {
-  "observedAt": "2026-11-02T02:22:49.524Z",
+  "observedAt": "2026-11-03T13:40:59.364Z",
   "name": "filens-preview",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "source": "offline npm tarball",
   "platform": "darwin-arm64",
   "passed": true,

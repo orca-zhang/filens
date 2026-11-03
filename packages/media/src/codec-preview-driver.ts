@@ -2,7 +2,7 @@ import {
   createImagePreviewDriver, createMediaPreviewDriver,
   type ConverterClient, type FormatDefinition, type PreviewDriver, type PreviewEventMap,
   type PreviewEventName, type PreviewItemState, type PreviewLoadContext,
-  type PreviewOptions, type PreviewSession, type PreviewSource
+  type PreviewOptions, type PreviewSession, type PreviewSource, type MediaPreviewState
 } from '@filens/core';
 import type { BrowserMediaOptions } from './engine';
 import { createMediaConverterClient } from '@filens/converter-client';
@@ -65,11 +65,12 @@ class CodecPreviewSession implements PreviewSession {
 
   private async recover(source: PreviewSource, context: PreviewLoadContext, controller: AbortController): Promise<void> {
     if (controller.signal.aborted || this.controller !== controller) return;
+    const previous = { ...this.state } as MediaPreviewState;
     this.releaseChild();
     try {
       const { BrowserVideoSession } = await import('./browser-video-session');
       if (controller.signal.aborted || this.controller !== controller) return;
-      const child = new BrowserVideoSession(this.host, typeof this.browserMedia === 'object' ? this.browserMedia : {});
+      const child = new BrowserVideoSession(this.host, typeof this.browserMedia === 'object' ? this.browserMedia : {}, previous);
       this.attach(child, controller);
       await child.load(source, context);
     } catch (error) { this.fail(error, controller); }
@@ -110,7 +111,9 @@ class CodecPreviewSession implements PreviewSession {
         if (!active()) return;
         if (event === 'error' && fallback) { fallback(); return; }
         if (event === 'loading' || event === 'rendered' || event === 'statechange') {
-          this.state = payload as PreviewItemState;
+          // The native session mutates its state while stopping after an error.
+          // Retain the last emitted playback settings for a recovery handoff.
+          this.state = { ...payload as PreviewItemState };
           this.emit(event, this.state);
         } else this.emit(event, payload as never);
       }));

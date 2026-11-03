@@ -1,14 +1,14 @@
 # filens Agent CLI
 
 <!-- agent-cli-size:npm:start -->
-**v0.5.0 · MIT · CLI executable 2.17 MiB · Lite 8.05 MiB · Full 31.25 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
+**v0.5.1 · MIT · CLI executable 2.17 MiB · Lite 7.86 MiB · Full 31.06 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
 
 | Platform | CLI executable | Lite installed / download | Full installed / download |
 | --- | ---: | ---: | ---: |
-| darwin-arm64 | 2.17 MiB | 8.05 / 6.14 MiB | 31.25 / 20.34 MiB |
-| linux-x64 | 1.90 MiB | 7.78 / 6.86 MiB | 36.74 / 22.84 MiB |
-| linux-arm64 | 1.80 MiB | 7.68 / 6.75 MiB | 31.10 / 20.53 MiB |
-| win32-x64 | 1.82 MiB | 7.70 / 6.78 MiB | 36.48 / 23.01 MiB |
+| darwin-arm64 | 2.17 MiB | 7.86 / 5.95 MiB | 31.06 / 20.16 MiB |
+| linux-x64 | 1.90 MiB | 7.59 / 6.67 MiB | 36.54 / 22.65 MiB |
+| linux-arm64 | 1.79 MiB | 7.48 / 6.56 MiB | 30.91 / 20.35 MiB |
+| win32-x64 | 1.82 MiB | 7.51 / 6.59 MiB | 36.29 / 22.82 MiB |
 
 Totals add the launcher and selected platform packages from npm pack. Node.js, npm caches, filesystem overhead and the optional frontend preview package are excluded. Bundled dependencies retain their own licenses; see THIRD-PARTY-NOTICES.md in the platform packages.
 <!-- agent-cli-size:npm:end -->
@@ -42,7 +42,7 @@ npx --yes filens-cli-lite read report.pdf --json
 The CLI is Rust, built with stripped symbols, LTO and size optimization.
 Windows/Linux executables use UPX `--best --lzma`, followed by `--test`.
 Mach-O arm64 is unsupported by UPX and remains uncompressed.
-WASM resources use fast gzip compression and are decoded locally as needed.
+WASM resources use gzip level 9 compression and are decoded locally as needed.
 The package includes `skills/filens/SKILL.md`, with standard YAML front matter
 and agent guidance for evidence, partial results, OCR and coordinate units.
 Copy `skills/filens/` to your agent's skills directory to enable discovery.
@@ -206,4 +206,4 @@ one profile at a time. Platform packages are implementation components.
 [Protocol, limitations and source build](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
-`npm install -g /path/to/filens-cli-0.5.0.tgz /path/to/filens-cli-PLATFORM-0.5.0.tgz /path/to/filens-ocr-PLATFORM-0.5.0.tgz`.
+`npm install -g /path/to/filens-cli-0.5.1.tgz /path/to/filens-cli-PLATFORM-0.5.1.tgz /path/to/filens-ocr-PLATFORM-0.5.1.tgz`.

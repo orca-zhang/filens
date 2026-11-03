@@ -39,5 +39,15 @@
   "devDependencies": {
     "@filens/core": "file:../core",
     "@filens/panorama": "file:../panorama"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/media"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

@@ -30,7 +30,9 @@ if (!statSync(outputJsonFile).size) {
 }
 
 const descriptor = JSON.parse(readFileSync(outputJsonFile, 'utf8'));
-writeFileSync(outputTsFile, `const descriptor = ${JSON.stringify(descriptor)} as const;\nexport default descriptor;\n`);
+// Keep generated declarations small; consumers need the schema interface,
+// rather than a literal TypeScript type for every protobuf field.
+writeFileSync(outputTsFile, `import type { INamespace } from 'protobufjs/light.js';\nconst descriptor = ${JSON.stringify(descriptor)} as INamespace;\nexport default descriptor;\n`);
 
 const commonTypeMap = JSON.parse(
   readFileSync(join(rootDir, 'packages', 'iwork', 'vendor', 'iwork-converter', 'codegen', 'Common.json'), 'utf8')
@@ -48,10 +50,10 @@ const pagesTypeMap = JSON.parse(
 writeFileSync(
   typeMapsTsFile,
   [
-    `export const commonTypeMap = ${JSON.stringify(commonTypeMap)} as const;`,
-    `export const keynoteTypeMap = ${JSON.stringify(keynoteTypeMap)} as const;`,
-    `export const numbersTypeMap = ${JSON.stringify(numbersTypeMap)} as const;`,
-    `export const pagesTypeMap = ${JSON.stringify(pagesTypeMap)} as const;`,
+    `export const commonTypeMap: Record<string, string> = ${JSON.stringify(commonTypeMap)};`,
+    `export const keynoteTypeMap: Record<string, string> = ${JSON.stringify(keynoteTypeMap)};`,
+    `export const numbersTypeMap: Record<string, string> = ${JSON.stringify(numbersTypeMap)};`,
+    `export const pagesTypeMap: Record<string, string> = ${JSON.stringify(pagesTypeMap)};`,
     ''
   ].join('\n')
 );

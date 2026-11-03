@@ -38,5 +38,15 @@
     "@filens/diagram": "file:../diagram",
     "@filens/mindmap": "file:../mindmap",
     "@filens/model3d": "file:../model3d"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/design"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

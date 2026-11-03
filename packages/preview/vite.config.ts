@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, transformWithEsbuild } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -90,10 +90,21 @@ function embeddedStyles() {
   };
 }
 
+function minifiedRuntime() {
+  return {
+    name: 'filens-preview-minify',
+    // Vite preserves ES library whitespace for downstream tree shaking. This
+    // complete runtime is ready to serve; compact it after Vite's own transform.
+    renderChunk: { order: 'post' as const, handler(code: string, chunk: { fileName: string }) {
+      return transformWithEsbuild(code, chunk.fileName, { loader: 'js', minifyWhitespace: true, legalComments: 'eof' });
+    } }
+  };
+}
+
 export default defineConfig({
   base: './',
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
-  plugins: [archiveEngineAssets(), sharedCompression(), embeddedAssets(), vue(), embeddedStyles()],
+  plugins: [archiveEngineAssets(), sharedCompression(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime()],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
   build: {

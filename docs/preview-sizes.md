@@ -1,14 +1,14 @@
-# Preview 0.3.0 and mobile SDK sizes
+# Preview 0.3.1 and mobile SDK sizes
 
-Measured 2026-11-02. Runtime rows use **MB = 1,000,000 bytes**. gzip level 9 and Brotli quality 11 measure build artifacts; actual HTTP transfer depends on hosting. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
+Measured 2026-11-03. Runtime rows use **MB = 1,000,000 bytes**. gzip level 9 and Brotli quality 11 measure build artifacts; actual HTTP transfer depends on hosting. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
 
 | Runtime | Raw MB | gzip MB | Brotli MB |
 | --- | ---: | ---: | ---: |
-| Split main runtime | 11.23 | 3.26 | 2.57 |
-| All-in-one main JS | 8.85 | 3.26 | 2.90 |
+| Split main runtime | 10.55 | 3.34 | 2.67 |
+| All-in-one main JS | 8.05 | 3.34 | 3.02 |
 | Optional archive WASM + worker (either build) | 0.88 | 0.35 | 0.28 |
-| Split with archive assets | 12.11 | 3.61 | 2.85 |
-| All-in-one with archive assets | 9.73 | 3.60 | 3.18 |
+| Split with archive assets | 11.44 | 3.69 | 2.94 |
+| All-in-one with archive assets | 8.93 | 3.69 | 3.30 |
 
 [Exact runtime bytes](preview-build-sizes.json).
 
@@ -16,21 +16,21 @@ Measured 2026-11-02. Runtime rows use **MB = 1,000,000 bytes**. gzip level 9 and
 
 | Package | Compressed download | Installed file bytes |
 | --- | ---: | ---: |
-| filens-preview 0.3.0 | 6.98 MiB | 21.72 MiB |
+| filens-preview 0.3.1 | 7.14 MiB | 20.40 MiB |
 
 The npm package includes **both** complete runtime directories, archive assets, types, documentation and license notices. MiB = 1,048,576 bytes; excludes the npm cache and filesystem allocation overhead. [Exact package bytes and SHA-256](preview-package-sizes.json).
 
-## Mobile source SDKs 0.1.0
+## Mobile source SDKs 0.1.1
 
-Each SDK includes the complete offline split runtime 0.3.0; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
+Each SDK includes the complete offline split runtime 0.3.1; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
 
 | SDK | ZIP download | Extracted file bytes |
 | --- | ---: | ---: |
-| iOS / Swift Package | 3.51 MiB | 12.02 MiB |
-| Android / Java Library | 3.51 MiB | 12.02 MiB |
+| iOS / Swift Package | 3.59 MiB | 11.43 MiB |
+| Android / Java Library | 3.59 MiB | 11.42 MiB |
 
 Excludes build tools, build caches and filesystem allocation overhead. [Exact SDK bytes and SHA-256](mobile-sdk-sizes.json).
 
-CLI 0.5.0 and ZimaOS 0.5.1 retain their previous release measurements; this preview/SDK release does not rebuild those components.
+CLI measurements are recorded separately in [the npm artifact report](agent-cli-npm-release.json).
 
-Reproduce: `npm run build:preview`, `npm run report:preview-sizes`, `node scripts/package-preview-npm.mjs --no-build`, `npm run package:sdk:mobile`, then `npm run report:preview-sizes`.
+Reproduce: `npm run build:preview`, `node scripts/package-preview-npm.mjs --no-build`, `npm run package:sdk:mobile`, then `npm run report:preview-sizes`.

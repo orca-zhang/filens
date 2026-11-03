@@ -15,14 +15,15 @@
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
-| 大概多大 | **Lite 安装后 7.68–8.05 MiB · Full 安装后 31.10–36.74 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 支持格式（按扩展名） | **334 种**。 | **397 种**，含直接预览与本地 WASM 转换后预览。 |
+| 大概多大 | **Lite 安装后 7.48–7.86 MiB · Full 安装后 30.91–36.54 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **1.80–2.17 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.0 主运行时按分包合计 **2.57 MB Brotli**，单 JS 版为 **2.90 MB Brotli / 3.26 MB gzip / 8.85 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **1.79–2.17 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.1 主运行时按分包合计 **2.67 MB Brotli**，单 JS 版为 **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
-本地读取 PDF、Office、表格、扫描件和图片；搜索目录与嵌套压缩包、提取关键原文、查找重复文件与相似图片。输出 text、JSON、Markdown、HTML、YAML、XML、CSV 或 TSV，保留可用的页码坐标与文档结构。改写总结、翻译和问答由调用它的 Agent 完成。
+**支持 334 种文件格式（按扩展名统计）**，在本地读取 PDF、Office、表格、扫描件和图片；搜索目录与嵌套压缩包、提取关键原文、查找重复文件与相似图片。输出 text、JSON、Markdown、HTML、YAML、XML、CSV 或 TSV，保留可用的页码坐标与文档结构。具体能力以 `filens capacity --json` 为准，提取保真度因格式而异。改写总结、翻译和问答由调用它的 Agent 完成。
 
 **把这句话发给你的 Agent：**
 
@@ -42,7 +43,7 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**离线浏览器预览（CLI 0.5.0）：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。首次使用会安装 `filens-preview@0.2.0`；可提前运行 `filens setup-preview`，之后离线使用。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**离线浏览器预览（CLI 0.5.1）：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。首次使用会安装 `filens-preview@0.3.1`；可提前运行 `filens setup-preview`，之后离线使用。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -61,7 +62,7 @@ filens preview report.pdf --mode serve
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.17 MiB · Lite 8.05 MiB · Full 31.25 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.0 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.17 MiB · Lite 7.86 MiB · Full 31.06 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.1 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -78,7 +79,7 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ## 纯前端预览
 
-**大量复杂格式，在浏览器本地解析和渲染，无需上传或转换服务器。** 直接浏览 Keynote 幻灯片、Pages 页面、Numbers 表格，读取 Office 与 PDF，检查 CAD / 3D 模型，查看 RAW 和 360° 照片、视频。
+**支持 397 种文件格式，在浏览器本地解析和渲染，无需上传或转换服务器。** 按扩展名统计，包含直接预览与本地 WASM 转换后预览。直接浏览 Keynote 幻灯片、Pages 页面、Numbers 表格，读取 Office 与 PDF，检查 CAD / 3D 模型，查看 RAW 和 360° 照片、视频。各格式的支持范围与限制见[支持矩阵](docs/support-matrix.zh-CN.md)。
 
 ### 单文件与按需分包，两种选择
 

@@ -816,7 +816,7 @@ function buildDualFisheyeSeamMask(weights, left, right) {
 }
 
 
-function protectDualFisheyeDisplacedContent(mask, colors, weights, gains) {
+function protectDualFisheyeDisplacedContent(mask, colors, weights, gains, spherical = false) {
   if (!mask) return null;
   const votes = [new Float32Array(mask.length), new Float32Array(mask.length)];
   for (let y = 0; y < ANALYSIS_HEIGHT; y += 1) for (let x = 0; x < ANALYSIS_WIDTH; x += 1) {
@@ -839,12 +839,16 @@ function protectDualFisheyeDisplacedContent(mask, colors, weights, gains) {
     const support = (weights[winner][index] - weights[other][index]) * Math.min(1, mismatch / 64);
     // Include neighboring features so a boundary cannot pass between an eye
     // and its forehead simply because their individual colors happen to match.
+    // Longitude cells shrink toward a pole. Static MEI images need the same
+    // angular support horizontally as vertically to keep a close face together.
+    const longitudeScale = spherical ? Math.max(.1, Math.sin((y + .5) / ANALYSIS_HEIGHT * Math.PI)) : 1;
+    const radius = Math.floor(2 / longitudeScale);
     for (let dy = -2; dy <= 2; dy += 1) {
       const row = y + dy;
       if (row < 0 || row >= ANALYSIS_HEIGHT) continue;
-      for (let dx = -2; dx <= 2; dx += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
         const column = (x + dx + ANALYSIS_WIDTH) % ANALYSIS_WIDTH;
-        votes[winner][row * ANALYSIS_WIDTH + column] += support * (3 - Math.max(Math.abs(dx), Math.abs(dy)));
+        votes[winner][row * ANALYSIS_WIDTH + column] += support * (3 - Math.max(Math.abs(dx) * longitudeScale, Math.abs(dy)));
       }
     }
   }
@@ -1280,7 +1284,7 @@ function createDJISoftwareAnalysisSurface(frames, cache, previous = null, map = 
 }
 
 
-function createSeamAnalysisSurface(mediaEl, maxSize = SOURCE_ANALYSIS_SIZE, cache = null) {
+function createSeamAnalysisSurface(mediaEl, maxSize = SOURCE_ANALYSIS_SIZE, cache = null, highQuality = false) {
   const sourceSize = getMediaTextureSize(mediaEl);
   const scale = Math.min(1, maxSize / Math.max(sourceSize.width, sourceSize.height));
   const width = Math.max(1, Math.round(sourceSize.width * scale));
@@ -1302,6 +1306,10 @@ function createSeamAnalysisSurface(mediaEl, maxSize = SOURCE_ANALYSIS_SIZE, cach
     context.translate(0, height);
     context.scale(1, -1);
   }
+  // Sparse bilinear taps can turn fine hair/foliage into false occlusion and
+  // unstable feature matches. Static analysis can afford filtered reduction;
+  // decoded video retains its existing fast path, including reused canvases.
+  context.imageSmoothingQuality = highQuality ? "high" : "low";
   context.drawImage(mediaEl, 0, 0, width, height);
   if (flipped) context.restore();
   return { pixels: context.getImageData(0, 0, width, height).data, width, height };
@@ -1724,7 +1732,7 @@ function acceptStaticDualFisheyeImage(mediaEl, options, calibration, remap, fron
   const useConvergence = !remap && [frontLens, backLens].every((lens) => lens.distortionModel === "radtan_pro" && lens.distortionCoeffs?.length === 13);
   const useFocalRefinement = Boolean(options.dualFisheyeRefineFocal && calibration && !remap &&
     [frontLens, backLens].every((lens) => (lens.projectionModel || "equidistant") === "equidistant" && lens.focal?.every((value) => value > 0)));
-  const surface = createSeamAnalysisSurface(mediaEl, useConvergence || useFocalRefinement ? 1024 : SOURCE_ANALYSIS_SIZE);
+  const surface = createSeamAnalysisSurface(mediaEl, useConvergence || useFocalRefinement ? 1024 : SOURCE_ANALYSIS_SIZE, null, true);
   if (!surface) return null;
   let focalScale = useFocalRefinement ? estimateDualFisheyeImageFocalScale(surface, [frontLens, backLens], options, calibration.textureOrigin, maxTheta) : 1;
   if (focalScale !== 1) {
@@ -1737,23 +1745,29 @@ function acceptStaticDualFisheyeImage(mediaEl, options, calibration, remap, fron
       backLens = back;
     } else focalScale = 1;
   }
-  const convergenceM = useConvergence ? estimateX5ImageConvergence(surface, [frontLens, backLens], calibration?.textureOrigin) : 0;
-  const usePolarDepth = calibration && !remap && [frontLens, backLens].every((lens) =>
-    lens.projectionModel === "mei_extended" && lens.distortionModel !== "radtan_pro" && Array.isArray(lens.rotationQuat)) &&
-    [frontLens, backLens].some((lens) => lens.translationM?.some((value) => Math.abs(value) > .001));
-  const polarSurface = usePolarDepth ? createSeamAnalysisSurface(mediaEl, 1024) : null;
+  const lenses = [frontLens, backLens];
+  const convergenceM = useConvergence ? estimateX5ImageConvergence(surface, lenses, calibration?.textureOrigin) : 0;
+  const hasMeiGeometry = calibration && !remap && lenses.every((lens) =>
+    lens.projectionModel === "mei_extended" && lens.distortionModel !== "radtan_pro" && Array.isArray(lens.rotationQuat));
+  const usePolarDepth = hasMeiGeometry && lenses.some((lens) => lens.translationM?.some((value) => Math.abs(value) > .001));
+  const polarSurface = usePolarDepth ? createSeamAnalysisSurface(mediaEl, 1024, null, true) : null;
   const polarInverseDepth = polarSurface
-    ? estimateDualFisheyePolarDepth(polarSurface, [frontLens, backLens], options, calibration.textureOrigin) : [0, 0];
+    ? estimateDualFisheyePolarDepth(polarSurface, lenses, options, calibration.textureOrigin) : [0, 0];
   // DNG's MEI metadata can retain angular mismatch at the horizontal seams.
   // Register both overlaps once, independently of the nearby polar subject.
   // Fixed remaps and RadtanPro images keep their existing geometry path.
-  const useImageRegistration = calibration && !remap && calibration.imageSize?.[0] === 2 * calibration.imageSize?.[1] &&
-    [frontLens, backLens].every((lens) => lens.projectionModel === "mei_extended" &&
-      lens.distortionModel !== "radtan_pro" && Array.isArray(lens.rotationQuat));
-  const registrationSurface = useImageRegistration ? createSeamAnalysisSurface(mediaEl, 2048) : null;
-  const imageOffsets = registrationSurface
-    ? registerDualFisheyeOverlaps(registrationSurface, options, [frontLens, backLens], calibration.textureOrigin)?.offsets || [0, 0, 0, 0]
-    : [0, 0, 0, 0];
+  const useImageRegistration = hasMeiGeometry && calibration.imageSize?.[0] === 2 * calibration.imageSize?.[1];
+  const registrationSurface = useImageRegistration ? createSeamAnalysisSurface(mediaEl, 2048, null, true) : null;
+  let registration = registrationSurface
+    ? registerDualFisheyeOverlaps(registrationSurface, options, lenses, calibration.textureOrigin) : null;
+  if (registrationSurface && !registration && registrationSurface.width > 512) {
+    // Repeated fine detail can lack consensus even with valid calibration.
+    // Retry once at a filtered coarse scale, with the same match thresholds
+    // and the requirement that both overlaps succeed together.
+    const coarse = createSeamAnalysisSurface(mediaEl, 512, null, true);
+    if (coarse) registration = registerDualFisheyeOverlaps(coarse, options, lenses, calibration.textureOrigin);
+  }
+  const imageOffsets = registration?.offsets || [0, 0, 0, 0];
   const seam = analyzeDualFisheyeSeam(surface, options, calibration, remap, frontLens, backLens, maxTheta,
     { convergenceM, polarInverseDepth, imageOffsets: useImageRegistration ? imageOffsets : null });
   return seam ? { ...seam, convergenceM, polarInverseDepth, focalScale, imageOffsets } : null;
@@ -1816,7 +1830,8 @@ function dualFisheyeAnalysisMap(options, calibration, remap, frontLens, backLens
     const index = maskY * ANALYSIS_WIDTH + maskX;
     const mapped = sampleRemapAnalysis(remap, maskUV[0], maskUV[1]);
     for (let lensIndex = 0; lensIndex < 2; lensIndex++) {
-      const lensDirection = lensIndex === 1 && registrationOffsets ? registeredDualFisheyeVideoDirection(direction, registrationOffsets) : direction;
+      const lensDirection = lensIndex === 1 && registrationOffsets
+        ? registeredDualFisheyeVideoDirection(direction, registrationOffsets, !videoOffsets) : direction;
       const lens = lenses[lensIndex];
       const projection = mapped
         ? (mapped[lensIndex].valid ? { uv: mapped[lensIndex].uv, confidence: mapped[lensIndex].confidence } : null)
@@ -1947,7 +1962,7 @@ function analyzeDualFisheyeSeam(surface, options, calibration, remap, frontLens,
   const seamMask = left && right && left.cost / ANALYSIS_HEIGHT <= 180 && right.cost / ANALYSIS_HEIGHT <= 180
     ? buildDualFisheyeSeamMask(weights, left.seam, right.seam.map((value) => value + half))
     : null;
-  let mask = protectDualFisheyeDisplacedContent(seamMask, colors, weights, [frontGain, backGain]);
+  let mask = protectDualFisheyeDisplacedContent(seamMask, colors, weights, [frontGain, backGain], Boolean(imageOffsets));
   if (mask && videoOffsets && dji.every(Boolean)) mask = protectDualFisheyeForegroundRegions(mask, colors, weights, [frontGain, backGain], mapCache && !remap ? map : null);
   if (mask && registrationOffsets) mask = stabilizeDualFisheyeVideoMask(mask, colors, weights, [frontGain, backGain], previousMask);
   const strength = mask && videoOffsets && dji.every(Boolean)
@@ -1956,11 +1971,15 @@ function analyzeDualFisheyeSeam(surface, options, calibration, remap, frontLens,
 }
 
 
-function registeredDualFisheyeVideoDirection(direction, offsets) {
+function registeredDualFisheyeVideoDirection(direction, offsets, staticImage = false) {
   const latitude = Math.asin(clamp(direction[1], -1, 1));
   let longitude = Math.atan2(direction[0], direction[2]);
-  const t = clamp((Math.abs(direction[1]) - Math.sin(50 * Math.PI / 180)) /
-    (Math.sin(70 * Math.PI / 180) - Math.sin(50 * Math.PI / 180)), 0, 1);
+  // Static near-field geometry is fully active at 50 degrees. Continuing the
+  // unrelated horizon correction past that latitude duplicates face features
+  // where the seam changes lenses. Video retains its established transition.
+  const start = Math.sin((staticImage ? 30 : 50) * Math.PI / 180);
+  const end = Math.sin((staticImage ? 50 : 70) * Math.PI / 180);
+  const t = clamp((Math.abs(direction[1]) - start) / (end - start), 0, 1);
   const fade = 1 - t * t * (3 - 2 * t);
   if (fade === 0) return direction.slice();
   const mix = .5 + .5 * Math.sin(longitude);
@@ -2572,15 +2591,19 @@ function createProjectionRenderer(canvas, mediaEl, options, projectionKind) {
     vec3 projectBackLens(vec3 dir) {
       vec3 backDirection = dir;
       if (length(uDualFisheyeVideoOffsets) > 0.0) {
-        float longitude = atan(dir.x, dir.z);
-        float latitude = asin(clamp(dir.y, -1.0, 1.0));
         // A smooth spherical field joins independently registered overlaps;
         // it does not jump when the camera crosses a seam or a video frame.
-        vec2 offset = mix(uDualFisheyeVideoOffsets.xy, uDualFisheyeVideoOffsets.zw, 0.5 + 0.5 * sin(longitude));
-        offset *= 1.0 - smoothstep(sin(radians(50.0)), sin(radians(70.0)), abs(dir.y));
-        longitude += offset.x;
-        latitude = clamp(latitude + offset.y, -PI * 0.5, PI * 0.5);
-        backDirection = vec3(cos(latitude) * sin(longitude), sin(latitude), cos(latitude) * cos(longitude));
+        float fade = 1.0 - smoothstep(sin(radians(${isVideo ? '50.0' : '30.0'})), sin(radians(${isVideo ? '70.0' : '50.0'})), abs(dir.y));
+        // Keep the original polar ray, just like CPU sampling. Reconstructing
+        // it through atan/asin after the correction ends adds rounding drift.
+        if (fade > 0.0) {
+          float longitude = atan(dir.x, dir.z);
+          float latitude = asin(clamp(dir.y, -1.0, 1.0));
+          vec2 offset = mix(uDualFisheyeVideoOffsets.xy, uDualFisheyeVideoOffsets.zw, 0.5 + 0.5 * sin(longitude)) * fade;
+          longitude += offset.x;
+          latitude = clamp(latitude + offset.y, -PI * 0.5, PI * 0.5);
+          backDirection = vec3(cos(latitude) * sin(longitude), sin(latitude), cos(latitude) * cos(longitude));
+        }
       }
       return uDualFisheyeBackUseMEI > 0.5 ? projectMEIDualLens(
         backDirection,

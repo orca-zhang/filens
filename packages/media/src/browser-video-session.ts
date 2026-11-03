@@ -13,7 +13,7 @@ export class BrowserVideoSession implements PreviewSession {
   private state: MediaPreviewState = { family: 'video', currentTime: 0, paused: true, muted: false, volume: 1, loading: false, error: null, warnings: [],
     capabilities: { playback: true, timeline: true, volume: true, fullscreen: true, download: true, subtitles: false } };
 
-  constructor(private host: HTMLElement, private options: BrowserMediaOptions) {}
+  constructor(private host: HTMLElement, private options: BrowserMediaOptions, private resume?: MediaPreviewState) {}
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
     this.destroy();
     const controller = this.controller = new AbortController();
@@ -27,11 +27,15 @@ export class BrowserVideoSession implements PreviewSession {
     this.emit('loading', this.state); this.emit('statechange', this.state);
     if (context.signal?.aborted) controller.abort(context.signal.reason);
     if (signal.aborted) return;
+    const resume = this.resume; this.resume = undefined;
     const root = this.root = document.createElement('div');
     root.className = 'pptxv-native-preview pptxv-native-preview--video';
     const video = this.video = document.createElement('video');
     video.className = 'pptxv-native-media pptxv-native-media--video';
     video.controls = true; video.playsInline = true; video.preload = 'metadata';
+    video.volume = resume?.volume ?? 1;
+    video.muted = resume?.muted ?? false;
+    video.playbackRate = resume?.playbackRate ?? 1;
     root.append(video); this.host.append(root);
     createVideoPreviewPlayer(root, video, signal);
     let rendered = false;
@@ -55,7 +59,8 @@ export class BrowserVideoSession implements PreviewSession {
     };
     video.addEventListener('error', () => fail(new Error('Browser media recovery cannot decode this video codec.')), { signal });
     try {
-      const playback = await recoverBrowserVideo(source, video, { ...this.options, signal, autoplay: false, onError: fail });
+      const playback = await recoverBrowserVideo(source, video, { ...this.options, signal,
+        startTime: resume?.currentTime ?? 0, autoplay: resume ? !resume.paused : false, onError: fail });
       if (signal.aborted || this.controller !== controller) { await playback.close(); return; }
       this.playback = playback; sync();
     } catch (error) { fail(error); }

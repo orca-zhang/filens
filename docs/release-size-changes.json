@@ -1,0 +1,249 @@
+{
+  "date": "2026-11-03",
+  "tag": "v0.6.1",
+  "baseline": "v0.6.0 (preview/SDK), CLI 0.5.0",
+  "unit": "bytes",
+  "runtime": {
+    "split": {
+      "raw": {
+        "before": 11229923,
+        "after": 10553047,
+        "bytes": -676876,
+        "percent": -6.027432245083064
+      },
+      "gzip": {
+        "before": 3256559,
+        "after": 3336734,
+        "bytes": 80175,
+        "percent": 2.4619544740322574
+      },
+      "brotli": {
+        "before": 2571855,
+        "after": 2666622,
+        "bytes": 94767,
+        "percent": 3.6847722752643586
+      }
+    },
+    "all-in-one": {
+      "raw": {
+        "before": 8845059,
+        "after": 8051917,
+        "bytes": -793142,
+        "percent": -8.967062853961739
+      },
+      "gzip": {
+        "before": 3255012,
+        "after": 3336451,
+        "bytes": 81439,
+        "percent": 2.501956982032638
+      },
+      "brotli": {
+        "before": 2902117,
+        "after": 3024295,
+        "bytes": 122178,
+        "percent": 4.209961211074531
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "kind": "browser-split",
+      "file": "filens-preview-0.3.1-split.zip",
+      "download": {
+        "before": 3659205,
+        "after": 3735826,
+        "bytes": 76621,
+        "percent": 2.093924773277256
+      },
+      "installed": {
+        "before": 12570313,
+        "after": 11935968,
+        "bytes": -634345,
+        "percent": -5.0463739447060725
+      }
+    },
+    {
+      "kind": "browser-all-in-one",
+      "file": "filens-preview-0.3.1-all-in-one.zip",
+      "download": {
+        "before": 3674890,
+        "after": 3755119,
+        "bytes": 80229,
+        "percent": 2.1831673873231594
+      },
+      "installed": {
+        "before": 10185454,
+        "after": 9434843,
+        "bytes": -750611,
+        "percent": -7.369440773086799
+      }
+    },
+    {
+      "kind": "npm",
+      "file": "filens-preview-0.3.1.tgz",
+      "download": {
+        "before": 7319003,
+        "after": 7486577,
+        "bytes": 167574,
+        "percent": 2.2895741400843717
+      },
+      "installed": {
+        "before": 22772131,
+        "after": 21387817,
+        "bytes": -1384314,
+        "percent": -6.078983121957271
+      }
+    },
+    {
+      "kind": "source-sdk-ios",
+      "file": "filens-ios-sdk-0.1.1.zip",
+      "download": {
+        "before": 3679002,
+        "after": 3760102,
+        "bytes": 81100,
+        "percent": 2.2044021721107976
+      },
+      "installed": {
+        "before": 12606947,
+        "after": 11981289,
+        "bytes": -625658,
+        "percent": -4.962803444799125
+      }
+    },
+    {
+      "kind": "source-sdk-android",
+      "file": "filens-android-sdk-0.1.1.zip",
+      "download": {
+        "before": 3681378,
+        "after": 3762540,
+        "bytes": 81162,
+        "percent": 2.204663579779087
+      },
+      "installed": {
+        "before": 12602789,
+        "after": 11977131,
+        "bytes": -625658,
+        "percent": -4.964440807506976
+      }
+    }
+  ],
+  "cli": [
+    {
+      "platform": "darwin-arm64",
+      "executable": {
+        "before": 2270304,
+        "after": 2270304,
+        "bytes": 0,
+        "percent": 0
+      },
+      "lite": {
+        "before": 8436234,
+        "after": 8236810,
+        "bytes": -199424,
+        "percent": -2.363898393524888
+      },
+      "full": {
+        "before": 32767981,
+        "after": 32568655,
+        "bytes": -199326,
+        "percent": -0.6082950304445056
+      }
+    },
+    {
+      "platform": "linux-x64",
+      "executable": {
+        "before": 1994760,
+        "after": 1993368,
+        "bytes": -1392,
+        "percent": -0.06978283101726213
+      },
+      "lite": {
+        "before": 8160713,
+        "after": 7959897,
+        "bytes": -200816,
+        "percent": -2.460765376750784
+      },
+      "full": {
+        "before": 38520895,
+        "after": 38320177,
+        "bytes": -200718,
+        "percent": -0.5210626596292789
+      }
+    },
+    {
+      "platform": "linux-arm64",
+      "executable": {
+        "before": 1882916,
+        "after": 1881780,
+        "bytes": -1136,
+        "percent": -0.06033195320449547
+      },
+      "lite": {
+        "before": 8048873,
+        "after": 7848313,
+        "bytes": -200560,
+        "percent": -2.491777420267405
+      },
+      "full": {
+        "before": 32614111,
+        "after": 32413649,
+        "bytes": -200462,
+        "percent": -0.6146480583205216
+      }
+    },
+    {
+      "platform": "win32-x64",
+      "executable": {
+        "before": 1911296,
+        "after": 1910784,
+        "bytes": -512,
+        "percent": -0.026788106080899432
+      },
+      "lite": {
+        "before": 8077236,
+        "after": 7877300,
+        "bytes": -199936,
+        "percent": -2.475302194958773
+      },
+      "full": {
+        "before": 38251183,
+        "after": 38051345,
+        "bytes": -199838,
+        "percent": -0.52243612962245
+      }
+    }
+  ],
+  "optimization": {
+    "scope": "Current working-tree build before this review versus the final candidate. Includes small media state continuity changes; package measurements include metadata and notices.",
+    "singleJs": {
+      "before": 9413324,
+      "after": 8051917,
+      "bytes": -1361407,
+      "percent": -14.462553291483438
+    },
+    "previewDownload": {
+      "before": 7825001,
+      "after": 7486577,
+      "bytes": -338424,
+      "percent": -4.3249067955390625
+    },
+    "previewInstalled": {
+      "before": 24112188,
+      "after": 21387817,
+      "bytes": -2724371,
+      "percent": -11.298729920320794
+    },
+    "iworkDownload": {
+      "before": 2405666,
+      "after": 1547653,
+      "bytes": -858013,
+      "percent": -35.666339383771486
+    },
+    "iworkInstalled": {
+      "before": 10430567,
+      "after": 3689683,
+      "bytes": -6740884,
+      "percent": -64.62624706787273
+    }
+  }
+}

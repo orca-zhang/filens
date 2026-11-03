@@ -43,5 +43,15 @@
   "dependencies": {
     "fflate": "^0.8.2",
     "jszip": "^3.10.1"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/diagram"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

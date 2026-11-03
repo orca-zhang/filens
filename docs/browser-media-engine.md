@@ -32,6 +32,10 @@ encoding. This mode never calls the optional `mediaConverter` for video; failure
 are reported through the existing error lifecycle and the original download
 capability remains available. HEIF image conversion retains its existing behavior.
 
+The handoff retains the last playback position, paused state, volume, mute and
+playback speed, matching the stage continuity used in share-front. It adds no
+media dependency or codec asset.
+
 The browser-local runtime can work offline with local files after its JavaScript
 has loaded. The split distribution needs its optional chunks available or cached;
 the all-in-one distribution embeds this video runtime. Remote URLs still need

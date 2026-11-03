@@ -38,5 +38,15 @@
     "@filens/iwork": "file:../iwork",
     "@filens/pdf": "file:../pdf",
     "@filens/xlsx": "file:../xlsx"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "packages/office"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

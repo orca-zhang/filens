@@ -47,6 +47,6 @@ try {
     report += `\n## Mobile source SDKs ${sdk.version}\n\nEach SDK includes the complete offline split runtime ${version}; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.\n\n| SDK | ZIP download | Extracted file bytes |\n| --- | ---: | ---: |\n${sdk.packages.map(item => `| ${item.platform === 'ios' ? 'iOS / Swift Package' : 'Android / Java Library'} | ${mib(item.bytes)} MiB | ${mib(item.unpackedBytes)} MiB |`).join('\n')}\n\nExcludes build tools, build caches and filesystem allocation overhead. [Exact SDK bytes and SHA-256](mobile-sdk-sizes.json).\n`;
   }
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
-report += '\nCLI 0.5.0 and ZimaOS 0.5.1 retain their previous release measurements; this preview/SDK release does not rebuild those components.\n\nReproduce: `npm run build:preview`, `npm run report:preview-sizes`, `node scripts/package-preview-npm.mjs --no-build`, `npm run package:sdk:mobile`, then `npm run report:preview-sizes`.\n';
+report += '\nCLI measurements are recorded separately in [the npm artifact report](agent-cli-npm-release.json).\n\nReproduce: `npm run build:preview`, `node scripts/package-preview-npm.mjs --no-build`, `npm run package:sdk:mobile`, then `npm run report:preview-sizes`.\n';
 await writeFile(path.join(root, 'docs/preview-sizes.md'), report);
 console.log(`Updated preview ${version} size summaries and docs/preview-sizes.md`);

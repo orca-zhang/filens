@@ -1,13 +1,13 @@
 {
   "name": "hdrw",
   "license": "proprietary",
-  "sourceCommit": "c2263e5f64432772b0f8a445ea19ce37629816bf",
+  "sourceCommit": "f64756e14f622d03d073e9ad4ddc097f61f72cfa",
   "sourceHasChanges": false,
   "abi": "wasi-preview1",
   "adapter": "filens-directory-v1",
-  "bytes": 3236964,
-  "gzipBytes": 972296,
-  "sha256": "6264cb0a9745ae96c162915ab2d0baf32b5a70e1d89c618fefc04281730d127a",
-  "gzipSHA256": "d17f7c1476c13073cb62a998551a65071c9d2e57b6ff55ef14b4c11d54d7c6c2",
+  "bytes": 3232280,
+  "gzipBytes": 969246,
+  "sha256": "1751e0cef3a2a3af40bc8113409b3918bf13e2d6bf861fcd797cdc270446acc2",
+  "gzipSHA256": "bf101578e1e3d8b783416ecdc37b2f9d8acd27723216f7548e9ace67d32342ab",
   "mode": "OS-backed read-only directory enumeration; no raw devices or filesystem drivers exposed"
 }
