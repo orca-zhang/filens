@@ -1,0 +1,17 @@
+{
+  "name": "dsh-filens",
+  "version": "0.1.0",
+  "file": "dsh-filens-0.1.0.tgz",
+  "bytes": 3779547,
+  "unpackedBytes": 9531351,
+  "sha256": "74811c5be927407c9c6c780b8a19cc8d02720df09a14f3c86b0e0b1ea818e4ad",
+  "integrity": "sha512-bjWXzoHL4HhysbzzPxBBmJmTx88RDxf6htfVjJ+6ZzQ3aQCk9jA0x/yzih4hF7LyNVLQFetvVMdas18lbngICA==",
+  "registryHttpStatus": 200,
+  "status": "publicly-available-integrity-verified",
+  "tarball": "https://registry.npmjs.org/dsh-filens/-/dsh-filens-0.1.0.tgz",
+  "license": "MIT",
+  "registry": "https://registry.npmjs.org/",
+  "observedAt": "2026-11-03T18:07:10.990Z",
+  "cliVersion": "0.5.2",
+  "previewVersion": "0.3.2"
+}

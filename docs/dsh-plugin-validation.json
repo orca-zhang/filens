@@ -1,6 +1,6 @@
 {
   "date": "2026-11-04",
-  "status": "release-candidate-validation",
+  "status": "published-and-validated",
   "package": {
     "name": "dsh-filens",
     "version": "0.1.0",
@@ -286,7 +286,7 @@
     "Conversion commits and standalone HTML preview output remain filesystem artifacts.",
     "Native Windows/Linux, remote execution, full reverse proxy and all extensions were not exhaustively tested."
   ],
-  "observedAt": "2026-11-03T17:06:40.180285+00:00",
+  "observedAt": "2026-11-03T18:09:03.192Z",
   "workspaceExecution": {
     "status": "passed",
     "workspaceFileDataLimitBytes": 536870912,
@@ -522,5 +522,66 @@
       }
     ],
     "scope": "Historical bundled macOS CLI/OCR validation before the universal npm release"
+  },
+  "releaseValidation": {
+    "artifact": "dist/dsh-npm/dsh-filens-0.1.0.tgz",
+    "dependencies": "Desktop, read-only and alpha.3 candidate checks used exact CLI/OCR 0.5.2 tarballs in isolated profiles. The final public npm install used ordinary platform dependencies without overrides; all test profile files were restored.",
+    "publicRegistryInstall": {
+      "status": "passed",
+      "source": "public npm registry",
+      "command": "dsh plugin --profile filens-test add dsh-filens@0.1.0",
+      "runtime": "0.2.1-rc.5",
+      "profile": "filens-test",
+      "platform": "darwin-arm64",
+      "versions": {
+        "dsh-filens": "0.1.0",
+        "filens-cli": "0.5.2",
+        "filens-cli-darwin-arm64": "0.5.2",
+        "filens-ocr-darwin-arm64": "0.5.2"
+      },
+      "installedHashes": {
+        "cli": "6a14785dbb60182a6e571a08ee809a1dbdd778495b625f90023811fb4081c6a0",
+        "ocr": "09522e3641ed3ef4c1283b65c018aaf3d7d1a9cbdc777cb5771c9e5ce8a66774",
+        "preview": "9a0b7f9c06e7052495142569c8dba28c453ecab7006eee982c1df5570d8f9982"
+      },
+      "comparedAgainst": "Exact published npm tarball contents",
+      "dependencyOverrides": false,
+      "packageManager": "pnpm 11.28.5",
+      "releaseAgePolicy": "Default pnpm add automatically added exact requested versions to minimumReleaseAgeExclude; no manual bypass used",
+      "checks": [
+        "bundle installation mounts both Host entries",
+        "Preview client participates in the real DSH module graph",
+        "real webServer serves the iframe runtime",
+        "filens_capacity through the installed DSH tool pipeline (workspace-write)",
+        "filens_read through the installed DSH tool pipeline (workspace-write)",
+        "filens_read through the installed DSH tool pipeline (workspace-write)",
+        "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
+        "filens_search through the installed DSH tool pipeline (workspace-write)",
+        "filens_convert writes a new XLSX through the installed DSH tool pipeline",
+        "command parameters explicitly select disk workspace through the installed DSH pipeline",
+        "disable Tools independently while Preview stays active",
+        "disable Preview removes its route/client while Tools stays active",
+        "both entries re-enable without duplicate registrations"
+      ],
+      "observedAt": "2026-11-03T18:08:11.914Z",
+      "cleanup": {
+        "status": "passed",
+        "profileFilesRestored": true,
+        "checks": [
+          "fresh boot after package removal has no FiLens tools, client or resource route"
+        ]
+      }
+    },
+    "workspaceWrite": [
+      "0.2.1-rc.5",
+      "0.2.2-alpha.3"
+    ],
+    "readOnly": [
+      "0.2.1-rc.5",
+      "0.2.2-alpha.3"
+    ],
+    "desktopSamples": 4,
+    "installedBinaryAndPreviewHashesVerified": true,
+    "publicationReport": "docs/dsh-plugin-publication.json"
   }
 }

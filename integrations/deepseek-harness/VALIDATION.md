@@ -1,6 +1,6 @@
 # DSH integration validation
 
-Date: **2026-11-04**. Release candidate validation for `dsh-filens@0.1.0`, CLI **0.5.2** and preview **0.3.2**. Publication status and exact registry hashes are recorded in the repository publication reports. No community post, model prompt or DSH account was used.
+Date: **2026-11-04**. Release validation for `dsh-filens@0.1.0`, CLI **0.5.2** and preview **0.3.2**. All release npm packages are publicly available with verified integrity. Publication status and exact registry hashes are recorded in the repository publication reports. No community post, model prompt or DSH account was used.
 
 ## Environments
 
@@ -12,6 +12,8 @@ Date: **2026-11-04**. Release candidate validation for `dsh-filens@0.1.0`, CLI *
 | Chromium, Playwright **1.59.1**, React **18.3.1** | Compiled adapter, iframe, shared-source preview runtime (version **0.3.2**), file switching and cleanup tested. |
 
 Release artifact: universal `dsh-filens@0.1.0`, depending on `filens-cli@0.5.2` and its matching byte-input RapidOCR platform libraries/models. Preview is built from the shared frontend workspace at version `0.3.2`. The plugin ships no duplicate CLI binary; npm selects its platform dependencies. The earlier bundled macOS test artifact remains historical evidence in `docs/dsh-plugin-validation.json`. The client registers 397 extensions from the shared FiLens manifest. This count is **not** 397 independently validated formats.
+
+The public package was installed with `dsh plugin --profile filens-test add dsh-filens@0.1.0` in the installed rc.5 runtime's isolated Web profile, without dependency overrides. All 13 integration checks passed, including the five tools, OCR, conversion, preview routing and independent lifecycle. Installed CLI/OCR/preview bytes match the exact published tarballs. pnpm 11.28.5 automatically recorded exact new versions in `minimumReleaseAgeExclude` during the ordinary add operation; no manual policy bypass was used.
 
 ## Checks
 

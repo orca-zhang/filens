@@ -92,9 +92,14 @@ if(!dry){
  const errors=results.filter(r=>r.status==='rejected');
  if(errors.length)throw new AggregateError(errors.map(r=>r.reason),'Platform packages are not publicly available; entry packages were not published');
 }
-for(const pkg of release.packages.filter(p=>entryNames.includes(p.name))){
- await publish(pkg);
- if(!dry)await verifyPublic(pkg);
+// Both entry packages depend only on the verified components. Submit each
+// before waiting, so npm processing one entry does not delay the other upload.
+const entries=release.packages.filter(p=>entryNames.includes(p.name));
+for(const pkg of entries)await publish(pkg);
+if(!dry){
+ const results=await Promise.allSettled(entries.map(verifyPublic));
+ const errors=results.filter(r=>r.status==='rejected');
+ if(errors.length)throw new AggregateError(errors.map(r=>r.reason),'Entry packages are not publicly available; rerun to resume verification');
 }
 async function publish(pkg){
  if(existing.has(pkg.name)){console.log(`Verified existing ${pkg.name}@${versionOf(pkg)}`);return;}

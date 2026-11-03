@@ -1,12 +1,16 @@
 {
   "name": "filens-preview",
-  "version": "0.3.1",
-  "registry": "https://registry.npmjs.org/",
-  "observedAt": "2026-11-03T13:59:29.130Z",
+  "version": "0.3.2",
+  "file": "filens-preview-0.3.2.tgz",
+  "bytes": 7488058,
+  "unpackedBytes": 21393868,
+  "sha256": "0fa70506bc2485c23147ac688f894f612bab56438abf7ea3fa40c0abb9896092",
+  "integrity": "sha512-yPt0xJFb3OHhEgJLtmPWgKNUbp1kEIgY3whcHRl0+AeNfm2Fnk3KYHPmnPIdRTebAOSB2FihbZ2RA8XLXFTwXw==",
+  "registryHttpStatus": 200,
   "status": "publicly-available-integrity-verified",
-  "sha256": "83ab0c5abb1bfbdebb86fcd3aa2217517bd8c1c93ad86d0644f923acb435deee",
-  "bytes": 7486577,
-  "unpackedBytes": 21387817,
-  "publicRegistryStatus": 200,
-  "integrity": "sha512-qI+Mflo3N/EZb9TIWk6njQ84Jo/Lfw75Kcv2u01TDUDP23DEbw0GHekDtRpzZ8gX+H44lmyjh/beQpz8JHZFgw=="
+  "tarball": "https://registry.npmjs.org/filens-preview/-/filens-preview-0.3.2.tgz",
+  "license": "MIT",
+  "registry": "https://registry.npmjs.org/",
+  "observedAt": "2026-11-03T18:07:10.990Z",
+  "publicRegistryStatus": 200
 }

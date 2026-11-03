@@ -1,11 +1,10 @@
 {
   "registry": "https://registry.npmjs.org/",
-  "observedAt": "2026-11-03T15:54:46.094Z",
-  "sourceCommit": "58d71ac45136e29a69697f54989335aa8d460c5d",
+  "observedAt": "2026-11-03T18:07:10.990Z",
   "count": 18,
   "acceptedCount": 18,
-  "publicCount": 17,
-  "status": "upload-accepted-awaiting-public-registry",
+  "publicCount": 18,
+  "status": "published-and-verified",
   "nameChanges": [
     {
       "from": "@filens/ebook",
@@ -23,6 +22,18 @@
       "sha256": "b11944bd3d833e5b8876432753cf0b6edb4bfd94000f6fff4a5cecffd42fc9f3",
       "integrity": "sha512-AUwANKHLPV1/nj8MQdq+hL6nZAS3C6lpdX+PxpdQAanFmwLs64yFHZAts2UN3ifBVQBq/4wL1lLjtvKCL1PnrA==",
       "acceptedAt": "2026-11-03T15:31:31.988Z",
+      "registryHttpStatus": 200,
+      "status": "publicly-available-integrity-verified"
+    },
+    {
+      "name": "@filens/books",
+      "version": "0.1.0",
+      "file": "filens-books-0.1.0.tgz",
+      "bytes": 9962,
+      "unpackedBytes": 29401,
+      "sha256": "12273b359412e7587419ccc6d5400a240003852be60da56901168d2d2bd0cc56",
+      "integrity": "sha512-qfhjeR58z9/o0867hGT5PPhCgBaGRyfITv+ovlRI7CDXf+kr7viJln+pI4UKQvrQ4QdEB/jzGovD7Fy14wPyYw==",
+      "acceptedAt": "2026-11-03T15:36:11.343Z",
       "registryHttpStatus": 200,
       "status": "publicly-available-integrity-verified"
     },
@@ -47,8 +58,8 @@
       "sha256": "77cde71ff1f88456846ada245cadcd4cbe0820500475208f427960efbe04c287",
       "integrity": "sha512-ZYbN69SEM/wDyhiO6CG7haHZTMSn1PYGNY7OA8/CP1DrsWSIJzb2rkLc0pFwFLB0XYc1dwYHMYyoei+h/jJjDw==",
       "acceptedAt": "2026-11-03T15:31:34.745Z",
-      "registryHttpStatus": 404,
-      "status": "upload-accepted-awaiting-public-registry"
+      "registryHttpStatus": 200,
+      "status": "publicly-available-integrity-verified"
     },
     {
       "name": "@filens/core",
@@ -99,18 +110,6 @@
       "status": "publicly-available-integrity-verified"
     },
     {
-      "name": "@filens/books",
-      "version": "0.1.0",
-      "file": "filens-books-0.1.0.tgz",
-      "bytes": 9962,
-      "unpackedBytes": 29401,
-      "sha256": "12273b359412e7587419ccc6d5400a240003852be60da56901168d2d2bd0cc56",
-      "integrity": "sha512-qfhjeR58z9/o0867hGT5PPhCgBaGRyfITv+ovlRI7CDXf+kr7viJln+pI4UKQvrQ4QdEB/jzGovD7Fy14wPyYw==",
-      "acceptedAt": "2026-11-03T15:36:11.343Z",
-      "registryHttpStatus": 200,
-      "status": "publicly-available-integrity-verified"
-    },
-    {
       "name": "@filens/iwork",
       "version": "0.1.0",
       "file": "filens-iwork-0.1.0.tgz",
@@ -148,15 +147,16 @@
     },
     {
       "name": "@filens/model3d",
-      "version": "0.1.0",
-      "file": "filens-model3d-0.1.0.tgz",
-      "bytes": 49013,
-      "unpackedBytes": 206431,
-      "sha256": "470865b1d4d141b09d6bc59c57f22f4fe1b2dcf00c8ed30c8f539f16fab539e7",
-      "integrity": "sha512-tlVHW7frPE6zf08TdowXBjJTNQPgRwxl23prGWOhJrMVQd+7X4a43X/be43/6LSEv29KiLTuYnvGJmzoRg2nhQ==",
-      "acceptedAt": "2026-11-03T15:36:13.729Z",
+      "version": "0.1.1",
+      "file": "filens-model3d-0.1.1.tgz",
+      "bytes": 49171,
+      "unpackedBytes": 207078,
+      "sha256": "515b4952fa50073721e7128f4f47fffb153748456236440e0548c95a880df449",
+      "integrity": "sha512-mtTRk6o0/YOJchypV7mtFGGKnFR8YkT/Tn6Ozhm/5axe10Dnn9rIqPPZmTytT/ZAHDBKWxSUP4bmBnK3Y24/Rg==",
       "registryHttpStatus": 200,
-      "status": "publicly-available-integrity-verified"
+      "status": "publicly-available-integrity-verified",
+      "tarball": "https://registry.npmjs.org/@filens/model3d/-/model3d-0.1.1.tgz",
+      "license": "MIT"
     },
     {
       "name": "@filens/office",
@@ -230,5 +230,6 @@
       "registryHttpStatus": 200,
       "status": "publicly-available-integrity-verified"
     }
-  ]
+  ],
+  "sourceTag": "v0.6.2"
 }
