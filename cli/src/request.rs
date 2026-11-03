@@ -10,6 +10,7 @@ pub const FORMATS: [&str; 8] = [
 #[derive(Clone, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct Request {
+    pub workspace: crate::workspace::Mode,
     pub intent: String,
     pub input: String,
     pub operation: String,
@@ -129,7 +130,7 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
             "--force" => o.request.force = true,
             "--include-hidden" => o.request.include_hidden = true,
             "--no-cache" => o.request.cache = Some(false),
-            "--input" | "--format" | "--wasm" | "--max-bytes" | "--timeout" | "--output" | "-o"
+            "--workspace" | "--input" | "--format" | "--wasm" | "--max-bytes" | "--timeout" | "--output" | "-o"
             | "--source" | "--from" | "--target" | "--to" | "--password" | "--locale"
             | "--query" | "--summary-chars" | "--summary-ratio" | "--search-mode"
             | "--max-results" | "--max-files" | "--max-depth" | "--similarity-mode" | "--threshold" => {
@@ -150,6 +151,7 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
                         o.request.format = value.into();
                     }
                     "--wasm" => o.wasm = value.into(),
+                    "--workspace" => o.request.workspace = value.parse()?,
                     "--max-bytes" => o.request.max_bytes = value.parse()?,
                     "--timeout" => o.timeout = duration(value)?,
                     "--output" | "-o" => o.request.output = value.into(),
@@ -713,6 +715,17 @@ mod tests {
             stdin.as_bytes(),
         )?;
         Ok(o)
+    }
+    #[test]
+    fn workspace_modes_are_explicit_and_validated_for_flags_and_json() {
+        use crate::workspace::Mode;
+        assert_eq!(options(&["capacity"], "").unwrap().request.workspace, Mode::Memory);
+        assert_eq!(options(&["capacity", "--workspace", "disk"], "").unwrap().request.workspace, Mode::Disk);
+        assert_eq!(options(&["capacity", "--workspace=memory"], "").unwrap().request.workspace, Mode::Memory);
+        assert_eq!(options(&["-"], r#"{"operation":"capabilities","workspace":"disk"}"#).unwrap().request.workspace, Mode::Disk);
+        assert!(options(&["capacity", "--workspace", "auto"], "").is_err());
+        assert!(options(&["capacity", "--workspace"], "").is_err());
+        assert!(options(&["-"], r#"{"operation":"capabilities","workspace":"auto"}"#).is_err());
     }
     #[test]
     fn requests_and_errors() {

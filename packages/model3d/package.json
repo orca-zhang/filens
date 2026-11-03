@@ -1,6 +1,6 @@
 {
   "name": "@filens/model3d",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser-native 3D model preview driver for the @filens multi-format preview runtime.",
   "type": "module",
   "main": "./dist/index.js",

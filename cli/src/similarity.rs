@@ -1,14 +1,14 @@
 //! Host plumbing only: directory discovery, metadata and shared WASM invocation.
+use crate::workspace::Workspace;
 use crate::{failure, request::Options, runtime::Runtime, walk};
 use anyhow::Result;
 use serde_json::{Value, json};
-use std::path::Path;
 
 pub fn execute(
     o: &Options,
     mut response: Value,
     engine: &mut Runtime,
-    work: &Path,
+    work: &Workspace,
 ) -> Result<(Value, i32)> {
     let root = std::fs::canonicalize(&o.request.input)?;
     let extensions = if o.request.similarity_mode == "duplicates" {
@@ -22,7 +22,7 @@ pub fn execute(
     let config = json!({"extensions":extensions,"exclude":[".git","node_modules","target","dist"],
         "maxFiles":max_files,"maxDepth":o.request.max_depth.unwrap_or(32),
         "maxEntries":(max_files*100).min(1_000_000),"includeHidden":o.request.include_hidden});
-    let mut scan = walk::scan(&root, work, &config)?;
+    let mut scan = walk::scan(&root, &config)?;
     let mut files = vec![];
     for entry in &scan.entries {
         let mut source = json!({"path":entry.path,"bytes":entry.bytes});
@@ -47,17 +47,13 @@ pub fn execute(
         }
         files.push(source);
     }
-    std::fs::write(
-        work.join("similarity.json"),
+    work.write("similarity.json",
         serde_json::to_vec(&json!({
             "mode":o.request.similarity_mode,"threshold":o.request.threshold.unwrap_or(8),
             "maxResults":o.request.max_results.unwrap_or(100),"format":o.request.format,"files":files
         }))?,
     )?;
-    let result_path = work.join("result.json");
-    if result_path.exists() {
-        std::fs::remove_file(result_path)?;
-    }
+    work.remove("result.json")?;
     let wire = engine.run_with_directory(
         &[
             "converter-text",

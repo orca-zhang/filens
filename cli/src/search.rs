@@ -1,4 +1,5 @@
 //! Search orchestration only; no persistent index, cache or source hashing. Extraction, chunks, ranking and exports use WASM.
+use crate::workspace::Workspace;
 use crate::{request::Options, runtime::Runtime, walk};
 use anyhow::{Result, ensure};
 use serde_json::{Value, json};
@@ -27,7 +28,7 @@ impl Extracted {
 
 fn batches(
     engine: &mut Runtime,
-    work: &Path,
+    work: &Workspace,
     root: &Path,
     entries: &[walk::Entry],
     ids: &[usize],
@@ -66,13 +67,11 @@ fn batches(
         if inputs.is_empty() {
             continue;
         }
-        std::fs::write(
-            work.join("extract-batch.json"),
+        work.write(
+            "extract-batch.json",
             serde_json::to_vec(&json!({"files":inputs,"options":options}))?,
         )?;
-        if work.join("result.json").exists() {
-            std::fs::remove_file(work.join("result.json"))?;
-        }
+        work.remove("result.json")?;
         result.batches += 1;
         let wire = engine.run_with_directory(
             &[
@@ -128,12 +127,16 @@ pub fn execute(
     o: &Options,
     mut response: Value,
     engine: &mut Runtime,
-    work: &Path,
+    work: &Workspace,
     capacity: &Value,
 ) -> Result<(Value, i32)> {
     let input = Path::new(response["source"]["path"].as_str().unwrap());
     let single_archive = input.is_file();
-    let root = if single_archive { input.parent().unwrap() } else { input };
+    let root = if single_archive {
+        input.parent().unwrap()
+    } else {
+        input
+    };
     let extensions: Vec<_> = if o.request.search_mode == "files" {
         vec![json!("*")]
     } else {
@@ -150,10 +153,18 @@ pub fn execute(
         "maxDepth":o.request.max_depth.unwrap_or(32),"includeHidden":o.request.include_hidden,"exclude":[".git","node_modules","target","dist"]});
     let started = std::time::Instant::now();
     let mut scan = if single_archive {
-        walk::Scan { backend:"single-archive".into(), visited:1,
-            entries:vec![walk::Entry {path:input.file_name().unwrap().to_string_lossy().into_owned(),bytes:input.metadata()?.len()}],
-            ..Default::default() }
-    } else { walk::scan(root, work, &config)? };
+        walk::Scan {
+            backend: "single-archive".into(),
+            visited: 1,
+            entries: vec![walk::Entry {
+                path: input.file_name().unwrap().to_string_lossy().into_owned(),
+                bytes: input.metadata()?.len(),
+            }],
+            ..Default::default()
+        }
+    } else {
+        walk::scan(root, &config)?
+    };
     let discovery_ms = started.elapsed().as_millis();
     let mut files = Vec::new();
     let mut text_bytes = 0;
@@ -196,7 +207,9 @@ pub fn execute(
             if source_bytes <= 8 << 20 {
                 1
             } else {
-                std::thread::available_parallelism().map_or(1, usize::from).min(4)
+                std::thread::available_parallelism()
+                    .map_or(1, usize::from)
+                    .min(4)
             }
         });
         if entries.len() < 32 {
@@ -241,10 +254,8 @@ pub fn execute(
             let mut workers = Vec::new();
             if plain_workers > 0 {
                 for ids in plain_ids.chunks(plain_ids.len().div_ceil(plain_workers)) {
-                    let directory = tempfile::Builder::new()
-                        .prefix("search-worker-")
-                        .tempdir_in(work)?;
-                    let runtime = engine.fork_without_ocr(directory.path())?;
+                    let directory = work.fork()?;
+                    let runtime = engine.fork_without_ocr(&directory)?;
                     workers.push((runtime, directory, ids));
                 }
             }
@@ -258,7 +269,7 @@ pub fn execute(
                         scope.spawn(move || {
                             batches(
                                 &mut runtime,
-                                directory.path(),
+                                &directory,
                                 root,
                                 entries,
                                 ids,
@@ -295,16 +306,37 @@ pub fn execute(
         }
     }
     if o.request.search_mode == "files" {
-        let ids: Vec<_> = entries.iter().enumerate().filter(|(_, entry)| {
-            crate::text_catalog::is_archive(&Path::new(&entry.path).extension().and_then(|s|s.to_str()).unwrap_or("").to_lowercase())
-        }).map(|(id, _)| id).collect();
+        let ids: Vec<_> = entries
+            .iter()
+            .enumerate()
+            .filter(|(_, entry)| {
+                crate::text_catalog::is_archive(
+                    &Path::new(&entry.path)
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("")
+                        .to_lowercase(),
+                )
+            })
+            .map(|(id, _)| id)
+            .collect();
         if !ids.is_empty() {
-            extracted = batches(engine, work, root, &entries, &ids, &HashSet::new(), &json!({
-                "archiveNamesOnly":true,"maxArchiveFiles":max_files,"includeHidden":o.request.include_hidden,
-                "maxDepth":o.request.max_depth.unwrap_or(32)
-            }))?;
+            extracted = batches(
+                engine,
+                work,
+                root,
+                &entries,
+                &ids,
+                &HashSet::new(),
+                &json!({
+                    "archiveNamesOnly":true,"maxArchiveFiles":max_files,"includeHidden":o.request.include_hidden,
+                    "maxDepth":o.request.max_depth.unwrap_or(32)
+                }),
+            )?;
             scan.truncated |= extracted.truncated;
-            for (id, error) in &extracted.errors { scan.issue(entries[*id].path.clone(), error.clone()); }
+            for (id, error) in &extracted.errors {
+                scan.issue(entries[*id].path.clone(), error.clone());
+            }
         }
     }
     let extraction_batches = extracted.batches;
@@ -315,7 +347,10 @@ pub fn execute(
     'sources: for (id, entry) in entries.iter().enumerate() {
         let path = root.join(&entry.path);
         if o.request.search_mode == "files" {
-            if files.len() >= max_files { scan.truncated = true; break; }
+            if files.len() >= max_files {
+                scan.truncated = true;
+                break;
+            }
             files.push(json!({"path":path,"relativePath":entry.path,"sha256":"","text":"","layout":null,"complete":true}));
         }
         let Some(outcome) = extracted.content.remove(&id) else {
@@ -330,7 +365,14 @@ pub fn execute(
             extraction_error_count += archive["errorCount"].as_u64().unwrap_or(0) as usize;
             for error in archive["errors"].as_array().into_iter().flatten() {
                 if extraction_errors.len() < 64 {
-                    let suffix = error["members"].as_array().into_iter().flatten().filter_map(Value::as_str).map(crate::text_catalog::escape_archive_path).collect::<Vec<_>>().join("!/");
+                    let suffix = error["members"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .filter_map(Value::as_str)
+                        .map(crate::text_catalog::escape_archive_path)
+                        .collect::<Vec<_>>()
+                        .join("!/");
                     extraction_errors.push(json!({"path":if suffix.is_empty(){path.to_string_lossy().into_owned()}else{format!("{}!/{suffix}",crate::text_catalog::escape_archive_path(&path.to_string_lossy()))},"error":{"code":error["code"],"message":error["message"]}}));
                 }
             }
@@ -340,32 +382,42 @@ pub fn execute(
             members.as_slice()
         };
         for item in outcomes {
-        if files.len() >= max_files { scan.truncated = true; break 'sources; }
-        let content = &item["content"];
-        let virtual_path = item["memberPath"].as_str().map(|s| format!("{}!/{s}",crate::text_catalog::escape_archive_path(&path.to_string_lossy())));
-        let source_path = virtual_path.clone().unwrap_or_else(||path.to_string_lossy().into_owned());
-        if content["complete"] != true || content["truncated"] == true {
-            extraction_error_count += 1;
-            if extraction_errors.len() < 64 {
-                extraction_errors.push(json!({"path":source_path,"error":{"code":content["errorCode"],"message":content["errorMessage"]}}));
+            if files.len() >= max_files {
+                scan.truncated = true;
+                break 'sources;
             }
-        }
-        let text = content["text"].as_str().unwrap_or("");
-        if text_bytes + text.len() > 32 << 20 {
-            scan.truncated = true;
-            break 'sources;
-        }
-        text_bytes += text.len();
-        let source_complete = content["complete"] == true && content["truncated"] != true;
-        if !source_complete {
-            incomplete_sources += 1;
-        }
-        let mut source = json!({"path":source_path,"relativePath":virtual_path.as_ref().map_or_else(||entry.path.clone(),|_|format!("{}!/{}",entry.path,item["members"].as_array().unwrap().iter().filter_map(Value::as_str).collect::<Vec<_>>().join("!/"))),"sha256":"","text":text,"layout":content["layout"],"complete":source_complete});
-        if virtual_path.is_some() {
-            archive_files += 1;
-            source["archive"] = json!({"path":path,"members":item["members"]});
-        }
-        files.push(source);
+            let content = &item["content"];
+            let virtual_path = item["memberPath"].as_str().map(|s| {
+                format!(
+                    "{}!/{s}",
+                    crate::text_catalog::escape_archive_path(&path.to_string_lossy())
+                )
+            });
+            let source_path = virtual_path
+                .clone()
+                .unwrap_or_else(|| path.to_string_lossy().into_owned());
+            if content["complete"] != true || content["truncated"] == true {
+                extraction_error_count += 1;
+                if extraction_errors.len() < 64 {
+                    extraction_errors.push(json!({"path":source_path,"error":{"code":content["errorCode"],"message":content["errorMessage"]}}));
+                }
+            }
+            let text = content["text"].as_str().unwrap_or("");
+            if text_bytes + text.len() > 32 << 20 {
+                scan.truncated = true;
+                break 'sources;
+            }
+            text_bytes += text.len();
+            let source_complete = content["complete"] == true && content["truncated"] != true;
+            if !source_complete {
+                incomplete_sources += 1;
+            }
+            let mut source = json!({"path":source_path,"relativePath":virtual_path.as_ref().map_or_else(||entry.path.clone(),|_|format!("{}!/{}",entry.path,item["members"].as_array().unwrap().iter().filter_map(Value::as_str).collect::<Vec<_>>().join("!/"))),"sha256":"","text":text,"layout":content["layout"],"complete":source_complete});
+            if virtual_path.is_some() {
+                archive_files += 1;
+                source["archive"] = json!({"path":path,"members":item["members"]});
+            }
+            files.push(source);
         }
     }
     let corpus = json!({"query":o.request.query,"mode":o.request.search_mode,"limit":o.request.max_results.unwrap_or(10),"format":o.request.format,"files":files});
@@ -378,13 +430,8 @@ pub fn execute(
             }
         }
     } else {
-        std::fs::write(
-            work.join("search-corpus.json"),
-            serde_json::to_vec(&corpus)?,
-        )?;
-        if work.join("result.json").exists() {
-            std::fs::remove_file(work.join("result.json"))?;
-        }
+        work.write("search-corpus.json", serde_json::to_vec(&corpus)?)?;
+        work.remove("result.json")?;
         let wire = engine.run(
             &[
                 "converter-text",

@@ -1,3 +1,5 @@
+mod workspace;
+use crate::workspace::Workspace;
 mod convert;
 #[path = "../../wasm/converter-core-rust/src/text/native_search.rs"]
 mod native_search;
@@ -13,11 +15,11 @@ mod similarity;
 mod text_catalog;
 mod walk;
 
-use anyhow::{Result, ensure};
+use anyhow::Result;
 use request::Options;
 use serde_json::{Value, json};
 use std::{
-    io::{IsTerminal, Read, Write},
+    io::{IsTerminal, Write},
     path::{Path, PathBuf},
     sync::{
         Arc,
@@ -61,7 +63,8 @@ fn run() -> Result<i32> {
     if args.first().is_some_and(|arg| arg == "preview") {
         return match preview::run(&args[1..]) {
             Err(error) if args.iter().any(|arg| arg == "--json") => {
-                let mut value = json!({"version":"filens-agent-v1","operation":"preview","ok":false});
+                let mut value =
+                    json!({"version":"filens-agent-v1","operation":"preview","ok":false});
                 failure(&mut value, "preview_failed", error);
                 Ok(finish("json", &value, 1))
             }
@@ -90,10 +93,25 @@ fn run() -> Result<i32> {
     let mut value = response(&options);
     if options.request.operation != "capabilities" {
         let parts: Vec<_> = options.request.input.split("!/").collect();
-        let archive_member = parts.len() > 1 && !matches!(options.request.operation.as_str(), "search" | "similar" | "convert")
-            && std::fs::metadata(text_catalog::unescape_archive_path(parts[0])).is_ok_and(|m|m.is_file())
-            && text_catalog::is_archive(&Path::new(parts[0]).extension().and_then(|s|s.to_str()).unwrap_or("").to_lowercase());
-        let physical_input = if archive_member { text_catalog::unescape_archive_path(parts[0]) } else { options.request.input.clone() };
+        let archive_member = parts.len() > 1
+            && !matches!(
+                options.request.operation.as_str(),
+                "search" | "similar" | "convert"
+            )
+            && std::fs::metadata(text_catalog::unescape_archive_path(parts[0]))
+                .is_ok_and(|m| m.is_file())
+            && text_catalog::is_archive(
+                &Path::new(parts[0])
+                    .extension()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("")
+                    .to_lowercase(),
+            );
+        let physical_input = if archive_member {
+            text_catalog::unescape_archive_path(parts[0])
+        } else {
+            options.request.input.clone()
+        };
         let metadata = match std::fs::metadata(&physical_input) {
             Ok(m) => m,
             Err(e) => {
@@ -102,8 +120,16 @@ fn run() -> Result<i32> {
             }
         };
         if matches!(options.request.operation.as_str(), "search" | "similar") {
-            let archive = options.request.operation == "search" && metadata.is_file() && metadata.len() <= 256 << 20
-                && text_catalog::is_archive(&Path::new(&options.request.input).extension().and_then(|s|s.to_str()).unwrap_or("").to_lowercase());
+            let archive = options.request.operation == "search"
+                && metadata.is_file()
+                && metadata.len() <= 256 << 20
+                && text_catalog::is_archive(
+                    &Path::new(&options.request.input)
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("")
+                        .to_lowercase(),
+                );
             if !metadata.is_dir() && !archive {
                 failure(
                     &mut value,
@@ -112,8 +138,7 @@ fn run() -> Result<i32> {
                 );
                 return Ok(finish(&options.request.format, &value, 2));
             }
-            value["source"] =
-                json!({"path":std::fs::canonicalize(&options.request.input)?,"kind":if archive {"archive"}else{"directory"}});
+            value["source"] = json!({"path":std::fs::canonicalize(&options.request.input)?,"kind":if archive {"archive"}else{"directory"}});
         } else if !metadata.is_file() || metadata.len() > 256 << 20 {
             failure(
                 &mut value,
@@ -135,14 +160,31 @@ fn run() -> Result<i32> {
             value["source"] = json!({"path":path,"format":format,"bytes":metadata.len()});
             if archive_member {
                 let outer = std::fs::canonicalize(&physical_input)?;
-                value["source"]["path"] = json!(format!("{}!/{}",text_catalog::escape_archive_path(&outer.to_string_lossy()),parts[1..].join("!/")));
+                value["source"]["path"] = json!(format!(
+                    "{}!/{}",
+                    text_catalog::escape_archive_path(&outer.to_string_lossy()),
+                    parts[1..].join("!/")
+                ));
                 value["source"]["archive"] = json!({"path":outer,"members":parts[1..].iter().map(|p|text_catalog::unescape_archive_path(p)).collect::<Vec<_>>()});
-                value["source"]["archiveFormat"] = json!(Path::new(&physical_input).extension().unwrap().to_string_lossy().to_lowercase());
+                value["source"]["archiveFormat"] = json!(
+                    Path::new(&physical_input)
+                        .extension()
+                        .unwrap()
+                        .to_string_lossy()
+                        .to_lowercase()
+                );
             }
         }
     }
-    let work = tempfile::Builder::new().prefix("filens-text-").tempdir()?;
-    let work_path = work.path().to_owned();
+    let work = match Workspace::with_mode(options.request.workspace) {
+        Ok(work) => work,
+        Err(error) => {
+            failure(&mut value, "io_error", error);
+            return Ok(finish(&options.request.format, &value, 1));
+        }
+    };
+    let _workspace_cleanup = work.cleanup_guard();
+    let work_path = work.clone();
     let bundle = std::env::current_exe()?.parent().unwrap().to_owned();
     let canceled = Arc::new(AtomicBool::new(false));
     let pid = Arc::new(AtomicU32::new(0));
@@ -191,7 +233,7 @@ fn run() -> Result<i32> {
                 if code == 0
                     && let Some((output, target, force)) = &conversion
                     && let Err(error) = convert::commit(
-                        work.path(),
+                        &work,
                         target,
                         &std::path::absolute(output)?,
                         *force,
@@ -227,7 +269,7 @@ fn execute(
     o: &Options,
     mut response: Value,
     bundle: &Path,
-    work: &Path,
+    work: &Workspace,
     pid: Arc<AtomicU32>,
 ) -> Result<(Value, i32)> {
     let profile = std::env::var("FILENS_PROFILE")
@@ -313,6 +355,7 @@ fn execute(
     if o.request.operation == "capabilities" {
         let mut metadata: Value = serde_json::from_str(include_str!("../capacity.json"))?;
         metadata["profile"] = json!(profile);
+        metadata["execution"] = json!({"workspace":work.mode(),"workspaceMaxBytes":if work.mode() == workspace::Mode::Memory { Some(workspace::LIMIT) } else {None},"diskSpill":false,"conversionOutput":"atomic-file"});
         metadata["formats"] = capacity;
         metadata["ocr"] = engine.ocr_capacity();
         metadata["preview"] = preview::capacity(bundle);
@@ -337,13 +380,17 @@ fn extract_content(
     o: &Options,
     mut response: Value,
     engine: &mut runtime::Runtime,
-    work: &Path,
+    work: &Workspace,
     capacity: &Value,
     prepared: bool,
 ) -> Result<(Value, i32)> {
     let source = response["source"]["format"].as_str().unwrap().to_owned();
     let archive = response["source"]["archive"].is_object();
-    let input_source = if archive { response["source"]["archiveFormat"].as_str().unwrap() } else { &source };
+    let input_source = if archive {
+        response["source"]["archiveFormat"].as_str().unwrap()
+    } else {
+        &source
+    };
     if !capacity
         .as_array()
         .unwrap()
@@ -359,20 +406,22 @@ fn extract_content(
     }
     // Bound the copy as well as the initial stat: input can change while read.
     if !prepared {
-        let mut input = std::fs::File::open(if archive {response["source"]["archive"]["path"].as_str().unwrap()} else {response["source"]["path"].as_str().unwrap()})?
-            .take((256 << 20) + 1);
-        let mut output = std::fs::File::create(work.join(format!("input.{input_source}")))?;
-        let copied = std::io::copy(&mut input, &mut output)?;
-        ensure!(
-            copied <= 256 << 20,
-            "input exceeded size limit while copying"
-        );
+        let source_path = if archive {
+            response["source"]["archive"]["path"].as_str().unwrap()
+        } else {
+            response["source"]["path"].as_str().unwrap()
+        };
+        work.load(
+            format!("input.{input_source}"),
+            Path::new(source_path),
+            256 << 20,
+        )?;
     }
     let summary = (o.request.operation == "summarize").then(|| json!({
         "query":o.request.query,"maxChars":o.request.summary_chars.unwrap_or(2000),"ratio":o.request.summary_ratio.unwrap_or(0.3)
     }));
     let options = json!({"maxBytes":if o.request.max_bytes == 0 { 8 << 20 } else { o.request.max_bytes },"maxOCRPages":200,"includeStructure":o.request.format != "text" || o.request.operation == "understand" || o.request.layout,"includeLayout":o.request.layout,"outputFormat":o.request.format,"summary":summary,"archiveMembers":response["source"]["archive"]["members"],"archiveName":response["source"]["archive"]["path"].as_str().and_then(|p|Path::new(p).file_name()).and_then(|p|p.to_str())});
-    std::fs::write(work.join("options.json"), serde_json::to_vec(&options)?)?;
+    work.write("options.json", serde_json::to_vec(&options)?)?;
     let args = [
         "converter-text",
         "--operation",
@@ -392,9 +441,7 @@ fn extract_content(
     ]
     .map(String::from);
     // A failed invocation must never reuse the capabilities result.
-    if work.join("result.json").exists() {
-        std::fs::remove_file(work.join("result.json"))?;
-    }
+    work.remove("result.json")?;
     let wire = engine.run(&args)?;
     let Some(content) = wire.get("payload").filter(|v| v.is_object()) else {
         failure(

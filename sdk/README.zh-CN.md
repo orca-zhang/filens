@@ -6,7 +6,7 @@
 前端运行时与 WASM，不上传文件，也不在 Swift / Java 内实现格式解析或转换。
 这是预览组件；目前不提供原生读取、OCR、搜索或独立转换结果 API。
 
-SDK 版本 **0.1.1**，共享预览运行时 **0.3.1**。Release 中的 SDK ZIP 已携带离线资源，
+SDK 版本 **0.1.2**，共享预览运行时 **0.3.2**。Release 中的 SDK ZIP 已携带离线资源，
 解压后可直接接入对应的 `sdk/ios` 或 `sdk/android` 模块。源码构建和打包方式见下文。
 [下载包与解压体积](../docs/mobile-sdk-sizes.json) · [运行时与 npm 包体积](../docs/preview-sizes.md)。
 
@@ -148,7 +148,7 @@ javac -d /tmp/filens-sdk-tests \
 java -cp /tmp/filens-sdk-tests app.filens.preview.ByteRangeTest
 ```
 
-2026-11-02 源码验证：Chromium / WebKit 共 22 项真实运行时与消息桥检查通过，覆盖
+2026-11-04 源码验证：Chromium / WebKit 共 22 项真实运行时与消息桥检查通过，覆盖
 文本、CSV、HTML、DOCX、PDF、Pages、EPUB、MP4、APK 图标、加密 RAR 与错误回调；
 macOS 上 3 项 Swift 测试通过。Swift 组件通过 iOS Simulator arm64 目标编译检查
 （iOS 26 SDK，最低目标 iOS 15），Android Java 组件通过 Android API 35 / AndroidX

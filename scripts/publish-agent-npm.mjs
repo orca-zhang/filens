@@ -8,9 +8,12 @@ import { supportedPlatforms, npmInvocation } from './agent-platforms.mjs';
 import { checkAgentReleaseLimits } from './agent-release-limits.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const modules=process.argv.includes('--modules');
-const directory=path.join(root,modules?'dist/workspace-npm':'dist/npm');
-const release=JSON.parse(await readFile(path.join(directory,'release.json'),'utf8'));
-if(!modules&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
+const dsh=process.argv.includes('--dsh');
+if(modules&&dsh)throw new Error('Choose --modules or --dsh');
+const directory=path.join(root,dsh?'dist/dsh-npm':modules?'dist/workspace-npm':'dist/npm');
+const metadata=JSON.parse(await readFile(path.join(directory,'release.json'),'utf8'));
+const release=dsh?{version:metadata.version,packages:[metadata]}:metadata;
+if(!modules&&!dsh&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
 const integrities=new Map();
 for(const pkg of release.packages){
  const bytes=await readFile(path.join(directory,pkg.file));
@@ -19,7 +22,9 @@ for(const pkg of release.packages){
  integrities.set(pkg.name,`sha512-${createHash('sha512').update(bytes).digest('base64')}`);
 }
 const dry=process.argv.includes('--dry-run');
-if(!modules)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
+const verifyAttempts=Number(process.env.FILENS_NPM_VERIFY_ATTEMPTS??30);
+if(!Number.isSafeInteger(verifyAttempts)||verifyAttempts<1||verifyAttempts>360)throw new Error('FILENS_NPM_VERIFY_ATTEMPTS must be an integer between 1 and 360');
+if(!modules&&!dsh)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
 const versionOf=pkg=>pkg.version??release.version;
 const keyOf=pkg=>`${pkg.name}@${versionOf(pkg)}`;
 const tagOf=pkg=>versionOf(pkg).includes('-')?'next':'latest';
@@ -95,7 +100,7 @@ async function publish(pkg){
  if(existing.has(pkg.name)){console.log(`Verified existing ${pkg.name}@${versionOf(pkg)}`);return;}
  if(accepted.has(keyOf(pkg))){console.log(`Previously accepted ${pkg.name}@${versionOf(pkg)}; awaiting public verification`);return;}
  console.log(`${dry?'Dry run':'Publishing'} ${pkg.name}@${versionOf(pkg)}`);
- await run(['publish',path.join(directory,pkg.file),'--access','public','--tag',tagOf(pkg),'--registry=https://registry.npmjs.org/',...(dry?['--dry-run']:[])]);
+ await run(['publish',path.join(directory,pkg.file),'--ignore-scripts','--access','public','--tag',tagOf(pkg),'--registry=https://registry.npmjs.org/',...(dry?['--dry-run']:[])]);
  if(!dry){
   // HTTP 202 is a successful npm upload, but the immutable version may still be
   // under review. Persist the receipt so a retry never submits it again.
@@ -107,7 +112,7 @@ async function publish(pkg){
 }
 async function verifyPublic(pkg){
  let lastStatus='not available';
- for(let attempt=0;attempt<30;attempt++){
+ for(let attempt=0;attempt<verifyAttempts;attempt++){
   let response;
   try{response=await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg.name)}/${versionOf(pkg)}`,{signal:AbortSignal.timeout(20000)});}
   catch(error){lastStatus=error.message;}
@@ -122,7 +127,7 @@ async function verifyPublic(pkg){
    lastStatus=`HTTP ${response.status}`;
    if(response.status!==404&&response.status!==429&&response.status<500)throw new Error(`Registry verification ${pkg.name}: ${lastStatus}`);
   }
-  if(attempt<29)await new Promise(resolve=>setTimeout(resolve,Math.min(10000,2000*(attempt+1))));
+  if(attempt<verifyAttempts-1)await new Promise(resolve=>setTimeout(resolve,Math.min(10000,2000*(attempt+1))));
  }
  throw new Error(`${pkg.name}@${versionOf(pkg)} is not publicly available after upload (${lastStatus}); npm may have staged it for review. Wait for the registry release rather than republishing.`);
 }

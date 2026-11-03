@@ -31,7 +31,7 @@ const commit = (await run('git', ['rev-parse', 'HEAD'], { cwd: source, capture: 
 const trackedChanges = (await run('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: source, capture: true })).trim().length > 0;
 await writeFile(path.join(assets, 'hdrw.json'), JSON.stringify({
   name: 'hdrw', license: 'proprietary', sourceCommit: commit, sourceHasChanges: trackedChanges,
-  abi: 'wasi-preview1', adapter: 'filens-directory-v1', bytes: bytes.length, gzipBytes: compressed.length,
+  abi: 'wasi-preview1', adapter: 'filens-directory-stdio-v1', transport: 'stdin-stdout', stdinMaxBytes: 1 << 20, stdoutMaxBytes: 16 << 20, bytes: bytes.length, gzipBytes: compressed.length,
   sha256: createHash('sha256').update(bytes).digest('hex'), gzipSHA256: createHash('sha256').update(compressed).digest('hex'),
   mode: 'OS-backed read-only directory enumeration; no raw devices or filesystem drivers exposed',
 }, null, 2) + '\n');

@@ -1,10 +1,11 @@
 //! WASI plumbing and capability dispatch only; no document parsers live here.
+use crate::workspace::Workspace;
 use crate::{ocr::Provider, pdf::Pdf};
 use anyhow::{Result, ensure};
 use serde_json::{Value, json};
 use std::{
     io::Read,
-    path::{Component, Path, PathBuf},
+    path::{Path, PathBuf},
 };
 use wasmi::{
     Caller, CompilationMode, Config, Engine, Instance, Linker, Module, Store, StoreLimits,
@@ -15,7 +16,7 @@ use wasmi_wasi::{WasiCtx, WasiCtxBuilder};
 pub struct State {
     pub wasi: WasiCtx,
     pub limits: StoreLimits,
-    pub work: PathBuf,
+    pub work: Workspace,
     pub ocr: Provider,
     pub pdf: Option<Pdf>,
     pub pdf_path: PathBuf,
@@ -49,24 +50,22 @@ pub fn read_wasm(path: &Path) -> Result<Vec<u8>> {
 }
 
 impl State {
-    fn path(&self, value: &Value) -> Result<PathBuf> {
-        let path = value.as_str().unwrap_or("");
-        let relative = path
+    fn path(&self, value: &Value) -> Result<String> {
+        let relative = value
+            .as_str()
+            .unwrap_or("")
             .strip_prefix("/work/")
             .ok_or_else(|| anyhow::anyhow!("capability path must be inside /work"))?;
-        let parts: Vec<_> = Path::new(relative).components().collect();
         ensure!(
-            matches!(parts.as_slice(), [Component::Normal(_)]),
+            !relative.is_empty()
+                && relative != "."
+                && relative != ".."
+                && !relative.contains(['/', '\\', '\0']),
             "capability paths must be flat"
         );
-        let local = self.work.join(relative);
-        ensure!(
-            !std::fs::symlink_metadata(&local).is_ok_and(|s| s.file_type().is_symlink()),
-            "capability paths cannot be symbolic links"
-        );
-        Ok(local)
+        Ok(relative.to_owned())
     }
-    fn call(&mut self, mut request: Value) -> Result<Value> {
+    fn call(&mut self, request: Value) -> Result<Value> {
         let operation = request["operation"].as_str().unwrap_or("").to_owned();
         let path = if request.get("path").is_some() {
             Some(self.path(&request["path"])?)
@@ -74,8 +73,10 @@ impl State {
             None
         };
         if operation == "ocr" {
-            request["path"] = json!(path.ok_or_else(|| anyhow::anyhow!("OCR path required"))?);
-            return self.ocr.call(request);
+            let bytes = self
+                .work
+                .read(path.ok_or_else(|| anyhow::anyhow!("OCR path required"))?)?;
+            return self.ocr.call(request, &bytes);
         }
         ensure!(
             ["pdf_open", "pdf_text", "pdf_layout", "pdf_render"].contains(&operation.as_str()),
@@ -86,6 +87,7 @@ impl State {
         }
         self.pdf.as_mut().unwrap().call(
             &operation,
+            &self.work,
             path.as_deref(),
             request["page"].as_i64().unwrap_or(0) as i32,
             request["dpi"].as_i64().unwrap_or(0) as i32,
@@ -102,7 +104,7 @@ pub struct Runtime {
     state: Option<State>,
 }
 impl Runtime {
-    pub fn new(wasm: &Path, work: &Path, bundle: &Path, ocr: Provider) -> Result<Self> {
+    pub fn new(wasm: &Path, work: &Workspace, bundle: &Path, ocr: Provider) -> Result<Self> {
         Self::with_mode(
             wasm,
             work,
@@ -113,12 +115,17 @@ impl Runtime {
             false,
         )
     }
-    pub fn for_search(wasm: &Path, work: &Path, bundle: &Path, ocr: Provider) -> Result<Self> {
+    pub fn for_search(wasm: &Path, work: &Workspace, bundle: &Path, ocr: Provider) -> Result<Self> {
         // Bundled modules are already built and checked. Search validates and
         // translates function bodies only when called, avoiding unrelated codecs.
         Self::with_mode(wasm, work, bundle, ocr, CompilationMode::Lazy, false, false)
     }
-    pub fn native_search(wasm: &Path, work: &Path, bundle: &Path, ocr: Provider) -> Result<Self> {
+    pub fn native_search(
+        wasm: &Path,
+        work: &Workspace,
+        bundle: &Path,
+        ocr: Provider,
+    ) -> Result<Self> {
         Self::with_mode(wasm, work, bundle, ocr, CompilationMode::Lazy, true, true)
     }
     pub fn uses_native_search(&self) -> bool {
@@ -139,7 +146,7 @@ impl Runtime {
     }
     fn with_mode(
         wasm: &Path,
-        work: &Path,
+        work: &Workspace,
         bundle: &Path,
         ocr: Provider,
         mode: CompilationMode,
@@ -149,7 +156,7 @@ impl Runtime {
         let state = State {
             wasi: WasiCtxBuilder::new().build(),
             limits: limits(),
-            work: work.into(),
+            work: work.clone(),
             ocr,
             pdf: None,
             pdf_path: std::env::var_os("FILENS_PDFIUM_WASM")
@@ -172,7 +179,7 @@ impl Runtime {
     pub fn ocr_capacity(&mut self) -> Value {
         self.state.as_mut().unwrap().ocr.capacity()
     }
-    pub fn fork_without_ocr(&self, work: &Path) -> Result<Self> {
+    pub fn fork_without_ocr(&self, work: &Workspace) -> Result<Self> {
         let parent = self.state.as_ref().unwrap();
         Ok(Self {
             engine: self.engine.clone(),
@@ -183,7 +190,7 @@ impl Runtime {
             state: Some(State {
                 wasi: WasiCtxBuilder::new().build(),
                 limits: limits(),
-                work: work.into(),
+                work: work.clone(),
                 ocr: parent.ocr.fork_disabled(),
                 pdf: None,
                 pdf_path: parent.pdf_path.clone(),
@@ -197,12 +204,8 @@ impl Runtime {
         self.ensure_loaded()?;
         let engine = self.engine.as_ref().unwrap();
         let work = self.state.as_ref().unwrap().work.clone();
-        let directory = wasmi_wasi::Dir::open_ambient_dir(&work, wasmi_wasi::ambient_authority())?;
         let mut builder = WasiCtxBuilder::new();
-        builder
-            .args(args)?
-            .inherit_stderr()
-            .preopened_dir(directory, "/work")?;
+        builder.args(args)?.inherit_stderr();
         if let Some(root) = input {
             builder.preopened_dir(
                 wasmi_wasi::Dir::open_ambient_dir(root, wasmi_wasi::ambient_authority())?,
@@ -210,6 +213,7 @@ impl Runtime {
             )?;
         }
         let wasi = builder.build();
+        wasi.push_preopened_dir(work.directory()?, "/work")?;
         let mut state = self.state.take().unwrap();
         state.wasi = wasi;
         let mut store = Store::new(engine, state);
@@ -275,11 +279,7 @@ impl Runtime {
         })();
         self.state = Some(store.into_data());
         result?;
-        let mut result = vec![];
-        std::fs::File::open(work.join("result.json"))?
-            .take((128 << 20) + 1)
-            .read_to_end(&mut result)?;
-        ensure!(result.len() <= 128 << 20, "WASM result exceeds limit");
+        let result = work.read_bounded("result.json", 128 << 20)?;
         let value: Value = serde_json::from_slice(&result)?;
         ensure!(
             status == 0 || value["ok"] != true,

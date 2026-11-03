@@ -4,10 +4,13 @@
   "sourceCommit": "f64756e14f622d03d073e9ad4ddc097f61f72cfa",
   "sourceHasChanges": false,
   "abi": "wasi-preview1",
-  "adapter": "filens-directory-v1",
-  "bytes": 3232280,
-  "gzipBytes": 969246,
-  "sha256": "1751e0cef3a2a3af40bc8113409b3918bf13e2d6bf861fcd797cdc270446acc2",
-  "gzipSHA256": "bf101578e1e3d8b783416ecdc37b2f9d8acd27723216f7548e9ace67d32342ab",
+  "adapter": "filens-directory-stdio-v1",
+  "transport": "stdin-stdout",
+  "stdinMaxBytes": 1048576,
+  "stdoutMaxBytes": 16777216,
+  "bytes": 3234287,
+  "gzipBytes": 970202,
+  "sha256": "562d587c1ac40875ebe69d2b246483521fd03b94db696d3fef0e7fc871c5f768",
+  "gzipSHA256": "092af41c94a6d8ec22bd932dd4610593f3b08079560b07143fb685ce702f7333",
   "mode": "OS-backed read-only directory enumeration; no raw devices or filesystem drivers exposed"
 }

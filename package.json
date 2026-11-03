@@ -10,6 +10,10 @@
     "apps/*"
   ],
   "scripts": {
+    "build:dsh": "npm --prefix integrations/deepseek-harness run build",
+    "package:dsh:npm": "node ./scripts/package-dsh-npm.mjs",
+    "publish:dsh:npm": "node ./scripts/publish-agent-npm.mjs --dsh",
+    "test:dsh": "npm --prefix integrations/deepseek-harness test",
     "build:agent": "node ./scripts/build-agent-cli.mjs",
     "build:agent:lite": "node ./scripts/build-agent-cli.mjs --lite",
     "setup:agent:ocr": "node ./scripts/setup-agent-ocr.mjs",
@@ -17,6 +21,7 @@
     "filens": "node ./scripts/run-agent-cli.mjs",
     "filens:lite": "node ./scripts/run-agent-cli.mjs --lite",
     "test:agent": "node --test scripts/model-download.test.mjs && npm run build:agent && npm run build:agent:lite && cargo test --locked --manifest-path cli/Cargo.toml && node ./scripts/test-agent-cli.mjs && node ./scripts/test-agent-rust.mjs && node ./scripts/test-agent-convert.mjs && node ./scripts/test-agent-prune.mjs && node ./scripts/test-agent-search.mjs && node ./scripts/test-agent-search-archives.mjs --ocr",
+    "test:agent:workspace": "node ./scripts/test-agent-workspace.mjs",
     "test:agent:convert": "node ./scripts/test-agent-convert.mjs",
     "build": "npm run build:wasm && npm run build:core && npm run build:converter-client && npm run build:xlsx && npm run build:archive && npm run build:ebook && npm run build:pdf && npm run build:docx && npm run build:cad && npm run build:model3d && npm run build:mindmap && npm run build:diagram && npm run build:panorama && npm run build:iwork && npm run build:design && npm run build:media && npm run build:office && npm run build:text && npm run build:vue && npm run build:demo",
     "build:archive:wasm": "node ./scripts/build-archive-wasm.mjs",

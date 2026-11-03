@@ -1,14 +1,14 @@
 # filens Agent CLI
 
 <!-- agent-cli-size:npm:start -->
-**v0.5.1 · MIT · CLI executable 2.17 MiB · Lite 7.86 MiB · Full 31.06 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
+**v0.5.2 · MIT · CLI executable 2.18 MiB · Lite 7.87 MiB · Full 31.09 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
 
 | Platform | CLI executable | Lite installed / download | Full installed / download |
 | --- | ---: | ---: | ---: |
-| darwin-arm64 | 2.17 MiB | 7.86 / 5.95 MiB | 31.06 / 20.16 MiB |
-| linux-x64 | 1.90 MiB | 7.59 / 6.67 MiB | 36.54 / 22.65 MiB |
-| linux-arm64 | 1.79 MiB | 7.48 / 6.56 MiB | 30.91 / 20.35 MiB |
-| win32-x64 | 1.82 MiB | 7.51 / 6.59 MiB | 36.29 / 22.82 MiB |
+| darwin-arm64 | 2.18 MiB | 7.87 / 5.97 MiB | 31.09 / 20.17 MiB |
+| linux-x64 | 1.91 MiB | 7.60 / 6.68 MiB | 36.56 / 22.66 MiB |
+| linux-arm64 | 1.80 MiB | 7.50 / 6.57 MiB | 30.93 / 20.36 MiB |
+| win32-x64 | 1.83 MiB | 7.52 / 6.60 MiB | 36.30 / 22.83 MiB |
 
 Totals add the launcher and selected platform packages from npm pack. Node.js, npm caches, filesystem overhead and the optional frontend preview package are excluded. Bundled dependencies retain their own licenses; see THIRD-PARTY-NOTICES.md in the platform packages.
 <!-- agent-cli-size:npm:end -->
@@ -150,6 +150,12 @@ Similarity fingerprints are recomputed each time. The document search cache and
 [similarity guide](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli-similarity.md)
 for source builds, limits, grouping semantics and the measured resource-size delta.
 
+## Workspace storage
+
+Version 0.5.2 defaults to an in-process memory workspace for input copies, conversion results and PDF/OCR intermediate images. Parallel workers share a 512 MiB file-data quota, without automatic disk fallback. This excludes WASM linear memory, native OCR allocations and transport copies; operating-system swapping is outside the CLI's control.
+
+Use `--workspace disk` (or stdin JSON `"workspace":"disk"`) to select disk scratch explicitly. Final conversion outputs and exported preview HTML still require write permission. The directory walker uses stdin/stdout for options and results. OCR requires the matching 0.5.2 platform package with byte-input support.
+
 ## Limits and conversion
 
 Paraphrasing, translation, questions, field extraction, page selection and URL fetching
@@ -206,4 +212,4 @@ one profile at a time. Platform packages are implementation components.
 [Protocol, limitations and source build](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
-`npm install -g /path/to/filens-cli-0.5.1.tgz /path/to/filens-cli-PLATFORM-0.5.1.tgz /path/to/filens-ocr-PLATFORM-0.5.1.tgz`.
+`npm install -g /path/to/filens-cli-0.5.2.tgz /path/to/filens-cli-PLATFORM-0.5.2.tgz /path/to/filens-ocr-PLATFORM-0.5.2.tgz`.

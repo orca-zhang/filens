@@ -1,0 +1,95 @@
+{
+  "name": "dsh-filens",
+  "version": "0.1.0",
+  "description": "Local document reading, OCR, search, conversion and multi-format sidebar previews for DeepSeek Harness.",
+  "type": "module",
+  "license": "MIT",
+  "author": "FiLens contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "directory": "integrations/deepseek-harness"
+  },
+  "homepage": "https://github.com/IceWhaleTech/filens/tree/main/integrations/deepseek-harness",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "filens",
+    "preview",
+    "ocr",
+    "wasm"
+  ],
+  "engines": {
+    "node": ">=24.9.0",
+    "dsh": "0.2.1-rc.5 || 0.2.2-alpha.3"
+  },
+  "main": "./lib/preview-host.js",
+  "exports": {
+    ".": "./lib/preview-host.js",
+    "./tools": "./lib/tools.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./tools/locale/*.json": "./locale/tools/*.json",
+    "./tools/icon": "./icon.svg"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "lib",
+    "locale",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "VALIDATION.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-documentpreview"
+      ],
+      "external": []
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.6-alpha.2",
+    "filens-cli": "0.5.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5 || ~4.0.6-alpha.2",
+    "@deepseek-ai/dsh-sandbox": "0.2.1-rc.5 || 0.2.2-alpha.3",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.5 || 0.2.2-alpha.3"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.6-alpha.2",
+    "@deepseek-ai/dsh": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-app-boot": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-bash-local": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-sandbox": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-subprocess-local": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-system-prompt": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-tool-executor-native": "0.2.2-alpha.3",
+    "@deepseek-ai/dsh-tools": "0.2.2-alpha.3",
+    "esbuild": "^0.25.0",
+    "playwright": "1.59.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:integration": "node test/integration.mjs",
+    "test:browser": "node test/browser.mjs",
+    "test:desktop": "node test/desktop.mjs",
+    "pack:local": "node scripts/pack-local.mjs",
+    "prepack": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

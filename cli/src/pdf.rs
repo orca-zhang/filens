@@ -1,8 +1,9 @@
 //! Thin bindings to the pinned PDFium WASM C API. Page selection, Unicode
 //! recovery, coordinate transforms and OCR policy belong to converter-text.
+use crate::workspace::Workspace;
 use anyhow::{Result, bail, ensure};
 use serde_json::{Value, json};
-use std::{fs::File, path::Path};
+use std::path::Path;
 use wasmi::{
     Caller, Engine, ExternType, Instance, Linker, Memory, Module, Store, StoreLimits, Val,
 };
@@ -164,10 +165,17 @@ impl Pdf {
             .collect();
         Ok(String::from_utf16_lossy(&words))
     }
-    pub fn call(&mut self, op: &str, path: Option<&Path>, index: i32, dpi: i32) -> Result<Value> {
+    pub fn call(
+        &mut self,
+        op: &str,
+        work: &Workspace,
+        path: Option<&str>,
+        index: i32,
+        dpi: i32,
+    ) -> Result<Value> {
         if op == "pdf_open" {
             self.close_document();
-            let data = std::fs::read(path.ok_or_else(|| anyhow::anyhow!("PDF path required"))?)?;
+            let data = work.read(path.ok_or_else(|| anyhow::anyhow!("PDF path required"))?)?;
             self.data = self.alloc(data.len())?;
             self.memory
                 .write(&mut self.store, self.data as usize, &data)?;
@@ -189,13 +197,20 @@ impl Pdf {
         ensure!(self.document != 0, "PDF is not open");
         let page = self.ints("FPDF_LoadPage", &[self.document, index])?;
         ensure!(page != 0, "PDF page unavailable");
-        let result = self.page(op, page, path, dpi);
+        let result = self.page(op, page, work, path, dpi);
         let closed = self.ints("FPDF_ClosePage", &[page]);
         let value = result?;
         closed?;
         Ok(value)
     }
-    fn page(&mut self, op: &str, page: i32, path: Option<&Path>, dpi: i32) -> Result<Value> {
+    fn page(
+        &mut self,
+        op: &str,
+        page: i32,
+        work: &Workspace,
+        path: Option<&str>,
+        dpi: i32,
+    ) -> Result<Value> {
         let width = self.double("FPDF_GetPageWidth", &[page])?;
         let height = self.double("FPDF_GetPageHeight", &[page])?;
         ensure!(
@@ -208,7 +223,14 @@ impl Pdf {
             "invalid PDF page geometry"
         );
         if op == "pdf_render" {
-            return self.render(page, path.unwrap(), dpi, width, height);
+            return self.render(
+                page,
+                work,
+                path.ok_or_else(|| anyhow::anyhow!("PDF render path required"))?,
+                dpi,
+                width,
+                height,
+            );
         }
         let text_page = self.ints("FPDFText_LoadPage", &[page])?;
         ensure!(text_page != 0, "PDF text page unavailable");
@@ -348,7 +370,8 @@ impl Pdf {
     fn render(
         &mut self,
         page: i32,
-        path: &Path,
+        work: &Workspace,
+        path: &str,
         dpi: i32,
         width: f64,
         height: f64,
@@ -380,13 +403,15 @@ impl Pdf {
                     rgb.extend_from_slice(&[pixel[2], pixel[1], pixel[0]]);
                 }
             }
-            let mut encoder = png::Encoder::new(File::create(path)?, w as u32, h as u32);
+            let mut encoded = Vec::new();
+            let mut encoder = png::Encoder::new(&mut encoded, w as u32, h as u32);
             encoder.set_color(png::ColorType::Rgb);
             encoder.set_depth(png::BitDepth::Eight);
             encoder.set_compression(png::Compression::Fastest);
             let mut writer = encoder.write_header()?;
             writer.write_image_data(&rgb)?;
             writer.finish()?;
+            work.write(path, encoded)?;
             Ok(json!({"ok":true}))
         })();
         let closed = self.ints("FPDFBitmap_Destroy", &[bitmap]);

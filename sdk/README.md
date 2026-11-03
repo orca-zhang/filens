@@ -8,7 +8,7 @@ code does not implement format parsing or conversion. These are preview componen
 they currently do not expose native APIs for reading, OCR, search, or standalone
 conversion results.
 
-SDK version: **0.1.1**. Shared preview runtime: **0.3.1**. The SDK ZIPs in Releases
+SDK version: **0.1.2**. Shared preview runtime: **0.3.2**. The SDK ZIPs in Releases
 already include the offline assets. Extract an archive and integrate its `sdk/ios`
 or `sdk/android` module directly. See below for building and packaging from source.
 [Download and extracted sizes](../docs/mobile-sdk-sizes.json) ·
@@ -176,7 +176,7 @@ javac -d /tmp/filens-sdk-tests \
 java -cp /tmp/filens-sdk-tests app.filens.preview.ByteRangeTest
 ```
 
-Source validation recorded on 2026-11-02: 22 real-runtime and message-bridge checks
+Source validation recorded on 2026-11-04: 22 real-runtime and message-bridge checks
 passed across Chromium / WebKit, covering text, CSV, HTML, DOCX, PDF, Pages, EPUB,
 MP4, APK icons, encrypted RAR, and error callbacks. Three Swift tests passed on
 macOS. The Swift component passed compilation for an iOS Simulator arm64 target

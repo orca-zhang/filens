@@ -10,6 +10,15 @@
       "integrity": "sha512-AUwANKHLPV1/nj8MQdq+hL6nZAS3C6lpdX+PxpdQAanFmwLs64yFHZAts2UN3ifBVQBq/4wL1lLjtvKCL1PnrA=="
     },
     {
+      "name": "@filens/books",
+      "version": "0.1.0",
+      "file": "filens-books-0.1.0.tgz",
+      "bytes": 9962,
+      "unpackedBytes": 29401,
+      "sha256": "12273b359412e7587419ccc6d5400a240003852be60da56901168d2d2bd0cc56",
+      "integrity": "sha512-qfhjeR58z9/o0867hGT5PPhCgBaGRyfITv+ovlRI7CDXf+kr7viJln+pI4UKQvrQ4QdEB/jzGovD7Fy14wPyYw=="
+    },
+    {
       "name": "@filens/cad",
       "version": "0.1.0",
       "file": "filens-cad-0.1.0.tgz",
@@ -64,15 +73,6 @@
       "integrity": "sha512-v3DWSIsIjZDS3U0sBQSFq535A66gNh7kPBqHaq9oRfYtPZzy/dedk8dKcwuTeckxyTtBRdaV/zHkB+EnpIGKMQ=="
     },
     {
-      "name": "@filens/books",
-      "version": "0.1.0",
-      "file": "filens-books-0.1.0.tgz",
-      "bytes": 9962,
-      "unpackedBytes": 29401,
-      "sha256": "12273b359412e7587419ccc6d5400a240003852be60da56901168d2d2bd0cc56",
-      "integrity": "sha512-qfhjeR58z9/o0867hGT5PPhCgBaGRyfITv+ovlRI7CDXf+kr7viJln+pI4UKQvrQ4QdEB/jzGovD7Fy14wPyYw=="
-    },
-    {
       "name": "@filens/iwork",
       "version": "0.1.0",
       "file": "filens-iwork-0.1.0.tgz",
@@ -101,12 +101,12 @@
     },
     {
       "name": "@filens/model3d",
-      "version": "0.1.0",
-      "file": "filens-model3d-0.1.0.tgz",
-      "bytes": 49013,
-      "unpackedBytes": 206431,
-      "sha256": "470865b1d4d141b09d6bc59c57f22f4fe1b2dcf00c8ed30c8f539f16fab539e7",
-      "integrity": "sha512-tlVHW7frPE6zf08TdowXBjJTNQPgRwxl23prGWOhJrMVQd+7X4a43X/be43/6LSEv29KiLTuYnvGJmzoRg2nhQ=="
+      "version": "0.1.1",
+      "file": "filens-model3d-0.1.1.tgz",
+      "bytes": 49171,
+      "unpackedBytes": 207078,
+      "sha256": "515b4952fa50073721e7128f4f47fffb153748456236440e0548c95a880df449",
+      "integrity": "sha512-mtTRk6o0/YOJchypV7mtFGGKnFR8YkT/Tn6Ozhm/5axe10Dnn9rIqPPZmTytT/ZAHDBKWxSUP4bmBnK3Y24/Rg=="
     },
     {
       "name": "@filens/office",

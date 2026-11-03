@@ -1,7 +1,7 @@
 {
-  "observedAt": "2026-11-03T13:58:21.729Z",
+  "observedAt": "2026-11-03T17:06:12.917Z",
   "name": "filens-preview",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "source": "public registry with fresh npm cache",
   "platform": "darwin-arm64",
   "passed": true,

@@ -1,0 +1,14 @@
+{
+  "name": "dsh-filens",
+  "version": "0.1.0",
+  "file": "dsh-filens-0.1.0.tgz",
+  "bytes": 3779547,
+  "unpackedBytes": 9531351,
+  "sha256": "74811c5be927407c9c6c780b8a19cc8d02720df09a14f3c86b0e0b1ea818e4ad",
+  "integrity": "sha512-bjWXzoHL4HhysbzzPxBBmJmTx88RDxf6htfVjJ+6ZzQ3aQCk9jA0x/yzih4hF7LyNVLQFetvVMdas18lbngICA==",
+  "cliVersion": "0.5.2",
+  "previewVersion": "0.3.2",
+  "previewSHA256": "9a0b7f9c06e7052495142569c8dba28c453ecab7006eee982c1df5570d8f9982",
+  "extensions": 397,
+  "privacyChecked": true
+}

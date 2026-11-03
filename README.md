@@ -16,10 +16,10 @@
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
 | Supported formats (by extension) | **334**. | **397**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite: 7.48–7.86 MiB installed · Full: 30.91–36.54 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Approximate size | **Lite: 7.50–7.87 MiB installed · Full: 30.93–36.56 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **1.79–2.17 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.1 main runtimes: **2.67 MB Brotli** summed across split files, or **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **1.80–2.18 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.2 main runtimes: **2.67 MB Brotli** summed across split files, or **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -43,7 +43,7 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**Offline browser preview (CLI 0.5.1):** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The first preview installs `filens-preview@0.3.1`; run `filens setup-preview` in advance for offline use. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**Offline browser preview (CLI 0.5.2):** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The first preview installs `filens-preview@0.3.2`; run `filens setup-preview` in advance for offline use. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -62,7 +62,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.17 MiB · Lite 7.86 MiB · Full 31.06 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.1 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.18 MiB · Lite 7.87 MiB · Full 31.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.2 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -78,6 +78,8 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 </details>
 
 ## Pure frontend previews
+
+**DeepSeek Harness:** [CLI tools and sidebar preview plugin](integrations/deepseek-harness/README.md), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. Install with `dsh plugin --profile desktop add dsh-filens@0.1.0`.
 
 **Preview 397 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
 

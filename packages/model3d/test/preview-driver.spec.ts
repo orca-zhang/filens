@@ -1,7 +1,6 @@
 import JSZip from 'jszip';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { Bone, BufferGeometry, Float32BufferAttribute, Group, LineSegments, Mesh, MeshStandardMaterial, Points, Skeleton, Texture, Vector3 } from 'three';
-import JSZip from 'jszip';
 import {
   createModel3dPreviewDriver,
   createModel3dPreviewRoutes,
@@ -1042,6 +1041,63 @@ describe('model3d preview driver', () => {
 
     session.destroy();
     container.remove();
+  });
+
+  it.each([[180, 720], [720, 180]])('fits geometry inside a %s by %s pane and preserves user zoom on resize', async (width, height) => {
+    let notifyResize = () => {};
+    vi.stubGlobal('ResizeObserver', class extends MockResizeObserver {
+      constructor(callback: () => void) { super(); notifyResize = callback; }
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const session = createModel3dPreviewDriver().createSession(container, {});
+    try {
+      await session.load(new TextEncoder().encode(createAsciiStlFixture()), {
+        descriptor: { source: new Uint8Array(), name: 'part.stl', extension: 'stl' },
+        route: createModel3dPreviewRoutes().find(route => route.extensions.includes('stl'))
+      });
+      const stage = container.querySelector<HTMLElement>('.model3dv-stage')!;
+      let paneWidth = width;
+      stage.getBoundingClientRect = () => new DOMRect(0, 0, paneWidth, height);
+      notifyResize();
+      const { PerspectiveCamera } = await import('three');
+      const camera = new PerspectiveCamera(45, width / height, 0.1, 100000);
+      camera.position.fromArray(session.getState().camera!.position);
+      camera.lookAt(0, 0, 0);
+      camera.updateMatrixWorld();
+      for (const point of [new Vector3(-0.5, -0.5, 0), new Vector3(0.5, -0.5, 0), new Vector3(-0.5, 0.5, 0)]) {
+        const projected = point.project(camera);
+        expect(Math.abs(projected.x)).toBeLessThan(1);
+        expect(Math.abs(projected.y)).toBeLessThan(1);
+      }
+      session.setScale?.(0.8);
+      session.pan?.(18, -6);
+      const before = new Vector3().fromArray(session.getState().camera!.position).normalize();
+      paneWidth /= 2;
+      notifyResize();
+      expect(session.getState().scale).toBe(0.8);
+      const after = new Vector3().fromArray(session.getState().camera!.position).normalize();
+      expect(after.distanceTo(before)).toBeLessThan(1e-6);
+    } finally { session.destroy(); container.remove(); }
+  });
+
+  it('uses initial zoom and resets orbit and zoom with a double-click', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const session = createModel3dPreviewDriver().createSession(container, { initialScale: 0.6 });
+    try {
+      await session.load(new TextEncoder().encode(createAsciiStlFixture()), {
+        descriptor: { source: new Uint8Array(), name: 'part.stl', extension: 'stl' },
+        route: createModel3dPreviewRoutes().find(route => route.extensions.includes('stl'))
+      });
+      const initialDistance = new Vector3().fromArray(session.getState().camera!.position).length();
+      session.setScale?.(1.8);
+      session.pan?.(30, 12);
+      container.querySelector('canvas')!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+      expect(session.getState().scale).toBe(1);
+      expect(session.getState().camera?.viewPreset).toBe('isometric');
+      expect(new Vector3().fromArray(session.getState().camera!.position).length()).toBeCloseTo(initialDistance * 0.6);
+    } finally { session.destroy(); container.remove(); }
   });
 
   it('renders OBJ sources through the preview session', async () => {

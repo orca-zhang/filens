@@ -1,5 +1,6 @@
 //! Optional native capability. Document parsing and OCR policy stay in WASM.
 use anyhow::{Result, bail, ensure};
+use base64::Engine as _;
 use libloading::Library;
 use serde_json::{Value, json};
 use std::{
@@ -72,6 +73,14 @@ impl Native {
         #[cfg(not(unix))]
         let companion = unsafe { Library::new(companion)? };
         let library = unsafe { Library::new(path)? };
+        let memory_input: unsafe extern "C" fn() -> i32 = unsafe {
+            *library.get(b"filens_ocr_memory_input_v1\0")
+                .map_err(|_| anyhow::anyhow!("OCR library lacks memory input support; rebuild or update the native OCR package"))?
+        };
+        ensure!(
+            unsafe { memory_input() } == 1,
+            "unsupported OCR memory input ABI"
+        );
         let create: JsonFn = unsafe { *library.get(b"zima_ncnn_create_json_v2\0")? };
         let destroy: JsonFn = unsafe { *library.get(b"zima_ncnn_destroy_json_v2\0")? };
         let load: JsonFn = unsafe { *library.get(b"zima_ncnn_load_json_v2\0")? };
@@ -96,7 +105,7 @@ impl Native {
         );
         Ok(native)
     }
-    fn recognize(&self, request: &Value) -> Result<Value> {
+    fn recognize(&self, request: &Value, image: &[u8]) -> Result<Value> {
         let deadline = request["deadline"]
             .as_u64()
             .unwrap_or_else(|| now_ms() + 30000);
@@ -104,7 +113,7 @@ impl Native {
             self.infer,
             json!({
                 "handle_id":self.handle,"model_class":"ocr","bundle_id":"rapidocr-ncnn","task":"ocr","thread_limit":2,"deadline_unix_milli":deadline,
-                "input":{"image":request["path"],"params":{"padding":50,"max_side_len":960,"box_score_thresh":0.3,"box_thresh":0.3,"unclip_ratio":1.6,"run_det":true,"run_cls":true,"run_rec":true,"do_angle":true,"most_angle":false}}
+                "input":{"image_base64":base64::engine::general_purpose::STANDARD.encode(image),"params":{"padding":50,"max_side_len":960,"box_score_thresh":0.3,"box_thresh":0.3,"unclip_ratio":1.6,"run_det":true,"run_cls":true,"run_rec":true,"do_angle":true,"most_angle":false}}
             }),
         )?;
         let output = &response["output"];
@@ -149,10 +158,14 @@ pub fn worker() -> Result<()> {
         ensure!(line.len() <= 1 << 20, "OCR request exceeds 1 MiB");
         let response = (|| -> Result<Value> {
             let request: Value = serde_json::from_str(&line)?;
+            let size = request["byteLength"].as_u64().unwrap_or(0);
+            ensure!(size <= 256 << 20, "OCR image exceeds 256 MiB");
+            let mut image = vec![0; size as usize];
+            input.read_exact(&mut image)?;
             let mut response =
                 json!({"provider":"rapidocr-ncnn","openmpThreads":2,"maxSideLen":960});
             if request["operation"] != "health" {
-                let result = native.recognize(&request)?;
+                let result = native.recognize(&request, &image)?;
                 for (key, value) in result.as_object().unwrap() {
                     response[key] = value.clone();
                 }
@@ -217,8 +230,10 @@ impl Provider {
             worker: None,
         }
     }
-    pub fn call(&mut self, mut request: Value) -> Result<Value> {
+    pub fn call(&mut self, mut request: Value, image: &[u8]) -> Result<Value> {
         ensure!(self.enabled, "OCR provider is unavailable");
+        ensure!(image.len() <= 256 << 20, "OCR image exceeds 256 MiB");
+        request["byteLength"] = json!(image.len());
         if self.worker.is_none() {
             let mut child = Command::new(std::env::current_exe()?)
                 .arg("--ocr-worker")
@@ -265,6 +280,7 @@ impl Provider {
         let result = (|| -> Result<Value> {
             let worker = self.worker.as_mut().unwrap();
             writeln!(worker.input, "{request}")?;
+            worker.input.write_all(image)?;
             worker.input.flush()?;
             let line = worker.responses.recv_timeout(Duration::from_secs(30))??;
             let value: Value = serde_json::from_str(&line)?;
@@ -281,7 +297,7 @@ impl Provider {
     pub fn capacity(&mut self) -> Value {
         let mut result = json!({"provider":"rapidocr-ncnn","enabled":self.enabled,"available":false,"openmpThreads":2,"maxSideLen":960,"padding":50,"orientation":true});
         if self.enabled {
-            match self.call(json!({"operation":"health"})) {
+            match self.call(json!({"operation":"health"}), &[]) {
                 Ok(v)
                     if v["provider"] == "rapidocr-ncnn"
                         && v["openmpThreads"] == 2

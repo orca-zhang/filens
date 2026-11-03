@@ -9,12 +9,18 @@ import { npmInvocation } from './agent-platforms.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root, 'dist/workspace-npm');
+const requested = process.argv.slice(2);
+if (requested.length && (requested[0] !== '--package' || requested.length !== 2)) {
+  throw new Error('Usage: node scripts/package-workspace-npm.mjs [--package @filens/name]');
+}
+const selected = requested[1];
 await mkdir(output, { recursive: true });
 const packages = [];
 for (const entry of await readdir(path.join(root, 'packages'))) {
   const source = path.join(root, 'packages', entry);
   const metadata = JSON.parse(await readFile(path.join(source, 'package.json'), 'utf8'));
   if (!metadata.name.startsWith('@filens/') || metadata.private) continue;
+  if (selected && metadata.name !== selected) continue;
   const directory = path.join(output, entry);
   await rm(directory, { recursive: true, force: true });
   await mkdir(directory, { recursive: true });
@@ -42,8 +48,16 @@ for (const entry of await readdir(path.join(root, 'packages'))) {
   console.log(`${packed.name}@${packed.version}: ${(packed.size / 1048576).toFixed(2)} MiB download / ${(packed.unpackedSize / 1048576).toFixed(2)} MiB installed`);
 }
 const report = `${JSON.stringify({ packages, privacyChecked: true }, null, 2)}\n`;
+if (!packages.length) throw new Error(`No publishable package matched ${selected}`);
 await writeFile(path.join(output, 'release.json'), report);
-await writeFile(path.join(root, 'docs/module-npm-release.json'), report);
+const reportFile = path.join(root, 'docs/module-npm-release.json');
+if (selected) {
+  const previous = JSON.parse(await readFile(reportFile, 'utf8'));
+  previous.packages = previous.packages.filter(pkg => pkg.name !== selected).concat(packages).sort((a, b) => a.name.localeCompare(b.name));
+  await writeFile(reportFile, `${JSON.stringify(previous, null, 2)}\n`);
+} else {
+  await writeFile(reportFile, report);
+}
 
 async function removeMapReferences(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {

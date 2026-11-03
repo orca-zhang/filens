@@ -1,0 +1,84 @@
+:root {
+  --filens-panel: #fff;
+  --filens-surface: #f5f6f8;
+  --filens-text: #292b31;
+  --filens-muted: #777b86;
+  --filens-border: #e6e8ed;
+  --filens-accent: #4176e6;
+  --filens-font: system-ui, sans-serif;
+  font-family: var(--filens-font);
+  color: var(--filens-text);
+  background: var(--filens-surface);
+}
+html, body, #preview { width: 100%; height: 100%; min-width: 0; min-height: 0; margin: 0; overflow: hidden; }
+#preview .pptxv-shell {
+  --pptxv-panel: var(--filens-panel);
+  --pptxv-surface: var(--filens-surface);
+  --pptxv-text: var(--filens-text);
+  --pptxv-muted: var(--filens-muted);
+  --pptxv-border: var(--filens-border);
+  --pptxv-border-strong: var(--filens-muted);
+  --pptxv-accent: var(--filens-accent);
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  font-family: var(--filens-font);
+}
+#preview .pptxv-toolbar {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 6px 12px;
+  background: var(--filens-panel);
+}
+#preview .pptxv-toolbar-group { gap: 4px; max-width: 100%; }
+#preview .pptxv-toolbar-group + .pptxv-toolbar-group {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  min-height: 32px;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+#preview .pptxv-toolbar-group > * { flex-shrink: 0; }
+#preview .pptxv-button {
+  min-height: 28px;
+  padding: 4px 8px;
+  border-color: transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--filens-text);
+  font: 500 12px/1.4 var(--filens-font);
+  transition: background-color .12s, color .12s;
+}
+#preview .pptxv-button:hover:not(:disabled), #preview .pptxv-button.is-active { background: var(--filens-surface); border-color: var(--filens-border); }
+#preview :is(button, input, select, summary):focus-visible { outline: 2px solid var(--filens-accent); outline-offset: -2px; }
+#preview .pptxv-status { flex: 0 0 auto; min-width: auto; max-width: none; padding: 0 6px; color: var(--filens-muted); font: 500 12px/1.4 var(--filens-font); white-space: nowrap; }
+#preview .pptxv-pill { padding: 4px 7px; min-width: 0; border-radius: 5px; font: 500 11px/1.4 var(--filens-font); }
+#preview :is(.pptxv-pill--hidden, .pptxv-layer-menu--hidden) { display: none; }
+#preview[data-controls="false"] .pptxv-toolbar { display: none; }
+#preview[data-family="model3d"] .pptxv-toolbar { display: none; }
+#preview[data-navigation="false"] .pptxv-toolbar-group:first-child > :is(button, .pptxv-status) { display: none; }
+#preview[data-navigation="false"] .pptxv-toolbar-group:first-child:not(:has(.pptxv-pill:not(.pptxv-pill--hidden), .pptxv-layer-menu:not(.pptxv-layer-menu--hidden))) { display: none; }
+#preview :is(.pptxv-main, .pptxv-viewer, .pptxv-loading) { min-height: 0; background: var(--filens-surface); }
+#preview :is(.pptxv-main-view, .pptxv-native-preview) { min-height: 0; }
+#preview .pptxv-main-stage { min-height: 0; }
+#preview :is(.pptxv-sidebar, .pptxv-layer-popover) { background: var(--filens-panel); }
+#preview .pptxv-scroll-area { scrollbar-width: thin; }
+#preview .pptxv-native-preview--text { color: var(--filens-text); background: var(--filens-panel); }
+#preview .pptxv-native-text:not([data-family="code"]) { color: var(--filens-text); }
+#preview .pptxv-native-text-shell:not([data-family="code"]) .pptxv-native-text-gutter { color: var(--filens-muted); background: var(--filens-panel); border-color: var(--filens-border); }
+#preview .docxv-preview { min-height: 0; padding: 16px; background: var(--filens-surface); }
+#preview :is(.pptxv-tree-summary, .pptxv-tree-empty, .pptxv-tree-detail-row, .pptxv-tree-toggle, .pptxv-tree-button) { background: var(--filens-panel); }
+#preview .pptxv-model-tools-toggle { width: 30px; height: 30px; background: var(--filens-panel); border-color: var(--filens-border); }
+#preview :is(.model3dv-preview, .model3dv-stage) { min-height: 0; }
+#preview .model3dv-hint { max-width: calc(100% - 160px); padding: 0; border: 0; background: transparent; font: 400 11px/1.5 var(--filens-font); opacity: .75; }
+#preview .pptxv-password-form { border-radius: 10px; font-family: var(--filens-font); }
+#preview .pptxv-overlay { background: var(--filens-surface); color: var(--filens-text); }
+#preview .pptxv-password-form input { color: var(--filens-text); background: var(--filens-surface); }
+@media (max-width: 640px) {
+  #preview .pptxv-toolbar-group + .pptxv-toolbar-group { flex-basis: 100%; }
+  #preview .pptxv-sidebar { max-height: min(24vh, 160px); padding: 8px; gap: 8px; }
+  #preview .pptxv-thumb-button { min-width: 120px; }
+}
+@media (prefers-reduced-motion: reduce) { #preview .pptxv-button { transition: none; } }

@@ -60,6 +60,7 @@ export async function buildMacWrapper(destination, { signal, sourceCount = 3 } =
 // Rebuild every wrapper from the same hash-pinned snapshot. Upstream Linux
 // prebuilts contain personal source paths; -trimpath keeps them out of releases.
 export async function buildOCRWrapper(destination, { signal, sourceCount = 3, platform = `${process.platform}-${process.arch}` } = {}) {
+  destination = path.resolve(destination);
   if (!['darwin-arm64', 'linux-x64', 'linux-arm64', 'win32-x64'].includes(platform)) throw new Error('Unsupported OCR wrapper target');
   if (platform === 'darwin-arm64' && (process.platform !== 'darwin' || process.arch !== 'arm64')) throw new Error('The macOS wrapper must be built on macOS arm64');
   const { downloadArtifact } = await import('./model-download.mjs');
@@ -71,11 +72,13 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
   const windows = platform === 'win32-x64';
   const windowsLoader = windows ? await readFile(path.join(root,'packaging/ncnn-windows/native_loader_windows.go')) : null;
   const loaderSHA256 = windowsLoader ? createHash('sha256').update(windowsLoader).digest('hex') : undefined;
+  const memoryInput = await readFile(path.join(root, 'packaging/ncnn-memory/filens_memory_input.go'));
+  const memoryInputSHA256 = createHash('sha256').update(memoryInput).digest('hex');
   const library = path.join(destination, windows ? 'zima_ncnn_runtime_v7.dll' : darwin ? 'libzima_ncnn_runtime_v7.dylib' : 'libzima_ncnn_runtime_v7.so');
   const architecture = platform.endsWith('-x64') ? 'amd64' : 'arm64';
   try {
     const prior = JSON.parse(await readFile(path.join(destination, 'wrapper-build.json'), 'utf8'));
-    if (prior.sourceSHA256 === artifact.sha256 && prior.platform === platform && prior.trimpath === true && prior.loaderSHA256 === loaderSHA256
+    if (prior.sourceSHA256 === artifact.sha256 && prior.platform === platform && prior.trimpath === true && prior.loaderSHA256 === loaderSHA256 && prior.memoryInputSHA256 === memoryInputSHA256
         && createHash('sha256').update(await readFile(library)).digest('hex') === prior.sha256) {
       await assertReleaseDirectory(destination);
       return;
@@ -86,6 +89,17 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
     const archive = path.join(work, 'source.tar.gz');
     await downloadArtifact({ ...artifact, path:archive, sources:modelSources(artifact, sourceCount, manifest) }, { signal });
     await run('tar', ['-xzf', archive, '-C', work], signal);
+    const ocrSource = path.join(work, 'tools/ncnn_runtime_wrapper/native_ocr_runtime.go');
+    let ocrText = await readFile(ocrSource, 'utf8');
+    for (const [before, after] of [
+      ['source, err := imaging.Open(config.imagePath, imaging.AutoOrientation(true))', 'source, err := filensOCRImage(parsed, config.imagePath)'],
+      ['if imagePath == "" {', 'if imagePath == "" && metadataStringValue(parsed.Input["image_base64"]) == "" {'],
+    ]) {
+      if (ocrText.split(before).length !== 2) throw new Error('Pinned OCR memory input patch no longer matches');
+      ocrText = ocrText.replace(before, after);
+    }
+    await writeFile(ocrSource, ocrText);
+    await writeFile(path.join(work, 'tools/ncnn_runtime_wrapper/filens_memory_input.go'), memoryInput);
     if (windows) {
       const source = path.join(work,'tools/ncnn_runtime_wrapper/native_embedding_runtime.go');
       const text = await readFile(source,'utf8');
@@ -108,7 +122,7 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
     if (darwin) await run('codesign',['--force','--sign','-',library],signal);
     await rm(path.join(destination,'libzima_ncnn_runtime_v7.h'),{force:true});
     if (windows) await rm(path.join(destination,'zima_ncnn_runtime_v7.h'),{force:true});
-    await writeFile(path.join(destination,'wrapper-build.json'),JSON.stringify({release:manifest.version,sourceSHA256:artifact.sha256,platform,trimpath:true,
+    await writeFile(path.join(destination,'wrapper-build.json'),JSON.stringify({release:manifest.version,sourceSHA256:artifact.sha256,platform,trimpath:true,memoryInputSHA256,
       ...(windows ? {minimumWindows:'10',compiler:'zig cc',loaderSHA256} : darwin ? {minimumMacOS:'12.0'} : {minimumGlibc:'2.17',compiler:'zig cc'}),
       sha256:createHash('sha256').update(await readFile(library)).digest('hex')},null,2)+'\n');
     await assertReleaseDirectory(destination);

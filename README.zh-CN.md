@@ -16,10 +16,10 @@
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
 | 支持格式（按扩展名） | **334 种**。 | **397 种**，含直接预览与本地 WASM 转换后预览。 |
-| 大概多大 | **Lite 安装后 7.48–7.86 MiB · Full 安装后 30.91–36.54 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 大概多大 | **Lite 安装后 7.50–7.87 MiB · Full 安装后 30.93–36.56 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **1.79–2.17 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.1 主运行时按分包合计 **2.67 MB Brotli**，单 JS 版为 **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **1.80–2.18 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、npm 缓存和可选预览资源（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.2 主运行时按分包合计 **2.67 MB Brotli**，单 JS 版为 **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
@@ -43,7 +43,7 @@ filens convert report.doc report.docx
 npx --yes filens-cli-lite capacity --json
 ```
 
-**离线浏览器预览（CLI 0.5.1）：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。首次使用会安装 `filens-preview@0.3.1`；可提前运行 `filens setup-preview`，之后离线使用。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**离线浏览器预览（CLI 0.5.2）：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。首次使用会安装 `filens-preview@0.3.2`；可提前运行 `filens setup-preview`，之后离线使用。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -56,13 +56,13 @@ filens preview report.pdf --mode serve
 
 页面检测浏览器能力，并禁止外部资源请求。HTML 含原文件副本，临时 HTML 在退出后保留。Safari / WebKit 的 iWork 预览需使用 HTTP 兼容模式。[预览配置与限制](packages/preview/README.md#cli-preview) · [浏览器验证](docs/preview-html-validation.json)。
 
-**[ZimaOS ModStore](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens)：**运行 `sudo zpkg install filens` 安装；已有版本先执行 `sudo zpkg update`，再执行 `sudo zpkg upgrade filens`。ModStore 0.5.1 为 Linux x64 / arm64 内置离线 HTML 预览引擎，固定关闭自动打开浏览器。将生成的 HTML 下载或复制到电脑后查看，`--json` 返回 ZimaOS 上的文件路径；无需 Node.js 或 npm。[安装、导出预览和 OCR 配置](packaging/zimaos/README.md)。
+**[ZimaOS ModStore](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens)：** 运行 `sudo zpkg install filens` 安装；已有版本先执行 `sudo zpkg update`，再执行 `sudo zpkg upgrade filens`。ModStore 0.5.1 为 Linux x64 / arm64 内置离线 HTML 预览引擎，固定关闭自动打开浏览器。将生成的 HTML 下载或复制到电脑后查看，`--json` 返回 ZimaOS 上的文件路径；无需 Node.js 或 npm。[安装、导出预览和 OCR 配置](packaging/zimaos/README.md)。
 
 <details>
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.17 MiB · Lite 7.86 MiB · Full 31.06 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.1 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.18 MiB · Lite 7.87 MiB · Full 31.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.2 · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -79,6 +79,8 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ## 纯前端预览
 
+**DeepSeek Harness 插件：**[CLI 工具与侧栏预览](integrations/deepseek-harness/README.zh-CN.md)，统一安装、独立启停。支持 DSH 桌面版 0.2.1-rc.5 和 Web 0.2.2-alpha.3。安装：`dsh plugin --profile desktop add dsh-filens@0.1.0`。
+
 **支持 397 种文件格式，在浏览器本地解析和渲染，无需上传或转换服务器。** 按扩展名统计，包含直接预览与本地 WASM 转换后预览。直接浏览 Keynote 幻灯片、Pages 页面、Numbers 表格，读取 Office 与 PDF，检查 CAD / 3D 模型，查看 RAW 和 360° 照片、视频。各格式的支持范围与限制见[支持矩阵](docs/support-matrix.zh-CN.md)。
 
 ### 单文件与按需分包，两种选择
@@ -87,7 +89,7 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 npm install filens-preview
 ```
 
-**iOS / Android 应用接入：**提供 Swift Package 与 Android Library 源码 SDK，封装同一份
+**iOS / Android 应用接入：** 提供 Swift Package 与 Android Library 源码 SDK，封装同一份
 前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md) · [运行时与 SDK 体积](docs/preview-sizes.md)。
 
 两种构建使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。

@@ -4,6 +4,8 @@ package main
 import (
     "encoding/json"
     "errors"
+    "fmt"
+    "io"
     "os"
     "path/filepath"
     "strings"
@@ -35,7 +37,8 @@ func main() {
         result.ErrorCount++
         if len(result.Errors)<64 { result.Errors=append(result.Errors,issue{path,err.Error()}) }
     }
-    data, err := os.ReadFile("/work/walk-options.json")
+    data, err := io.ReadAll(io.LimitReader(os.Stdin, (1<<20)+1))
+    if err == nil && len(data) > 1<<20 { err = errors.New("walk options exceed 1 MiB") }
     var config options
     if err == nil { err=json.Unmarshal(data,&config) }
     if err != nil { fail(".",err) } else {
@@ -69,6 +72,8 @@ func main() {
             if err!=nil && !errors.Is(err,stop) { fail(".",err) }
         }
     }
-    wire,_:=json.Marshal(result)
-    if os.WriteFile("/work/walk-result.json",wire,0600)!=nil { os.Exit(1) }
+    if err := json.NewEncoder(os.Stdout).Encode(result); err != nil {
+        fmt.Fprintln(os.Stderr, "write walk result:", err)
+        os.Exit(1)
+    }
 }

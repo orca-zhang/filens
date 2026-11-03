@@ -1,0 +1,5 @@
+- insert:
+    - id: filens-tools
+      name: dsh-filens/tools
+    - id: filens-preview
+      name: dsh-filens

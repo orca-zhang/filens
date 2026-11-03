@@ -365,7 +365,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     this.stage.className = 'model3dv-stage';
     this.hint = document.createElement('div');
     this.hint.className = 'model3dv-hint';
-    this.hint.textContent = 'Drag to orbit · Pinch or scroll to zoom';
+    this.hint.textContent = 'Drag to orbit · Scroll to zoom · Double-click to reset';
     this.root.replaceChildren(this.stage, this.hint);
     this.host.replaceChildren(this.root);
     this.state = {
@@ -1358,9 +1358,9 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
 
     const center = boundsCenter(model.bounds);
     const size = boundsSize(model.bounds);
-    this.modelRadius = Math.max(size.x, size.y, size.z, 1) * 0.72;
+    this.modelRadius = Math.max(size.length() / 2, 0.5);
     this.baseModelRadius = this.modelRadius;
-    this.distance = this.modelRadius * 2.6;
+    this.distance = Math.max(this.modelRadius * 1.25, (this.modelRadius * 2.6) / this.state.scale);
     this.baseDistance = this.distance;
     modelGroup.position.set(-center.x, -center.y, -center.z);
     this.baseModelGroupPosition.copy(modelGroup.position);
@@ -1481,9 +1481,9 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     const bounds = new Box3().setFromObject(object);
     const center = bounds.getCenter(new Vector3());
     const size = bounds.getSize(new Vector3());
-    this.modelRadius = Math.max(size.x, size.y, size.z, 1) * 0.72;
+    this.modelRadius = Math.max(size.length() / 2, 0.5);
     this.baseModelRadius = this.modelRadius;
-    this.distance = this.modelRadius * 2.6;
+    this.distance = Math.max(this.modelRadius * 1.25, (this.modelRadius * 2.6) / this.state.scale);
     this.baseDistance = this.distance;
     object.position.sub(center);
     this.sectionBounds = sectionBoundsFromObject(object);
@@ -1611,6 +1611,12 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       event.preventDefault();
       this.setScale(this.state.scale + (event.deltaY > 0 ? -0.08 : 0.08));
     }, { passive: false, signal });
+    canvas.addEventListener('dblclick', (event) => {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || this.state.measurement?.active) return;
+      event.preventDefault();
+      this.setCameraViewPreset('isometric');
+      this.fit();
+    }, { signal });
   }
 
   private observeResize(): void {
@@ -1635,7 +1641,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       this.camera.updateProjectionMatrix();
     } else {
       const aspect = width / height;
-      const halfHeight = Math.max(this.modelRadius, 1) * 1.35 / this.state.scale;
+      const halfHeight = this.modelRadius * 1.08 / (this.state.scale * Math.min(1, aspect));
       const halfWidth = halfHeight * aspect;
       this.camera.left = -halfWidth;
       this.camera.right = halfWidth;
@@ -1643,7 +1649,9 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       this.camera.bottom = -halfHeight;
       this.camera.updateProjectionMatrix();
     }
+    this.positionCamera();
     this.renderer.setSize(width, height, false);
+    this.state.camera = this.currentCameraState();
   };
 
   private startAnimation(): void {
@@ -1676,19 +1684,29 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
   }
 
   private updateCamera(): void {
+    this.resize();
+  }
+
+  private positionCamera(): void {
     if (!this.camera) {
       return;
+    }
+    // Fit the bounding sphere within the narrower field of view. Keep the
+    // user's zoom and orbit independent of the pane's changing aspect ratio.
+    let distance = this.distance;
+    if (this.camera instanceof PerspectiveCamera) {
+      const vertical = degToRad(this.camera.fov) / 2;
+      const horizontal = Math.atan(Math.tan(vertical) * this.camera.aspect);
+      distance *= 1.08 / (2.6 * Math.sin(Math.min(vertical, horizontal)));
     }
     const yaw = degToRad(this.yaw);
     const pitch = degToRad(this.pitch);
     this.camera.position.set(
-      this.distance * Math.cos(pitch) * Math.sin(yaw),
-      this.distance * Math.sin(pitch),
-      this.distance * Math.cos(pitch) * Math.cos(yaw)
+      distance * Math.cos(pitch) * Math.sin(yaw),
+      distance * Math.sin(pitch),
+      distance * Math.cos(pitch) * Math.cos(yaw)
     );
     this.camera.lookAt(0, 0, 0);
-    this.resize();
-    this.state.camera = this.currentCameraState();
   }
 
   private currentCameraState(): Model3dCameraInfo {
@@ -2414,7 +2432,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
         if (!visibleBounds.isEmpty()) {
           const center = visibleBounds.getCenter(new Vector3());
           const size = visibleBounds.getSize(new Vector3());
-          this.modelRadius = Math.max(size.x, size.y, size.z, 1) * 0.72;
+          this.modelRadius = Math.max(size.length() / 2, 0.5);
           this.distance = Math.max(this.modelRadius * 2.6, this.baseDistance * 0.24);
           this.modelGroup.position.copy(this.baseModelGroupPosition).sub(center);
           this.updateCamera();
@@ -2446,7 +2464,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     }
     const center = bounds.getCenter(new Vector3());
     const size = bounds.getSize(new Vector3());
-    this.modelRadius = Math.max(size.x, size.y, size.z, 1) * 0.72;
+    this.modelRadius = Math.max(size.length() / 2, 0.5);
     this.distance = Math.max(this.modelRadius * 2.6, this.baseDistance * 0.24);
     this.modelGroup.position.copy(this.baseModelGroupPosition).sub(center);
     this.updateCamera();

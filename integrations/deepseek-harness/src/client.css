@@ -1,0 +1,83 @@
+.filens-dsh {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--filens-text);
+  background: var(--filens-surface);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.filens-dsh > iframe {
+  display: block;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: var(--filens-surface);
+}
+.filens-dsh-state {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background: var(--filens-surface);
+}
+.filens-dsh-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 300px);
+  gap: 8px;
+  text-align: center;
+}
+.filens-dsh-file-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border: 1px solid var(--filens-border);
+  border-radius: 12px;
+  color: var(--filens-muted);
+  background: var(--filens-panel);
+}
+.filens-dsh-state strong { font-size: 14px; font-weight: 550; }
+.filens-dsh-filename {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--filens-muted);
+  font-size: 12px;
+}
+.filens-dsh-state p { margin: 2px 0; color: var(--filens-muted); overflow-wrap: anywhere; }
+.filens-dsh-state details { max-width: 100%; text-align: left; font-size: 12px; }
+.filens-dsh-state details p { max-height: 120px; overflow: auto; user-select: text; }
+.filens-dsh-state summary { color: var(--filens-muted); cursor: pointer; }
+.filens-dsh-state button {
+  margin-top: 8px;
+  padding: 6px 16px;
+  border: 1px solid var(--filens-border);
+  border-radius: 6px;
+  background: var(--filens-panel);
+  color: var(--filens-text);
+  font: inherit;
+  cursor: pointer;
+}
+.filens-dsh-state button:hover { border-color: var(--filens-accent); color: var(--filens-accent); }
+.filens-dsh-state :is(button, summary):focus-visible { outline: 2px solid var(--filens-accent); outline-offset: 3px; }
+.filens-dsh-progress { width: 96px; height: 3px; margin-top: 10px; overflow: hidden; border-radius: 4px; background: var(--filens-border); }
+.filens-dsh-progress span { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--filens-accent); animation: filens-dsh-progress 1.5s ease-in-out infinite; }
+@keyframes filens-dsh-progress { from { transform: translateX(-100%); } to { transform: translateX(350%); } }
+@media (prefers-reduced-motion: reduce) { .filens-dsh-progress span { animation: none; width: 100%; opacity: .5; } }

@@ -50,6 +50,14 @@ npm install -g ./dist/npm/filens-cli-0.5.0.tgz ./dist/npm/filens-cli-darwin-arm6
 
 Historical [Rust migration measurements](agent-cli-rust-size.json) and [similarity feature costs](agent-cli-similarity-size.json) describe earlier local builds; use the 0.5.0 report above for current installation sizes.
 
+## Memory workspace (0.5.2)
+
+CLI reads, searches, PDF/OCR intermediate images and WASM input/output use an in-process workspace by default. Parallel workers share a 512 MiB file-data quota; exceeding it returns an error. Use `--workspace disk` or the stdin JSON field `"workspace":"disk"` to select disk scratch explicitly. There is no automatic disk fallback. WASM linear memory, native OCR memory and transport copies are separate allocations; operating-system swapping is outside this setting.
+
+The directory walker exchanges options and results through stdin/stdout and mounts only `/scan`. Memory mode still needs write permission for requested conversion outputs or exported HTML previews. Existing outputs are refused; conversion commits remain atomic. CLI 0.5.2 requires its matching OCR platform package with the byte-input ABI.
+
+For DeepSeek Harness, install the combined tools/sidebar plugin with `dsh plugin --profile desktop add dsh-filens@0.1.0`. See the [plugin guide](../integrations/deepseek-harness/README.md) for tested versions, permissions and configuration.
+
 ## Source build and release packaging
 
 The CLI in `cli/` is Rust; document parsing stays in the shared frontend WASM core. Release builds use size optimization, LTO, one codegen unit, aborting panics and stripped symbols. Windows/Linux executables additionally use UPX `--best --lzma` and pass `upx --test`; macOS arm64 skips UPX because that executable format is unsupported. Binaryen `-Oz` strips debug/producers metadata from the text WASM. npm packages store all WASM engines as gzip level 9 resources, decoded locally and loaded only when needed; no external decompression tool is required at runtime. Build hosts can install pinned, SHA-256-verified UPX with `node scripts/setup-agent-upx.mjs`; `--no-upx` produces an uncompressed executable for comparison.

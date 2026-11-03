@@ -25,7 +25,10 @@ Preview: FILE [--port 0] [--no-open] [--json] [--assets DIR]. Browser-local UI;
          requires built preview assets (npm run build:preview / FILENS_PREVIEW_DIR).
 Optional flags: --json, --format text|json|markdown|html|yaml|xml|csv|tsv,
                 --layout, --input PATH, --max-bytes N,
-                --timeout 2m, --wasm PATH, --no-ocr, --help.
+                --timeout 2m, --wasm PATH, --no-ocr, --help,
+                --workspace memory|disk (default memory; disk creates request-local temporary files).
+Workspace mode also accepts the JSON field "workspace". Memory never spills to disk.
+Conversion outputs still require write permission in either mode.
 Conversion flags: --output/-o PATH, --to/--target EXT, --from/--source EXT,
                   --password VALUE, --locale VALUE, --force.
 Summary flags: --query TEXT, --summary-chars N (default 2000, max 20000),
