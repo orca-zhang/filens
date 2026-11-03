@@ -10,12 +10,15 @@ const root = path.resolve(__dirname, '../..');
 const single = process.env.FILENS_PREVIEW_BUILD === 'all-in-one';
 const packages = ['archive', 'cad', 'core', 'converter-client', 'design', 'diagram', 'docx',
   'ebook', 'iwork', 'media', 'mindmap', 'model3d', 'office', 'panorama', 'pdf', 'text', 'vue', 'xlsx'];
-const alias = packages.flatMap(name => [
-  { find: `@filens/${name}/style.css`, replacement: path.join(root, `packages/${name}/src/${['design', 'media', 'office', 'text', 'vue'].includes(name) ? 'style.css' : 'styles/index.css'}`) },
-  ...(name === 'core' ? [{ find: '@filens/core/zip', replacement: path.join(root, 'packages/core/src/zip.ts') }] : []),
-  ...(name === 'core' ? [{ find: '@filens/core/archive-volumes', replacement: path.join(root, 'packages/core/src/archive-volumes.ts') }] : []),
-  { find: `@filens/${name}`, replacement: path.join(root, `packages/${name}/src/index.ts`) }
-]);
+const alias = packages.flatMap(directory => {
+  const name = directory === 'ebook' ? 'books' : directory;
+  return [
+    { find: `@filens/${name}/style.css`, replacement: path.join(root, `packages/${directory}/src/${['design', 'media', 'office', 'text', 'vue'].includes(name) ? 'style.css' : 'styles/index.css'}`) },
+    ...(name === 'core' ? [{ find: '@filens/core/zip', replacement: path.join(root, 'packages/core/src/zip.ts') }] : []),
+    ...(name === 'core' ? [{ find: '@filens/core/archive-volumes', replacement: path.join(root, 'packages/core/src/archive-volumes.ts') }] : []),
+    { find: `@filens/${name}`, replacement: path.join(root, `packages/${directory}/src/index.ts`) }
+  ];
+});
 alias.push({ find: 'filens-step', replacement: path.join(root, 'packages/step/src/index.ts') });
 
 function embeddedAssets() {

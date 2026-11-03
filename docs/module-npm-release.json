@@ -64,13 +64,13 @@
       "integrity": "sha512-v3DWSIsIjZDS3U0sBQSFq535A66gNh7kPBqHaq9oRfYtPZzy/dedk8dKcwuTeckxyTtBRdaV/zHkB+EnpIGKMQ=="
     },
     {
-      "name": "@filens/ebook",
+      "name": "@filens/books",
       "version": "0.1.0",
-      "file": "filens-ebook-0.1.0.tgz",
-      "bytes": 9959,
+      "file": "filens-books-0.1.0.tgz",
+      "bytes": 9962,
       "unpackedBytes": 29401,
-      "sha256": "cace5f049d05fb20afcbf2eb35cd1ac8dcb4636c3d2e6b0b36a92e5c047587ab",
-      "integrity": "sha512-Kxuy4BgWNzHU0KeHCUujRKHXd7ccy9ci5Y2uhXT6b8mpxMRb0S8W2MrAktZXaYsAaTUoweUwXAFLN9e49du7Ww=="
+      "sha256": "12273b359412e7587419ccc6d5400a240003852be60da56901168d2d2bd0cc56",
+      "integrity": "sha512-qfhjeR58z9/o0867hGT5PPhCgBaGRyfITv+ovlRI7CDXf+kr7viJln+pI4UKQvrQ4QdEB/jzGovD7Fy14wPyYw=="
     },
     {
       "name": "@filens/iwork",
@@ -141,8 +141,8 @@
       "file": "filens-text-0.1.0.tgz",
       "bytes": 6049,
       "unpackedBytes": 19695,
-      "sha256": "aa0a1155ba9cdd58294c9683a21480972713d7404ff55142dd8c99dfbe82dee8",
-      "integrity": "sha512-Ry5Ehs380cYviTeV+S2CCmGE1YfFf6007nOCJpXs33tK3WxaLeB+rHm6dDw0KxyciB5qRLyQTmslc6Den6WH/g=="
+      "sha256": "b3de3d5560e37bc8c02d639aab652029d1086ab3ab01b6841424983cf7006d4e",
+      "integrity": "sha512-RgH+fSFp0BEWUny3UPq0xVa8rgKgfvqomk1GQRzYr/IXQKeRqJaDwSrRelrNh8QE/g7WEdxsfs5kxPTmyXoI5w=="
     },
     {
       "name": "@filens/vue",
@@ -150,8 +150,8 @@
       "file": "filens-vue-0.1.0.tgz",
       "bytes": 90672,
       "unpackedBytes": 444673,
-      "sha256": "232556082fcca01e4571d6b9f81a6588b4bdcc38a108411cc94fcece2357eae7",
-      "integrity": "sha512-qm+/Xbi9+JdFCLijC3TY1nGdMXp55vNT27yx4Vwp5dzcR3Z4BgM8JO6CAJsU3ssVIq3cbk/i/BXwF0gGmTp57w=="
+      "sha256": "ff786710b483c815353ca124fa4e6c3166cb31f36aa69d2bcd3963dcfdf399f5",
+      "integrity": "sha512-NRMUsUZ+Kt5yspn1lPXL9wXZJ8OhJ6JvvvutXr/0jhSofhEibLn4URoOXH2nb70kvrEGkwPMfxNLIzwzA1A5pg=="
     },
     {
       "name": "@filens/xlsx",

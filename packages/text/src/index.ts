@@ -7,7 +7,7 @@ import {
   type FormatDefinition,
   type PreviewDriver
 } from '@filens/core';
-import { createEbookPreviewDriver, createEbookPreviewRoutes } from '@filens/ebook';
+import { createEbookPreviewDriver, createEbookPreviewRoutes } from '@filens/books';
 
 const TEXT_DRIVER_IDS = new Set(['text', 'html']);
 const TEXT_CORE_ROUTES = DEFAULT_FORMAT_ROUTES.filter((route) => TEXT_DRIVER_IDS.has(route.driverId));

@@ -12,7 +12,7 @@ export default defineConfig({
     },
     sourcemap: true,
     rollupOptions: {
-      external: ['@filens/core', '@filens/ebook']
+      external: ['@filens/core', '@filens/books']
     }
   }
 });

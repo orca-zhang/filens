@@ -1,5 +1,5 @@
 {
-  "name": "@filens/ebook",
+  "name": "@filens/books",
   "version": "0.1.0",
   "description": "EPUB preview driver for the @filens multi-format preview runtime.",
   "type": "module",

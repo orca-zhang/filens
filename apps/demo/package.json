@@ -16,7 +16,7 @@
     "@filens/diagram": "file:../../packages/diagram",
     "@filens/design": "file:../../packages/design",
     "@filens/docx": "file:../../packages/docx",
-    "@filens/ebook": "file:../../packages/ebook",
+    "@filens/books": "file:../../packages/ebook",
     "@filens/iwork": "file:../../packages/iwork",
     "@filens/model3d": "file:../../packages/model3d",
     "@filens/media": "file:../../packages/media",

@@ -13,7 +13,7 @@ export default defineConfig({
       '@filens/diagram/style.css': path.resolve(__dirname, '../diagram/dist/index.css'),
       '@filens/design': path.resolve(__dirname, '../design/dist/index.js'),
       '@filens/docx/style.css': path.resolve(__dirname, '../docx/dist/index.css'),
-      '@filens/ebook/style.css': path.resolve(__dirname, '../ebook/dist/index.css'),
+      '@filens/books/style.css': path.resolve(__dirname, '../ebook/dist/index.css'),
       '@filens/iwork/style.css': path.resolve(__dirname, '../iwork/dist/index.css'),
       '@filens/model3d/style.css': path.resolve(__dirname, '../model3d/dist/index.css'),
       '@filens/media': path.resolve(__dirname, '../media/dist/index.js'),

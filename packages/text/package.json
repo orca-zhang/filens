@@ -24,14 +24,14 @@
     "dev": "vite build --watch"
   },
   "dependencies": {
-    "@filens/ebook": "^0.1.0"
+    "@filens/books": "^0.1.0"
   },
   "peerDependencies": {
     "@filens/core": "^0.1.0"
   },
   "devDependencies": {
     "@filens/core": "file:../core",
-    "@filens/ebook": "file:../ebook"
+    "@filens/books": "file:../ebook"
   },
   "license": "MIT",
   "repository": {
