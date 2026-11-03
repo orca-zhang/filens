@@ -8,6 +8,14 @@
       "observedAt": "2026-11-03T13:40:16.311Z",
       "freshNpmCache": false,
       "preview": true
+    },
+    "registry": {
+      "command": "node scripts/test-agent-npm.mjs --registry",
+      "platform": "darwin-arm64",
+      "passed": true,
+      "observedAt": "2026-11-03T13:59:51.475Z",
+      "freshNpmCache": true,
+      "preview": true
     }
   }
 }
