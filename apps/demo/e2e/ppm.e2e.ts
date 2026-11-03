@@ -4,10 +4,10 @@ test('previews the PPM sample and local P3/P6 files through WASM', async ({ page
   await page.goto('./?view=preview');
   await page.getByRole('button', { name: 'Media', exact: true }).click();
   const images = page.locator('.wb-format-category').filter({
-    has: page.getByRole('heading', { name: '图片', exact: true })
+    has: page.getByRole('heading', { name: /^图片(?:\s|$)/ })
   });
   await images.getByRole('button', { name: 'PPM', exact: true }).click();
-  await expect(page.locator('.wb-preview-title strong')).toHaveText('photo-alpine-lake.ppm');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('vegetable-market.ppm');
   const image = page.locator('img.pptxv-native-image');
   await expect(image).toBeVisible();
   await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(256);

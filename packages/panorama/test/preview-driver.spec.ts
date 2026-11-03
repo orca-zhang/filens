@@ -114,12 +114,14 @@ describe('Panorama preview driver', () => {
     };
     const internal = session as unknown as {
       calibratedRenderer: typeof renderer;
-      createCalibratedControls(value: typeof renderer): void;
+      state: { family: string; paused: boolean; currentTime: number; duration: number };
+      createPlaybackControls(): void;
     };
     internal.calibratedRenderer = renderer;
-    internal.createCalibratedControls(renderer);
+    Object.assign(internal.state, { family: 'panorama-video', paused: false, currentTime: 2, duration: 10 });
+    internal.createPlaybackControls();
 
-    (host.querySelector('button') as HTMLButtonElement).click();
+    (host.querySelector('[aria-label="Pause panorama video"]') as HTMLButtonElement).click();
     expect(renderer.pause).toHaveBeenCalledOnce();
     const timeline = host.querySelector('input[type="range"]') as HTMLInputElement;
     timeline.value = '6';

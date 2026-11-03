@@ -24,8 +24,9 @@ serde_yaml, regex, flate2, png, tempfile and ctrlc. The locked dependencies'
 license texts and version metadata are collected into licenses/rust-cli.txt.
 PDFium remains the WASM artifact from go-pdfium v1.17.3, verified by SHA-256;
 its upstream license notice is included as go-pdfium@v1.17.3-LICENSE.txt.
-The optional image WASM engine uses jpeg-encoder and the repository's modified
-rawloader 0.37.2 (LGPL-2.1). RAW source and local changes are maintained at
+The optional image WASM engine uses jpeg-encoder, moxcms and png, and the repository's modified
+rawloader 0.37.2 (LGPL-2.1). HEIF color/PNG dependency notices are also included
+in licenses/rust-cli.txt. RAW source and local changes are maintained at
 wasm/converter-image-rust/vendor/rawloader in the filens source repository;
 the package includes its LGPL and X3F notices in licenses/rust-cli.txt.
 

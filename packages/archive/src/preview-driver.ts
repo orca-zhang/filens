@@ -90,11 +90,19 @@ export const ARCHIVE_FORMAT_ROUTES: FormatDefinition[] = [
     contentTypes: ['application/x-7z-compressed']
   },
   {
-    extensions: ['zip', 'jar', 'war', 'ear', 'apk'],
+    extensions: ['zip', 'jar', 'war', 'ear'],
     family: 'archive',
     driverId: 'archive',
     targetFormat: 'zip',
-    contentTypes: ['application/zip', 'application/x-zip-compressed', 'application/java-archive', 'application/vnd.android.package-archive']
+    contentTypes: ['application/zip', 'application/x-zip-compressed', 'application/java-archive']
+  },
+  {
+    extensions: ['apk'], family: 'archive', driverId: 'archive', targetFormat: 'zip',
+    contentTypes: ['application/vnd.android.package-archive']
+  },
+  {
+    extensions: ['ipa'], family: 'archive', driverId: 'archive', targetFormat: 'zip',
+    contentTypes: ['application/x-ios-app']
   },
   {
     extensions: ['tar'],
@@ -1169,7 +1177,7 @@ function isSupportedArchiveFormat(format: string): boolean {
 }
 
 function isZipFormat(format: string): boolean {
-  return ['zip', 'jar', 'war', 'ear', 'apk'].includes(format);
+  return ['zip', 'jar', 'war', 'ear', 'apk', 'ipa'].includes(format);
 }
 
 async function sourceToArrayBuffer(source: PreviewSource, context: PreviewLoadContext): Promise<ArrayBuffer> {

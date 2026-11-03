@@ -105,7 +105,7 @@ const CAD_EXCHANGE_FORMATS = new Set(['step', 'stp', 'iges', 'igs', 'brep', 'brp
 const BIM_FORMATS = new Set(['ifc']);
 const STRUCTURED_DATA_FORMATS = new Set(['csv', 'tsv', 'tab', 'psv', 'json', 'jsonl', 'jsonlines', 'ndjson', 'ldjson', 'xml', 'yaml', 'yml', 'toml', 'ini']);
 const PANORAMA_FORMATS = new Set(['pano', 'panorama', '360', 'insv', 'insp', 'osv']);
-const ARCHIVE_FORMATS = new Set(['zip', 'zipx', 'rar', '7z', 'tar', 'gz', 'bz', 'bz2', 'xz', 'z', 'zst', 'tgz', 'tbz', 'tbz2', 'txz', 'lz', 'lzma', 'cab', 'iso', 'ar', 'cpio', 'ace', 'lha', 'lzh', 'zoo', 'xar', 'sit', 'sitx', 'apk', 'jar', 'war', 'ear', 'xpi', 'crx', 'deb', 'rpm', 'dmg', 'img', 'wim', 'swm', 'esd', 'pak', '001', 'cbz', 'cbr', 'cb7', 'cbt']);
+const ARCHIVE_FORMATS = new Set(['zip', 'zipx', 'rar', '7z', 'tar', 'gz', 'bz', 'bz2', 'xz', 'z', 'zst', 'tgz', 'tbz', 'tbz2', 'txz', 'lz', 'lzma', 'cab', 'iso', 'ar', 'cpio', 'ace', 'lha', 'lzh', 'zoo', 'xar', 'sit', 'sitx', 'apk', 'ipa', 'jar', 'war', 'ear', 'xpi', 'crx', 'deb', 'rpm', 'dmg', 'img', 'wim', 'swm', 'esd', 'pak', '001', 'cbz', 'cbr', 'cb7', 'cbt']);
 
 export const DIRECT_FORMAT_ROUTES: FormatDefinition[] = [
   defineRoute(['pptx'], 'paged', 'pptx'),
@@ -507,6 +507,14 @@ export const DIRECT_FORMAT_ROUTES: FormatDefinition[] = [
   }),
   defineRoute(['zip'], 'archive', 'archive', {
     contentTypes: ['application/zip', 'application/x-zip-compressed']
+  }),
+  defineRoute(['apk'], 'archive', 'archive', {
+    targetFormat: 'zip',
+    contentTypes: ['application/vnd.android.package-archive']
+  }),
+  defineRoute(['ipa'], 'archive', 'archive', {
+    targetFormat: 'zip',
+    contentTypes: ['application/x-ios-app']
   })
 ];
 

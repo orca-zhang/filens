@@ -1,0 +1,7 @@
+<!doctype html><html lang="en"><meta charset="UTF-8"><title>Browser media validation</title>
+<div id="host"></div><video id="video" muted playsinline></video>
+<script type="module">
+import { createMediaPreviewDrivers } from '../src/index.ts';
+import * as engine from '../src/engine.ts';
+window.filensMedia = { ...engine, createMediaPreviewDrivers };
+</script></html>

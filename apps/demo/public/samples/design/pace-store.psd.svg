@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+<title>Pace Store — sneaker launch campaign</title>
+<metadata>Project-authored design study. Layout, copy and illustrations: Filens contributors, MIT. No third-party photography. Fictional demo identity and pricing; no brand affiliation or endorsement. See samples/design/SOURCES.md.</metadata>
+<style>text{font-family:Arial,Helvetica,sans-serif} .serif{font-family:Georgia,'Times New Roman',serif} .caps{letter-spacing:3px}</style>
+
+<rect width="1800" height="1200" fill="#f4f4ed"/>
+<rect width="1800" height="980" fill="#18191a"/>
+<text x="65" y="75" font-size="38" font-weight="900" font-style="italic" letter-spacing="-2" fill="#fff">PACE / STORE</text>
+<text x="1050" y="69" class="caps" font-size="13" fill="#fff">NEW ARRIVALS</text>
+<text x="1300" y="69" class="caps" font-size="13" fill="#fff">FOOTWEAR</text>
+<text x="1590" y="69" class="caps" font-size="13" fill="#d9f76f">DROP 04</text>
+<defs>
+<linearGradient id="red" x2="1" y2="1"><stop stop-color="#e83c32"/><stop offset="1" stop-color="#b32624"/></linearGradient>
+<linearGradient id="upper" x2="0" y2="1"><stop stop-color="#fcf7e9"/><stop offset=".6" stop-color="#e4dcc6"/><stop offset="1" stop-color="#bcb49e"/></linearGradient>
+<linearGradient id="sole" x2="0" y2="1"><stop stop-color="#f5efdd"/><stop offset=".45" stop-color="#d8d1bb"/><stop offset="1" stop-color="#a89d85"/></linearGradient>
+<pattern id="mesh" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.4" fill="#958b75" opacity=".55"/><circle cx="9" cy="9" r="1.4" fill="#958b75" opacity=".55"/></pattern>
+<filter id="shoe-shadow" x="-40%" y="-80%" width="200%" height="300%"><feGaussianBlur stdDeviation="24"/></filter>
+</defs>
+<rect x="670" y="118" width="1130" height="862" fill="url(#red)"/>
+<text x="720" y="350" font-size="210" font-weight="900" font-style="italic" letter-spacing="-12" fill="none" stroke="#ffffff30" stroke-width="2">EVERYDAY</text>
+<ellipse cx="1240" cy="767" rx="390" ry="46" fill="#582623" opacity=".4" filter="url(#shoe-shadow)"/>
+<g transform="translate(768 338) rotate(-15 450 200)">
+<path d="M45 310Q80 331 193 326L805 297Q868 299 869 342L858 363Q725 395 474 390L172 380Q54 367 33 343Z" fill="#3e4037"/>
+<path d="M42 284Q61 315 190 309L804 284Q868 285 870 325L857 343Q721 376 475 370L169 361Q58 352 36 325Z" fill="url(#sole)" stroke="#8f8773" stroke-width="2"/>
+<path d="M48 312Q148 340 338 334L837 313" fill="none" stroke="#fffcf2" stroke-width="7"/>
+<path d="M65 288Q72 250 130 235L287 201Q327 176 375 170L482 173Q554 141 602 107L641 58Q661 43 683 65L746 114Q779 133 787 190L817 287Q614 323 385 310L146 309Q81 307 65 288Z" fill="url(#upper)" stroke="#aaa38d" stroke-width="2"/>
+<path d="M88 276Q117 249 196 239L327 211Q352 202 378 207L431 300L171 300Q110 300 88 276Z" fill="url(#mesh)"/>
+<path d="M77 274Q165 292 270 277L326 302Q193 319 93 300Z" fill="#d1c8b0"/>
+<path d="M336 199Q374 167 412 168L488 183 567 292 451 306Z" fill="#b9b19b"/>
+<path d="M379 185Q415 164 441 166L503 209 458 231Z" fill="#5d6558"/>
+<path d="M602 107Q636 122 646 167L610 194 549 161Z" fill="#5f6e58"/>
+<path d="M641 59Q661 44 683 65L746 115Q737 159 700 183L646 167Q632 125 602 107Z" fill="#596951"/>
+<path d="M651 77Q673 66 698 86L733 115Q711 133 682 132Z" fill="#323c30"/>
+<path d="M769 160Q787 187 794 231L811 282 705 300 676 236Q717 227 735 190Z" fill="#cbbf9c"/>
+<path d="M776 200 797 274 745 285 719 235Z" fill="#eb6a3d"/>
+<path d="M468 216Q519 192 571 179L628 222 601 282 541 296Z" fill="#f3efde" stroke="#b2aa92" stroke-width="2"/>
+<path d="M489 230Q542 215 574 211L603 230 585 271 548 282Z" fill="url(#mesh)"/>
+<g stroke="#fefbf2" stroke-width="9" stroke-linecap="round">
+<path d="M382 200 461 183M397 223 481 205M411 247 499 228M425 271 518 252"/>
+</g>
+<g fill="#656854"><circle cx="379" cy="200" r="4"/><circle cx="395" cy="223" r="4"/><circle cx="410" cy="247" r="4"/><circle cx="424" cy="271" r="4"/></g>
+<path d="M643 60 651 35 671 45 683 65" fill="none" stroke="#ea683b" stroke-width="12"/>
+<path d="M104 318Q214 344 330 332M563 335 795 316" fill="none" stroke="#a19983" stroke-width="2"/>
+<path d="M100 354v25" stroke="#807861" stroke-width="4"/><path d="M158 354v25" stroke="#807861" stroke-width="4"/><path d="M216 354v25" stroke="#807861" stroke-width="4"/><path d="M274 354v25" stroke="#807861" stroke-width="4"/><path d="M332 354v25" stroke="#807861" stroke-width="4"/><path d="M390 354v25" stroke="#807861" stroke-width="4"/><path d="M490 354v25" stroke="#807861" stroke-width="4"/><path d="M550 354v25" stroke="#807861" stroke-width="4"/><path d="M610 354v25" stroke="#807861" stroke-width="4"/><path d="M670 354v25" stroke="#807861" stroke-width="4"/><path d="M730 354v25" stroke="#807861" stroke-width="4"/><path d="M790 354v25" stroke="#807861" stroke-width="4"/>
+</g>
+<text x="65" y="209" class="caps" font-size="13" fill="#d9f76f">FIND YOUR EVERYDAY PACE</text>
+<text x="52" y="390" font-size="145" font-weight="900" letter-spacing="-10" fill="#fff">MAKE</text>
+<text x="52" y="537" font-size="145" font-weight="900" letter-spacing="-10" fill="#fff">YOUR</text>
+<text x="52" y="684" font-size="145" font-weight="900" letter-spacing="-10" fill="#d9f76f">MOVE.</text>
+<text x="65" y="759" font-size="20" fill="#aeb0ae">A new day. A fresh pair. Your own direction.</text>
+<rect x="65" y="825" width="303" height="73" rx="2" fill="#d9f76f"/>
+<text x="94" y="870" font-size="18" font-weight="700" fill="#18191a">SHOP THE DROP</text>
+<path d="M292 861h40m-13-13 13 13-13 13" fill="none" stroke="#18191a" stroke-width="2"/>
+<rect x="1540" y="823" width="205" height="112" fill="#ffffffed"/>
+<text x="1560" y="861" class="caps" font-size="11" fill="#8d231d">THE COLOR EDIT</text>
+<text x="1560" y="907" font-size="30" font-weight="800" fill="#242424">SAND / SAGE</text>
+<text x="65" y="1040" class="caps" font-size="11" fill="#777970">CURATED FOOTWEAR / 001</text>
+<text x="65" y="1103" font-size="38" font-weight="700" letter-spacing="-1" fill="#20211e">Everyday trainer</text>
+<text x="65" y="1144" font-size="17" fill="#777970">Sand / Sage · Everyday collection</text>
+<text x="793" y="1040" class="caps" font-size="11" fill="#777970">SELECT YOUR SIZE</text>
+<rect x="793" y="1068" width="62" height="57" fill="none" stroke="#c0c2b8"/><text x="824" y="1104" text-anchor="middle" font-size="17" fill="#41443b">38</text><rect x="867" y="1068" width="62" height="57" fill="none" stroke="#c0c2b8"/><text x="898" y="1104" text-anchor="middle" font-size="17" fill="#41443b">39</text><rect x="941" y="1068" width="62" height="57" fill="none" stroke="#c0c2b8"/><text x="972" y="1104" text-anchor="middle" font-size="17" fill="#41443b">40</text><rect x="1015" y="1068" width="62" height="57" fill="#20211e" stroke="#c0c2b8"/><text x="1046" y="1104" text-anchor="middle" font-size="17" fill="#fff">41</text><rect x="1089" y="1068" width="62" height="57" fill="none" stroke="#c0c2b8"/><text x="1120" y="1104" text-anchor="middle" font-size="17" fill="#41443b">42</text><rect x="1163" y="1068" width="62" height="57" fill="none" stroke="#c0c2b8"/><text x="1194" y="1104" text-anchor="middle" font-size="17" fill="#41443b">43</text>
+<text x="1730" y="1103" text-anchor="end" font-size="48" font-weight="700" fill="#20211e">¥699</text>
+<text x="1730" y="1140" text-anchor="end" class="caps" font-size="11" fill="#777970">THE NEW-SEASON EDIT</text></svg>

@@ -1,15 +1,21 @@
 import { defineConfig } from 'vitest/config';
+import { readFileSync, readdirSync } from 'node:fs';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
   test: { environment: 'jsdom', globals: true },
-  plugins: [dts({ insertTypesEntry: true })],
+  plugins: [dts({ insertTypesEntry: true }), { name: 'media-engine-license', generateBundle() {
+    const directory = new URL('./src/engine-snapshot/types/', import.meta.url);
+    for (const name of readdirSync(directory, { recursive: true }).map(String).filter(name => /\.d\.(ts|mts)$/.test(name)))
+      this.emitFile({ type: 'asset', fileName: `engine-snapshot/types/${name}`, source: readFileSync(new URL(name, directory)) });
+    this.emitFile({ type: 'asset', fileName: 'MP4Box-LICENSE.txt', source: readFileSync(new URL('./src/engine-snapshot/MP4Box-LICENSE.txt', import.meta.url)) });
+  } }],
   build: {
     cssCodeSplit: false,
     lib: {
-      entry: './src/index.ts',
+      entry: { index: './src/index.ts', engine: './src/engine.ts' },
       formats: ['es'],
-      fileName: () => 'index.js'
+      fileName: (_format, name) => `${name}.js`
     },
     sourcemap: true,
     rollupOptions: {

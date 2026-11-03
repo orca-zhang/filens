@@ -58,12 +58,13 @@ locale tags. Standalone `createPreview()` accepts the same options and supports
 
 ## Application icons (source build)
 
-APK and IPA packages and Windows EXE/DLL/MUI/MUN resource containers use the
+APK and IPA packages open as ZIP-compatible archives by default, with directory
+browsing and entry previews. Windows EXE/DLL/MUI/MUN resource containers use the
 shared WASM core to extract their application icon as PNG, then display it with
 the normal image controls. The core also converts ICO to PNG; browser-native ICO
 preview and existing ICNS preview remain available. No application is executed.
-Configure `converter` as for legacy Office previews. APK archive browsing remains
-available through explicit `@filens/archive` routes.
+Configure `converter` as for legacy Office previews. APK/IPA icon extraction is
+available through explicit conversion requests.
 
 APK extraction follows the application's compiled manifest icon resource through
 `resources.arsc`, including obfuscated paths and raster-backed adaptive XML. IPA

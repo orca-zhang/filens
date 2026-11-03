@@ -1028,6 +1028,10 @@ describe('Preview', () => {
     expect(wrapper.text()).toContain('model3d');
     const zoomIn = wrapper.findAll('button').find((button) => button.text() === '+');
     expect((zoomIn?.element as HTMLButtonElement | undefined)?.disabled).toBe(false);
+    await zoomIn!.trigger('click');
+    expect(wrapper.findAll('.pptxv-status').some(status => status.text() === '110%')).toBe(true);
+    await zoomIn!.trigger('click');
+    expect(wrapper.findAll('.pptxv-status').some(status => status.text() === '120%')).toBe(true);
 
     wrapper.unmount();
   });

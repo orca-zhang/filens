@@ -1,0 +1,219 @@
+[
+  {
+    "name": "pq10",
+    "width": 64,
+    "height": 64,
+    "reference": "pq10.rgba",
+    "sha256": "42aa1367dcd6103b84cd0fb95fe51183eff6ff708b9f0b20ea90ae312ed072db"
+  },
+  {
+    "name": "hlg10",
+    "width": 64,
+    "height": 64,
+    "reference": "hlg10.rgba",
+    "sha256": "4438ed4210326e75ea12c2e132e123a715a1e0bfdb67124312e74e33e5703246"
+  },
+  {
+    "name": "pq12-p3",
+    "width": 64,
+    "height": 64,
+    "reference": "pq12-p3.rgba",
+    "sha256": "a973e003c0bb87578ce5db38f8eba1a2010b250ab91615901b1ceb0101cf280b"
+  },
+  {
+    "name": "hlg12-p3",
+    "width": 64,
+    "height": 64,
+    "reference": "hlg12-p3.rgba",
+    "sha256": "0bfd22fdf186f9a951343917b800139680c3312950d3f669e350a5aae3bdefe6"
+  },
+  {
+    "name": "pq10-alpha",
+    "width": 64,
+    "height": 64,
+    "reference": "pq10-alpha.rgba",
+    "sha256": "1e15c273853353a2019b9639f65f09189dbbaa6c5ff49aa234a0ecfe083c85c1"
+  },
+  {
+    "name": "hlg10-alpha",
+    "width": 64,
+    "height": 64,
+    "reference": "hlg10-alpha.rgba",
+    "sha256": "c14c351f8446a840fe9db7fa1c7494a8b7915b97ae98f02288af816f188aba44"
+  },
+  {
+    "name": "pq8",
+    "width": 64,
+    "height": 64,
+    "reference": "pq8.rgba",
+    "sha256": "8e44fb0c6b6d736c1b225ef7f3f0fd4334be0e70e8e7a4c0a04a3c94f9bda12e"
+  },
+  {
+    "name": "hlg8",
+    "width": 64,
+    "height": 64,
+    "reference": "hlg8.rgba",
+    "sha256": "2ffdf8d696479ca7fccf9b0eaaaeaba7c6fe5e4277a1dc7ccf432b2ca4dafef1"
+  },
+  {
+    "name": "pq12-icc",
+    "width": 64,
+    "height": 64,
+    "reference": "pq12-icc.rgba",
+    "sha256": "25b2fa707d42a34ca3aa342e5312c9fa6b19a9b7d183a33314379ede28d0b00d"
+  },
+  {
+    "name": "pq-yuv10",
+    "width": 64,
+    "height": 64,
+    "reference": "pq-yuv10.rgba",
+    "sha256": "c7d28c3fe5dedf1b7b9cc2ecdb1b28663f724c97d6b4209ad8038c09bc589a18"
+  },
+  {
+    "name": "hlg-yuv12-limited",
+    "width": 64,
+    "height": 64,
+    "reference": "hlg-yuv12-limited.rgba",
+    "sha256": "8a9e8185bb12aed499ccabcef585a4acdd6ff32399884eeb374a402fcd882f29"
+  },
+  {
+    "name": "422-bt2020-pq",
+    "width": 64,
+    "height": 64,
+    "reference": "422-bt2020-pq.rgba",
+    "sha256": "d948487c6730250ef46dc62ee7cafae0a8dd0fa9f3972920345be6e532cb23bc"
+  },
+  {
+    "name": "422-bt2020-hlg",
+    "width": 64,
+    "height": 64,
+    "reference": "422-bt2020-hlg.rgba",
+    "sha256": "31c75dcb4ad0d5c4f6ddba46d073e9c85b18d8518baf0286395ded8f5c522c11"
+  },
+  {
+    "name": "420-bt2020-pq",
+    "width": 64,
+    "height": 64,
+    "reference": "420-bt2020-pq.rgba",
+    "sha256": "d948487c6730250ef46dc62ee7cafae0a8dd0fa9f3972920345be6e532cb23bc"
+  },
+  {
+    "name": "420-bt2020-hlg",
+    "width": 64,
+    "height": 64,
+    "reference": "420-bt2020-hlg.rgba",
+    "sha256": "31c75dcb4ad0d5c4f6ddba46d073e9c85b18d8518baf0286395ded8f5c522c11"
+  },
+  {
+    "name": "420-2020linear12-limited",
+    "width": 64,
+    "height": 64,
+    "reference": "420-2020linear12-limited.rgba",
+    "sha256": "7a0cd3f8b8f6fba89f7a859f633fca51acaf46d28912edd3043191b654d45dc0"
+  },
+  {
+    "name": "420-70910-limited",
+    "width": 64,
+    "height": 64,
+    "reference": "420-70910-limited.rgba",
+    "sha256": "725dac0d77a18e2f9ce1b2826b5b60e53b23d185cdee662d8ad96a943f915567"
+  },
+  {
+    "name": "420-odd10-full",
+    "width": 65,
+    "height": 49,
+    "reference": "420-odd10-full.rgba",
+    "sha256": "de6fa538b2aac2ceb8cfde7628781833254a483d5ddaed2e0140964c46d6ef0d"
+  },
+  {
+    "name": "420-srgb8-full",
+    "width": 64,
+    "height": 64,
+    "reference": "420-srgb8-full.rgba",
+    "sha256": "7fb1feaa8302065a23264bed843e4a525e66ab1d194e62c9b57cf53dc3bfe56d"
+  },
+  {
+    "name": "422-2020linear12-limited",
+    "width": 64,
+    "height": 64,
+    "reference": "422-2020linear12-limited.rgba",
+    "sha256": "99d4dbbb919de456afb4bed7bd2104f27efa0c93afc43366a7263a2efe5ba44c"
+  },
+  {
+    "name": "422-70910-limited",
+    "width": 64,
+    "height": 64,
+    "reference": "422-70910-limited.rgba",
+    "sha256": "7c8d411a792cb9f341f034e5990cc9604c726449a68df7159cd57bc609c03c47"
+  },
+  {
+    "name": "422-odd10-full",
+    "width": 65,
+    "height": 49,
+    "reference": "422-odd10-full.rgba",
+    "sha256": "b1263ffe79da7d6727688ede674e6a6c55f9d85f1092655e9dce6491a75ce9c4"
+  },
+  {
+    "name": "422-srgb8-full",
+    "width": 64,
+    "height": 64,
+    "reference": "422-srgb8-full.rgba",
+    "sha256": "f39f5819320352829f8f59f9a36bbc6996a5b9865ed7840a21e29542411013b7"
+  },
+  {
+    "name": "420-2020linear12-limited-vui",
+    "width": 64,
+    "height": 64,
+    "reference": "420-2020linear12-limited.rgba",
+    "sha256": "7a0cd3f8b8f6fba89f7a859f633fca51acaf46d28912edd3043191b654d45dc0"
+  },
+  {
+    "name": "420-70910-limited-vui",
+    "width": 64,
+    "height": 64,
+    "reference": "420-70910-limited.rgba",
+    "sha256": "725dac0d77a18e2f9ce1b2826b5b60e53b23d185cdee662d8ad96a943f915567"
+  },
+  {
+    "name": "420-odd10-full-vui",
+    "width": 65,
+    "height": 49,
+    "reference": "420-odd10-full.rgba",
+    "sha256": "de6fa538b2aac2ceb8cfde7628781833254a483d5ddaed2e0140964c46d6ef0d"
+  },
+  {
+    "name": "420-srgb8-full-vui",
+    "width": 64,
+    "height": 64,
+    "reference": "420-srgb8-full.rgba",
+    "sha256": "7fb1feaa8302065a23264bed843e4a525e66ab1d194e62c9b57cf53dc3bfe56d"
+  },
+  {
+    "name": "422-2020linear12-limited-vui",
+    "width": 64,
+    "height": 64,
+    "reference": "422-2020linear12-limited.rgba",
+    "sha256": "99d4dbbb919de456afb4bed7bd2104f27efa0c93afc43366a7263a2efe5ba44c"
+  },
+  {
+    "name": "422-70910-limited-vui",
+    "width": 64,
+    "height": 64,
+    "reference": "422-70910-limited.rgba",
+    "sha256": "7c8d411a792cb9f341f034e5990cc9604c726449a68df7159cd57bc609c03c47"
+  },
+  {
+    "name": "422-odd10-full-vui",
+    "width": 65,
+    "height": 49,
+    "reference": "422-odd10-full.rgba",
+    "sha256": "b1263ffe79da7d6727688ede674e6a6c55f9d85f1092655e9dce6491a75ce9c4"
+  },
+  {
+    "name": "422-srgb8-full-vui",
+    "width": 64,
+    "height": 64,
+    "reference": "422-srgb8-full.rgba",
+    "sha256": "f39f5819320352829f8f59f9a36bbc6996a5b9865ed7840a21e29542411013b7"
+  }
+]

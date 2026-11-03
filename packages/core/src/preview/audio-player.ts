@@ -55,7 +55,7 @@ export class AudioPreviewPlayer {
     const placeholder = node('div', 'pptxv-audio-placeholder');
     placeholder.setAttribute('aria-hidden', 'true');
     placeholder.append(node('span', '', '♫'));
-    this.play = this.button(this.labels.play, '▶', 'pptxv-audio-play', async () => {
+    this.play = this.button(this.labels.play, '', 'pptxv-audio-play', async () => {
       if (!media.paused) media.pause();
       else {
         try { await media.play(); }
@@ -127,6 +127,7 @@ export class AudioPreviewPlayer {
     for (const event of ['timeupdate', 'seeking', 'seeked', 'loadedmetadata', 'play', 'pause', 'ended']) {
       media.addEventListener(event, () => this.sync(), { signal });
     }
+    this.sync();
   }
 
   async loadCompanions(): Promise<void> {
@@ -238,7 +239,10 @@ export class AudioPreviewPlayer {
   private sync(): void {
     this.element.classList.toggle('is-playing', !this.media.paused && !this.media.ended);
     const playing = !this.media.paused && !this.media.ended;
-    this.play.textContent = playing ? 'Ⅱ' : '▶';
+    const icon = playing
+      ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
+      : '<path d="m8 5 11 7-11 7Z"/>';
+    this.play.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">${icon}</svg>`;
     this.play.setAttribute('aria-label', playing ? this.labels.pause : this.labels.play);
     this.play.title = playing ? this.labels.pause : this.labels.play;
     const index = findAudioLyricIndex(this.lyrics.lines, this.media.currentTime - this.delay);

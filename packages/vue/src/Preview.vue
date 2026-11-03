@@ -102,6 +102,7 @@ const props = withDefaults(
     routes?: FormatDefinition[];
     converter?: ConverterClient;
     mediaConverter?: ConverterClient;
+    browserMedia?: MediaPreviewDriverOptions['browserMedia'];
     fontResolver?: PreviewFontResolver;
     fontLoading?: boolean | PreviewFontLoadingOptions;
     resourceResolver?: PreviewResourceResolver;
@@ -117,6 +118,7 @@ const props = withDefaults(
     routes: undefined,
     converter: undefined,
     mediaConverter: undefined,
+    browserMedia: false,
     fontResolver: undefined,
     fontLoading: undefined,
     resourceResolver: undefined,
@@ -200,7 +202,7 @@ const pagedState = computed(() => (isPaged.value ? (previewState.value as PagedP
 const workbookState = computed(() => (isWorkbook.value ? (previewState.value as WorkbookPreviewState) : null));
 const ebookState = computed(() => (isEbook.value ? (previewState.value as EbookPreviewState) : null));
 const imageState = computed(() =>
-  previewState.value.family === 'image' || previewState.value.family === 'panorama'
+  previewState.value.family === 'image' || previewState.value.family === 'panorama' || previewState.value.family === 'panorama-video'
     ? (previewState.value as ImagePreviewState)
     : null
 );
@@ -212,7 +214,7 @@ const mindmapState = computed(() => (previewState.value.family === 'mindmap' ? (
 const diagramState = computed(() => (previewState.value.family === 'diagram' ? (previewState.value as DiagramPreviewState) : null));
 const activeIndex = computed(() => pagedState.value?.pageIndex ?? workbookState.value?.activeSheetIndex ?? ebookState.value?.chapterIndex ?? diagramState.value?.pageIndex ?? 0);
 const activeCount = computed(() => pagedState.value?.pageCount ?? workbookState.value?.sheets.length ?? ebookState.value?.chapterCount ?? diagramState.value?.pageCount ?? 0);
-const scale = computed(() => pagedState.value?.scale ?? workbookState.value?.scale ?? imageState.value?.scale ?? cadState.value?.scale ?? mindmapState.value?.scale ?? diagramState.value?.scale ?? props.initialScale);
+const scale = computed(() => pagedState.value?.scale ?? workbookState.value?.scale ?? imageState.value?.scale ?? cadState.value?.scale ?? model3dState.value?.scale ?? mindmapState.value?.scale ?? diagramState.value?.scale ?? props.initialScale);
 const scaleLabel = computed(() => `${Math.round(scale.value * 100)}%`);
 const canNavigate = computed(() => Boolean(previewState.value.capabilities.paged || previewState.value.capabilities.sheets || previewState.value.capabilities.chapters));
 const canGoPrev = computed(() => !isLoading.value && canNavigate.value && activeIndex.value > 0);
@@ -547,7 +549,7 @@ async function recreatePreviewer(): Promise<void> {
     return;
   }
 
-  const drivers = props.drivers ?? createVueDefaultPreviewDrivers(props.panoramaProcessor, props.converter, props.mediaConverter);
+  const drivers = props.drivers ?? createVueDefaultPreviewDrivers(props.panoramaProcessor, props.converter, props.mediaConverter, props.browserMedia);
   const routes = props.routes ?? createVueDefaultPreviewRoutes({ rawPreview: Boolean(props.panoramaProcessor && props.converter) });
   const createNestedPreviewer = (host: HTMLElement, childOptions: PreviewOptions = {}) => createPreviewer(host, {
     containerContext: childOptions.containerContext,
@@ -1192,6 +1194,7 @@ watch(
     props.routes,
     props.converter,
     props.mediaConverter,
+    props.browserMedia,
     props.fontResolver,
     props.fontLoading,
     props.resourceResolver,
@@ -1224,11 +1227,11 @@ onUnmounted(() => {
   previewer.value?.destroy();
 });
 
-function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOptions['panoramaProcessor'], converter?: MediaPreviewDriverOptions['converter'], mediaConverter?: MediaPreviewDriverOptions['mediaConverter']): PreviewDriver[] {
+function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOptions['panoramaProcessor'], converter?: MediaPreviewDriverOptions['converter'], mediaConverter?: MediaPreviewDriverOptions['mediaConverter'], browserMedia?: MediaPreviewDriverOptions['browserMedia']): PreviewDriver[] {
   return [
     ...createOfficePreviewDrivers(),
     ...createDesignPreviewDrivers(),
-    ...createMediaPreviewDrivers({ panoramaProcessor, converter, mediaConverter }),
+    ...createMediaPreviewDrivers({ panoramaProcessor, converter, mediaConverter, browserMedia }),
     createArchivePreviewDriver(),
     ...createTextPreviewDrivers()
   ];

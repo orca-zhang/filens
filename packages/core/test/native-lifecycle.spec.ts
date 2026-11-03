@@ -31,6 +31,7 @@ beforeEach(() => {
   vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
   vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
+  vi.spyOn(HTMLVideoElement.prototype, 'videoWidth', 'get').mockReturnValue(1920);
 });
 afterEach(() => { for (const session of sessions.splice(0)) session.destroy(); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
@@ -112,6 +113,26 @@ describe('native element preview lifecycles', () => {
     host.querySelector('source')!.dispatchEvent(new Event('error'));
     expect(session.getState()).toMatchObject({ loading: false, error: expect.stringContaining('codec') });
     expect(error).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects progressing audio-only video after observing playback, and releases stale listeners', async () => {
+    const { host, session } = setup(createMediaPreviewDriver);
+    vi.spyOn(HTMLVideoElement.prototype, 'videoWidth', 'get').mockReturnValue(0);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0);
+    const rendered = vi.fn(), error = vi.fn(); session.on('rendered', rendered); session.on('error', error);
+    await session.load('/audio-only.mov', context('/audio-only.mov', 'audio-only.mov'));
+    const video = host.querySelector('video')!;
+    Object.defineProperties(video, { paused: { value: false }, readyState: { value: 3 } });
+    video.dispatchEvent(new Event('loadedmetadata'));
+    video.currentTime = 1; video.dispatchEvent(new Event('timeupdate'));
+    now.mockReturnValue(1600);
+    video.currentTime = 2; video.dispatchEvent(new Event('timeupdate'));
+    expect(session.getState()).toMatchObject({ loading: false, error: expect.stringContaining('video codec') });
+    expect(rendered).not.toHaveBeenCalled(); expect(error).toHaveBeenCalledOnce();
+    video.dispatchEvent(new Event('loadeddata')); video.dispatchEvent(new Event('timeupdate'));
+    expect(error).toHaveBeenCalledOnce();
+    expect(host.querySelector('video')).toBeNull();
   });
 
   it('pauses and clears the previous media resource on replacement and destruction', async () => {

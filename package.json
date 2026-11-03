@@ -114,7 +114,13 @@
     "test:preview:archives": "node ./scripts/test-archive-assets.mjs",
     "package:preview:npm": "node ./scripts/package-preview-npm.mjs",
     "test:preview:npm": "node ./scripts/test-preview-npm.mjs",
-    "report:converter-monolithic-size": "node ./scripts/report-converter-monolithic-size.mjs"
+    "report:converter-monolithic-size": "node ./scripts/report-converter-monolithic-size.mjs",
+    "sync:media-engine": "node scripts/sync-media-engine.mjs",
+    "check:media-engine": "node scripts/sync-media-engine.mjs --check",
+    "test:media:browser": "node scripts/test-browser-media.mjs",
+    "test:media:standalone": "node scripts/test-browser-media-standalone.mjs",
+    "bench:media:browser": "node scripts/test-browser-media.mjs --bench",
+    "test:media:package": "node scripts/test-media-engine-package.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.0",

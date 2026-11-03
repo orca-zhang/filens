@@ -3,6 +3,7 @@
   --wb-muted: #858a91;
   --wb-line: #e8eaed;
   --wb-accent: #b96b4c;
+  --wb-converted: #8faed8;
   display: grid;
   grid-template-columns: 276px minmax(0, 1fr);
   height: 100vh;
@@ -20,7 +21,7 @@
 .workbench button { cursor: pointer; }
 .workbench button:disabled { cursor: default; }
 .workbench button:focus-visible, .workbench input:focus-visible, .wb-upload:has(input:focus-visible) { outline: 2px solid #d88d68; outline-offset: 4px; }
-.workbench svg { pointer-events: none; }
+.workbench .wb-icon, .workbench .format-icon { pointer-events: none; }
 .workbench.is-library-closed { grid-template-columns: minmax(0, 1fr); }
 .wb-sidebar { min-height: 0; display: flex; flex-direction: column; background: #1d2025; color: #f2f2f1; overflow: hidden; }
 .wb-brand { display: flex; align-items: center; gap: 11px; width: 100%; min-height: 91px; padding: 0 23px; border: 0; border-bottom: 1px solid #ffffff0d; background: transparent; color: #fafaf9; text-align: left; }
@@ -56,11 +57,12 @@
 .wb-subformat.is-active { border-color: #dba383; background: #ecc6aa; color: #493526; font-weight: 650; }
 .wb-subformat.is-active:not(:disabled):hover { background: #f5d4bc; color: #493526; }
 .wb-subformat.is-unavailable { color: #686f79; border-style: dashed; background: transparent; }
-.wb-subformat.is-sample-only { border-style: double; border-width: 3px; }
+.wb-subformat.is-sample-only { border: 3px double var(--wb-converted); }
+.wb-subformat.is-sample-only:not(:disabled):hover { border-color: var(--wb-converted); }
 .wb-format-hint { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 4px; margin: 0; padding: 15px 0; border-top: 1px solid #ffffff0c; color: #858b95; font-size: 9px; }
 .wb-format-hint > span { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: #c9cbd0; }
 .wb-format-hint > .is-muted { background: #5f6670; }
-.wb-format-hint > .is-converted { background: #dba383; }
+.wb-format-hint > .is-converted { width: 12px; height: 10px; border: 3px double var(--wb-converted); border-radius: 3px; background: transparent; }
 .wb-search-results { margin: 0 0 18px; color: #b7a292; font-size: 11px; }
 .wb-search-empty { display: flex; flex-direction: column; align-items: center; padding-top: 45px; color: #858b94; font-size: 11px; text-align: center; }
 .wb-search-empty > .wb-icon { width: 27px; height: 27px; margin-bottom: 19px; opacity: .5; }
@@ -86,7 +88,9 @@
 .wb-agent-sidebar > div { display: flex; align-items: center; gap: 12px; margin-top: 25px; color: #b4bac3; font-size: 11px; }
 .wb-agent-sidebar > div .wb-icon { width: 15px; color: #ac896c; }
 .wb-agent-sidebar .wb-agent-sidebar-note { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ffffff12; }
-.wb-header-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.wb-header-tools { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.wb-header-actions { display: flex; align-items: center; gap: 10px; }
+.wb-language-toggle { min-width: 58px; }
 .wb-button, .wb-icon-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; min-height: 36px; border: 1px solid #e3e5e8; border-radius: 6px; background: #fff; color: #626970; font-size: 11px !important; line-height: 1; transition: background .15s, color .15s, border-color .15s; }
 .wb-button { padding: 0 13px; white-space: nowrap; }
 .wb-icon-button { width: 34px; min-height: 34px; padding: 0; border-color: transparent; background: transparent; color: #858b92; }
@@ -185,6 +189,9 @@
   .wb-workspace-nav { gap: 11px; }
   .wb-workspace-nav button { font-size: 12px; }
   .wb-header-actions { gap: 7px; }
+  .wb-header-tools { gap: 7px; }
+  .wb-language-toggle { min-width: 46px; padding: 0 8px; }
+  .wb-language-toggle > span { display: none; }
   .wb-link-button { width: 34px; padding: 0; }
   .wb-link-button > span { display: none; }
   .wb-upload { padding: 0 10px; font-size: 10px !important; }
@@ -212,6 +219,10 @@
   .wb-details { top: 105px; right: 12px; width: min(310px, calc(100% - 24px)); max-height: calc(100% - 140px); }
 }
 @media (max-width: 420px) {
+  .wb-header { gap: 8px; padding-inline: 12px; }
+  .wb-workspace-nav { gap: 8px; }
+  .wb-workspace-nav button { font-size: 11px; }
+  .wb-header-tools, .wb-header-actions { gap: 5px; }
   .wb-upload { width: 34px; padding: 0; }
   .wb-upload > span { display: none; }
 }

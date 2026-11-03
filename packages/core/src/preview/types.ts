@@ -329,6 +329,7 @@ export interface MediaPreviewState extends PreviewItemState {
   paused: boolean;
   muted: boolean;
   volume: number;
+  playbackRate?: number;
 }
 
 export interface EbookPreviewState extends PreviewItemState {

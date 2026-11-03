@@ -154,6 +154,34 @@ describe('clocked frame delivery', () => {
     renderer.close();
   });
 
+  it('changes speed without jumping the clock and keeps the rate through pause and seek', async () => {
+    const { renderer, advance, settle } = await open();
+    advance(100);
+    expect(renderer.currentTime).toBeCloseTo(0.1);
+    renderer.setPlaybackRate!(2);
+    expect(renderer.currentTime).toBeCloseTo(0.1);
+    advance(200);
+    expect(renderer.currentTime).toBeCloseTo(0.3);
+    renderer.pause();
+    advance(300);
+    renderer.setPlaybackRate!(0.5);
+    expect(renderer.currentTime).toBeCloseTo(0.3);
+    renderer.play();
+    advance(400);
+    expect(renderer.currentTime).toBeCloseTo(0.35);
+    renderer.pause();
+    renderer.seek(0.2);
+    await settle();
+    renderer.update();
+    await settle();
+    expect(renderer.currentTime).toBeCloseTo(0.2);
+    expect(renderer.paused).toBe(true);
+    renderer.play();
+    advance(600);
+    expect(renderer.currentTime).toBeCloseTo(0.3);
+    renderer.close();
+  });
+
   it('seeks while paused, resets stale ownership, and closes every frame and decoder', async () => {
     const { renderer, frames, decoders, settle } = await open();
     renderer.pause();

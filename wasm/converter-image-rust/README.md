@@ -25,9 +25,7 @@ area cropping and EXIF orientation, and shares white balance, camera-to-sRGB
 matrix conversion, and sRGB encoding. Neither path provides full RAW development
 or vendor picture-profile parity. Input is limited to 256 MiB.
 
-The color contract follows Photos' `internal/rawthumbnail/native_impl.inc` and
-`native_color_test.go` at revision `5967f350d9b169211379b91a3a097ee1883373e6`:
-camera white balance with a daylight fallback, sensor black/white levels,
+The color pipeline uses camera white balance with a daylight fallback, sensor black/white levels,
 camera-basis normalization before matrix inversion, clipping white-balanced
 camera channels before color conversion, fixed sRGB transfer without histogram
 auto-brightening, and signed DNG `BaselineExposure` bounded to ±4 EV. Missing

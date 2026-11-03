@@ -4,14 +4,26 @@ import { createVueDefaultPreviewRoutes } from '../src/defaults';
 import conversionManifest from '../../../wasm/converter-core/manifest/conversions.json';
 
 describe('createVueDefaultPreviewRoutes', () => {
-  it('previews application packages and PE resources as PNG icons', () => {
+  it('browses application packages as archives and previews PE resources as PNG icons', () => {
     const routes = createVueDefaultPreviewRoutes();
-    for (const extension of ['apk', 'ipa', 'exe', 'dll', 'mui', 'mun']) {
+    for (const [extension, contentType] of [
+      ['apk', 'application/vnd.android.package-archive'],
+      ['ipa', 'application/x-ios-app']
+    ]) {
+      for (const descriptor of [{ name: `app.${extension.toUpperCase()}` }, { contentType }]) {
+        const route = resolveFormatRoute(descriptor, { routes });
+        expect(route).toMatchObject({ sourceFormat: extension, family: 'archive', driverId: 'archive', targetFormat: 'zip' });
+        expect(route?.conversion?.required).not.toBe(true);
+      }
+      expect(listPreviewFormats({ routes }).filter(format => format.extension === extension)).toEqual([
+        expect.objectContaining({ family: 'archive', group: 'archive', conversionRequired: false })
+      ]);
+    }
+    for (const extension of ['exe', 'dll', 'mui', 'mun']) {
       expect(resolveFormatRoute({ name: `app.${extension}` }, { routes })).toMatchObject({
         family: 'image', driverId: 'image', targetFormat: 'png', conversion: { required: true }
       });
     }
-    expect(resolveFormatRoute({ contentType: 'application/vnd.android.package-archive' }, { routes })).toMatchObject({ sourceFormat: 'apk', targetFormat: 'png' });
     expect(resolveFormatRoute({ name: 'archive.zip' }, { routes })).toMatchObject({ family: 'archive' });
   });
 
@@ -32,7 +44,7 @@ describe('createVueDefaultPreviewRoutes', () => {
 
     expect(conversionFormats.map((format) => `${format.extension}->${format.targetFormat}`).sort()).toEqual(
       conversionManifest
-        .filter((pair) => pair.sourceFormat !== 'epub' && pair.sourceFormat !== pair.targetFormat)
+        .filter((pair) => !['epub', 'apk', 'ipa'].includes(pair.sourceFormat) && pair.sourceFormat !== pair.targetFormat)
         .map((pair) => `${pair.sourceFormat}->${pair.targetFormat}`).sort()
     );
     expect(resolveFormatRoute({ name: 'book.epub' }, { routes })).toMatchObject({ driverId: 'ebook', targetFormat: 'epub' });

@@ -106,6 +106,30 @@ for (const packed of [false, true]) {
     });
     await expect.poll(() => page.evaluate(() => (window as any).realtimePanoramaTest.getState().currentTime)).toBeCloseTo(1.2, 2);
     await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Audio unavailable for this panorama preview' })).toBeDisabled();
+    expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().capabilities.volume)).toBe(false);
+    await page.getByRole('combobox', { name: 'Panorama video playback speed' }).selectOption('0.5');
+    expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().playbackRate)).toBe(0.5);
+    await page.getByRole('button', { name: 'Reset panorama view' }).click();
+    expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().scale)).toBe(1);
+    await page.getByRole('button', { name: 'Enter panorama fullscreen' }).click();
+    await expect.poll(() => page.evaluate(() => document.fullscreenElement?.classList.contains('panoramav-preview'))).toBe(true);
+    await expect(canvas).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Exit panorama fullscreen' }).click();
+    await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false);
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.locator('#realtime-panorama-test').evaluate(host => { (host as HTMLElement).style.width = '100%'; });
+    for (const control of [
+      page.getByRole('button', { name: 'Play panorama video', exact: true }),
+      page.getByRole('combobox', { name: 'Panorama video playback speed' }),
+      page.getByRole('button', { name: 'Enter panorama fullscreen' })
+    ]) {
+      await expect(control).toBeVisible();
+      const bounds = (await control.boundingBox())!;
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+    }
+    await page.screenshot({ path: `test-results/video-controls-calibrated-${packed ? 'packed' : 'separate'}-320.png` });
     expect(errors).toEqual([]);
     await page.evaluate(() => (window as any).realtimePanoramaTest.destroy());
     await expect(canvas).toHaveCount(0);

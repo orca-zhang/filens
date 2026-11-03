@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useDemoI18n } from '../i18n';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+
+const { t } = useDemoI18n();
 
 const props = defineProps<{
   photoSrc: string;
@@ -86,10 +89,10 @@ function loadLivePhotosKit(): Promise<LivePhotosKitApi> {
   <div class="apple-live-photo-preview">
     <div ref="host" class="apple-live-photo-player" :aria-label="title ?? 'Apple Live Photo'"></div>
     <p v-if="error" class="apple-live-photo-error">{{ error }}</p>
-    <p v-else class="apple-live-photo-hint">点击 LIVE 徽标或按住照片播放</p>
+    <p v-else class="apple-live-photo-hint">{{ t('点击 LIVE 徽标或按住照片播放', 'Click the LIVE badge or hold the photo to play') }}</p>
     <div v-if="originalPhotoSrc || originalVideoSrc" class="apple-live-photo-originals">
-      <a v-if="originalPhotoSrc" :href="originalPhotoSrc" download>原始 HEIC</a>
-      <a v-if="originalVideoSrc" :href="originalVideoSrc" download>原始 MOV</a>
+      <a v-if="originalPhotoSrc" :href="originalPhotoSrc" download>{{ t('原始 HEIC', 'Original HEIC') }}</a>
+      <a v-if="originalVideoSrc" :href="originalVideoSrc" download>{{ t('原始 MOV', 'Original MOV') }}</a>
     </div>
   </div>
 </template>

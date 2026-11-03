@@ -74,10 +74,31 @@ describe('native media with optional HEIF decoding', () => {
     const rendered = vi.fn(); session.on('rendered', rendered);
     const load = context('audio-only.mov');
     await session.load(load.descriptor.source, load);
-    host.querySelector('video')!.dispatchEvent(new Event('loadedmetadata'));
+    const video = host.querySelector('video')!;
+    video.dispatchEvent(new Event('loadedmetadata'));
+    expect(session.getState()).toMatchObject({ loading: true, error: null });
+    video.dispatchEvent(new Event('loadeddata'));
     expect(rendered).not.toHaveBeenCalled();
     expect(session.getState()).toMatchObject({ loading: false, error: expect.stringContaining('video codec') });
     expect(host.querySelector('video')).toBeNull();
+  });
+
+  it('accepts video dimensions arriving after metadata and renders once', async () => {
+    const width = vi.spyOn(HTMLVideoElement.prototype, 'videoWidth', 'get').mockReturnValue(0);
+    const convert = vi.fn();
+    const { host, session } = setup({ convert });
+    const rendered = vi.fn(); session.on('rendered', rendered);
+    const load = context('delayed.mov');
+    await session.load(load.descriptor.source, load);
+    const video = host.querySelector('video')!;
+    expect(video.playsInline).toBe(true);
+    video.dispatchEvent(new Event('loadedmetadata'));
+    expect(session.getState()).toMatchObject({ loading: true, error: null });
+    width.mockReturnValue(1920);
+    for (const event of ['resize', 'loadeddata', 'canplay', 'loadedmetadata']) video.dispatchEvent(new Event(event));
+    expect(session.getState()).toMatchObject({ loading: false, error: null });
+    expect(rendered).toHaveBeenCalledOnce();
+    expect(convert).not.toHaveBeenCalled();
   });
 
   it('preserves native audio playback without applying the video-only codec check', async () => {

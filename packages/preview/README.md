@@ -18,6 +18,10 @@ runtime fixes used by CLI 0.5.0's offline HTML preview. It uses native HEIC/HEIF
 decoder as fallback. MOV plays through browser codecs.
 Applications can supply an optional `mediaConverter` for unsupported MOV codecs.
 Both builds preserve the same image and video support boundaries.
+For optional local MP4/MOV recovery, pass `browserMedia: true` to `createPreview`.
+It tries native playback first, then bounded remuxing or necessary WebCodecs AVC
+processing, and never calls `mediaConverter` for video in this mode.
+[Browser-only media scope and validation](../../docs/browser-media-engine.md).
 
 ```sh
 npm install filens-preview
@@ -123,9 +127,11 @@ detection. Switch language with `viewer.update({ locale: 'de_DE' })`. Optional
 Both split and all-in-one builds contain these dictionaries for offline use.
 See the [locale list and API notes](../vue/README.md#languages-source-build).
 
-APK/IPA packages and Windows EXE/DLL/MUI/MUN resource files can be previewed as
-application icons using the included WASM converter. Icon extraction supports
-compiled Android icon resources, XML/binary iOS plist metadata, iOS CgBI PNGs,
+APK/IPA packages open as ZIP-compatible archives with directory browsing and
+entry previews. Windows EXE/DLL/MUI/MUN resource files can be previewed as
+application icons using the included WASM converter. The converter also exposes
+APK/IPA icon extraction for explicit requests. Icon extraction supports compiled
+Android icon resources, XML/binary iOS plist metadata, iOS CgBI PNGs,
 and Windows PNG/DIB icon frames. These additions are included in 0.2.0.
 See the [supported icon representations
 and limits](../vue/README.md#application-icons-source-build).

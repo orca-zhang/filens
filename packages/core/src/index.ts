@@ -9,6 +9,9 @@ export * from './archive-volumes';
 export { MediaRegistry, renderSlideToElement } from './render/dom';
 export type { MediaResolver, RenderSlideOptions } from './render/dom';
 export * from './preview';
+export { bindPreviewTouchGestures, type PreviewTouchGestureOptions } from './preview/touch-gestures';
+export { createVideoPlaybackControls, type VideoPlaybackActions, type VideoPlaybackState } from './preview/video-controls';
+export { createVideoPreviewPlayer } from './preview/video-player';
 export type {
   Model3dPreviewNode,
   Model3dPreviewState,

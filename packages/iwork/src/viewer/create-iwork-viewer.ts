@@ -1,4 +1,4 @@
-import { MediaRegistry, type TableItem } from '@filens/core';
+import { bindPreviewTouchGestures, MediaRegistry, type TableItem } from '@filens/core';
 import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE, type ParsedSheet } from '@filens/xlsx';
 import type {
   IworkFitMode,
@@ -47,6 +47,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
   const sheetLoads = new Map<number, Promise<void>>();
   let refreshedRows: number[] | undefined;
   let scrollFrame = 0;
+  let unbindTouch = () => {};
 
   const emit = <T extends IworkViewerEventName>(event: T, payload: IworkViewerEventMap[T]) => {
     listeners.get(event)?.forEach((handler) => handler(payload));
@@ -64,6 +65,8 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
   });
 
   const stopLoad = () => {
+    unbindTouch();
+    unbindTouch = () => {};
     const controller = loadController;
     loadController = null;
     controller?.abort();
@@ -452,6 +455,16 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       mediaRegistry = createMediaRegistry(document);
       state.loading = false;
       render();
+      if (state.kind !== 'numbers') {
+        unbindTouch = bindPreviewTouchGestures(container, {
+          getScale: () => state.scale,
+          setScale,
+          enabled: () => !destroyed && !state.loading,
+          minScale: options.minScale,
+          maxScale: options.maxScale,
+          signal: controller.signal
+        });
+      }
       bindResizeObserver();
       setStatus();
       emit('loadingchange', getState());
@@ -526,6 +539,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      unbindTouch();
       ++generation;
       listeners.clear();
       stopLoad();

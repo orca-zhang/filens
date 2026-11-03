@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "fflate": "0.8.2",
-    "libheif-js": "^1.23.5"
+    "libheif-js": "1.23.5"
   }
 }

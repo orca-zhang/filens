@@ -25,7 +25,7 @@ test('previews a real stitched Insta360 INSV proxy as panorama video', async ({ 
 
   await expect(page.locator('.wb-preview-title strong')).toHaveText(/\.insv$/i);
   await expect(page.locator('canvas.panoramav-canvas')).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator('video.panoramav-video-controls')).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Panorama video controls' })).toBeVisible();
   await expect(page.locator('.panoramav-notice')).toHaveCount(0);
 });
 
@@ -40,6 +40,6 @@ test('previews a real Osmo OSV recording through its matching LRF proxy', async 
 
   await expect(page.locator('.wb-preview-title strong')).toHaveText(/\.osv$/i);
   await expect(page.locator('canvas.panoramav-canvas')).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator('video.panoramav-video-controls')).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Panorama video controls' })).toBeVisible();
   await expect(page.locator('.panoramav-notice')).toHaveCount(0);
 });

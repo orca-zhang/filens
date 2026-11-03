@@ -4,6 +4,7 @@ import {
   type PreviewEventName, type PreviewItemState, type PreviewLoadContext,
   type PreviewOptions, type PreviewSession, type PreviewSource
 } from '@filens/core';
+import type { BrowserMediaOptions } from './engine';
 import { createMediaConverterClient } from '@filens/converter-client';
 
 export const HEIF_PREVIEW_ROUTES: FormatDefinition[] = [{
@@ -11,17 +12,17 @@ export const HEIF_PREVIEW_ROUTES: FormatDefinition[] = [{
   contentTypes: ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'], group: 'image'
 }];
 
-export function createCodecPreviewDrivers(converter?: ConverterClient): PreviewDriver[] {
+export function createCodecPreviewDrivers(converter?: ConverterClient, browserMedia?: boolean | BrowserMediaOptions): PreviewDriver[] {
   return [{
     id: 'heif-image', family: 'image', supports: format => ['heic', 'heif'].includes(format.replace(/^\./, '').toLowerCase()),
     createSession: (host, options) => new CodecPreviewSession(host, options ?? {}, converter ?? createMediaConverterClient(), true)
   }, {
     ...createMediaPreviewDriver(),
-    createSession: (host, options) => new CodecPreviewSession(host, options ?? {}, converter, false)
+    createSession: (host, options) => new CodecPreviewSession(host, options ?? {}, converter, false, browserMedia)
   }];
 }
 
-/** Keep the native controls and image tools while supplying browser-safe media. */
+/** Keep the shared media controls and image tools while supplying browser-safe media. */
 class CodecPreviewSession implements PreviewSession {
   private child?: PreviewSession;
   private controller?: AbortController;
@@ -30,7 +31,7 @@ class CodecPreviewSession implements PreviewSession {
   private listeners = new Map<PreviewEventName, Set<(payload: never) => void>>();
   private state: PreviewItemState;
 
-  constructor(private host: HTMLElement, private options: PreviewOptions, private converter: ConverterClient | undefined, private image: boolean) {
+  constructor(private host: HTMLElement, private options: PreviewOptions, private converter: ConverterClient | undefined, private image: boolean, private browserMedia?: boolean | BrowserMediaOptions) {
     this.state = { family: image ? 'image' : 'video', loading: false, error: null, warnings: [], capabilities: {} };
   }
 
@@ -53,9 +54,25 @@ class CodecPreviewSession implements PreviewSession {
     if (context.signal?.aborted) controller.abort();
     if (signal.aborted) return;
     const loadContext = { ...context, signal };
-    await this.open(source, loadContext, controller,
-      this.image || (this.converter && (context.route?.sourceFormat ?? context.descriptor.extension)?.toLowerCase() === 'mov')
-        ? () => { void this.convert(source, loadContext, controller); } : undefined);
+    const extension = (context.route?.sourceFormat ?? context.descriptor.extension ?? '').toLowerCase();
+    const video = context.route?.family === 'video' || context.descriptor.contentType?.startsWith('video/') ||
+      ['mp4', 'mov', 'm4v', 'webm', 'mkv', 'avi', 'mpeg', 'mpg', 'ogv', '3gp'].includes(extension);
+    const fallback = this.image ? () => { void this.convert(source, loadContext, controller); }
+      : this.browserMedia && video ? () => { void this.recover(source, loadContext, controller); }
+      : this.converter && extension === 'mov' ? () => { void this.convert(source, loadContext, controller); } : undefined;
+    await this.open(source, loadContext, controller, fallback);
+  }
+
+  private async recover(source: PreviewSource, context: PreviewLoadContext, controller: AbortController): Promise<void> {
+    if (controller.signal.aborted || this.controller !== controller) return;
+    this.releaseChild();
+    try {
+      const { BrowserVideoSession } = await import('./browser-video-session');
+      if (controller.signal.aborted || this.controller !== controller) return;
+      const child = new BrowserVideoSession(this.host, typeof this.browserMedia === 'object' ? this.browserMedia : {});
+      this.attach(child, controller);
+      await child.load(source, context);
+    } catch (error) { this.fail(error, controller); }
   }
 
   private async convert(source: PreviewSource, context: PreviewLoadContext, controller: AbortController): Promise<void> {
@@ -80,30 +97,24 @@ class CodecPreviewSession implements PreviewSession {
   private async open(source: PreviewSource, context: PreviewLoadContext, controller: AbortController, fallback?: () => void): Promise<void> {
     if (controller.signal.aborted || this.controller !== controller) return;
     const child = (this.image ? createImagePreviewDriver() : createMediaPreviewDriver()).createSession(this.host, this.options);
+    this.attach(child, controller, fallback);
+    try { await child.load(source, context); }
+    catch (error) { if (this.child === child) this.fail(error, controller); }
+  }
+
+  private attach(child: PreviewSession, controller: AbortController, fallback?: () => void): void {
     this.child = child;
     const active = () => this.child === child && this.controller === controller && !controller.signal.aborted;
     for (const event of ['loading', 'rendered', 'statechange', 'error', 'warnings'] as const) {
       this.childListeners.push(child.on(event, payload => {
         if (!active()) return;
         if (event === 'error' && fallback) { fallback(); return; }
-        // Some browsers accept a MOV's audio while silently dropping its video.
-        // A progressing time line alone must not be reported as a video preview.
-        if (event === 'rendered' && (payload as PreviewItemState).family === 'video' && !this.host.querySelector('video')?.videoWidth) {
-          if (fallback) fallback();
-          else {
-            this.releaseChild();
-            this.fail(new Error('The browser cannot decode this video codec. Use a compatible browser or an optional media converter.'), controller);
-          }
-          return;
-        }
         if (event === 'loading' || event === 'rendered' || event === 'statechange') {
           this.state = payload as PreviewItemState;
           this.emit(event, this.state);
         } else this.emit(event, payload as never);
       }));
     }
-    try { await child.load(source, context); }
-    catch (error) { if (active()) this.fail(error, controller); }
   }
 
   private fail(error: unknown, controller: AbortController): void {

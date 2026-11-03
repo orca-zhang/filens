@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useDemoI18n } from '../i18n';
 import { computed, ref } from 'vue';
 import WorkbenchIcon from './WorkbenchIcon.vue';
 import type { WorkbenchFamilyId, WorkbenchFormat, WorkbenchFormatFamily } from './workbench';
+
+const { t } = useDemoI18n();
 
 const props = defineProps<{
   families: WorkbenchFormatFamily[];
@@ -27,9 +30,9 @@ const categories = computed(() => props.families
 const resultCount = computed(() => categories.value.reduce((count, category) => count + category.formats.length, 0));
 const canPreview = (format: WorkbenchFormat) => (format.supported || format.sampleOnly) && props.sampleExtensions.has(format.extension);
 function formatHint(format: WorkbenchFormat): string {
-  if (format.sampleOnly) return '转换后 SVG 展示示例；暂不支持直接上传原格式';
-  if (!format.supported) return '已归类，暂未支持预览';
-  return props.sampleExtensions.has(format.extension) ? `预览 ${format.label} 示例` : '支持上传预览，暂无内置示例';
+  if (format.sampleOnly) return t('转换后 SVG 展示示例；暂不支持直接上传原格式', 'Converted SVG sample; uploading the original format is not supported yet');
+  if (!format.supported) return t('已归类，暂未支持预览', 'Listed format; preview is not supported yet');
+  return props.sampleExtensions.has(format.extension) ? t(`预览 ${format.label} 示例`, `Preview ${format.label} sample`) : t('支持上传预览，暂无内置示例', 'Upload to preview; no built-in sample yet');
 }
 function chooseSample(extension: string): void {
   search.value = '';
@@ -38,24 +41,24 @@ function chooseSample(extension: string): void {
 </script>
 
 <template>
-  <section class="wb-library" aria-label="示例资料库">
+  <section class="wb-library" :aria-label="t('示例资料库', 'Sample library')">
     <div class="wb-library-heading">
-      <div><p class="wb-eyebrow">EXPLORE FILES</p><h2>示例资料库</h2></div>
-      <span class="wb-library-count" title="当前列出的格式数量">{{ resultCount }}</span>
+      <div><p class="wb-eyebrow">EXPLORE FILES</p><h2>{{ t('示例资料库', 'Sample library') }}</h2></div>
+      <span class="wb-library-count" :title="t('当前列出的格式数量', 'Number of listed formats')">{{ resultCount }}</span>
     </div>
-    <p class="wb-library-description">选一个格式，看看文件里的世界。</p>
+    <p class="wb-library-description">{{ t('选一个格式，看看文件里的世界。', 'Choose a format and see what is inside.') }}</p>
     <div class="wb-search">
       <WorkbenchIcon name="search" />
-      <input v-model="search" type="search" aria-label="搜索文件格式" placeholder="搜索格式，如 PDF、3D…" />
-      <button v-if="search" type="button" aria-label="清除格式搜索" @click="search = ''"><WorkbenchIcon name="close" /></button>
+      <input v-model="search" type="search" :aria-label="t('搜索文件格式', 'Search file formats')" :placeholder="t('搜索格式，如 PDF、3D…', 'Search formats, e.g. PDF, 3D…')" />
+      <button v-if="search" type="button" :aria-label="t('清除格式搜索', 'Clear format search')" @click="search = ''"><WorkbenchIcon name="close" /></button>
     </div>
-    <nav class="wb-tabs" aria-label="格式分类">
+    <nav class="wb-tabs" :aria-label="t('格式分类', 'Format categories')">
       <button v-for="family in families" :key="family.id" type="button" class="wb-tab"
         :class="{ 'is-active': selectedFamily === family.id && !query }" :aria-pressed="selectedFamily === family.id && !query"
         @click="search = ''; emit('family', family.id)">{{ family.label }}</button>
     </nav>
-    <div class="wb-format-list" aria-label="格式列表">
-      <p v-if="query" class="wb-search-results" role="status">找到 {{ resultCount }} 种格式</p>
+    <div class="wb-format-list" :aria-label="t('格式列表', 'Format list')">
+      <p v-if="query" class="wb-search-results" role="status">{{ t(`找到 ${resultCount} 种格式`, `${resultCount} format${resultCount === 1 ? '' : 's'} found`) }}</p>
       <div v-for="category in categories" :key="category.key" class="wb-format-category">
         <h3>{{ category.label }} <span>{{ category.formats.length.toString().padStart(2, '0') }}</span></h3>
         <div class="wb-subformats">
@@ -65,8 +68,8 @@ function chooseSample(extension: string): void {
             @click="chooseSample(format.extension)">{{ format.label }}</button>
         </div>
       </div>
-      <div v-if="!resultCount" class="wb-search-empty"><WorkbenchIcon name="search" /><strong>没有找到这个格式</strong><p>试试扩展名，或换个关键词。</p><button type="button" @click="search = ''">查看全部格式</button></div>
+      <div v-if="!resultCount" class="wb-search-empty"><WorkbenchIcon name="search" /><strong>{{ t('没有找到这个格式', 'No matching formats') }}</strong><p>{{ t('试试扩展名，或换个关键词。', 'Try a file extension or another keyword.') }}</p><button type="button" @click="search = ''">{{ t('查看全部格式', 'View all formats') }}</button></div>
     </div>
-    <p class="wb-format-hint"><span></span> 可打开示例 <span class="is-muted"></span> 暂无示例 <span class="is-converted"></span> 转换展示</p>
+    <p class="wb-format-hint"><span></span> {{ t('可打开示例', 'Samples') }} <span class="is-muted"></span> {{ t('暂无示例', 'No sample') }} <span class="is-converted"></span> {{ t('转换展示', 'Converted') }}</p>
   </section>
 </template>

@@ -10,6 +10,7 @@ import type {
 import { clamp } from './utils/common';
 import { loadPptx } from './parser/load-pptx';
 import { MediaRegistry, renderSlideToElement } from './render/dom';
+import { bindPreviewTouchGestures } from './preview/touch-gestures';
 
 type ListenerMap = {
   [K in ViewerEventName]: Set<(payload: ViewerEventMap[K]) => void>;
@@ -19,6 +20,7 @@ export class PptxViewer implements ViewerInstance {
   private readonly options: Required<ViewerOptions>;
   private readonly root: HTMLDivElement;
   private readonly scrollArea: HTMLDivElement;
+  private unbindTouch = () => {};
   private readonly listeners: ListenerMap = {
     rendered: new Set(),
     error: new Set(),
@@ -88,6 +90,7 @@ export class PptxViewer implements ViewerInstance {
   }
 
   async preview(source: Parameters<ViewerInstance['preview']>[0]): Promise<void> {
+    this.unbindTouch();
     const token = ++this.requestToken;
     this.activeAbortController?.abort();
     this.activeAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -123,6 +126,7 @@ export class PptxViewer implements ViewerInstance {
   }
 
   destroy(): void {
+    this.unbindTouch();
     this.requestToken += 1;
     this.activeAbortController?.abort();
     this.activeAbortController = null;
@@ -237,6 +241,13 @@ export class PptxViewer implements ViewerInstance {
 
     this.scrollArea.scrollTop = 0;
     this.renderSlideShells();
+    this.unbindTouch = bindPreviewTouchGestures(this.scrollArea, {
+      getScale: () => this.state.scale,
+      setScale: scale => this.setScale(scale),
+      enabled: () => !this.state.loading && !!this.presentation,
+      minScale: this.options.minScale,
+      maxScale: this.options.maxScale
+    });
     this.emit('warnings', presentation.warnings);
     this.emit('rendered', this.getState());
   }

@@ -10,7 +10,7 @@ const processor = createWasmPanoramaProcessor({ wasm: '/externals/converter-core
 const driver = createPanoramaPreviewDriver({ processor });
 ```
 
-Register the driver and `createPanoramaPreviewRoutes()` with the preview runtime. The driver selects the Photos WebGL renderer for supported calibrated video and provides drag, zoom, play/pause, and seek controls. Use the preview resource resolver to supply matching ONE RS companions and calibration sidecars.
+Register the driver and `createPanoramaPreviewRoutes()` with the preview runtime. The driver selects the Photos WebGL renderer for supported calibrated video and provides drag, zoom, view reset, play/pause, seek, five-second skips, playback speed, and fullscreen controls. Camera originals and stitched/proxy videos share the same responsive control bar. Fullscreen retains the stitched canvas and controls; calibrated originals currently preview video only, with audio controls disabled. Use the preview resource resolver to supply matching ONE RS companions and calibration sidecars.
 
 File inspection and calibration decoding run in the frontend WASM core. Browser WebCodecs supplies synchronized frames to the renderer; supported codecs depend on the browser and device. Separate square lenses and side-by-side packed video share the same projection, exposure, seam, and foreground-protection implementation. Other supported layouts retain the existing renderer.
 

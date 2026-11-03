@@ -88,7 +88,7 @@ npm install filens-preview
 
 **iOS / Android:** source SDKs are available as a local Swift Package and an Android
 Library, sharing the offline frontend and WASM runtime. See the
-[mobile SDK integration guide (Chinese)](sdk/README.zh-CN.md) and
+[mobile SDK integration guide](sdk/README.md) and
 [runtime, npm and SDK sizes](docs/preview-sizes.md).
 
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
@@ -268,6 +268,7 @@ If the module is not found, run `sudo zpkg update` to refresh the store index, t
 | Standalone single-file / split builds and CLI preview | [Preview guide](packages/preview/README.md) |
 | Vue integration | [Vue components](packages/vue/README.md) |
 | Supported formats | [Support matrix](docs/support-matrix.md) |
+| Browser media without a conversion server | [Integration, limits and validation](docs/browser-media-engine.md) |
 | Architecture and WASM boundaries | [Project overview](docs/project-overview.md) |
 | Frontend benchmarks and raw data | [Performance comparison](docs/performance-comparison.md) |
 | macOS native OCR vs RapidOCR | [Measured comparison](docs/macos-ocr-benchmark.zh-CN.md) |

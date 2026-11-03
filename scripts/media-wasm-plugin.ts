@@ -2,7 +2,17 @@ import { readFile } from 'node:fs/promises';
 
 /** Keep the optional HEIF decoder separate in library mode. */
 export function mediaWasmAsset() {
-  return libraryAsset('/libheif-js/libheif-wasm/libheif.wasm?url', 'libheif.wasm');
+  return [
+    libraryAsset('/libheif-js/libheif-wasm/libheif.wasm?url', 'libheif.wasm'),
+    libraryAsset('/wasm/converter-image/dist/converter-image.wasm?url', 'converter-image.wasm'),
+    {
+      name: 'filens-image-core-notices', apply: 'build' as const,
+      async generateBundle(this: { emitFile(asset: { type: 'asset'; fileName: string; source: string }): string }) {
+        this.emitFile({ type: 'asset', fileName: 'THIRD-PARTY-NOTICES.txt', source: await readFile(
+          new URL('../wasm/converter-image/THIRD-PARTY-NOTICES.txt', import.meta.url), 'utf8') });
+      }
+    }
+  ];
 }
 
 /** Keep PDF's existing worker as a file instead of a Base64 URL module. */

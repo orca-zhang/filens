@@ -59,6 +59,29 @@ try {
       await expect.poll(() => page.locator('audio').evaluate(audio => audio.currentTime)).toBeGreaterThan(0);
       assert.ok(!requests.some(url => /libheif\.wasm|ffmpeg/i.test(url)), 'Audio must not load image or video decoders');
       console.log(`${mode}: native WAV audio played without an image/video decoder`);
+      for (const name of ['hlg10', 'pq12-icc', '422-odd10-full-vui']) {
+        const fixtures = path.join(root, 'packages/converter-client/test/fixtures/heif');
+        await page.locator('#file').setInputFiles({ name: `${name}.heic`, mimeType: 'image/heic',
+          buffer: await readFile(path.join(fixtures, `${name}.heic`)) });
+        await expect.poll(() => page.locator('body').getAttribute('data-state'), { timeout: 45000 }).toBe('ready');
+        const actual = await page.locator('img.pptxv-native-image').evaluate(async image => {
+          const blob = await (await fetch(image.src)).blob();
+          if (blob.type !== 'image/png') return null; // Native rendering follows the browser's policy.
+          const canvas = document.createElement('canvas');
+          canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+          const context = canvas.getContext('2d', { colorSpace: 'srgb' });
+          context.drawImage(image, 0, 0);
+          return [...context.getImageData(0, 0, canvas.width, canvas.height).data];
+        });
+        if (actual) {
+          const expected = await readFile(path.join(fixtures, `${name.replace('-vui', '')}.rgba`));
+          assert.equal(actual.length, expected.length);
+          let maximum = 0;
+          for (let i = 0; i < actual.length; i++) maximum = Math.max(maximum, Math.abs(actual[i] - expected[i]));
+          assert.ok(maximum <= 3, `${mode}/${name}: maximum pixel error ${maximum}`);
+        }
+        console.log(`${mode}: ${name}: ${actual ? 'WASM worker pixels match independent reference' : 'native image rendered'}`);
+      }
       for (const extension of ['HEIC', 'MOV']) {
         await page.locator('#file').setInputFiles(path.join(root, `apps/demo/public/samples/live-photo/apple-iphone-15-live-photo.${extension}`));
         await expect.poll(async () => ['ready', 'error'].includes(await page.locator('body').getAttribute('data-state')), {

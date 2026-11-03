@@ -8,6 +8,11 @@ use std::path::Path;
 use std::process;
 use std::time::Instant;
 
+#[cfg(any(target_arch = "wasm32", test))]
+mod heif_color;
+#[cfg(any(target_arch = "wasm32", test))]
+mod heif_metadata;
+
 const FIDELITY: &str = "lightweight";
 const RAW_PREVIEW_BACKEND: &str = "raw-preview";
 const RAW_PREVIEW_WARNING: &str = "Image converter uses an embedded JPEG when suitable and otherwise generates a lightweight sensor preview; small X3F previews are developed from the sensor. Full-resolution sensor data, custom picture profiles, and edits are not preserved.";
@@ -369,6 +374,54 @@ pub unsafe extern "C" fn filens_image_preview(pointer: u32, length: u32) -> u64 
     (u64::from(length) << 32) | u64::from(pointer)
 }
 
+/// The HEIF WASM decoder supplies source-depth RGB and its own colour metadata.
+/// Keep colour conversion in the shared image core, including for browser hosts.
+#[cfg(target_arch = "wasm32")]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn filens_image_normalize_heif(pointer: u32, length: u32) -> u64 {
+    if pointer == 0 || length == 0 {
+        return 0;
+    }
+    let input = unsafe { std::slice::from_raw_parts(pointer as *const u8, length as usize) };
+    let (metadata, image) = match heif_color::normalize_packet(input) {
+        Ok(image) => (
+            serde_json::json!({"ok": true, "contentType": "image/png"}),
+            image,
+        ),
+        Err(message) => (
+            serde_json::json!({"ok": false, "errorMessage": message}),
+            Vec::new(),
+        ),
+    };
+    heif_result(metadata, &image)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn filens_image_heif_profile(pointer: u32, length: u32, item_id: u32) -> u64 {
+    if pointer == 0 || length == 0 {
+        return 0;
+    }
+    let input = unsafe { std::slice::from_raw_parts(pointer as *const u8, length as usize) };
+    let metadata = match heif_metadata::item_color(input, item_id) {
+        Ok(profile) => serde_json::json!({"ok": true, "profile": profile}),
+        Err(message) => serde_json::json!({"ok": false, "errorMessage": message}),
+    };
+    heif_result(metadata, &[])
+}
+
+#[cfg(target_arch = "wasm32")]
+fn heif_result(metadata: serde_json::Value, image: &[u8]) -> u64 {
+    let json = serde_json::to_vec(&metadata).expect("HEIF result serializes");
+    let mut result = Vec::with_capacity(4 + json.len() + image.len());
+    result.extend_from_slice(&(json.len() as u32).to_le_bytes());
+    result.extend_from_slice(&json);
+    result.extend_from_slice(&image);
+    let length = result.len() as u32;
+    let pointer = Box::into_raw(result.into_boxed_slice()) as *mut u8 as u32;
+    (u64::from(length) << 32) | u64::from(pointer)
+}
+
 fn develop_raw_sensor_preview_with_options(
     bytes: &[u8],
     options: &PreviewOptions,
@@ -526,7 +579,7 @@ fn encode_camera_rgb(
     brightness: f32,
     srgb: &SrgbEncoder,
 ) -> [u8; 3] {
-    // Photos / LibRaw highlight=0: clip white-balanced camera channels before
+    // LibRaw highlight=0: clip white-balanced camera channels before
     // conversion, then apply metadata exposure and the fixed sRGB transfer curve.
     let rgb = rgb.map(|value| value.clamp(0.0, 1.0));
     std::array::from_fn(|channel| {
@@ -1356,8 +1409,8 @@ mod tests {
         }
     }
 
-    // Same independent color contract as Photos' nativeGrayDNGFixture: 18%
-    // sensor gray, calibrated sRGB primaries, no JPEG and signed exposure EV.
+    // Independent color reference: 18% sensor gray, calibrated sRGB primaries,
+    // no JPEG and signed exposure EV.
     fn gray_dng(ev: Option<i32>, with_matrix: bool) -> Vec<u8> {
         let short = |value: u16| value.to_le_bytes().to_vec();
         let long = |value: u32| value.to_le_bytes().to_vec();
@@ -1448,7 +1501,7 @@ mod tests {
     }
 
     #[test]
-    fn sensor_color_matches_photos_gray_and_signed_exposure_contract() {
+    fn sensor_color_matches_gray_and_signed_exposure_contract() {
         let encoder = SrgbEncoder::new();
         for (ev, expected) in [
             (None, 118u8),

@@ -1,0 +1,768 @@
+{
+  "date": "2026-11-03",
+  "host": "Apple M4 Pro / macOS arm64",
+  "scope": "Synthetic local validation, not Windows GPU acceptance. prefer-hardware does not establish hardware execution.",
+  "browsers": [
+    {
+      "browser": "chromium",
+      "version": "156.0.8078.80",
+      "direct": {
+        "codecs": 0,
+        "fetches": 0,
+        "width": 640,
+        "time": 0.134295
+      },
+      "recovery": {
+        "width": 640,
+        "src": "blob:http://127.0.0.1:5173/0cdee8ce-dd20-4d7c-b213-28a852b4bc2d",
+        "firstFrameMs": 51.29999999701977
+      },
+      "transcoding": {
+        "width": 640,
+        "time": 0.4987,
+        "readyAndPlaybackMs": 4149.20000000298,
+        "errors": [],
+        "measurements": [
+          {
+            "elapsedMs": 1004.5999999940395,
+            "encode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "decode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "process": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "encoderQueueDepth": 0,
+            "droppedFrames": 0,
+            "cpuUsage": null,
+            "gpuVideoUtilization": null,
+            "utilizationSource": null,
+            "network": {
+              "rttMs": null,
+              "packetLoss": null,
+              "availableBitrate": null
+            }
+          },
+          {
+            "elapsedMs": 2001.0999999940395,
+            "encode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "decode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "process": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "encoderQueueDepth": 0,
+            "droppedFrames": 0,
+            "cpuUsage": null,
+            "gpuVideoUtilization": null,
+            "utilizationSource": null,
+            "network": {
+              "rttMs": null,
+              "packetLoss": null,
+              "availableBitrate": null
+            }
+          },
+          {
+            "elapsedMs": 3001.0999999940395,
+            "encode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "decode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "process": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "encoderQueueDepth": 0,
+            "droppedFrames": 0,
+            "cpuUsage": null,
+            "gpuVideoUtilization": null,
+            "utilizationSource": null,
+            "network": {
+              "rttMs": null,
+              "packetLoss": null,
+              "availableBitrate": null
+            }
+          }
+        ]
+      },
+      "ranged": {
+        "readyAndPlaybackMs": 370.8999999910593,
+        "time": 16,
+        "width": 640,
+        "paused": true,
+        "volume": 0.4,
+        "rate": 1.5,
+        "reads": 16,
+        "maxRead": 1048576,
+        "errors": [],
+        "released": true
+      },
+      "offline": {
+        "requests": 0,
+        "time": 0.060054,
+        "width": 640,
+        "readyAndPlaybackMs": 108.90000000596046
+      },
+      "rejectedRange": "Browser media requires a valid HTTP Range response (206).",
+      "benchmarks": [
+        {
+          "config": {
+            "codec": "avc1.640033",
+            "width": 1920,
+            "height": 1080,
+            "framerate": 30,
+            "bitrate": 6000000,
+            "latencyMode": "realtime",
+            "hardwareAcceleration": "prefer-hardware"
+          },
+          "result": {
+            "support": "supported",
+            "preference": "prefer-hardware",
+            "execution": "unknown",
+            "configuration": {
+              "alpha": "discard",
+              "bitrate": 6000000,
+              "bitrateMode": "variable",
+              "codec": "avc1.640033",
+              "contentHint": "",
+              "framerate": 30,
+              "hardwareAcceleration": "prefer-hardware",
+              "height": 1080,
+              "latencyMode": "realtime",
+              "width": 1920
+            },
+            "initialized": true,
+            "completed": true,
+            "metrics": {
+              "elapsedMs": 173.70000000298023,
+              "encode": {
+                "frames": 30,
+                "samples": 30,
+                "fps": 172.71157167233898,
+                "averageMs": 18.74333333323399,
+                "p95Ms": 35.099999994039536
+              },
+              "decode": {
+                "frames": 30,
+                "samples": 30,
+                "fps": 172.71157167233898,
+                "averageMs": 0.9466666663686435,
+                "p95Ms": 1.7999999970197678
+              },
+              "process": {
+                "frames": 0,
+                "samples": 0,
+                "fps": 0,
+                "averageMs": 0,
+                "p95Ms": 0
+              },
+              "encoderQueueDepth": 0,
+              "droppedFrames": 0,
+              "cpuUsage": null,
+              "gpuVideoUtilization": null,
+              "utilizationSource": null,
+              "network": {
+                "rttMs": null,
+                "packetLoss": null,
+                "availableBitrate": null
+              }
+            }
+          }
+        },
+        {
+          "config": {
+            "codec": "avc1.640033",
+            "width": 1920,
+            "height": 1080,
+            "framerate": 60,
+            "bitrate": 6000000,
+            "latencyMode": "realtime",
+            "hardwareAcceleration": "prefer-hardware"
+          },
+          "result": {
+            "support": "supported",
+            "preference": "prefer-hardware",
+            "execution": "unknown",
+            "configuration": {
+              "alpha": "discard",
+              "bitrate": 6000000,
+              "bitrateMode": "variable",
+              "codec": "avc1.640033",
+              "contentHint": "",
+              "framerate": 60,
+              "hardwareAcceleration": "prefer-hardware",
+              "height": 1080,
+              "latencyMode": "realtime",
+              "width": 1920
+            },
+            "initialized": true,
+            "completed": true,
+            "metrics": {
+              "elapsedMs": 178.8999999910593,
+              "encode": {
+                "frames": 30,
+                "samples": 30,
+                "fps": 167.691447744546,
+                "averageMs": 20.25333333512147,
+                "p95Ms": 40.8999999910593
+              },
+              "decode": {
+                "frames": 30,
+                "samples": 30,
+                "fps": 167.691447744546,
+                "averageMs": 1.1333333318432173,
+                "p95Ms": 2.5
+              },
+              "process": {
+                "frames": 0,
+                "samples": 0,
+                "fps": 0,
+                "averageMs": 0,
+                "p95Ms": 0
+              },
+              "encoderQueueDepth": 0,
+              "droppedFrames": 0,
+              "cpuUsage": null,
+              "gpuVideoUtilization": null,
+              "utilizationSource": null,
+              "network": {
+                "rttMs": null,
+                "packetLoss": null,
+                "availableBitrate": null
+              }
+            }
+          }
+        },
+        {
+          "config": {
+            "codec": "avc1.640033",
+            "width": 2560,
+            "height": 1440,
+            "framerate": 60,
+            "bitrate": 6000000,
+            "latencyMode": "realtime",
+            "hardwareAcceleration": "prefer-hardware"
+          },
+          "result": {
+            "support": "supported",
+            "preference": "prefer-hardware",
+            "execution": "unknown",
+            "configuration": {
+              "alpha": "discard",
+              "bitrate": 6000000,
+              "bitrateMode": "variable",
+              "codec": "avc1.640033",
+              "contentHint": "",
+              "framerate": 60,
+              "hardwareAcceleration": "prefer-hardware",
+              "height": 1440,
+              "latencyMode": "realtime",
+              "width": 2560
+            },
+            "initialized": true,
+            "completed": false,
+            "error": "Incomplete codec trial",
+            "metrics": {
+              "elapsedMs": 267.59999999403954,
+              "encode": {
+                "frames": 29,
+                "samples": 29,
+                "fps": 108.37070254351995,
+                "averageMs": 24.162068967161506,
+                "p95Ms": 44.400000005960464
+              },
+              "decode": {
+                "frames": 29,
+                "samples": 29,
+                "fps": 108.37070254351995,
+                "averageMs": 1.7931034487896953,
+                "p95Ms": 3.9000000059604645
+              },
+              "process": {
+                "frames": 0,
+                "samples": 0,
+                "fps": 0,
+                "averageMs": 0,
+                "p95Ms": 0
+              },
+              "encoderQueueDepth": 0,
+              "droppedFrames": 0,
+              "cpuUsage": null,
+              "gpuVideoUtilization": null,
+              "utilizationSource": null,
+              "network": {
+                "rttMs": null,
+                "packetLoss": null,
+                "availableBitrate": null
+              }
+            }
+          }
+        },
+        {
+          "config": {
+            "codec": "avc1.640033",
+            "width": 3840,
+            "height": 2160,
+            "framerate": 30,
+            "bitrate": 6000000,
+            "latencyMode": "realtime",
+            "hardwareAcceleration": "prefer-hardware"
+          },
+          "result": {
+            "support": "supported",
+            "preference": "prefer-hardware",
+            "execution": "unknown",
+            "configuration": {
+              "alpha": "discard",
+              "bitrate": 6000000,
+              "bitrateMode": "variable",
+              "codec": "avc1.640033",
+              "contentHint": "",
+              "framerate": 30,
+              "hardwareAcceleration": "prefer-hardware",
+              "height": 2160,
+              "latencyMode": "realtime",
+              "width": 3840
+            },
+            "initialized": true,
+            "completed": false,
+            "error": "Incomplete codec trial",
+            "metrics": {
+              "elapsedMs": 519.5,
+              "encode": {
+                "frames": 29,
+                "samples": 29,
+                "fps": 55.82290664100096,
+                "averageMs": 49.18965517035846,
+                "p95Ms": 68.09999999403954
+              },
+              "decode": {
+                "frames": 29,
+                "samples": 29,
+                "fps": 55.82290664100096,
+                "averageMs": 3.413793104475942,
+                "p95Ms": 4.200000002980232
+              },
+              "process": {
+                "frames": 0,
+                "samples": 0,
+                "fps": 0,
+                "averageMs": 0,
+                "p95Ms": 0
+              },
+              "encoderQueueDepth": 0,
+              "droppedFrames": 0,
+              "cpuUsage": null,
+              "gpuVideoUtilization": null,
+              "utilizationSource": null,
+              "network": {
+                "rttMs": null,
+                "packetLoss": null,
+                "availableBitrate": null
+              }
+            }
+          }
+        }
+      ],
+      "bytesServed": 18779318,
+      "fixtureBytes": 2136382,
+      "virtualRangeBytes": 9663676416,
+      "hardwareExecution": "unknown"
+    },
+    {
+      "browser": "firefox",
+      "version": "148.0.2",
+      "direct": {
+        "codecs": 0,
+        "fetches": 0,
+        "width": 640,
+        "time": 0.338898
+      },
+      "recovery": {
+        "width": 640,
+        "src": "blob:http://127.0.0.1:5173/cfc64f7c-c6e2-4bf3-ad2b-23d6547baab7",
+        "firstFrameMs": 54
+      },
+      "transcoding": {
+        "width": 640,
+        "time": 0.466195,
+        "readyAndPlaybackMs": 682,
+        "errors": [],
+        "measurements": []
+      },
+      "ranged": {
+        "readyAndPlaybackMs": 366,
+        "time": 16,
+        "width": 640,
+        "paused": true,
+        "volume": 0.4,
+        "rate": 1.5,
+        "reads": 17,
+        "maxRead": 1048576,
+        "errors": [],
+        "released": true
+      },
+      "offline": {
+        "requests": 0,
+        "time": 0.305128,
+        "width": 640,
+        "readyAndPlaybackMs": 358
+      },
+      "rejectedRange": "Browser media requires a valid HTTP Range response (206).",
+      "benchmarks": [],
+      "bytesServed": 19827894,
+      "fixtureBytes": 2136382,
+      "virtualRangeBytes": 9663676416,
+      "hardwareExecution": "unknown"
+    },
+    {
+      "browser": "webkit",
+      "version": "26.4",
+      "direct": {
+        "codecs": 0,
+        "fetches": 0,
+        "width": 640,
+        "time": 0.3472947923389871
+      },
+      "recovery": {
+        "width": 640,
+        "src": "blob:http://127.0.0.1:5173/4b32e73a-0423-4228-ad9b-7ccbfcbbf177",
+        "firstFrameMs": 85
+      },
+      "transcoding": {
+        "width": 640,
+        "time": 0.400100875,
+        "readyAndPlaybackMs": 537,
+        "errors": [],
+        "measurements": []
+      },
+      "ranged": {
+        "readyAndPlaybackMs": 371,
+        "time": 16,
+        "width": 640,
+        "paused": true,
+        "volume": 0.4,
+        "rate": 1.5,
+        "reads": 17,
+        "maxRead": 1048576,
+        "errors": [],
+        "released": true
+      },
+      "offline": {
+        "requests": 0,
+        "time": 0.100074443,
+        "width": 640,
+        "readyAndPlaybackMs": 316
+      },
+      "rejectedRange": "Browser media requires a valid HTTP Range response (206).",
+      "benchmarks": [],
+      "bytesServed": 20876472,
+      "fixtureBytes": 2136382,
+      "virtualRangeBytes": 9663676416,
+      "hardwareExecution": "unknown"
+    }
+  ],
+  "standalone": [
+    {
+      "mode": "split",
+      "width": 320,
+      "time": 0.3525,
+      "source": "blob:http://127.0.0.1:54015/a5c8a55c-c644-435a-b9a6-8d3fdeb108de",
+      "conversions": 0,
+      "requests": 18
+    },
+    {
+      "mode": "all-in-one",
+      "width": 320,
+      "time": 0.3525,
+      "source": "blob:http://127.0.0.1:54015/1e246cb3-ce43-44c5-a767-c18b9a75f946",
+      "conversions": 0,
+      "requests": 2
+    }
+  ],
+  "finalRegression": [
+    {
+      "browser": "chromium",
+      "version": "156.0.8078.80",
+      "direct": {
+        "codecs": 0,
+        "fetches": 0,
+        "width": 640,
+        "time": 0.130743
+      },
+      "recovery": {
+        "width": 640,
+        "src": "blob:http://127.0.0.1:5173/f7de7b8d-c5b8-4073-9be6-397234075094",
+        "firstFrameMs": 61.70000000298023
+      },
+      "transcoding": {
+        "width": 640,
+        "time": 0.4985,
+        "readyAndPlaybackMs": 4161.5,
+        "errors": [],
+        "measurements": [
+          {
+            "elapsedMs": 1002.9000000059605,
+            "encode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "decode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "process": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "encoderQueueDepth": 0,
+            "droppedFrames": 0,
+            "cpuUsage": null,
+            "gpuVideoUtilization": null,
+            "utilizationSource": null,
+            "network": {
+              "rttMs": null,
+              "packetLoss": null,
+              "availableBitrate": null
+            }
+          },
+          {
+            "elapsedMs": 2000.5,
+            "encode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "decode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "process": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "encoderQueueDepth": 0,
+            "droppedFrames": 0,
+            "cpuUsage": null,
+            "gpuVideoUtilization": null,
+            "utilizationSource": null,
+            "network": {
+              "rttMs": null,
+              "packetLoss": null,
+              "availableBitrate": null
+            }
+          },
+          {
+            "elapsedMs": 3002.4000000059605,
+            "encode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "decode": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "process": {
+              "frames": 0,
+              "samples": 0,
+              "fps": 0,
+              "averageMs": 0,
+              "p95Ms": 0
+            },
+            "encoderQueueDepth": 0,
+            "droppedFrames": 0,
+            "cpuUsage": null,
+            "gpuVideoUtilization": null,
+            "utilizationSource": null,
+            "network": {
+              "rttMs": null,
+              "packetLoss": null,
+              "availableBitrate": null
+            }
+          }
+        ]
+      },
+      "ranged": {
+        "readyAndPlaybackMs": 364.6000000089407,
+        "time": 16,
+        "width": 640,
+        "paused": true,
+        "volume": 0.4,
+        "rate": 1.5,
+        "reads": 16,
+        "maxRead": 1048576,
+        "errors": [],
+        "released": true
+      },
+      "offline": {
+        "requests": 0,
+        "time": 0.057831,
+        "width": 640,
+        "readyAndPlaybackMs": 108
+      },
+      "rejectedRange": "Browser media requires a valid HTTP Range response (206).",
+      "benchmarks": [],
+      "bytesServed": 18779318,
+      "fixtureBytes": 2136382,
+      "virtualRangeBytes": 9663676416,
+      "hardwareExecution": "unknown"
+    },
+    {
+      "browser": "firefox",
+      "version": "148.0.2",
+      "direct": {
+        "codecs": 0,
+        "fetches": 0,
+        "width": 640,
+        "time": 0.340607
+      },
+      "recovery": {
+        "width": 640,
+        "src": "blob:http://127.0.0.1:5173/42c8852e-c6d9-42ff-b133-d8b6134de010",
+        "firstFrameMs": 49
+      },
+      "transcoding": {
+        "width": 640,
+        "time": 0.430712,
+        "readyAndPlaybackMs": 646,
+        "errors": [],
+        "measurements": []
+      },
+      "ranged": {
+        "readyAndPlaybackMs": 365,
+        "time": 16,
+        "width": 640,
+        "paused": true,
+        "volume": 0.4,
+        "rate": 1.5,
+        "reads": 17,
+        "maxRead": 1048576,
+        "errors": [],
+        "released": true
+      },
+      "offline": {
+        "requests": 0,
+        "time": 0.088883,
+        "width": 640,
+        "readyAndPlaybackMs": 116
+      },
+      "rejectedRange": "Browser media requires a valid HTTP Range response (206).",
+      "benchmarks": [],
+      "bytesServed": 38607212,
+      "fixtureBytes": 2136382,
+      "virtualRangeBytes": 9663676416,
+      "hardwareExecution": "unknown"
+    },
+    {
+      "browser": "webkit",
+      "version": "26.4",
+      "direct": {
+        "codecs": 0,
+        "fetches": 0,
+        "width": 640,
+        "time": 0.3467550003325181
+      },
+      "recovery": {
+        "width": 640,
+        "src": "blob:http://127.0.0.1:5173/9dddfea4-68b4-4aee-9ca6-160a30bf7484",
+        "firstFrameMs": 73
+      },
+      "transcoding": {
+        "width": 640,
+        "time": 0.400061833,
+        "readyAndPlaybackMs": 534,
+        "errors": [],
+        "measurements": []
+      },
+      "ranged": {
+        "readyAndPlaybackMs": 370,
+        "time": 16,
+        "width": 640,
+        "paused": true,
+        "volume": 0.4,
+        "rate": 1.5,
+        "reads": 18,
+        "maxRead": 1048576,
+        "errors": [],
+        "released": true
+      },
+      "offline": {
+        "requests": 0,
+        "time": 0.100059466,
+        "width": 640,
+        "readyAndPlaybackMs": 313
+      },
+      "rejectedRange": "Browser media requires a valid HTTP Range response (206).",
+      "benchmarks": [],
+      "bytesServed": 59483684,
+      "fixtureBytes": 2136382,
+      "virtualRangeBytes": 9663676416,
+      "hardwareExecution": "unknown"
+    }
+  ]
+}

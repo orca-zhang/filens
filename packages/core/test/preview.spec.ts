@@ -1286,9 +1286,18 @@ describe('preview format routing', () => {
   it('lists each extension once and prefers direct preview routes', () => {
     const formats = listPreviewFormats();
 
-    for (const extension of ['txt', 'csv', 'html']) {
+    for (const extension of ['txt', 'csv', 'html', 'apk', 'ipa']) {
       expect(formats.filter((format) => format.extension === extension)).toHaveLength(1);
       expect(formats.find((format) => format.extension === extension)?.conversionRequired).toBe(false);
+    }
+    for (const [extension, contentType] of [
+      ['apk', 'application/vnd.android.package-archive'],
+      ['ipa', 'application/x-ios-app']
+    ]) {
+      expect(formats.find(format => format.extension === extension)).toMatchObject({ family: 'archive', group: 'archive' });
+      for (const descriptor of [{ name: `app.${extension}` }, { contentType }]) {
+        expect(resolveFormatRoute(descriptor)).toMatchObject({ sourceFormat: extension, family: 'archive', driverId: 'archive', targetFormat: 'zip' });
+      }
     }
   });
 
@@ -1698,6 +1707,7 @@ describe('native preview drivers', () => {
 
     const video = videoContainer.querySelector('video.pptxv-native-media');
     expect(video).toBeTruthy();
+    Object.defineProperty(video, 'videoWidth', { value: 640 });
     video?.dispatchEvent(new Event('loadedmetadata'));
     expect(videoSession.getState()).toMatchObject({
       family: 'video',

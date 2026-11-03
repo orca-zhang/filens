@@ -905,6 +905,11 @@
     flex-wrap: wrap;
   }
 
+  .pptxv-toolbar-group + .pptxv-toolbar-group {
+    flex: 0 1 100%;
+    justify-content: flex-start;
+  }
+
   .pptxv-layout {
     flex-direction: column;
   }

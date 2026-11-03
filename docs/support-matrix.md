@@ -64,7 +64,7 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Portable pixmaps | `ppm` | Convert → `png` | P3 text and P6 binary; comments, arbitrary maxval, 8/16-bit RGB. | First image in a stream; [decode, runtime, and verification limits](#ppm-conversion). |
 | Camera RAW | `dng`, `cr2`, `cr3`, `nef`, and [more](#camera-raw-conversion) | Convert → `jpg` | Embedded JPEG or lightweight sensor preview. | Full RAW development is unavailable. |
 | Audio | `mp3`, `wav`, `aac`, `m4a`, `flac`, `ogg`, `oga`, `opus` | Direct | Native browser playback and controls. | Codec support varies. |
-| Video | `mp4`, `webm`, `mov`, `m4v`, `ogv`, `mkv`, `avi`, `mpeg`, `mpg`, `3gp` | Direct | Native browser playback and controls. | A recognized extension does not guarantee a decodable codec. |
+| Video | `mp4`, `webm`, `mov`, `m4v`, `ogv`, `mkv`, `avi`, `mpeg`, `mpg`, `3gp` | Direct | Native browser playback and controls; optional [local MP4/MOV recovery](browser-media-engine.md). | A recognized extension does not guarantee a decodable codec. Recovery is opt-in and rejects unsupported tracks. |
 | Equirectangular panoramas | `pano`, `panorama`, `360`; video: `360v`, `vr360` | Direct | Three.js spherical rendering. | Videos require browser-decodable media. |
 | Camera panoramas | `insp`, `insv`, `osv` | Direct; WASM processing where needed | Experimental calibrated lens rendering or a supported fallback. | Camera metadata, codecs, and companion files; [requirements](#panoramas-and-live-photo-samples). |
 
@@ -88,7 +88,7 @@ Long feature tables can be expanded using their disclosure headings. These table
 | HTML / XHTML | `html`, `htm`, `shtml`, `xhtml`, `xht`, `xhtm` | Direct | Sandboxed iframe; URLs, HTML data URLs and inline fragments. | Scripts are disabled by the iframe sandbox. |
 | EPUB | `epub` | Direct | Spine-based XHTML chapters, CSS imports, fonts, background images and SVG image references; local/app-resolved assets. | Advanced ebook navigation and themes are unavailable. |
 | Comic books | `cbz` | Direct | ZIP-based image page sequences. | Additional native comic formats are unavailable. |
-| ZIP-compatible archives | `zip`, `jar`, `war`, `ear`, `apk` | Direct | Listings, directory/nested browsing, entry preview, extraction helpers. | Read-only; no bulk extraction UI. |
+| ZIP-compatible archives | `zip`, `jar`, `war`, `ear`, `apk`, `ipa` | Direct | Listings, directory/nested browsing, entry preview, extraction helpers. | Read-only; no bulk extraction UI. |
 | TAR / GZIP | `tar`, `tgz`, `tar.gz`, `gz` | Direct | TAR/TGZ listings with PAX / GNU long paths; single-file GZIP extraction. | Read-only. |
 | Additional readable inputs | Examples: `fb2`, `eml`, `msg`, `ics`, `vcf` | Convert → `docx` | Content extraction for preview. | Exact pairs follow the conversion manifest. |
 
@@ -378,7 +378,7 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | Diagrams | Compressed/uncompressed diagrams.net mxGraph with default-size fallback; basic Visio XML/ZIP pages including legacy VDX `XForm` / `PageProps` geometry, `Shape` connectors and `pages.xml` manifests; common colors, rounded/ellipse/rhombus shapes, dashed lines, arrows, selection, zoom and responsive fitting. Replaced/cancelled/destroyed sessions discard pending results. | Visio mainly reads cached geometry; full master inheritance, layout fidelity and editing are unavailable. |
 | Code / text | UTF-8 display, language metadata, aligned line numbers; lightweight code highlighting up to 200,000 characters. Verified with 200,000 lines; replacing, cancelling or destroying a load discards pending results. | Full-file decoding and layout remain; no text virtualization, built-in search or richer editor controls. Larger sources skip highlighting. |
 | Browser images / HTML | Replacement, cancellation and destruction release session-owned URLs and ignore old element events. | Image decoding remains browser-dependent; HTML scripts remain sandboxed. |
-| Audio / video | Browser-native playback; replacement/cancellation/destruction stops old players. Failed media sources report errors; optional artwork does not block playback. | Browser codecs only; no HLS/DASH streaming or general transcoding. Artwork reads ID3 APIC only, limited to the first 512 KiB for Blob/File input. Standalone playback does not imply embedded Office/iWork media support. |
+| Audio / video | Browser-native playback; replacement/cancellation/destruction stops old players. Failed media sources report errors; optional artwork does not block playback. | Browser codecs; optional bounded MP4/MOV recovery with `browserMedia: true`. No HLS/DASH or general transcoding. Artwork reads ID3 APIC only, limited to the first 512 KiB for Blob/File input. Standalone playback does not imply embedded Office/iWork media support. |
 
 ## Integration support
 
@@ -427,7 +427,7 @@ Gaps below apply to shipped preview paths. Hosts can supply custom drivers or co
 | Native CAD | DWG, DGN, FreeCAD projects, IGES/BREP | No native preview route; STEP/STP and DXF are covered above. |
 | BIM | Revit, IFC | No native preview route. |
 | ECAD / fabrication | Gerber/Excellon, layered KiCad PCB | No native preview route. |
-| HEIC/HEIF | Native image decoding, with a dedicated local WASM fallback. | Primary image only; HDR and sequence fidelity vary. |
+| HEIC/HEIF | Native image decoding; local WASM fallback preserves source depth for ICC or fixed PQ/HLG-to-sRGB previews. | Primary still only; no sequence-only files or gain-map reproduction. Fallback: 64 MiB input, 64 MP, 16,384 px per edge, 4 MiB ICC, 30 s decode. |
 | Other images | TIFF, PSD | No default standalone route. Demo-derived assets do not establish general support. |
 | Other Netpbm extensions | `pbm`, `pgm`, `pnm`, `pam`, `pfm` | No default preview/conversion routes for these extensions. PPM support covers P3/P6 RGB only. |
 | Office add-ins | Add-ins and embedded application behavior | Outside the default conversion policy. |

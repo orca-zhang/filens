@@ -1,5 +1,7 @@
 import {
   createDefaultPreviewRoutes,
+  createVideoPlaybackControls,
+  bindPreviewTouchGestures,
   type FormatDefinition,
   type PreviewDriver,
   type PreviewEventMap,
@@ -67,6 +69,8 @@ export type PanoramaPreviewState = PreviewItemState & {
   currentTime?: number;
   paused?: boolean;
   muted?: boolean;
+  volume?: number;
+  playbackRate?: number;
   vendor?: PanoramaAssetManifest['vendor'];
   cameraModel?: string | null;
   calibrationSource?: PanoramaAssetManifest['calibrationSource'];
@@ -100,9 +104,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
   private geometry: SphereGeometry | null = null;
   private material: MeshBasicMaterial | null = null;
   private calibratedRenderer: CalibratedPanoramaRenderer | null = null;
-  private calibratedPlayButton: HTMLButtonElement | null = null;
-  private calibratedTimeline: HTMLInputElement | null = null;
-  private calibratedTime: HTMLOutputElement | null = null;
+  private playbackControls: ReturnType<typeof createVideoPlaybackControls> | null = null;
   private lastPlaybackStateEmit = 0;
   private osmoFallbackReason = '';
   private animationFrame = 0;
@@ -128,7 +130,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
     this.stage.className = 'panoramav-stage';
     this.hint = document.createElement('div');
     this.hint.className = 'panoramav-hint';
-    this.hint.textContent = 'Drag to look around';
+    this.hint.textContent = 'Drag to look around · Pinch or scroll to zoom';
     this.notice = document.createElement('div');
     this.notice.className = 'panoramav-notice';
     this.notice.setAttribute('role', 'status');
@@ -174,7 +176,8 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
       stabilizationAvailable: false,
       stabilizationMode: 'off',
       naturalWidth: undefined, naturalHeight: undefined,
-      duration: undefined, currentTime: undefined, paused: true, muted: undefined
+      duration: undefined, currentTime: undefined, paused: true, muted: undefined,
+      volume: undefined, playbackRate: 1
     };
     this.emit('loading', this.state);
     this.emit('statechange', this.state);
@@ -409,11 +412,13 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
   }
 
   setScale(scale: number): void {
+    if (!Number.isFinite(scale)) return;
     this.state.scale = Math.max(0.5, Math.min(scale, 2.4));
     if (this.camera) {
       this.camera.fov = this.scaleToFov(this.state.scale);
       this.camera.updateProjectionMatrix();
     }
+    this.syncPlaybackControls();
     this.scheduleFrame();
     this.emit('statechange', this.state);
   }
@@ -441,7 +446,19 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
 
   private bindInteractions(canvas: HTMLCanvasElement): void {
     const signal = (this.interactionController ??= new AbortController()).signal;
+    bindPreviewTouchGestures(canvas, {
+      getScale: () => this.state.scale,
+      setScale: scale => this.setScale(scale),
+      pan: (x, y) => {
+        const direction = this.calibratedRenderer?.canvas ? this.calibratedRenderer.dragDirectionSign ?? -1 : 1;
+        this.lon -= x * 0.1 * direction;
+        this.lat = Math.max(-85, Math.min(85, this.lat + y * 0.1 * direction));
+        this.scheduleFrame();
+      },
+      signal
+    });
     canvas.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'touch') return;
       this.pointerDown = true;
       this.pointerStartX = event.clientX;
       this.pointerStartY = event.clientY;
@@ -589,7 +606,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
       this.state.currentTime = calibrated.currentTime;
       this.state.paused = calibrated.paused;
       this.state.muted = true;
-      this.createCalibratedControls(calibrated);
+      this.createPlaybackControls();
       this.state.warnings = manifest.confidence === 'experimental'
         ? [`Experimental calibrated ${format.toUpperCase()} preview uses source-specific lens calibration. Dynamic seams and symmetric overlap exposure matching activate after paired frames; IMU stabilization ${calibrated.stabilizationAvailable ? 'is available' : 'remains disabled until the IMU-to-camera rotation is confirmed'}.`]
         : manifest.warnings;
@@ -619,7 +636,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
           this.state.currentTime = calibrated.currentTime;
           this.state.paused = calibrated.paused;
           this.state.muted = true;
-          this.createCalibratedControls(calibrated);
+          this.createPlaybackControls();
           this.state.warnings = [
             'WebCodecs is unavailable; using browser media decoding. Dynamic seams and IMU stabilization are disabled.',
             ...manifest.warnings
@@ -650,51 +667,70 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
     return previewSourceFromResource(resolved);
   }
 
-  private createCalibratedControls(renderer: CalibratedPanoramaRenderer): void {
+  private createPlaybackControls(): void {
     const signal = (this.interactionController ??= new AbortController()).signal;
-    const controls = document.createElement('div');
-    controls.className = 'panoramav-calibrated-controls';
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.setAttribute('aria-label', 'Pause panorama video');
-    button.textContent = 'Pause';
-    button.addEventListener('click', () => {
-      if (renderer.paused) renderer.play(); else renderer.pause();
-      this.syncCalibratedPlayback(true);
-    }, { signal });
-    const timeline = document.createElement('input');
-    timeline.type = 'range';
-    timeline.min = '0';
-    timeline.max = String(renderer.duration || 0);
-    timeline.step = '0.01';
-    timeline.setAttribute('aria-label', 'Panorama video position');
-    timeline.addEventListener('change', () => renderer.seek(Number(timeline.value)), { signal });
-    const time = document.createElement('output');
-    controls.append(button, timeline, time);
-    this.root.append(controls);
-    this.hint.style.bottom = '66px';
-    this.calibratedPlayButton = button;
-    this.calibratedTimeline = timeline;
-    this.calibratedTime = time;
-    this.syncCalibratedPlayback(true);
+    // Calibrated renderers currently decode video tracks only.
+    this.state.capabilities = { ...this.state.capabilities, volume: Boolean(this.video) };
+    this.playbackControls = createVideoPlaybackControls(this.root, {
+      signal,
+      mediaName: 'panorama video',
+      togglePlayback: () => {
+        const renderer = this.calibratedRenderer;
+        if (renderer) {
+          if (renderer.paused) renderer.play(); else renderer.pause();
+          this.syncCalibratedPlayback(true);
+        } else if (this.video) {
+          if (this.video.paused) void this.video.play().catch(() => undefined); else this.video.pause();
+        }
+      },
+      seek: seconds => {
+        if (this.calibratedRenderer) {
+          this.calibratedRenderer.seek(seconds);
+          this.syncCalibratedPlayback(true);
+        } else if (this.video && Number.isFinite(this.video.duration)) {
+          this.video.currentTime = Math.max(0, Math.min(seconds, this.video.duration));
+        }
+      },
+      toggleMuted: () => { if (this.video) {
+        this.video.muted = !this.video.muted;
+        if (!this.video.muted && this.video.volume === 0) this.video.volume = 1;
+      } },
+      setVolume: volume => { if (this.video) { this.video.volume = volume; this.video.muted = volume === 0; } },
+      setPlaybackRate: rate => {
+        this.calibratedRenderer?.setPlaybackRate?.(rate);
+        if (this.video) this.video.playbackRate = rate;
+        this.state.playbackRate = rate;
+        this.syncPlaybackControls();
+        this.emit('statechange', this.state);
+      },
+      fullscreen: () => this.fullscreen(),
+      zoom: delta => this.setScale(this.state.scale + delta),
+      resetView: () => this.fit()
+    });
+    this.syncPlaybackControls();
+  }
+
+  private syncPlaybackControls(): void {
+    this.playbackControls?.sync({
+      currentTime: this.state.currentTime ?? 0,
+      duration: this.state.duration ?? 0,
+      paused: this.state.paused ?? true,
+      muted: this.state.muted ?? true,
+      volume: this.state.volume ?? 1,
+      playbackRate: this.state.playbackRate ?? 1,
+      audioAvailable: Boolean(this.video),
+      scale: this.state.scale
+    });
   }
 
   private syncCalibratedPlayback(force = false): void {
     const renderer = this.calibratedRenderer;
-    if (!renderer) return;
+    if (!renderer || this.state.family !== 'panorama-video') return;
     const currentTime = renderer.currentTime;
     this.state.duration = renderer.duration;
     this.state.currentTime = currentTime;
     this.state.paused = renderer.paused;
-    if (this.calibratedPlayButton) {
-      this.calibratedPlayButton.textContent = renderer.paused ? 'Play' : 'Pause';
-      this.calibratedPlayButton.setAttribute('aria-label', `${renderer.paused ? 'Play' : 'Pause'} panorama video`);
-    }
-    if (this.calibratedTimeline) {
-      this.calibratedTimeline.max = String(renderer.duration || 0);
-      this.calibratedTimeline.value = String(currentTime);
-    }
-    if (this.calibratedTime) this.calibratedTime.value = `${formatTime(currentTime)} / ${formatTime(renderer.duration)}`;
+    this.syncPlaybackControls();
     const now = performance.now();
     if (force || now - this.lastPlaybackStateEmit >= 250) {
       this.lastPlaybackStateEmit = now;
@@ -760,8 +796,9 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
 
   private async createVideoTexture(source: PreviewSource, contentType: string | undefined, signal: AbortSignal): Promise<VideoTexture> {
     const video = document.createElement('video');
-    video.className = 'panoramav-video-controls';
-    video.controls = true;
+    video.className = 'panoramav-video-source';
+    video.hidden = true;
+    video.setAttribute('aria-hidden', 'true');
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
@@ -791,14 +828,18 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
       this.state.currentTime = video.currentTime;
       this.state.paused = video.paused;
       this.state.muted = video.muted;
+      this.state.volume = video.volume;
+      this.state.playbackRate = video.playbackRate;
+      this.syncPlaybackControls();
       this.emit('statechange', this.state);
     };
-    for (const event of ['durationchange', 'timeupdate', 'play', 'pause', 'volumechange'] as const) {
+    for (const event of ['durationchange', 'timeupdate', 'play', 'pause', 'volumechange', 'ratechange', 'seeked'] as const) {
       video.addEventListener(event, syncState, { signal: interactionSignal });
     }
     this.video = video;
     this.root.append(video);
     syncState();
+    this.createPlaybackControls();
     return new VideoTexture(video);
   }
 
@@ -855,17 +896,15 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
     this.material = null;
     this.renderer = null;
     this.calibratedRenderer = null;
-    this.calibratedPlayButton = null;
-    this.calibratedTimeline = null;
-    this.calibratedTime = null;
+    this.playbackControls?.remove();
+    this.playbackControls = null;
     this.lastPlaybackStateEmit = 0;
-    this.hint.style.bottom = '';
     this.osmoFallbackReason = '';
     this.scene = null;
     this.camera = null;
     this.revokeCreatedUrl();
     this.stage.replaceChildren();
-    this.root.querySelectorAll('.panoramav-calibrated-controls, .panoramav-notice').forEach(node => node.remove());
+    this.root.querySelectorAll('.panoramav-notice').forEach(node => node.remove());
   }
 
   private revokeCreatedUrl(): void {
@@ -999,12 +1038,6 @@ export async function resolvePanoramaSource(
 
 function degToRad(value: number): number {
   return value * Math.PI / 180;
-}
-
-function formatTime(seconds: number): string {
-  const value = Math.max(0, Number.isFinite(seconds) ? seconds : 0);
-  const minutes = Math.floor(value / 60);
-  return `${minutes}:${Math.floor(value % 60).toString().padStart(2, '0')}`;
 }
 
 function normalizeFormat(format: string | undefined): string {

@@ -155,25 +155,33 @@ test('offers playable samples for more audio and video formats', async ({ page }
   await expect(page.locator('audio.pptxv-native-media')).toBeVisible();
 
   const videoCategory = page.locator('.wb-format-category').filter({
-    has: page.getByRole('heading', { name: '视频', exact: true })
+    has: page.getByRole('heading', { name: /^视频(?:\s|$)/ })
   });
   for (const [format, name] of [
     ['MP4', 'sample-video.mp4'],
-    ['WEBM', 'flower.webm'],
-    ['MOV', 'sample.mov'],
-    ['M4V', 'sample.m4v'],
-    ['OGV', 'sample.ogv'],
-    ['MKV', 'sample.mkv'],
-    ['AVI', 'sample.avi'],
-    ['MPEG', 'sample.mpeg'],
-    ['MPG', 'sample.mpg'],
-    ['3GP', 'sample.3gp']
+    ['WEBM', 'waterfall.webm'],
+    ['MOV', 'big-buck-bunny.mov'],
+    ['M4V', 'sintel-dragon.m4v'],
+    ['OGV', 'ocean-waves.ogv'],
+    ['MKV', 'jellyfish.mkv'],
+    ['AVI', 'steam-train.avi'],
+    ['MPEG', 'city-traffic.mpeg'],
+    ['MPG', 'cloud-timelapse.mpg'],
+    ['3GP', 'colorful-bird.3gp']
   ] as const) {
     const button = videoCategory.getByRole('button', { name: format, exact: true });
     await expect(button).toBeEnabled();
     await button.click();
     await expect(page.locator('.wb-preview-title strong')).toHaveText(name);
-    await expect(page.locator('video.pptxv-native-media')).toBeVisible();
+    const video = page.locator('video.pptxv-native-media');
+    await expect(video).toBeVisible();
+    await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.readyState)).toBeGreaterThan(1);
+    await video.evaluate(async (element: HTMLVideoElement) => {
+      element.muted = true;
+      await element.play();
+    });
+    await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0.1);
+    await video.evaluate((element: HTMLVideoElement) => element.pause());
   }
 });
 
@@ -189,7 +197,7 @@ test('offers samples for browser-native images and panorama aliases', async ({ p
   await page.getByRole('button', { name: 'Media', exact: true }).click();
 
   const imageCategory = page.locator('.wb-format-category').filter({
-    has: page.getByRole('heading', { name: '图片', exact: true })
+    has: page.getByRole('heading', { name: /^图片(?:\s|$)/ })
   });
   for (const format of ['PNG', 'JPG', 'GIF', 'WEBP', 'AVIF', 'APNG', 'ICO', 'ICNS', 'BMP']) {
     await expect(imageCategory.getByRole('button', { name: format, exact: true })).toBeEnabled();
@@ -202,14 +210,20 @@ test('offers samples for browser-native images and panorama aliases', async ({ p
   await expect(page.locator('img.pptxv-native-image')).toBeVisible();
 
   for (const [format, name] of [
-    ['AVIF', 'photo-alpine-lake.avif'],
-    ['APNG', 'photo-animated-earth.apng'],
-    ['ICO', 'photo-transparency.ico'],
-    ['ICNS', 'photo-transparency.icns']
+    ['PNG', 'photo-transparency.png'],
+    ['GIF', 'photo-animated-earth.gif'],
+    ['WEBP', 'golden-gate.webp'],
+    ['AVIF', 'blue-morpho.avif'],
+    ['APNG', 'bouncing-ball.apng'],
+    ['ICO', 'filens.ico'],
+    ['ICNS', 'compass.icns'],
+    ['BMP', 'great-wave.bmp']
   ]) {
     await imageCategory.getByRole('button', { name: format, exact: true }).click();
     await expect(page.locator('.wb-preview-title strong')).toHaveText(name);
-    await expect(page.locator('img.pptxv-native-image')).toBeVisible();
+    const image = page.locator('img.pptxv-native-image');
+    await expect(image).toBeVisible();
+    await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
   }
 
   for (const [format, name] of [
@@ -232,7 +246,7 @@ test('offers samples for browser-native images and panorama aliases', async ({ p
   })).toBeLessThanOrEqual(24);
 
   const panoramaCategory = page.locator('.wb-format-category').filter({
-    has: page.getByRole('heading', { name: '全景图', exact: true })
+    has: page.getByRole('heading', { name: /^全景图(?:\s|$)/ })
   });
   for (const format of ['PANO', 'PANORAMA', '360', 'INSP', '360V', 'INSV', 'OSV']) {
     await expect(panoramaCategory.getByRole('button', { name: format, exact: true })).toBeEnabled();
@@ -267,11 +281,11 @@ test('offers samples for browser-native images and panorama aliases', async ({ p
   await panoramaCategory.getByRole('button', { name: '360V', exact: true }).click();
   await expect(page.locator('.wb-preview-title strong')).toHaveText('nasa-black-hole-360.webm');
   await expect(page.locator('canvas.panoramav-canvas')).toBeVisible({ timeout: 15_000 });
-  const panoramaVideo = page.locator('video.panoramav-video-controls');
-  await expect(panoramaVideo).toBeVisible();
-  await panoramaVideo.evaluate((video: HTMLVideoElement) => video.play());
+  const panoramaVideo = page.locator('video.panoramav-video-source');
+  await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Play panorama video', exact: true }).click();
   await expect.poll(() => panoramaVideo.evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
-  await panoramaVideo.evaluate((video: HTMLVideoElement) => video.pause());
+  await page.getByRole('button', { name: 'Pause panorama video', exact: true }).click();
 });
 
 test('lists only locally bundled real-device live photo samples', async ({ page }) => {

@@ -1,5 +1,7 @@
 import { normalizeExtension } from './formats';
 import { AudioPreviewPlayer } from './audio-player';
+import { bindPreviewTouchGestures } from './touch-gestures';
+import { createVideoPreviewPlayer } from './video-player';
 import type {
   ImagePreviewState,
   MediaPreviewState,
@@ -418,6 +420,7 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
     };
     this.root.addEventListener('pointerdown', this.handlePointerDown);
     this.root.addEventListener('mousedown', this.handleMouseDown);
+    this.root.addEventListener('wheel', this.handleWheel, { passive: false });
   }
 
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
@@ -461,6 +464,13 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
       this.root.className = 'pptxv-native-preview pptxv-native-preview--image';
       this.root.replaceChildren(image);
       this.applyImageStyle();
+      bindPreviewTouchGestures(this.root, {
+        getScale: () => this.state.scale,
+        setScale: (scale, anchor) => this.zoomAt(scale, anchor),
+        pan: (x, y) => this.pan(x, y),
+        enabled: () => !this.state.loading && !this.state.error,
+        signal
+      });
     } catch (error) {
       if (signal.aborted) {
         if (context.signal?.aborted) checkElementAborted(signal);
@@ -475,6 +485,7 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
     this.stopPanDrag();
     this.root.removeEventListener('pointerdown', this.handlePointerDown);
     this.root.removeEventListener('mousedown', this.handleMouseDown);
+    this.root.removeEventListener('wheel', this.handleWheel);
     super.destroy();
   }
 
@@ -483,8 +494,23 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
   }
 
   setScale(scale: number): void {
+    this.zoomAt(scale);
+  }
+
+  private zoomAt(scale: number, anchor?: { x: number; y: number }): void {
     if (!Number.isFinite(scale)) return;
-    this.scale = Math.max(0.05, scale);
+    this.preserveFittedImageSize();
+    const nextScale = Math.max(0.05, scale);
+    if (anchor && this.scale > 0) {
+      // Preserve the image point beneath the pointer/pinch midpoint.
+      // Translation is outside rotate/scale.
+      const x = anchor.x - this.root.clientWidth / 2;
+      const y = anchor.y - this.root.clientHeight / 2;
+      const ratio = nextScale / this.scale;
+      this.state.panX = x - (x - this.state.panX) * ratio;
+      this.state.panY = y - (y - this.state.panY) * ratio;
+    }
+    this.scale = nextScale;
     this.state.scale = this.scale;
     this.fitMode = 'none';
     this.applyImageStyle();
@@ -494,6 +520,10 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
   fit(mode: PreviewFitMode = 'contain'): void {
     this.fitMode = mode;
     if (mode !== 'none') {
+      if (this.image) {
+        this.image.style.width = '';
+        this.image.style.height = '';
+      }
       this.state.scale = 1;
       this.scale = 1;
       this.state.panX = 0;
@@ -514,11 +544,19 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
     if (!Number.isFinite(deltaX) || !Number.isFinite(deltaY)) {
       return;
     }
+    this.preserveFittedImageSize();
     this.state.panX = Number((this.state.panX + deltaX).toFixed(3));
     this.state.panY = Number((this.state.panY + deltaY).toFixed(3));
     this.fitMode = 'none';
     this.applyImageStyle();
     this.emit('statechange', this.state);
+  }
+
+  private preserveFittedImageSize(): void {
+    if (this.fitMode !== 'none' && this.image?.clientWidth && this.image.clientHeight) {
+      this.image.style.width = `${this.image.clientWidth}px`;
+      this.image.style.height = `${this.image.clientHeight}px`;
+    }
   }
 
   private applyImageStyle(): void {
@@ -532,13 +570,23 @@ export class ImagePreviewSession extends NativePreviewSession<ImagePreviewState>
   }
 
   private readonly handlePointerDown = (event: PointerEvent): void => {
-    if (event.button !== 0 || !this.image || this.state.loading || this.panDrag) {
+    if (event.pointerType === 'touch' || event.button !== 0 || !this.image || this.state.loading || this.panDrag) {
       return;
     }
 
     this.startPanDrag(event.pointerId, event.clientX, event.clientY);
     this.root.setPointerCapture?.(event.pointerId);
     event.preventDefault();
+  };
+
+  private readonly handleWheel = (event: WheelEvent): void => {
+    if (!this.image || this.state.loading || this.state.error || !Number.isFinite(event.deltaY)) return;
+    event.preventDefault();
+    const rect = this.root.getBoundingClientRect();
+    const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.root.clientHeight : 1);
+    this.zoomAt(Math.min(8, Math.max(0.1, this.scale * Math.exp(-delta * 0.002))), {
+      x: event.clientX - rect.left, y: event.clientY - rect.top
+    });
   };
 
   private readonly handleMouseDown = (event: MouseEvent): void => {
@@ -882,7 +930,8 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
       },
       duration: undefined,
       currentTime: 0,
-      paused: true
+      paused: true,
+      playbackRate: 1
     };
     const signal = this.beginElementLoad(this.state, context, () => this.releaseMedia());
 
@@ -893,20 +942,30 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
       media.className = `pptxv-native-media pptxv-native-media--${family === 'audio' ? 'audio' : 'video'}`;
       media.controls = true;
       media.preload = 'metadata';
+      if (media instanceof HTMLVideoElement) media.playsInline = true;
       media.muted = this.state.muted;
       media.volume = this.state.volume;
       const contentType = resolveMediaContentType(context);
       media.dataset.contentType = contentType ?? '';
       media.dataset.sourceFormat = normalizeExtension(context.route?.sourceFormat ?? context.descriptor.extension ?? '');
       const mediaUrl = this.sourceToUrl(source, contentType);
-      media.addEventListener('loadedmetadata', () => {
+      let rendered = false;
+      let missingPicture: { at: number; time: number } | undefined;
+      const ready = () => {
         if (signal.aborted) return;
         this.syncMediaState(media);
-        this.state.loading = false;
-        this.emit('rendered', this.state);
+        // Dimensions can arrive after metadata. Only accept a video once the
+        // browser exposes its picture; audio is ready on metadata as before.
+        if (!rendered && (family === 'audio' || (media as HTMLVideoElement).videoWidth > 0)) {
+          rendered = true;
+          this.state.loading = false;
+          this.emit('rendered', this.state);
+        }
         this.emit('statechange', this.state);
-      }, { signal });
-      for (const event of ['timeupdate', 'durationchange', 'seeking', 'seeked', 'ended']) {
+      };
+      media.addEventListener('loadedmetadata', ready, { signal });
+      for (const event of ['loadeddata', 'canplay', 'resize']) media.addEventListener(event, ready, { signal });
+      for (const event of ['timeupdate', 'durationchange', 'seeking', 'seeked', 'ended', 'ratechange']) {
         media.addEventListener(event, () => {
           if (signal.aborted) return;
           this.syncMediaState(media);
@@ -928,11 +987,13 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
         this.syncMediaState(media);
         this.emit('statechange', this.state);
       }, { signal });
-      const fail = () => {
+      const fail = (missingVideo = false) => {
         if (signal.aborted) return;
         this.stopElementLoad();
         const error = new Error(
-          contentType
+          missingVideo
+            ? 'The browser cannot decode this video codec. Use a compatible browser or an optional media converter.'
+            : contentType
             ? `Failed to load media preview (${contentType}). The browser may not support this codec.`
             : 'Failed to load media preview. The browser may not support this codec.'
         );
@@ -941,10 +1002,30 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
         this.emit('error', error);
         this.emit('statechange', this.state);
       };
-      media.addEventListener('error', fail, { signal });
+      media.addEventListener('error', () => fail(), { signal });
+      if (family !== 'audio') {
+        document.addEventListener('visibilitychange', () => { missingPicture = undefined; }, { signal });
+        media.addEventListener('loadeddata', () => {
+          if (!(media as HTMLVideoElement).videoWidth) fail(true);
+        }, { signal });
+        // Check actual progress for browsers that silently play only a video's
+        // audio. Ignore pauses, seeking and hidden documents.
+        media.addEventListener('timeupdate', () => {
+          if (signal.aborted) return;
+          if (document.visibilityState === 'hidden' || media.paused || media.seeking || media.ended
+            || media.readyState < 3 || (media as HTMLVideoElement).videoWidth > 0) {
+            missingPicture = undefined;
+          } else if (!missingPicture || media.currentTime < missingPicture.time) {
+            missingPicture = { at: performance.now(), time: media.currentTime };
+          } else if (performance.now() - missingPicture.at >= 1500 && media.currentTime > missingPicture.time) {
+            fail(true);
+          }
+        }, { signal });
+        for (const event of ['pause', 'seeking', 'ended']) media.addEventListener(event, () => { missingPicture = undefined; }, { signal });
+      }
       if (contentType) {
         const sourceElement = document.createElement('source');
-        sourceElement.addEventListener('error', fail, { signal });
+        sourceElement.addEventListener('error', () => fail(), { signal });
         sourceElement.src = mediaUrl;
         // Chrome can play QuickTime codecs even when canPlayType rejects the
         // container's MIME type. Let it inspect the resource instead of skipping it.
@@ -956,6 +1037,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
 
       this.root.className = `pptxv-native-preview pptxv-native-preview--${family === 'audio' ? 'audio' : 'video'}`;
       this.root.replaceChildren(media);
+      if (media instanceof HTMLVideoElement) createVideoPreviewPlayer(this.root, media, signal);
       if (family === 'audio') {
         const player = new AudioPreviewPlayer(media, context, this.options, signal);
         this.audioPlayer = player;
@@ -993,6 +1075,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
     this.state.paused = media.paused;
     this.state.muted = media.muted;
     this.state.volume = media.volume;
+    this.state.playbackRate = media.playbackRate;
     this.state.error = null;
   }
 

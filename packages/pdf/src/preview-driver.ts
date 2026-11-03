@@ -3,6 +3,7 @@
 import {
   PreviewPasswordError,
   createDefaultPreviewRoutes,
+  bindPreviewTouchGestures,
   classifyPreviewFont,
   PREVIEW_CONTAINER_LIMITS,
   createPreviewContainerContext,
@@ -67,12 +68,13 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private removeAbortListener?: () => void;
   private dimensions = '';
   private readonly virtual: boolean;
+  private unbindTouch = () => {};
   private readonly containerContext;
   private state: PagedPreviewState;
   private readonly inspectedFontPages = new Set<number>();
   private readonly fonts = new Map<string, PreviewFontDiagnostic>();
 
-  constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
+  constructor(private readonly host: HTMLElement, private readonly options: PreviewOptions = {}) {
     this.containerContext = options.containerContext ?? createPreviewContainerContext();
     this.root = document.createElement('div');
     this.root.className = 'pdfv-preview';
@@ -207,6 +209,14 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
 
       this.state.loading = false;
       this.state.error = null;
+      this.unbindTouch = bindPreviewTouchGestures(this.root, {
+        getScale: () => this.state.scale,
+        setScale: scale => this.setScale(scale),
+        enabled: () => !this.state.loading && !!this.document,
+        minScale: this.options.minScale,
+        maxScale: this.options.maxScale,
+        signal
+      });
       this.emit('rendered', this.state);
       this.emit('statechange', this.state);
       if (this.virtual) this.scheduleRender();
@@ -228,6 +238,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   }
 
   destroy(): void {
+    this.unbindTouch();
     this.loadGeneration += 1;
     this.removeAbortListener?.();
     this.root.removeEventListener('scroll', this.scheduleRender);
@@ -463,6 +474,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   }
 
   private releaseDocument(): Promise<void> {
+    this.unbindTouch();
     if (this.animationFrame !== null) cancelAnimationFrame(this.animationFrame);
     this.animationFrame = null;
     this.renderGeneration++;

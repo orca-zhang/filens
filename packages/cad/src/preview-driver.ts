@@ -1,5 +1,6 @@
 import {
   createDefaultPreviewRoutes,
+  bindPreviewTouchGestures,
   analyzePreviewFonts,
   getPreviewFontWarnings,
   bindPreviewFontLoading,
@@ -541,6 +542,12 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
         activeLayerIds
       };
       this.render(drawing);
+      bindPreviewTouchGestures(this.root, {
+        getScale: () => this.state.scale,
+        setScale: scale => this.setScale(scale),
+        pan: (x, y) => this.pan(x, y),
+        signal
+      });
       if (this.state.warnings.length) {
         this.emit('warnings', this.state.warnings);
       }

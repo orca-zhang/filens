@@ -1,5 +1,6 @@
 import {
   createDefaultPreviewRoutes,
+  bindPreviewTouchGestures,
   type FormatDefinition,
   type MindmapPreviewState,
   type PreviewDriver,
@@ -180,6 +181,11 @@ export class MindmapPreviewSession implements PreviewSession<MindmapPreviewState
         scale: this.scale
       };
       this.render();
+      bindPreviewTouchGestures(this.root, {
+        getScale: () => this.state.scale,
+        setScale: scale => this.setScale(scale),
+        signal: controller.signal
+      });
       this.emit('rendered', this.state);
       this.emit('statechange', this.state);
     } catch (error) {

@@ -1,5 +1,7 @@
 # iOS / Android SDK（源码接入）
 
+[English](README.md) · 简体中文
+
 在 iOS 和 Android 应用内离线预览本地文件。两端都封装同一份 `filens-preview`
 前端运行时与 WASM，不上传文件，也不在 Swift / Java 内实现格式解析或转换。
 这是预览组件；目前不提供原生读取、OCR、搜索或独立转换结果 API。

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import JSZip from 'jszip';
+import { useDemoI18n } from './i18n';
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import AppleLivePhotoPreview from './components/AppleLivePhotoPreview.vue';
 import LandingPage from './components/LandingPage.vue';
 import DocumentWorkbench from './components/DocumentWorkbench.vue';
+import PhotoshopSamplePicker from './components/PhotoshopSamplePicker.vue';
+import { photoshopSamples } from './photoshop-samples';
 import { createWasmConverterClient } from '@filens/converter-client';
 import { createWasmPanoramaProcessor } from '@filens/panorama';
 import type { ZipArchiveResource } from '@filens/archive';
@@ -50,6 +53,8 @@ type DemoKind =
   | 'audio'
   | 'video';
 type SourceMode = 'sample' | 'url' | 'upload' | 'generated';
+
+const { locale, isEnglish, previewLocale, t, syncLocaleFromUrl } = useDemoI18n();
 
 function resolvePublicSamplePath(source: string): string {
   if (source.startsWith('/samples/')) {
@@ -155,15 +160,15 @@ const staticSamples: DemoSource[] = [
     mode: 'generated',
     catalogId: 'ai'
   },
-  {
+  ...photoshopSamples.map((sample): DemoSource => ({
     kind: 'image',
-    label: 'PSD Chromatic Layers -> SVG',
-    name: 'chromatic-layers.psd.svg',
-    source: createVectorPosterDataUrl('CHROMATIC', 'PHOTOSHOP LAYER COMPOSITION', '#fb923c'),
+    label: `${sample.titleEn} · Photoshop design study`,
+    name: sample.name,
+    source: `/samples/design/${sample.name}`,
     contentType: 'image/svg+xml',
-    mode: 'generated',
+    mode: 'sample',
     catalogId: 'psd'
-  },
+  })),
   {
     kind: 'image',
     label: 'EPS Signal Poster -> SVG',
@@ -813,57 +818,57 @@ const staticSamples: DemoSource[] = [
   },
   {
     kind: 'image',
-    label: 'WebP · Gallery',
-    name: 'photo-gallery.webp',
-    source: '/samples/photo-gallery.webp',
+    label: 'WebP · Golden Gate Bridge',
+    name: 'golden-gate.webp',
+    source: '/samples/media/golden-gate.webp',
     contentType: 'image/webp',
     mode: 'sample'
   },
   {
     kind: 'image',
-    label: 'AVIF · Alpine Lake',
-    name: 'photo-alpine-lake.avif',
-    source: '/samples/photo-alpine-lake.avif',
+    label: 'AVIF · Blue Morpho Butterfly',
+    name: 'blue-morpho.avif',
+    source: '/samples/media/blue-morpho.avif',
     contentType: 'image/avif',
     mode: 'sample'
   },
   {
     kind: 'image',
-    label: 'APNG · Animated Earth',
-    name: 'photo-animated-earth.apng',
-    source: '/samples/photo-animated-earth.apng',
+    label: 'APNG · Bouncing Beach Ball',
+    name: 'bouncing-ball.apng',
+    source: '/samples/media/bouncing-ball.apng',
     contentType: 'image/apng',
     mode: 'sample'
   },
   {
     kind: 'image',
-    label: 'ICO · Transparency',
-    name: 'photo-transparency.ico',
-    source: '/samples/photo-transparency.ico',
+    label: 'ICO · Filens App Icon',
+    name: 'filens.ico',
+    source: '/samples/media/filens.ico',
     contentType: 'image/x-icon',
     mode: 'sample'
   },
   {
     kind: 'image',
-    label: 'ICNS · Embedded PNG',
-    name: 'photo-transparency.icns',
-    source: '/samples/photo-transparency.icns',
+    label: 'ICNS · Compass',
+    name: 'compass.icns',
+    source: '/samples/media/compass.icns',
     contentType: 'application/x-icns',
     mode: 'sample'
   },
   {
     kind: 'image',
-    label: 'PPM · Alpine Lake',
-    name: 'photo-alpine-lake.ppm',
-    source: '/samples/photo-alpine-lake.ppm',
+    label: 'PPM · Vegetable Market',
+    name: 'vegetable-market.ppm',
+    source: '/samples/media/vegetable-market.ppm',
     contentType: 'image/x-portable-pixmap',
     mode: 'sample'
   },
   {
     kind: 'image',
-    label: 'BMP · Camera Sample',
-    name: 'photo-sample.bmp',
-    source: '/samples/photo-sample.bmp',
+    label: 'BMP · The Great Wave',
+    name: 'great-wave.bmp',
+    source: '/samples/media/great-wave.bmp',
     contentType: 'image/bmp',
     mode: 'sample'
   },
@@ -1232,83 +1237,85 @@ const staticSamples: DemoSource[] = [
   },
   {
     kind: 'video',
-    label: 'WebM URL',
-    name: 'flower.webm',
-    source: '/external-samples/mdn-video/flower.webm',
+    label: 'WebM · Peruvian Waterfall',
+    name: 'waterfall.webm',
+    source: '/samples/media/waterfall.webm',
     contentType: 'video/webm',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'MOV URL',
-    name: 'sample.mov',
-    source: '/external-samples/filesamples/video/mov/sample_640x360.mov',
+    label: 'MOV · Big Buck Bunny',
+    name: 'big-buck-bunny.mov',
+    source: '/samples/media/big-buck-bunny.mov',
     contentType: 'video/quicktime',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'M4V URL',
-    name: 'sample.m4v',
-    source: '/external-samples/filesamples/video/m4v/sample_640x360.m4v',
+    label: 'M4V · Sintel Dragon',
+    name: 'sintel-dragon.m4v',
+    source: '/samples/media/sintel-dragon.m4v',
     contentType: 'video/x-m4v',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'Ogg Video URL',
-    name: 'sample.ogv',
-    source: '/external-samples/filesamples/video/ogv/sample_640x360.ogv',
+    label: 'OGV · Ocean Waves',
+    name: 'ocean-waves.ogv',
+    source: '/samples/media/ocean-waves.ogv',
     contentType: 'video/ogg',
-    previewSource: '/samples/sample-video.mp4',
+    previewSource: '/samples/media/ocean-waves.preview.mp4',
     previewContentType: 'video/mp4',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'Matroska URL',
-    name: 'sample.mkv',
-    source: '/external-samples/filesamples/video/mkv/sample_640x360.mkv',
+    label: 'MKV · Aquarium Jellyfish',
+    name: 'jellyfish.mkv',
+    source: '/samples/media/jellyfish.mkv',
     contentType: 'video/x-matroska',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'AVI URL',
-    name: 'sample.avi',
-    source: '/external-samples/filesamples/video/avi/sample_640x360.avi',
+    label: 'AVI · Steam Train',
+    name: 'steam-train.avi',
+    source: '/samples/media/steam-train.avi',
     contentType: 'video/x-msvideo',
-    previewSource: '/samples/sample-video.mp4',
+    previewSource: '/samples/media/steam-train.preview.mp4',
     previewContentType: 'video/mp4',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'MPEG URL',
-    name: 'sample.mpeg',
-    source: '/external-samples/filesamples/video/mpeg/sample_640x360.mpeg',
+    label: 'MPEG · Mexico City Traffic',
+    name: 'city-traffic.mpeg',
+    source: '/samples/media/city-traffic.mpeg',
     contentType: 'video/mpeg',
-    previewSource: '/samples/sample-video.mp4',
+    previewSource: '/samples/media/city-traffic.preview.mp4',
     previewContentType: 'video/mp4',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: 'MPG URL',
-    name: 'sample.mpg',
-    source: '/external-samples/filesamples/video/mpeg/sample_640x360.mpeg',
+    label: 'MPG · Cloud Timelapse',
+    name: 'cloud-timelapse.mpg',
+    source: '/samples/media/cloud-timelapse.mpg',
     contentType: 'video/mpeg',
-    previewSource: '/samples/sample-video.mp4',
+    previewSource: '/samples/media/cloud-timelapse.preview.mp4',
     previewContentType: 'video/mp4',
-    mode: 'url'
+    mode: 'sample'
   },
   {
     kind: 'video',
-    label: '3GP URL',
-    name: 'sample.3gp',
-    source: '/external-samples/filesamples/video/3gp/sample_640x360.3gp',
+    label: '3GP · Colorful Bird',
+    name: 'colorful-bird.3gp',
+    source: '/samples/media/colorful-bird.3gp',
     contentType: 'video/3gpp',
-    mode: 'url'
+    previewSource: '/samples/media/colorful-bird.preview.mp4',
+    previewContentType: 'video/mp4',
+    mode: 'sample'
   }
 ];
 
@@ -1363,6 +1370,8 @@ const formatSupportByExtension = computed(() => new Map(supportedFormats.value.m
 const sampleByExtension = new Map(
   staticSamples.map((sample) => [sample.catalogId ?? inferExtensionFromName(sample.name) ?? '', sample])
 );
+const photoshopCoverSample = staticSamples.find((sample) => sample.name === photoshopSamples[0].name);
+if (photoshopCoverSample) sampleByExtension.set('psd', photoshopCoverSample);
 const showcaseDocxSample = staticSamples.find((sample) => sample.name === 'filens-aurora-guide.docx');
 if (showcaseDocxSample) sampleByExtension.set('docx', showcaseDocxSample);
 const showcaseXlsxSample = staticSamples.find((sample) => sample.name === 'filens-observatory.xlsx');
@@ -1492,28 +1501,28 @@ const markdownFormats = new Set(['md', 'markdown', 'mkd', 'mkdn', 'mdown', 'mdx'
 const configFormats = new Set(['json', 'jsonc', 'json5', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'config', 'cnf', 'properties', 'xml']);
 
 function getBusinessFormatCategory(extension: string, family: PreviewFamily): { familyId: BusinessFormatFamilyId; id: string; label: string } {
-  if (livePhotoFormatIds.has(extension)) return { familyId: 'media', id: 'live-photo', label: '实况图' };
+  if (livePhotoFormatIds.has(extension)) return { familyId: 'media', id: 'live-photo', label: t('实况图', 'Live Photos') };
   if (wordFormats.has(extension)) return { familyId: 'office', id: 'word', label: 'Word' };
   if (spreadsheetFormats.has(extension)) return { familyId: 'office', id: 'excel', label: 'Excel' };
   if (presentationFormats.has(extension)) return { familyId: 'office', id: 'powerpoint', label: 'PPT' };
   if (extension === 'pdf') return { familyId: 'office', id: 'pdf', label: 'PDF' };
   if (openDocumentFormats.has(extension)) return { familyId: 'office', id: 'opendocument', label: 'OpenDocument' };
   if (iworkFormats.has(extension)) return { familyId: 'office', id: 'iwork', label: 'iWork' };
-  if (designDraftFormats.has(extension)) return { familyId: 'design', id: 'draft', label: '设计稿' };
+  if (designDraftFormats.has(extension)) return { familyId: 'design', id: 'draft', label: t('设计稿', 'Design files') };
   if (family === 'cad') return { familyId: 'design', id: 'cad', label: 'CAD' };
-  if (family === 'model3d') return { familyId: 'design', id: 'model3d', label: '3D 模型' };
-  if (family === 'diagram') return { familyId: 'design', id: 'diagram', label: '流程图' };
-  if (family === 'mindmap') return { familyId: 'design', id: 'mindmap', label: '思维导图' };
-  if (family === 'image') return { familyId: 'media', id: 'image', label: '图片' };
-  if (family === 'panorama' || family === 'panorama-video') return { familyId: 'media', id: 'panorama', label: '全景图' };
-  if (family === 'audio') return { familyId: 'media', id: 'audio', label: '音频' };
-  if (family === 'video') return { familyId: 'media', id: 'video', label: '视频' };
-  if (comicFormats.has(extension) || family === 'ebook') return { familyId: 'text', id: 'ebook', label: '电子书' };
-  if (family === 'archive') return { familyId: 'archive', id: 'archive', label: '压缩文件' };
-  if (extension === 'log') return { familyId: 'text', id: 'log', label: '日志' };
+  if (family === 'model3d') return { familyId: 'design', id: 'model3d', label: t('3D 模型', '3D models') };
+  if (family === 'diagram') return { familyId: 'design', id: 'diagram', label: t('流程图', 'Diagrams') };
+  if (family === 'mindmap') return { familyId: 'design', id: 'mindmap', label: t('思维导图', 'Mind maps') };
+  if (family === 'image') return { familyId: 'media', id: 'image', label: t('图片', 'Images') };
+  if (family === 'panorama' || family === 'panorama-video') return { familyId: 'media', id: 'panorama', label: t('全景图', 'Panoramas') };
+  if (family === 'audio') return { familyId: 'media', id: 'audio', label: t('音频', 'Audio') };
+  if (family === 'video') return { familyId: 'media', id: 'video', label: t('视频', 'Video') };
+  if (comicFormats.has(extension) || family === 'ebook') return { familyId: 'text', id: 'ebook', label: t('电子书', 'Ebooks') };
+  if (family === 'archive') return { familyId: 'archive', id: 'archive', label: t('压缩文件', 'Archives') };
+  if (extension === 'log') return { familyId: 'text', id: 'log', label: t('日志', 'Logs') };
   if (markdownFormats.has(extension)) return { familyId: 'text', id: 'markdown', label: 'Markdown' };
-  if (configFormats.has(extension)) return { familyId: 'text', id: 'config', label: '配置' };
-  if (family === 'code' || family === 'html') return { familyId: 'text', id: 'code', label: '代码' };
+  if (configFormats.has(extension)) return { familyId: 'text', id: 'config', label: t('配置', 'Configuration') };
+  if (family === 'code' || family === 'html') return { familyId: 'text', id: 'code', label: t('代码', 'Code') };
   return { familyId: 'text', id: 'plain-text', label: 'TXT' };
 }
 
@@ -1567,17 +1576,11 @@ const lastError = ref<string | null>(null);
 const workbenchSection = ref<'preview' | 'agent'>(new URLSearchParams(window.location.search).get('view') === 'agent' ? 'agent' : 'preview');
 const showWorkbench = ref(['preview', 'agent'].includes(new URLSearchParams(window.location.search).get('view') ?? ''));
 const showPreviewToolbar = ref(false);
-const previewLocale = ref<string>();
-function readPreviewLocale(): string | undefined {
-  const requested = new URLSearchParams(window.location.search).get('lang');
-  if (requested) return requested;
-  try { return localStorage.getItem('filens-locale') ?? undefined; } catch { return undefined; }
-}
 let appliedUrlFormat: string | null = null;
 
 function syncPageFromUrl(): void {
   const params = new URLSearchParams(window.location.search);
-  previewLocale.value = readPreviewLocale();
+  syncLocaleFromUrl();
   showWorkbench.value = ['preview', 'agent'].includes(params.get('view') ?? '');
   workbenchSection.value = params.get('view') === 'agent' ? 'agent' : 'preview';
   const format = params.get('format');
@@ -1586,8 +1589,16 @@ function syncPageFromUrl(): void {
     appliedUrlFormat = format;
     selectLandingSample(format);
   }
-  if (showWorkbench.value) document.title = workbenchSection.value === 'agent' ? '探微 · Agent 控制台' : '探微 · 文件预览台';
 }
+
+watch([locale, showWorkbench, workbenchSection], () => {
+  document.documentElement.lang = isEnglish.value ? 'en' : 'zh-CN';
+  document.title = showWorkbench.value
+    ? workbenchSection.value === 'agent'
+      ? t('探微 · Agent 控制台', 'filens · Agent console')
+      : t('探微 · 文件预览台', 'filens · File preview')
+    : t('探微 · 文件的精彩，打开就看见', 'filens · Files shine bright. Dreams take flight.');
+}, { immediate: true });
 
 function selectWorkbenchSection(section: 'preview' | 'agent'): void {
   if (showWorkbench.value && workbenchSection.value === section) return;
@@ -1693,30 +1704,30 @@ const familyLabel = computed(() => renderedState.value?.family ?? detectKind(cur
 const warningCount = computed(() => renderedState.value?.warnings.length ?? 0);
 const entrySizeLabel = computed(() => {
   const entry = buildInfo.value?.entry;
-  return entry ? `${formatBytes(entry.gzipBytes)} gzip · ${formatBytes(entry.brotliBytes)} br` : '构建后读取';
+  return entry ? `${formatBytes(entry.gzipBytes)} gzip · ${formatBytes(entry.brotliBytes)} br` : t('构建后读取', 'Available after build');
 });
 const renderTimeLabel = computed(() => formatDuration(renderTimeMs.value));
 const downloadTimeLabel = computed(() => formatDuration(downloadTimeMs.value));
 const conversionTimeLabel = computed(() => formatDuration(conversionTimeMs.value));
 const runtimeTimings = computed(() => [
-  downloadTimeMs.value === null ? null : { label: '下载', value: downloadTimeLabel.value },
-  conversionTimeMs.value === null ? null : { label: '转换', value: conversionTimeLabel.value },
-  renderTimeMs.value === null ? null : { label: '渲染', value: renderTimeLabel.value }
+  downloadTimeMs.value === null ? null : { label: t('下载', 'Download'), value: downloadTimeLabel.value },
+  conversionTimeMs.value === null ? null : { label: t('转换', 'Conversion'), value: conversionTimeLabel.value },
+  renderTimeMs.value === null ? null : { label: t('渲染', 'Rendering'), value: renderTimeLabel.value }
 ].filter((timing): timing is { label: string; value: string } => timing !== null));
 const wasmSizeLabel = computed(() => {
   const wasm = buildInfo.value?.converterCoreWasm;
-  return wasm ? `${formatBytes(wasm.gzipBytes)} gzip · ${formatBytes(wasm.brotliBytes)} br` : '构建后读取';
+  return wasm ? `${formatBytes(wasm.gzipBytes)} gzip · ${formatBytes(wasm.brotliBytes)} br` : t('构建后读取', 'Available after build');
 });
 const wasmDependencyLabel = computed(() => {
-  return '外挂 · 首次转换/全景操作时加载';
+  return t('外挂 · 首次转换/全景操作时加载', 'Loaded on the first conversion or panorama operation');
 });
 const imageWasmSizeLabel = computed(() => {
   const wasm = buildInfo.value?.converterImageWasm;
-  return wasm ? `${formatBytes(wasm.gzipBytes)} gzip · ${formatBytes(wasm.brotliBytes)} br` : '构建后读取';
+  return wasm ? `${formatBytes(wasm.gzipBytes)} gzip · ${formatBytes(wasm.brotliBytes)} br` : t('构建后读取', 'Available after build');
 });
 const performanceLabel = computed(() => {
   const performance = buildInfo.value?.typicalPerformance;
-  if (!performance) return '小样例快照';
+  if (!performance) return t('小样例快照', 'Small sample snapshot');
   return `DOC→DOCX ${performance.smallDocToDocxMs ?? '—'}ms · XLS→XLSX ${performance.smallXlsToXlsxMs ?? '—'}ms · PPT→PPTX ${performance.smallPptToPptxMs ?? '—'}ms`;
 });
 const businessFormatFamilies = computed(() => {
@@ -1769,6 +1780,11 @@ function selectFormatFamily(id: BusinessFormatFamilyId): void {
 
 function useFormatSample(extension: string): void {
   const sample = sampleByExtension.get(extension);
+  if (sample) void useSample(sample);
+}
+
+function usePhotoshopSample(name: string): void {
+  const sample = staticSamples.find((candidate) => candidate.catalogId === 'psd' && candidate.name === name);
   if (sample) void useSample(sample);
 }
 
@@ -3660,7 +3676,6 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     v-else
     v-model:remote-url="remoteUrl"
     v-model:toolbar="showPreviewToolbar"
-            :locale="previewLocale"
     :section="workbenchSection"
     :brand-icon="brandIconUrl"
     :name="current.name"
@@ -3685,6 +3700,9 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     @family="selectFormatFamily"
     @sample="useFormatSample"
   >
+    <template #samples>
+      <PhotoshopSamplePicker v-if="current.catalogId === 'psd'" :active-name="current.name" @select="usePhotoshopSample" />
+    </template>
           <AppleLivePhotoPreview
             v-if="current.livePhoto"
             :photo-src="current.livePhoto.photoSrc"
@@ -3715,11 +3733,11 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
           />
     <template #diagnostics>
       <details class="wb-diagnostics">
-        <summary>运行与构建信息</summary>
+        <summary>{{ t('运行与构建信息', 'Runtime and build information') }}</summary>
         <div class="wb-build-stat"><small>ENTRY JS</small><strong>{{ entrySizeLabel }}</strong></div>
         <div class="wb-build-stat"><small>CONVERTER-CORE.WASM</small><strong>{{ wasmSizeLabel }}</strong><span>{{ wasmDependencyLabel }}</span></div>
-        <div class="wb-build-stat"><small>CONVERTER-IMAGE.WASM</small><strong>{{ imageWasmSizeLabel }}</strong><span>RAW / ICNS 转换时按需加载</span></div>
-        <div class="wb-build-stat" aria-label="小样例性能参考"><small>小样例性能参考</small><strong>{{ performanceLabel }}</strong><span>{{ buildInfo?.typicalPerformance?.note ?? '仅供观察启动与执行量级' }}</span></div>
+        <div class="wb-build-stat"><small>CONVERTER-IMAGE.WASM</small><strong>{{ imageWasmSizeLabel }}</strong><span>{{ t('RAW / ICNS 转换时按需加载', 'Loaded on demand for RAW / ICNS conversion') }}</span></div>
+        <div class="wb-build-stat" :aria-label="t('小样例性能参考', 'Small sample performance')"><small>{{ t('小样例性能参考', 'Small sample performance') }}</small><strong>{{ performanceLabel }}</strong><span>{{ t(buildInfo?.typicalPerformance?.note ?? '仅供观察启动与执行量级', 'Small sample results; performance varies with file complexity and device.') }}</span></div>
       </details>
     </template>
   </DocumentWorkbench>

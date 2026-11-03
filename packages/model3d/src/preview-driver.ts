@@ -349,11 +349,6 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
   private sectionBounds: PreviewSectionBounds = defaultSectionBounds();
   private measurementHoverClientX: number | null = null;
   private measurementHoverClientY: number | null = null;
-  private pointerDown = false;
-  private pointerStartX = 0;
-  private pointerStartY = 0;
-  private pointerStartYaw = 0;
-  private pointerStartPitch = 0;
   private projectionMode: 'perspective' | 'orthographic' = 'perspective';
   private viewPreset: 'free' | 'front' | 'back' | 'left' | 'right' | 'top' | 'bottom' | 'isometric' = 'isometric';
   private displayMode: PreviewDisplayMode = 'solid-edge';
@@ -370,7 +365,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     this.stage.className = 'model3dv-stage';
     this.hint = document.createElement('div');
     this.hint.className = 'model3dv-hint';
-    this.hint.textContent = 'Drag to orbit';
+    this.hint.textContent = 'Drag to orbit · Pinch or scroll to zoom';
     this.root.replaceChildren(this.stage, this.hint);
     this.host.replaceChildren(this.root);
     this.state = {
@@ -1540,38 +1535,73 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     this.interactionController?.abort();
     this.interactionController = new AbortController();
     const signal = this.interactionController.signal;
+    const pointers = new Map<number, { x: number; y: number }>();
+    let tapStart: { x: number; y: number } | null = null;
+    const pinchDistance = (): number => {
+      const [first, second] = pointers.values();
+      return first && second ? Math.hypot(second.x - first.x, second.y - first.y) : 0;
+    };
+    const releasePointer = (pointerId: number): void => {
+      if (canvas.hasPointerCapture(pointerId)) {
+        canvas.releasePointerCapture(pointerId);
+      }
+    };
+    // Keep the browser from taking over gestures, including in embedded viewers.
+    canvas.style.touchAction = 'none';
+    signal.addEventListener('abort', () => {
+      for (const pointerId of pointers.keys()) releasePointer(pointerId);
+      pointers.clear();
+      tapStart = null;
+    }, { once: true });
     canvas.addEventListener('pointerdown', (event) => {
-      this.pointerDown = true;
-      this.pointerStartX = event.clientX;
-      this.pointerStartY = event.clientY;
-      this.pointerStartYaw = this.yaw;
-      this.pointerStartPitch = this.pitch;
+      const point = { x: event.clientX, y: event.clientY };
+      pointers.set(event.pointerId, point);
+      tapStart = pointers.size === 1 ? { ...point } : null;
       canvas.setPointerCapture(event.pointerId);
     }, { signal });
     canvas.addEventListener('pointermove', (event) => {
-      if ((this.state.measurement?.active ?? false) && !this.pointerDown) {
-        this.measurementHoverClientX = event.clientX;
-        this.measurementHoverClientY = event.clientY;
-        this.updateMeasurementHover(event.clientX, event.clientY);
-      }
-      if (!this.pointerDown) {
+      const point = pointers.get(event.pointerId);
+      if (!point) {
+        if ((this.state.measurement?.active ?? false) && pointers.size === 0) {
+          this.measurementHoverClientX = event.clientX;
+          this.measurementHoverClientY = event.clientY;
+          this.updateMeasurementHover(event.clientX, event.clientY);
+        }
         return;
       }
-      this.yaw = this.pointerStartYaw + (event.clientX - this.pointerStartX) * 0.35;
-      this.pitch = clamp(this.pointerStartPitch + (event.clientY - this.pointerStartY) * 0.25, -80, 80);
-      this.updateCamera();
+      if (tapStart && Math.hypot(event.clientX - tapStart.x, event.clientY - tapStart.y) > 4) {
+        tapStart = null;
+      }
+      const previousDistance = pinchDistance();
+      const deltaX = event.clientX - point.x;
+      const deltaY = event.clientY - point.y;
+      point.x = event.clientX;
+      point.y = event.clientY;
+      if (pointers.size === 1) {
+        if (deltaX !== 0 || deltaY !== 0) this.pan(deltaX, deltaY);
+      } else {
+        const nextDistance = pinchDistance();
+        if (previousDistance > 0 && nextDistance > 0) {
+          this.setScale(this.state.scale * nextDistance / previousDistance);
+        }
+      }
     }, { signal });
     canvas.addEventListener('pointerup', (event) => {
-      const moved = Math.hypot(event.clientX - this.pointerStartX, event.clientY - this.pointerStartY);
-      this.pointerDown = false;
-      if ((this.state.measurement?.active ?? false) && moved <= 4) {
+      if (!pointers.delete(event.pointerId)) return;
+      const isTap = tapStart && Math.hypot(event.clientX - tapStart.x, event.clientY - tapStart.y) <= 4;
+      tapStart = null;
+      releasePointer(event.pointerId);
+      if ((this.state.measurement?.active ?? false) && isTap) {
         this.pickMeasurementPoint(event.clientX, event.clientY);
       }
-      canvas.releasePointerCapture(event.pointerId);
     }, { signal });
-    canvas.addEventListener('pointercancel', () => {
-      this.pointerDown = false;
-    }, { signal });
+    const cancelPointer = (event: PointerEvent): void => {
+      if (!pointers.delete(event.pointerId)) return;
+      tapStart = null;
+      releasePointer(event.pointerId);
+    };
+    canvas.addEventListener('pointercancel', cancelPointer, { signal });
+    canvas.addEventListener('lostpointercapture', cancelPointer, { signal });
     canvas.addEventListener('pointerleave', () => {
       this.measurementHoverClientX = null;
       this.measurementHoverClientY = null;
@@ -1605,7 +1635,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       this.camera.updateProjectionMatrix();
     } else {
       const aspect = width / height;
-      const halfHeight = Math.max(this.modelRadius, 1) * 1.35;
+      const halfHeight = Math.max(this.modelRadius, 1) * 1.35 / this.state.scale;
       const halfWidth = halfHeight * aspect;
       this.camera.left = -halfWidth;
       this.camera.right = halfWidth;
@@ -2618,7 +2648,6 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     window.removeEventListener('resize', this.resize);
     this.interactionController?.abort();
     this.interactionController = null;
-    this.pointerDown = false;
     disposeModelResources(this.modelGroup,
       [this.geometry, this.edgeGeometry, this.measurementLineGeometry, this.measurementPointsGeometry, this.sectionPlaneHelperGeometry, this.sectionPlaneOutlineGeometry, this.sectionPlaneFillGeometry, this.sectionBoxFillGeometry, this.sectionBoxHelperGeometry],
       [this.material, this.edgeMaterial, this.measurementLineMaterial, this.measurementPointsMaterial, this.sectionPlaneHelperMaterial, this.sectionPlaneOutlineMaterial, this.sectionPlaneFillMaterial, this.sectionBoxFillMaterial, this.sectionBoxHelperMaterial]);

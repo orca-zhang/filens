@@ -5,25 +5,14 @@ import FileStory from './FileStory.vue';
 import WorkbenchIcon from './WorkbenchIcon.vue';
 import demoMedia from '../home-media.json';
 import './landing.css';
+import { useDemoI18n } from '../i18n';
 
 defineProps<{ uploadAccept: string }>();
 const emit = defineEmits<{ preview: [extension?: string]; upload: [event: Event]; agent: [] }>();
-type Locale = 'zh' | 'en';
-const storedLocale = (() => {
-  try {
-    return localStorage.getItem('filens-locale');
-  } catch {
-    return null;
-  }
-})();
-const locale = ref<Locale>(
-  (new URLSearchParams(location.search).get('lang') ?? storedLocale) === 'en' ? 'en' : 'zh'
-);
-const isEnglish = computed(() => locale.value === 'en');
+const { locale, isEnglish, t, toggleLocale } = useDemoI18n();
 const landing = ref<HTMLElement>();
 let revealObserver: IntersectionObserver | undefined;
 const revealAnimations = new Set<Animation>();
-const t = (zh: string, en: string) => (isEnglish.value ? en : zh);
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 const demoAsset = (file: string) => `${asset(`home/${file}`)}?v=${demoMedia.version}`;
 const repo = 'https://github.com/IceWhaleTech/filens';
@@ -281,8 +270,6 @@ const formatFamilies = [
   }
 ];
 function applyLocale(): void {
-  document.documentElement.lang = isEnglish.value ? 'en' : 'zh-CN';
-  document.title = t('探微 · 文件的精彩，打开就看见', 'filens · Files shine bright. Dreams take flight.');
   document
     .querySelector('meta[name="description"]')
     ?.setAttribute(
@@ -292,17 +279,6 @@ function applyLocale(): void {
         'Preview Office, iWork, PDF, CAD / STEP, 3D, RAW, and panoramas in your browser. Local files stay on your device. Modules load on demand; WASM conversion runs in the browser or through CLI / HTTP tools.'
       )
     );
-}
-function toggleLocale(): void {
-  locale.value = isEnglish.value ? 'zh' : 'en';
-  try {
-    localStorage.setItem('filens-locale', locale.value);
-  } catch {
-    /* Storage is optional. */
-  }
-  const url = new URL(location.href);
-  url.searchParams.set('lang', locale.value);
-  history.replaceState({}, '', url);
 }
 watch(locale, applyLocale);
 onMounted(() => {

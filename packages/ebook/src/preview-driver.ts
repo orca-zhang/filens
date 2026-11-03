@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { createEpubResources, resolveArchivePath } from './epub-resources';
+import { createFrameResourceUrl } from './frame-resource-url';
 import {
   createDefaultPreviewRoutes,
   type EbookPreviewState,
@@ -438,7 +439,7 @@ export async function loadCbzBook(
       checkAborted(context.signal);
       const index = start + offset;
       const contentType = imageContentType(entry.name);
-      const url = createUrl(new Blob([pages[offset]!], { type: contentType }));
+      const url = createFrameResourceUrl(pages[offset]!, contentType, createUrl);
       const title = `Page ${index + 1}`;
       chapters.push({
         id: `page-${index + 1}`,
@@ -554,6 +555,12 @@ async function rewriteChapterHtml(
       const inlineStyle = element.getAttribute('style');
       if (inlineStyle !== null) element.setAttribute('style', await resources.rewriteCss(inlineStyle, chapterDir));
     }
+  }
+  // srcdoc inherits the parent's base URL. Point local links at the chapter itself
+  // so native fragment navigation also works in WebKit's script-disabled sandbox.
+  for (const link of document.querySelectorAll('a[href], area[href]')) {
+    const href = link.getAttribute('href')!.trim();
+    if (href.startsWith('#')) link.setAttribute('href', `about:srcdoc${href}`);
   }
   checkAborted(signal);
   return {

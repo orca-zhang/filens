@@ -1,3 +1,5 @@
+@import '@filens/core/style.css';
+
 .panoramav-preview {
   position: relative;
   box-sizing: border-box;
@@ -56,57 +58,36 @@
   line-height: 1.45;
 }
 
-.panoramav-video-controls {
+.panoramav-view-controls {
   position: absolute;
-  right: 14px;
-  bottom: 12px;
-  left: 14px;
+  top: 14px;
+  right: 12px;
   z-index: 2;
-  width: calc(100% - 28px);
-  height: 42px;
-  border-radius: 10px;
-  background: rgba(17, 24, 39, 0.86);
-  object-fit: none;
-}
-
-.panoramav-calibrated-controls {
-  position: absolute;
-  right: 14px;
-  bottom: 12px;
-  left: 14px;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: auto minmax(80px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  min-height: 42px;
-  padding: 0 12px;
+  display: flex;
+  gap: 2px;
+  padding: 5px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-  background: rgba(17, 24, 39, 0.86);
-  backdrop-filter: blur(8px);
+  border-radius: 24px;
+  background: rgba(20, 24, 33, 0.86);
+  backdrop-filter: blur(16px);
 }
 
-.panoramav-calibrated-controls button {
-  min-width: 58px;
-  border: 0;
-  border-radius: 6px;
-  padding: 6px 10px;
-  background: #f8fafc;
-  color: #111827;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+.panoramav-preview.pptxv-has-video-controls .panoramav-hint {
+  bottom: 114px;
+  border-radius: 8px;
+  font-weight: 400;
 }
 
-.panoramav-calibrated-controls input {
-  width: 100%;
-  accent-color: #f59e0b;
+.panoramav-preview.pptxv-has-video-controls .panoramav-notice {
+  top: 76px;
 }
 
-.panoramav-calibrated-controls output {
-  min-width: 82px;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
+.panoramav-video-source {
+  display: none;
+}
+
+@container (max-width: 420px) {
+  .panoramav-preview.pptxv-has-video-controls .panoramav-hint {
+    display: none;
+  }
 }

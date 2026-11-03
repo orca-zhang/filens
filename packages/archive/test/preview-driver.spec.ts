@@ -44,6 +44,8 @@ describe('Archive preview driver', () => {
     expect(driver.supports('tgz')).toBe(true);
     expect(driver.supports('gz')).toBe(true);
     expect(driver.supports('jar')).toBe(true);
+    expect(driver.supports('apk')).toBe(true);
+    expect(driver.supports('.IPA')).toBe(true);
     expect(driver.supports('rar')).toBe(true);
     expect(driver.supports('7z')).toBe(true);
   });
@@ -123,7 +125,7 @@ describe('Archive preview driver', () => {
     await expect(createArchiveResourceIndex(tar, createLoadContext('bad-pax.tar'))).rejects.toThrow('TAR');
   });
 
-  it('renders ZIP entries into an archive table', async () => {
+  it.each(['zip', 'apk', 'ipa'])('browses %s entries and previews their contents', async extension => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     const session = createArchivePreviewDriver().createSession(host);
@@ -136,12 +138,12 @@ describe('Archive preview driver', () => {
     await session.load(await createZipFixture(), {
       descriptor: {
         source: new Uint8Array(),
-        name: 'sample.zip',
-        extension: 'zip',
+        name: `sample.${extension}`,
+        extension,
         contentType: 'application/zip'
       },
       route: {
-        sourceFormat: 'zip',
+        sourceFormat: extension,
         targetFormat: 'zip',
         family: 'archive',
         driverId: 'archive'
@@ -180,7 +182,7 @@ describe('Archive preview driver', () => {
         }
       ]
     });
-    expect(host.querySelector('.archivev-summary')?.textContent).toContain('sample.zip›docs');
+    expect(host.querySelector('.archivev-summary')?.textContent).toContain(`sample.${extension}›docs`);
     expect(host.querySelector('.archivev-summary')?.textContent).not.toContain('/docs/');
     expect(host.querySelector('.archivev-table')?.textContent).toContain('readme.txt');
 
@@ -200,7 +202,7 @@ describe('Archive preview driver', () => {
     expect(host.querySelector('.archivev-table')?.textContent).toContain('readme.txt');
 
     const archiveBreadcrumb = Array.from(host.querySelectorAll<HTMLButtonElement>('.archivev-breadcrumb')).find((button) =>
-      button.textContent === 'sample.zip'
+      button.textContent === `sample.${extension}`
     );
     expect(archiveBreadcrumb?.disabled).toBe(false);
     archiveBreadcrumb?.click();

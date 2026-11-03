@@ -27,9 +27,7 @@ Prepare the photography with `python3 scripts/prepare-showcase-images.py` (Pillo
 - `rich-text.rtf`: project-generated fixture covering headings, inline styles, Unicode, lists, tables, wrapping, and page breaks.
 - `t-rex-roar.mp3`: MDN interactive example media (CC0). Source: https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3
 - `example.ogg`: "Example.ogg" by JesseW, Wikimedia Commons, CC BY-SA 3.0. Source: https://commons.wikimedia.org/wiki/File:Example.ogg
-- `flower.webm`: MDN interactive example media (CC0). Source: https://interactive-examples.mdn.mozilla.net/media/cc0-videos/
 - `sample-video.mp4`: publicly bundled MDN flower video (CC0), used by the homepage video sample without a host-file dependency. Source: https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4
-- `sample.mov`, `sample.m4v`, `sample.ogv`, `sample.mkv`, `sample.avi`, `sample.mpeg`, `sample.mpg`, and `sample.3gp`: File Samples test media. Source: https://filesamples.com/categories/video
 - `photo-alpine-lake.jpg`: "Brown wooden house near lake and mountain" by Ricardo Gomez Angel, Unsplash License. Source: https://unsplash.com/photos/brown-wooden-house-near-lake-and-mountain-pR5uo2ED_hg
 - `photo-alpine-lake.avif`: AVIF derivative of `photo-alpine-lake.jpg` generated with FFmpeg.
 - `photo-alpine-lake.ppm`: 256-pixel-wide P6 PPM derivative of `photo-alpine-lake.jpg`, generated with Pillow.
@@ -51,6 +49,44 @@ Prepare the photography with `python3 scripts/prepare-showcase-images.py` (Pillo
 - `panorama/insta360-oners-tallinn.jpg`: stitched equirectangular panorama captured and stitched with an Insta360 One RS, released under CC0. Source: https://commons.wikimedia.org/wiki/File:Tallinn,_Estonia_%E2%80%93_Vanalinn,_Vene_%E2%80%93_2024-05-03_01.jpg
 - `panorama/osmo-360-leipzig.jpg`: 3840px derivative of a stitched equirectangular panorama whose EXIF identifies `Osmo [OQ001]`, CC BY-SA 4.0. Source: https://commons.wikimedia.org/wiki/File:Leipzig-Liviaplatz-Nordseite-DJI_0137-360x180G-PanoS-24-10-2025.jpg
 - `panorama/nasa-black-hole-360.webm`: Wikimedia 480p VP9 derivative of NASA's equirectangular black-hole plunge visualization, public domain. Source: https://commons.wikimedia.org/wiki/File:NASA_Black_Hole_Visualization_Takes_Viewers_Beyond_the_Brink_(SVS14576_BHPlunge_360_FINAL_1080).webm
+
+## Varied image and video samples
+
+The Media format buttons use different subjects for each image/video format. The original alpine-lake JPEG, transparent PNG, rotating-Earth GIF, and flower MP4 remain in use; the older alternate encodings above remain available at their existing URLs.
+
+Regenerate the following assets with `python3 scripts/prepare-demo-media.py` (Pillow 11.3+ with AVIF support and FFmpeg required). Photographs/artwork are resized without changing their aspect ratio and re-encoded; the APNG is copied unchanged. Videos are 6–8 second excerpts, resized and re-encoded except for the stream-copied OGV. Legacy video samples have a `.preview.mp4` derivative of the **same excerpt**, used for browser playback. They no longer share the unrelated flower clip. All files are bundled locally; previewing them requires no external media host.
+
+| Bundled file in `media/` | Work and creator | License / source |
+| --- | --- | --- |
+| `golden-gate.webp` | Golden Gate Bridge from Battery Spencer — Wattewyl | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), [original](https://commons.wikimedia.org/wiki/File:Golden_Gate_Bridge_from_Battery_Spencer.jpg) |
+| `blue-morpho.avif` | Blue morpho butterfly — Gregory Phillips | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), [original](https://commons.wikimedia.org/wiki/File:Blue_morpho_butterfly.jpg). This derivative is also CC BY-SA 3.0. |
+| `vegetable-market.ppm` | Veggies — calliope | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/), [original](https://commons.wikimedia.org/wiki/File:Veggies.jpg) |
+| `great-wave.bmp` | The Great Wave off Kanagawa — after Katsushika Hokusai | Public domain, [original](https://commons.wikimedia.org/wiki/File:The_Great_Wave_off_Kanagawa.jpg) |
+| `bouncing-ball.apng` | Animated PNG example bouncing beach ball — Holger Will | Public domain, [original](https://commons.wikimedia.org/wiki/File:Animated_PNG_example_bouncing_beach_ball.png) |
+| `filens.ico` | Project-authored Filens application icon | Derived from `brand/filens-icon-512.png`; project MIT license. |
+| `compass.icns` | Fluent Emoji Compass (3D) — Microsoft Corporation | [MIT](media/FLUENT-EMOJI-LICENSE.txt), [original](https://github.com/microsoft/fluentui-emoji/tree/main/assets/Compass) |
+| `waterfall.webm` | Waterfall in Huascarán National Park, Peru — CorraleH | [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [original](https://commons.wikimedia.org/wiki/File:Waterfall_in_Huascar%C3%A1n_National_Park_-_Peru.webm) |
+| `big-buck-bunny.mov` | Big Buck Bunny trailer (00:09–00:15) — Blender Foundation / Peach team | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), [film and credits](https://peach.blender.org/about/), [source trailer](https://media.w3.org/2010/05/bunny/trailer.mp4) |
+| `sintel-dragon.m4v` | Sintel trailer (00:25–00:32) — Blender Foundation / Durian team | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), [film and credits](https://durian.blender.org/about/), [source trailer](https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4) |
+| `ocean-waves.ogv`, `ocean-waves.preview.mp4` | Water Waves Greece — Tanzania | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), [original](https://commons.wikimedia.org/wiki/File:Water_Waves_Greece.ogv) |
+| `jellyfish.mkv` | Jellyfish in the Aquarium Genoa — Ofrommel | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), [original](https://commons.wikimedia.org/wiki/File:Jellyfish_in_the_Aquarium_Genoa.ogg). This derivative is also CC BY-SA 4.0. |
+| `steam-train.avi`, `steam-train.preview.mp4` | Steam locomotive parade in Shcherbinka (00:08–00:16) — Olezka100 | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), [original](https://commons.wikimedia.org/wiki/File:Steam_locomotive_parade_in_Shcherbinka.webm) |
+| `city-traffic.mpeg`, `city-traffic.preview.mp4` | Traffic control in Mexico City — Uwebart | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), [original](https://commons.wikimedia.org/wiki/File:Traffic_control_in_Mexico_City.ogv). These derivatives are also CC BY-SA 3.0. |
+| `cloud-timelapse.mpg`, `cloud-timelapse.preview.mp4` | Timelapse clouds — Eclipse.sx (attributed by the source) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), [original](https://commons.wikimedia.org/wiki/File:Timelapse_clouds.ogv). These derivatives are also CC BY-SA 3.0. |
+| `colorful-bird.3gp`, `colorful-bird.preview.mp4` | Cute Colorful Bird on Walking on Ledge — Yourusernamewillbepublic2 | [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [original](https://commons.wikimedia.org/wiki/File:Cute_Colorful_Bird_on_Walking_on_Ledge.webm) |
+
+## Commercial Photoshop design previews
+
+The PSD sample entry offers four project-authored `.psd.svg` design previews:
+Still Form skincare, Pace Store footwear, Sunday Roast coffee branding, and Mono
+Sound headphone detail. They use different artboards, typography, products and
+palettes, with local thumbnails for switching. These remain sample-only SVG
+previews; native PSD parsing/upload support is not implied. Layouts and the
+unbranded shoe/package illustrations are project-authored; the three embedded
+Unsplash photographs retain their separate license. Full asset URLs, usage
+conditions and rights distinctions are in [design/SOURCES.md](design/SOURCES.md)
+and [design/UNSPLASH-LICENSE.txt](design/UNSPLASH-LICENSE.txt). Regenerate with
+`node scripts/generate-photoshop-samples.mjs`.
 
 External proprietary-format validation files are not redistributed with the demo:
 

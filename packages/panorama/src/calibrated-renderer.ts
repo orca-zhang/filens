@@ -35,6 +35,7 @@ export interface CalibratedPanoramaRenderer {
   play(): void;
   pause(): void;
   seek(seconds: number): void;
+  setPlaybackRate?(rate: number): void;
   close(): void;
   readonly duration: number;
   readonly currentTime: number;
@@ -483,6 +484,7 @@ export async function createCalibratedPanoramaRenderer(processor: PanoramaProces
     play: () => playback.play(),
     pause: () => playback.pause(),
     seek: (seconds) => playback.seek(seconds),
+    setPlaybackRate: (rate) => playback.setPlaybackRate(rate),
     close: () => {
       playback.close();
       analyzer.close();
@@ -570,6 +572,7 @@ export async function createBrowserCalibratedPanoramaRenderer(
     play: () => playback.play(),
     pause: () => playback.pause(),
     seek: (seconds) => playback.seek(seconds),
+    setPlaybackRate: (rate) => playback.setPlaybackRate(rate),
     close: () => {
       playback.close();
       seamTexture.dispose();
@@ -846,6 +849,11 @@ class BrowserPanoramaPlayback {
 
   pause(): void { this.videos.forEach((video) => video.pause()); }
 
+  setPlaybackRate(rate: number): void {
+    if (this.isClosed || !Number.isFinite(rate) || rate < 0.5 || rate > 2) return;
+    this.videos.forEach((video) => { video.playbackRate = rate; });
+  }
+
   seek(seconds: number): void {
     const target = Math.max(0, Math.min(Number.isFinite(seconds) ? seconds : 0, this.duration));
     this.videos.forEach((video) => { video.currentTime = target; });
@@ -944,6 +952,7 @@ export class DualTrackPlayback {
   private startedAt = 0;
   private clockTime = 0;
   private clockRunning = false;
+  private playbackRate = 1;
   private feeding = false;
   private closed = false;
   private seekTargetUs = 0;
@@ -999,10 +1008,17 @@ export class DualTrackPlayback {
   }
 
   get currentTime(): number {
-    return Math.min(this.duration, this.clockTime + (this.isPaused || !this.clockRunning ? 0 : (performance.now() - this.startedAt) / 1000));
+    return Math.min(this.duration, this.clockTime + (this.isPaused || !this.clockRunning ? 0 : (performance.now() - this.startedAt) / 1000 * this.playbackRate));
   }
 
   get paused(): boolean { return this.isPaused; }
+
+  setPlaybackRate(rate: number): void {
+    if (this.closed || !Number.isFinite(rate) || rate < 0.5 || rate > 2) return;
+    this.clockTime = this.currentTime;
+    this.startedAt = performance.now();
+    this.playbackRate = rate;
+  }
 
   play() {
     if (this.closed || !this.isPaused) return;

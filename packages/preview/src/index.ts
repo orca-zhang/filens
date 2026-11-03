@@ -1,4 +1,5 @@
 import { createApp, h, shallowReactive } from 'vue';
+import type { BrowserMediaOptions } from '@filens/media';
 import { Preview } from '@filens/vue';
 import type { ConverterClient, PreviewOptions, PreviewSource, SourceDescriptor } from '@filens/core';
 import { createWasmConverterClient } from '@filens/converter-client';
@@ -19,6 +20,7 @@ export interface BrowserPreviewOptions extends PreviewOptions {
   messages?: Readonly<Record<string, string>>;
   converter?: ConverterClient;
   mediaConverter?: ConverterClient;
+  browserMedia?: boolean | BrowserMediaOptions;
   panoramaProcessor?: PanoramaProcessor;
   onRendered?: (state: unknown) => void;
   onError?: (error: Error) => void;

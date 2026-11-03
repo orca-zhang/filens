@@ -78,19 +78,31 @@ function hexDigit(value: number): number {
   return lower >= 97 && lower <= 102 ? lower - 87 : -1;
 }
 
-export async function sourceToBytes(source: PreviewSource, fetchImpl = globalThis.fetch, signal?: AbortSignal): Promise<Uint8Array> {
+export async function sourceToBytes(source: PreviewSource, fetchImpl = globalThis.fetch, signal?: AbortSignal, maxBytes = Infinity): Promise<Uint8Array> {
+  const bounded = (size: number) => {
+    if (size > maxBytes) throw new Error('Conversion source exceeds the preview byte limit.');
+  };
   if (isBlobLikeSource(source)) {
-    return new Uint8Array(await waitForConversion(source.arrayBuffer(), signal));
+    bounded(source.size);
+    const bytes = new Uint8Array(await waitForConversion(source.arrayBuffer(), signal));
+    bounded(bytes.length);
+    return bytes;
   }
   if (source instanceof ArrayBuffer) {
+    bounded(source.byteLength);
     return new Uint8Array(source);
   }
   if (ArrayBuffer.isView(source)) {
+    bounded(source.byteLength);
     return new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
   }
   if (typeof source === 'string') {
     if (isDataUrl(source)) {
-      return readDataUrl(source).bytes;
+      // A data URL can expand to at most three source characters per byte.
+      bounded(Math.max(0, source.length - source.indexOf(',') - 1) / 3);
+      const bytes = readDataUrl(source).bytes;
+      bounded(bytes.length);
+      return bytes;
     }
     if (isConversionSourceUrl(source)) {
       if (!fetchImpl) throw new Error('A fetch implementation is required to load a conversion source URL.');
@@ -99,9 +111,41 @@ export async function sourceToBytes(source: PreviewSource, fetchImpl = globalThi
       if (!response.ok) {
         throw new Error(`Failed to fetch conversion source: ${response.status} ${response.statusText}`.trim());
       }
-      return new Uint8Array(await waitForConversion(response.arrayBuffer(), signal));
+      try {
+        bounded(Number(response.headers.get('content-length')));
+        if (!Number.isFinite(maxBytes) || !response.body) {
+          const bytes = new Uint8Array(await waitForConversion(response.arrayBuffer(), signal));
+          bounded(bytes.length);
+          return bytes;
+        }
+        const reader = response.body.getReader();
+        try {
+          const chunks: Uint8Array[] = [];
+          let length = 0;
+          while (true) {
+            const { value, done } = await waitForConversion(reader.read(), signal);
+            if (done) break;
+            length += value.length;
+            bounded(length);
+            chunks.push(value);
+          }
+          const bytes = new Uint8Array(length);
+          let at = 0;
+          for (const chunk of chunks) { bytes.set(chunk, at); at += chunk.length; }
+          return bytes;
+        } finally {
+          await reader.cancel().catch(() => {});
+          reader.releaseLock();
+        }
+      } catch (error) {
+        await response.body?.cancel().catch(() => {});
+        throw error;
+      }
     }
-    return new TextEncoder().encode(source);
+    bounded(source.length);
+    const bytes = new TextEncoder().encode(source);
+    bounded(bytes.length);
+    return bytes;
   }
   throw new Error('Unsupported conversion source type.');
 }

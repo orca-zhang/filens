@@ -1,6 +1,7 @@
 import type JSZip from 'jszip';
 import type { PreviewResourceResolver, PreviewSource } from '@filens/core';
 import { rewriteCssResources } from './css-resources';
+import { createFrameResourceUrl, needsInlineFrameResources } from './frame-resource-url';
 
 interface Asset {
   path: string;
@@ -49,7 +50,7 @@ export async function createEpubResources(
       assets.set(asset.path, asset);
       if (asset.mediaType !== 'text/css') {
         checkAborted(signal);
-        urls.set(asset.path, createUrl(new Blob([asset.bytes], { type: asset.mediaType })));
+        urls.set(asset.path, createFrameResourceUrl(asset.bytes, asset.mediaType, createUrl));
       }
     }
   }
@@ -95,10 +96,14 @@ export async function createEpubResources(
         const next = new Set(ancestors); next.add(path);
         const css = await rewrite(decodeCss(bytes, type), dirname(path), next);
         checkAborted(signal);
-        url = createUrl(new Blob([css], { type: 'text/css;charset=utf-8' }));
+        url = createFrameResourceUrl(css, 'text/css;charset=utf-8', createUrl);
+      } else if (source instanceof Blob && !needsInlineFrameResources()) {
+        url = createUrl(source.type ? source : new Blob([source], { type }));
       } else if (asset || source instanceof Blob) {
-        const part = source instanceof Uint8Array ? new Uint8Array(source) : source;
-        url = createUrl(source instanceof Blob && source.type ? source : new Blob([part], { type }));
+        const bytes = source instanceof Blob ? await source.arrayBuffer() : source instanceof ArrayBuffer
+          ? source : new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
+        checkAborted(signal);
+        url = createFrameResourceUrl(bytes, type, createUrl);
       } else {
         const bytes = source instanceof ArrayBuffer ? new Uint8Array(source) : new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
         let binary = '';

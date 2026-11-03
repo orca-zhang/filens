@@ -114,6 +114,7 @@ export async function createRealtimePanoramaRenderer(processor: PanoramaProcesso
     play: () => playback.play(),
     pause: () => playback.pause(),
     seek: (seconds) => playback.seek(seconds),
+    setPlaybackRate: (rate) => playback.setPlaybackRate(rate),
     close() {
       if (closed) return;
       closed = true;

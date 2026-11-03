@@ -173,7 +173,7 @@ test('opens the bundled Milky Way panorama from its matching preview tab', async
 for (const [label, format, file, preview] of [
   ['STEP solids', 'step', 'rounded-cube.step', 'canvas.model3dv-canvas'],
   ['camera RAW', 'dng', 'pentax-k-r.dng', 'img.pptxv-native-image'],
-  ['PPM images', 'ppm', 'photo-alpine-lake.ppm', 'img.pptxv-native-image'],
+  ['PPM images', 'ppm', 'vegetable-market.ppm', 'img.pptxv-native-image'],
   ['legacy Office / WPS', 'doc', 'legacy-project-workflow.doc', '.docx'],
 ] as const) {
   test(`opens the public ${label} sample from the homepage`, async ({ page }) => {

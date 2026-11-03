@@ -31,4 +31,4 @@ the SD9 sample in rawpy's test corpus and CC0 SD14, DP1 and SD1 Merrill samples
 from raw.pixls.us (IDs 4462, 1116 and 4918). All four matched exactly; this is
 a decompression check, not a claim of matching vendor-developed color.
 
-The DNG metadata adapter additionally exposes signed `BaselineExposure` on `RawImage` (zero for other decoders) and rejects missing or incorrectly sized color matrices instead of guessing a color basis. The shared image core applies the bounded EV, validates calibration, and uses the Photos color contract described in the parent README. These are metadata/color handling changes; they do not add a second sensor decoder.
+The DNG metadata adapter additionally exposes signed `BaselineExposure` on `RawImage` (zero for other decoders) and rejects missing or incorrectly sized color matrices instead of guessing a color basis. The shared image core applies the bounded EV, validates calibration, and uses the color pipeline described in the parent README. These are metadata/color handling changes; they do not add a second sensor decoder.

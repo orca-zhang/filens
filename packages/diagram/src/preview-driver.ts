@@ -1,5 +1,6 @@
 import {
   createDefaultPreviewRoutes,
+  bindPreviewTouchGestures,
   type DiagramPreviewState,
   type FormatDefinition,
   type PreviewDriver,
@@ -192,6 +193,11 @@ export class DiagramPreviewSession implements PreviewSession<DiagramPreviewState
         scale: this.scale
       };
       this.render();
+      bindPreviewTouchGestures(this.root, {
+        getScale: () => this.state.scale,
+        setScale: scale => this.setScale(scale),
+        signal: controller.signal
+      });
       this.emit('rendered', this.state);
       this.emit('statechange', this.state);
     } catch (error) {
