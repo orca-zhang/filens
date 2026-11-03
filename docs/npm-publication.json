@@ -136,14 +136,19 @@
     }
   ],
   "modules": {
-    "status": "awaiting-filens-organization-publish-permission",
+    "observedAt": "2026-11-03T15:54:46.094Z",
+    "sourceCommit": "58d71ac45136e29a69697f54989335aa8d460c5d",
     "count": 18,
-    "lastAttempt": {
-      "name": "@filens/core",
-      "version": "0.1.0",
-      "observedAt": "2026-11-03T14:05:50.045Z",
-      "httpStatus": 404,
-      "error": "Scope not found"
-    }
+    "acceptedCount": 18,
+    "publicCount": 17,
+    "status": "upload-accepted-awaiting-public-registry",
+    "nameChanges": [
+      {
+        "from": "@filens/ebook",
+        "to": "@filens/books",
+        "reason": "npm rejected the original package name with HTTP 400: That word is not allowed"
+      }
+    ],
+    "report": "docs/module-npm-publication.json"
   }
 }
