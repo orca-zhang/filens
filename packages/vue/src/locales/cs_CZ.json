@@ -1,4 +1,7 @@
 {
+  "Model tools": "Nástroje modelu",
+  "Structure": "Struktura",
+  "Tools": "Nástroje",
   "Prev": "Předchozí",
   "Next": "Další",
   "Fit": "Přizpůsobit",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Materiály modelu",
+  "Selected materials": "Vybrané materiály"
 }

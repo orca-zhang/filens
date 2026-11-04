@@ -29,6 +29,10 @@ struct Source {
     #[serde(default)]
     layout: Value,
     #[serde(default)]
+    document: Value,
+    #[serde(default)]
+    warnings: Value,
+    #[serde(default)]
     archive: Value,
     complete: bool,
 }
@@ -318,11 +322,28 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
             let layout_blocks:Vec<_>=file.layout["blocks"].as_array().into_iter().flatten().filter(|block|{
                 block["startByte"].as_u64().zip(block["endByte"].as_u64()).is_some_and(|(a,b)|a<span.end as u64 && b>span.start as u64)
             }).map(|block|{let mut value=block.clone();value["boundsScope"]=json!("source-block");value}).collect();
-            json!({"id":format!("s{}",j+1),"startByte":span.start,"endByte":span.end,"startLine":start_line,"endLine":end_line,"text":text,"score":score,
+            // Evidence here addresses the full extracted source. Normalize adjacent
+            // chunks of the same origin so native/WASM extraction stays identical.
+            let mut blocks:Vec<Value>=Vec::new();
+            for block in file.document["blocks"].as_array().into_iter().flatten() {
+                let Some((a,b))=block["startByte"].as_u64().zip(block["endByte"].as_u64()) else {continue};
+                if a>=span.end as u64 || b<=span.start as u64 {continue;}
+                let start=a.max(span.start as u64); let end=b.min(span.end as u64);
+                let mut value=json!({"startByte":start,"endByte":end});
+                for key in ["source","confidence","confidenceKind","page","slide","shape","sourcePart","media"] {
+                    if let Some(v)=block.get(key){value[key]=v.clone();}
+                }
+                let same=blocks.last().is_some_and(|last|last["endByte"]==start && ["source","confidence","confidenceKind","page","slide","shape","sourcePart","media"].iter().all(|key|last[*key]==value[*key]));
+                if same {blocks.last_mut().unwrap()["endByte"]=json!(end);}else{blocks.push(value);}
+            }
+            if blocks.is_empty() && file.document.is_null() {blocks.push(json!({"startByte":span.start,"endByte":span.end,"source":"text","confidence":null}));}
+            json!({"blocks":blocks,"id":format!("s{}",j+1),"startByte":span.start,"endByte":span.end,"startLine":start_line,"endLine":end_line,"text":text,"score":score,
                 "layout":{"blocks":layout_blocks,"pages":file.layout["pages"],"images":file.layout["images"]}})
         }).collect();
-        let mut result = json!({"path":file.path,"sha256":if file.sha256.is_empty(){Value::Null}else{json!(file.sha256)},"score":selected[&i][0].1,"sourceComplete":file.complete,"excerpts":excerpts});
-        if !file.archive.is_null() { result["archive"] = file.archive.clone(); }
+        let mut result = json!({"path":file.path,"sha256":if file.sha256.is_empty(){Value::Null}else{json!(file.sha256)},"score":selected[&i][0].1,"sourceComplete":file.complete,"warnings":file.warnings.as_array().cloned().unwrap_or_default(),"excerpts":excerpts});
+        if !file.archive.is_null() {
+            result["archive"] = file.archive.clone();
+        }
         results.push(result);
     }
     let mut text = String::new();
@@ -435,6 +456,8 @@ mod tests {
             sha256: "fixture".into(),
             text: text.into(),
             layout: Value::Null,
+            document: Value::Null,
+            warnings: Value::Null,
             archive: Value::Null,
             complete: true,
         }

@@ -53,12 +53,12 @@ add('format','自然语言要求 XML','读取 "report.txt"，以 XML 输出');
 add('format','显式格式拒绝 YAML',['report.txt','--format','yaml']);
 add('format','显式 flag 覆盖自然语言',['读取 "report.txt"，以纯文本输出','--json']);
 add('format','自然语言格式冲突','read "report.txt" as json and as plain text');
-add('structured','JSON stdin',[],JSON.stringify({operation:'understand',input:'report.txt'}));
-add('structured','JSON 请求纯文本',[],JSON.stringify({operation:'read',input:'report.txt',format:'text'}));
+add('structured','JSON stdin',[],JSON.stringify({op:'understand',input:'report.txt'}));
+add('structured','JSON 请求纯文本',[],JSON.stringify({op:'read',input:'report.txt',format:'text'}));
 add('structured','自然语言 stdin',[],'读取 "report.txt"，以 JSON 输出');
 add('structured','JSON 未知字段',[],JSON.stringify({input:'report.txt',pages:'1-2'}));
-add('structured','JSON 摘录请求',[],JSON.stringify({operation:'summarize',input:'report.txt',query:'预算',summaryChars:100}));
-add('structured','JSON 非法 operation',[],JSON.stringify({operation:'nonexistent',input:'report.txt'}));
+add('structured','JSON 摘录请求',[],JSON.stringify({op:'summarize',input:'report.txt',query:'预算',summaryChars:100}));
+add('structured','JSON 非法 operation',[],JSON.stringify({op:'nonexistent',input:'report.txt'}));
 add('structured','JSON 非法 format',[],JSON.stringify({input:'report.txt',format:'xml'}));
 add('summary','中文原文摘录','总结 "report.txt"，以 JSON 输出');
 add('summary','英文原文摘录','summarize "report.txt" as json');
@@ -92,7 +92,7 @@ const results=[];
 for(const test of cases){
  const result=await invoke(test);
  results.push(result);
- console.log(`${test.group}: ${test.label}: exit=${result.exit} format=${result.format} operation=${result.operation??'-'} ${result.elapsedMs}ms`);
+ console.log(`${test.group}: ${test.label}: exit=${result.exit} format=${result.format} operation=${result.op??'-'} ${result.elapsedMs}ms`);
 }
 const report={date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai'}).format(new Date()),platform:`${process.platform}-${process.arch}`,node:process.version,binary,method:'One process per request; sequential single run, including process startup, WASM compilation and OCR model loading. Synthetic text is not an accuracy benchmark corpus.',cases:results};
 await writeFile(path.join(output,'report.json'),JSON.stringify(report,null,2)+'\n');
@@ -110,7 +110,7 @@ async function invoke(test){
    clearTimeout(timer);
    let response;try{response=JSON.parse(stdout);}catch{}
    const text=response?.content?.text??(response?undefined:stdout);
-   resolve({...test,exit,signal,format:response?'json':'text',operation:response?.operation,error:response?.error,ok:response?.ok,complete:response?.content?.complete,truncated:response?.content?.truncated,blocks:response?.content?.document?.blocks?.length,elapsedMs:Math.round(performance.now()-started),characters:text?[...text].length:0,text,stderr,...(response?.capacity?{ocr:response.capacity.ocr,formats:response.capacity.formats.length}:{}),...(test.reference&&typeof text==='string'?{normalizedCER:characterError(test.reference,text),invoiceNumberCorrect:text.includes('FILENS2026'),amountCorrect:text.includes('12345.67')}:{} )});
+   resolve({...test,exit,signal,format:response?'json':'text',op:response?.op,error:response?.error,ok:response?.ok,complete:response?.content?.complete,truncated:response?.content?.truncated,blocks:response?.content?.document?.blocks?.length,elapsedMs:Math.round(performance.now()-started),characters:text?[...text].length:0,text,stderr,...(response?.capacity?{ocr:response.capacity.ocr,formats:response.capacity.formats.length}:{}),...(test.reference&&typeof text==='string'?{normalizedCER:characterError(test.reference,text),invoiceNumberCorrect:text.includes('FILENS2026'),amountCorrect:text.includes('12345.67')}:{} )});
   });
   child.stdin.end(test.stdin??'');
  });

@@ -16,6 +16,12 @@ required-features = ["office-crypto"]
 test = false
 
 [[bin]]
+name = "converter-postscript"
+path = "src/postscript_main.rs"
+required-features = ["postscript"]
+test = false
+
+[[bin]]
 name = "converter-text"
 path = "src/text_main.rs"
 required-features = ["text-extraction"]
@@ -23,9 +29,12 @@ required-features = ["text-extraction"]
 [features]
 default = ["office-crypto"]
 office-crypto = ["msoffice-crypto/legacy-binary"]
+postscript = ["dep:efterscript-remelt", "dep:efterscript-vm"]
 text-extraction = ["dep:calamine", "dep:iwork", "dep:djvu-rs", "dep:sha2", "dep:acadrust", "dep:cadkit-core", "dep:raster-codec", "dep:matfile", "dep:fitsrs", "dep:lopdf", "dep:ttf-parser", "dep:unicode-normalization", "dep:tar"]
 
 [dependencies]
+efterscript-remelt = { version = "=0.0.7", default-features = false, optional = true }
+efterscript-vm = { version = "=0.0.7", default-features = false, optional = true }
 msoffice-crypto = { version = "=0.1.0-rc.13", default-features = false }
 png = "0.18.0"
 quick-xml = "0.41.0"

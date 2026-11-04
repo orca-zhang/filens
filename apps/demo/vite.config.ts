@@ -52,6 +52,7 @@ const converterOfficeWasmOutput = 'externals/converter-office.wasm';
 const converterImageWasmSource = path.resolve(__dirname, '../../wasm/converter-image/dist/converter-image.wasm');
 const converterImageWasmOutput = 'externals/converter-image.wasm';
 const externalConverterAssets = [
+  { source: path.resolve(__dirname, '../../wasm/converter-core/dist/converter-postscript.wasm'), output: 'externals/converter-postscript.wasm' },
   { source: converterCoreWasmSource, output: converterCoreWasmOutput },
   { source: converterOfficeWasmSource, output: converterOfficeWasmOutput },
   { source: converterImageWasmSource, output: converterImageWasmOutput }
@@ -86,6 +87,7 @@ function externalConverterWasms() {
       });
     },
     async generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'externals/converter-core-NOTICES.txt', source: await readFile(path.resolve(__dirname, '../../wasm/converter-core/THIRD-PARTY-NOTICES.txt')) });
       for (const asset of externalConverterAssets) {
         this.emitFile({
           type: 'asset',

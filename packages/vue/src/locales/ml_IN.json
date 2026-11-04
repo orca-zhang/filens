@@ -1,4 +1,7 @@
 {
+  "Model tools": "മോഡൽ ഉപകരണങ്ങൾ",
+  "Structure": "ഘടന",
+  "Tools": "ഉപകരണങ്ങൾ",
   "Prev": "മുമ്പത്തേത്",
   "Next": "അടുത്തത്",
   "Fit": "ഒതുക്കുക",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "മോഡൽ മെറ്റീരിയലുകൾ",
+  "Selected materials": "തിരഞ്ഞെടുത്ത മെറ്റീരിയലുകൾ"
 }

@@ -26,7 +26,7 @@ function run(args, expected = 0, stdin, environment = {}, executable = binary) {
 }
 const json = (args, expected = 0, stdin) => JSON.parse(run(args, expected, stdin));
 const query = (text, extra = [], expected = 0) => json(['search', corpus, '--query', text, '--json', '--no-ocr', ...extra], expected);
-const cap = json(['capacity', '--json', '--no-ocr']);
+const cap = json(['capacity', '--full', '--json', '--no-ocr']);
 assert.ok(cap.capacity.operations.some(o => o.name === 'search'));
 assert.equal(cap.capacity.search.semantic, false);
 if (process.platform === 'darwin' && process.env.FILENS_WALKER !== 'hdrw-wasi') {
@@ -98,11 +98,11 @@ assert.deepEqual(names.search.results[0].excerpts, []);
 const literal = query('must pass Windows testing.', ['--search-mode', 'exact']);
 assert.equal(literal.search.matchedFiles, 1);
 assert.equal(query('MUST PASS Windows testing.', ['--search-mode', 'exact']).search.matchedFiles, 0);
-const structured = json(['-'], 0, JSON.stringify({ operation: 'search', input: corpus, query: '预算', format: 'json', cache: false }));
+const structured = json(['-'], 0, JSON.stringify({ op: 'search', input: corpus, query: '预算', format: 'json', cache: false }));
 assert.equal(structured.search.scan.cache.enabled, false);
 const chinese = json([`在 "${corpus}" 中搜索 "预算"，以 JSON 输出`, '--no-ocr']);
 const english = json([`search "${corpus}" for "budget" as json`, '--no-ocr']);
-assert.equal(chinese.operation, 'search');
+assert.equal(chinese.op, 'search');
 assert.ok(english.search.results.some(r => r.path.endsWith('budget.txt')));
 const logical = query('milestone', ['--layout', '--no-cache']);
 assert.ok(logical.search.results[0].excerpts[0].layout.blocks.some(b => b.kind === 'heading'));
@@ -110,7 +110,7 @@ assert.ok(logical.search.results[0].excerpts[0].layout.blocks.every(b => !b.boun
 for (const format of ['text', 'json', 'markdown', 'html', 'yaml', 'xml', 'csv', 'tsv']) {
   const value = run(['search', corpus, '--query', '预算', '--format', format, '--no-ocr']);
   assert.ok(value.includes('budget.txt'));
-  if (format === 'json') assert.equal(JSON.parse(value).operation, 'search');
+  if (format === 'json') assert.equal(JSON.parse(value).op, 'search');
   if (format === 'html') assert.match(value, /<!doctype html>/);
   if (format === 'csv') assert.match(value, /^"path","score"/);
   if (format === 'tsv') assert.match(value, /^"path"\t"score"/);
@@ -127,11 +127,11 @@ const incomplete = query('FILENS2026', [], 3);
 assert.equal(incomplete.search.scan.extractionErrorCount, 1);
 assert.equal(incomplete.search.matchedFiles, 1);
 for (const request of [
-  { operation: 'search', input: corpus },
-  { operation: 'search', input: corpus, query: 'budget', maxResults: 0 },
-  { operation: 'search', input: corpus, query: 'budget', searchMode: 'semantic' },
-  { operation: 'search', input: corpus, query: 'budget', summaryChars: 100 },
-  { operation: 'search', input: corpus, query: 'budget', cache: true },
+  { op: 'search', input: corpus },
+  { op: 'search', input: corpus, query: 'budget', maxResults: 0 },
+  { op: 'search', input: corpus, query: 'budget', searchMode: 'semantic' },
+  { op: 'search', input: corpus, query: 'budget', summaryChars: 100 },
+  { op: 'search', input: corpus, query: 'budget', cache: true },
 ]) assert.equal(json(['-', '--no-ocr'], 2, JSON.stringify(request)).ok, false);
 // Actual pooled-WASM coverage: deterministic results and partial errors must
 // survive multiple workers, independently of the single-file startup path.

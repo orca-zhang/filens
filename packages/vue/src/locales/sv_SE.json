@@ -1,4 +1,7 @@
 {
+  "Model tools": "Modellverktyg",
+  "Structure": "Struktur",
+  "Tools": "Verktyg",
   "Prev": "Föregående",
   "Next": "Nästa",
   "Fit": "Anpassa",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Modellmaterial",
+  "Selected materials": "Valda material"
 }

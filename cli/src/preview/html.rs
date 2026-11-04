@@ -73,7 +73,7 @@ pub(super) fn run(
     if structured {
         println!(
             "{}",
-            json!({"ok":true,"operation":"preview","mode":"html","transport":"file",
+            json!({"ok":true,"op":"preview","mode":"html","transport":"file",
             "url":url,"path":path,"temporary":output.is_none(),"containsSource":true,
             "source":{"name":input.file_name().unwrap().to_string_lossy()}})
         );

@@ -6,11 +6,13 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertReleaseArchive, assertReleaseDirectory, privacyIssues } from './agent-release-privacy.mjs';
-import { executableName, platformPackageName, npmInvocation } from './agent-platforms.mjs';
+import { executableName, platformPackageName, npmInvocation, supportedPlatforms } from './agent-platforms.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const output=path.join(root,'dist/npm');
 const release=JSON.parse(await readFile(path.join(output,'release.json')));
+assert.ok(supportedPlatforms.every(platform=>release.targets.includes(platform)),
+  'Build all supported targets with npm run package:agent:npm before synchronizing release sizes');
 let accepted=new Map();
 try{
   const receipt=JSON.parse(await readFile(path.join(output,`publication-state-${release.version}.json`)));
@@ -47,13 +49,13 @@ async function update(){
     const fullRange=range(rows.map(r=>r.full.installedBytes/1048576));
     const binaryRange=range(rows.map(r=>r.binaryBytes/1048576));
     text=language==='zh'
-      ? text.replace(/(\| 大概多大 \| ).*?( \|)/,`$1**Lite 安装后 ${liteRange} MiB · Full 安装后 ${fullRange} MiB**，完整版含 OCR 运行时与模型。$2`)
+      ? text.replace(/(\| 大概多大 \| ).*?( \|)/,`$1**Lite 基础组件 ${liteRange} MiB · Full 基础组件 ${fullRange} MiB**，完整版含 OCR 运行时与模型。$2`)
         .replace(/原生可执行文件为 \*\*[^*]+\*\*/,`原生可执行文件为 **${binaryRange} MiB**`)
-      : text.replace(/(\| Approximate size \| ).*?( \|)/,`$1**Lite: ${liteRange} MiB installed · Full: ${fullRange} MiB installed**, including OCR runtime and models.$2`)
+      : text.replace(/(\| Approximate size \| ).*?( \|)/,`$1**Lite components: ${liteRange} MiB · Full components: ${fullRange} MiB**, including OCR runtime and models.$2`)
         .replace(/The native executable is \*\*[^*]+\*\*/,`The native executable is **${binaryRange} MiB**`);
     const body=language==='zh'
-      ? `  <p><strong>CLI 可执行文件 ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full 为包安装体积，Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>`
-      : `  <p><strong>CLI executable ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>`;
+      ? `  <p><strong>CLI 可执行文件 ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full 为基础组件体积，离线预览资源另计；Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>`
+      : `  <p><strong>CLI executable ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>`;
     await writeFile(path.join(root,file),block(text,`agent-cli-size:${language}`,body,anchor));
   }
   const table='| Platform | CLI executable | Lite installed / download | Full installed / download |\n| --- | ---: | ---: | ---: |\n'+rows.map(r=>`| ${r.platform} | ${mib(r.binaryBytes)} MiB | ${mib(r.lite.installedBytes)} / ${mib(r.lite.downloadBytes)} MiB | ${mib(r.full.installedBytes)} / ${mib(r.full.downloadBytes)} MiB |`).join('\n');

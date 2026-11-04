@@ -35,6 +35,8 @@ export interface WasmConverterClientOptions {
   imageWasm?: WasmModuleSource;
   /** Loaded only when the core requests Office password decryption. */
   officeWasm?: WasmModuleSource;
+  /** Loaded on demand for EPS, PS and Illustrator previews. */
+  postscriptWasm?: WasmModuleSource;
   fetch?: typeof fetch;
 }
 
@@ -69,6 +71,9 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
   const runOffice = options.officeWasm
     ? createWasmCoreRunner({ wasm: options.officeWasm, fetch: options.fetch })
     : undefined;
+  const runPostscript = options.postscriptWasm
+    ? createWasmCoreRunner({ wasm: options.postscriptWasm, fetch: options.fetch })
+    : undefined;
   const imageModule = options.imageWasm
     ? retryableLoader(() => loadWasmModule(options.imageWasm!, options.fetch))
     : undefined;
@@ -100,7 +105,8 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
         throwIfAborted(context.signal);
         if (preview) return preview;
       }
-      const runConverter = useImageConverter ? runImage! : runCore;
+      const usePostscriptConverter = Boolean(runPostscript && targetFormat === 'pdf' && ['eps', 'ps', 'ai'].includes(sourceFormat));
+      const runConverter = usePostscriptConverter ? runPostscript! : useImageConverter ? runImage! : runCore;
       const invoke = (runner: typeof runCore, bytes: Uint8Array) => runner({
         args: [
           useImageConverter ? 'converter-image' : 'converter-core',

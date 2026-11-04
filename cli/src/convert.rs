@@ -47,9 +47,26 @@ pub fn execute(
             &mut response,
             "unsupported_format",
             format!(
-                "unsupported conversion pair: {} -> {}; inspect capacity.conversionPairs",
-                r.source_format, r.target_format
+                "unsupported conversion pair: {} -> {}; inspect supportedTargets or capacity --from {} --section conversionPairs",
+                r.source_format, r.target_format, r.source_format
             ),
+        );
+        response["error"]["sourceFormat"] = json!(r.source_format);
+        response["error"]["targetFormat"] = json!(r.target_format);
+        let mut targets: Vec<_> = capacity["pairs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|p| {
+                p["sourceFormat"] == r.source_format && p["targetFormat"] != r.source_format
+            })
+            .filter_map(|p| p["targetFormat"].as_str())
+            .collect();
+        targets.sort_unstable();
+        targets.dedup();
+        response["error"]["supportedTargets"] = json!(targets);
+        response["error"]["reason"] = json!(
+            "The installed WASM engines do not declare this conversion pair. No indirect route has been verified."
         );
         return Ok((response, 2));
     }

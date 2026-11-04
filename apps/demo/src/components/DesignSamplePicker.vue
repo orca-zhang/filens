@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import { photoshopSamples } from '../photoshop-samples';
+import { designSamples } from '../design-samples';
 import { useDemoI18n } from '../i18n';
+import { nextTick, ref, watch } from 'vue';
 
-defineProps<{ activeName: string }>();
+const props = defineProps<{ activeName: string }>();
 const emit = defineEmits<{ select: [name: string] }>();
 const { t } = useDemoI18n();
 const thumbnail = (id: string) => `${import.meta.env.BASE_URL}samples/design/${id}.webp`;
+const gallery = ref<HTMLElement | null>(null);
+watch(() => props.activeName, async () => {
+  await nextTick();
+  gallery.value?.querySelector('button[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}, { immediate: true, flush: 'post' });
 </script>
 
 <template>
-  <nav class="photoshop-samples" :aria-label="t('Photoshop 设计稿样例', 'Photoshop design samples')">
+  <nav ref="gallery" class="photoshop-samples" :aria-label="t('设计稿样例', 'Design file samples')">
     <span class="photoshop-samples-label">{{ t('换一份设计稿', 'Explore the designs') }}</span>
     <div class="photoshop-samples-list">
-      <button v-for="sample in photoshopSamples" :key="sample.id" type="button"
+      <button v-for="sample in designSamples" :key="sample.id" type="button"
         :aria-pressed="activeName === sample.name" @click="emit('select', sample.name)">
         <img :src="thumbnail(sample.id)" alt="" width="64" height="44" />
-        <span>{{ t(sample.titleZh, sample.titleEn) }}</span>
+        <span>{{ t(sample.titleZh, sample.titleEn) }} <small>{{ sample.format.toUpperCase() }}</small></span>
       </button>
     </div>
   </nav>
@@ -29,6 +35,7 @@ const thumbnail = (id: string) => `${import.meta.env.BASE_URL}samples/design/${i
 .photoshop-samples button:hover { border-color: #c69c80; color: #76513b; }
 .photoshop-samples button[aria-pressed="true"] { border-color: #bd8a69; background: #fcf5ef; color: #795036; box-shadow: 0 0 0 1px #bd8a6920; }
 .photoshop-samples img { width: 64px; height: 44px; border-radius: 3px; object-fit: cover; }
+.photoshop-samples small { display: block; margin-top: 3px; color: #828992; font-size: 9px; text-align: left; }
 @media (max-width: 1100px) {
   .photoshop-samples { display: block; margin-bottom: 10px; }
   .photoshop-samples-label { display: block; margin: 0 4px 4px; }

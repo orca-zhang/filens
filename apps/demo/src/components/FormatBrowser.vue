@@ -31,7 +31,10 @@ const resultCount = computed(() => categories.value.reduce((count, category) => 
 const canPreview = (format: WorkbenchFormat) => (format.supported || format.sampleOnly) && props.sampleExtensions.has(format.extension);
 function formatHint(format: WorkbenchFormat): string {
   if (format.sampleOnly) return t('转换后 SVG 展示示例；暂不支持直接上传原格式', 'Converted SVG sample; uploading the original format is not supported yet');
-  if (!format.supported) return t('已归类，暂未支持预览', 'Listed format; preview is not supported yet');
+  if (!format.supported) return t('暂不支持预览', 'Preview is not supported yet');
+  if (!props.sampleExtensions.has(format.extension)) return t('已支持，暂无示例；可导入文件预览', 'Supported, no sample yet; import a file to preview');
+  if (['ai', 'eps', 'ps'].includes(format.extension)) return t('预览设计原文件并保留矢量缩放；部分字体功能受限', 'Preview original vector artwork; some font features are limited');
+  if (['psd', 'psb'].includes(format.extension)) return t('预览 PSD/PSB 原文件中已保存的合成图（8 位 RGB / 灰度）', 'Preview the saved composite in PSD/PSB files (8-bit RGB / grayscale)');
   return props.sampleExtensions.has(format.extension) ? t(`预览 ${format.label} 示例`, `Preview ${format.label} sample`) : t('支持上传预览，暂无内置示例', 'Upload to preview; no built-in sample yet');
 }
 function chooseSample(extension: string): void {
@@ -63,13 +66,13 @@ function chooseSample(extension: string): void {
         <h3>{{ category.label }} <span>{{ category.formats.length.toString().padStart(2, '0') }}</span></h3>
         <div class="wb-subformats">
           <button v-for="format in category.formats" :key="`${format.family}:${format.extension}`" type="button"
-            class="wb-subformat" :class="{ 'is-active': activeExtension === format.extension, 'is-sample-only': format.sampleOnly, 'is-unavailable': !canPreview(format) }"
+            class="wb-subformat" :class="{ 'is-active': activeExtension === format.extension, 'is-sample-only': format.sampleOnly, 'is-no-sample': format.supported && !sampleExtensions.has(format.extension), 'is-unavailable': !format.supported && !format.sampleOnly }"
             :aria-pressed="activeExtension === format.extension" :disabled="!canPreview(format)" :title="formatHint(format)"
             @click="chooseSample(format.extension)">{{ format.label }}</button>
         </div>
       </div>
       <div v-if="!resultCount" class="wb-search-empty"><WorkbenchIcon name="search" /><strong>{{ t('没有找到这个格式', 'No matching formats') }}</strong><p>{{ t('试试扩展名，或换个关键词。', 'Try a file extension or another keyword.') }}</p><button type="button" @click="search = ''">{{ t('查看全部格式', 'View all formats') }}</button></div>
     </div>
-    <p class="wb-format-hint"><span></span> {{ t('可打开示例', 'Samples') }} <span class="is-muted"></span> {{ t('暂无示例', 'No sample') }} <span class="is-converted"></span> {{ t('转换展示', 'Converted') }}</p>
+    <p class="wb-format-hint"><span><i></i>{{ t('可打开示例', 'Samples') }}</span><span><i class="is-no-sample"></i>{{ t('已支持，暂无示例', 'Supported, no sample') }}</span><span><i class="is-muted"></i>{{ t('暂不支持', 'Unsupported') }}</span></p>
   </section>
 </template>

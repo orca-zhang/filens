@@ -70,8 +70,10 @@ type cachedWASIModule struct {
 type WASIBackend struct {
 	// Defaults to converter-office.wasm beside the configured conversion core.
 	OfficeWasmPath string
-	mu             sync.Mutex
-	modules        map[string]*cachedWASIModule
+	// Defaults to converter-postscript.wasm beside the configured conversion core.
+	PostscriptWasmPath string
+	mu                 sync.Mutex
+	modules            map[string]*cachedWASIModule
 }
 
 func NewWASIBackend() *WASIBackend {
@@ -201,6 +203,21 @@ func (backend *WASIBackend) convertWithFormats(
 	}
 	if runErr != nil {
 		return res, runErr
+	}
+
+	if !res.OK && res.ErrorCode == ErrorCodeEngineUnavailable && res.RequiredModule == "postscript" {
+		modulePath := backend.PostscriptWasmPath
+		if modulePath == "" {
+			modulePath = filepath.Join(filepath.Dir(wasmPath), "converter-postscript.wasm")
+		}
+		if _, err := os.Stat(modulePath); err != nil {
+			res.ErrorMessage = "PostScript preview requires converter-postscript.wasm beside the conversion core."
+			return res, nil
+		}
+		res, runErr = backend.run(ctx, modulePath, configFor(workInput, workOutput), workResult)
+		if runErr != nil {
+			return res, runErr
+		}
 	}
 
 	if res.OK {

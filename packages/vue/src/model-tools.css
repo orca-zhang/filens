@@ -1,0 +1,103 @@
+.pptxv-layout:has(.pptxv-model-tools) {
+  position: relative;
+  container-type: inline-size;
+}
+.pptxv-model-tools {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  width: min(304px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--pptxv-border);
+  border-radius: 12px;
+  background: var(--pptxv-panel);
+  color: var(--pptxv-text);
+  box-shadow: 0 10px 36px rgb(0 0 0 / 18%), 0 1px 4px rgb(0 0 0 / 8%);
+  font: 400 12px/1.5 system-ui, sans-serif;
+}
+.pptxv-model-tools-header { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; padding: 10px 10px 8px 16px; }
+.pptxv-model-tools-header strong { font-size: 13px; font-weight: 600; }
+.pptxv-model-icon-button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: inherit; font: inherit; font-size: 18px; cursor: pointer; }
+.pptxv-model-icon-button svg { width: 18px; height: 18px; }
+.pptxv-model-icon-button:hover:not(:disabled) { background: var(--pptxv-surface); }
+.pptxv-model-icon-button:disabled { opacity: .35; cursor: default; }
+.pptxv-model-tabs { display: flex; flex-shrink: 0; gap: 3px; margin: 0 12px; padding: 3px; border-radius: 7px; background: var(--pptxv-surface); }
+.pptxv-model-tabs button { flex: 1; min-width: 0; padding: 6px 4px; border: 0; border-radius: 5px; background: transparent; color: var(--pptxv-muted); font: inherit; cursor: pointer; }
+.pptxv-model-tabs button[aria-selected="true"] { color: var(--pptxv-text); background: var(--pptxv-panel); box-shadow: 0 1px 3px rgb(0 0 0 / 8%); font-weight: 600; }
+.pptxv-model-tools-body { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.pptxv-model-tab-panel { display: grid; gap: 16px; padding: 18px 16px 16px; }
+.pptxv-model-field { display: grid; grid-template-columns: minmax(64px, auto) minmax(0, 1fr); align-items: center; gap: 12px; color: var(--pptxv-muted); }
+.pptxv-model-field select { box-sizing: border-box; width: 100%; min-width: 0; height: 32px; padding: 0 7px; border: 1px solid var(--pptxv-border); border-radius: 6px; background: var(--pptxv-panel); color: var(--pptxv-text); font: inherit; cursor: pointer; }
+.pptxv-model-segmented { display: flex; padding: 3px; gap: 3px; border: 1px solid var(--pptxv-border); border-radius: 7px; }
+.pptxv-model-segmented button { flex: 1; padding: 5px 8px; border: 0; border-radius: 4px; background: transparent; color: var(--pptxv-muted); font: inherit; cursor: pointer; }
+.pptxv-model-segmented button[aria-pressed="true"] { color: var(--pptxv-text); background: var(--pptxv-surface); font-weight: 600; }
+.pptxv-model-view-actions { display: flex; align-items: center; gap: 10px; }
+.pptxv-model-zoom { display: flex; flex: 1; align-items: center; justify-content: space-between; min-width: 0; border: 1px solid var(--pptxv-border); border-radius: 6px; }
+.pptxv-model-zoom .pptxv-status { min-width: 0; padding: 0; font: inherit; color: var(--pptxv-text); font-variant-numeric: tabular-nums; }
+.pptxv-model-tools .pptxv-button { min-height: 32px; padding: 5px 10px; border: 1px solid var(--pptxv-border); border-radius: 6px; background: var(--pptxv-panel); color: var(--pptxv-text); font: inherit; }
+.pptxv-model-tools .pptxv-button[aria-pressed="true"] { color: var(--pptxv-accent); border-color: var(--pptxv-accent); background: var(--pptxv-surface); }
+.pptxv-model-tools .pptxv-button:hover:not(:disabled) { background: var(--pptxv-surface); }
+.pptxv-model-reset { width: 100%; }
+.pptxv-model-tool-actions { display: flex; gap: 8px; }
+.pptxv-model-tool-actions button { flex: 1; }
+.pptxv-model-tools :is(button, select, input, summary):focus-visible { outline: 2px solid var(--pptxv-accent); outline-offset: 2px; }
+.pptxv-model-tools input[type="range"] { accent-color: var(--pptxv-accent); }
+.pptxv-model-disclosure { border-top: 1px solid var(--pptxv-border); }
+.pptxv-model-disclosure > summary { display: flex; align-items: center; gap: 7px; padding: 13px 0; list-style: none; cursor: pointer; font-weight: 500; }
+.pptxv-model-disclosure > summary::-webkit-details-marker { display: none; }
+.pptxv-model-disclosure > summary::before { content: ''; width: 5px; height: 5px; margin-right: 2px; border-right: 1.5px solid var(--pptxv-muted); border-bottom: 1.5px solid var(--pptxv-muted); transform: rotate(-45deg); }
+.pptxv-model-disclosure[open] > summary::before { transform: rotate(45deg); }
+.pptxv-model-disclosure > summary > span { margin-left: auto; color: var(--pptxv-muted); font-weight: 400; }
+.pptxv-model-disclosure.has-active-tool > summary::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--pptxv-accent); }
+.pptxv-model-disclosure > :not(summary) { margin-bottom: 12px; }
+.pptxv-model-tab-panel > .pptxv-model-disclosure:first-child { border-top: 0; }
+.pptxv-model-tab-panel > .pptxv-model-disclosure:first-child > summary { padding-top: 0; }
+.pptxv-model-tab-panel:has(> .pptxv-model-disclosure:first-child) { gap: 0; }
+.pptxv-model-tools .pptxv-meta-list { gap: 0; }
+.pptxv-model-tools :is(.pptxv-meta-row, .pptxv-tree-detail-row, .pptxv-material-detail-row) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 10px; padding: 7px 0; border: 0; border-bottom: 1px solid var(--pptxv-border); background: transparent; }
+.pptxv-model-tools :is(dt, dd) { margin: 0; font: inherit; text-transform: none; letter-spacing: 0; overflow-wrap: anywhere; }
+.pptxv-model-tools dt { color: var(--pptxv-muted); }
+.pptxv-model-tools dd { text-align: right; font-variant-numeric: tabular-nums; }
+.pptxv-model-tools .pptxv-tree-detail-list { grid-template-columns: 1fr; gap: 0; }
+.pptxv-model-tools .pptxv-tree-search { grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
+.pptxv-model-tools .pptxv-tree-search-input { height: 34px; border-radius: 6px; background: var(--pptxv-surface); font: inherit; }
+.pptxv-model-tree-caption { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--pptxv-muted); font-size: 11px; }
+.pptxv-model-tree-caption button { border: 0; padding: 0; background: transparent; color: var(--pptxv-accent); font: inherit; cursor: pointer; }
+.pptxv-model-tree-caption button:disabled { color: var(--pptxv-muted); opacity: .5; cursor: default; }
+.pptxv-model-tools .pptxv-tree-list { gap: 2px; }
+.pptxv-model-tools .pptxv-tree-row { grid-template-columns: 14px 14px minmax(0, 1fr); gap: 5px; }
+.pptxv-model-tools :is(.pptxv-tree-toggle, .pptxv-tree-spacer) { width: 14px; min-width: 14px; }
+.pptxv-model-tools .pptxv-tree-toggle { border: 0; border-radius: 4px; background: transparent; font-weight: 400; }
+.pptxv-model-tools .pptxv-tree-visibility { width: 13px; height: 13px; accent-color: var(--pptxv-accent); }
+.pptxv-model-tools .pptxv-tree-button { border: 0; border-radius: 5px; padding: 6px; background: transparent; font: inherit; }
+.pptxv-model-tools .pptxv-tree-button:hover { background: var(--pptxv-surface); }
+.pptxv-model-tools .pptxv-tree-button.is-active { background: var(--pptxv-surface); color: var(--pptxv-accent); box-shadow: none; }
+.pptxv-model-tools .pptxv-tree-label { font: inherit; }
+.pptxv-model-tools .pptxv-tree-topline { grid-template-columns: minmax(0, 1fr) auto; }
+.pptxv-model-selection { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.pptxv-model-selection strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pptxv-model-tools .pptxv-tree-explode { color: var(--pptxv-muted); font-size: 11px; }
+.pptxv-model-tools .pptxv-material-card { border-radius: 6px; background: var(--pptxv-panel); }
+.pptxv-model-tools .pptxv-material-title span { font-weight: 400; text-transform: none; }
+.pptxv-model-tools .pptxv-material-swatch { border-radius: 50%; }
+.pptxv-model-material-properties > summary { color: var(--pptxv-muted); cursor: pointer; font-size: 11px; }
+.pptxv-model-muted { margin: 0; color: var(--pptxv-muted); }
+.pptxv-button.pptxv-model-tools-toggle { position: absolute; top: 12px; left: 12px; z-index: 2; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border-radius: 8px; background: var(--pptxv-panel); border-color: var(--pptxv-border); color: var(--pptxv-text); box-shadow: 0 2px 8px rgb(0 0 0 / 12%); }
+.pptxv-model-tools-toggle svg { width: 18px; height: 18px; }
+.pptxv-layout:has(.pptxv-model-tools) .model3dv-hint {
+  max-width: calc(100% - 160px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: 400 11px/1.5 system-ui, sans-serif;
+  opacity: .7;
+}
+@container (max-width: 560px) {
+  .pptxv-model-tools { max-height: min(440px, calc(65% - 12px)); }
+}

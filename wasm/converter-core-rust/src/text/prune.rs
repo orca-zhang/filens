@@ -6,7 +6,6 @@ use std::collections::{BTreeMap, BTreeSet};
 const MAX_CANDIDATES: usize = 4096;
 const SHORTLIST: usize = 512;
 const MAX_EXCERPTS: usize = 64;
-const CHUNK_CHARS: usize = 384;
 
 #[derive(Deserialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
@@ -117,14 +116,12 @@ fn tokens(text: &str) -> BTreeMap<String, f64> {
 // unbounded spans. Sentence stops preserve decimals, email addresses and URLs.
 fn spans(text: &str, mut emit: impl FnMut(usize, usize, bool)) {
     let mut start = 0;
-    let mut chars = 0;
     for (at, c) in text.char_indices() {
-        chars += 1;
         let end = at + c.len_utf8();
         let next = text[end..].chars().next();
         let stop = matches!(c, '\n' | '\r' | '。' | '！' | '？' | '；')
             || (matches!(c, '.' | '!' | '?' | ';') && next.is_none_or(char::is_whitespace));
-        if stop || chars >= CHUNK_CHARS {
+        if stop {
             let part = &text[start..end];
             let trimmed = part.trim();
             if !trimmed.is_empty() {
@@ -132,7 +129,6 @@ fn spans(text: &str, mut emit: impl FnMut(usize, usize, bool)) {
                 emit(a, a + trimmed.len(), !stop && next.is_some());
             }
             start = end;
-            chars = 0;
         }
     }
     let part = &text[start..];
@@ -174,6 +170,46 @@ pub(super) fn apply(result: &mut Outcome, options: Options) -> Result<(), Conver
     }
     let text = &result.text;
     let original_chars = text.chars().count();
+    if options.query.trim().is_empty() && original_chars <= options.max_chars {
+        result.summary = Some(Summary {
+            version: "filens-summary-v1",
+            method: "full-text-within-budget",
+            extractive: true,
+            query: options.query,
+            query_matched: None,
+            source_complete: result.complete && !result.truncated,
+            source_bytes: text.len(),
+            source_characters: original_chars,
+            characters: original_chars,
+            budget_characters: options.max_chars,
+            retained_ratio: if original_chars == 0 { 0.0 } else { 1.0 },
+            omitted: false,
+            total_segments: usize::from(!text.is_empty()),
+            sampled: false,
+            ranked_segments: 0,
+            source_coordinates: "UTF-8 byte offsets in extracted text; end exclusive.",
+            excerpts: if text.is_empty() {
+                vec![]
+            } else {
+                vec![Excerpt {
+                    id: "s1".into(),
+                    start_byte: 0,
+                    end_byte: text.len(),
+                    source_start_byte: 0,
+                    source_end_byte: text.len(),
+                    source_start_line: 1,
+                    source_end_line: text.lines().count(),
+                    score: 1.0,
+                    clipped: false,
+                }]
+            },
+        });
+        if let (Some(layout), Some(summary)) = (&mut result.layout, &result.summary) {
+            remap(layout, &summary.excerpts);
+        }
+        remap_pages(&mut result.pages);
+        return Ok(());
+    }
     let budget = options
         .max_chars
         .min((original_chars as f64 * options.ratio).ceil() as usize);
@@ -192,6 +228,10 @@ pub(super) fn apply(result: &mut Outcome, options: Options) -> Result<(), Conver
             return;
         }
         next_sample += 1;
+        // Huge unpunctuated runs are not split into misleading quotations.
+        if b - a > 65536 {
+            return;
+        }
         let part = &text[a..b];
         let key = part
             .split_whitespace()
@@ -375,19 +415,8 @@ pub(super) fn apply(result: &mut Outcome, options: Options) -> Result<(), Conver
             !(similarity >= 0.92 && segments[chosen].facts == segments[*i].facts)
         });
     }
-    // A tiny budget may fit no complete sentence. Make the clipping explicit.
-    if selected.is_empty() && budget > 0 {
-        if let Some(i) = pool.first().copied() {
-            let s = &mut segments[i];
-            s.end = s.start
-                + text[s.start..s.end]
-                    .char_indices()
-                    .nth(budget)
-                    .map_or(s.end - s.start, |(at, _)| at);
-            s.chars = text[s.start..s.end].chars().count();
-            s.clipped = true;
-            selected.push(i);
-        }
+    if selected.is_empty() && budget > 0 && !pool.is_empty() {
+        result.warnings.push("No whole sentence or paragraph fits the excerpt budget; increase maxChars/ratio or use read.".into());
     }
     selected.sort_by_key(|i| segments[*i].start);
     let mut output = String::new();
@@ -422,6 +451,17 @@ pub(super) fn apply(result: &mut Outcome, options: Options) -> Result<(), Conver
     }
     if let Some(layout) = &mut result.layout {
         remap(layout, &excerpts);
+    }
+    provenance::remap(
+        &mut result.spans,
+        &excerpts
+            .iter()
+            .map(|e| (e.source_start_byte, e.source_end_byte, e.start_byte))
+            .collect::<Vec<_>>(),
+    );
+    remap_pages(&mut result.pages);
+    if text.len() > 65536 && count > ranked_segments && count <= MAX_CANDIDATES {
+        result.warnings.push("Oversized unbroken sentences were omitted from excerpt ranking; use read for complete text.".into());
     }
     let characters = output.chars().count();
     if excerpts.iter().any(|e| e.clipped) {
@@ -458,6 +498,15 @@ pub(super) fn apply(result: &mut Outcome, options: Options) -> Result<(), Conver
     });
     result.text = output;
     Ok(())
+}
+
+fn remap_pages(pages: &mut [Value]) {
+    for page in pages {
+        page["sourceStartByte"] = page["startByte"].take();
+        page["sourceEndByte"] = page["endByte"].take();
+        page.as_object_mut().unwrap().remove("startByte");
+        page.as_object_mut().unwrap().remove("endByte");
+    }
 }
 
 fn remap(layout: &mut layout::Layout, excerpts: &[Excerpt]) {
@@ -554,7 +603,8 @@ mod tests {
     fn tiny_budget_empty_and_no_match_are_explicit() {
         let r = run("🙂预算不得超支。", "预算", 3, 1.0);
         verify("🙂预算不得超支。", &r);
-        assert!(r.summary.unwrap().excerpts[0].clipped);
+        assert!(r.text.is_empty());
+        assert!(!r.warnings.is_empty());
         let r = run("Budget is 42.", "zebra", 100, 1.0);
         assert!(r.text.is_empty());
         assert_eq!(r.summary.unwrap().query_matched, Some(false));

@@ -199,8 +199,8 @@ pub fn execute(
             .filter(|c| c["ocr"] == true || c["archiveSearch"] == true)
             .filter_map(|c| c["format"].as_str().map(String::from))
             .collect();
-        let options = json!({"maxBytes":if o.request.max_bytes == 0 { 8 << 20 } else { o.request.max_bytes },
-            "maxOCRPages":200,"includeStructure":false,"includeLayout":o.request.layout,"outputFormat":"json",
+        let options = json!({"ocr":o.request.ocr,"ocrMinConfidence":o.request.ocr_min_confidence.unwrap_or(0.8),"media":false,"maxBytes":if o.request.max_bytes == 0 { 8 << 20 } else { o.request.max_bytes },
+            "maxOCRPages":200,"includeStructure":true,"includeLayout":o.request.layout,"outputFormat":"json",
             "maxArchiveFiles":max_files,"includeHidden":o.request.include_hidden,"maxDepth":o.request.max_depth.unwrap_or(32)});
         jobs = configured_jobs.unwrap_or_else(|| {
             let source_bytes = entries.iter().map(|entry| entry.bytes).sum::<u64>();
@@ -412,7 +412,7 @@ pub fn execute(
             if !source_complete {
                 incomplete_sources += 1;
             }
-            let mut source = json!({"path":source_path,"relativePath":virtual_path.as_ref().map_or_else(||entry.path.clone(),|_|format!("{}!/{}",entry.path,item["members"].as_array().unwrap().iter().filter_map(Value::as_str).collect::<Vec<_>>().join("!/"))),"sha256":"","text":text,"layout":content["layout"],"complete":source_complete});
+            let mut source = json!({"path":source_path,"relativePath":virtual_path.as_ref().map_or_else(||entry.path.clone(),|_|format!("{}!/{}",entry.path,item["members"].as_array().unwrap().iter().filter_map(Value::as_str).collect::<Vec<_>>().join("!/"))),"sha256":"","text":text,"layout":content["layout"],"document":content["document"],"warnings":content["warnings"],"complete":source_complete});
             if virtual_path.is_some() {
                 archive_files += 1;
                 source["archive"] = json!({"path":path,"members":item["members"]});
@@ -468,6 +468,12 @@ pub fn execute(
         "discoveryMs":discovery_ms,"errors":scan.errors,"errorCount":scan.error_count,"extractionErrors":extraction_errors,"extractionErrorCount":extraction_error_count,
         "incompleteSources":incomplete_sources,"textBytes":text_bytes,"archives":{"files":archive_files,"visited":archive_visited,"expandedBytes":archive_expanded_bytes,"maxDepth":8,"maxExpandedBytesPerBatch":268435456},"cache":{"enabled":false,"storage":"none","hits":0,"writes":0,"errors":0},"integrity":"assumed","execution":{"workers":jobs,"sharedTextModules":engine.loaded_modules(),"nativeFiles":native_files,"ranking":if engine.uses_native_search(){"native-rust"}else{"wasm"},"extractionBatches":extraction_batches,"batchSize":256}});
     response["search"]["scope"] = config;
+    response["search"]["scope"]["textScope"] = json!(if o.request.ocr == "never" {
+        "native-text"
+    } else {
+        "native-and-ocr"
+    });
+    response["content"]["textScope"] = response["search"]["scope"]["textScope"].clone();
     let complete = response["search"]["complete"] == true
         && !scan.truncated
         && scan.error_count == 0

@@ -353,6 +353,14 @@ function inferContentType(name: string | undefined, fallbackFormat?: string): st
       return 'image/x-icon';
     case 'icns':
       return 'application/x-icns';
+    case 'psd':
+    case 'psb':
+      return 'image/vnd.adobe.photoshop';
+    case 'ai':
+      return 'application/illustrator';
+    case 'eps':
+    case 'ps':
+      return 'application/postscript';
     case 'ppm':
       return 'image/x-portable-pixmap';
     case 'doc':

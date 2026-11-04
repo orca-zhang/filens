@@ -22,6 +22,8 @@ const files = [
   path.join(work, '中文 preview.txt'),
   path.join(root, 'apps/demo/public/samples/filens-aurora-guide.docx'),
   path.join(root, 'apps/demo/public/samples/filens-cosmic-atlas.pdf'),
+  ...['still-form.psd', 'after-hours.psb', 'forma-identity.ai', 'orbit-marks.eps', 'studio-editions.ps']
+    .map(name => path.join(root, 'apps/demo/public/samples/design', name)),
   path.join(root, 'apps/demo/public/samples/a.pages'),
   path.join(root, 'apps/demo/public/samples/filens-weekend.key'),
   path.join(root, 'apps/demo/public/samples/filens-observatory.xlsx'),

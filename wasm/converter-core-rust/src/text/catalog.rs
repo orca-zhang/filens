@@ -3,11 +3,17 @@ use serde_json::{Value, json};
 
 pub const ARCHIVES: &[&str] = &["zip", "jar", "war", "ear", "apk", "tar", "tgz", "gz"];
 
-pub fn is_archive(source: &str) -> bool { ARCHIVES.contains(&source) }
+pub fn is_archive(source: &str) -> bool {
+    ARCHIVES.contains(&source)
+}
 
 // Escape delimiter characters only; preserve ordinary paths and Unicode.
-pub fn escape_archive_path(path: &str) -> String { path.replace('%', "%25").replace('!', "%21") }
-pub fn unescape_archive_path(path: &str) -> String { path.replace("%21", "!").replace("%25", "%") }
+pub fn escape_archive_path(path: &str) -> String {
+    path.replace('%', "%25").replace('!', "%21")
+}
+pub fn unescape_archive_path(path: &str) -> String {
+    path.replace("%21", "!").replace("%25", "%")
+}
 
 pub fn formats() -> Vec<Value> {
     let mut formats: Vec<Value> =

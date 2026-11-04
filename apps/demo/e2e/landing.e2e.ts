@@ -152,9 +152,9 @@ test('opens the 3D showcase from its matching preview tab', async ({ page }) => 
   await page.goto('./?lang=en');
   await page.getByRole('tab', { name: '3D', exact: true }).click();
   await expect(page.locator('#preview-panel img')).toHaveAttribute('src', /model.webp$/);
-  await expect(page.locator('.preview-window-bar')).toContainText('viking-helmet.obj');
+  await expect(page.locator('.preview-window-bar')).toContainText('trail-rover.obj');
   await page.getByRole('button', { name: 'Explore this file', exact: true }).click();
-  await expect(page.locator('.wb-preview-title strong')).toHaveText('viking-helmet.obj');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('trail-rover.obj');
   await expect(page.locator('canvas.model3dv-canvas')).toBeVisible();
 });
 
@@ -171,7 +171,7 @@ test('opens the bundled Milky Way panorama from its matching preview tab', async
 });
 
 for (const [label, format, file, preview] of [
-  ['STEP solids', 'step', 'rounded-cube.step', 'canvas.model3dv-canvas'],
+  ['STEP solids', 'step', 'flanged-bearing.step', 'canvas.model3dv-canvas'],
   ['camera RAW', 'dng', 'pentax-k-r.dng', 'img.pptxv-native-image'],
   ['PPM images', 'ppm', 'vegetable-market.ppm', 'img.pptxv-native-image'],
   ['legacy Office / WPS', 'doc', 'legacy-project-workflow.doc', '.docx'],

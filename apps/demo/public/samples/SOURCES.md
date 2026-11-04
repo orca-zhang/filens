@@ -75,18 +75,29 @@ Regenerate the following assets with `python3 scripts/prepare-demo-media.py` (Pi
 | `cloud-timelapse.mpg`, `cloud-timelapse.preview.mp4` | Timelapse clouds — Eclipse.sx (attributed by the source) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), [original](https://commons.wikimedia.org/wiki/File:Timelapse_clouds.ogv). These derivatives are also CC BY-SA 3.0. |
 | `colorful-bird.3gp`, `colorful-bird.preview.mp4` | Cute Colorful Bird on Walking on Ledge — Yourusernamewillbepublic2 | [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [original](https://commons.wikimedia.org/wiki/File:Cute_Colorful_Bird_on_Walking_on_Ledge.webm) |
 
-## Commercial Photoshop design previews
+## Original industrial and toy 3D models
 
-The PSD sample entry offers four project-authored `.psd.svg` design previews:
-Still Form skincare, Pace Store footwear, Sunday Roast coffee branding, and Mono
-Sound headphone detail. They use different artboards, typography, products and
-palettes, with local thumbnails for switching. These remain sample-only SVG
-previews; native PSD parsing/upload support is not implied. Layouts and the
-unbranded shoe/package illustrations are project-authored; the three embedded
-Unsplash photographs retain their separate license. Full asset URLs, usage
-conditions and rights distinctions are in [design/SOURCES.md](design/SOURCES.md)
-and [design/UNSPLASH-LICENSE.txt](design/UNSPLASH-LICENSE.txt). Regenerate with
-`node scripts/generate-photoshop-samples.mjs`.
+The STEP, STL, OBJ, GLB, glTF, PLY, 3MF and VTK demo entries use eight different
+project-authored models: a bearing assembly, impeller, toy rover, space robot,
+industrial arm, fox figurine, planetary gearbox and cutaway heat exchanger.
+All are self-contained original geometry under the project MIT license, with
+no third-party meshes, textures, brands or licensed characters. Details,
+generation commands and format features are in [models/SOURCES.md](models/SOURCES.md).
+Their thumbnails and the homepage model card are captures of the real previewer.
+
+## Native design files
+
+Design files offers twelve project-authored original files: six PSD, two PSB, two
+PDF-compatible AI documents, one EPS and one two-page PS document. Native PSD/PSB previews decode saved composite pixels
+in the shared WASM core; compatible AI artwork preserves vector paths and type
+through the existing PDF viewer. Uploaded files use the same path. WebP images
+are picker thumbnails only. EPS/PS and legacy PostScript AI are interpreted in
+the on-demand WASM module to vector PDF, with explicit errors for unsupported
+artwork or missing fonts. Resident font outlines are excluded from this compact build.
+Layouts and illustrations are project-authored; three Unsplash photographs and
+the AI documents' OFL font subsets retain their separate licenses. Full sources,
+encoding limits and rights distinctions are in [design/SOURCES.md](design/SOURCES.md).
+Regenerate with `node scripts/generate-photoshop-samples.mjs`.
 
 External proprietary-format validation files are not redistributed with the demo:
 

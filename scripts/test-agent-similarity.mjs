@@ -93,19 +93,19 @@ assert.equal(images.similarity.groups.find(g=>g.files.some(f=>f.path==='white.pn
 const strict=json(['similar',photos,'--threshold','0','--json']);
 assert.ok(strict.similarity.groups.every(g=>g.files.every(f=>f.distanceToReference===0)));
 for(const intent of [ `查找 "${photos}" 中的相似图片，以 JSON 输出`, `find duplicate files in "${duplicates}" as json` ]) {
-  assert.equal(json([intent]).operation,'similar');
+  assert.equal(json([intent]).op,'similar');
 }
-assert.equal(json(['-'],0,JSON.stringify({operation:'similar',input:photos,similarityMode:'images',threshold:8})).similarity.matchedGroups,images.similarity.matchedGroups);
+assert.equal(json(['-'],0,JSON.stringify({op:'similar',input:photos,similarityMode:'images',threshold:8})).similarity.matchedGroups,images.similarity.matchedGroups);
 for(const format of ['text','json','markdown','html','yaml','xml','csv','tsv']) {
   assert.ok(run(['similar-images',photos,'--format',format]).includes('scene-original.png'));
 }
 for(const request of [
-  {operation:'similar',input:photos,threshold:25},
-  {operation:'similar',input:photos,similarityMode:'semantic'},
-  {operation:'duplicates',input:duplicates,threshold:1},
-  {operation:'similar',input:photos,layout:true},
-  {operation:'similar',input:photos,maxResults:0},
-  {operation:'search',input:photos,query:'scene',threshold:8},
+  {op:'similar',input:photos,threshold:25},
+  {op:'similar',input:photos,similarityMode:'semantic'},
+  {op:'duplicates',input:duplicates,threshold:1},
+  {op:'similar',input:photos,layout:true},
+  {op:'similar',input:photos,maxResults:0},
+  {op:'search',input:photos,query:'scene',threshold:8},
 ]) assert.equal(json(['-'],2,JSON.stringify(request)).ok,false);
 await writeFile(path.join(photos,'broken.jpg'),'not a JPEG');
 const partial=json(['similar-images',photos,'--json'],3);
@@ -120,7 +120,7 @@ const jpeg=json(['similar-images',photos,'--json']);
 assert.ok(jpeg.similarity.groups.some(g=>g.files.filter(f=>f.path.startsWith('scan')).length===2));
 assert.ok(jpeg.similarity.groups.flatMap(g=>g.files).filter(f=>f.path.startsWith('scan')).every(f=>f.width===2000&&f.height===520));
 assert.equal((await readFile(path.join(duplicates,'same-prefix.bin')))[19000],46);
-const capacity=json(['capacity','--json','--no-ocr']).capacity;
+const capacity=json(['capacity','--full','--json','--no-ocr']).capacity;
 assert.ok(capacity.operations.some(o=>o.name==='similar'));
 assert.equal(capacity.similarity.requiresModel,false);
 await writeFile(path.join(work,'report.json'),JSON.stringify({binary,hardLinks,observations},null,2)+'\n');

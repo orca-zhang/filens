@@ -1,4 +1,7 @@
 {
+  "Model tools": "Alati modela",
+  "Structure": "Struktura",
+  "Tools": "Alati",
   "Prev": "Prethodno",
   "Next": "Sljedeće",
   "Fit": "Prilagodi",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Materijali modela",
+  "Selected materials": "Odabrani materijali"
 }

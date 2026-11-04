@@ -33,12 +33,15 @@ export async function buildAgentBinary(destination, { lite = false, platform = `
   const toolchain = /channel\s*=\s*"([^"]+)"/.exec(await readFile(path.join(root,'cli/rust-toolchain.toml'),'utf8'))[1];
   // cargo-zigbuild supplies a Linux glibc 2.17 linker for source-side --all.
   // Use it for native Linux builds too, preserving the advertised glibc floor.
-  const args = [`+${toolchain}`,zig?'zigbuild':'build','--locked','--release','--manifest-path','cli/Cargo.toml'];
+  const outline = platform === 'darwin-arm64';
+  const args = [`+${toolchain}`,zig?'zigbuild':outline?'rustc':'build','--locked','--release','--manifest-path','cli/Cargo.toml'];
   if (zig) {
     await run('rustup',['target','add','--toolchain',toolchain,target]);
     args.push('--target',platform.startsWith('linux-')?`${target}.2.17`:target);
   }
   if (lite) args.push('--features','lite');
+  // Outline repeated AArch64 instructions to retain the native executable budget.
+  if (outline) args.push('--', '-C', 'llvm-args=-enable-machine-outliner=always');
   const env = { ...privateRustBuildEnv(root), MACOSX_DEPLOYMENT_TARGET:'12.0' };
   await run('cargo',args,{env});
   await mkdir(path.dirname(destination),{recursive:true});

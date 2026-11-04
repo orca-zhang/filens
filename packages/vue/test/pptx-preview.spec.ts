@@ -1025,12 +1025,15 @@ describe('Preview', () => {
       expect(wrapper.find('canvas.model3dv-canvas').exists()).toBe(true);
     });
 
-    expect(wrapper.text()).toContain('model3d');
-    const zoomIn = wrapper.findAll('button').find((button) => button.text() === '+');
-    expect((zoomIn?.element as HTMLButtonElement | undefined)?.disabled).toBe(false);
-    await zoomIn!.trigger('click');
+    expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools').isVisible()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools-toggle').isVisible()).toBe(true);
+    await wrapper.find('.pptxv-model-tools-toggle').trigger('click');
+    const zoomIn = wrapper.find('button[aria-label="Zoom in"]');
+    expect((zoomIn.element as HTMLButtonElement).disabled).toBe(false);
+    await zoomIn.trigger('click');
     expect(wrapper.findAll('.pptxv-status').some(status => status.text() === '110%')).toBe(true);
-    await zoomIn!.trigger('click');
+    await zoomIn.trigger('click');
     expect(wrapper.findAll('.pptxv-status').some(status => status.text() === '120%')).toBe(true);
 
     wrapper.unmount();
@@ -1051,7 +1054,9 @@ describe('Preview', () => {
       expect(wrapper.find('canvas.model3dv-canvas').exists()).toBe(true);
     });
 
-    expect(wrapper.text()).toContain('model3d');
+    expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools').isVisible()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools-toggle').isVisible()).toBe(true);
 
     wrapper.unmount();
   });
@@ -1071,7 +1076,9 @@ describe('Preview', () => {
       expect(wrapper.find('canvas.model3dv-canvas').exists()).toBe(true);
     });
 
-    expect(wrapper.text()).toContain('model3d');
+    expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools').isVisible()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools-toggle').isVisible()).toBe(true);
 
     wrapper.unmount();
   });
@@ -1091,7 +1098,9 @@ describe('Preview', () => {
       expect(wrapper.find('canvas.model3dv-canvas').exists()).toBe(true);
     });
 
-    expect(wrapper.text()).toContain('model3d');
+    expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools').isVisible()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools-toggle').isVisible()).toBe(true);
 
     wrapper.unmount();
   });
@@ -1113,7 +1122,9 @@ describe('Preview', () => {
       expect(wrapper.find('canvas.model3dv-canvas').exists()).toBe(true);
     });
 
-    expect(wrapper.text()).toContain('model3d');
+    expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools').isVisible()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools-toggle').isVisible()).toBe(true);
     expect(wrapper.emitted('warnings')).toBeUndefined();
 
     wrapper.unmount();
@@ -1134,7 +1145,9 @@ describe('Preview', () => {
       expect(wrapper.find('canvas.model3dv-canvas').exists()).toBe(true);
     });
 
-    expect(wrapper.text()).toContain('model3d');
+    expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools').isVisible()).toBe(false);
+    expect(wrapper.find('.pptxv-model-tools-toggle').isVisible()).toBe(true);
 
     wrapper.unmount();
   });

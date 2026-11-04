@@ -84,13 +84,13 @@ test('native touch taps still pick measurement points', async ({ page }) => {
 
 test('demo upload reflects pinch zoom and keeps mobile zoom buttons reachable', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'Native multi-touch injection uses the Chromium DevTools protocol.');
-  await page.goto('./?view=preview');
+  await page.goto('./?view=preview&lang=zh');
+  await expect(page.locator('.wb-status')).toHaveText('预览就绪');
   await page.locator('input[type=file]').setInputFiles({
     name: 'triangle.glb', mimeType: 'model/gltf-binary', buffer: Buffer.from(createGlbFixture())
   });
   const canvas = page.locator('canvas.model3dv-canvas');
   await expect(canvas).toBeVisible();
-  await page.getByRole('button', { name: '显示工具栏' }).click();
   await canvas.scrollIntoViewIfNeeded();
   const bounds = (await canvas.boundingBox())!;
   const x = bounds.x + bounds.width / 2;
@@ -99,7 +99,8 @@ test('demo upload reflects pinch zoom and keeps mobile zoom buttons reachable', 
   await touch(page, cdp, 'touchStart', [{ id: 1, x: x - 40, y }, { id: 2, x: x + 40, y }]);
   await touch(page, cdp, 'touchMove', [{ id: 1, x: x - 80, y }, { id: 2, x: x + 80, y }]);
   await touch(page, cdp, 'touchEnd', []);
+  await page.getByRole('button', { name: '显示模型工具', exact: true }).tap();
   await expect(page.locator('.pptxv-status').filter({ hasText: /^200%$/ })).toBeVisible();
-  await page.locator('.pptxv-toolbar-group button').filter({ hasText: /^\+$/ }).tap();
+  await page.getByRole('button', { name: '放大', exact: true }).tap();
   await expect(page.locator('.pptxv-status').filter({ hasText: /^210%$/ })).toBeVisible();
 });

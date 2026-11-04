@@ -5,8 +5,10 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef
 import AppleLivePhotoPreview from './components/AppleLivePhotoPreview.vue';
 import LandingPage from './components/LandingPage.vue';
 import DocumentWorkbench from './components/DocumentWorkbench.vue';
-import PhotoshopSamplePicker from './components/PhotoshopSamplePicker.vue';
-import { photoshopSamples } from './photoshop-samples';
+import DesignSamplePicker from './components/DesignSamplePicker.vue';
+import { designSamples } from './design-samples';
+import ModelSamplePicker from './components/ModelSamplePicker.vue';
+import { modelSamples } from './model-samples';
 import { createWasmConverterClient } from '@filens/converter-client';
 import { createWasmPanoramaProcessor } from '@filens/panorama';
 import type { ZipArchiveResource } from '@filens/archive';
@@ -97,6 +99,7 @@ const conversionKindBySource = new Map<string, DemoKind>(
 // Keep conversion modules outside the main graph; each module is fetched on its first matching route.
 const brandIconUrl = `${import.meta.env.BASE_URL}brand/filens-icon.svg`;
 const converterCoreWasmUrl = `${import.meta.env.BASE_URL}externals/converter-core.wasm`;
+const converterPostscriptWasmUrl = `${import.meta.env.BASE_URL}externals/converter-postscript.wasm`;
 const converterOfficeWasmUrl = `${import.meta.env.BASE_URL}externals/converter-office.wasm`;
 const converterImageWasmUrl = `${import.meta.env.BASE_URL}externals/converter-image.wasm`;
 
@@ -151,42 +154,16 @@ const staticSamples: DemoSource[] = [
     contentType: 'application/pdf',
     mode: 'sample'
   },
-  {
-    kind: 'image',
-    label: 'AI Neon Poster -> SVG',
-    name: 'neon-orbit.ai.svg',
-    source: createVectorPosterDataUrl('NEON ORBIT', 'ADOBE ILLUSTRATOR SHOWCASE', '#22d3ee'),
-    contentType: 'image/svg+xml',
-    mode: 'generated',
-    catalogId: 'ai'
-  },
-  ...photoshopSamples.map((sample): DemoSource => ({
-    kind: 'image',
-    label: `${sample.titleEn} · Photoshop design study`,
+  ...designSamples.map((sample): DemoSource => ({
+    kind: ['ai', 'eps', 'ps'].includes(sample.format) ? 'pdf' : 'image',
+    label: `${sample.titleEn} · ${sample.format.toUpperCase()}`,
     name: sample.name,
     source: `/samples/design/${sample.name}`,
-    contentType: 'image/svg+xml',
+    contentType: sample.format === 'ai' ? 'application/illustrator'
+      : ['eps', 'ps'].includes(sample.format) ? 'application/postscript' : 'image/vnd.adobe.photoshop',
     mode: 'sample',
-    catalogId: 'psd'
+    catalogId: sample.format
   })),
-  {
-    kind: 'image',
-    label: 'EPS Signal Poster -> SVG',
-    name: 'signal-void.eps.svg',
-    source: createVectorPosterDataUrl('SIGNAL VOID', 'ENCAPSULATED POSTSCRIPT SHOWCASE', '#f43f8b'),
-    contentType: 'image/svg+xml',
-    mode: 'generated',
-    catalogId: 'eps'
-  },
-  {
-    kind: 'image',
-    label: 'PS Future Poster -> SVG',
-    name: 'future-grid.ps.svg',
-    source: createVectorPosterDataUrl('FUTURE GRID', 'POSTSCRIPT SHOWCASE', '#c7f52e'),
-    contentType: 'image/svg+xml',
-    mode: 'generated',
-    catalogId: 'ps'
-  },
   {
     kind: 'docx',
     label: 'DOCX',
@@ -641,77 +618,14 @@ const staticSamples: DemoSource[] = [
     contentType: 'image/vnd.dxf',
     mode: 'generated'
   },
-  {
+  ...modelSamples.map((sample): DemoSource => ({
     kind: 'model3d',
-    label: 'STEP Rounded Cube',
-    name: 'rounded-cube.step',
-    source: '/samples/rounded-cube.step',
+    label: `${sample.titleEn} · ${sample.format.toUpperCase()}`,
+    name: sample.name,
+    source: `/samples/models/${sample.name}`,
+    contentType: sample.contentType,
     mode: 'sample'
-  },
-  {
-    kind: 'model3d',
-    label: 'STL',
-    name: 'printed-part.stl',
-    source: createStlFixture(),
-    contentType: 'model/stl',
-    mode: 'generated'
-  },
-  {
-    kind: 'model3d',
-    label: 'OBJ',
-    name: 'low-poly-part.obj',
-    source: createObjFixture(),
-    contentType: 'model/obj',
-    mode: 'generated'
-  },
-  {
-    kind: 'model3d',
-    label: 'Viking horned helmet OBJ',
-    name: 'viking-helmet.obj',
-    source: '/samples/viking-helmet.obj',
-    contentType: 'model/obj',
-    mode: 'sample'
-  },
-  {
-    kind: 'model3d',
-    label: 'PLY',
-    name: 'scan-mesh.ply',
-    source: createPlyFixture(),
-    contentType: 'model/ply',
-    mode: 'generated'
-  },
-  {
-    kind: 'model3d',
-    label: 'GLB',
-    name: 'scene.glb',
-    source: createGlbFixture(),
-    contentType: 'model/gltf-binary',
-    mode: 'generated'
-  },
-  {
-    kind: 'model3d',
-    label: 'glTF',
-    name: 'scene.gltf',
-    source: createGltfFixture(),
-    contentType: 'model/gltf+json',
-    mode: 'generated'
-  },
-  {
-    kind: 'model3d',
-    label: '3MF',
-    name: 'printer-job.3mf',
-    source: new Uint8Array(),
-    contentType: 'model/3mf',
-    mode: 'generated'
-  },
-  {
-    kind: 'model3d',
-    label: 'VTK',
-    name: 'surface.vtk',
-    source: createVtkFixture(),
-    contentType: 'model/vtk',
-    mode: 'generated'
-  },
+  })),
   {
     kind: 'model3d',
     label: 'VOX',
@@ -1370,8 +1284,10 @@ const formatSupportByExtension = computed(() => new Map(supportedFormats.value.m
 const sampleByExtension = new Map(
   staticSamples.map((sample) => [sample.catalogId ?? inferExtensionFromName(sample.name) ?? '', sample])
 );
-const photoshopCoverSample = staticSamples.find((sample) => sample.name === photoshopSamples[0].name);
-if (photoshopCoverSample) sampleByExtension.set('psd', photoshopCoverSample);
+for (const format of ['psd', 'psb', 'ai', 'eps', 'ps']) {
+  const cover = staticSamples.find((sample) => sample.catalogId === format);
+  if (cover) sampleByExtension.set(format, cover);
+}
 const showcaseDocxSample = staticSamples.find((sample) => sample.name === 'filens-aurora-guide.docx');
 if (showcaseDocxSample) sampleByExtension.set('docx', showcaseDocxSample);
 const showcaseXlsxSample = staticSamples.find((sample) => sample.name === 'filens-observatory.xlsx');
@@ -1495,7 +1411,6 @@ const presentationFormats = new Set(['ppt', 'pptx', 'pptm', 'pps', 'ppsx', 'ppsm
 const openDocumentFormats = new Set(['odt', 'ott', 'fodt', 'ods', 'ots', 'fods', 'odp', 'otp', 'fodp', 'odg', 'otg', 'fodg', 'odf', 'sxw', 'stw', 'sxc', 'stc', 'sxi', 'sti', 'sxd', 'std']);
 const iworkFormats = new Set(['pages', 'numbers', 'key']);
 const designDraftFormats = new Set(['psd', 'psb', 'ai', 'eps', 'ps']);
-const convertedDesignSampleFormats = new Set(['psd', 'ai', 'eps', 'ps']);
 const comicFormats = new Set(['cbz', 'cbr', 'cb7', 'cbt']);
 const markdownFormats = new Set(['md', 'markdown', 'mkd', 'mkdn', 'mdown', 'mdx', 'rmd', 'qmd']);
 const configFormats = new Set(['json', 'jsonc', 'json5', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'config', 'cnf', 'properties', 'xml']);
@@ -1535,13 +1450,14 @@ const formatCatalog = computed(() => [
     sampleOnly: false
   })),
   ...catalogOnlyFormats
-    .filter(([extension, family]) => !supportedFormats.value.some((format) => format.extension === extension && format.family === family))
+    .filter(([extension, family]) => !supportedFormats.value.some((format) =>
+      format.extension === extension && (format.family === family || designDraftFormats.has(extension))))
     .map(([extension, family]) => ({
       extension,
       family,
       label: catalogFormatLabels.get(`${family}:${extension}`) ?? extension.toUpperCase(),
       supported: false,
-      sampleOnly: convertedDesignSampleFormats.has(extension)
+      sampleOnly: false
     })),
   ...livePhotoFormats.map(([extension, label]) => ({
     extension,
@@ -1655,7 +1571,8 @@ let measurementGeneration = 0;
 const converterCore = createWasmConverterClient({
   wasm: converterCoreWasmUrl,
   imageWasm: converterImageWasmUrl,
-  officeWasm: converterOfficeWasmUrl
+  officeWasm: converterOfficeWasmUrl,
+  postscriptWasm: converterPostscriptWasmUrl
 });
 const converter: ConverterClient = {
   async convert(request, context) {
@@ -1680,6 +1597,8 @@ onUnmounted(() => window.removeEventListener('popstate', syncPageFromUrl));
 
 function demoKindForConversionTarget(targetFormat: string): DemoKind {
   switch (targetFormat) {
+    case 'pdf':
+      return 'pdf';
     case 'jpg':
     case 'jpeg':
     case 'png':
@@ -1763,6 +1682,13 @@ watch(
     downloadTimeMs.value = pendingDownloadTimeMs;
     pendingDownloadTimeMs = null;
     conversionTimeMs.value = null;
+  },
+  { immediate: true }
+);
+
+watch(
+  () => [activeFormatExtension.value, current.value.contentType, formatSupportByExtension.value],
+  () => {
     if (current.value.catalogId) {
       selectedFormatFamilyId.value = getBusinessFormatCategory(current.value.catalogId, 'image').familyId;
       return;
@@ -1783,8 +1709,17 @@ function useFormatSample(extension: string): void {
   if (sample) void useSample(sample);
 }
 
-function usePhotoshopSample(name: string): void {
-  const sample = staticSamples.find((candidate) => candidate.catalogId === 'psd' && candidate.name === name);
+function useDesignSample(name: string): void {
+  const sample = staticSamples.find((candidate) => candidate.name === name && candidate.catalogId && designDraftFormats.has(candidate.catalogId));
+  if (sample) void useSample(sample);
+}
+
+const showModelSamples = computed(() => sourceMode.value === 'sample'
+  && current.value.kind === 'model3d' && modelSamples.some((sample) => sample.name === current.value.name));
+
+function useModelSample(name: string): void {
+  if (showModelSamples.value && current.value.name === name) return;
+  const sample = staticSamples.find((candidate) => candidate.kind === 'model3d' && candidate.name === name);
   if (sample) void useSample(sample);
 }
 
@@ -2138,7 +2073,7 @@ async function materializeSample(sample: DemoSource): Promise<DemoSource> {
       mode: 'generated'
     };
   }
-  if (sample.name.toLowerCase().endsWith('.3mf')) {
+  if (sample.mode === 'generated' && sample.name.toLowerCase().endsWith('.3mf')) {
     return {
       ...sample,
       source: await create3mfFixture(),
@@ -2673,162 +2608,6 @@ async function createVsdxFixture(): Promise<Uint8Array> {
   return zip.generateAsync({ type: 'uint8array' });
 }
 
-function createStlFixture(): Uint8Array {
-  return new TextEncoder().encode(`solid demo_part
-facet normal 0 -1 0
-  outer loop
-    vertex -26 -18 0
-    vertex 26 -18 0
-    vertex 0 -18 34
-  endloop
-endfacet
-facet normal 1 0 0
-  outer loop
-    vertex 26 -18 0
-    vertex 26 18 0
-    vertex 0 -18 34
-  endloop
-endfacet
-facet normal 0 1 0
-  outer loop
-    vertex 26 18 0
-    vertex -26 18 0
-    vertex 0 -18 34
-  endloop
-endfacet
-facet normal -1 0 0
-  outer loop
-    vertex -26 18 0
-    vertex -26 -18 0
-    vertex 0 -18 34
-  endloop
-endfacet
-facet normal 0 0 -1
-  outer loop
-    vertex -26 -18 0
-    vertex -26 18 0
-    vertex 26 18 0
-  endloop
-endfacet
-facet normal 0 0 -1
-  outer loop
-    vertex -26 -18 0
-    vertex 26 18 0
-    vertex 26 -18 0
-  endloop
-endfacet
-endsolid demo_part`);
-}
-
-function createObjFixture(): Uint8Array {
-  return new TextEncoder().encode(`# low-poly preview part
-v -28 -20 0
-v 28 -20 0
-v 28 20 0
-v -28 20 0
-v 0 -20 36
-v 0 20 24
-vn 0 0 -1
-vn 0 -1 0
-vn 1 0 0
-vn 0 1 0
-vn -1 0 0
-f 1//1 4//1 3//1 2//1
-f 1//2 2//2 5//2
-f 2//3 3//3 6//3 5//3
-f 3//4 4//4 6//4
-f 4//5 1//5 5//5 6//5`);
-}
-
-function createPlyFixture(): Uint8Array {
-  return new TextEncoder().encode(`ply
-format ascii 1.0
-element vertex 5
-property float x
-property float y
-property float z
-element face 5
-property list uchar int vertex_indices
-end_header
--24 -18 0
-24 -18 0
-24 18 0
--24 18 0
-0 0 32
-4 0 1 2 3
-3 0 1 4
-3 1 2 4
-3 2 3 4
-3 3 0 4`);
-}
-
-function createGlbFixture(): Uint8Array {
-  const geometry = createTriangleGltfGeometry();
-  const json = JSON.stringify({ ...geometry.document, buffers: [{ byteLength: geometry.bytes.byteLength }] });
-  const jsonBytes = new TextEncoder().encode(json);
-  const paddedJsonLength = align4(jsonBytes.byteLength);
-  const paddedBinLength = align4(geometry.bytes.byteLength);
-  const totalLength = 12 + 8 + paddedJsonLength + 8 + paddedBinLength;
-  const bytes = new Uint8Array(totalLength);
-  const view = new DataView(bytes.buffer);
-  view.setUint32(0, 0x46546c67, true);
-  view.setUint32(4, 2, true);
-  view.setUint32(8, totalLength, true);
-  view.setUint32(12, paddedJsonLength, true);
-  view.setUint32(16, 0x4e4f534a, true);
-  bytes.set(jsonBytes, 20);
-  bytes.fill(0x20, 20 + jsonBytes.byteLength, 20 + paddedJsonLength);
-  const binOffset = 20 + paddedJsonLength;
-  view.setUint32(binOffset, paddedBinLength, true);
-  view.setUint32(binOffset + 4, 0x004e4942, true);
-  bytes.set(geometry.bytes, binOffset + 8);
-  return bytes;
-}
-
-function createGltfFixture(): Uint8Array {
-  const geometry = createTriangleGltfGeometry();
-  const uri = `data:application/octet-stream;base64,${btoa(String.fromCharCode(...geometry.bytes))}`;
-  return new TextEncoder().encode(JSON.stringify({ ...geometry.document, buffers: [{ byteLength: geometry.bytes.byteLength, uri }] }, null, 2));
-}
-
-function createTriangleGltfGeometry() {
-  const bytes = new Uint8Array(44);
-  const view = new DataView(bytes.buffer);
-  [-1, -1, 0, 1, -1, 0, 0, 1, 0].forEach((value, index) => view.setFloat32(index * 4, value, true));
-  [0, 1, 2].forEach((value, index) => view.setUint16(36 + index * 2, value, true));
-  return {
-    bytes,
-    document: {
-      asset: { version: '2.0', generator: 'file-previewer demo' },
-      scene: 0,
-      scenes: [{ nodes: [0] }],
-      nodes: [{ name: 'Colored Triangle', mesh: 0, translation: [0.25, 0.1, 0] }],
-      meshes: [{ name: 'Triangle Mesh', primitives: [{ attributes: { POSITION: 0 }, indices: 1, material: 0 }] }],
-      materials: [{ name: 'Safety Orange', pbrMetallicRoughness: { baseColorFactor: [0.95, 0.32, 0.08, 1], metallicFactor: 0.1, roughnessFactor: 0.7 } }],
-      bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36, target: 34962 }, { buffer: 0, byteOffset: 36, byteLength: 6, target: 34963 }],
-      accessors: [
-        { bufferView: 0, componentType: 5126, count: 3, type: 'VEC3', min: [-1, -1, 0], max: [1, 1, 0] },
-        { bufferView: 1, componentType: 5123, count: 3, type: 'SCALAR', min: [0], max: [2] }
-      ]
-    }
-  };
-}
-
-function createVtkFixture(): Uint8Array {
-  return new TextEncoder().encode(`# vtk DataFile Version 3.0
-Simple quad
-ASCII
-DATASET POLYDATA
-POINTS 4 float
-0 0 0
-1 0 0
-1 1 0
-0 1 0
-POLYGONS 1 5
-4 0 1 2 3
-`);
-}
-
 function createVoxFixture(): Uint8Array {
   const bytes = new Uint8Array(68);
   const view = new DataView(bytes.buffer);
@@ -2935,10 +2714,6 @@ async function create3mfFixture(): Promise<Uint8Array> {
   </build>
 </model>`);
   return zip.generateAsync({ type: 'uint8array' });
-}
-
-function align4(value: number): number {
-  return Math.ceil(value / 4) * 4;
 }
 
 function inferName(source: string): string {
@@ -3208,30 +2983,6 @@ Room B
 ENDSEC
 0
 EOF`);
-}
-
-function createVectorPosterDataUrl(title: string, subtitle: string, accent: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-  <defs>
-    <radialGradient id="glow"><stop stop-color="${accent}" stop-opacity=".42"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/></radialGradient>
-    <pattern id="grid" width="54" height="54" patternUnits="userSpaceOnUse"><path d="M54 0H0V54" fill="none" stroke="${accent}" stroke-opacity=".12"/></pattern>
-  </defs>
-  <rect width="1440" height="900" fill="#060914"/>
-  <rect width="1440" height="900" fill="url(#grid)"/>
-  <circle cx="1040" cy="450" r="390" fill="url(#glow)"/>
-  <g fill="none" stroke="${accent}">
-    <circle cx="1040" cy="450" r="260" stroke-width="2"/><circle cx="1040" cy="450" r="190" stroke-opacity=".6"/>
-    <path d="M1040 130 1295 620H785Z" stroke-width="4"/><path d="M1040 210 1225 575H855Z" stroke-opacity=".6"/>
-    <path d="M80 760H1360M80 110H1360" stroke-opacity=".55" stroke-width="2"/>
-  </g>
-  <circle cx="1040" cy="450" r="22" fill="${accent}"/>
-  <text x="82" y="330" fill="#f8fafc" font-family="Impact, sans-serif" font-size="112" letter-spacing="-2">${escapeHtml(title)}</text>
-  <text x="88" y="382" fill="${accent}" font-family="system-ui, sans-serif" font-size="22" font-weight="800" letter-spacing="5">${escapeHtml(subtitle)}</text>
-  <text x="88" y="690" fill="#94a3b8" font-family="monospace" font-size="18">VECTOR / TYPE / SIGNAL / 2035</text>
-  <text x="88" y="810" fill="#64748b" font-family="monospace" font-size="15">FILES PREVIEWER — DESIGN SOURCE CONVERTED TO SVG</text>
-  <rect x="82" y="430" width="330" height="9" fill="${accent}"/><rect x="82" y="455" width="210" height="9" fill="${accent}" opacity=".45"/>
-</svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 function createMinimalPdf(label = 'Generic PDF preview'): Uint8Array {
@@ -3692,7 +3443,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     :ready="renderTimeMs !== null || !!current.livePhoto"
     :error="lastError"
     :warning-count="warningCount"
-    :has-toolbar="!current.livePhoto"
+    :has-toolbar="!current.livePhoto && familyLabel !== 'model3d'"
     @home="returnHome"
     @section="selectWorkbenchSection"
     @upload="files => { selectWorkbenchSection('preview'); void previewFiles(files); }"
@@ -3701,7 +3452,8 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     @sample="useFormatSample"
   >
     <template #samples>
-      <PhotoshopSamplePicker v-if="current.catalogId === 'psd'" :active-name="current.name" @select="usePhotoshopSample" />
+      <DesignSamplePicker v-if="designDraftFormats.has(activeFormatExtension)" :active-name="current.name" @select="useDesignSample" />
+      <ModelSamplePicker v-if="showModelSamples" :active-name="current.name" @select="useModelSample" />
     </template>
           <AppleLivePhotoPreview
             v-if="current.livePhoto"

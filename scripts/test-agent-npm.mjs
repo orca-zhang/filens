@@ -25,7 +25,7 @@ try {
   const full=path.join(work,'full');
   run('npm',['install',...installFlags,'--prefix',full,...(registry?[`${fullName}@${release.version}`]:[archive(fullName),archive(coreName),archive(ocrName)])]);
   let executable=path.join(full,'node_modules',fullName,'cli.mjs');
-  const capacity=JSON.parse(run(executable,['capacity','--json']).stdout);
+  const capacity=JSON.parse(run(executable,['capacity','--full','--json']).stdout);
   const installedSkill=await readFile(path.join(full,'node_modules',fullName,'skills/filens/SKILL.md'),'utf8');
   assert.ok(installedSkill.startsWith('---\nname: filens\ndescription:'));
   assert.equal(capacity.capacity.profile,'full');
@@ -40,7 +40,7 @@ try {
   const image=path.join(root,'converter/rapidocr/testdata/scan-transparent.png');
   assert.match(JSON.parse(run(executable,[`读取 "${image}"，以 JSON 输出`]).stdout).content.text,/FILENS2026/);
   const text=path.join(work,'test.txt');await writeFile(text,'文档证据 42\n');
-  assert.equal(JSON.parse(run(executable,[],JSON.stringify({input:text,operation:'understand'})).stdout).content.text.trim(),'文档证据 42');
+  assert.equal(JSON.parse(run(executable,[],JSON.stringify({input:text,op:'understand'})).stdout).content.text.trim(),'文档证据 42');
   const converted=path.join(work,'converted.docx');
   assert.equal(JSON.parse(run(executable,['convert',text,converted]).stdout).ok,true);
   assert.match(JSON.parse(run(executable,[converted,'--json']).stdout).content.text,/文档证据 42/);
@@ -68,7 +68,7 @@ try {
   const lite=path.join(work,'lite');
   run('npm',['install',...installFlags,'--prefix',lite,...(registry?[`${liteName}@${release.version}`]:[archive(liteName),archive(coreName)])]);
   executable=path.join(lite,'node_modules',liteName,'cli.mjs');
-  assert.equal(JSON.parse(run(executable,['capacity','--json']).stdout).capacity.ocr.enabled,false);
+  assert.equal(JSON.parse(run(executable,['capacity','--full','--json']).stdout).capacity.ocr.enabled,false);
   assert.equal(run(executable,[text]).stdout.trim(),'文档证据 42');
   if(hasPreview){
     if(!registry)env.FILENS_PREVIEW_PACKAGE=archive('filens-preview');
@@ -85,7 +85,7 @@ try {
       createInterface({input:child.stdout}).once('line',line=>{clearTimeout(timer);resolve(JSON.parse(line));});
     });
     try{
-      assert.equal(ready.operation,'preview');
+      assert.equal(ready.op,'preview');
       if(ready.mode==='html'){
         const html=await readFile(new URL(ready.url),'utf8');
         assert.equal(ready.transport,'file');
@@ -103,12 +103,12 @@ try {
       }
     }finally{child.kill('SIGTERM');await closed;}
     run(executable,['setup-preview']);
-    const previewCapacity=JSON.parse(run(executable,['capacity','--json']).stdout).capacity.preview;
+    const previewCapacity=JSON.parse(run(executable,['capacity','--full','--json']).stdout).capacity.preview;
     assert.equal(previewCapacity.available,true);
   }
   if(!registry) env.FILENS_OCR_PACKAGE=archive(ocrName);
   run(executable,['setup-ocr','--sources','4']);
-  const enabled=JSON.parse(run(executable,['capacity','--json']).stdout);
+  const enabled=JSON.parse(run(executable,['capacity','--full','--json']).stdout);
   assert.equal(enabled.capacity.profile,'lite');
   assert.equal(enabled.capacity.ocr.available,true);
   assert.match(JSON.parse(run(executable,[image,'--json']).stdout).content.text,/FILENS2026/);

@@ -1,4 +1,7 @@
 {
+  "Model tools": "模型工具",
+  "Structure": "結構",
+  "Tools": "工具",
   "Prev": "上一頁",
   "Next": "下一頁",
   "Fit": "符合視窗",
@@ -94,5 +97,7 @@
   "Download attachment": "下載附件",
   "Retry": "重試",
   "No previewer is configured for this attachment.": "未設定此附件的預覽器。",
-  "Some document attachments could not be read.": "部分文件附件無法讀取。"
+  "Some document attachments could not be read.": "部分文件附件無法讀取。",
+  "Model materials": "模型材質",
+  "Selected materials": "所選材質"
 }

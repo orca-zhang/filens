@@ -15,9 +15,9 @@ const artifacts = await read('docs/preview-release-sizes.json');
 const oldArtifacts = previous('docs/preview-release-sizes.json');
 const cli = await read('docs/agent-cli-npm-release.json');
 const oldCli = previous('docs/agent-cli-npm-release.json');
-const rows = oldArtifacts.assets.map(item => {
+const rows = oldArtifacts.assets.flatMap(item => {
   const current = artifacts.assets.find(asset => asset.kind === item.kind);
-  return { kind: item.kind, file: current.file, download: delta(item.bytes, current.bytes), installed: delta(item.unpackedBytes, current.unpackedBytes) };
+  return current ? [{ kind: item.kind, file: current.file, download: delta(item.bytes, current.bytes), installed: delta(item.unpackedBytes, current.unpackedBytes) }] : [];
 });
 const runtime = Object.fromEntries(Object.entries(build.builds).map(([mode, value]) => [mode,
   Object.fromEntries(['raw', 'gzip', 'brotli'].map(key => [key, delta(oldBuild.builds[mode].main[key], value.main[key])]))]));

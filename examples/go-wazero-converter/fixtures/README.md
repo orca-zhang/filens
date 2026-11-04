@@ -4,12 +4,17 @@ This directory contains controlled samples for the manifest-backed OpenXML conve
 
 `manifest.json` is the source of truth for fixture smoke tests. Only files referenced by that manifest are part of the default conversion policy; any historical or locally generated files that are not referenced by `manifest.json` are ignored by the current smoke matrix.
 
-The Go wrapper only hosts `converter-core.wasm` through wazero. Parsing and OpenXML generation happen inside the WASI core.
+The Go wrapper hosts the shared frontend WASM modules through wazero. When the
+core returns `requiredModule: postscript`, it invokes `converter-postscript.wasm`
+beside the core. Parsing and conversion happen inside WASM.
 
 ## Included Jobs
 
 | Source File | Source | Target | Notes |
 | --- | --- | --- | --- |
+| `design/sample.psd`, `design/sample.psb` | `psd`, `psb` | `png` | Native 8-bit RGB Photoshop composite; the shared WASM core decodes pixels. |
+| `design/sample.eps`, `design/sample.ps` | `eps`, `ps` | `pdf` | Original PostScript interpreted to vector PDF by the on-demand WASM core. |
+| `design/sample.ai` | `ai` | `pdf` | PDF-compatible vector artwork retained without rasterization. |
 | `ppt/sample.ppt` | `ppt` | `pptx` | Controlled OLE PowerPoint binary fixture. |
 | `ppt/sample.pps` | `pps` | `pptx` | Controlled OLE PowerPoint show fixture. |
 | `ppt/sample.pot` | `pot` | `pptx` | Controlled OLE PowerPoint template fixture. |

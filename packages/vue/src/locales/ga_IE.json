@@ -1,4 +1,7 @@
 {
+  "Model tools": "Uirlisí samhla",
+  "Structure": "Struchtúr",
+  "Tools": "Uirlisí",
   "Prev": "Roimhe",
   "Next": "Ar aghaidh",
   "Fit": "Oiriúnaigh",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Ábhair an mhúnla",
+  "Selected materials": "Ábhair roghnaithe"
 }

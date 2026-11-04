@@ -17,6 +17,9 @@ use zip::ZipArchive;
 mod panorama;
 mod ppm;
 mod icons;
+mod design;
+#[cfg(feature = "postscript")]
+mod postscript;
 mod office;
 mod zip_io;
 #[path = "text/plain.rs"]
@@ -539,6 +542,12 @@ fn converter_main() {
                 OPENXML_WARNING,
                 normalize_package(&request.input, &request.output, &request.target),
             )
+        } else if design::supports(&request.source) {
+            (
+                "design-preview",
+                design::warning(&request.source),
+                design::convert(&request.input, &request.output, &request.source),
+            )
         } else if is_raw_source(&request.source) {
             (
                 RAW_PREVIEW_BACKEND,
@@ -749,7 +758,7 @@ fn validate_input(request: &Request, input_size: u64) -> Result<(), ConvertError
     if icons::supports(&request.source) && input_size > MAX_PACKAGE_BYTES {
         return Err(parse_error("Application package exceeds the 256 MiB limit".into()));
     }
-    if request.source == "ppm" && input_size > MAX_RAW_BYTES {
+    if (request.source == "ppm" || design::supports(&request.source)) && input_size > MAX_RAW_BYTES {
         return Err(io_error("PPM input is too large for conversion".into()));
     }
     let pairs: Vec<ConversionPair> =
@@ -872,6 +881,8 @@ fn failure(
         error_message: message,
         required_module: if code == "engine_unavailable" && backend == Some("office-encryption") {
             Some("office")
+        } else if code == "engine_unavailable" && backend == Some("design-preview") {
+            Some("postscript")
         } else {
             None
         },
@@ -11238,6 +11249,10 @@ fn rewrite_xml(
 }
 
 fn validate_output(path: &str, target: &str) -> Result<(), ConvertError> {
+    if target == "pdf" {
+        let bytes = fs::read(path).map_err(|e| conversion_error(format!("read PDF: {e}")))?;
+        return design::validate_pdf(&bytes);
+    }
     if matches!(target, "jpg" | "jpeg") {
         let bytes = fs::read(path)
             .map_err(|error| conversion_error(format!("read {path} as JPEG: {error}")))?;
@@ -11451,6 +11466,7 @@ fn required_entries(target: &str) -> &'static [&'static str] {
 
 fn content_type(target: &str) -> &'static str {
     match target {
+        "pdf" => "application/pdf",
         "jpg" | "jpeg" => "image/jpeg",
         "png" => "image/png",
         "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

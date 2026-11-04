@@ -1,0 +1,72 @@
+[
+  {
+    "id": "flanged-bearing",
+    "file": "flanged-bearing.step",
+    "solids": 62,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "centrifugal-impeller",
+    "file": "centrifugal-impeller.stl",
+    "meshes": 13,
+    "triangles": 15652,
+    "vertices": 27329,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "trail-rover",
+    "file": "trail-rover.obj",
+    "meshes": 184,
+    "triangles": 25884,
+    "vertices": 37306,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "orbital-bot",
+    "file": "orbital-bot.glb",
+    "meshes": 50,
+    "triangles": 31496,
+    "vertices": 26217,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "industrial-arm",
+    "file": "industrial-arm.gltf",
+    "meshes": 92,
+    "triangles": 11544,
+    "vertices": 18937,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "sleepy-fox",
+    "file": "sleepy-fox.ply",
+    "meshes": 22,
+    "triangles": 16560,
+    "vertices": 11819,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "planetary-gearbox",
+    "file": "planetary-gearbox.3mf",
+    "meshes": 26,
+    "triangles": 22880,
+    "vertices": 55564,
+    "license": "MIT",
+    "original": true
+  },
+  {
+    "id": "heat-exchanger",
+    "file": "heat-exchanger.vtk",
+    "meshes": 54,
+    "triangles": 42272,
+    "vertices": 120870,
+    "license": "MIT",
+    "original": true
+  }
+]

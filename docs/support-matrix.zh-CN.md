@@ -2,7 +2,7 @@
 
 [English](support-matrix.md) | 简体中文
 
-filens 在现代浏览器中提供只读文件预览。当前完整预览宿主覆盖 **397 种文件格式**，按扩展名去重统计，包含直接预览与本地 WASM 转换后预览。支持某种格式，不代表完整兼容该格式的原始编辑软件。
+filens 在现代浏览器中提供只读文件预览。当前完整预览宿主覆盖 **402 种文件格式**，按扩展名去重统计，包含直接预览与本地 WASM 转换后预览。支持某种格式，不代表完整兼容该格式的原始编辑软件。
 
 | 查找内容 | 对应章节 |
 | --- | --- |
@@ -72,6 +72,8 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 
 | 格式 | 扩展名 | 预览路径 | 支持范围 | 限制 |
 | --- | --- | --- | --- | --- |
+| Photoshop | `psd`, `psb` | 转换 → `png` | 前端 WASM 核心解码文件中保存的合成图。 | 8 位 RGB / 灰度；不提供图层编辑或 ICC 处理。[设计稿预览限制](design-preview.md)。 |
+| Illustrator / PostScript | `ai`, `eps`, `ps` | 转换 → `pdf` | PDF 兼容 AI 保留 PDF 原始字节；受支持的 PostScript 转为矢量 PDF，PS 保留多页。 | 预览子集；缺失字体或不支持的绘图会明确报错；EPS/PS 模块按需加载。[兼容范围与下载体积](design-preview.md)。 |
 | 二维 CAD | `dxf` | 直接预览 | SVG 几何图形、文本、图层、块与栅格图像引用。 | 实体与文本保真度仅部分支持；见[DXF 矩阵](#dxf-cad)。 |
 | CAD 实体 | `step`, `stp` | 直接预览 + truck Rust WASM | 按需加载并三角化，用于查看。 | 不提供 CAD 编辑。 |
 | 3D 模型与场景 | `stl`, `obj`, `ply`, `gltf`, `glb`, `3mf` 等，[完整列表](#3d-模型与检查) | 直接预览 | Three.js 网格、材质与场景。 | 材质与资源限制因格式而异。 |
@@ -117,6 +119,8 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 相机 RAW | [完整 RAW 列表](#相机-raw-转换) | `jpg` |
 | Apple 图标 | `icns` | `png` |
 | PPM 图片 | `ppm` | `png` |
+| Photoshop 已保存合成图 | `psd`, `psb` | `png` |
+| Illustrator / PostScript 设计稿 | `ai`, `eps`, `ps` | `pdf` |
 
 ### 默认路由
 
@@ -148,7 +152,7 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 
 | 组件 | 职责 | 参考 |
 | --- | --- | --- |
-| 浏览器 WASM 客户端 | `createWasmConverterClient({ wasm, imageWasm })`；在本地运行文档/全景核心与可选图像模块。 | [转换客户端 API](../packages/converter-client/src/index.ts) |
+| 浏览器 WASM 客户端 | `createWasmConverterClient({ wasm, imageWasm, postscriptWasm })`；在本地运行共享核心与可选图像 / PostScript 模块。 | [转换客户端 API](../packages/converter-client/src/index.ts) |
 | 文档 / 全景 / PPM 核心 | 由 Rust 构建的生产转换 WASM；包含 PPM → PNG，无需可选图像模块。 | [Rust 核心](../wasm/converter-core-rust/README.md) |
 | 可选图像核心 | 由 Rust 构建的独立图像/RAW WASM 模块。 | [Rust 图像模块](../wasm/converter-image-rust/README.md) |
 | HTTP 适配器 | 调用配置的转换服务。 | [适配器 API](#路由与数据源加载) |
@@ -426,7 +430,7 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 | BIM | Revit、IFC | 没有原生预览路由。 |
 | ECAD / 制造 | Gerber/Excellon、分层 KiCad PCB | 没有原生预览路由。 |
 | HEIC/HEIF | 优先原生显示；本地 WASM 回退保留源位深，支持 ICC 或固定 PQ/HLG 到 sRGB 预览。 | 仅静态主图；不支持纯序列文件或增益图还原。回退限制：输入 64 MiB、6400 万像素、单边 16,384 像素、ICC 4 MiB、解码 30 秒。 |
-| 其他图片 | TIFF、PSD | 没有默认独立路由。演示中的衍生文件不代表通用格式支持。 |
+| 设计稿编辑 | PSD/PSB 图层、Illustrator 编辑数据 | 只读合成图或矢量预览；不提供设计稿编辑。[支持子集](design-preview.md)。 |
 | 其他 Netpbm 扩展名 | `pbm`, `pgm`, `pnm`, `pam`, `pfm` | 这些扩展名没有默认预览或转换路由。PPM 仅覆盖 P3/P6 RGB。 |
 | 其他压缩包 | RAR、7z | 没有默认独立路由。 |
 | Office 加载项 | 加载项与嵌入式应用行为 | 不在默认转换策略范围内。 |

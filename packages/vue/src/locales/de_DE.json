@@ -1,4 +1,7 @@
 {
+  "Model tools": "Modellwerkzeuge",
+  "Structure": "Struktur",
+  "Tools": "Werkzeuge",
   "Prev": "Zurück",
   "Next": "Weiter",
   "Fit": "Einpassen",
@@ -94,5 +97,7 @@
   "Download attachment": "Anhang herunterladen",
   "Retry": "Erneut versuchen",
   "No previewer is configured for this attachment.": "Für diesen Anhang ist keine Vorschau eingerichtet.",
-  "Some document attachments could not be read.": "Einige Dokumentanhänge konnten nicht gelesen werden."
+  "Some document attachments could not be read.": "Einige Dokumentanhänge konnten nicht gelesen werden.",
+  "Model materials": "Modellmaterialien",
+  "Selected materials": "Ausgewählte Materialien"
 }

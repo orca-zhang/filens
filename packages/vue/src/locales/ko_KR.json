@@ -1,4 +1,7 @@
 {
+  "Model tools": "모델 도구",
+  "Structure": "구조",
+  "Tools": "도구",
   "Prev": "이전",
   "Next": "다음",
   "Fit": "화면 맞춤",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "모델 재질",
+  "Selected materials": "선택한 재질"
 }

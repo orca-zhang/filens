@@ -31,7 +31,7 @@ function embeddedAssets() {
       // A single file downloads every embedded engine anyway. Use the combined
       // core there to avoid shipping duplicate WASI/CFB code with the decryptor.
       const converterDir = path.join(root, 'wasm/converter-core/dist');
-      if (single && file === path.join(converterDir, 'converter-office.wasm')) {
+      if (single && ['converter-office.wasm', 'converter-postscript.wasm'].some(name => file === path.join(converterDir, name))) {
         return 'export default undefined;';
       }
       const asset = single && file === path.join(converterDir, 'converter-core.wasm')
@@ -58,6 +58,7 @@ function embeddedAssets() {
     },
     async generateBundle() {
       const notices = ['LICENSE', 'packages/step/vendor/THIRD-PARTY-NOTICES.txt', 'packages/archive/THIRD-PARTY-NOTICES.txt',
+        'wasm/converter-core/THIRD-PARTY-NOTICES.txt',
         'wasm/converter-image/THIRD-PARTY-NOTICES.txt', 'packages/media/src/engine-snapshot/MP4Box-LICENSE.txt'];
       const texts = await Promise.all(notices.map(file => readFile(path.join(root, file), 'utf8')));
       // Worker-only dependencies are absent from the main Rollup module graph.

@@ -27,7 +27,7 @@ filens 'find duplicate files in "./files" as json'
 结构化请求：
 
 ```json
-{"operation":"similar","input":"./photos","similarityMode":"images","threshold":8,"format":"json","maxResults":100,"maxFiles":2000,"maxDepth":32}
+{"op":"similar","input":"./photos","similarityMode":"images","threshold":8,"format":"json","maxResults":100,"maxFiles":2000,"maxDepth":32}
 ```
 
 `duplicates` 和 `similar-images` 是命令及 operation 别名，响应中的 operation 统一为 `similar`。`similarityMode` 为 `duplicates` 或 `images`，默认 `images`。这些命令只读取并报告，不执行删除、移动或替换。

@@ -1,28 +1,27 @@
-# Release size changes: v0.6.1
+# Release size changes: v0.6.3
 
-Measured 2026-11-03. All tables use MiB (1,048,576 bytes). Compare the exact published v0.6.0 preview/SDK artifacts and CLI 0.5.0 with current candidates. Download compression and installed file bytes are separate; filesystem overhead and caches are excluded.
+Measured 2026-11-04. All tables use MiB (1,048,576 bytes). Compare the exact published v0.6.0 preview/SDK artifacts and CLI 0.5.0 with current candidates. Download compression and installed file bytes are separate; filesystem overhead and caches are excluded.
 
 | Artifact | Previous download | Current download | Change | Previous installed | Current installed | Change |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| browser-split | 3.49 | 3.56 | +2.1% | 11.99 | 11.38 | -5.0% |
-| browser-all-in-one | 3.50 | 3.58 | +2.2% | 9.71 | 9.00 | -7.4% |
-| npm | 6.98 | 7.14 | +2.3% | 21.72 | 20.40 | -6.1% |
-| source-sdk-ios | 3.51 | 3.59 | +2.2% | 12.02 | 11.43 | -5.0% |
-| source-sdk-android | 3.51 | 3.59 | +2.2% | 12.02 | 11.42 | -5.0% |
+| browser-split | 3.49 | 4.31 | +23.4% | 11.99 | 13.81 | +15.2% |
+| browser-all-in-one | 3.50 | 4.20 | +19.8% | 9.71 | 9.84 | +1.3% |
+| source-sdk-ios | 3.51 | 4.33 | +23.4% | 12.02 | 13.85 | +15.2% |
+| source-sdk-android | 3.51 | 4.33 | +23.4% | 12.02 | 13.85 | +15.2% |
 
 Runtime rows exclude notices, HTML and archive sidecars. Compression uses gzip level 9 and Brotli quality 11; actual HTTP transfer depends on the server.
 
 | Main runtime | Raw MiB before / after | gzip MiB before / after | Brotli MiB before / after |
 | --- | ---: | ---: | ---: |
-| split | 10.71 / 10.06 | 3.11 / 3.18 | 2.45 / 2.54 |
-| all-in-one | 8.44 / 7.68 | 3.10 / 3.18 | 2.77 / 2.88 |
+| split | 10.71 / 12.46 | 3.11 / 3.92 | 2.45 / 3.05 |
+| all-in-one | 8.44 / 8.50 | 3.10 / 3.79 | 2.77 / 3.49 |
 
 | CLI platform | Executable before / after | Lite installed before / after | Full installed before / after |
 | --- | ---: | ---: | ---: |
-| darwin-arm64 | 2.17 / 2.17 | 8.05 / 7.86 | 31.25 / 31.06 |
-| linux-x64 | 1.90 / 1.90 | 7.78 / 7.59 | 36.74 / 36.54 |
-| linux-arm64 | 1.80 / 1.79 | 7.68 / 7.48 | 31.10 / 30.91 |
-| win32-x64 | 1.82 / 1.82 | 7.70 / 7.51 | 36.48 / 36.29 |
+| darwin-arm64 | 2.17 / 2.20 | 8.05 / 8.64 | 31.25 / 31.87 |
+| linux-x64 | 1.90 / 1.93 | 7.78 / 8.38 | 36.74 / 37.34 |
+| linux-arm64 | 1.80 / 1.82 | 7.68 / 8.27 | 31.10 / 31.70 |
+| win32-x64 | 1.82 / 1.85 | 7.70 / 8.29 | 36.48 / 37.07 |
 
 ## Savings from this review
 

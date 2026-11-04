@@ -1,8 +1,9 @@
 import { spawn } from 'node:child_process';
-import { mkdir } from 'node:fs/promises';
+import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { privateRustBuildEnv } from './agent-release-privacy.mjs';
+import { checkPostscriptSize } from './check-postscript-size.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const wasmOpt = path.join(rootDir, 'node_modules', 'binaryen', 'bin', 'wasm-opt');
@@ -10,6 +11,12 @@ const converters = [
   {
     name: 'converter-core',
     cargoArgs: ['--no-default-features'],
+    crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
+    outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
+  },
+  {
+    name: 'converter-postscript',
+    cargoArgs: ['--no-default-features', '--features', 'postscript'],
     crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
     outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
   },
@@ -22,7 +29,7 @@ const converters = [
   {
     name: 'converter-core',
     outputName: 'converter-core-full',
-    cargoArgs: ['--features', 'office-crypto'],
+    cargoArgs: ['--features', 'office-crypto,postscript'],
     crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
     outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
   },
@@ -62,7 +69,10 @@ for (const converter of converters) {
     outputPath
   ], rootDir);
   console.log(`Built Rust production WASM -> ${path.relative(rootDir, outputPath)}`);
+  if (converter.name === 'converter-postscript') await checkPostscriptSize();
 }
+await copyFile(path.join(rootDir, 'wasm/converter-core/THIRD-PARTY-NOTICES.txt'),
+  path.join(rootDir, 'wasm/converter-core/dist/THIRD-PARTY-NOTICES.txt'));
 
 function run(command, args, cwd) {
   return new Promise((resolve, reject) => {

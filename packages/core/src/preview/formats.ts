@@ -773,6 +773,8 @@ function createConversionRoutes(
           required: true,
           reason: sourceFormat === 'ppm'
             ? 'PPM images are decoded to PNG in the WASM conversion core'
+            : ['psd', 'psb'].includes(sourceFormat)
+            ? 'Photoshop files use their saved merged image (8-bit RGB or grayscale) in the WASM conversion core'
             : ['apk', 'ipa', 'exe', 'dll', 'mui', 'mun', 'ico'].includes(sourceFormat)
             ? 'application icons are extracted to PNG in the WASM conversion core'
             : targetFormat === 'png'
@@ -806,6 +808,8 @@ function openXMLDriverId(targetFormat: string): string {
 
 function openXMLConversionReason(targetFormat: string): string {
   switch (targetFormat) {
+    case 'pdf':
+      return 'AI, EPS and PS artwork uses vector PDF; PostScript interpretation omits built-in font outlines';
     case 'docx':
       return 'legacy or compatible text documents are normalized to DOCX';
     case 'xlsx':
@@ -817,6 +821,16 @@ function openXMLConversionReason(targetFormat: string): string {
 
 function legacyContentTypesForSource(sourceFormat: string): string[] {
   switch (sourceFormat) {
+    case 'psd':
+      return ['image/vnd.adobe.photoshop', 'image/x-photoshop'];
+    case 'psb':
+      return ['image/vnd.adobe.photoshop', 'image/x-photoshop'];
+    case 'ai':
+      return ['application/illustrator', 'application/vnd.adobe.illustrator'];
+    case 'eps':
+      return ['application/eps', 'application/x-eps', 'image/x-eps'];
+    case 'ps':
+      return ['application/postscript'];
     case 'ppm':
       return ['image/x-portable-pixmap'];
     case 'apk':

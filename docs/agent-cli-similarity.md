@@ -27,10 +27,10 @@ filens 'find similar images in "./photos" as json'
 A JSON request:
 
 ```json
-{"operation":"similar","input":"./photos","similarityMode":"images","threshold":8,"format":"json","maxResults":100,"maxFiles":2000,"maxDepth":32}
+{"op":"similar","input":"./photos","similarityMode":"images","threshold":8,"format":"json","maxResults":100,"maxFiles":2000,"maxDepth":32}
 ```
 
-`duplicates` and `similar-images` are command and operation aliases. Responses normalize `operation` to `similar`. `similarityMode` is `duplicates` or `images`, defaulting to `images`. Scans read files and report groups; they do not delete, move or replace files.
+`duplicates` and `similar-images` are command and operation aliases. Responses normalize `op` to `similar`. `similarityMode` is `duplicates` or `images`, defaulting to `images`. Scans read files and report groups; they do not delete, move or replace files.
 
 | Flag | Default | Range and purpose |
 | --- | --- | --- |

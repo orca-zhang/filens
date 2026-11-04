@@ -44,7 +44,7 @@ try{
   });
   const text=path.join(work,'季度 报告.txt');await writeFile(text,'中文证据\nBudget 42\n');
   await check('Chinese intent, spaces and UTF-8',()=>assert.match(json([`读取 "${text}"，以 JSON 输出`]).content.text,/中文证据/));
-  await check('JSON stdin',()=>assert.equal(json([],{input:JSON.stringify({operation:'understand',input:text})}).operation,'understand'));
+  await check('JSON stdin',()=>assert.equal(json([],{input:JSON.stringify({op:'understand',input:text})}).op,'understand'));
   await check('eight output formats',()=>{
     for(const format of ['text','json','markdown','html','yaml','xml','csv','tsv'])assert.ok(invoke([text,'--format',format]).includes('Budget'));
   });
@@ -55,7 +55,7 @@ try{
   });
   await check('RAW to JPEG conversion',()=>assert.equal(json(['convert',path.join(fixtures,'sample.dng'),path.join(work,'photo.jpg')]).ok,true));
   await check('logical Word layout',()=>{
-    const layout=json(['layout',path.join(fixtures,'embedded.docx'),'--json',...(capacity?.profile==='full'?[]:['--no-ocr'])],{expected:capacity?.profile==='full'?0:3}).content.layout;
+    const layout=json(['layout',path.join(fixtures,'embedded.docx'),'--json',...(capacity?.profile==='full'?[]:['--no-ocr'])]).content.layout;
     assert.ok(layout.blocks.some(b=>b.kind==='heading'));assert.ok(layout.blocks.some(b=>b.kind==='paragraph'));
   });
   if(capacity?.profile==='full'){

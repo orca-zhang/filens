@@ -19,7 +19,7 @@ filens '总结 "report.txt"，以 JSON 输出'
 filens 'summarize "report.txt" as json'
 filens '提取 "report.txt" 的关键内容，关注预算和风险，保留30%，最多800字，以 JSON 输出'
 filens prune report.txt --query '预算 风险' --summary-chars 800 --json
-echo '{"operation":"summarize","input":"report.txt","query":"预算 风险","format":"json"}' | filens
+echo '{"op":"summarize","input":"report.txt","query":"预算 风险","format":"json"}' | filens
 ```
 
 `summarize` 是合法操作，`prune` 是别名；“总结”返回关键原文片段。检查 `content.summary.sourceComplete`、`omitted`、`sampled` 和每段的 `clipped`；主动裁剪不等于读取被截断。分数只用于排序，不能表示内容可信度。出处同时提供输出文本和完整提取文本的 UTF-8 偏移。
@@ -43,7 +43,7 @@ filens '你能做什么？以 JSON 输出'
 filens '读取 "report.txt"，以纯文本输出'
 filens '理解 "report.txt"，以 JSON 输出'
 filens 'Please extract all text from "report.txt" in JSON'
-echo '{"operation":"understand","input":"report.txt","format":"json"}' | filens
+echo '{"op":"understand","input":"report.txt","format":"json"}' | filens
 ```
 
 图片、PDF 和内嵌图片示例使用你自己的文件路径，或先运行文末的评估脚本生成样本：
@@ -172,8 +172,8 @@ AFTER
 
 | 案例 | 实际请求 | 实际输出 / 退出码 | 观察 |
 | --- | --- | --- | --- |
-| JSON stdin | `stdin: {"operation":"understand","input":"report.txt"}` | json / 0 | understand；45 字符；1 个证据块 |
-| JSON 请求纯文本 | `stdin: {"operation":"read","input":"report.txt","format":"text"}` | text / 0 | read（纯文本不带操作字段）；45 字符 |
+| JSON stdin | `stdin: {"op":"understand","input":"report.txt"}` | json / 0 | understand；45 字符；1 个证据块 |
+| JSON 请求纯文本 | `stdin: {"op":"read","input":"report.txt","format":"text"}` | text / 0 | read（纯文本不带操作字段）；45 字符 |
 | 自然语言 stdin | `stdin: 读取 "report.txt"，以 JSON 输出` | json / 0 | read；45 字符；1 个证据块 |
 | JSON 未知字段 | `stdin: {"input":"report.txt","pages":"1-2"}` | json / 2 | invalid_request: invalid JSON request: json: unknown field "pages" |
 | JSON 非法 format | `stdin: {"input":"report.txt","format":"xml"}` | json / 2 | invalid_request: unsupported output format "xml"; choose text or json |
@@ -181,7 +181,7 @@ AFTER
 推荐调用链：读取 capacity → 根据 Schema 发送 search、understand/read 或 summarize 请求 → 检查 ok、complete、truncated、error 及摘录标记 → 根据需要将原文或关键摘录交给上层 Agent 改写总结、问答或字段提取。证据位置是提取文本的 UTF-8 字节偏移；物理页码和坐标需检查布局信息。
 
 ```json
-{"operation":"understand","input":"report.txt","format":"json"}
+{"op":"understand","input":"report.txt","format":"json"}
 ```
 
 ## 历史边界记录：改写、问答与其他操作
@@ -200,7 +200,7 @@ AFTER
 | 没有文件路径 | `filens "帮我读取文档，以 JSON 输出"` | json / 2 | invalid_request: name the local file to read, for example: filens '读取 "report.pdf"，以 JSON 输出' |
 | 不存在的文件 | `filens "读取 \"missing.pdf\"，以 JSON 输出"` | json / 1 | io_error: stat missing.pdf: no such file or directory |
 
-“只列金额”“what is the budget”“转成 PDF”目前都不能作为已完成对应操作的证据。这些请求可能只返回全文，甚至仍为退出码 0。Agent 要对照返回的 operation / content 验证任务，不能把自然语言被接受等同于任务已执行。
+“只列金额”“what is the budget”“转成 PDF”目前都不能作为已完成对应操作的证据。这些请求可能只返回全文，甚至仍为退出码 0。Agent 要对照返回的 `op` / `content` 验证任务，不能把自然语言被接受等同于任务已执行。
 
 ## OCR 调用、扫描页和文档回调案例
 

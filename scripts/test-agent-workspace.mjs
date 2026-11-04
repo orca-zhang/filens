@@ -30,7 +30,7 @@ try {
   assert.equal(capacity.capacity.execution.workspace, 'memory');
   assert.equal(capacity.capacity.ocr.available, true, JSON.stringify(capacity.capacity.ocr));
   for (const file of ['filens-aurora-guide.docx', 'filens-observatory.xlsx', 'filens-field-notes.pptx', 'filens-cosmic-atlas.pdf']) {
-    assert.equal(run(file, ['read', path.join(root, 'apps/demo/public/samples', file), '--json']).ok, true);
+    assert.equal(run(file, ['read', path.join(root, 'apps/demo/public/samples', file), '--ocr', 'never', '--json']).ok, true);
   }
   const fixtures = path.join(root, 'converter/rapidocr/testdata');
   for (const file of ['scan.png', 'scan.pdf']) {
@@ -77,7 +77,7 @@ try {
   const diskCapacity = onDisk('disk capacity', ['capacity', '--json']);
   assert.equal(diskCapacity.capacity.execution.workspace, 'disk');
   assert.equal(diskCapacity.capacity.ocr.available, true);
-  assert.equal(onDisk('disk document read', ['read', path.join(root, 'apps/demo/public/samples/filens-aurora-guide.docx'), '--json']).ok, true);
+  assert.equal(onDisk('disk document read', ['read', path.join(root, 'apps/demo/public/samples/filens-aurora-guide.docx'), '--ocr', 'never', '--json']).ok, true);
   assert.match(onDisk('disk scanned PDF OCR', ['read', path.join(fixtures, 'scan.pdf'), '--json']).content.text, /FILENS2026[\s\S]*BRIGHT2027/);
   assert.match(onDisk('disk nested archive OCR', ['read', `${archive}!/inner.zip!/scan.png`, '--json']).content.text, /FILENS2026/);
   const diskSearch = onDisk('disk parallel workers', ['search', corpus, '--query', 'MEMORY2026', '--layout', '--json']);
@@ -88,7 +88,7 @@ try {
   assert.equal((await readFile(output)).subarray(0, 2).toString(), 'PK');
   await rm(output);
   const fromJson = run('disk selected in JSON request', ['-'], { confined: false, extraEnv: diskEnv,
-    input: JSON.stringify({ operation: 'capabilities', workspace: 'disk' }) });
+    input: JSON.stringify({ op: 'capabilities', workspace: 'disk' }) });
   assert.equal(fromJson.capacity.execution.workspace, 'disk');
   assert.equal(onDisk('disk deadline cleanup', ['read', path.join(fixtures, 'scan.pdf'), '--timeout', '1ms', '--json'], 1).error.code, 'canceled');
   assert.deepEqual(await readdir(diskTmp), [], 'disk scratch directories must be cleaned on success and cancellation');

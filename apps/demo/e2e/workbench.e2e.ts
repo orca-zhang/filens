@@ -1,12 +1,34 @@
 import { expect, test } from '@playwright/test';
 
+test('selects the initial model family after routes load and distinguishes missing samples from unsupported formats', async ({ page }) => {
+  await page.goto('./?view=preview&format=step&lang=zh');
+  await expect(page.getByRole('button', { name: 'Design', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'STEP', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  const supported = page.getByRole('button', { name: 'STP', exact: true });
+  const unsupported = page.getByRole('button', { name: 'DWG', exact: true });
+  await expect(supported).toBeDisabled();
+  await expect(supported).toHaveClass(/is-no-sample/);
+  await expect(supported).toHaveAttribute('title', '已支持，暂无示例；可导入文件预览');
+  await expect(unsupported).toBeDisabled();
+  await expect(unsupported).toHaveClass(/is-unavailable/);
+  await expect(unsupported).toHaveAttribute('title', '暂不支持预览');
+  await expect(page.locator('.wb-format-hint')).toContainText('已支持，暂无示例');
+  await expect(page.locator('canvas.model3dv-canvas')).toBeVisible();
+  await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
+  await page.setViewportSize({ width: 320, height: 900 });
+  await expect(supported).toHaveAttribute('title', 'Supported, no sample yet; import a file to preview');
+  await expect(unsupported).toHaveAttribute('title', 'Preview is not supported yet');
+  await expect(page.locator('.wb-format-hint')).toContainText('Supported, no sample');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+});
+
 test('searches formats across families and recovers from an empty search', async ({ page }) => {
   await page.goto('./?view=preview');
   const search = page.getByRole('searchbox', { name: '搜索文件格式' });
   await search.fill('.obj');
   await expect(page.getByRole('button', { name: 'OBJ', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'OBJ', exact: true }).click();
-  await expect(page.locator('.wb-preview-title strong')).toHaveText('viking-helmet.obj');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('trail-rover.obj');
   await expect(page.locator('canvas.model3dv-canvas')).toBeVisible();
   await expect(search).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Design', exact: true })).toHaveAttribute('aria-pressed', 'true');

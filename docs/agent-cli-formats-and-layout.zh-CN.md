@@ -25,8 +25,8 @@ CSV / TSV 会保留字段中的逗号、引号与换行。存在多个表格、�
 filens '获取 "report.pdf" 的版面信息，以 JSON 输出'
 filens layout invoice.png --format yaml
 filens read report.docx --layout --format json
-echo '{"operation":"layout","input":"report.pdf","format":"json"}' | filens
-echo '{"operation":"understand","input":"report.docx","layout":true,"format":"yaml"}' | filens
+echo '{"op":"layout","input":"report.pdf","format":"json"}' | filens
+echo '{"op":"understand","input":"report.docx","layout":true,"format":"yaml"}' | filens
 ```
 
 布局请求默认输出 JSON。纯文本无法表达布局元数据，会明确拒绝 `layout --format text`。Markdown / HTML 的布局请求在正文后附加布局元数据；CSV / TSV 的布局请求始终返回块记录。

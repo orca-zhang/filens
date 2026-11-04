@@ -10,6 +10,7 @@
 @import "@filens/panorama/style.css";
 @import "@filens/pdf/style.css";
 @import "@filens/xlsx/style.css";
+@import "./model-tools.css";
 
 .pptxv-shell {
   --pptxv-panel: #ffffff;
@@ -99,29 +100,6 @@
   min-height: 0;
   flex: 1;
   overflow: hidden;
-}
-
-.pptxv-model-tools {
-  display: flex;
-  flex: 0 0 auto;
-  min-height: 0;
-}
-
-.pptxv-button.pptxv-model-tools-toggle {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-}
-
-.pptxv-model-tools-toggle svg {
-  width: 20px;
-  height: 20px;
 }
 
 .pptxv-sidebar {
@@ -912,17 +890,6 @@
 
   .pptxv-layout {
     flex-direction: column;
-  }
-
-  .pptxv-model-tools {
-    flex-direction: column;
-    flex: 0 1 auto;
-    max-height: min(40vh, 320px);
-    overflow: auto;
-  }
-
-  .pptxv-model-tools .pptxv-sidebar {
-    box-sizing: border-box;
   }
 
   .pptxv-sidebar {

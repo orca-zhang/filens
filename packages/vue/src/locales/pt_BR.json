@@ -1,4 +1,7 @@
 {
+  "Model tools": "Ferramentas do modelo",
+  "Structure": "Estrutura",
+  "Tools": "Ferramentas",
   "Prev": "Anterior",
   "Next": "Próximo",
   "Fit": "Ajustar",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Materiais do modelo",
+  "Selected materials": "Materiais selecionados"
 }

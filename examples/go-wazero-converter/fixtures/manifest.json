@@ -4,6 +4,36 @@
   },
   "jobs": [
     {
+      "inputPath": "./fixtures/design/sample.psd",
+      "outputPath": "./tmp/sample.psd.png",
+      "sourceFormat": "psd",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/design/sample.psb",
+      "outputPath": "./tmp/sample.psb.png",
+      "sourceFormat": "psb",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/design/sample.ai",
+      "outputPath": "./tmp/sample.ai.pdf",
+      "sourceFormat": "ai",
+      "targetFormat": "pdf"
+    },
+    {
+      "inputPath": "./fixtures/design/sample.eps",
+      "outputPath": "./tmp/sample.eps.pdf",
+      "sourceFormat": "eps",
+      "targetFormat": "pdf"
+    },
+    {
+      "inputPath": "./fixtures/design/sample.ps",
+      "outputPath": "./tmp/sample.ps.pdf",
+      "sourceFormat": "ps",
+      "targetFormat": "pdf"
+    },
+    {
       "inputPath": "./fixtures/doc/sample.docx",
       "outputPath": "./tmp/sample.docx.docx",
       "sourceFormat": "docx",

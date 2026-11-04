@@ -1,4 +1,7 @@
 {
+  "Model tools": "Modelværktøjer",
+  "Structure": "Struktur",
+  "Tools": "Værktøjer",
   "Prev": "Forrige",
   "Next": "Næste",
   "Fit": "Tilpas",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Modelmaterialer",
+  "Selected materials": "Valgte materialer"
 }

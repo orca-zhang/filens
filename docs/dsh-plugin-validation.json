@@ -1,51 +1,49 @@
 {
   "date": "2026-11-04",
-  "status": "published-and-validated",
+  "observedAt": "2026-11-04T05:59:13.627Z",
+  "status": "locally-validated",
   "package": {
     "name": "dsh-filens",
-    "version": "0.1.0",
-    "artifact": "dist/dsh-npm/dsh-filens-0.1.0.tgz",
-    "sha256": "74811c5be927407c9c6c780b8a19cc8d02720df09a14f3c86b0e0b1ea818e4ad",
-    "integrity": "sha512-bjWXzoHL4HhysbzzPxBBmJmTx88RDxf6htfVjJ+6ZzQ3aQCk9jA0x/yzih4hF7LyNVLQFetvVMdas18lbngICA==",
-    "bytes": 3779547,
-    "unpackedBytes": 9531351,
-    "files": 24,
-    "platform": "universal adapter; CLI/OCR selected by npm platform dependencies",
-    "preview": {
-      "version": "0.3.2",
-      "source": "workspace",
-      "sha256": "9a0b7f9c06e7052495142569c8dba28c453ecab7006eee982c1df5570d8f9982"
-    }
+    "version": "0.1.1",
+    "file": "dsh-filens-0.1.1.tgz",
+    "bytes": 4438888,
+    "unpackedBytes": 10459822,
+    "sha256": "9a4ad766523455c15b1fd0e1f528a7c80b2d551e05593bc68115255f6ce219e7",
+    "integrity": "sha512-cobx0TS6CUpmP7QTwTsFsQ+8dYvE/st55tezqkuaUzEsR/vEtqWWu5baY/Lg2u8hyhwcBFzFy8ftQ/NWvCDd/A==",
+    "cliVersion": "0.5.4",
+    "previewVersion": "0.3.3",
+    "previewSHA256": "1d85d4bf83950550b3aa9851817f061dfce15ebca29fec0a39f42c4cc843fd18",
+    "extensions": 402,
+    "privacyChecked": true
   },
   "dependencies": {
-    "cli": "0.5.2",
-    "preview": "0.3.2",
-    "universalBundleCLI": "0.5.2"
+    "cli": "0.5.4",
+    "preview": "0.3.3"
   },
   "unitTests": {
-    "groupsPerMode": 7,
-    "workspaceModes": [
-      "memory",
-      "disk"
-    ],
-    "status": "passed"
+    "count": 18,
+    "passed": 18,
+    "command": "npm run test:dsh",
+    "node": "24.22.2",
+    "platform": "darwin-arm64",
+    "realCli": true
   },
   "browser": {
     "results": [
       {
         "name": "hello.txt",
         "rendered": true,
-        "ms": 39
+        "ms": 40
       },
       {
         "name": "filens-cosmic-atlas.pdf",
         "rendered": true,
-        "ms": 98
+        "ms": 97
       },
       {
         "name": "filens-aurora-guide.docx",
         "rendered": true,
-        "ms": 82
+        "ms": 65
       },
       {
         "name": "filens-observatory.xlsx",
@@ -55,51 +53,52 @@
       {
         "name": "filens-field-notes.pptx",
         "rendered": true,
-        "ms": 32
+        "ms": 31
       },
       {
         "name": "a.pages",
         "rendered": true,
-        "ms": 144
+        "ms": 147
       },
       {
         "name": "a.numbers",
         "rendered": true,
-        "ms": 170
+        "ms": 198
       },
       {
         "name": "filens-weekend.key",
         "rendered": true,
-        "ms": 113
+        "ms": 115
       },
       {
         "name": "rounded-cube.step",
         "rendered": true,
-        "ms": 281
+        "ms": 267
       },
       {
         "name": "raw/pentax-k-r.dng",
         "rendered": true,
-        "ms": 106
+        "ms": 119
       },
       {
         "name": "sample-nested-archives.zip",
         "rendered": true,
-        "ms": 32
+        "ms": 22
       },
       {
         "name": "encrypted.rar",
         "rendered": true,
-        "ms": 42
+        "ms": 67
       }
     ],
     "interactions": [
       "loading identifies the file and respects reduced motion",
-      "narrow pane fills its height without document overflow; keyboard page navigation works",
+      "toolbar contains only working zoom and fullscreen; keyboard navigation works",
       "document fullscreen opens from the keyboard and exits normally",
       "live DSH language and theme changes preserve the document and current page",
       "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
       "double-click restores the complete 3D model after orbit and zoom",
+      "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
       "3D auto framing keeps the whole model visible in a tall narrow pane",
       "Word pages fit narrow/resized panes and omit unavailable controls",
       "resizing the Word pane preserves the reading position",
@@ -111,477 +110,24 @@
     "errors": [],
     "failures": []
   },
-  "desktop": {
-    "environment": {
-      "version": "0.2.1-rc.5",
-      "node": "24.21.0",
-      "electron": "44.7.0",
-      "platform": "darwin",
-      "arch": "arm64"
-    },
-    "url": "dsh-app://app/",
-    "registrations": [
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/text",
-        "extensions": 0
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/markdown",
-        "extensions": 2
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/html",
-        "extensions": 2
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/image",
-        "extensions": 8
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/pdf",
-        "extensions": 1
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office",
-        "extensions": 4
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/excel",
-        "extensions": 4
-      },
-      {
-        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code",
-        "extensions": 115
-      },
-      {
-        "id": "dsh-filens",
-        "extensions": 397
-      }
-    ],
-    "results": [
-      {
-        "name": "filens-aurora-guide.docx",
-        "rendered": true,
-        "fillsPane": true
-      },
-      {
-        "name": "filens-weekend.key",
-        "rendered": true,
-        "fillsPane": true
-      },
-      {
-        "name": "rounded-cube.step",
-        "rendered": true,
-        "fillsPane": true,
-        "toolbar": false,
-        "orbitZoomAndReset": true
-      },
-      {
-        "name": "sample-nested-archives.zip",
-        "rendered": true,
-        "fillsPane": true
-      }
-    ],
-    "errors": []
-  },
-  "profiles": [
-    {
-      "version": "0.2.1-rc.5",
-      "profile": "filens-test",
-      "policy": "read-only",
-      "checks": [
-        "bundle installation mounts both Host entries",
-        "Preview client participates in the real DSH module graph",
-        "real webServer serves the iframe runtime",
-        "filens_capacity through the installed DSH tool pipeline (read-only)",
-        "filens_read through the installed DSH tool pipeline (read-only)",
-        "filens_read through the installed DSH tool pipeline (read-only)",
-        "filens_excerpt through the installed DSH tool pipeline (read-only)",
-        "filens_search through the installed DSH tool pipeline (read-only)",
-        "real read-only sandbox refuses conversion output without creating a file",
-        "disable Tools independently while Preview stays active",
-        "disable Preview removes its route/client while Tools stays active",
-        "both entries re-enable without duplicate registrations"
-      ]
-    },
-    {
-      "version": "0.2.1-rc.5",
-      "profile": "filens-test",
-      "policy": "workspace-write",
-      "checks": [
-        "fresh boot after package removal has no FiLens tools, client or resource route"
-      ]
-    },
-    {
-      "version": "0.2.1-rc.5",
-      "profile": "filens-test",
-      "policy": "workspace-write",
-      "checks": [
-        "bundle installation mounts both Host entries",
-        "Preview client participates in the real DSH module graph",
-        "real webServer serves the iframe runtime",
-        "filens_capacity through the installed DSH tool pipeline (workspace-write)",
-        "filens_read through the installed DSH tool pipeline (workspace-write)",
-        "filens_read through the installed DSH tool pipeline (workspace-write)",
-        "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
-        "filens_search through the installed DSH tool pipeline (workspace-write)",
-        "filens_convert writes a new XLSX through the installed DSH tool pipeline",
-        "command parameters explicitly select disk workspace through the installed DSH pipeline",
-        "disable Tools independently while Preview stays active",
-        "disable Preview removes its route/client while Tools stays active",
-        "both entries re-enable without duplicate registrations"
-      ]
-    },
-    {
-      "version": "0.2.2-alpha.3",
-      "profile": "filens-test",
-      "policy": "read-only",
-      "checks": [
-        "bundle installation mounts both Host entries",
-        "Preview client participates in the real DSH module graph",
-        "real webServer serves the iframe runtime",
-        "filens_capacity through the installed DSH tool pipeline (read-only)",
-        "filens_read through the installed DSH tool pipeline (read-only)",
-        "filens_read through the installed DSH tool pipeline (read-only)",
-        "filens_excerpt through the installed DSH tool pipeline (read-only)",
-        "filens_search through the installed DSH tool pipeline (read-only)",
-        "real read-only sandbox refuses conversion output without creating a file",
-        "disable Tools independently while Preview stays active",
-        "disable Preview removes its route/client while Tools stays active",
-        "both entries re-enable without duplicate registrations"
-      ]
-    },
-    {
-      "version": "0.2.2-alpha.3",
-      "profile": "filens-test",
-      "policy": "workspace-write",
-      "checks": [
-        "fresh boot after package removal has no FiLens tools, client or resource route"
-      ]
-    },
-    {
-      "version": "0.2.2-alpha.3",
-      "profile": "filens-test",
-      "policy": "workspace-write",
-      "checks": [
-        "bundle installation mounts both Host entries",
-        "Preview client participates in the real DSH module graph",
-        "real webServer serves the iframe runtime",
-        "filens_capacity through the installed DSH tool pipeline (workspace-write)",
-        "filens_read through the installed DSH tool pipeline (workspace-write)",
-        "filens_read through the installed DSH tool pipeline (workspace-write)",
-        "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
-        "filens_search through the installed DSH tool pipeline (workspace-write)",
-        "filens_convert writes a new XLSX through the installed DSH tool pipeline",
-        "command parameters explicitly select disk workspace through the installed DSH pipeline",
-        "disable Tools independently while Preview stays active",
-        "disable Preview removes its route/client while Tools stays active",
-        "both entries re-enable without duplicate registrations"
-      ]
-    }
-  ],
-  "limits": [
-    "No real model prompt or account used.",
-    "Universal plugin depends on CLI/OCR 0.5.2 platform packages. Native execution verified on macOS arm64; Linux/Windows are cross-built.",
-    "Conversion commits and standalone HTML preview output remain filesystem artifacts.",
-    "Native Windows/Linux, remote execution, full reverse proxy and all extensions were not exhaustively tested."
-  ],
-  "observedAt": "2026-11-03T18:09:03.192Z",
-  "workspaceExecution": {
-    "status": "passed",
-    "workspaceFileDataLimitBytes": 536870912,
-    "diskSpill": false,
-    "limitExcludes": [
-      "WASM linear memory",
-      "native OCR runtime",
-      "transport copies",
-      "operating-system swap"
-    ],
-    "checks": {
-      "rustUnitTests": 22,
-      "cliEndToEndGroups": 8,
-      "conversionChecks": 19,
-      "searchChecks": 46,
-      "archiveOCRChecks": 53,
-      "similarityChecks": 27,
-      "workspaceFTSChecks": 23,
-      "workspaceWASIWalkerChecks": 23,
-      "pluginTestGroupsPerMode": 7,
-      "pluginWorkspaceModes": [
-        "memory",
-        "disk"
-      ],
-      "desktopPreviewSamples": 4,
-      "releaseNativeRustTests": 20,
-      "releasePackagedWorkspaceChecks": 23,
-      "releaseWASIRustTests": 22
-    },
-    "osSandbox": "macOS Seatbelt denies all filesystem writes except /dev/null; applies to CLI and OCR child",
-    "wasiWalker": "hdrw-wasi feature exercised on macOS, including four WASI extraction workers",
-    "installedBinaryHashesVerified": true,
-    "readonlyDSH": [
-      "0.2.1-rc.5",
-      "0.2.2-alpha.3"
-    ],
-    "finalConversionCommit": "denied in read-only; WASM conversion succeeds in memory; no output created",
-    "testProfiles": "Removed from isolated rc.5 Web/Desktop and alpha.3 Web profiles after verification; normal user profiles were not changed",
-    "defaultWorkspace": "memory",
-    "workspaceModes": [
-      "memory",
-      "disk"
-    ],
-    "diskSelection": "--workspace disk or stdin JSON workspace=disk; neither mode falls back automatically",
-    "diskModeDSH": [
-      "0.2.1-rc.5",
-      "0.2.2-alpha.3"
-    ],
-    "diskCleanup": "verified on success and deadline cancellation, including parallel workers"
-  },
-  "hdrwTransport": {
-    "transport": "stdin-stdout",
-    "adapter": "filens-directory-stdio-v1",
-    "stdinMaxBytes": 1048576,
-    "stdoutMaxBytes": 16777216,
-    "preopens": [
-      "/scan"
-    ],
-    "workspaceDependency": false,
-    "optionOrResultFiles": false,
-    "sha256": "562d587c1ac40875ebe69d2b246483521fd03b94db696d3fef0e7fc871c5f768",
-    "gzipSHA256": "092af41c94a6d8ec22bd932dd4610593f3b08079560b07143fb685ce702f7333",
-    "tests": [
-      "embedded WASM reads stdin and emits one JSON result",
-      "Unicode filename discovery and extension filtering",
-      "invalid JSON and oversized input",
-      "sticky bounded stdout without partial overflowing write"
+  "publicProtocol": {
+    "request": "op",
+    "response": "op",
+    "capacityFilter": "forOp",
+    "legacyFieldsRejected": [
+      "operation",
+      "forOperation"
     ]
   },
-  "previewPolish": {
-    "status": "passed",
-    "browserFormats": 12,
-    "browserInteractions": 13,
-    "desktopSamples": 4,
-    "threeDimensionalToolbar": false,
-    "threeDimensionalInteraction": [
-      "drag to orbit",
-      "scroll/pinch to zoom",
-      "double-click to reset"
-    ],
-    "appearance": "DSH palette, fonts and document language; changes preserve source and page",
-    "wordLayout": "fits pane width and preserves unscaled reading position on resize; unavailable controls omitted",
-    "loading": "filename, progress indicator, reduced-motion support and timeout",
-    "errors": "localized message, expandable details and fresh-viewer retry",
-    "sourceSwitching": "per-open request identity rejects late completions",
-    "passwordEntry": "local forms are enabled while CSP form-action remains none; encrypted PDF opened with Enter",
-    "fullscreen": "iframe permits fullscreen; keyboard open/exit tested in Chromium",
-    "installedPreviewBytesVerified": true,
-    "screenshots": [
-      "docs/assets/dsh-plugin/desktop-step.jpg",
-      "docs/assets/dsh-plugin/desktop-word.jpg",
-      "docs/assets/dsh-plugin/narrow-dark.jpg",
-      "docs/assets/dsh-plugin/model-narrow.jpg"
-    ],
-    "threeDimensionalFraming": "bounding sphere fits the narrower camera field of view; tested at 240×600 and in the actual Desktop pane",
-    "previewBuild": "Shared frontend workspace source 0.3.2; runtime hash recorded in package report"
+  "previousRelease": {
+    "version": "0.1.0",
+    "sourceTag": "v0.6.2",
+    "validation": "https://github.com/IceWhaleTech/filens/blob/v0.6.2/docs/dsh-plugin-validation.json",
+    "scope": "Real Desktop/Web profile and model observations remain historical; not repeated for adapter 0.1.1."
   },
-  "sharedModel3d": {
-    "status": "passed",
-    "tests": 326,
-    "files": 10,
-    "packageBuild": "passed",
-    "checks": [
-      "portrait and landscape camera fitting",
-      "resize preserves orbit and zoom",
-      "initial scale",
-      "double-click restores isometric view and fit"
-    ],
-    "npmConsumer": {
-      "version": "0.1.1",
-      "source": "public npm registry",
-      "typecheck": "strict TypeScript with browser bundler resolution",
-      "status": "passed"
-    }
-  },
-  "priorLocalBundle": {
-    "package": {
-      "name": "dsh-filens",
-      "version": "0.1.0",
-      "artifact": "integrations/deepseek-harness/artifacts/dsh-filens-0.1.0-71003d8b851e.tgz",
-      "sha256": "71003d8b851ecf9c1ad0325ae3d005970655848221f32cf4bb09379337454018",
-      "bytes": 24892034,
-      "unpackedBytes": 42088391,
-      "files": 106,
-      "bundledPlatform": "darwin-arm64",
-      "cliSHA256": "244c508d42d51d217e517dcd08e6ebf6d425ff2f639230d6c84157441b7a6acf",
-      "ocrSHA256": "09522e3641ed3ef4c1283b65c018aaf3d7d1a9cbdc777cb5771c9e5ce8a66774",
-      "preview": {
-        "version": "0.3.1",
-        "source": "workspace",
-        "sha256": "9a0b7f9c06e7052495142569c8dba28c453ecab7006eee982c1df5570d8f9982"
-      }
-    },
-    "dependencies": {
-      "cli": "0.5.2-dev.0 (local source build, default memory workspace and byte-input OCR ABI)",
-      "preview": "0.3.1 (shared workspace source plus unpublished preview fixes)",
-      "universalBundleCLI": "0.5.1 (published; default-memory changes are not released)"
-    },
-    "profiles": [
-      {
-        "version": "0.2.1-rc.5",
-        "profile": "filens-test",
-        "policy": "read-only",
-        "checks": [
-          "bundle installation mounts both Host entries",
-          "Preview client participates in the real DSH module graph",
-          "real webServer serves the iframe runtime",
-          "filens_capacity through the installed DSH tool pipeline (read-only)",
-          "filens_read through the installed DSH tool pipeline (read-only)",
-          "filens_read through the installed DSH tool pipeline (read-only)",
-          "filens_excerpt through the installed DSH tool pipeline (read-only)",
-          "filens_search through the installed DSH tool pipeline (read-only)",
-          "real read-only sandbox refuses conversion output without creating a file",
-          "disable Tools independently while Preview stays active",
-          "disable Preview removes its route/client while Tools stays active",
-          "both entries re-enable without duplicate registrations"
-        ]
-      },
-      {
-        "version": "0.2.1-rc.5",
-        "profile": "filens-test",
-        "policy": "workspace-write",
-        "checks": [
-          "fresh boot after package removal has no FiLens tools, client or resource route"
-        ]
-      },
-      {
-        "version": "0.2.1-rc.5",
-        "profile": "filens-test",
-        "policy": "workspace-write",
-        "checks": [
-          "bundle installation mounts both Host entries",
-          "Preview client participates in the real DSH module graph",
-          "real webServer serves the iframe runtime",
-          "filens_capacity through the installed DSH tool pipeline (workspace-write)",
-          "filens_read through the installed DSH tool pipeline (workspace-write)",
-          "filens_read through the installed DSH tool pipeline (workspace-write)",
-          "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
-          "filens_search through the installed DSH tool pipeline (workspace-write)",
-          "filens_convert writes a new XLSX through the installed DSH tool pipeline",
-          "command parameters explicitly select disk workspace through the installed DSH pipeline",
-          "disable Tools independently while Preview stays active",
-          "disable Preview removes its route/client while Tools stays active",
-          "both entries re-enable without duplicate registrations"
-        ]
-      },
-      {
-        "version": "0.2.2-alpha.3",
-        "profile": "filens-test",
-        "policy": "read-only",
-        "checks": [
-          "bundle installation mounts both Host entries",
-          "Preview client participates in the real DSH module graph",
-          "real webServer serves the iframe runtime",
-          "filens_capacity through the installed DSH tool pipeline (read-only)",
-          "filens_read through the installed DSH tool pipeline (read-only)",
-          "filens_read through the installed DSH tool pipeline (read-only)",
-          "filens_excerpt through the installed DSH tool pipeline (read-only)",
-          "filens_search through the installed DSH tool pipeline (read-only)",
-          "real read-only sandbox refuses conversion output without creating a file",
-          "disable Tools independently while Preview stays active",
-          "disable Preview removes its route/client while Tools stays active",
-          "both entries re-enable without duplicate registrations"
-        ]
-      },
-      {
-        "version": "0.2.2-alpha.3",
-        "profile": "filens-test",
-        "policy": "workspace-write",
-        "checks": [
-          "fresh boot after package removal has no FiLens tools, client or resource route"
-        ]
-      },
-      {
-        "version": "0.2.2-alpha.3",
-        "profile": "filens-test",
-        "policy": "workspace-write",
-        "checks": [
-          "bundle installation mounts both Host entries",
-          "Preview client participates in the real DSH module graph",
-          "real webServer serves the iframe runtime",
-          "filens_capacity through the installed DSH tool pipeline (workspace-write)",
-          "filens_read through the installed DSH tool pipeline (workspace-write)",
-          "filens_read through the installed DSH tool pipeline (workspace-write)",
-          "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
-          "filens_search through the installed DSH tool pipeline (workspace-write)",
-          "filens_convert writes a new XLSX through the installed DSH tool pipeline",
-          "command parameters explicitly select disk workspace through the installed DSH pipeline",
-          "disable Tools independently while Preview stays active",
-          "disable Preview removes its route/client while Tools stays active",
-          "both entries re-enable without duplicate registrations"
-        ]
-      }
-    ],
-    "scope": "Historical bundled macOS CLI/OCR validation before the universal npm release"
-  },
-  "releaseValidation": {
-    "artifact": "dist/dsh-npm/dsh-filens-0.1.0.tgz",
-    "dependencies": "Desktop, read-only and alpha.3 candidate checks used exact CLI/OCR 0.5.2 tarballs in isolated profiles. The final public npm install used ordinary platform dependencies without overrides; all test profile files were restored.",
-    "publicRegistryInstall": {
-      "status": "passed",
-      "source": "public npm registry",
-      "command": "dsh plugin --profile filens-test add dsh-filens@0.1.0",
-      "runtime": "0.2.1-rc.5",
-      "profile": "filens-test",
-      "platform": "darwin-arm64",
-      "versions": {
-        "dsh-filens": "0.1.0",
-        "filens-cli": "0.5.2",
-        "filens-cli-darwin-arm64": "0.5.2",
-        "filens-ocr-darwin-arm64": "0.5.2"
-      },
-      "installedHashes": {
-        "cli": "6a14785dbb60182a6e571a08ee809a1dbdd778495b625f90023811fb4081c6a0",
-        "ocr": "09522e3641ed3ef4c1283b65c018aaf3d7d1a9cbdc777cb5771c9e5ce8a66774",
-        "preview": "9a0b7f9c06e7052495142569c8dba28c453ecab7006eee982c1df5570d8f9982"
-      },
-      "comparedAgainst": "Exact published npm tarball contents",
-      "dependencyOverrides": false,
-      "packageManager": "pnpm 11.28.5",
-      "releaseAgePolicy": "Default pnpm add automatically added exact requested versions to minimumReleaseAgeExclude; no manual bypass used",
-      "checks": [
-        "bundle installation mounts both Host entries",
-        "Preview client participates in the real DSH module graph",
-        "real webServer serves the iframe runtime",
-        "filens_capacity through the installed DSH tool pipeline (workspace-write)",
-        "filens_read through the installed DSH tool pipeline (workspace-write)",
-        "filens_read through the installed DSH tool pipeline (workspace-write)",
-        "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
-        "filens_search through the installed DSH tool pipeline (workspace-write)",
-        "filens_convert writes a new XLSX through the installed DSH tool pipeline",
-        "command parameters explicitly select disk workspace through the installed DSH pipeline",
-        "disable Tools independently while Preview stays active",
-        "disable Preview removes its route/client while Tools stays active",
-        "both entries re-enable without duplicate registrations"
-      ],
-      "observedAt": "2026-11-03T18:08:11.914Z",
-      "cleanup": {
-        "status": "passed",
-        "profileFilesRestored": true,
-        "checks": [
-          "fresh boot after package removal has no FiLens tools, client or resource route"
-        ]
-      }
-    },
-    "workspaceWrite": [
-      "0.2.1-rc.5",
-      "0.2.2-alpha.3"
-    ],
-    "readOnly": [
-      "0.2.1-rc.5",
-      "0.2.2-alpha.3"
-    ],
-    "desktopSamples": 4,
-    "installedBinaryAndPreviewHashesVerified": true,
-    "publicationReport": "docs/dsh-plugin-publication.json"
-  }
+  "limits": [
+    "No new real Desktop or Web profile installation validation for 0.1.1.",
+    "Linux/Windows native execution and remote/container shells were not tested.",
+    "402 extensions are registered; the browser suite exercises 12 formats."
+  ]
 }

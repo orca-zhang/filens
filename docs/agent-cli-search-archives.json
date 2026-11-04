@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-10-29T19:18:26.163Z",
+  "observedAt": "2026-11-04T05:35:05.534Z",
   "platform": "darwin-arm64",
   "requests": 53,
   "ocr": true,
@@ -223,8 +223,8 @@
       "exit": 0
     },
     {
-      "case": "unavailable OCR retains other members",
-      "exit": 3
+      "case": "intentional native-only archive search completes without OCR",
+      "exit": 0
     }
   ],
   "limitations": [

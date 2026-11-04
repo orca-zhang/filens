@@ -23,9 +23,9 @@ function invoke(args,input='',expected=0) {
   return response;
 }
 try {
-  const capacity = invoke(['capacity','--json','--no-ocr']).capacity;
+  const capacity = invoke(['capacity','--full','--json','--no-ocr']).capacity;
   const pairs = JSON.parse(await readFile(path.join(root,'wasm/converter-core/manifest/conversions.json'),'utf8'));
-  assert.deepEqual(capacity.conversionPairs,pairs,'CLI must discover conversion policy from the running WASM');
+  assert.deepEqual(capacity.conversionPairs,pairs.filter(p=>p.sourceFormat!==p.targetFormat),'CLI must discover cross-format pairs from the running WASM');
   for (const [fixture,target,entry,token] of [
     ['doc/sample.doc','docx','word/document.xml','Fixture'],
     ['doc/sample.wps','docx','word/document.xml','Fixture'],
@@ -36,7 +36,7 @@ try {
   ]) {
     const output = path.join(work,`${path.basename(fixture)}.${target}`);
     const r = invoke(['convert',path.join(fixtures,fixture),output]);
-    assert.equal(r.operation,'convert'); assert.equal(r.ok,true);
+    assert.equal(r.op,'convert'); assert.equal(r.ok,true);
     assert.equal(r.output.path,output); assert.equal(r.conversion.fidelity,'lightweight');
     const bytes = await readFile(output); assert.equal(r.output.bytes,bytes.length);
     const zip = unzipSync(bytes);
@@ -47,6 +47,11 @@ try {
     ['raw/sample.dng','jpg',[0xff,0xd8]],
     ['image/sample.icns','png',[0x89,0x50,0x4e,0x47]],
     ['image/sample.ppm','png',[0x89,0x50,0x4e,0x47]],
+    ['design/sample.psd','png',[0x89,0x50,0x4e,0x47]],
+    ['design/sample.psb','png',[0x89,0x50,0x4e,0x47]],
+    ['design/sample.ai','pdf',[0x25,0x50,0x44,0x46]],
+    ['design/sample.eps','pdf',[0x25,0x50,0x44,0x46]],
+    ['design/sample.ps','pdf',[0x25,0x50,0x44,0x46]],
   ]) {
     const output = path.join(work,`${path.basename(fixture)}.${target}`);
     const r = invoke(['convert',path.join(fixtures,fixture),'--output',output,'--json']);
@@ -66,7 +71,7 @@ try {
   assert.match(strFromU8(unzipSync(await readFile(destination))['word/document.xml']),/Replacement evidence 43/);
   assert.equal(invoke(['convert',text,text,'--force','--to','docx'],'',2).error.code,'invalid_request');
   const pipedOutput = path.join(work,'from-json.docx');
-  assert.equal(invoke([],JSON.stringify({operation:'convert',input:text,output:pipedOutput,options:{locale:'zh-CN'}})).ok,true);
+  assert.equal(invoke([],JSON.stringify({op:'convert',input:text,output:pipedOutput,options:{locale:'zh-CN'}})).ok,true);
   const disguised = path.join(work,'source.blob'); await copyFile(text,disguised);
   assert.equal(invoke(['convert',disguised,'--from','txt','--to','docx']).ok,true);
   const untouched = path.join(work,'untouched.pdf'); await writeFile(untouched,'keep this file');

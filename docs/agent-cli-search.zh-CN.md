@@ -14,7 +14,7 @@ npm run build:agent:lite
 标准输入协议：
 
 ```json
-{"operation":"search","input":"./documents","query":"预算 风险","format":"json","layout":true,"maxResults":10,"maxFiles":2000,"maxDepth":32,"cache":false}
+{"op":"search","input":"./documents","query":"预算 风险","format":"json","layout":true,"maxResults":10,"maxFiles":2000,"maxDepth":32,"cache":false}
 ```
 
 | 模式 | 用途与边界 |

@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const expectedConversions = [
+  ['psd', 'png'],
+  ['psb', 'png'],
+  ['ai', 'pdf'],
+  ['eps', 'pdf'],
+  ['ps', 'pdf'],
   ['docx', 'docx'],
   ['xlsx', 'xlsx'],
   ['pptx', 'pptx'],
@@ -311,7 +316,7 @@ const forbiddenDefaultSources = [
 const expectedConversionSources = new Set(expectedConversions.map(([sourceFormat]) => sourceFormat));
 const forbiddenManifestSources = forbiddenDefaultSources.filter((sourceFormat) => !expectedConversionSources.has(sourceFormat));
 
-const allowedTargets = new Set(['pptx', 'docx', 'xlsx', 'jpg', 'png']);
+const allowedTargets = new Set(['pptx', 'docx', 'xlsx', 'jpg', 'png', 'pdf']);
 const rawSources = new Set(['dng', 'cr2', 'cr3', 'nef', 'nrw', 'arw', 'sr2', 'srf', 'orf', 'rw2', 'rwl', 'raf', 'kdc', 'x3f', 'pef', 'srw', 'erf', 'mef', 'mos', 'mrw', '3fr', 'iiq']);
 const failures = [];
 let checkCount = 0;
@@ -376,6 +381,7 @@ async function verifyManifest() {
   for (const pair of normalized) {
     check(Boolean(pair.sourceFormat && pair.targetFormat), `empty conversion pair is not allowed: ${JSON.stringify(pair)}`);
     check(allowedTargets.has(pair.targetFormat), `unsupported conversion target: ${pairKey(pair)}`);
+    check(pair.targetFormat !== 'pdf' || ['ai', 'eps', 'ps'].includes(pair.sourceFormat), `only vector design sources may target PDF: ${pairKey(pair)}`);
     check(pair.targetFormat !== 'jpg' || rawSources.has(pair.sourceFormat), `only RAW sources may target JPG previews: ${pairKey(pair)}`);
     check(!pairKeys.has(pairKey(pair)), `duplicate conversion pair: ${pairKey(pair)}`);
     pairKeys.add(pairKey(pair));

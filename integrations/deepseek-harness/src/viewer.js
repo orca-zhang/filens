@@ -88,13 +88,15 @@ addEventListener('message', event => {
   const respond = (type, extra) => { if (generation === current) send(type, { requestId: event.data.requestId, ...extra }); };
   try {
     viewer = createPreview('#preview', {
-      src: event.data.bytes, name: event.data.name, locale: document.documentElement.lang,
+      src: event.data.bytes, name: event.data.name, locale: document.documentElement.lang, toolbar: 'minimal',
       onStateChange: state => {
         if (generation !== current) return;
         const capabilities = state.capabilities ?? {};
         host.dataset.family = state.family;
-        host.dataset.navigation = String(Boolean(capabilities.paged || capabilities.sheets || capabilities.chapters));
-        host.dataset.controls = String(['paged', 'sheets', 'chapters', 'zoom', 'fit', 'rotate', 'fullscreen', 'layers'].some(key => capabilities[key]));
+        host.dataset.page = String(state.pageIndex ?? state.activeSheetIndex ?? state.chapterIndex ?? 0);
+        host.dataset.zoom = String(Boolean(capabilities.zoom));
+        host.dataset.fullscreen = String(Boolean(capabilities.fullscreen));
+        host.dataset.controls = String(Boolean(capabilities.zoom || capabilities.fullscreen));
       },
       onRendered: () => requestAnimationFrame(() => { fitDocument(); respond('filens:rendered'); }),
       onError: error => respond('filens:error', { message: error.message }),

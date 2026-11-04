@@ -1,4 +1,7 @@
 {
+  "Model tools": "Eines del model",
+  "Structure": "Estructura",
+  "Tools": "Eines",
   "Prev": "Anterior",
   "Next": "Següent",
   "Fit": "Ajusta",
@@ -94,5 +97,7 @@
   "Download attachment": "Download attachment",
   "Retry": "Retry",
   "No previewer is configured for this attachment.": "No previewer is configured for this attachment.",
-  "Some document attachments could not be read.": "Some document attachments could not be read."
+  "Some document attachments could not be read.": "Some document attachments could not be read.",
+  "Model materials": "Materials del model",
+  "Selected materials": "Materials seleccionats"
 }

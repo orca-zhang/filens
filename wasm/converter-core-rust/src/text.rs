@@ -2,23 +2,25 @@
 //! invocation bridge; it never decides reading order or when OCR is needed.
 use super::*;
 use calamine::Reader as WorkbookReader;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::cell::RefCell;
 use std::path::{Component, PathBuf};
 
-mod catalog;
 mod archives;
+mod catalog;
+mod inspect;
 mod layout;
 mod ocr_image;
 mod odf_sheet;
 mod pdf_unicode;
+mod provenance;
 mod prune;
 mod raster;
 mod search;
 mod search_wire;
-mod stopwords;
 mod similarity;
+mod stopwords;
 
 pub(super) fn similarity(request: &Request, started: Instant) {
     similarity::execute(request, started);
@@ -40,6 +42,21 @@ struct Outcome {
     warnings: Vec<String>,
     error_code: String,
     error_message: String,
+    #[serde(skip)]
+    spans: Vec<provenance::Span>,
+    pages: Vec<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    media: Option<Vec<Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    media_scope: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    images: Option<Vec<Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    images_info: Option<Value>,
+    text_scope: &'static str,
+    #[serde(skip)]
+    ocr_results: Vec<Value>,
+    ocr: Value,
     #[serde(skip_serializing_if = "Option::is_none")]
     document: Option<Document>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -69,14 +86,32 @@ struct TextBlock {
     end_byte: usize,
     start_line: usize,
     end_line: usize,
+    #[serde(flatten)]
+    origin: provenance::Origin,
 }
 
+#[cfg(test)]
 fn document(text: &str) -> Document {
+    document_spans(text, &[])
+}
+fn document_spans(text: &str, spans: &[provenance::Span]) -> Document {
     let mut blocks = Vec::new();
     let mut start = 0;
     let mut line = 1;
+    let mut cursor = 0;
     while start < text.len() {
+        while cursor < spans.len() && spans[cursor].end <= start {
+            cursor += 1;
+        }
         let mut end = (start + 2048).min(text.len());
+        let span = spans
+            .get(cursor)
+            .filter(|v| v.start <= start && start < v.end);
+        if let Some(span) = span {
+            end = end.min(span.end);
+        } else if let Some(next) = spans.get(cursor).filter(|v| v.start > start) {
+            end = end.min(next.start);
+        }
         while !text.is_char_boundary(end) {
             end -= 1;
         }
@@ -93,6 +128,7 @@ fn document(text: &str) -> Document {
             end_byte: end,
             start_line: line,
             end_line: line + newlines - usize::from(value.ends_with('\n')),
+            origin: span.map(|s| s.origin.clone()).unwrap_or_default(),
         });
         line += newlines;
         start = end;
@@ -123,6 +159,8 @@ struct State {
     ocr_pages: usize,
     work: PathBuf,
     images: HashMap<String, Value>,
+    origin: provenance::Origin,
+    options: Value,
 }
 
 pub(super) fn active() -> bool {
@@ -135,12 +173,20 @@ fn append(value: &str) {
     STATE.with(|s| {
         let mut slot = s.borrow_mut();
         let s = slot.as_mut().unwrap();
+        if s.result.spans.len() >= 20_000
+            && s.result.spans.last().is_some_and(|v| v.origin != s.origin)
+        {
+            s.result.truncated = true;
+            return;
+        }
         let remaining = s.limit.saturating_sub(s.result.text.len());
         let mut end = value.len().min(remaining);
         while !value.is_char_boundary(end) {
             end -= 1;
         }
         s.result.text.push_str(&value[..end]);
+        let start = s.result.text.len() - end;
+        provenance::record(s, start, start + end);
         if end < value.len() {
             s.result.truncated = true;
         }
@@ -218,14 +264,14 @@ fn image(bytes: &[u8], extension: &str) -> Result<(), ConvertError> {
     if full() {
         return Ok(());
     }
+    if STATE.with(|s| s.borrow().as_ref().unwrap().options["ocr"] == "never") {
+        provenance::skip_ocr("OCR disabled (ocr=never); only native text was requested, image text is not included.");
+        return Ok(());
+    }
     let hash = format!("{:x}", Sha256::digest(bytes));
     let cached = STATE.with(|s| s.borrow().as_ref().unwrap().images.get(&hash).cloned());
     if let Some(result) = cached {
-        let start = layout::offset();
-        let text = result["text"].as_str().unwrap_or("");
-        append(&text);
-        append("\n");
-        layout::ocr(&result, start, layout::source_image());
+        emit_ocr(&result);
         return Ok(());
     }
     let ext: String = extension
@@ -242,24 +288,107 @@ fn image(bytes: &[u8], extension: &str) -> Result<(), ConvertError> {
     });
     // The same preprocessing applies to standalone images, PDF renders and
     // embedded document images before invoking an injected OCR provider.
-    let prepared = ocr_image::prepare(bytes)?;
+    let prepared = match ocr_image::prepare(bytes) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            provenance::ocr_result("failed", 0, 0, Some(&error.message));
+            partial("ocr_failed", provenance::scoped(&error.message));
+            return Ok(());
+        }
+    };
     fs::write(&path, &prepared).map_err(|e| io_error(format!("write OCR image: {e}")))?;
-    let result = host(json!({"operation":"ocr", "path":path,"layout":layout::enabled()}));
+    let result = host(json!({"operation":"ocr", "path":path,"layout":true}));
     let _ = fs::remove_file(path);
     match result {
         Ok(result) => {
-            let start = layout::offset();
-            let text = result["text"].as_str().unwrap_or("").to_owned();
-            append(&text);
-            append("\n");
-            layout::ocr(&result, start, layout::source_image());
+            emit_ocr(&result);
             STATE.with(|s| {
                 s.borrow_mut().as_mut().unwrap().images.insert(hash, result);
             });
         }
-        Err(error) => partial("ocr_failed", error.message),
+        Err(error) => {
+            provenance::ocr_result("failed", 0, 0, Some(&error.message));
+            partial("ocr_failed", provenance::scoped(&error.message));
+        }
     }
     Ok(())
+}
+
+fn emit_ocr(result: &Value) {
+    let threshold = STATE.with(|s| {
+        s.borrow().as_ref().unwrap().options["ocrMinConfidence"]
+            .as_f64()
+            .unwrap_or(0.8)
+    });
+    let mut filtered = result.clone();
+    let lines: Vec<String> = result["detail"]["lines"]
+        .as_array()
+        .map(|v| {
+            v.iter()
+                .map(|v| v.as_str().unwrap_or("").to_owned())
+                .collect()
+        })
+        .unwrap_or_else(|| {
+            result["text"]
+                .as_str()
+                .unwrap_or("")
+                .lines()
+                .map(str::to_owned)
+                .collect()
+        });
+    let raw = result["detail"]["raw_output"].as_str().unwrap_or("");
+    let start = layout::offset();
+    let original = STATE.with(|s| s.borrow().as_ref().unwrap().origin.clone());
+    let mut accepted = Vec::new();
+    let mut kept = Vec::new();
+    let mut dropped = 0;
+    for (i, line) in lines.iter().enumerate() {
+        let confidence = raw
+            .lines()
+            .find(|v| v.starts_with(&format!("TextBox[{i}]")))
+            .and_then(|v| v.split_once("score("))
+            .and_then(|(_, v)| v.split_once(')'))
+            .and_then(|(v, _)| v.parse::<f64>().ok())
+            .filter(|v| v.is_finite() && (0.0..=1.0).contains(v));
+        if line.trim().is_empty() {
+            kept.push(String::new());
+            continue;
+        }
+        if confidence.is_none_or(|v| v < threshold) && threshold > 0.0 {
+            dropped += 1;
+            kept.push(String::new());
+            continue;
+        }
+        STATE.with(|s| {
+            let mut s = s.borrow_mut();
+            let s = s.as_mut().unwrap();
+            s.origin.source = "ocr";
+            s.origin.confidence = confidence;
+            s.origin.confidence_kind = Some("detection");
+        });
+        append(line);
+        append("\n");
+        accepted.push(line.clone());
+        kept.push(line.clone());
+    }
+    STATE.with(|s| s.borrow_mut().as_mut().unwrap().origin = original);
+    provenance::ocr_result(if dropped > 0 { "partial" } else { "complete" }, accepted.len(), dropped, None);
+    if !accepted.is_empty() {
+        provenance::warn(
+            "OCR text is machine-recognized and may contain artifacts. Block confidence is detector confidence, not recognition accuracy or factual certainty.",
+        );
+    }
+    if dropped > 0 {
+        partial(
+            "ocr_low_confidence",
+            provenance::scoped(&format!(
+                "Discarded {dropped} OCR line(s) below detector confidence {threshold}, or without a score; verify the image if its text matters."
+            )),
+        );
+    }
+    filtered["text"] = json!(accepted.join("\n"));
+    filtered["detail"]["lines"] = json!(kept);
+    layout::ocr(&filtered, start, layout::source_image());
 }
 
 pub(super) fn paragraphs(paragraphs: &[DocxParagraph]) -> Result<(), ConvertError> {
@@ -337,7 +466,9 @@ pub(super) fn slides(slides: &[OdfSlide]) -> Result<(), ConvertError> {
 }
 
 fn extract_outcome(request: &Request) -> Outcome {
-    if request.options_json["archiveMembers"].is_array() { return archives::read_selected(request); }
+    if request.options_json["archiveMembers"].is_array() {
+        return archives::read_selected(request);
+    }
     let limit = request.options_json["maxBytes"]
         .as_u64()
         .unwrap_or(8 << 20)
@@ -366,19 +497,36 @@ fn extract_outcome(request: &Request) -> Outcome {
                 .unwrap_or(Path::new("/work"))
                 .into(),
             images: HashMap::new(),
+            origin: provenance::Origin::default(),
+            options: request.options_json.clone(),
         })
     });
-    let extracted = extract(request);
+    let extracted = inspect::validate(request).and_then(|_| extract(request));
+    let valid = !matches!(&extracted,Err(e) if e.code=="invalid_request");
     if let Err(error) = extracted {
         partial(error.code, error.message);
     }
+    if valid && (request.options_json["media"].as_bool() != Some(false) || request.options_json["images"] == true) {
+        if let Err(error) = inspect::media(request) {
+            partial(
+                if error.code == "invalid_request" { "invalid_request" } else { "media_inventory_failed" },
+                format!("Media inventory incomplete: {}", error.message),
+            );
+        }
+    }
     let mut result = STATE.with(|s| s.borrow_mut().take().unwrap().result);
+    let policy = request.options_json["ocr"].as_str().unwrap_or("auto");
+    result.text_scope = if policy == "never" { "native-text" } else { "native-and-ocr" };
+    result.ocr = json!({"policy":policy,"minConfidence":request.options_json["ocrMinConfidence"].as_f64().unwrap_or(0.8),"confidenceKind":"detection","complete":!result.ocr_results.iter().any(|v|v["status"]=="partial"||v["status"]=="failed"),"results":result.ocr_results,"note":"Detector confidence is not recognition accuracy. Inspect source=ocr blocks and warnings. Skipped OCR is outside native-text scope."});
     if let Some(layout) = &mut result.layout {
         layout::finish(layout, &result.text);
     }
     if !request.options_json["summary"].is_null() {
         let summarized = serde_json::from_value(request.options_json["summary"].clone())
-            .map_err(|e| ConvertError { code: "invalid_request", message: format!("summary options: {e}") })
+            .map_err(|e| ConvertError {
+                code: "invalid_request",
+                message: format!("summary options: {e}"),
+            })
             .and_then(|options| prune::apply(&mut result, options));
         if let Err(error) = summarized {
             result.complete = false;
@@ -403,7 +551,10 @@ fn extract_outcome(request: &Request) -> Outcome {
                 let appendix = if format == "markdown" {
                     format!("\n\n## Layout metadata\n\n```json\n{metadata}\n```\n")
                 } else {
-                    format!("<details id=\"filens-layout\"><summary>Layout metadata</summary><pre>{}</pre></details>\n",layout::html(&metadata))
+                    format!(
+                        "<details id=\"filens-layout\"><summary>Layout metadata</summary><pre>{}</pre></details>\n",
+                        layout::html(&metadata)
+                    )
                 };
                 if format == "html" {
                     result.rendered = result
@@ -420,7 +571,7 @@ fn extract_outcome(request: &Request) -> Outcome {
         result.layout = None;
     }
     if request.options_json["includeStructure"].as_bool() == Some(true) {
-        result.document = Some(document(&result.text));
+        result.document = Some(document_spans(&result.text, &result.spans));
     }
     result
 }
@@ -492,23 +643,42 @@ pub(super) fn extract_batch(request: &Request, started: Instant) {
                     let archive = archives.extract(&child);
                     truncated |= archive["truncated"] == true;
                     files.push(json!({"id":file.id,"archive":archive}));
-                    if truncated { break; }
+                    if truncated {
+                        break;
+                    }
                     continue;
                 }
-                let staged = file.copy_input.then(|| Path::new(&request.output).parent().unwrap_or(Path::new("/work"))
-                    .join(format!("batch-input.{}", child.source)));
-                let copied = staged.as_ref().map(|path| {
-                    let metadata = fs::metadata(&child.input).map_err(|e| e.to_string())?;
-                    if !metadata.is_file() || metadata.len() > MAX_INPUT { return Err("source exceeds 256 MiB or is not a regular file".to_string()); }
-                    fs::copy(&child.input, path).map_err(|e| e.to_string())?;
-                    child.input = path.to_string_lossy().into_owned();
-                    Ok(())
-                }).transpose();
+                let staged = file.copy_input.then(|| {
+                    Path::new(&request.output)
+                        .parent()
+                        .unwrap_or(Path::new("/work"))
+                        .join(format!("batch-input.{}", child.source))
+                });
+                let copied = staged
+                    .as_ref()
+                    .map(|path| {
+                        let metadata = fs::metadata(&child.input).map_err(|e| e.to_string())?;
+                        if !metadata.is_file() || metadata.len() > MAX_INPUT {
+                            return Err(
+                                "source exceeds 256 MiB or is not a regular file".to_string()
+                            );
+                        }
+                        fs::copy(&child.input, path).map_err(|e| e.to_string())?;
+                        child.input = path.to_string_lossy().into_owned();
+                        Ok(())
+                    })
+                    .transpose();
                 let content = match copied {
                     Ok(_) => extract_outcome(&child),
-                    Err(message) => Outcome { error_code: "io_error".into(), error_message: message, ..Default::default() },
+                    Err(message) => Outcome {
+                        error_code: "io_error".into(),
+                        error_message: message,
+                        ..Default::default()
+                    },
                 };
-                if let Some(path) = staged { let _ = fs::remove_file(path); }
+                if let Some(path) = staged {
+                    let _ = fs::remove_file(path);
+                }
                 if text_bytes + content.text.len() > 32 << 20 {
                     truncated = true;
                     break;
@@ -524,7 +694,9 @@ pub(super) fn extract_batch(request: &Request, started: Instant) {
         }
         result => ResultContract {
             error_code: "invalid_request".into(),
-            error_message: result.err().unwrap_or_else(|| "extraction batch exceeds 256 files".into()),
+            error_message: result
+                .err()
+                .unwrap_or_else(|| "extraction batch exceeds 256 files".into()),
             ..Default::default()
         },
     };
@@ -557,11 +729,13 @@ fn extract(request: &Request) -> Result<(), ConvertError> {
         "xps" | "oxps" => xps(input),
         "dwg" | "dxf" => cad(input, source),
         "png" | "jpg" | "jpeg" | "jpe" | "jfif" | "gif" | "bmp" | "tif" | "tiff" | "webp" => {
+            provenance::page(1, "image");
             let bytes = fs::read(input).map_err(|e| io_error(e.to_string()))?;
             image(&bytes, source)
         }
         "pbm" | "pgm" | "ppm" | "pnm" | "pfm" | "hdr" | "exr" | "mat" | "fits" | "fit" | "fts"
         | "v" | "vips" => {
+            provenance::page(1, "image");
             let bytes = raster::png(input, source)?;
             image(&bytes, "png")
         }
@@ -575,6 +749,7 @@ fn extract(request: &Request) -> Result<(), ConvertError> {
             &fs::read(input).map_err(|e| io_error(e.to_string()))?,
         )?),
         _ if is_raw_source(source) || source == "raw" => {
+            provenance::page(1, "image");
             let output = STATE.with(|s| s.borrow().as_ref().unwrap().work.join("raw-preview.jpg"));
             convert_raw_preview(input, output.to_str().unwrap(), "jpg")?;
             let bytes = fs::read(&output).map_err(|e| io_error(e.to_string()))?;
@@ -584,9 +759,12 @@ fn extract(request: &Request) -> Result<(), ConvertError> {
         _ => {
             static TEXT_SOURCES: std::sync::OnceLock<HashSet<String>> = std::sync::OnceLock::new();
             let sources = TEXT_SOURCES.get_or_init(|| {
-                serde_json::from_str::<Vec<ConversionPair>>(CONVERSIONS).unwrap()
-                    .into_iter().filter(|p| p.target_format == "docx")
-                    .map(|p| p.source_format).collect()
+                serde_json::from_str::<Vec<ConversionPair>>(CONVERSIONS)
+                    .unwrap()
+                    .into_iter()
+                    .filter(|p| p.target_format == "docx")
+                    .map(|p| p.source_format)
+                    .collect()
             });
             if !sources.contains(source) {
                 return Err(ConvertError {
@@ -799,15 +977,31 @@ fn relationships(
     Ok(result)
 }
 fn part_image(z: &mut ZipArchive<File>, path: &str) -> Result<(), ConvertError> {
-    image(
+    let previous = STATE.with(|s| {
+        s.borrow_mut()
+            .as_mut()
+            .unwrap()
+            .origin
+            .media
+            .replace(path.into())
+    });
+    let result = image(
         &entry(z, path)?,
         Path::new(path)
             .extension()
             .and_then(|p| p.to_str())
             .unwrap_or("bin"),
-    )
+    );
+    STATE.with(|s| s.borrow_mut().as_mut().unwrap().origin.media = previous);
+    result
 }
 fn xml_part(z: &mut ZipArchive<File>, part: &str) -> Result<(), ConvertError> {
+    STATE.with(|s| {
+        let mut s = s.borrow_mut();
+        let s = s.as_mut().unwrap();
+        s.origin.source_part = Some(part.into());
+        s.origin.shape = None;
+    });
     let rels = relationships(z, part)?;
     let bytes = xml_entry(z, part)?;
     let mut reader = Reader::from_reader(bytes.as_slice());
@@ -817,6 +1011,11 @@ fn xml_part(z: &mut ZipArchive<File>, part: &str) -> Result<(), ConvertError> {
     let mut binary: Option<String> = None;
     let mut structure: Vec<(Vec<u8>, Option<usize>)> = Vec::new();
     let mut tables: Vec<(Option<usize>, usize, usize)> = Vec::new();
+    let presentation = part.starts_with("ppt/slides/");
+    // Explicit shape metadata lets callers identify native headings without
+    // reparsing the package. It does not infer titles or resolve inherited fonts.
+    let mut shape_metadata: HashMap<String, Value> = HashMap::new();
+    let mut current_shape: Option<String> = None;
     loop {
         if full() {
             break;
@@ -827,6 +1026,42 @@ fn xml_part(z: &mut ZipArchive<File>, part: &str) -> Result<(), ConvertError> {
             Ok(Event::Start(v)) | Ok(Event::Empty(v)) => {
                 let name = v.name();
                 let local = local_name(name.as_ref());
+                if local == b"cNvPr" {
+                    current_shape = attribute(&v, b"id");
+                    if presentation {
+                        if let Some(id) = &current_shape {
+                            shape_metadata.insert(
+                                id.clone(),
+                                json!({"name":attribute(&v,b"name"),"placeholder":"none"}),
+                            );
+                        }
+                    }
+                    STATE.with(|s| {
+                        s.borrow_mut().as_mut().unwrap().origin.shape = attribute(&v, b"id")
+                    });
+                }
+                if presentation {
+                    if let Some(metadata) = current_shape
+                        .as_ref()
+                        .and_then(|id| shape_metadata.get_mut(id))
+                    {
+                        if local == b"ph" {
+                            metadata["placeholder"] =
+                                json!(attribute(&v, b"type").unwrap_or_else(|| "obj".into()));
+                        }
+                        if matches!(local, b"rPr" | b"defRPr" | b"endParaRPr") {
+                            if let Some(size) = attribute(&v, b"sz")
+                                .and_then(|v| v.parse::<u64>().ok())
+                                .filter(|n| *n > 0 && *n <= 400000)
+                            {
+                                let size = size as f64 / 100.;
+                                if size > metadata["fontSize"].as_f64().unwrap_or(0.) {
+                                    metadata["fontSize"] = json!(size);
+                                }
+                            }
+                        }
+                    }
+                }
                 if !empty && layout::enabled() {
                     let kind = match local {
                         b"tbl" => Some("table"),
@@ -972,6 +1207,10 @@ fn xml_part(z: &mut ZipArchive<File>, part: &str) -> Result<(), ConvertError> {
                     }
                     _ => {}
                 }
+                if matches!(local, b"sp" | b"pic" | b"graphicFrame") {
+                    current_shape = None;
+                    STATE.with(|s| s.borrow_mut().as_mut().unwrap().origin.shape = None);
+                }
                 if structure.last().is_some_and(|(n, _)| n.as_slice() == local) {
                     let (_, token) = structure.pop().unwrap();
                     layout::close(token);
@@ -1004,6 +1243,25 @@ fn xml_part(z: &mut ZipArchive<File>, part: &str) -> Result<(), ConvertError> {
         layout::close(token);
         layout::properties(token, json!({"incomplete":true}));
     }
+    if presentation {
+        STATE.with(|slot| {
+            let mut slot = slot.borrow_mut();
+            for span in &mut slot.as_mut().unwrap().result.spans {
+                if span.origin.source == "text" && span.origin.source_part.as_deref() == Some(part) {
+                    if let Some(metadata) = span
+                        .origin
+                        .shape
+                        .as_ref()
+                        .and_then(|id| shape_metadata.get(id))
+                    {
+                        span.origin.shape_name = metadata["name"].as_str().map(str::to_owned);
+                        span.origin.placeholder = metadata["placeholder"].as_str().map(str::to_owned);
+                        span.origin.max_explicit_font_size_pt = metadata["fontSize"].as_f64();
+                    }
+                }
+            }
+        });
+    }
     Ok(())
 }
 fn openxml(input: &str, family: &str) -> Result<(), ConvertError> {
@@ -1026,36 +1284,22 @@ fn openxml(input: &str, family: &str) -> Result<(), ConvertError> {
             xml_part(&mut z, &part)?;
         }
     } else {
-        let part = "ppt/presentation.xml";
-        let rels = relationships(&mut z, part)?;
-        let bytes = xml_entry(&mut z, part)?;
-        let mut reader = Reader::from_reader(bytes.as_slice());
-        let mut slide_index = 0;
-        loop {
-            match reader.read_event() {
-                Ok(Event::Start(v)) | Ok(Event::Empty(v))
-                    if local_name(v.name().as_ref()) == b"sldId" =>
-                {
-                    // local_name(Id) differs from the lower-case relationship id.
-                    if let Some(path) = v
-                        .attributes()
-                        .flatten()
-                        .find(|a| a.key.as_ref().ends_with(b":id"))
-                        .map(|a| String::from_utf8_lossy(&a.value).into_owned())
-                        .and_then(|id| rels.get(&id))
-                    {
-                        slide_index += 1;
-                        layout::page(slide_index, None, None, "", "slide");
-                        xml_part(&mut z, path)?;
-                    }
-                    if full() {
-                        break;
-                    }
-                }
-                Ok(Event::Eof) => break,
-                Err(e) => return Err(parse_error(e.to_string())),
-                _ => {}
+        let parts = inspect::slide_parts(&mut z)?;
+        let range = STATE.with(|s| {
+            s.borrow().as_ref().unwrap().options["slides"]
+                .as_str()
+                .unwrap_or("")
+                .to_owned()
+        });
+        for index in provenance::selected(&range, parts.len() as u64)? {
+            if full() {
+                break;
             }
+            let part = &parts[index as usize - 1];
+            layout::page(index, None, None, "", "slide");
+            let start = layout::offset();
+            xml_part(&mut z, part)?;
+            provenance::finish_page(index, "slide", start, Some(part));
         }
     }
     Ok(())
@@ -1429,7 +1673,7 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
                 .result
                 .warnings
                 .push(format!(
-                    "PDF text mapping unavailable; using OCR for {} page(s)",
+                    "PDF text mapping unavailable on {} page(s); OCR may be required",
                     prepared.ocr_pages.len()
                 ))
         });
@@ -1437,7 +1681,17 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
     let pages = host(json!({"operation":"pdf_open","path":pdf_input}))?["pages"]
         .as_u64()
         .ok_or_else(|| parse_error("missing PDF page count".into()))?;
-    for page in 0..pages {
+    let (range, policy) = STATE.with(|s| {
+        let s = s.borrow();
+        let o = &s.as_ref().unwrap().options;
+        (
+            o["pages"].as_str().unwrap_or("").to_owned(),
+            o["ocr"].as_str().unwrap_or("auto").to_owned(),
+        )
+    });
+    for index in provenance::selected(&range, pages)? {
+        let page = index - 1;
+        let page_start = layout::offset();
         if full() {
             break;
         }
@@ -1476,12 +1730,13 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
                     .result
                     .warnings
                     .push(format!(
-                        "PDF text mapping invalid on page {}; using OCR",
+                        "PDF native text mapping invalid on page {}; OCR may be required",
                         page + 1
                     ))
             });
         }
-        if !prepared.ocr_pages.contains(&page)
+        if policy != "always"
+            && !prepared.ocr_pages.contains(&page)
             && !invalid_mapping
             && text.chars().any(|c| !c.is_whitespace() && !c.is_control())
         {
@@ -1491,6 +1746,12 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
             if let Some(geometry) = &geometry {
                 layout::pdf_rects(geometry, &text, start);
             }
+            provenance::finish_page(index, "page", page_start, None);
+            continue;
+        }
+        if policy == "never" {
+            provenance::skip_ocr(&format!("Page {index} requires OCR; skipped because ocr=never; native text only was requested."));
+            provenance::finish_page(index, "page", page_start, None);
             continue;
         }
         if !ocr_page() {
@@ -1505,6 +1766,7 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
             }
             Err(e) => partial("page_failed", e.message),
         }
+        provenance::finish_page(index, "page", page_start, None);
     }
     Ok(())
 }
@@ -1806,8 +2068,29 @@ mod tests {
                 ocr_pages: 0,
                 work: std::env::temp_dir(),
                 images: HashMap::new(),
+                origin: provenance::Origin::default(),
+                options: json!({}),
             })
         });
+    }
+    #[test]
+    fn ocr_scores_filter_noise_and_keep_unambiguous_origins() {
+        start(4096);
+        provenance::page(2, "slide");
+        append("Native title\n");
+        emit_ocr(
+            &json!({"text":"noise\nInvoice 42\nunscored","detail":{"lines":["noise","Invoice 42","unscored"],"raw_output":"TextBox[0](+padding)[score(0.2),x]\nTextBox[1](+padding)[score(0.96),x]"}}),
+        );
+        append("Native footer\n");
+        let result = STATE.with(|s| s.borrow_mut().take().unwrap().result);
+        assert_eq!(result.text, "Native title\nInvoice 42\nNative footer\n");
+        assert!(!result.complete);
+        assert_eq!(result.spans.len(), 3);
+        assert_eq!(result.spans[1].origin.source, "ocr");
+        assert_eq!(result.spans[1].origin.confidence, Some(0.96));
+        assert_eq!(result.spans[1].origin.slide, Some(2));
+        assert_eq!(result.spans[2].origin.source, "text");
+        assert!(result.warnings.iter().any(|v| v.contains("Discarded 2")));
     }
     #[test]
     fn utf16_xml_parts_and_invalid_units() {

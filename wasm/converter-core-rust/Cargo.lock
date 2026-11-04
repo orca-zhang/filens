@@ -340,6 +340,8 @@ dependencies = [
  "cadkit-core",
  "calamine",
  "djvu-rs",
+ "efterscript-remelt",
+ "efterscript-vm",
  "fitsrs",
  "flate2",
  "image",
@@ -572,6 +574,59 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26f2a8b3e564eba0877223dc343703ad0385794e882e6d13f3a4dd5c6b1f41ac"
 dependencies = [
  "cipher",
+]
+
+[[package]]
+name = "efterscript-codec"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d36db02fc5df14ee0f18bb49f775a2a98ec5f087c895a0c874cbbcc0c758319"
+
+[[package]]
+name = "efterscript-fonts"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0e59f4564044b7809b5f805886956893d35cf592c2d105d34f4e5cbe827311c"
+
+[[package]]
+name = "efterscript-graphics"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "336be647851a18335b51edf2da45aa5515c20a13840a67e37d3d39080c91e53d"
+dependencies = [
+ "efterscript-fonts",
+ "efterscript-vm",
+]
+
+[[package]]
+name = "efterscript-pdf"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb7098cd9264faf11af2b2be01168ba80a00a196ec4971ea8905c203a4f2a25b"
+dependencies = [
+ "efterscript-codec",
+]
+
+[[package]]
+name = "efterscript-remelt"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d74c677a783b62ce053d9f40bcd42bd4a97216135560642951f25b964735332"
+dependencies = [
+ "efterscript-fonts",
+ "efterscript-graphics",
+ "efterscript-pdf",
+ "efterscript-vm",
+]
+
+[[package]]
+name = "efterscript-vm"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f54cc06c54fb8917872cde0fd8fd57dfcbbf42113cd4f49e11e918de09dc8be"
+dependencies = [
+ "efterscript-codec",
+ "efterscript-fonts",
 ]
 
 [[package]]

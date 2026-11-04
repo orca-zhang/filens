@@ -7,13 +7,14 @@ import { createWasmPanoramaProcessor, type PanoramaProcessor } from '@filens/pan
 import coreWasm from '../../../wasm/converter-core/dist/converter-core.wasm?url';
 import imageWasm from '../../../wasm/converter-image/dist/converter-image.wasm?url';
 import officeWasm from '../../../wasm/converter-core/dist/converter-office.wasm?url';
+import postscriptWasm from '../../../wasm/converter-core/dist/converter-postscript.wasm?url';
 export { isArchiveVolumeName, selectArchiveVolumes } from '@filens/core/archive-volumes';
 
 export interface BrowserPreviewOptions extends PreviewOptions {
   src: PreviewSource | SourceDescriptor;
   name?: string;
   extension?: string;
-  toolbar?: boolean;
+  toolbar?: boolean | 'minimal';
   /** ZimaOS codes (zh_CN) and BCP 47 tags (zh-CN); defaults to browser language. */
   locale?: string;
   /** English source phrases mapped to host translations. */
@@ -30,7 +31,7 @@ export interface BrowserPreviewOptions extends PreviewOptions {
 export function createPreview(element: Element | string, options: BrowserPreviewOptions) {
   const props = shallowReactive({
     ...options,
-    converter: options.converter ?? createWasmConverterClient({ wasm: coreWasm, imageWasm, officeWasm }),
+    converter: options.converter ?? createWasmConverterClient({ wasm: coreWasm, imageWasm, officeWasm, postscriptWasm }),
     panoramaProcessor: options.panoramaProcessor ?? createWasmPanoramaProcessor({ wasm: coreWasm, imageWasm })
   });
   const app = createApp({ render: () => h(Preview, props) });

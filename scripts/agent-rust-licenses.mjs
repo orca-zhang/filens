@@ -44,7 +44,7 @@ async function upstreamLicense(dependency, base) {
 export async function writeRustLicenses(directory, options = {}) {
   const graphs = options.graphs ?? [
     ...['aarch64-apple-darwin','x86_64-unknown-linux-gnu','aarch64-unknown-linux-gnu','x86_64-pc-windows-gnu'].map(target=>({manifest:'cli/Cargo.toml',target})),
-    {manifest:'wasm/converter-core-rust/Cargo.toml',target:'wasm32-wasip1',features:'text-extraction'},
+    {manifest:'wasm/converter-core-rust/Cargo.toml',target:'wasm32-wasip1',features:'text-extraction,postscript'},
     {manifest:'wasm/converter-image-rust/Cargo.toml',target:'wasm32-wasip1'}
   ];
   const metadata = await Promise.all(graphs.map(async ({manifest,target,features})=>
@@ -82,5 +82,8 @@ export async function writeRustLicenses(directory, options = {}) {
     for (const file of files.sort()) await include(file);
   }
   await mkdir(directory,{recursive:true});
+  if (dependencies.some(p => p.name === 'efterscript-fonts')) {
+    sections.push(await readFile(path.join(root, 'wasm/converter-core/THIRD-PARTY-NOTICES.txt'), 'utf8'));
+  }
   await writeFile(path.join(directory,options.filename ?? 'rust-cli.txt'),sections.join('\n')+'\n');
 }

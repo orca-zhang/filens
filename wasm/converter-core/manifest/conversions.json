@@ -1,4 +1,9 @@
 [
+  { "sourceFormat": "psd", "targetFormat": "png" },
+  { "sourceFormat": "psb", "targetFormat": "png" },
+  { "sourceFormat": "ai", "targetFormat": "pdf" },
+  { "sourceFormat": "eps", "targetFormat": "pdf" },
+  { "sourceFormat": "ps", "targetFormat": "pdf" },
   { "sourceFormat": "docx", "targetFormat": "docx" },
   { "sourceFormat": "xlsx", "targetFormat": "xlsx" },
   { "sourceFormat": "pptx", "targetFormat": "pptx" },

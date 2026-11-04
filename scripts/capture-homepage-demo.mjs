@@ -28,7 +28,7 @@ await mkdir(output, { recursive: true });
 
 // Keep the captured previews and downloadable showcase files in sync.
 if (!reuseSamples && !mediaOnly && !readmeOnly && !ebookOnly) {
-  await import('./generate-showcase-helmet.mjs');
+  await import('./generate-model-showcase.mjs');
   if (!modelOnly) await import('./generate-showcase-documents.mjs');
 }
 
@@ -192,12 +192,12 @@ async function captureHomepageDemo() {
   await model.waitFor();
   await videoPage.locator('.wb-runtime-timings').waitFor();
   const modelPosterTime = (Date.now() - recordingStart) / 1000 + 4.3;
-  await chapter('维京牛角头盔，旋转查看每一处细节', 'Orbit a Viking helmet. Explore every detail.', 5800, async () => {
+  await chapter('越野车玩具，旋转查看每一处细节', 'Orbit a trail rover. Explore every detail.', 5800, async () => {
     await model.hover();
     for (let i = 0; i < 4; i++) await videoPage.mouse.wheel(0, -100);
     await videoPage.waitForTimeout(500);
     const bounds = await model.boundingBox();
-    if (!bounds) throw new Error('The helmet canvas is unavailable for recording.');
+    if (!bounds) throw new Error('The model canvas is unavailable for recording.');
     const x = bounds.x + bounds.width / 2;
     const y = bounds.y + bounds.height / 2;
     await videoPage.mouse.move(x - 90, y);

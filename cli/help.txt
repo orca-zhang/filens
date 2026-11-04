@@ -5,14 +5,22 @@ filens — local document reading and conversion for agents
   filens '理解 "meeting notes.docx"，以 JSON 输出'
   filens 'read "report.pages" as json'
   filens '提取 "report.pdf" 的关键内容，关注预算和风险，保留30%，以 JSON 输出'
-  filens summarize report.pdf --query 'budget risk' --summary-chars 1000 --json
+  filens capacity --op read
+  filens capacity --query ocr --section formats
+  filens capacity --from pptx --to pdf
+  filens capacity 'docx>?'
+  filens capacity '?>pdf'
+  filens capacity --section conversionPairs --format tsv
+  filens read slides.pptx --slides 1-3 --ocr never --json
+  filens read slides.pptx --images --max-images 4 --ocr never --json
+  filens excerpt report.pdf --query 'budget risk' --summary-chars 1000 --json
   filens '在 "./documents" 中搜索 "预算 风险"，以 JSON 输出'
   filens search ./documents --query 'budget risk' --json
   filens '在 "documents.zip" 中搜索 "预算"，以 JSON 输出' --layout
   filens read 'documents.zip!/attachments.tar.gz!/report.pdf' --json
   filens duplicates ./files --json
   filens similar-images ./photos --threshold 8 --json
-  echo '{"input":"report.pdf","operation":"understand"}' | filens
+  echo '{"input":"report.pdf","op":"understand"}' | filens
   filens convert report.doc --output report.docx --json
   filens convert data.csv result.xlsx
   filens convert photo.dng --to jpg
@@ -20,11 +28,14 @@ filens — local document reading and conversion for agents
   filens preview drawing.step --no-open --json
 
 Optional commands: capacity (capabilities), read, extract, understand, layout,
-                   summarize (prune), search, similar, duplicates, similar-images, convert, preview.
+                   excerpt, summarize (prune), search, similar, duplicates, similar-images, convert, preview.
 Preview: FILE [--port 0] [--no-open] [--json] [--assets DIR]. Browser-local UI;
          requires built preview assets (npm run build:preview / FILENS_PREVIEW_DIR).
 Optional flags: --json, --format text|json|markdown|html|yaml|xml|csv|tsv,
                 --layout, --input PATH, --max-bytes N,
+                --ocr auto|never|always, --ocr-min-confidence 0.8,
+                --slides 1-3,5 (OpenXML), --pages 2,4 (PDF), --no-media,
+                --images, --max-images 1..16 (default 4), --image MEDIA_NAME (repeatable),
                 --timeout 2m, --wasm PATH, --no-ocr, --help,
                 --workspace memory|disk (default memory; disk creates request-local temporary files).
 Workspace mode also accepts the JSON field "workspace". Memory never spills to disk.
@@ -33,6 +44,24 @@ Conversion flags: --output/-o PATH, --to/--target EXT, --from/--source EXT,
                   --password VALUE, --locale VALUE, --force.
 Summary flags: --query TEXT, --summary-chars N (default 2000, max 20000),
                --summary-ratio R (default 0.3; >0 and <=1).
+Capacity defaults to short signatures and counts. Conversion lists use one
+source>target,target;source>target string. --json keeps structured
+output; --format tsv/csv uses real rows; --full restores detailed metadata.
+Filters: --from/--to EXT, --op NAME (or alias), --query KEYWORDS (case-insensitive,
+all whitespace-separated terms must match metadata). Exact format + operation,
+e.g. --query "pptx read", resolves to --from pptx --op read.
+Directional queries: 'docx>?', '?>pdf', 'docx>pdf' (also --query / JSON query).
+These return declared cross-format pairs only; same-format pairs are omitted from lists
+and counts. Quote > and ? in the shell.
+Select sections with --section/--fields operations,formats,conversionPairs (CSV).
+Filters combine; unmatched collections are empty, never inferred conversion routes.
+OCR blocks are marked source=ocr; confidence is detection confidence, not text accuracy.
+Intentional ocr=never succeeds within textScope=native-text; skip warnings remain.
+Office media inventories cover the whole package, including unused images.
+--images returns decoded embedded Office images as stdout JSON base64, not rendered
+pages. Select by slide or --image; inspect imagesInfo for limits and failures.
+Excerpts target long documents and preserve complete sentences/paragraphs. Short text
+fitting --summary-chars is returned whole without a query. No sentence is clipped.
 Summaries select original excerpts using local density/TF-IDF/BM25/diversity scoring.
 They use no language model. JSON includes source offsets, omissions and clipping.
 Search flags: --query TEXT, --search-mode bm25|exact|files, --max-results N,

@@ -1,5 +1,7 @@
 # 无 LLM 的关键内容提取
 
+CLI 0.5.4：`excerpt` 保持自己的 `op` 名；无查询且全文不超过 `summaryChars` 时全文返回，不受比例限制。句段容不下预算时返回空摘录和警告，不截断句子。CLI 0.5.2 仍采用旧裁剪规则。
+
 0.3.0 提供 `summarize`（别名 `prune`），可在 Full / Lite 中使用。它按密度、词项相关性与相似距离选择原文片段，无需语言模型、向量模型或网络服务。扫描件先经过已有 RapidOCR，文本文件无需 OCR。npm 0.2.0 和早先 Windows 候选 ZIP 不包含这项能力；请安装 0.3.0 或用最新源码构建，并检查 `capacity.operations` 是否包含 `summarize`。
 
 ```sh
@@ -18,7 +20,7 @@ Windows 使用对应构建目录中的 `filens.exe`。包含公开合成会议�
 标准输入也接受 JSON 请求：
 
 ```json
-{"operation":"summarize","input":"report.pdf","query":"预算 风险","summaryChars":800,"summaryRatio":0.3,"format":"json","layout":true}
+{"op":"summarize","input":"report.pdf","query":"预算 风险","summaryChars":800,"summaryRatio":0.3,"format":"json","layout":true}
 ```
 
 `query` 可省略；`summaryChars` 默认 2000、范围 1–20000；`summaryRatio` 默认 0.3、范围大于 0 且不超过 1。比例先换算成向上取整的字符预算，再由 `summaryChars` 限制上限，按 Unicode 字符计数，包含片段间的换行。可选参数为 `--query`、`--summary-chars`、`--summary-ratio`；自然语言支持“关注/聚焦”“保留30%”“最多800字”，英文支持 `focusing on "budget risk"`、`keep 30%`、`at most 800 characters`。涉及空格或多个关注词时，给文件路径和关注词分别加引号。
@@ -28,7 +30,7 @@ Windows 使用对应构建目录中的 `filens.exe`。包含公开合成会议�
 | 未指定关注主题 | 结合 TF-IDF 与全文词项中心的相似度、有效文字密度、标题、位置、数字/否定标记和决议/风险等提示词评分。 |
 | 指定关注主题 | BM25 词项匹配优先，再结合基础评分；中文使用字符和相邻双字特征，英文按词处理。 |
 | 多个片段重复 | 余弦相似度与 MMR 风格的增量选择降低重复，近似重复中数字或否定标记不同的片段不会直接去重。 |
-| 控制输出长度 | 在字符预算内优先保留完整片段，再按原文顺序输出；预算过小时允许截短，并明确标记。 |
+| 控制输出长度 | 在字符预算内优先保留完整片段，再按原文顺序输出；CLI 0.5.4 预算过小时返回空摘录和警告，不截断句段；无查询且全文可放进 maxChars 时直接返回全文。 |
 
 这借鉴了 Blue 的分段、BM25/结构评分、预算裁剪流程。算法在共享前端 WASM 核心中实现，CLI 和 Go 集成只传递请求与结果，未复制 Blue 的 Go 算法。
 

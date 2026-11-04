@@ -132,7 +132,7 @@ pub fn run(args: &[String]) -> Result<i32> {
     if structured {
         println!(
             "{}",
-            json!({"ok":true,"operation":"preview","mode":"serve","transport":"loopback-http","url":url,"source":{"name":input.file_name().unwrap().to_string_lossy()},"stop":"Ctrl-C"})
+            json!({"ok":true,"op":"preview","mode":"serve","transport":"loopback-http","url":url,"source":{"name":input.file_name().unwrap().to_string_lossy()},"stop":"Ctrl-C"})
         );
     } else {
         println!("{url}\nBrowser-local preview. Press Ctrl-C to stop.");

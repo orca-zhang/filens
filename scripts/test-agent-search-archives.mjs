@@ -176,8 +176,11 @@ try {
       const unit=hit.path.endsWith('.pdf')?'pt':'px';
       assert.ok(hit.excerpts.some(e=>e.layout.blocks.some(b=>b.bounds?.unit===unit)));
     }
-    const unavailable=search('unavailable OCR retains other members',outer,'ARCHIVE2026',['--no-ocr'],3);
-    assert.equal(unavailable.search.matchedFiles,4);
+    const nativeOnly=search('intentional native-only archive search completes without OCR',outer,'ARCHIVE2026',['--no-ocr']);
+    assert.equal(nativeOnly.search.matchedFiles,4);
+    assert.equal(nativeOnly.search.complete,true);
+    assert.equal(nativeOnly.search.scope.textScope,'native-text');
+    assert.equal(nativeOnly.content.textScope,'native-text');
   }
   assert.deepEqual((await readdir(corpus)).sort(),before);
   assert.deepEqual(await readdir(temporary),[],'CLI left temporary extraction files behind');

@@ -15,7 +15,7 @@ export interface BrowserPreviewOptions {
   contentType?: string;
   password?: string;
   fit?: 'contain' | 'width' | 'height' | 'none';
-  toolbar?: boolean;
+  toolbar?: boolean | 'minimal';
   /** Native first; local MP4/MOV recovery without a conversion service. Off by default. */
   browserMedia?: boolean | { allowTranscoding?: boolean; fetch?: typeof globalThis.fetch };
   /** ZimaOS codes (zh_CN) and BCP 47 tags (zh-CN); defaults to browser language. */

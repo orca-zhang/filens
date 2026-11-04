@@ -20,7 +20,7 @@ try {
     'word/media/scan.png': await readFile(path.join(fixtures, 'scan-transparent.png'))
   }));
 
-  const capabilities = json(['你能做什么？以 JSON 输出']);
+  const capabilities = json(['你能做什么？以 JSON 输出', '--full']);
   assert.equal(capabilities.capacity.ocr.available, true);
   assert.equal(capabilities.capacity.ocr.provider, 'rapidocr-ncnn');
   assert.equal(capabilities.capacity.ocr.openmpThreads, 2);
@@ -39,10 +39,10 @@ try {
   const text = '中文证据\nBudget 42\n';
   await writeFile(textPath, text);
   const read = json([`理解 "${textPath}"，以 JSON 输出`]);
-  assert.equal(read.operation, 'understand');
+  assert.equal(read.op, 'understand');
   assert.equal(read.content.text.trim(), text.trim());
   verifyEvidence(read);
-  const piped = json([], JSON.stringify({ input: textPath, operation: 'understand' }));
+  const piped = json([], JSON.stringify({ input: textPath, op: 'understand' }));
   assert.equal(piped.content.text, read.content.text);
   const plain = invoke([`读取 "${textPath}"，以纯文本输出`]);
   assert.equal(plain.stdout, read.content.text);
@@ -62,11 +62,13 @@ try {
 
   const embedded = json(['understand', path.join(work, 'embedded.docx'), '--json']);
   assert.match(embedded.content.text, /BEFORE 中文[\s\S]*FILENS2026[\s\S]*AFTER/);
-  const missingOCR = json(['read', path.join(work, 'embedded.docx'), '--json', '--no-ocr'], undefined, 3);
-  assert.equal(missingOCR.ok, false);
-  assert.equal(missingOCR.content.complete, false);
-  assert.equal(missingOCR.error.code, 'ocr_failed');
-  assert.match(missingOCR.content.text, /BEFORE 中文[\s\S]*AFTER/);
+  const nativeOnly = json(['read', path.join(work, 'embedded.docx'), '--json', '--no-ocr']);
+  assert.equal(nativeOnly.ok, true);
+  assert.equal(nativeOnly.content.complete, true);
+  assert.equal(nativeOnly.content.textScope, 'native-text');
+  assert.ok(nativeOnly.content.warnings.some(v => v.includes('OCR disabled')));
+  assert.match(nativeOnly.content.text, /BEFORE 中文[\s\S]*AFTER/);
+  assert.doesNotMatch(nativeOnly.content.text, /FILENS2026/);
   checks++;
 
   const truncated = json(['read', textPath, '--json', '--max-bytes', '4'], undefined, 3);
@@ -98,7 +100,7 @@ try {
   } catch (error) { if (error.code !== 'ENOENT') throw error; }
   checks++;
   binary = path.join(root, 'dist', 'agent-lite', process.platform === 'win32' ? 'filens.exe' : 'filens');
-  const liteCapacity = json(['capacity', '--json']);
+  const liteCapacity = json(['capacity', '--full', '--json']);
   assert.equal(liteCapacity.capacity.profile, 'lite');
   assert.equal(liteCapacity.capacity.ocr.enabled, false);
   assert.equal(liteCapacity.capacity.ocr.available, false);

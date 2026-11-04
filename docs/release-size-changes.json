@@ -1,129 +1,113 @@
 {
-  "date": "2026-11-03",
-  "tag": "v0.6.1",
+  "date": "2026-11-04",
+  "tag": "v0.6.3",
   "baseline": "v0.6.0 (preview/SDK), CLI 0.5.0",
   "unit": "bytes",
   "runtime": {
     "split": {
       "raw": {
         "before": 11229923,
-        "after": 10553047,
-        "bytes": -676876,
-        "percent": -6.027432245083064
+        "after": 13066626,
+        "bytes": 1836703,
+        "percent": 16.355437165508626
       },
       "gzip": {
         "before": 3256559,
-        "after": 3336734,
-        "bytes": 80175,
-        "percent": 2.4619544740322574
+        "after": 4108054,
+        "bytes": 851495,
+        "percent": 26.14707732916861
       },
       "brotli": {
         "before": 2571855,
-        "after": 2666622,
-        "bytes": 94767,
-        "percent": 3.6847722752643586
+        "after": 3198757,
+        "bytes": 626902,
+        "percent": 24.375479955129652
       }
     },
     "all-in-one": {
       "raw": {
         "before": 8845059,
-        "after": 8051917,
-        "bytes": -793142,
-        "percent": -8.967062853961739
+        "after": 8909501,
+        "bytes": 64442,
+        "percent": 0.728564953608557
       },
       "gzip": {
         "before": 3255012,
-        "after": 3336451,
-        "bytes": 81439,
-        "percent": 2.501956982032638
+        "after": 3973493,
+        "bytes": 718481,
+        "percent": 22.073067626171582
       },
       "brotli": {
         "before": 2902117,
-        "after": 3024295,
-        "bytes": 122178,
-        "percent": 4.209961211074531
+        "after": 3657821,
+        "bytes": 755704,
+        "percent": 26.039749603479123
       }
     }
   },
   "artifacts": [
     {
       "kind": "browser-split",
-      "file": "filens-preview-0.3.1-split.zip",
+      "file": "filens-preview-0.3.3-split.zip",
       "download": {
         "before": 3659205,
-        "after": 3735826,
-        "bytes": 76621,
-        "percent": 2.093924773277256
+        "after": 4516416,
+        "bytes": 857211,
+        "percent": 23.4261540416566
       },
       "installed": {
         "before": 12570313,
-        "after": 11935968,
-        "bytes": -634345,
-        "percent": -5.0463739447060725
+        "after": 14479542,
+        "bytes": 1909229,
+        "percent": 15.18839666124463
       }
     },
     {
       "kind": "browser-all-in-one",
-      "file": "filens-preview-0.3.1-all-in-one.zip",
+      "file": "filens-preview-0.3.3-all-in-one.zip",
       "download": {
         "before": 3674890,
-        "after": 3755119,
-        "bytes": 80229,
-        "percent": 2.1831673873231594
+        "after": 4401308,
+        "bytes": 726418,
+        "percent": 19.767067857813437
       },
       "installed": {
         "before": 10185454,
-        "after": 9434843,
-        "bytes": -750611,
-        "percent": -7.369440773086799
-      }
-    },
-    {
-      "kind": "npm",
-      "file": "filens-preview-0.3.1.tgz",
-      "download": {
-        "before": 7319003,
-        "after": 7486577,
-        "bytes": 167574,
-        "percent": 2.2895741400843717
-      },
-      "installed": {
-        "before": 22772131,
-        "after": 21387817,
-        "bytes": -1384314,
-        "percent": -6.078983121957271
+        "after": 10322422,
+        "bytes": 136968,
+        "percent": 1.3447412358840394
       }
     },
     {
       "kind": "source-sdk-ios",
-      "file": "filens-ios-sdk-0.1.1.zip",
+      "file": "filens-ios-sdk-0.1.3.zip",
       "download": {
         "before": 3679002,
-        "after": 3760102,
-        "bytes": 81100,
-        "percent": 2.2044021721107976
+        "after": 4540776,
+        "bytes": 861774,
+        "percent": 23.42412425978566
       },
       "installed": {
         "before": 12606947,
-        "after": 11981289,
-        "bytes": -625658,
-        "percent": -4.962803444799125
+        "after": 14524863,
+        "bytes": 1917916,
+        "percent": 15.213167787569827
       }
     },
     {
       "kind": "source-sdk-android",
-      "file": "filens-android-sdk-0.1.1.zip",
+      "file": "filens-android-sdk-0.1.3.zip",
       "download": {
         "before": 3681378,
-        "after": 3762540,
-        "bytes": 81162,
-        "percent": 2.204663579779087
+        "after": 4543228,
+        "bytes": 861850,
+        "percent": 23.41107052848146
       },
       "installed": {
         "before": 12602789,
-        "after": 11977131,
-        "bytes": -625658,
-        "percent": -4.964440807506976
+        "after": 14520705,
+        "bytes": 1917916,
+        "percent": 15.218187021936181
       }
     }
   ],
@@ -132,84 +116,84 @@
       "platform": "darwin-arm64",
       "executable": {
         "before": 2270304,
-        "after": 2270304,
-        "bytes": 0,
-        "percent": 0
+        "after": 2304688,
+        "bytes": 34384,
+        "percent": 1.5145108320295364
       },
       "lite": {
         "before": 8436234,
-        "after": 8236810,
-        "bytes": -199424,
-        "percent": -2.363898393524888
+        "after": 9064831,
+        "bytes": 628597,
+        "percent": 7.451156523159508
       },
       "full": {
         "before": 32767981,
-        "after": 32568655,
-        "bytes": -199326,
-        "percent": -0.6082950304445056
+        "after": 33413934,
+        "bytes": 645953,
+        "percent": 1.9712932572806263
       }
     },
     {
       "platform": "linux-x64",
       "executable": {
         "before": 1994760,
-        "after": 1993368,
-        "bytes": -1392,
-        "percent": -0.06978283101726213
+        "after": 2024932,
+        "bytes": 30172,
+        "percent": 1.512562914836879
       },
       "lite": {
         "before": 8160713,
-        "after": 7959897,
-        "bytes": -200816,
-        "percent": -2.460765376750784
+        "after": 8785098,
+        "bytes": 624385,
+        "percent": 7.65110842643284
       },
       "full": {
         "before": 38520895,
-        "after": 38320177,
-        "bytes": -200718,
-        "percent": -0.5210626596292789
+        "after": 39149236,
+        "bytes": 628341,
+        "percent": 1.6311692654077836
       }
     },
     {
       "platform": "linux-arm64",
       "executable": {
         "before": 1882916,
-        "after": 1881780,
-        "bytes": -1136,
-        "percent": -0.06033195320449547
+        "after": 1909112,
+        "bytes": 26196,
+        "percent": 1.3912463434375244
       },
       "lite": {
         "before": 8048873,
-        "after": 7848313,
-        "bytes": -200560,
-        "percent": -2.491777420267405
+        "after": 8669282,
+        "bytes": 620409,
+        "percent": 7.708023222630045
       },
       "full": {
         "before": 32614111,
-        "after": 32413649,
-        "bytes": -200462,
-        "percent": -0.6146480583205216
+        "after": 33238444,
+        "bytes": 624333,
+        "percent": 1.9143032903763624
       }
     },
     {
       "platform": "win32-x64",
       "executable": {
         "before": 1911296,
-        "after": 1910784,
-        "bytes": -512,
-        "percent": -0.026788106080899432
+        "after": 1936384,
+        "bytes": 25088,
+        "percent": 1.3126171979640944
       },
       "lite": {
         "before": 8077236,
-        "after": 7877300,
-        "bytes": -199936,
-        "percent": -2.475302194958773
+        "after": 8696537,
+        "bytes": 619301,
+        "percent": 7.667239139725512
       },
       "full": {
         "before": 38251183,
-        "after": 38051345,
-        "bytes": -199838,
-        "percent": -0.52243612962245
+        "after": 38873904,
+        "bytes": 622721,
+        "percent": 1.6279784078834902
       }
     }
   ],

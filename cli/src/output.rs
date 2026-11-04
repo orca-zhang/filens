@@ -67,32 +67,49 @@ pub fn write(format: &str, response: &Value) -> Result<()> {
                     }
                     "csv" | "tsv" => {
                         let sep = if format == "csv" { ',' } else { '\t' };
-                        writeln!(
-                            stdout,
-                            "kind{sep}content\ncapabilities{sep}\"{}\"",
-                            data.replace('"', "\"\"")
-                        )?;
+                        writeln!(stdout, "section{sep}key{sep}value")?;
+                        for row in crate::capacity::rows(capacity) {
+                            let cells: Vec<_> = row
+                                .iter()
+                                .map(|v| {
+                                    if format == "csv" {
+                                        format!("\"{}\"", v.replace('"', "\"\""))
+                                    } else {
+                                        v.replace('\\', "\\\\")
+                                            .replace('\t', "\\t")
+                                            .replace('\r', "\\r")
+                                            .replace('\n', "\\n")
+                                    }
+                                })
+                                .collect();
+                            writeln!(stdout, "{}", cells.join(&sep.to_string()))?;
+                        }
                     }
                     _ => {
-                        stdout.write_all(crate::HELP.as_bytes())?;
-                        let formats = capacity["formats"].as_array().unwrap();
-                        writeln!(
-                            stdout,
-                            "\nSupported input formats ({}):\n{}",
-                            formats.len(),
-                            formats
-                                .iter()
-                                .filter_map(|f| f["format"].as_str())
-                                .collect::<Vec<_>>()
-                                .join(", ")
-                        )?;
-                        writeln!(
-                            stdout,
-                            "RapidOCR NCNN: enabled={} available={} OpenMP threads=2 max side=960",
-                            capacity["ocr"]["enabled"], capacity["ocr"]["available"]
-                        )?;
-                        if let Some(error) = capacity["ocr"]["error"].as_str() {
-                            eprintln!("{error}");
+                        let rows = crate::capacity::rows(capacity);
+                        let pairs = rows
+                            .iter()
+                            .filter(|[section, key, _]| {
+                                section == "conversionPairs" && !key.is_empty()
+                            })
+                            .map(|[_, key, value]| format!("{key}>{value}"))
+                            .collect::<Vec<_>>()
+                            .join(";");
+                        let mut wrote_pairs = false;
+                        for [section, key, value] in rows {
+                            match section.as_str() {
+                                "operations" if !key.is_empty() => {
+                                    writeln!(stdout, "{key}{value}")?
+                                }
+                                "conversionPairs" if !key.is_empty() => {
+                                    if !wrote_pairs {
+                                        writeln!(stdout, "{pairs}")?;
+                                        wrote_pairs = true;
+                                    }
+                                }
+                                "formats" if !key.is_empty() => writeln!(stdout, "{key}: {value}")?,
+                                _ => writeln!(stdout, "{section}={value}")?,
+                            }
                         }
                     }
                 }

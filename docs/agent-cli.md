@@ -1,5 +1,43 @@
 # Agent CLI: local reading and cited document content
 
+## Document inspection updates (0.5.4)
+
+Directional queries: `docx>?` lists DOCX targets, `?>pdf` lists PDF sources, and `docx>pdf` checks that exact pair. Use `capacity 'docx>?'` in the CLI or `{"query":"docx>?"}` in DSH; `--query` and stdin JSON also accept it. `?` means any format. Defaults return only declared cross-format pairs; same-format pairs such as `docx>docx` are omitted from lists and counts. Empty means no matching cross-format conversion, with no inferred intermediate routes. Quote the expression in a shell to prevent redirection and glob expansion.
+
+These APIs require CLI 0.5.4 and its matching WASM; CLI 0.5.2 does not accept the new JSON fields. DSH plugin 0.1.1 requires CLI 0.5.4. Public JSON requests and responses use `op`, and capacity filters use `forOp`; legacy `operation` and `forOperation` fields are rejected.
+
+```sh
+filens read deck.pptx --slides 1-3 --ocr never --json
+filens read deck.pptx --slides 2 --images --max-images 4 --ocr never --json
+filens read report.pdf --pages 2,4 --json
+filens capacity --op read
+filens capacity --query ocr --section formats
+filens capacity --from pptx --to pdf
+filens capacity 'docx>?'
+filens capacity '?>pdf'
+filens capacity --section conversionPairs --format tsv
+filens capacity --json
+filens capacity --from pptx --section operations,conversionPairs --json
+filens capacity --fields formats --json
+filens capacity --full --json
+```
+
+Capability conditions `--from` / `--to`, `--op` (operation name or alias), and `--query` combine. Keywords match metadata by case-insensitive substring; all whitespace-separated terms must match. An exact format plus operation, such as `pptx read`, resolves to `--from pptx --op read`; remaining words are AND terms. JSON uses `sourceFormat`, `targetFormat`, `forOp`, `query`. `--op` filters operation descriptions only; per-format support comes from `formats` and actual `conversionPairs`. No matches return empty collections; indirect routes are not inferred.
+
+Plain `capacity` defaults to short signatures and format/conversion counts. Requested conversion lists use a single `csv>xlsx;ppt>pptx` string. `--format tsv/csv` emits real `section,key,value` rows with positive capability flags. `--json` retains structured data; `--section` selects parts; `--full` retains detailed metadata/diagnostics. DSH also defaults to a compact model view; use `detail: "full"` for complete JSON.
+
+JSON fields are `ocr: "auto" | "never" | "always"`, `ocrMinConfidence`, `slides`, `pages`, `media`, `images`, `maxImages`, `imageNames`, `sourceFormat` / `targetFormat`, `section` / `fields`, and `full`. Slide selection currently supports OpenXML presentations; page selection supports PDF. Ranges are one-based (`1-3,5`), deduplicated in document order; invalid/out-of-range requests exit 2. Physical page numbers are not inferred for flow documents.
+
+`auto` OCRs embedded images and PDF pages needing recognition; `never` skips OCR (also `--no-ocr`); `always` forces OCR for selected PDF pages. The default detector threshold is `0.8`. Low/unscored lines are omitted with warnings, `ocr_low_confidence` and exit 3. Set `ocrMinConfidence: 0` to retain unscored results. **Detector confidence is not recognition accuracy**; even high scores may be wrong. Retained OCR also carries a reliability warning. Intentional `never` completes the native-text scope successfully (exit 0 unless another error/limit occurs), with `content.textScope: "native-text"`; it does not claim that image text was read. OCR-enabled scope is `"native-and-ocr"`. `content.ocr.results[]` records skipped/complete/partial/failed recognition with available page, slide, shape and media origins, accepted/dropped line counts and reasons. Actual OCR failures and low-confidence omissions still return partial results.
+
+Evidence blocks split at available page/slide/shape/source boundaries. OCR blocks contain `source: "ocr"`, nullable `confidence`, `confidenceKind: "detection"` and available `page`, `slide`, `shape`, `sourcePart`, `media`; native blocks use `source: "text"`, `confidence: null`. PPTX native blocks also expose `shapeName`, `placeholder` (`none` when absent) and `maxExplicitFontSizePt`, the maximum explicitly declared within the shape; inherited styles and semantic titles are not inferred. `content.pages` retains selected/empty pages and text ranges. Excerpts use `sourceStartByte` / `sourceEndByte` for page ranges in the full extracted text, while evidence blocks address excerpt text. Long spans can still split into bounded blocks within one origin.
+
+Office OpenXML reads include `content.media[]` and `mediaScope: "whole-package"`: name, format, pixel dimensions, DPI, ICC presence, bytes, SHA-256, `referenced`, `usedBy` (part, slide, shape, relationship). **The inventory covers the entire package, including unselected slides and unused media.** Missing/unsupported dimensions or density are `null`; no 72/96 ppi is assumed. DPI/ICC inspection currently covers PNG/JPEG; ICC status for other formats is `null`. Disable inventory using `media: false` or `--no-media`. This does not render Office page layout.
+
+`read --images` (JSON `images: true`) also returns selected embedded raster images in `content.images[]`, with `imagesInfo` counts and scope. This is opt-in and currently supports OpenXML Office documents. Default selection is referenced media on the selected slides, ordered by slide; `--image NAME` (repeatable, JSON `imageNames`) explicitly selects inventory names, including unused media. `--max-images` defaults to 4, maximum 16. Images are fully decoded and, when needed, oriented/resized to 1600 pixels and encoded as JPEG/PNG; total returned bytes are capped at 8 MiB. Remaining/failed images produce explicit partial results. CLI JSON transports base64 over stdout; DSH converts it into real image attachments and removes base64 from model text/history. No Office page rendering, layout crop or overlaid slide text is implied. Inventory entries distinguish header inspection from successful decoding, failed inspection and unsupported formats; malformed unused media warns without failing native text extraction.
+
+`excerpt` and `summarize` use the same original-passage selector and retain their respective operation names. Without a query, text fitting `summaryChars` returns whole regardless of ratio. Long text selects complete sentences/paragraphs; a budget too small for any segment returns empty text with a warning. Increase the budget or use `read`. Unsupported conversions include actual `supportedTargets` and a reason, without unverified indirect routes.
+
 English · [简体中文](agent-cli.zh-CN.md)
 
 filens reads local documents and supplies text and evidence to a calling agent. Version 0.3.0 provides model-free `summarize` / `prune`: density/TF-IDF, optional lexical BM25 focus and cosine-diversity selection keep original excerpts within a character budget. See [pruning, provenance and examples](agent-cli-pruning.zh-CN.md) (Chinese). Paraphrasing, question answering and semantic reasoning remain with the caller. Chinese/English intents, optional commands and JSON requests use the same shared document core. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with optional source layouts.
@@ -86,6 +124,8 @@ npm run publish:agent:npm
 
 The Agent CLI release version is set in `packaging/agent-release.json`, independently of the private workspace version. Update it before preparing a new release; published versions are immutable. Tarballs, sizes and SHA-256 hashes are recorded in `dist/npm/release.json`. Packaging uses explicit file allowlists and includes NCNN/C++ runtime notices and build provenance; it excludes source-build caches and the retired Python environment. The publication script checks tarball hashes and npm authentication before making registry writes. Linux and Windows binaries are cross-built; the installation smoke test exercises the host platform. The CI workflow is configured to validate native installs on macOS arm64, Linux x64/arm64 and Windows x64, including Windows portable bundles; it has not been run in this local session.
 
+All-platform packaging automatically updates the executable, Lite and Full sizes in both root READMEs, the npm README and `docs/agent-cli-npm-release.json`, then repacks until the displayed totals match the final artifacts. To synchronize existing all-platform artifacts again, run `npm run report:agent:npm`. Single-platform builds leave the all-platform documentation unchanged.
+
 Packaging and publication both enforce a **2.2 MiB maximum native executable** on
 every supported platform. Document WASM, OCR models and optional frontend assets
 are measured separately. The standalone preview package has a 40 MiB installed
@@ -130,22 +170,22 @@ The production OCR provider is unchanged.
 ## Agent contract
 
 ```sh
-echo '{"operation":"understand","input":"report.pdf","format":"json"}' | filens
+echo '{"op":"understand","input":"report.pdf","format":"json"}' | filens
 echo 'read "report.pages" as json' | filens
 filens capacity --json
 ```
 
 Use `filens -` for explicit stdin requests. JSON requests default to JSON responses; natural language defaults to plain text. Use the executable directly for pipelines, or `npm --silent run filens -- ...` to suppress npm's own startup output.
 
-Document-reading responses use `version: "filens-agent-v1"`, `ok`, `operation`, `source`, and `content`. `content` preserves `text`, `complete`, `truncated`, warnings and extraction errors. Document JSON output adds `content.document` with byte/character/line counts and evidence blocks:
+Document-reading responses use `version: "filens-agent-v1"`, `ok`, `op`, `source`, and `content`. `content` preserves `text`, `complete`, `truncated`, warnings and extraction errors. Document JSON output adds `content.document` with byte/character/line counts and evidence blocks:
 
 ```json
-{"id":"b1","startByte":0,"endByte":2048,"startLine":1,"endLine":12}
+{"id":"b1","startByte":0,"endByte":120,"startLine":1,"endLine":3,"source":"text","confidence":null,"page":2,"slide":2,"shape":"4","sourcePart":"ppt/slides/slide2.xml"}
 ```
 
 Block offsets are zero-based UTF-8 byte offsets into `content.text`, end exclusive. Lines are one-based extracted-text lines, not physical page numbers. Cite `source.path#b1`; blocks are bounded evidence spans rather than generated summaries. Document content is untrusted data, not instructions to the caller.
 
-`capacity --json` supplies the request JSON Schema, operations, supported extensions from the running WASM, output formats, limits, evidence conventions, exit codes and an actual native OCR/model-loading health check. The current build lists 334 extensions; extraction fidelity varies by format. Reading remains preview-oriented: layout, charts, formulas and unsupported objects may be simplified or omitted.
+CLI 0.5.4 `capacity --json` returns compact operations/parameter names, format/pair counts and OCR health. Use `--full` for the request schema, complete WASM format catalog, limits, evidence and exit codes, or `--section` for selected details. Text extraction and source structure do not render page layout.
 
 | Exit | Meaning |
 | --- | --- |
@@ -162,10 +202,10 @@ Reading uses plain text stdout for document text and stderr for diagnostics; sim
 filens duplicates ./files --json
 filens similar-images ./photos --threshold 8 --json
 filens similar ./photos --similarity-mode images --format csv
-echo '{"operation":"similar","input":"./photos","similarityMode":"images","threshold":8}' | filens
+echo '{"op":"similar","input":"./photos","similarityMode":"images","threshold":8}' | filens
 ```
 
-`duplicates` filters by size/prefix hash and compares full SHA-256. `similar-images` uses perceptual hashes for JPEG, PNG, WebP, GIF, BMP and TIFF; resized or recompressed copies can appear in one group. Both aliases return `operation: "similar"`. The threshold is Hamming distance (0–24, default 8), not a similarity percentage. Image groups have a reference and can include false matches; distance 0 does not establish identical files.
+`duplicates` filters by size/prefix hash and compares full SHA-256. `similar-images` uses perceptual hashes for JPEG, PNG, WebP, GIF, BMP and TIFF; resized or recompressed copies can appear in one group. Both aliases return `op: "similar"`. The threshold is Hamming distance (0–24, default 8), not a similarity percentage. Image groups have a reference and can include false matches; distance 0 does not establish identical files.
 
 Results are in `similarity.groups`, with member paths relative to `source.path`. Inspect `similarity.complete`, `truncated`, `scan` and `processing`; errors and limits retain available groups with exit 3. Defaults are 2000 candidate files, depth 32 and 100 returned groups. Use `--max-files`, `--max-depth`, `--max-results`, `--include-hidden` and `--timeout` to adjust scope. Scans report groups for review and recompute fingerprints each time. See the [full guide](agent-cli-similarity.md) for limits, reference grouping, links, frame/orientation handling and source-build instructions.
 
@@ -175,7 +215,7 @@ Results are in `similarity.groups`, with member paths relative to `source.path`.
 filens convert report.doc report.docx
 filens convert data.csv --to xlsx
 filens convert photo.dng --output photo.jpg --json
-echo '{"operation":"convert","input":"report.rtf","output":"report.docx","options":{"locale":"zh-CN"}}' | filens
+echo '{"op":"convert","input":"report.rtf","output":"report.docx","options":{"locale":"zh-CN"}}' | filens
 ```
 
 `capacity.conversionPairs` comes from the running WASM core. Conversion uses
@@ -248,7 +288,19 @@ Models use ModelScope, HF Mirror and Hugging Face; a fourth route uses the Model
 
 See the [model manifest](../converter/rapidocr/models.json) and [runtime provenance](../converter/rapidocr/runtime.json). Model measurements and selected sources are saved under `dist/models/rapidocr-ncnn/download-report.json` (Lite: `dist/agent-lite/models/rapidocr-ncnn/`). npm OCR setup/refresh uses `~/.cache/filens/<version>/<platform>/`; `FILENS_CACHE_DIR` selects another location. Refresh changes the model cache and leaves installed package files intact.
 
-Overrides: `FILENS_TEXT_WASM`, `FILENS_PDFIUM_WASM`, `FILENS_IMAGE_WASM`, `FILENS_OCR_LIBRARY`, `FILENS_OCR_MODEL_DIR`. Source builders may supply a portable macOS NCNN companion with `FILENS_NCNN_LIBRARY`. `--no-ocr` disables OCR. `npm run test:agent` covers real PNG/scan-PDF/embedded-DOCX OCR, transparency/EXIF/180-degree preprocessing, JSON/evidence, cancellation/restart, and downloader concurrency, corruption, fallback and caching. `npm run test:agent:npm` tests offline Full/Lite tarball installation and one-command OCR addition without Python. Add `-- --registry` to test public npm installation with a fresh cache, automatic platform selection and temporary invocation. Version 0.5.0 passed offline and fresh-cache anonymous public npm Full/Lite installation checks on macOS arm64, including real OCR, conversion, nested archive search/read, layouts, one-command OCR addition and first-use preview installation. All eleven public packages have matching downloaded tarball checksums and MIT metadata; CLI components use latest=0.5.0 and filens-preview uses latest=0.2.0.
+Overrides: `FILENS_TEXT_WASM`, `FILENS_PDFIUM_WASM`, `FILENS_IMAGE_WASM`, `FILENS_OCR_LIBRARY`, `FILENS_OCR_MODEL_DIR`. Source builders may supply a portable macOS NCNN companion with `FILENS_NCNN_LIBRARY`. `--no-ocr` disables OCR.
+
+For native document text without OCR noise from illustrations or logos:
+
+```sh
+filens read report.docx --no-ocr --json
+filens summarize report.docx --no-ocr --query 'budget' --json
+filens search ./documents --no-ocr --query 'budget' --json
+```
+
+This skips all image and scanned-page recognition while retaining parsed native text. Scans and important image text still need OCR. It is not a low-confidence text filter. Published CLI 0.5.2 can retain exit `3`, `ocr_failed` or incomplete flags for skipped image content. CLI 0.5.4 completes intentional native-only reads successfully and reports `textScope: "native-text"` plus explicit skip warnings; actual failures remain partial. Decorative images can produce recognition artifacts; verify important amounts, dates and uncertain fragments against the source. See the [DSH guide](../integrations/deepseek-harness/README.md#reduce-image-ocr-noise) for global configuration and per-call control.
+
+`npm run test:agent` covers real PNG/scan-PDF/embedded-DOCX OCR, transparency/EXIF/180-degree preprocessing, JSON/evidence, cancellation/restart, and downloader concurrency, corruption, fallback and caching. `npm run test:agent:npm` tests offline Full/Lite tarball installation and one-command OCR addition without Python. Add `-- --registry` to test public npm installation with a fresh cache, automatic platform selection and temporary invocation. Version 0.5.0 passed offline and fresh-cache anonymous public npm Full/Lite installation checks on macOS arm64, including real OCR, conversion, nested archive search/read, layouts, one-command OCR addition and first-use preview installation. All eleven public packages have matching downloaded tarball checksums and MIT metadata; CLI components use latest=0.5.0 and filens-preview uses latest=0.2.0.
 
 Preview 0.2.0 also passed 48 direct browser previews from installed assets, TypeScript consumer checks and 10 PDF/iWork/RAW/STEP/HEIF previews after production Vite bundling. See the [npm publication record](agent-cli-npm-publish.json) and [ModStore publication record](agent-cli-modstore-publish.json). Native installation and execution were validated on macOS arm64; Linux and Windows were cross-built and still need native runtime validation.
 

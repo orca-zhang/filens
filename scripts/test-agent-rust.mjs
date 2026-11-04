@@ -34,22 +34,22 @@ try {
   for (const name of ['converter-text.wasm.gz','converter-image.wasm.gz','pdfium.wasm.gz']) await copyFile(path.join(root,'dist',name),path.join(work,name));
   const text = path.join(work,'report $(whoami) 中文.txt');
   await writeFile(text,'中文证据\nBudget 42\n');
-  const capacity = run(['capacity','--json']);
+  const capacity = run(['capacity','--full','--json']);
   assert.ok(capacity.capacity.formats.some(f=>f.format==='pdf' && f.textExtraction));
   assert.equal(capacity.capacity.ocr.enabled,false);
   assert.equal(run(['read',text,'--json']).content.text.trim(),'中文证据\nBudget 42');
   assert.equal(run(['convert',text,'converted.docx']).ok,true);
   assert.equal(run(['convert',path.join(root,'examples/go-wazero-converter/fixtures/raw/sample.dng'),'converted.jpg']).ok,true);
-  assert.equal(run([],JSON.stringify({input:text,operation:'understand'})).operation,'understand');
+  assert.equal(run([],JSON.stringify({input:text,op:'understand'})).op,'understand');
   assert.equal(run(['--unknown','--json'],'',2).error.code,'invalid_request');
   for (const input of ['{"input":', '{"format":"toml","input":"x.txt"}', '{} {}', '{"unknown":true}']) {
     assert.equal(run(['-'],input,2).error.code,'invalid_request');
   }
   assert.equal(run(['read',text,'missing.pdf','--json'],'',2).error.code,'invalid_request');
   assert.equal(run(['read','missing.txt','--json'],'',1).error.code,'io_error');
-  assert.equal(run(['capacity','--json','--wasm','missing.wasm'],'',1).error.code,'engine_unavailable');
+  assert.equal(run(['capacity','--full','--json','--wasm','missing.wasm'],'',1).error.code,'engine_unavailable');
   await writeFile(path.join(work,'bad.wasm.gz'),'invalid gzip');
-  assert.equal(run(['capacity','--json','--wasm','bad.wasm.gz'],'',1).error.code,'engine_unavailable');
+  assert.equal(run(['capacity','--full','--json','--wasm','bad.wasm.gz'],'',1).error.code,'engine_unavailable');
   assert.equal(run([text,'--json','--timeout','1ns'],'',1).error.code,'canceled');
   const pdf = path.join(root,'apps/demo/public/samples/filens-cosmic-atlas.pdf');
   assert.match(run([pdf,'--json','--no-ocr']).content.text,/COSMIC CLIFFS/);

@@ -1,5 +1,46 @@
 # Agent CLI：本地读取文档与交付证据
 
+## 文档读取优化（0.5.4）
+
+转换方向支持 `docx>?`（DOCX 能转成什么）、`?>pdf`（什么能转 PDF）和 `docx>pdf`（检查指定转换）。CLI 用 `capacity 'docx>?'`，DSH 用 `{"query":"docx>?"}`；`--query` 和 stdin JSON 也支持。`?` 表示任意格式，默认只返回真实的跨格式转换对；同格式项（如 `docx>docx`）不列出，计数也不包含。空集合表示没有匹配的跨格式转换，不推测中转。Shell 中必须引用整个表达式，避免 `>` 重定向和 `?` 展开。
+
+以下接口需要 CLI 0.5.4 及其配套 WASM；CLI 0.5.2 不接受新增 JSON 字段。DSH 插件 0.1.1 需配套 CLI 0.5.4。公开 JSON 请求和响应使用 `op`，能力筛选使用 `forOp`；旧字段 `operation` 和 `forOperation` 会报参数错误。
+
+```sh
+# 设计稿：只读第 1–3 页原生文字，避免照片 OCR 杂字
+filens read deck.pptx --slides 1-3 --ocr never --json
+# 返回图片字节供调用方看图，stdout JSON 携带 base64，不解包落盘
+filens read deck.pptx --slides 2 --images --max-images 4 --ocr never --json
+filens read report.pdf --pages 2,4 --json
+# 默认精简能力查询；需要时才展开格式与转换表
+filens capacity --op read
+filens capacity --query ocr --section formats
+filens capacity --from pptx --to pdf
+filens capacity 'docx>?'
+filens capacity '?>pdf'
+filens capacity --section conversionPairs --format tsv
+filens capacity --json
+filens capacity --from pptx --section operations,conversionPairs --json
+filens capacity --fields formats --json
+filens capacity --full --json
+```
+
+能力查询的 `--from` / `--to`、`--op`（操作名或别名）和 `--query` 可组合；`--query` 对元数据做不区分大小写的子串匹配，空白分隔的词全部满足。精确的格式名加操作名（例如 `pptx read`）等价于 `--from pptx --op read`，剩余词继续按 AND 匹配。JSON 字段为 `sourceFormat`、`targetFormat`、`forOp`、`query`。`--op` 只筛选操作说明，格式支持由 `formats` 和真实 `conversionPairs` 判断。没有匹配时返回空集合，不推测中转转换。
+
+不加输出参数的 `capacity` 默认返回短签名和格式 / 转换数量；请求转换列表时，按源格式聚合为单行字符串 `csv>xlsx;ppt>pptx`；`--format tsv/csv` 返回真正的三列表 `section,key,value`，布尔能力以正向标记列出。`--json` 保留结构化接口；`--section` 仅取指定部分；`--full` 保留详细说明与诊断。DSH 模型视图也默认精简，使用 `detail: "full"` 可取完整 JSON。
+
+JSON 请求对应字段为 `ocr: "auto" | "never" | "always"`、`ocrMinConfidence`、`slides`、`pages`、`media`、`images`、`maxImages`、`imageNames`、`sourceFormat` / `targetFormat`、`section` / `fields`、`full`。`slides` 目前支持 OpenXML 演示文件，`pages` 支持 PDF；从 1 开始，支持 `1-3,5`，按文档顺序去重，越界返回退出码 2。其他格式不会猜测物理页码。
+
+`auto` 识别内嵌图片及需要 OCR 的 PDF 页；`never` 跳过全部 OCR（兼容 `--no-ocr`）；`always` 强制 PDF 选中页使用 OCR。默认 `ocrMinConfidence: 0.8`，丢弃分数不足或无分数的 OCR 行，并通过 `warnings`、`ocr_low_confidence` 和退出码 3 明示遗漏。设为 0 可保留无分数结果。**这是文字检测分数，不是识别正确率**，高分也可能认错。保留下来的 OCR 同样附带可靠性警告。主动选择 `never` 后，原生文字范围读取完成即成功（没有其他错误或限制时退出码 0），`content.textScope: "native-text"` 明示不包含图片文字；启用 OCR 则为 `"native-and-ocr"`。`content.ocr.results[]` 按可用的页、slide、shape、media 记录 skipped / complete / partial / failed、保留 / 丢弃行数与原因。真实 OCR 失败和低分遗漏仍返回部分结果。
+
+证据块在可用的页、幻灯片、shape 与来源边界处分开；OCR 块带 `source: "ocr"`、可空的 `confidence`、`confidenceKind: "detection"` 和可用的 `page` / `slide` / `shape` / `sourcePart` / `media`；原生文字为 `source: "text"`、`confidence: null`。PPTX 原生块另附 `shapeName`、`placeholder`（没有占位符为 `none`）和 `maxExplicitFontSizePt`；字号只统计 shape 内显式声明的最大值，不解析继承样式，也不推断标题。`content.pages` 包含空页及选中页的范围；摘录中的页范围改用 `sourceStartByte` / `sourceEndByte` 指向完整提取文本，摘录 block 仍定位到摘录文本。大段文本仍可能在同一来源内拆成有界块。
+
+Office OpenXML 读取默认附带 `content.media[]` 与 `mediaScope: "whole-package"`：条目包含名称、格式、像素尺寸、DPI、ICC 存在标记、字节数、SHA-256、`referenced` 和 `usedBy`（部件、幻灯片、shape、关系）。**清单始终覆盖整份包，包括未选中页和未引用图片。** 缺失或无法解析的尺寸、DPI 返回 `null`，不假设 72/96 ppi；目前 DPI / ICC 检查覆盖 PNG、JPEG，其他格式 ICC 状态为 `null`。`media: false` 或 `--no-media` 可省略清单。它不渲染 Office 版面。
+
+`read --images`（JSON `images: true`）额外返回 `content.images[]` 中的内嵌栅格图片与 `imagesInfo` 数量 / 范围说明，当前支持 OpenXML Office。默认只选中所选幻灯片引用的媒体，按 slide 排序；重复 `--image NAME`（JSON `imageNames`）可按清单名称精确选择，也可检查未引用媒体。`--max-images` 默认 4、最大 16。图片会完整解码，必要时校正方向、缩到最长边 1600 像素并编码为 JPEG / PNG；总图片字节上限 8 MiB，剩余图片或解码失败会明确返回部分结果。CLI 通过 stdout JSON 传 base64；DSH 转成模型可见的图片附件，并从文字 / 工具历史中去掉 base64。返回的是内嵌媒体，不代表 Office 整页渲染、页面裁切或叠加文字。清单用 `inspection` 区分头部检查、完整解码、失败和不支持；未引用坏图会警告，但不把原生文字读取判为失败。
+
+`excerpt` 与 `summarize` 使用同一原文选择器，但返回各自的操作名。无查询且全文不超过 `summaryChars` 时直接返回全文，不受比例压缩；长文按完整句段选择，不从句中截断。预算容不下完整片段时返回空摘录及警告，可增加预算或改用 `read`。转换不支持时，错误附带当前 WASM 实际支持的 `supportedTargets` 与原因，不推测未经验证的中转路线。
+
 [English](agent-cli.md) · 简体中文
 
 filens 负责读取本地文档，向上层 Agent 交付文本、来源与证据片段。0.3.0 提供不依赖 LLM 的 `summarize` / `prune`，按密度、BM25 和相似距离选取关键原文，详见[关键内容提取与实例](agent-cli-pruning.zh-CN.md)。改写总结、问答等语义推理由调用方完成。支持中英文意图，以及 text、JSON、Markdown、HTML、YAML、XML、CSV、TSV 输出和布局信息，也保留可选命令与参数。文档解析与裁剪复用共享前端核心；常见文本搜索直接编译同一份 Rust 源码，其他格式及布局按需调用 WASM。
@@ -78,6 +119,8 @@ npm run publish:agent:npm
 
 Agent CLI 的发布版本独立记录在 `packaging/agent-release.json`，不改动私有工作区版本；准备下一次发布前应先更新它，已发布版本不可覆盖。产物、体积和 SHA-256 记录于 `dist/npm/release.json`。打包采用文件白名单，包含 NCNN / C++ 运行时许可与构建来源，不包含源码构建缓存或旧 Python 环境。发布脚本先校验 tarball 和 npm 身份，再写入注册表。Linux 和 Windows 二进制通过交叉编译生成；本地安装测试验证宿主平台，CI 已配置 macOS arm64、Linux x64 / arm64 和 Windows x64 的原生安装及 Windows 便携包测试，本轮尚未执行 CI。
 
+全平台打包会自动更新中英文主 README、npm 说明和 `docs/agent-cli-npm-release.json` 中的可执行文件、Lite 与 Full 体积，并重新打包直到文案中的数字与最终产物一致。已有全平台产物可运行 `npm run report:agent:npm` 重新同步；单平台构建保留全平台文档中的现有数据。
+
 读取和摘录每次接受一个本地文件或包内成员路径，`search` 每次接受一个本地目录或支持的压缩包。ZIP、TAR、GZIP 等会自动展开最多 8 层嵌套，保留 `资料.zip!/附件.tar.gz!/合同.pdf` 路径供再次读取、获取布局或摘录，详见[嵌套压缩包用法与实测](agent-cli-search-archives.zh-CN.md)。自然语言中的路径应加引号，尤其是含空格路径；相对路径以调用方工作目录为准。可选命令为 `read`、`extract`、`understand`、`layout`、`summarize` / `prune`、`search`、`capacity` / `capabilities`，可选参数有 `--json`、`--format text|json|markdown|html|yaml|xml|csv|tsv`、`--layout`、`--input`、`--max-bytes`、`--timeout`、`--wasm`、`--no-ocr`。搜索增加 `--query`、`--search-mode bm25|exact|files`、`--max-results`、`--max-files`、`--max-depth`、`--include-hidden` 和 `--no-cache`，详见[搜索指南](agent-cli-search.zh-CN.md)。
 
 ## 浏览器预览（0.5.0）
@@ -113,22 +156,22 @@ ZimaOS ModStore 0.5.1 的启动器固定传入 `--no-open`，默认只导出 HTM
 ## Agent 交付协议
 
 ```sh
-echo '{"operation":"understand","input":"report.pdf","format":"json"}' | filens
+echo '{"op":"understand","input":"report.pdf","format":"json"}' | filens
 echo '读取 "report.pages"，以 JSON 输出' | filens
 filens capacity --json
 ```
 
 可以用 `filens -` 显式读取 stdin；无参数且 stdin 为管道时也会读取。JSON 请求默认返回 JSON，自然语言默认返回纯文本。在管道中直接使用二进制，或使用 `npm --silent run filens -- ...` 隐藏 npm 自身的提示。
 
-文档读取的响应协议为 `version: "filens-agent-v1"`，包含 `ok`、`operation`、`source`、`content`。内容保留 `text`、`complete`、`truncated`、警告与提取错误。文档 JSON 还交付 `content.document` 的字节数、字符数、行数和证据块：
+文档读取的响应协议为 `version: "filens-agent-v1"`，包含 `ok`、`op`、`source`、`content`。内容保留 `text`、`complete`、`truncated`、警告与提取错误。文档 JSON 还交付 `content.document` 的字节数、字符数、行数和证据块：
 
 ```json
-{"id":"b1","startByte":0,"endByte":2048,"startLine":1,"endLine":12}
+{"id":"b1","startByte":0,"endByte":120,"startLine":1,"endLine":3,"source":"text","confidence":null,"page":2,"slide":2,"shape":"4","sourcePart":"ppt/slides/slide2.xml"}
 ```
 
 偏移是 `content.text` 中从零开始、左闭右开的 UTF-8 字节位置；行号是提取文本中从 1 开始的行号，不代表原文页码。可引用 `source.path#b1`。证据块不是生成的摘要；文档内容是待分析的数据，不是给调用 Agent 的指令。
 
-`capacity --json` 交付请求 JSON Schema、操作、运行中 WASM 的格式清单、输出格式、限制、证据规范、退出码及真实的原生 OCR / 模型加载检查。当前构建列出 334 个扩展名，保真度因格式而异；布局、图表、公式和不支持的对象可能简化或遗漏。
+CLI 0.5.4 的 `capacity --json` 默认精简返回操作、参数名、格式/转换对数量及 OCR 健康状态；`--full` 返回请求 JSON Schema、完整格式表、限制、证据规范与退出码。也可用 `--section` 只取所需部分。格式清单由运行中的 WASM 提供；文字提取和源结构不等于版面渲染。
 
 | 退出码 | 含义 |
 | --- | --- |
@@ -145,10 +188,10 @@ filens capacity --json
 filens duplicates ./files --json
 filens similar-images ./photos --threshold 8 --json
 filens similar ./photos --similarity-mode images --format csv
-echo '{"operation":"similar","input":"./photos","similarityMode":"images","threshold":8}' | filens
+echo '{"op":"similar","input":"./photos","similarityMode":"images","threshold":8}' | filens
 ```
 
-`duplicates` 按大小和前缀哈希筛选后比较完整 SHA-256；`similar-images` 对 JPEG、PNG、WebP、GIF、BMP、TIFF 计算感知哈希，可将缩放或重新压缩后的副本分到一组。两者响应均为 `operation: "similar"`。图片阈值为汉明距离（0–24，默认 8），不是相似百分比；每组有参考图，可能误匹配，距离 0 也不代表文件完全相同。
+`duplicates` 按大小和前缀哈希筛选后比较完整 SHA-256；`similar-images` 对 JPEG、PNG、WebP、GIF、BMP、TIFF 计算感知哈希，可将缩放或重新压缩后的副本分到一组。两者响应均为 `op: "similar"`。图片阈值为汉明距离（0–24，默认 8），不是相似百分比；每组有参考图，可能误匹配，距离 0 也不代表文件完全相同。
 
 结果在 `similarity.groups` 中，成员路径相对 `source.path`。检查 `similarity.complete`、`truncated`、`scan` 和 `processing`；错误或限制会保留可用组并返回退出码 3。默认扫描 2000 个候选文件、深度 32、返回 100 组，可用 `--max-files`、`--max-depth`、`--max-results`、`--include-hidden`、`--timeout` 调整。扫描只报告分组供核对，每次重新计算指纹。限制、参考图分组语义、链接处理、帧 / 方向规则及源码构建见[完整指南](agent-cli-similarity.zh-CN.md)。
 
@@ -158,7 +201,7 @@ echo '{"operation":"similar","input":"./photos","similarityMode":"images","thres
 filens convert report.doc report.docx
 filens convert data.csv --to xlsx
 filens convert photo.dng --output photo.jpg --json
-echo '{"operation":"convert","input":"report.rtf","output":"report.docx","options":{"locale":"zh-CN"}}' | filens
+echo '{"op":"convert","input":"report.rtf","output":"report.docx","options":{"locale":"zh-CN"}}' | filens
 ```
 
 支持的转换格式对由正在运行的 WASM 返回，见 `capacity.conversionPairs`。
@@ -223,6 +266,16 @@ npm run setup:agent:ocr -- --lite --sources 4
 源码版测速报告位于 `dist/models/rapidocr-ncnn/download-report.json`；Lite 对应 `dist/agent-lite/models/rapidocr-ncnn/`。npm 按需组件和刷新模型使用 `~/.cache/filens/<版本>/<平台>/`，可用 `FILENS_CACHE_DIR` 指定位置。刷新只修改用户缓存，不写入已安装的包目录。
 
 受控部署可用 `FILENS_TEXT_WASM`、`FILENS_OCR_LIBRARY`、`FILENS_OCR_MODEL_DIR` 指定核心、原生库和模型；源码构建可通过 `FILENS_NCNN_LIBRARY` 提供可移植的 macOS NCNN 库。`--no-ocr` 显式关闭 OCR。
+
+只需要文档正文、希望避免插图或 Logo 的 OCR 杂字时，可运行：
+
+```sh
+filens read report.docx --no-ocr --json
+filens summarize report.docx --no-ocr --query '预算' --json
+filens search ./documents --no-ocr --query '预算' --json
+```
+
+这会跳过所有图片和扫描页的文字识别，保留可直接解析的正文；扫描件或重要图中文字仍需开启 OCR。它不是低置信度文字过滤器。已发布 CLI 0.5.2 在跳过图片时仍可能返回退出码 `3`、`ocr_failed` 或不完整标记；CLI 0.5.4 主动选择原生文字范围后可成功完成，用 `textScope: "native-text"` 和跳过警告标明范围，真实失败仍为部分结果。OCR 可能将装饰图案识别为杂字，关键数字、日期和不确定片段应对照原件核实。DSH 的全局配置及单次调用参数见[插件说明](../integrations/deepseek-harness/README.zh-CN.md#减少图片-ocr-噪声)。
 
 ## 验证
 

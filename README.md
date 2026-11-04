@@ -15,35 +15,36 @@
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
-| Supported formats (by extension) | **334**. | **397**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite: 7.50–7.87 MiB installed · Full: 30.93–36.56 MiB installed**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Supported formats (by extension) | **334**. | **402**, including direct previews and previews after local WASM conversion. |
+| Approximate size | **Lite components: 8.27–8.64 MiB · Full components: 31.70–37.34 MiB**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **1.80–2.18 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, npm caches and optional preview assets (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.2 main runtimes: **2.67 MB Brotli** summed across split files, or **3.02 MB Brotli / 3.34 MB gzip / 8.05 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **1.82–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.3 main runtimes: **3.20 MB Brotli** summed across split files, or **3.66 MB Brotli / 3.97 MB gzip / 8.91 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
 **Supports 334 file formats (counted by extension).** Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Check `filens capacity --json` for your installation's capabilities; extraction fidelity varies by format. Paraphrasing, translation and question answering belong to the calling Agent.
 
+### Installation and use
+
 **Ask your Agent to install it:**
 
 > Install filens for me. Find skills/filens/SKILL.md at https://github.com/IceWhaleTech/filens and follow it to set up the CLI and skill.
 
-[Skill guide](skills/filens/SKILL.md) · Or install the CLI yourself:
+[Skill guide](skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest) and extract the entire archive. Full includes OCR and models; Lite leaves OCR optional. Both include offline preview assets and need no Node.js or npm.
 
 ```sh
-# Full: native RapidOCR and Chinese/English models; no Python
-npm install -g filens-cli
 filens 'read "report.pdf" as json'
 filens 'search "./documents" for "budget risk" as json'
 filens summarize report.pdf --query 'budget risk' --json
 filens convert report.doc report.docx
 
-# Lite: add OCR later with filens setup-ocr
-npx --yes filens-cli-lite capacity --json
+filens capacity --json
 ```
 
-**Offline browser preview (CLI 0.5.2):** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The first preview installs `filens-preview@0.3.2`; run `filens setup-preview` in advance for offline use. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+### Offline browser previews
+
+**CLI 0.5.4:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. Release bundles already include preview 0.3.3. Other installation methods can prepare preview assets in advance with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -56,13 +57,15 @@ filens preview report.pdf --mode serve
 
 The HTML checks browser capabilities and blocks external resource requests. It contains a copy of the original file; temporary HTML files remain after exit. Safari/WebKit iWork previews require HTTP compatibility mode. [Preview setup and limits](packages/preview/README.md#cli-preview) · [Browser validation](docs/preview-html-validation.json).
 
+### ZimaOS
+
 **[ZimaOS ModStore](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens):** install with `sudo zpkg install filens`. To upgrade, run `sudo zpkg update` and `sudo zpkg upgrade filens`. ModStore 0.5.1 includes the offline HTML preview engine for Linux x64/arm64 and always skips browser launching. Download or copy the generated HTML to your computer; `--json` returns its path on ZimaOS. Node.js and npm are not required. [Install, export previews and configure OCR](packaging/zimaos/README.md).
 
 <details>
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.18 MiB · Lite 7.87 MiB · Full 31.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.2 · macOS arm64 · Lite/Full installed packages, Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.20 MiB · Lite 8.64 MiB · Full 31.87 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.4 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -71,7 +74,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 - [Duplicates and similar images](docs/agent-cli-similarity.md) · [Windows setup and validation status](docs/agent-cli-windows.zh-CN.md)
 - [Search coverage](docs/agent-cli-search-formats.zh-CN.md), [retrieval benchmarks](docs/agent-cli-search-benchmark.zh-CN.md) and [startup costs](docs/agent-cli-search-native.zh-CN.md)
 
-The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; page selection and field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
+The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; use explicit `--pages` / `--slides` for selection. Field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
 
 **macOS OCR comparison:** Apple Vision is faster on the tested warm image calls, but loses tiny text and can be less accurate on blurred input; fresh-process latency is also higher. It cannot yet replace RapidOCR across this project's requirements. [Measurements, capability gaps and reproduction](docs/macos-ocr-benchmark.zh-CN.md).
 
@@ -79,30 +82,25 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ## Pure frontend previews
 
-**DeepSeek Harness:** [CLI tools and sidebar preview plugin](integrations/deepseek-harness/README.md), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. Install with `dsh plugin --profile desktop add dsh-filens@0.1.0`.
+**Preview 402 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
 
-**Preview 397 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
+### DeepSeek Harness
 
-### Single file or split modules
+[CLI tools and sidebar preview plugin](integrations/deepseek-harness/README.md), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. In Desktop, open **Plugins → Add plugin**, enter `dsh-filens` (or `dsh-filens@0.1.1` to pin the version), and click **Install**. [CLI installation and configuration](integrations/deepseek-harness/README.md#install-and-build).
 
-```sh
-npm install filens-preview
-```
+### Browser integration: single file or split modules
 
-**iOS / Android:** source SDKs are available as a local Swift Package and an Android
-Library, sharing the offline frontend and WASM runtime. See the
-[mobile SDK integration guide](sdk/README.md) and
-[runtime, npm and SDK sizes](docs/preview-sizes.md).
+Download a browser preview ZIP from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
 
 ```html
 <div id="preview" style="height: 80vh"></div>
 <script type="module">
-  // Split build: deploy the entire split/ directory; engines load as needed.
-  import { createPreview } from 'filens-preview';
-  // Single-file alternative: deploy all-in-one/filens.js (styles, WASM and workers included).
-  // import { createPreview } from 'filens-preview/all-in-one';
+  // Deploy the entire extracted directory; the split build loads engines as needed.
+  import { createPreview } from './filens.js';
+  // The all-in-one build uses the same entry point with styles, WASM and workers included.
+  // Keep the archive sidecars for RAR / 7z.
 
   const viewer = createPreview('#preview', { src: './report.pdf', name: 'report.pdf' });
   // viewer.update({ src: anotherFile, name: anotherFile.name });
@@ -110,17 +108,29 @@ The same API is available in both builds. Vue, styles and the conversion engines
 </script>
 ```
 
-Use a bundler for npm imports, or deploy the package runtime directory and import its `filens.js` over HTTP(S). For a Vue app, use the shared [`Preview` component](packages/vue/README.md); for direct JavaScript integration and CLI previews, see the [standalone guide](packages/preview/README.md). Single-file packaging trades a larger initial download for simpler deployment; it has the same format limits as the split build.
+Deploy the extracted runtime directory and import its `filens.js` over HTTP(S). For a Vue app, use the shared [`Preview` component](packages/vue/README.md); for direct JavaScript integration and CLI previews, see the [standalone guide](packages/preview/README.md). Single-file packaging trades a larger initial download for simpler deployment; it has the same format limits as the split build.
+
+### iOS / Android SDKs
+
+Source SDKs are available as a local Swift Package and an Android
+Library, sharing the offline frontend and WASM runtime. See the
+[mobile SDK integration guide](sdk/README.md) and
+[runtime, npm and SDK sizes](docs/preview-sizes.md).
+
+### Format coverage
 
 | Files | Preview | Main limits |
 | --- | --- | --- |
 | PPTX, Keynote / Pages / Numbers | Slide, page and worksheet canvases. | Fidelity varies by layout, fonts and objects. |
 | DOCX, XLSX / CSV, PDF | Documents, sheets and paged PDFs. | Read-only; advanced styling may differ. |
 | DOC / XLS / PPT, WPS / ET / DPS | Local WASM conversion for preview. | Preview-focused; macros are stripped. |
+| PSD / PSB, AI / EPS / PS | Saved composite images or vector PDF. | 8-bit RGB/grayscale for Photoshop; bounded PostScript preview subset. [Design limits](docs/design-preview.md). |
 | DXF, STEP / STP, mesh models | Pan drawings and orbit 3D geometry. | STEP omits source colors, names and assembly trees. |
 | RAW, common images and icons | Embedded JPEG first, lightweight RAW development as fallback. | Camera coverage and image quality vary. |
 | 360° photos and video | Interactive viewing and supported camera-original stitching. | Stitching is experimental; metadata, sidecars and browser codecs matter. |
 | Archives, ebooks, code, mind maps and diagrams | Browse entries, chapters, source and node relationships. | Each format supports a documented subset. |
+
+### Bundle sizes and loading costs
 
 <details>
 <summary>Detailed bundle sizes and loading costs</summary>
@@ -174,6 +184,8 @@ worker packaging and measured savings for applications combining the npm librari
 The table above is the recorded demo-build snapshot. The new standalone builds have their own [complete measurements](docs/preview-build-sizes.json), including embedded dependencies. Individual chunks are not independent per-format download totals.
 
 </details>
+
+### Frontend project comparisons
 
 <details>
 <summary>Frontend project comparisons</summary>

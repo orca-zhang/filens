@@ -229,6 +229,11 @@ const SOURCE_CODE_FORMATS = [
 ] as const;
 
 describe('preview format routing', () => {
+  it.each(['ai', 'eps', 'ps'])('routes native %s through vector PDF conversion', extension => {
+    expect(resolveFormatRoute({ name: `artwork.${extension}` })).toMatchObject({
+      sourceFormat: extension, targetFormat: 'pdf', driverId: 'pdf', conversion: { required: true }
+    });
+  });
   it('infers normalized extensions from names and URLs', () => {
     expect(inferExtensionFromName('Quarterly Report.PPTX')).toBe('pptx');
     expect(inferExtensionFromName('/files/archive.tar.gz?token=abc')).toBe('gz');
@@ -477,6 +482,7 @@ describe('preview format routing', () => {
 
   it('routes manifest-listed formats through their conversion preview drivers', () => {
     const expectedFamilies = {
+      pdf: 'paged',
       pptx: 'paged',
       docx: 'flow',
       xlsx: 'workbook',

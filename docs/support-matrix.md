@@ -2,7 +2,7 @@
 
 English | [简体中文](support-matrix.zh-CN.md)
 
-filens provides read-only file previews in modern browsers. The complete preview host currently covers **397 file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
+filens provides read-only file previews in modern browsers. The complete preview host currently covers **402 file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
 
 | Find | Go to |
 | --- | --- |
@@ -72,6 +72,8 @@ Long feature tables can be expanded using their disclosure headings. These table
 
 | Format | Extensions | Path | Preview coverage | Limits |
 | --- | --- | --- | --- | --- |
+| Photoshop | `psd`, `psb` | Convert → `png` | Saved merged composite, decoded in the frontend WASM core. | 8-bit RGB/grayscale; no layer editing or ICC processing. [Design preview limits](design-preview.md). |
+| Illustrator / PostScript | `ai`, `eps`, `ps` | Convert → `pdf` | PDF-compatible AI preserves PDF bytes; supported PostScript artwork becomes vector PDF, including multiple PS pages. | Preview subset; missing fonts and unsupported artwork fail explicitly. The EPS/PS module loads on demand. [Compatibility and download budget](design-preview.md). |
 | 2D CAD | `dxf` | Direct | SVG geometry, text, layers, blocks, raster references. | Partial entity and text fidelity; [DXF matrix](#dxf-cad). |
 | CAD solids | `step`, `stp` | Direct + truck Rust WASM | Lazy-loaded triangulation for viewing. | CAD editing is unavailable. |
 | 3D models and scenes | `stl`, `obj`, `ply`, `gltf`, `glb`, `3mf`, and [more](#3d-models-and-inspection) | Direct | Three.js meshes, materials, and scenes. | Format-specific material and resource limits. |
@@ -117,6 +119,8 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 | Camera RAW | [Complete RAW list](#camera-raw-conversion) | `jpg` |
 | Apple icons | `icns` | `png` |
 | Portable pixmaps | `ppm` | `png` |
+| Photoshop saved composites | `psd`, `psb` | `png` |
+| Illustrator / PostScript artwork | `ai`, `eps`, `ps` | `pdf` |
 
 ### Default routing
 
@@ -148,7 +152,7 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 
 | Component | Role | Reference |
 | --- | --- | --- |
-| Browser WASM client | `createWasmConverterClient({ wasm, imageWasm })`; runs the document/panorama core and optional image module locally. | [Converter client API](../packages/converter-client/src/index.ts) |
+| Browser WASM client | `createWasmConverterClient({ wasm, imageWasm, postscriptWasm })`; runs the shared core and optional image/PostScript modules locally. | [Converter client API](../packages/converter-client/src/index.ts) |
 | Document / panorama / PPM core | Production conversion WASM built from Rust; includes PPM → PNG without the optional image module. | [Rust core](../wasm/converter-core-rust/README.md) |
 | Optional image core | Separate image/RAW WASM module built from Rust. | [Rust image module](../wasm/converter-image-rust/README.md) |
 | HTTP adapter | Invokes the configured conversion service. | [Adapter APIs](#routes-and-source-loading) |
@@ -428,7 +432,7 @@ Gaps below apply to shipped preview paths. Hosts can supply custom drivers or co
 | BIM | Revit, IFC | No native preview route. |
 | ECAD / fabrication | Gerber/Excellon, layered KiCad PCB | No native preview route. |
 | HEIC/HEIF | Native image decoding; local WASM fallback preserves source depth for ICC or fixed PQ/HLG-to-sRGB previews. | Primary still only; no sequence-only files or gain-map reproduction. Fallback: 64 MiB input, 64 MP, 16,384 px per edge, 4 MiB ICC, 30 s decode. |
-| Other images | TIFF, PSD | No default standalone route. Demo-derived assets do not establish general support. |
+| Design editing | PSD/PSB layers, Illustrator editing data | Read-only saved-composite or vector preview; no design editor. [Supported subsets](design-preview.md). |
 | Other Netpbm extensions | `pbm`, `pgm`, `pnm`, `pam`, `pfm` | No default preview/conversion routes for these extensions. PPM support covers P3/P6 RGB only. |
 | Office add-ins | Add-ins and embedded application behavior | Outside the default conversion policy. |
 | Unlisted conversion pairs | Any pair absent from the manifests | Outside the default conversion policy; macro stripping applies to listed macro-enabled OpenXML sources. |

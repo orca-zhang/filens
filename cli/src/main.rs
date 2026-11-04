@@ -1,5 +1,6 @@
 mod workspace;
 use crate::workspace::Workspace;
+mod capacity;
 mod convert;
 #[path = "../../wasm/converter-core-rust/src/text/native_search.rs"]
 mod native_search;
@@ -37,7 +38,7 @@ fn failure(response: &mut Value, code: &str, message: impl ToString) {
 fn response(o: &Options) -> Value {
     let mut value = json!({"version":"filens-agent-v1","ok":false});
     if !o.request.operation.is_empty() {
-        value["operation"] = json!(o.request.operation);
+        value["op"] = json!(o.request.operation);
     }
     if !o.request.intent.is_empty() {
         value["intent"] = json!(o.request.intent);
@@ -63,8 +64,7 @@ fn run() -> Result<i32> {
     if args.first().is_some_and(|arg| arg == "preview") {
         return match preview::run(&args[1..]) {
             Err(error) if args.iter().any(|arg| arg == "--json") => {
-                let mut value =
-                    json!({"version":"filens-agent-v1","operation":"preview","ok":false});
+                let mut value = json!({"version":"filens-agent-v1","op":"preview","ok":false});
                 failure(&mut value, "preview_failed", error);
                 Ok(finish("json", &value, 1))
             }
@@ -353,7 +353,8 @@ fn execute(
         }
     };
     if o.request.operation == "capabilities" {
-        let mut metadata: Value = serde_json::from_str(include_str!("../capacity.json"))?;
+        let mut metadata: Value =
+            serde_json::from_str(include_str!(concat!(env!("OUT_DIR"), "/capacity.json")))?;
         metadata["profile"] = json!(profile);
         metadata["execution"] = json!({"workspace":work.mode(),"workspaceMaxBytes":if work.mode() == workspace::Mode::Memory { Some(workspace::LIMIT) } else {None},"diskSpill":false,"conversionOutput":"atomic-file"});
         metadata["formats"] = capacity;
@@ -363,7 +364,13 @@ fn execute(
         metadata["similarity"]["discovery"] = walk::capacity();
         let conversion = convert::capabilities(&mut engine)?;
         metadata["conversionPairs"] = conversion["pairs"].clone();
-        response["capacity"] = metadata;
+        match capacity::view(metadata, &o.request) {
+            Ok(metadata) => response["capacity"] = metadata,
+            Err(error) => {
+                failure(&mut response, "invalid_request", error);
+                return Ok((response, 2));
+            }
+        }
         response["ok"] = json!(true);
         return Ok((response, 0));
     }
@@ -417,10 +424,18 @@ fn extract_content(
             256 << 20,
         )?;
     }
-    let summary = (o.request.operation == "summarize").then(|| json!({
+    let summary = matches!(o.request.operation.as_str(),"summarize"|"excerpt").then(|| json!({
         "query":o.request.query,"maxChars":o.request.summary_chars.unwrap_or(2000),"ratio":o.request.summary_ratio.unwrap_or(0.3)
     }));
-    let options = json!({"maxBytes":if o.request.max_bytes == 0 { 8 << 20 } else { o.request.max_bytes },"maxOCRPages":200,"includeStructure":o.request.format != "text" || o.request.operation == "understand" || o.request.layout,"includeLayout":o.request.layout,"outputFormat":o.request.format,"summary":summary,"archiveMembers":response["source"]["archive"]["members"],"archiveName":response["source"]["archive"]["path"].as_str().and_then(|p|Path::new(p).file_name()).and_then(|p|p.to_str())});
+    let mut options = json!({"maxBytes":if o.request.max_bytes == 0 { 8 << 20 } else { o.request.max_bytes },"maxOCRPages":200,"includeStructure":o.request.format != "text" || o.request.operation == "understand" || o.request.layout,"includeLayout":o.request.layout,"outputFormat":o.request.format,"summary":summary,"archiveMembers":response["source"]["archive"]["members"],"archiveName":response["source"]["archive"]["path"].as_str().and_then(|p|Path::new(p).file_name()).and_then(|p|p.to_str())});
+    options["ocr"] = json!(o.request.ocr);
+    options["ocrMinConfidence"] = json!(o.request.ocr_min_confidence.unwrap_or(0.8));
+    options["slides"] = json!(o.request.slides);
+    options["pages"] = json!(o.request.pages);
+    options["media"] = json!(o.request.media.unwrap_or(true));
+    options["images"] = json!(o.request.images);
+    options["maxImages"] = json!(o.request.max_images.unwrap_or(4));
+    options["imageNames"] = json!(o.request.image_names);
     work.write("options.json", serde_json::to_vec(&options)?)?;
     let args = [
         "converter-text",
@@ -462,7 +477,12 @@ fn extract_content(
                 .as_str()
                 .unwrap_or("incomplete extraction"),
         );
-        return Ok((response, 3));
+        let code = if content["errorCode"] == "invalid_request" {
+            2
+        } else {
+            3
+        };
+        return Ok((response, code));
     }
     if content["truncated"] == true {
         failure(

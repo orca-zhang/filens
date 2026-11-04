@@ -289,6 +289,15 @@ async function buildFixtureEntries() {
     ...ICNS_FIXTURES,
     ...applicationIconFixtures(buildStoreZip),
     ['image/sample.ppm', utf8Bytes('P3\n# RGB test image\n2 1\n255\n255 0 0 0 255 0\n')],
+    ...[1, 2].map((version) => {
+      const header = Buffer.alloc(version === 1 ? 40 : 44);
+      header.write('8BPS'); header.writeUInt16BE(version, 4); header.writeUInt16BE(3, 12);
+      header.writeUInt32BE(1, 14); header.writeUInt32BE(2, 18); header.writeUInt16BE(8, 22); header.writeUInt16BE(3, 24);
+      return [`design/sample.${version === 1 ? 'psd' : 'psb'}`, Buffer.concat([header, Buffer.from([255, 0, 0, 255, 0, 0])])];
+    }),
+    ['design/sample.ai', buildPdfCompatibleAIFixture()],
+    ['design/sample.eps', utf8Bytes('%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 10 20 210 120\n10 20 200 100 rectfill\n%%EOF\n')],
+    ['design/sample.ps', utf8Bytes('%!PS-Adobe-3.0\n<< /PageSize [200 100] >> setpagedevice\n/Helvetica findfont 18 scalefont setfont\n20 50 moveto (Vector preview) show\n0 0 moveto 200 100 lineto stroke showpage\n')],
     ...PPT_FIXTURES.map(([relativePath, title, bullet]) => [relativePath, buildPPTBinaryCompoundFile(title, bullet)])
   ]) {
     entries.set(relativePath, bytes);
@@ -326,6 +335,7 @@ async function buildBatchManifest() {
 }
 
 function fixturePathForSource(sourceFormat) {
+  if (['psd', 'psb', 'ai', 'eps', 'ps'].includes(sourceFormat)) return `design/sample.${sourceFormat}`;
   if (['apk', 'ipa', 'ico', 'exe', 'dll', 'mui', 'mun'].includes(sourceFormat)) return `icons/sample.${sourceFormat}`;
   if (DOC_TEXT_SOURCE_FORMAT_SET.has(sourceFormat)) {
     return `doc/sample.${sourceFormat}`;
@@ -404,6 +414,26 @@ function fixturePathForSource(sourceFormat) {
 
 function fixtureBaseNameForSource(sourceFormat) {
   return `sample.${sourceFormat}`;
+}
+
+function buildPdfCompatibleAIFixture() {
+  const stream = 'q\n0.8 0.2 0.1 rg\n20 20 m 180 20 l 100 80 l h f\nQ\n';
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Resources << >> /Contents 4 0 R >>',
+    `<< /Length ${stream.length} >>\nstream\n${stream}endstream`
+  ];
+  let pdf = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${offsets.length}\n0000000000 65535 f \n`;
+  pdf += offsets.slice(1).map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('');
+  return utf8Bytes(`${pdf}trailer\n<< /Root 1 0 R /Size ${offsets.length} >>\nstartxref\n${xref}\n%%EOF\n`);
 }
 
 function normalizeFormat(format) {

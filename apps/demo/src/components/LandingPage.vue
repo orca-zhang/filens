@@ -137,7 +137,7 @@ const previews = [
     color: '#8572b6',
     image: 'model.webp',
     sample: 'obj',
-    file: 'viking-helmet.obj'
+    file: 'trail-rover.obj'
   },
   {
     zh: '全景',
@@ -383,7 +383,7 @@ async function playDemo(): Promise<void> {
               'Ideas in a document. Places in a photo. Possibilities in a model.'
             )
           }}<br />
-          {{ t('支持 397 种格式，在浏览器里打开。本地文件，无需上传。', 'Preview 397 file formats in your browser. Local files stay with you.') }}
+          {{ t('支持 402 种格式，在浏览器里打开。本地文件，无需上传。', 'Preview 402 file formats in your browser. Local files stay with you.') }}
         </p>
         <div class="hero-actions">
           <label class="button button-dark upload-button"
@@ -541,7 +541,7 @@ async function playDemo(): Promise<void> {
             <h2 id="formats-title">{{ t('更多文件，也能打开。', 'More files. More possibilities.') }}</h2>
           </div>
           <p>
-            {{ t('覆盖 397 种格式，按扩展名统计，包含直接预览与本地转换后预览。从传统文档到相机原片、CAD 实体，选一类，打开真实样例。', '397 formats, counted by extension, including direct previews and previews after local conversion. From legacy documents to camera originals and CAD solids, pick a category to try a real sample.') }}
+            {{ t('覆盖 402 种格式，按扩展名统计，包含直接预览与本地转换后预览。从传统文档到相机原片、CAD 实体，选一类，打开真实样例。', '402 formats, counted by extension, including direct previews and previews after local conversion. From legacy documents to camera originals and CAD solids, pick a category to try a real sample.') }}
           </p>
         </div>
         <ul class="format-family-grid">

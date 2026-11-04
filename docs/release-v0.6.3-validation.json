@@ -1,0 +1,247 @@
+{
+  "tag": "v0.6.3",
+  "date": "2026-11-04",
+  "components": {
+    "cli": "0.5.4",
+    "preview": "0.3.3",
+    "sourceSdk": "0.1.3",
+    "dsh": "0.1.1"
+  },
+  "previewFormats": 402,
+  "cliInputFormats": 334,
+  "changes": {
+    "designSamples": 12,
+    "modelSamples": 8,
+    "sampleStates": [
+      "可打开示例",
+      "已支持，暂无示例",
+      "暂不支持"
+    ],
+    "initialModelFamily": "STEP URL selects Design after lazy routes load",
+    "protocol": {
+      "request": "op",
+      "response": "op",
+      "capacityFilter": "forOp",
+      "legacyFieldsRejected": [
+        "operation",
+        "forOperation"
+      ]
+    }
+  },
+  "validation": {
+    "workspaceTests": {
+      "passed": 1876,
+      "skipped": 11,
+      "files": 102
+    },
+    "policyChecks": 2027,
+    "wasmConversionJobs": {
+      "passed": 311,
+      "total": 311
+    },
+    "goTests": "passed",
+    "cliRustTests": 27,
+    "cli": {
+      "endToEndGroups": 8,
+      "capabilityChecks": 35,
+      "documentInspectionGroups": 21,
+      "conversionChecks": 24,
+      "runtimeChecks": 19,
+      "workspaceChecks": 23,
+      "pruneGroups": 18,
+      "searchChecks": 44,
+      "archiveOcrChecks": 53,
+      "similarityChecks": 27
+    },
+    "workbench": {
+      "passed": 33,
+      "scope": "27 landing/design/model browser tests plus 6 final workbench tests; initial STEP category, Chinese/English states and 320px layout verified. Dev-only model touch tests passed separately."
+    },
+    "standalonePreview": {
+      "passed": true,
+      "browserCases": 58,
+      "productionViteExports": 2,
+      "registryInstallation": "passed with fresh npm cache",
+      "report": "preview-npm-validation.json"
+    },
+    "mobileRuntime": {
+      "passed": 22,
+      "browsers": [
+        "Chromium",
+        "WebKit"
+      ]
+    },
+    "dsh": {
+      "tests": 18,
+      "browserFormats": 12,
+      "report": "dsh-plugin-validation.json"
+    },
+    "native": {
+      "tag": "v0.6.3",
+      "cliVersion": "0.5.4",
+      "previewVersion": "0.3.3",
+      "platform": "darwin-arm64",
+      "emptyPATH": true,
+      "resourceOverrides": false,
+      "archives": [
+        {
+          "file": "filens-0.5.4-macos-arm64-lite.tar.gz",
+          "kind": "cli-lite",
+          "platform": "darwin-arm64",
+          "bytes": 11399720,
+          "unpackedBytes": 19334305,
+          "binaryBytes": 2304688,
+          "sha256": "c1ad83ce9330bc0f10cf8b8f2ce2197166aef6cb0bcb56162f1914ea3fcf6525",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": true
+        },
+        {
+          "file": "filens-0.5.4-macos-arm64-full.tar.gz",
+          "kind": "cli-full",
+          "platform": "darwin-arm64",
+          "bytes": 26215967,
+          "unpackedBytes": 43664654,
+          "binaryBytes": 2304688,
+          "sha256": "df307735d4760369fe833690af650080f28d7eacc1ec32922d01b2478be3cdae",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": true
+        },
+        {
+          "file": "filens-0.5.4-linux-x64-lite.tar.gz",
+          "kind": "cli-lite",
+          "platform": "linux-x64",
+          "bytes": 12185805,
+          "unpackedBytes": 19054547,
+          "binaryBytes": 2024932,
+          "sha256": "6d8d75f8f2f9a7bc613b8ab9f0eac2c92a837dc45ee95b37a2c21050d626d0dc",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": false
+        },
+        {
+          "file": "filens-0.5.4-linux-x64-full.tar.gz",
+          "kind": "cli-full",
+          "platform": "linux-x64",
+          "bytes": 28910394,
+          "unpackedBytes": 49397932,
+          "binaryBytes": 2022956,
+          "sha256": "bf9bb64ca6cc7d432d4c7ace757b48311f4c9886286eeffd44a145011ae58c7d",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": false
+        },
+        {
+          "file": "filens-0.5.4-linux-arm64-lite.tar.gz",
+          "kind": "cli-lite",
+          "platform": "linux-arm64",
+          "bytes": 12069940,
+          "unpackedBytes": 18938729,
+          "binaryBytes": 1909112,
+          "sha256": "20b780bb55aac7c859018ec9308a2fd49850d4ca6493c9859e2ec2b8ee95f6bf",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": false
+        },
+        {
+          "file": "filens-0.5.4-linux-arm64-full.tar.gz",
+          "kind": "cli-full",
+          "platform": "linux-arm64",
+          "bytes": 26484129,
+          "unpackedBytes": 43487570,
+          "binaryBytes": 1907572,
+          "sha256": "78ae39c409669c7bf0a92ee8f4aa2f40cef1f1074d14aa84c22ba589123d7f4c",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": false
+        },
+        {
+          "file": "filens-0.5.4-windows-x64-lite.zip",
+          "kind": "cli-lite",
+          "platform": "win32-x64",
+          "bytes": 12120044,
+          "unpackedBytes": 18966017,
+          "binaryBytes": 1936384,
+          "sha256": "dacdf3ab25fb2f96f81cc41358838f0995c4f67a0c4a66ad1e875b4b6d6d5fd6",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": false
+        },
+        {
+          "file": "filens-0.5.4-windows-x64-full.zip",
+          "kind": "cli-full",
+          "platform": "win32-x64",
+          "bytes": 29141827,
+          "unpackedBytes": 49124112,
+          "binaryBytes": 1935872,
+          "sha256": "afe53ed2e2dff0df531427d4a6ebe41ef16d663fead69840db32511fa3f9959c",
+          "archiveIntegrity": true,
+          "wasmValid": true,
+          "previewMatches": true,
+          "nativeExecuted": false
+        }
+      ],
+      "offlineBrowserPreviews": [
+        {
+          "profile": "full",
+          "input": "evidence.txt",
+          "passed": true,
+          "externalRequests": 0
+        },
+        {
+          "profile": "full",
+          "input": "filens-cosmic-atlas.pdf",
+          "passed": true,
+          "externalRequests": 0
+        },
+        {
+          "profile": "full",
+          "input": "cube.stp",
+          "passed": true,
+          "externalRequests": 0
+        },
+        {
+          "profile": "full",
+          "input": "mono-sound.psd",
+          "passed": true,
+          "externalRequests": 0
+        },
+        {
+          "profile": "lite",
+          "input": "evidence.txt",
+          "passed": true,
+          "externalRequests": 0
+        }
+      ],
+      "passed": true
+    }
+  },
+  "assets": {
+    "packageArchives": 12,
+    "metadataFiles": 2,
+    "kinds": [
+      "cli-full",
+      "cli-lite",
+      "browser-split",
+      "browser-all-in-one",
+      "source-sdk-ios",
+      "source-sdk-android"
+    ],
+    "npmTarballsIncluded": false,
+    "report": "preview-release-sizes.json"
+  },
+  "limits": [
+    "Linux and Windows binaries are cross-built; native execution was verified only on macOS arm64.",
+    "Mobile ZIPs contain source SDKs and offline assets; no physical-device or AAR/XCFramework validation.",
+    "Current DSH adapter tests use the compiled browser harness and real CLI; previous Desktop/Web profile validation belongs to adapter 0.1.0.",
+    "PSD/PSB use saved 8-bit RGB/grayscale composites. AI/EPS/PS previews have the documented PostScript/font limits."
+  ]
+}

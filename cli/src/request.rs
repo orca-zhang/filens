@@ -13,6 +13,7 @@ pub struct Request {
     pub workspace: crate::workspace::Mode,
     pub intent: String,
     pub input: String,
+    #[serde(rename = "op")]
     pub operation: String,
     pub format: String,
     pub max_bytes: i64,
@@ -33,6 +34,19 @@ pub struct Request {
     pub cache: Option<bool>,
     pub similarity_mode: String,
     pub threshold: Option<u32>,
+    pub ocr: String,
+    pub ocr_min_confidence: Option<f64>,
+    pub slides: String,
+    pub pages: String,
+    pub media: Option<bool>,
+    pub images: bool,
+    pub max_images: Option<usize>,
+    pub image_names: Vec<String>,
+    pub full: bool,
+    pub section: String,
+    pub fields: String,
+    #[serde(rename = "forOp")]
+    pub for_operation: String,
 }
 
 #[derive(Clone)]
@@ -63,6 +77,19 @@ fn re(pattern: &str) -> Regex {
 }
 fn has(s: &str, terms: &[&str]) -> bool {
     terms.iter().any(|term| s.contains(term))
+}
+fn infer_output_format(options: &str, layout: bool) -> String {
+    let output = re(
+        r"(?i)(?:(?-u:\b)(?:as|in|output|return)\s+(?:plain\s+)?|(?:以|用|为|输出|返回)\s*)(json|yaml|yml|markdown|md|html|htm|csv|tsv|xml|text|txt)(?-u:\b)",
+    );
+    let suffix = re(
+        r"(?i)(?-u:\b)(json|yaml|yml|markdown|md|html|csv|tsv|xml|text)\s*(?:format|output|格式|输出|返回)",
+    );
+    output
+        .captures(options)
+        .or_else(|| suffix.captures(options))
+        .map(|c| c[1].to_owned())
+        .unwrap_or_else(|| if layout { "json" } else { "text" }.into())
 }
 pub fn normalize(s: &str) -> String {
     match s.trim().to_lowercase().as_str() {
@@ -126,14 +153,45 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
             }
             "--capacity" | "--capabilities" => o.request.operation = "capabilities".into(),
             "--no-ocr" => o.ocr = false,
+            "--full" => o.request.full = true,
+            "--no-media" => o.request.media = Some(false),
+            "--images" => o.request.images = true,
             "--layout" => o.request.layout = true,
             "--force" => o.request.force = true,
             "--include-hidden" => o.request.include_hidden = true,
             "--no-cache" => o.request.cache = Some(false),
-            "--workspace" | "--input" | "--format" | "--wasm" | "--max-bytes" | "--timeout" | "--output" | "-o"
-            | "--source" | "--from" | "--target" | "--to" | "--password" | "--locale"
-            | "--query" | "--summary-chars" | "--summary-ratio" | "--search-mode"
-            | "--max-results" | "--max-files" | "--max-depth" | "--similarity-mode" | "--threshold" => {
+            "--workspace"
+            | "--input"
+            | "--format"
+            | "--wasm"
+            | "--max-bytes"
+            | "--timeout"
+            | "--output"
+            | "-o"
+            | "--source"
+            | "--from"
+            | "--target"
+            | "--to"
+            | "--password"
+            | "--locale"
+            | "--query"
+            | "--summary-chars"
+            | "--summary-ratio"
+            | "--search-mode"
+            | "--max-results"
+            | "--max-files"
+            | "--max-depth"
+            | "--similarity-mode"
+            | "--threshold"
+            | "--ocr"
+            | "--ocr-min-confidence"
+            | "--slides"
+            | "--pages"
+            | "--max-images"
+            | "--image"
+            | "--section"
+            | "--op"
+            | "--fields" => {
                 let value = match inline {
                     Some(v) => v,
                     None => {
@@ -166,6 +224,18 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
                     "--max-depth" => o.request.max_depth = Some(value.parse()?),
                     "--similarity-mode" => o.request.similarity_mode = value.into(),
                     "--threshold" => o.request.threshold = Some(value.parse()?),
+                    "--ocr" => o.request.ocr = value.into(),
+                    "--ocr-min-confidence" => o.request.ocr_min_confidence = Some(value.parse()?),
+                    "--slides" => o.request.slides = value.into(),
+                    "--pages" => o.request.pages = value.into(),
+                    "--max-images" => o.request.max_images = Some(value.parse()?),
+                    "--image" => {
+                        o.request.images = true;
+                        o.request.image_names.push(value.into());
+                    }
+                    "--section" => o.request.section = value.into(),
+                    "--op" => o.request.for_operation = value.into(),
+                    "--fields" => o.request.fields = value.into(),
                     "--password" | "--locale" => {
                         if o.request.options.is_null() {
                             o.request.options = serde_json::json!({});
@@ -201,10 +271,28 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
             o.request.intent = data.trim().into();
         }
     } else if !positional.is_empty() {
-        if positional.first().is_some_and(|s| ["similar", "duplicates", "similar-images"].contains(&s.as_str())) {
+        if positional
+            .first()
+            .is_some_and(|s| ["capacity", "capabilities"].contains(&s.as_str()))
+        {
+            o.request.operation = "capabilities".into();
+            ensure!(positional.len() <= 2, "capacity accepts one query");
+            if let Some(query) = positional.get(1) {
+                ensure!(
+                    o.request.query.is_empty(),
+                    "multiple capacity queries found"
+                );
+                o.request.query = query.clone();
+            }
+        } else if positional
+            .first()
+            .is_some_and(|s| ["similar", "duplicates", "similar-images"].contains(&s.as_str()))
+        {
             o.request.operation = positional[0].clone();
             ensure!(positional.len() <= 2, "similar accepts one directory");
-            if let Some(input) = positional.get(1) { set_input(&mut o.request, input)?; }
+            if let Some(input) = positional.get(1) {
+                set_input(&mut o.request, input)?;
+            }
         } else if positional.first().is_some_and(|s| s == "search") {
             o.request.operation = "search".into();
             if let Some(input) = positional.get(1) {
@@ -214,7 +302,22 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
                 ensure!(o.request.query.is_empty(), "multiple search queries found");
                 o.request.query = positional[2..].join(" ");
             }
-        } else if positional.len() == 2 && positional.first().is_some_and(|s| ["read", "extract", "understand", "layout", "summarize", "prune", "summary", "summarise"].contains(&s.as_str())) {
+        } else if positional.len() == 2
+            && positional.first().is_some_and(|s| {
+                [
+                    "read",
+                    "extract",
+                    "understand",
+                    "layout",
+                    "excerpt",
+                    "summarize",
+                    "prune",
+                    "summary",
+                    "summarise",
+                ]
+                .contains(&s.as_str())
+            })
+        {
             o.request.operation = positional[0].clone();
             set_input(&mut o.request, &positional[1])?;
         } else if positional.first().is_some_and(|s| s == "convert") {
@@ -237,7 +340,11 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
             o.request.intent = positional.join(" ");
             for arg in &positional {
                 if std::fs::metadata(arg).is_ok_and(|m| m.is_file())
-                    || arg.split_once("!/").is_some_and(|(outer, _)| std::fs::metadata(crate::text_catalog::unescape_archive_path(outer)).is_ok_and(|m|m.is_file())) {
+                    || arg.split_once("!/").is_some_and(|(outer, _)| {
+                        std::fs::metadata(crate::text_catalog::unescape_archive_path(outer))
+                            .is_ok_and(|m| m.is_file())
+                    })
+                {
                     set_input(&mut o.request, arg)?;
                 }
             }
@@ -249,7 +356,48 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
     if o.help {
         return Ok(());
     }
+    if !o.ocr {
+        o.request.ocr = "never".into();
+    }
+    if o.request.ocr.is_empty() {
+        o.request.ocr = "auto".into();
+    }
+    ensure!(
+        ["auto", "never", "always"].contains(&o.request.ocr.as_str()),
+        "ocr must be auto, never or always"
+    );
+    ensure!(
+        o.request
+            .ocr_min_confidence
+            .is_none_or(|v| v.is_finite() && (0.0..=1.0).contains(&v)),
+        "ocrMinConfidence must be between 0 and 1"
+    );
+    o.ocr &= o.request.ocr != "never";
     resolve(&mut o.request)?;
+    ensure!(
+        o.request.max_images.is_none_or(|n| (1..=16).contains(&n)),
+        "maxImages must be between 1 and 16"
+    );
+    ensure!(
+        o.request.image_names.len() <= 16
+            && o.request
+                .image_names
+                .iter()
+                .all(|s| !s.is_empty() && s.len() <= 4096 && !s.contains('\0')),
+        "imageNames accepts at most 16 nonempty media names"
+    );
+    ensure!(
+        o.request.images || (o.request.max_images.is_none() && o.request.image_names.is_empty()),
+        "maxImages/imageNames require images=true"
+    );
+    ensure!(
+        !o.request.images
+            || matches!(
+                o.request.operation.as_str(),
+                "read" | "extract" | "understand" | "layout"
+            ),
+        "images requires read/understand/layout"
+    );
     ensure!(!o.timeout.is_zero(), "timeout must be positive");
     ensure!(
         (0..=33554432).contains(&o.request.max_bytes),
@@ -293,14 +441,62 @@ fn set_input(r: &mut Request, value: &str) -> Result<()> {
 }
 
 fn resolve(r: &mut Request) -> Result<()> {
-    let search_words = re(r"(?i)^\s*(?:please\s+)?(?:search|find)(?-u:\b)|^\s*(?:请|帮我)?\s*(?:搜索|查找|检索)|^\s*在.*(?:搜索|查找|检索)");
-    let mut unquoted = re(r#"["'“‘][^"'”’]+["'”’]"#).replace_all(&r.intent, "").into_owned();
-    if !r.input.is_empty() { unquoted=unquoted.replace(&r.input, ""); }
+    let intent = r.intent.trim().to_lowercase();
+    if r.operation == "capacity"
+        || (r.operation.is_empty()
+            && (r.full
+                || !r.section.is_empty()
+                || !r.fields.is_empty()
+                || !r.for_operation.is_empty()
+                || ["capacity", "capabilities"].contains(&intent.as_str())))
+    {
+        r.operation = "capabilities".into();
+    }
+    if r.operation == "capabilities" {
+        ensure!(
+            r.input.is_empty() && r.output.is_empty() && r.options.is_null() && !r.force,
+            "capabilities does not accept input/output/conversion options"
+        );
+        if r.format.is_empty() {
+            r.format = infer_output_format(&r.intent, false);
+        }
+        r.format = normalize(&r.format);
+        ensure!(
+            FORMATS.contains(&r.format.as_str()),
+            "unsupported output format"
+        );
+        r.source_format = r.source_format.trim_start_matches('.').to_lowercase();
+        r.target_format = r.target_format.trim_start_matches('.').to_lowercase();
+        r.for_operation = r.for_operation.trim().to_lowercase();
+        ensure!(
+            r.query.len() <= 4096,
+            "capacity query must be at most 4096 UTF-8 bytes"
+        );
+        crate::capacity::resolve_query(r)?;
+        return Ok(());
+    }
+    ensure!(
+        !r.full && r.section.is_empty() && r.fields.is_empty() && r.for_operation.is_empty(),
+        "full/section/fields/op require capacity"
+    );
+
+    let search_words = re(
+        r"(?i)^\s*(?:please\s+)?(?:search|find)(?-u:\b)|^\s*(?:请|帮我)?\s*(?:搜索|查找|检索)|^\s*在.*(?:搜索|查找|检索)",
+    );
+    let mut unquoted = re(r#"["'“‘][^"'”’]+["'”’]"#)
+        .replace_all(&r.intent, "")
+        .into_owned();
+    if !r.input.is_empty() {
+        unquoted = unquoted.replace(&r.input, "");
+    }
     if ["similar", "duplicates", "similar-images"].contains(&r.operation.as_str())
         || (r.operation.is_empty() && re(r"(?i)重复文件|相同文件|相似图片|相近图片|\bduplicate\s+files\b|\bsimilar\s+images\b").is_match(&unquoted)) {
         return resolve_similarity(r);
     }
-    ensure!(r.similarity_mode.is_empty() && r.threshold.is_none(), "similarity options require the similar operation");
+    ensure!(
+        r.similarity_mode.is_empty() && r.threshold.is_none(),
+        "similarity options require the similar operation"
+    );
     if r.operation == "search" || (r.operation.is_empty() && search_words.is_match(&unquoted)) {
         return resolve_search(r);
     }
@@ -349,17 +545,7 @@ fn resolve(r: &mut Request) -> Result<()> {
         || re(r"(?i)(?-u:\b)(?:layout|coordinates|bounding\s+boxes)(?-u:\b)|布局|版面|坐标")
             .is_match(&options);
     if r.format.is_empty() {
-        let output = re(
-            r"(?i)(?:(?-u:\b)(?:as|in|output|return)\s+(?:plain\s+)?|(?:以|用|为|输出|返回)\s*)(json|yaml|yml|markdown|md|html|htm|csv|tsv|xml|text|txt)(?-u:\b)",
-        );
-        let suffix = re(
-            r"(?i)(?-u:\b)(json|yaml|yml|markdown|md|html|csv|tsv|xml|text)\s*(?:format|output|格式|输出|返回)",
-        );
-        r.format = output
-            .captures(&options)
-            .or_else(|| suffix.captures(&options))
-            .map(|c| c[1].to_owned())
-            .unwrap_or_else(|| if r.layout { "json" } else { "text" }.into());
+        r.format = infer_output_format(&options, r.layout);
     }
     r.format = normalize(&r.format);
     ensure!(
@@ -416,12 +602,19 @@ fn resolve(r: &mut Request) -> Result<()> {
         .into();
     }
     ensure!(
-        ["read", "understand", "capabilities", "layout", "summarize"]
-            .contains(&r.operation.as_str()),
+        [
+            "read",
+            "understand",
+            "capabilities",
+            "layout",
+            "summarize",
+            "excerpt"
+        ]
+        .contains(&r.operation.as_str()),
         "unsupported operation {:?}",
         r.operation
     );
-    if r.operation == "summarize" {
+    if matches!(r.operation.as_str(), "summarize" | "excerpt") {
         if r.query.is_empty() {
             let unquoted_focus =
                 re(r"(?i)(?:聚焦|关注|围绕|focus(?:ing)?\s+on)\s*([^，,。；;\n]+)");
@@ -517,32 +710,89 @@ fn resolve(r: &mut Request) -> Result<()> {
 }
 
 fn resolve_similarity(r: &mut Request) -> Result<()> {
-    ensure!(r.query.is_empty() && r.summary_chars.is_none() && r.summary_ratio.is_none()
-        && r.output.is_empty() && r.source_format.is_empty() && r.target_format.is_empty()
-        && r.options.is_null() && !r.force && !r.layout && r.search_mode.is_empty() && r.cache.is_none(),
-        "similar does not accept query, summary, conversion, layout or search-cache options");
+    ensure!(
+        r.query.is_empty()
+            && r.summary_chars.is_none()
+            && r.summary_ratio.is_none()
+            && r.output.is_empty()
+            && r.source_format.is_empty()
+            && r.target_format.is_empty()
+            && r.options.is_null()
+            && !r.force
+            && !r.layout
+            && r.search_mode.is_empty()
+            && r.cache.is_none(),
+        "similar does not accept query, summary, conversion, layout or search-cache options"
+    );
     let quoted = re(r#"["'“‘]([^"'”’]+)["'”’]"#);
-    let paths:Vec<_> = quoted.captures_iter(&r.intent).map(|c| c[1].to_owned()).collect();
-    for path in paths { set_input(r, &path)?; }
+    let paths: Vec<_> = quoted
+        .captures_iter(&r.intent)
+        .map(|c| c[1].to_owned())
+        .collect();
+    for path in paths {
+        set_input(r, &path)?;
+    }
     let options = quoted.replace_all(&r.intent, "");
-    let inferred = if r.operation == "duplicates" || re(r"(?i)重复文件|相同文件|\bduplicate\s+files\b").is_match(&options) { "duplicates" } else { "images" };
-    ensure!(r.operation != "duplicates" || r.similarity_mode.is_empty() || r.similarity_mode == "duplicates", "duplicates requires similarityMode=duplicates");
-    ensure!(r.operation != "similar-images" || r.similarity_mode.is_empty() || r.similarity_mode == "images", "similar-images requires similarityMode=images");
-    if r.similarity_mode.is_empty() { r.similarity_mode = inferred.into(); }
+    let inferred = if r.operation == "duplicates"
+        || re(r"(?i)重复文件|相同文件|\bduplicate\s+files\b").is_match(&options)
+    {
+        "duplicates"
+    } else {
+        "images"
+    };
+    ensure!(
+        r.operation != "duplicates"
+            || r.similarity_mode.is_empty()
+            || r.similarity_mode == "duplicates",
+        "duplicates requires similarityMode=duplicates"
+    );
+    ensure!(
+        r.operation != "similar-images"
+            || r.similarity_mode.is_empty()
+            || r.similarity_mode == "images",
+        "similar-images requires similarityMode=images"
+    );
+    if r.similarity_mode.is_empty() {
+        r.similarity_mode = inferred.into();
+    }
     r.operation = "similar".into();
-    ensure!(["duplicates", "images"].contains(&r.similarity_mode.as_str()), "similarityMode must be duplicates or images");
-    ensure!(r.threshold.is_none_or(|n| n <= 24), "threshold must be between 0 and 24 (default 8)");
-    ensure!(r.similarity_mode == "images" || r.threshold.is_none(), "threshold applies only to similar images");
+    ensure!(
+        ["duplicates", "images"].contains(&r.similarity_mode.as_str()),
+        "similarityMode must be duplicates or images"
+    );
+    ensure!(
+        r.threshold.is_none_or(|n| n <= 24),
+        "threshold must be between 0 and 24 (default 8)"
+    );
+    ensure!(
+        r.similarity_mode == "images" || r.threshold.is_none(),
+        "threshold applies only to similar images"
+    );
     if r.format.is_empty() {
         r.format = re(r"(?i)(?:\b(?:as|in|output|return)\s+|(?:以|用|输出|返回)\s*)(json|yaml|yml|markdown|md|html|csv|tsv|xml|text|txt)\b")
             .captures(&options).map_or_else(|| "text".into(), |c| c[1].to_owned());
     }
     r.format = normalize(&r.format);
-    ensure!(FORMATS.contains(&r.format.as_str()), "unsupported output format");
-    ensure!(!r.input.is_empty() && !r.input.contains("://"), "similar requires a local directory; quote the path or use --input");
-    ensure!((1..=1000).contains(&r.max_results.unwrap_or(100)), "maxResults must be between 1 and 1000");
-    ensure!((1..=20000).contains(&r.max_files.unwrap_or(2000)), "maxFiles must be between 1 and 20000");
-    ensure!((1..=256).contains(&r.max_depth.unwrap_or(32)), "maxDepth must be between 1 and 256");
+    ensure!(
+        FORMATS.contains(&r.format.as_str()),
+        "unsupported output format"
+    );
+    ensure!(
+        !r.input.is_empty() && !r.input.contains("://"),
+        "similar requires a local directory; quote the path or use --input"
+    );
+    ensure!(
+        (1..=1000).contains(&r.max_results.unwrap_or(100)),
+        "maxResults must be between 1 and 1000"
+    );
+    ensure!(
+        (1..=20000).contains(&r.max_files.unwrap_or(2000)),
+        "maxFiles must be between 1 and 20000"
+    );
+    ensure!(
+        (1..=256).contains(&r.max_depth.unwrap_or(32)),
+        "maxDepth must be between 1 and 256"
+    );
     Ok(())
 }
 
@@ -558,7 +808,10 @@ fn resolve_search(r: &mut Request) -> Result<()> {
             && !r.force,
         "search does not accept summary or conversion options"
     );
-    ensure!(r.cache != Some(true), "search uses request-local memory only; persistent cache is unavailable (omit cache or use cache:false)");
+    ensure!(
+        r.cache != Some(true),
+        "search uses request-local memory only; persistent cache is unavailable (omit cache or use cache:false)"
+    );
     let quoted = re(r#"["'“‘]([^"'”’]+)["'”’]"#);
     let values: Vec<_> = quoted
         .captures_iter(&r.intent)
@@ -697,15 +950,139 @@ fn resolve_conversion(r: &mut Request) -> Result<()> {
 mod tests {
     use super::*;
     #[test]
+    fn image_arguments_are_bounded_and_read_scoped() {
+        let r = options(
+            &[
+                "read",
+                "deck.pptx",
+                "--images",
+                "--max-images",
+                "2",
+                "--image",
+                "ppt/media/a.png",
+            ],
+            "",
+        )
+        .unwrap()
+        .request;
+        assert!(r.images);
+        assert_eq!(r.max_images, Some(2));
+        assert_eq!(r.image_names, vec!["ppt/media/a.png"]);
+        for args in [
+            vec!["read", "deck.pptx", "--images", "--max-images", "0"],
+            vec!["read", "deck.pptx", "--max-images", "2"],
+            vec!["capacity", "--images"],
+            vec!["excerpt", "deck.pptx", "--images"],
+        ] {
+            assert!(options(&args, "").is_err());
+        }
+    }
+    #[test]
+    fn capability_conditions_are_scoped_and_match_json_requests() {
+        let r = options(
+            &[
+                "capacity", "--op", "READ", "--query", "ocr", "--from", "PPTX", "--to", "PDF",
+            ],
+            "",
+        )
+        .unwrap()
+        .request;
+        assert_eq!(
+            (
+                r.operation.as_str(),
+                r.for_operation.as_str(),
+                r.query.as_str(),
+                r.source_format.as_str(),
+                r.target_format.as_str(),
+                r.format.as_str()
+            ),
+            ("capabilities", "read", "ocr", "pptx", "pdf", "text")
+        );
+        let r = options(
+            &["-"],
+            r#"{"op":"capacity","forOp":"read","query":"ocr","sourceFormat":"pptx"}"#,
+        )
+        .unwrap()
+        .request;
+        assert_eq!(r.for_operation, "read");
+        assert_eq!(r.query, "ocr");
+        assert_eq!(r.format, "json");
+        assert!(options(&["read", "report.pdf", "--op", "read"], "").is_err());
+        assert!(options(&["capacity", "--query", &"x".repeat(4097)], "").is_err());
+    }
+    #[test]
+    fn capability_directions_match_positional_flag_and_json() {
+        for (args, stdin) in [
+            (vec!["capacity", " .DOCX > ? "], ""),
+            (vec!["capabilities", "--query", "docx>?"], ""),
+            (vec!["-"], r#"{"op":"capacity","query":"docx>?"}"#),
+        ] {
+            let r = options(&args, stdin).unwrap().request;
+            assert_eq!(r.source_format, "docx");
+            assert!(r.target_format.is_empty() && r.query.is_empty());
+            assert_eq!(r.section, "conversionPairs");
+        }
+        let r = options(&["capacity", "?>PDF"], "").unwrap().request;
+        assert!(r.source_format.is_empty());
+        assert_eq!(r.target_format, "pdf");
+        let r = options(&["capacity", "?>?", "--section", "formats"], "")
+            .unwrap()
+            .request;
+        assert_eq!(r.section, "formats");
+        assert!(options(&["capacity", "docx>pdf", "--from", "pptx"], "").is_err());
+        for query in ["docx>", ">pdf", "docx>pdf>png", "docx>pdf ocr"] {
+            assert!(options(&["capacity", query], "").is_err(), "{query}");
+        }
+    }
+    #[test]
     fn search_intents_and_boundaries() {
-        let request=options(&["在 \"./文档\" 中搜索 \"预算 风险\"，以 JSON 输出"],"").unwrap().request;
-        assert_eq!((request.operation.as_str(),request.input.as_str(),request.query.as_str(),request.format.as_str()),("search","./文档","预算 风险","json"));
-        let request=options(&["search","./documents","--query","budget risk","--json"],"").unwrap().request;
-        assert_eq!(request.query,"budget risk");
-        assert!(options(&["search","docs","--query","x","--search-mode","semantic"],"").is_err());
-        assert!(options(&["search","docs","--query","x","--max-results","0"],"").is_err());
-        let mut request=Request{input:"/tmp/search files/budget.txt".into(),intent:"read /tmp/search files/budget.txt".into(),..Default::default()};
-        resolve(&mut request).unwrap();assert_eq!(request.operation,"read");
+        let request = options(&["在 \"./文档\" 中搜索 \"预算 风险\"，以 JSON 输出"], "")
+            .unwrap()
+            .request;
+        assert_eq!(
+            (
+                request.operation.as_str(),
+                request.input.as_str(),
+                request.query.as_str(),
+                request.format.as_str()
+            ),
+            ("search", "./文档", "预算 风险", "json")
+        );
+        let request = options(
+            &["search", "./documents", "--query", "budget risk", "--json"],
+            "",
+        )
+        .unwrap()
+        .request;
+        assert_eq!(request.query, "budget risk");
+        assert!(
+            options(
+                &[
+                    "search",
+                    "docs",
+                    "--query",
+                    "x",
+                    "--search-mode",
+                    "semantic"
+                ],
+                ""
+            )
+            .is_err()
+        );
+        assert!(
+            options(
+                &["search", "docs", "--query", "x", "--max-results", "0"],
+                ""
+            )
+            .is_err()
+        );
+        let mut request = Request {
+            input: "/tmp/search files/budget.txt".into(),
+            intent: "read /tmp/search files/budget.txt".into(),
+            ..Default::default()
+        };
+        resolve(&mut request).unwrap();
+        assert_eq!(request.operation, "read");
     }
     fn options(args: &[&str], stdin: &str) -> Result<Options> {
         let mut o = Options::default();
@@ -719,13 +1096,34 @@ mod tests {
     #[test]
     fn workspace_modes_are_explicit_and_validated_for_flags_and_json() {
         use crate::workspace::Mode;
-        assert_eq!(options(&["capacity"], "").unwrap().request.workspace, Mode::Memory);
-        assert_eq!(options(&["capacity", "--workspace", "disk"], "").unwrap().request.workspace, Mode::Disk);
-        assert_eq!(options(&["capacity", "--workspace=memory"], "").unwrap().request.workspace, Mode::Memory);
-        assert_eq!(options(&["-"], r#"{"operation":"capabilities","workspace":"disk"}"#).unwrap().request.workspace, Mode::Disk);
+        assert_eq!(
+            options(&["capacity"], "").unwrap().request.workspace,
+            Mode::Memory
+        );
+        assert_eq!(
+            options(&["capacity", "--workspace", "disk"], "")
+                .unwrap()
+                .request
+                .workspace,
+            Mode::Disk
+        );
+        assert_eq!(
+            options(&["capacity", "--workspace=memory"], "")
+                .unwrap()
+                .request
+                .workspace,
+            Mode::Memory
+        );
+        assert_eq!(
+            options(&["-"], r#"{"op":"capabilities","workspace":"disk"}"#)
+                .unwrap()
+                .request
+                .workspace,
+            Mode::Disk
+        );
         assert!(options(&["capacity", "--workspace", "auto"], "").is_err());
         assert!(options(&["capacity", "--workspace"], "").is_err());
-        assert!(options(&["-"], r#"{"operation":"capabilities","workspace":"auto"}"#).is_err());
+        assert!(options(&["-"], r#"{"op":"capabilities","workspace":"auto"}"#).is_err());
     }
     #[test]
     fn requests_and_errors() {
@@ -791,10 +1189,37 @@ mod tests {
     #[test]
     fn archive_member_paths_are_single_inputs() {
         let path = "资料.zip!/附件.tar.gz!/meeting notes.docx";
-        assert_eq!(options(&["read",path,"--layout","--json"],"").unwrap().request.input,path);
-        assert_eq!(options(&["summarize",path,"--query","预算"],"").unwrap().request.operation,"summarize");
-        assert_eq!(options(&["读取 \"资料.zip!/附件.tar.gz!/meeting notes.docx\"，以 JSON 输出"],"").unwrap().request.input,path);
-        assert_eq!(options(&["read bundle.zip!/inner.zip!/note.txt as json"],"").unwrap().request.input,"bundle.zip!/inner.zip!/note.txt");
+        assert_eq!(
+            options(&["read", path, "--layout", "--json"], "")
+                .unwrap()
+                .request
+                .input,
+            path
+        );
+        assert_eq!(
+            options(&["summarize", path, "--query", "预算"], "")
+                .unwrap()
+                .request
+                .operation,
+            "summarize"
+        );
+        assert_eq!(
+            options(
+                &["读取 \"资料.zip!/附件.tar.gz!/meeting notes.docx\"，以 JSON 输出"],
+                ""
+            )
+            .unwrap()
+            .request
+            .input,
+            path
+        );
+        assert_eq!(
+            options(&["read bundle.zip!/inner.zip!/note.txt as json"], "")
+                .unwrap()
+                .request
+                .input,
+            "bundle.zip!/inner.zip!/note.txt"
+        );
     }
     #[test]
     fn conversion_request_and_path_validation() {

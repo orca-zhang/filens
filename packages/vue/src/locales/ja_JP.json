@@ -1,4 +1,7 @@
 {
+  "Model tools": "モデルツール",
+  "Structure": "構造",
+  "Tools": "ツール",
   "Prev": "前へ",
   "Next": "次へ",
   "Fit": "全体表示",
@@ -94,5 +97,7 @@
   "Download attachment": "添付ファイルをダウンロード",
   "Retry": "再試行",
   "No previewer is configured for this attachment.": "この添付ファイルのプレビューは設定されていません。",
-  "Some document attachments could not be read.": "一部の添付ファイルを読み取れませんでした。"
+  "Some document attachments could not be read.": "一部の添付ファイルを読み取れませんでした。",
+  "Model materials": "モデルのマテリアル",
+  "Selected materials": "選択したマテリアル"
 }

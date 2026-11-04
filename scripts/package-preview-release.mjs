@@ -11,10 +11,6 @@ if (!/^v\d+\.\d+\.\d+$/.test(tag ?? '')) throw new Error('Usage: node scripts/pa
 const read = async file => JSON.parse(await readFile(path.join(root, file), 'utf8'));
 const preview = await read('dist/preview-npm/release.json');
 const sdk = await read('dist/mobile-sdk/release.json');
-let dsh;
-try { dsh = await read('dist/dsh-npm/release.json'); }
-catch (error) { if (error.code !== 'ENOENT') throw error; }
-if (dsh && dsh.previewVersion !== preview.version) throw new Error('DSH plugin uses a different preview runtime');
 const build = await read('docs/preview-build-sizes.json');
 const packageMetadata = await read('packages/preview/package.json');
 let native;
@@ -58,16 +54,6 @@ for (const mode of ['split', 'all-in-one']) {
   if (verified.status !== 0) throw new Error('Runtime ZIP integrity check failed');
   assets.push(await measure(file, `browser-${mode}`, await totalBytes(target)));
 }
-await cp(path.join(root, 'dist/preview-npm', preview.file), path.join(directory, preview.file));
-const npm = await measure(preview.file, 'npm', preview.unpackedBytes);
-if (npm.sha256 !== preview.sha256) throw new Error('npm tarball differs from the measured artifact');
-assets.push(npm);
-if (dsh) {
-  await cp(path.join(root, 'dist/dsh-npm', dsh.file), path.join(directory, dsh.file));
-  const artifact = await measure(dsh.file, 'dsh-plugin-npm', dsh.unpackedBytes);
-  if (artifact.sha256 !== dsh.sha256) throw new Error('DSH tarball differs from the measured artifact');
-  assets.push(artifact);
-}
 for (const item of sdk.packages) {
   await cp(path.join(root, 'dist/mobile-sdk', item.file), path.join(directory, item.file));
   const artifact = await measure(item.file, `source-sdk-${item.platform}`, item.unpackedBytes);
@@ -84,7 +70,7 @@ const tags = spawnSync('git', ['tag', '--list', '--sort=-v:refname'], { cwd: roo
 if (tags.status !== 0) throw new Error('Cannot identify the previous release');
 const previousRelease = tags.stdout.trim().split('\n').find(value => value && value !== tag);
 const report = { date: build.date, tag, previousRelease,
-  components: { preview: preview.version, mobileSdk: sdk.version, ...(native ? { cli: native.version } : {}), ...(dsh ? { dshPlugin: dsh.version } : {}) },
+  components: { preview: preview.version, mobileSdk: sdk.version, ...(native ? { cli: native.version } : {}) },
   scope: 'Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.', assets };
 await writeFile(path.join(root, 'docs/preview-release-sizes.json'), `${JSON.stringify(report, null, 2)}\n`);
 await writeManifest(report);
@@ -101,12 +87,6 @@ async function writeManifest(report) {
   const manifestName = `filens-release-${tag}.json`;
   const manifest = { ...report, sourceCommit: commit.stdout.trim(),
     validation: await read('docs/preview-npm-validation.json') };
-  if (dsh) manifest.dshPlugin = { ...dsh, validation: await read('docs/dsh-plugin-validation.json') };
-  try {
-    const publication = await read('docs/preview-npm-publication.json');
-    if (publication.version === preview.version) manifest.npmPublication = publication;
-  }
-  catch (error) { if (error.code !== 'ENOENT') throw error; }
   await writeFile(path.join(directory, manifestName), `${JSON.stringify(manifest, null, 2)}\n`);
   const manifestAsset = await measure(manifestName, 'manifest');
   await writeFile(path.join(directory, 'SHA256SUMS'), [...report.assets, manifestAsset].map(item => `${item.sha256}  ${item.file}`).join('\n') + '\n');

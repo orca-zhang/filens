@@ -121,6 +121,7 @@ pub(super) fn warning(message: &str) {
     });
 }
 pub(super) fn page(index: u64, width: Option<f64>, height: Option<f64>, unit: &str, kind: &str) {
+    provenance::page(index,kind);
     STATE.with(|s| {
         if let Some(layout) = s
             .borrow_mut()
@@ -234,13 +235,13 @@ pub(super) fn ocr(response: &Value, start: usize, standalone: bool) {
     }
     let (width, height) = (size[0], size[1]);
     let (space, page_size) = STATE.with(|s| {
-        let mut slot = s.borrow_mut(); let layout = slot.as_mut().unwrap().result.layout.as_mut().unwrap();
+        let mut slot = s.borrow_mut(); let state = slot.as_mut().unwrap(); let origin = state.origin.clone(); let layout = state.result.layout.as_mut().unwrap();
         let page = layout.current_page.and_then(|p| layout.pages.iter().find(|v| v["index"] == p)).cloned();
         if let Some(page) = page.filter(|v| v["unit"] == "pt") {
             (format!("page:{}", page["index"]), Some((page["width"].as_f64().unwrap_or(width), page["height"].as_f64().unwrap_or(height))))
         } else {
             let id = format!("image:{}", layout.images.len()+1);
-            layout.images.push(json!({"id":id,"width":width,"height":height,"unit":"px","orientation":"EXIF applied","placement":if standalone {"standalone"} else {"embedded; position within document unavailable"}}));
+            layout.images.push(json!({"id":id,"name":origin.media,"page":origin.page,"slide":origin.slide,"shape":origin.shape,"sourcePart":origin.source_part,"width":width,"height":height,"unit":"px","orientation":"EXIF applied","placement":if standalone {"standalone"} else {"embedded; position within document unavailable"}}));
             (id, None)
         }
     });
@@ -259,6 +260,7 @@ pub(super) fn ocr(response: &Value, start: usize, standalone: bool) {
         let Some(text) = lines.get(index).and_then(Value::as_str) else {
             continue;
         };
+        if text.is_empty() { continue; }
         let Some((score, points)) = rest
             .split_once("score(")
             .and_then(|(_, v)| v.split_once(')'))

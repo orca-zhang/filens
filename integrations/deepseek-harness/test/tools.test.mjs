@@ -4,6 +4,7 @@ import { mkdtemp, readFile, writeFile, rm, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { zipSync, strToU8 } from 'fflate';
 import { toolContext } from './helpers.mjs';
 import { parseResult } from '../src/requests.js';
 
@@ -13,18 +14,32 @@ test('real DSH pipeline: capacity, OCR, read, search, excerpt, conversion and no
   const root = await mkdtemp(path.join(tmpdir(), 'filens-dsh-tools-'));
   const { ctx, plugin, call } = await toolContext();
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }); });
-  assert.equal(ctx.tools.schemas().length, 5);
+  assert.equal(ctx.tools.schemas().length, 7);
   const capacity = await call('filens_capacity');
   assert.equal(capacity.isError, false, JSON.stringify(capacity));
   assert.equal(capacity.value.response.ok, true);
   assert.equal(capacity.value.response.capacity.ocr.available, true);
+  const compactText = capacity.content.map(v => v.text ?? '').join('\n');
+  assert.match(compactText, /read\(input,/);
+  assert.ok(compactText.length < JSON.stringify(capacity.value, null, 2).length);
+  assert.ok(Buffer.byteLength(JSON.stringify(capacity.value.response)) < 8000);
+  for (const op of ['read','excerpt','duplicates','similar-images']) assert.ok(capacity.value.response.capacity.operations.some(v => v.name === op));
   const ocr = await call('filens_read', { path: path.join(repository, 'converter/rapidocr/testdata/scan.pdf'), layout: true });
   assert.equal(ocr.value.response.ok, true, JSON.stringify(ocr));
   assert.match(ocr.value.response.content.text, /FILENS2026[\s\S]*BRIGHT2027/);
   for (const file of ['filens-cosmic-atlas.pdf', 'filens-aurora-guide.docx', 'filens-observatory.xlsx', 'filens-field-notes.pptx']) {
     const result = await call('filens_read', { path: path.join(repository, 'apps/demo/public/samples', file) });
     assert.equal(result.isError, false, JSON.stringify(result));
-    assert.equal(result.value.response.ok, true, JSON.stringify(result.value));
+    if (result.value.exit_code === 3) {
+      assert.equal(result.value.response.error.code, 'ocr_low_confidence', JSON.stringify(result.value));
+      assert.ok(result.value.response.content.warnings.length);
+    } else assert.equal(result.value.response.ok, true, JSON.stringify(result.value));
+    assert.ok(result.value.response.content.text.length > 0);
+    if (/\.(docx|xlsx|pptx)$/.test(file)) {
+      assert.equal(result.value.exit_code, 0, JSON.stringify(result.value));
+      assert.equal(result.value.response.content.textScope, 'native-text');
+      assert.ok(result.value.response.content.document.blocks.every(b => b.source === 'text'));
+    }
   }
   const tricky = path.join(root, "中文 ' $(touch PWNED).txt");
   await writeFile(tricky, 'Harness integration evidence.\nEvidence must survive search and excerpt.');
@@ -38,6 +53,7 @@ test('real DSH pipeline: capacity, OCR, read, search, excerpt, conversion and no
   const excerpt = await call('filens_excerpt', { path: tricky, query: 'Harness' });
   assert.equal(excerpt.value.response.ok, true, JSON.stringify(excerpt));
   assert.match(excerpt.value.response.content.text, /Harness integration/);
+  assert.equal(excerpt.value.response.op, 'excerpt');
   const input = path.join(root, 'data.csv');
   const output = path.join(root, 'data.xlsx');
   await writeFile(input, 'name,value\nHarness,42\n');
@@ -58,6 +74,41 @@ test('real DSH pipeline: capacity, OCR, read, search, excerpt, conversion and no
   assert.equal(ctx.tools.schemas().length, 0);
 });
 
+test('filtered discovery, page selection and duplicate/image tools are callable through DSH', async t => {
+  const root = await mkdtemp(path.join(tmpdir(), 'filens-dsh-discovery-'));
+  const { ctx, call } = await toolContext();
+  t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }); });
+  const capacity = await call('filens_capacity', { from: 'pptx', section: 'operations,conversionPairs' });
+  assert.equal(capacity.value.response.ok, true, JSON.stringify(capacity));
+  assert.deepEqual(Object.keys(capacity.value.response.capacity).sort(), ['conversionPairs','operations']);
+  assert.ok(capacity.value.response.capacity.conversionPairs.every(v => v.sourceFormat === 'pptx'));
+  const operation = await call('filens_capacity', { op: 'read' });
+  assert.deepEqual(Object.keys(operation.value.response.capacity), ['operations']);
+  assert.deepEqual(operation.value.response.capacity.operations.map(v => v.name), ['read']);
+  const keyword = await call('filens_capacity', { query: 'OCR', section: 'formats' });
+  assert.ok(keyword.value.response.capacity.formats.length > 0);
+  assert.ok(keyword.value.response.capacity.formats.every(v => v.ocr === true));
+  const full = await call('filens_capacity', { op: 'read', detail: 'full' });
+  assert.deepEqual(JSON.parse(full.content[0].text), full.value);
+  for (const [query, from, to] of [['docx>?', 'docx', ''], ['?>pdf', '', 'pdf']]) {
+    const direction = await call('filens_capacity', { query });
+    assert.equal(direction.value.response.ok, true, JSON.stringify(direction));
+    assert.deepEqual(Object.keys(direction.value.response.capacity), ['conversionPairs']);
+    assert.ok(direction.value.response.capacity.conversionPairs.every(p => (!from || p.sourceFormat === from) && (!to || p.targetFormat === to)));
+  }
+  const page = await call('filens_read', { path: path.join(repository, 'converter/rapidocr/testdata/scan.pdf'), pages: '2', ocr: 'always' });
+  assert.equal(page.value.response.ok, true, JSON.stringify(page));
+  assert.match(page.value.response.content.text, /BRIGHT2027/);
+  assert.ok(page.value.response.content.document.blocks.every(b => b.page === 2 && b.source === 'ocr'));
+  const image = await readFile(path.join(repository, 'converter/rapidocr/testdata/scan.png'));
+  await writeFile(path.join(root, 'a.png'), image); await writeFile(path.join(root, 'b.png'), image);
+  for (const tool of ['filens_duplicates', 'filens_similar_images']) {
+    const result = await call(tool, { path: root });
+    assert.equal(result.value.response.ok, true, JSON.stringify(result));
+    assert.equal(result.value.response.similarity.groups.length, 1);
+  }
+});
+
 test('session cwd and shell environment use the DSH services', async t => {
   const root = await mkdtemp(path.join(tmpdir(), 'filens-dsh-session-'));
   await writeFile(path.join(root, 'relative.txt'), 'Session-owned relative file');
@@ -73,6 +124,56 @@ test('session cwd and shell environment use the DSH services', async t => {
   const value = await ctx.tools.get('filens_read').execute({ path: 'relative.txt' }, { agent, signal: new AbortController().signal });
   assert.match(JSON.stringify(value), /Session-owned relative file/);
   assert.equal(ensured && collected, true);
+});
+
+test('per-call OCR control completes the requested native text scope without false failures', async t => {
+  const root = await mkdtemp(path.join(tmpdir(), 'filens-dsh-ocr-'));
+  const { ctx, call } = await toolContext();
+  t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }); });
+  const document = path.join(root, 'illustrated.docx');
+  await writeFile(document, zipSync({
+    'word/document.xml': strToU8('<w:document xmlns:w="word" xmlns:a="drawing" xmlns:r="rels"><w:body><w:p><w:r><w:t>NATIVE BEFORE</w:t><a:blip r:embed="image1"/><w:t>NATIVE AFTER</w:t></w:r></w:p></w:body></w:document>'),
+    'word/_rels/document.xml.rels': strToU8('<Relationships><Relationship Id="image1" Target="media/scan.png"/></Relationships>'),
+    'word/media/scan.png': await readFile(path.join(repository, 'converter/rapidocr/testdata/scan-transparent.png')),
+  }));
+  const recognized = await call('filens_read', { path: document, ocr: 'auto' });
+  assert.equal(recognized.value.response.ok, true, JSON.stringify(recognized));
+  assert.match(recognized.value.response.content.text, /NATIVE BEFORE[\s\S]*FILENS2026[\s\S]*NATIVE AFTER/);
+  const native = await call('filens_read', { path: document, ocr: 'never', layout: true });
+  assert.equal(native.value.exit_code, 0, JSON.stringify(native));
+  assert.equal(native.value.response.ok, true);
+  assert.equal(native.value.response.error, undefined);
+  assert.equal(native.value.response.content.complete, true);
+  assert.equal(native.value.response.content.textScope, 'native-text');
+  assert.match(native.value.response.content.text, /NATIVE BEFORE[\s\S]*NATIVE AFTER/);
+  assert.doesNotMatch(native.value.response.content.text, /FILENS2026/);
+
+  const excerpt = await call('filens_excerpt', { path: document, query: 'NATIVE', ocr: 'never' });
+  assert.equal(excerpt.value.exit_code, 0, JSON.stringify(excerpt));
+  assert.match(excerpt.value.response.content.text, /NATIVE/);
+  assert.doesNotMatch(excerpt.value.response.content.text, /FILENS2026/);
+  const imageHit = await call('filens_search', { path: root, query: 'FILENS2026' });
+  assert.equal(imageHit.value.response.search.matchedFiles, 1, JSON.stringify(imageHit));
+  const skipped = await call('filens_search', { path: root, query: 'FILENS2026', ocr: 'never' });
+  assert.equal(skipped.value.response.search.matchedFiles, 0, JSON.stringify(skipped));
+  assert.equal(skipped.value.response.search.complete, true);
+  const nativeHit = await call('filens_search', { path: root, query: 'NATIVE', ocr: 'never' });
+  assert.equal(nativeHit.value.response.search.matchedFiles, 1, JSON.stringify(nativeHit));
+  assert.equal(nativeHit.value.response.search.results[0].sourceComplete, true);
+});
+
+test('per-call OCR cannot re-enable recognition disabled by the plugin setting', async t => {
+  const { ctx, call } = await toolContext({ ocr: false });
+  t.after(() => ctx.fiber.dispose());
+  const skipped = await call('filens_read', { path: path.join(repository, 'converter/rapidocr/testdata/scan.png'), ocr: 'auto' });
+  assert.equal(skipped.value.exit_code, 0, JSON.stringify(skipped));
+  assert.equal(skipped.value.response.ok, true);
+  assert.equal(skipped.value.response.content.complete, true);
+  assert.equal(skipped.value.response.content.textScope, 'native-text');
+  assert.doesNotMatch(skipped.value.response.content.text, /FILENS2026/);
+  const native = await call('filens_read', { path: path.join(repository, 'README.md'), ocr: 'auto' });
+  assert.equal(native.value.response.ok, true, JSON.stringify(native));
+  assert.match(native.value.response.content.text, /FiLens/);
 });
 
 test('real process deadline, cancellation and plugin unload stop execution', async t => {

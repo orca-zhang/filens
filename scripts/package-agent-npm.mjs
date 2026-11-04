@@ -10,7 +10,7 @@ import { requestedSourceCount } from './download-agent-models.mjs';
 import { assertReleaseArchive, assertReleaseDirectory } from './agent-release-privacy.mjs';
 import { buildAgentBinary, compressAgentWASM, preparePDFium } from './agent-rust-build.mjs';
 import { writeRustLicenses } from './agent-rust-licenses.mjs';
-import { executableName, releaseTargets, platformPackageName, npmInvocation } from './agent-platforms.mjs';
+import { executableName, releaseTargets, platformPackageName, npmInvocation, supportedPlatforms } from './agent-platforms.mjs';
 import { checkAgentReleaseLimits } from './agent-release-limits.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -105,6 +105,14 @@ if (obsolete.length) {
 const release = {version,targets,privacyChecked:true,previewIncluded:withPreview,binaryCompression,packages};
 release.sizeLimits = checkAgentReleaseLimits(release, output);
 await writeFile(path.join(output,'release.json'),JSON.stringify(release,null,2)+'\n');
+if (supportedPlatforms.every(platform => targets.includes(platform))) {
+  // README changes affect package sizes too; repack until the displayed totals
+  // match the final archives, and retain those hashes in release.json.
+  await run(process.execPath, [path.join(root, 'scripts/report-agent-npm-release.mjs'), '--repack']);
+  console.log('Synchronized CLI sizes in both READMEs, npm package READMEs and docs/agent-cli-npm-release.json.');
+} else {
+  console.log('Kept the all-platform size report and READMEs unchanged; build all targets to synchronize release sizes.');
+}
 console.log(`Prepared ${packages.length} npm tarballs in dist/npm. No registry publication performed.`);
 
 async function prepare(name, metadata) {

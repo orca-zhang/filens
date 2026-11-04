@@ -18,7 +18,7 @@ const previewBuild = spawnSync(process.execPath, [path.join(repository, 'node_mo
 });
 if (previewBuild.error) throw previewBuild.error;
 if (previewBuild.status !== 0) throw new Error(`Shared preview build exited with ${previewBuild.status}`);
-for (const name of ['tools.js', 'requests.js', 'preview-host.js']) await cp(path.join(root, 'src', name), path.join(output, name));
+for (const name of ['tools.js', 'requests.js', 'images.js', 'preview-host.js']) await cp(path.join(root, 'src', name), path.join(output, name));
 for (const name of ['viewer.html', 'viewer.js', 'viewer.css']) await cp(path.join(root, 'src', name), path.join(output, 'runtime', name));
 const files = {};
 async function walk(directory, prefix = '') {

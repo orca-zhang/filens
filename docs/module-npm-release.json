@@ -29,21 +29,21 @@
     },
     {
       "name": "@filens/converter-client",
-      "version": "0.1.0",
-      "file": "filens-converter-client-0.1.0.tgz",
-      "bytes": 1037196,
-      "unpackedBytes": 3195650,
-      "sha256": "77cde71ff1f88456846ada245cadcd4cbe0820500475208f427960efbe04c287",
-      "integrity": "sha512-ZYbN69SEM/wDyhiO6CG7haHZTMSn1PYGNY7OA8/CP1DrsWSIJzb2rkLc0pFwFLB0XYc1dwYHMYyoei+h/jJjDw=="
+      "version": "0.1.1",
+      "file": "filens-converter-client-0.1.1.tgz",
+      "bytes": 1045818,
+      "unpackedBytes": 3226379,
+      "sha256": "ab708afd1fa24fb660638ac52812c8b6777938e4e8f4f001079c11703f85adc2",
+      "integrity": "sha512-71qqbN6dbzPTXMk9XESQwCrbp3ldYviXH3izDABxJBJ7VRo8R1TTfsojgQ+E7qndm9HHGH0mtK3sATHk+ujRTg=="
     },
     {
       "name": "@filens/core",
-      "version": "0.1.0",
-      "file": "filens-core-0.1.0.tgz",
-      "bytes": 141226,
-      "unpackedBytes": 597977,
-      "sha256": "bbf42e79cd95836ada159524e2d6bc292e5705928816fc1df9b45569710d333d",
-      "integrity": "sha512-Rglx/fgTOYIc4y2ckFw8kh+EOacXq36fLlZzqP/00KicDbVsa9fGP22Qwz34EcQhIiNJcFOMcDDwAplvjMBUoQ=="
+      "version": "0.1.1",
+      "file": "filens-core-0.1.1.tgz",
+      "bytes": 141462,
+      "unpackedBytes": 598921,
+      "sha256": "9c8adda7655ec307cacbf83946c8b9666c3107e140c4d38f7f1799c82af16362",
+      "integrity": "sha512-At/B/zBrhkc9mqaoHjGkjkSDEVMbFOY0K/P+/bhjtWzTR9qdPYgkPR03I4FDxeaiDkXLmVj8tA6zJbbl6CiBgg=="
     },
     {
       "name": "@filens/design",
@@ -146,12 +146,12 @@
     },
     {
       "name": "@filens/vue",
-      "version": "0.1.0",
-      "file": "filens-vue-0.1.0.tgz",
-      "bytes": 90672,
-      "unpackedBytes": 444673,
-      "sha256": "ff786710b483c815353ca124fa4e6c3166cb31f36aa69d2bcd3963dcfdf399f5",
-      "integrity": "sha512-NRMUsUZ+Kt5yspn1lPXL9wXZJ8OhJ6JvvvutXr/0jhSofhEibLn4URoOXH2nb70kvrEGkwPMfxNLIzwzA1A5pg=="
+      "version": "0.1.1",
+      "file": "filens-vue-0.1.1.tgz",
+      "bytes": 94363,
+      "unpackedBytes": 464169,
+      "sha256": "c1dcca6e7e7c005320d36fbf2980d4aab4c8023dffec492e37e7a18b5925903d",
+      "integrity": "sha512-Ge5xg6lG8FEeK20//OYPV0luWPKtsweMKjlhk9OiedNVGfz77kXxwGgCV8QDdrotbMtHYivbcGOJoFkSBybv2w=="
     },
     {
       "name": "@filens/xlsx",
