@@ -222,6 +222,12 @@
         }
       ],
       "passed": true
+    },
+    "cliDistribution": {
+      "offlineTarballInstallation": "passed",
+      "freshPublicRegistryInstallation": "passed",
+      "platform": "darwin-arm64",
+      "report": "agent-cli-npm-validation.json"
     }
   },
   "assets": {
@@ -243,5 +249,9 @@
     "Mobile ZIPs contain source SDKs and offline assets; no physical-device or AAR/XCFramework validation.",
     "Current DSH adapter tests use the compiled browser harness and real CLI; previous Desktop/Web profile validation belongs to adapter 0.1.0.",
     "PSD/PSB use saved 8-bit RGB/grayscale composites. AI/EPS/PS previews have the documented PostScript/font limits."
-  ]
+  ],
+  "publication": {
+    "status": "published-and-verified",
+    "report": "npm-publication.json"
+  }
 }

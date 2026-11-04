@@ -1,7 +1,7 @@
 {
   "date": "2026-11-04",
   "observedAt": "2026-11-04T05:59:13.627Z",
-  "status": "locally-validated",
+  "status": "published-and-validated",
   "package": {
     "name": "dsh-filens",
     "version": "0.1.1",
@@ -129,5 +129,11 @@
     "No new real Desktop or Web profile installation validation for 0.1.1.",
     "Linux/Windows native execution and remote/container shells were not tested.",
     "402 extensions are registered; the browser suite exercises 12 formats."
-  ]
+  ],
+  "publication": {
+    "registry": "https://registry.npmjs.org/",
+    "observedAt": "2026-11-04T06:11:36.535Z",
+    "registryHttpStatus": 200,
+    "integrity": "sha512-cobx0TS6CUpmP7QTwTsFsQ+8dYvE/st55tezqkuaUzEsR/vEtqWWu5baY/Lg2u8hyhwcBFzFy8ftQ/NWvCDd/A=="
+  }
 }

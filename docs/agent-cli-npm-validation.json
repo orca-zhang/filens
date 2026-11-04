@@ -5,8 +5,16 @@
       "command": "node scripts/test-agent-npm.mjs",
       "platform": "darwin-arm64",
       "passed": true,
-      "observedAt": "2026-11-04T05:58:23.456Z",
+      "observedAt": "2026-11-04T06:02:54.478Z",
       "freshNpmCache": false,
+      "preview": true
+    },
+    "registry": {
+      "command": "node scripts/test-agent-npm.mjs --registry",
+      "platform": "darwin-arm64",
+      "passed": true,
+      "observedAt": "2026-11-04T06:11:07.667Z",
+      "freshNpmCache": true,
       "preview": true
     }
   }
