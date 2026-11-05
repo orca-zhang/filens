@@ -2,7 +2,7 @@
   "date": "2026-11-05",
   "version": "0.3.4",
   "unit": "bytes",
-  "scope": "Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
+  "scope": "Current source checkout runtime build (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
   "builds": {
     "split": {
       "files": [
@@ -25,34 +25,34 @@
           "brotli": 156937
         },
         {
-          "file": "chunks/archive-driver-9RVPZTAM.js",
-          "raw": 32604,
-          "gzip": 10686,
-          "brotli": 9658
+          "file": "chunks/archive-driver-Lnm9YU9f.js",
+          "raw": 32633,
+          "gzip": 10697,
+          "brotli": 9668
         },
         {
-          "file": "chunks/browser-video-session-C7QUXrd5.js",
+          "file": "chunks/browser-video-session-DrSeiPXP.js",
           "raw": 36038,
-          "gzip": 12360,
+          "gzip": 12359,
           "brotli": 11163
         },
         {
-          "file": "chunks/cad-driver-BywAWzEU.js",
+          "file": "chunks/cad-driver-Cid10iqC.js",
           "raw": 54517,
           "gzip": 16748,
-          "brotli": 14684
+          "brotli": 14662
         },
         {
-          "file": "chunks/client-DHAZZrgc.js",
+          "file": "chunks/client-DgP42PML.js",
           "raw": 2527,
-          "gzip": 1275,
+          "gzip": 1274,
           "brotli": 1101
         },
         {
-          "file": "chunks/codec-preview-driver-CojJ3ibm.js",
+          "file": "chunks/codec-preview-driver-CurXQYBb.js",
           "raw": 5799,
-          "gzip": 2125,
-          "brotli": 1904
+          "gzip": 2121,
+          "brotli": 1899
         },
         {
           "file": "chunks/compression-CLhefix_.js",
@@ -61,16 +61,16 @@
           "brotli": 5191
         },
         {
-          "file": "chunks/diagram-driver-5y--5fJ_.js",
+          "file": "chunks/diagram-driver-B66oUTEY.js",
           "raw": 21861,
           "gzip": 7058,
-          "brotli": 6285
+          "brotli": 6274
         },
         {
-          "file": "chunks/docx-driver-C2_QLP2P.js",
+          "file": "chunks/docx-driver-CHv2iJ6n.js",
           "raw": 8989,
-          "gzip": 3340,
-          "brotli": 2985
+          "gzip": 3339,
+          "brotli": 2983
         },
         {
           "file": "chunks/docx-engine-DhLsMf1L.js",
@@ -85,10 +85,10 @@
           "brotli": 39324
         },
         {
-          "file": "chunks/ebook-driver-BVEzBLOs.js",
+          "file": "chunks/ebook-driver-6_KLYp6T.js",
           "raw": 17026,
-          "gzip": 6352,
-          "brotli": 5688
+          "gzip": 6351,
+          "brotli": 5682
         },
         {
           "file": "chunks/font-loading-BPv1ZV5e.js",
@@ -103,34 +103,34 @@
           "brotli": 3721
         },
         {
-          "file": "chunks/index-B5D6GLaz.js",
-          "raw": 275115,
-          "gzip": 73907,
-          "brotli": 60897
+          "file": "chunks/index-DAzUUREn.js",
+          "raw": 277666,
+          "gzip": 74590,
+          "brotli": 61533
         },
         {
-          "file": "chunks/index-DUqr4qT2.js",
+          "file": "chunks/index-DavGY1M1.js",
           "raw": 15372,
-          "gzip": 5558,
-          "brotli": 5047
+          "gzip": 5556,
+          "brotli": 5048
         },
         {
-          "file": "chunks/iwork-driver-BKt4Qx1z.js",
-          "raw": 23328,
-          "gzip": 7676,
-          "brotli": 6937
+          "file": "chunks/iwork-driver-v50w9rXk.js",
+          "raw": 23357,
+          "gzip": 7684,
+          "brotli": 6959
         },
         {
-          "file": "chunks/media-runtime-NEcs4Yw-.js",
+          "file": "chunks/media-runtime-DIKWXdzL.js",
           "raw": 146447,
           "gzip": 53645,
-          "brotli": 46530
+          "brotli": 46569
         },
         {
-          "file": "chunks/mindmap-driver-BLwmppVI.js",
+          "file": "chunks/mindmap-driver-s1_EqYjD.js",
           "raw": 15708,
           "gzip": 5071,
-          "brotli": 4536
+          "brotli": 4530
         },
         {
           "file": "chunks/model-3ds-ppXS_UoN.js",
@@ -187,10 +187,10 @@
           "brotli": 41697
         },
         {
-          "file": "chunks/model3d-driver-DJPU8yeY.js",
+          "file": "chunks/model3d-driver-vlSrly7R.js",
           "raw": 106826,
-          "gzip": 30834,
-          "brotli": 27169
+          "gzip": 30833,
+          "brotli": 27135
         },
         {
           "file": "chunks/mp4box.all-Bw_Tlr0T-D0URDfA1.js",
@@ -199,10 +199,10 @@
           "brotli": 37203
         },
         {
-          "file": "chunks/native-drivers-28PaBz7Y.js",
-          "raw": 49468,
-          "gzip": 15899,
-          "brotli": 14243
+          "file": "chunks/native-drivers-HbipUmbm.js",
+          "raw": 49672,
+          "gzip": 15930,
+          "brotli": 14235
         },
         {
           "file": "chunks/office-attachments-CprbjlU9.js",
@@ -211,10 +211,10 @@
           "brotli": 11325
         },
         {
-          "file": "chunks/panorama-driver-Dv-hkEsG.js",
+          "file": "chunks/panorama-driver-GpcRz_KE.js",
           "raw": 186878,
-          "gzip": 54372,
-          "brotli": 46265
+          "gzip": 54371,
+          "brotli": 46334
         },
         {
           "file": "chunks/pdf-Dzzffz3p.js",
@@ -223,22 +223,22 @@
           "brotli": 109850
         },
         {
-          "file": "chunks/pdf-driver-B_Ts5jE1.js",
+          "file": "chunks/pdf-driver-CR1wuMQs.js",
           "raw": 14521,
           "gzip": 4826,
-          "brotli": 4353
+          "brotli": 4354
         },
         {
-          "file": "chunks/pptx-driver-D3hiMx4U.js",
+          "file": "chunks/pptx-driver-BewD93Vf.js",
           "raw": 96353,
-          "gzip": 28335,
-          "brotli": 25244
+          "gzip": 28334,
+          "brotli": 25259
         },
         {
-          "file": "chunks/rust-step-importer-CWvsLNHM.js",
+          "file": "chunks/rust-step-importer-BS0IpO-R.js",
           "raw": 2775,
-          "gzip": 1388,
-          "brotli": 1215
+          "gzip": 1387,
+          "brotli": 1217
         },
         {
           "file": "chunks/svg-selection-IMnE-8rI.js",
@@ -271,16 +271,16 @@
           "brotli": 367
         },
         {
-          "file": "chunks/vue-4lD-xgIj.js",
-          "raw": 65084,
-          "gzip": 25592,
-          "brotli": 23244
+          "file": "chunks/vue-IyRo7Zd3.js",
+          "raw": 68358,
+          "gzip": 26898,
+          "brotli": 24382
         },
         {
-          "file": "chunks/xlsx-driver-C7Kah77A.js",
-          "raw": 19494,
-          "gzip": 6932,
-          "brotli": 6303
+          "file": "chunks/xlsx-driver-C-34_jYX.js",
+          "raw": 19531,
+          "gzip": 6946,
+          "brotli": 6313
         },
         {
           "file": "chunks/xml-compat-DIhpt_3t.js",
@@ -339,8 +339,8 @@
         {
           "file": "filens.js",
           "raw": 55327,
-          "gzip": 10896,
-          "brotli": 9675
+          "gzip": 10894,
+          "brotli": 9670
         },
         {
           "file": "libheif.wasm",
@@ -356,9 +356,9 @@
         }
       ],
       "main": {
-        "raw": 18102887,
-        "gzip": 6110657,
-        "brotli": 4731766
+        "raw": 18109011,
+        "gzip": 6112694,
+        "brotli": 4733610
       },
       "archive": {
         "raw": 1168795,
@@ -366,9 +366,9 @@
         "brotli": 356992
       },
       "total": {
-        "raw": 19271682,
-        "gzip": 6569366,
-        "brotli": 5088758
+        "raw": 19277806,
+        "gzip": 6571403,
+        "brotli": 5090602
       }
     },
     "all-in-one": {
@@ -387,15 +387,15 @@
         },
         {
           "file": "filens.js",
-          "raw": 7258142,
-          "gzip": 4031506,
-          "brotli": 3852757
+          "raw": 7264221,
+          "gzip": 4033494,
+          "brotli": 3854671
         }
       ],
       "main": {
-        "raw": 7258142,
-        "gzip": 4031506,
-        "brotli": 3852757
+        "raw": 7264221,
+        "gzip": 4033494,
+        "brotli": 3854671
       },
       "archive": {
         "raw": 1168795,
@@ -403,14 +403,14 @@
         "brotli": 356992
       },
       "total": {
-        "raw": 8426937,
-        "gzip": 4490215,
-        "brotli": 4209749
+        "raw": 8433016,
+        "gzip": 4492203,
+        "brotli": 4211663
       },
       "delivery": {
-        "raw": 7258142,
-        "gzip": 3992298,
-        "brotli": 3852757,
+        "raw": 7264221,
+        "gzip": 3994325,
+        "brotli": 3854671,
         "gzipEncoder": "Zopfli 15 iterations",
         "brotliEncoder": "Brotli quality 11",
         "gzipFile": "filens.js.gz",

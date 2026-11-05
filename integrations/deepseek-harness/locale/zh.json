@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "FiLens 文档工具与预览",
-    "description": "原生接入 DSH 文档侧栏，支持 400+ 种格式本地预览，涵盖 Office、PDF、iWork、CAD/3D、RAW、全景媒体及 PPT 全屏演示；附本地读取、OCR、搜索、摘录和转换。按扩展名统计，含直接预览与本地 WASM 转换后预览。"
+    "title": "FiLens 文档预览",
+    "description": "支持 400+ 种格式本地预览，涵盖 Office、PDF、iWork、CAD/3D、RAW、全景媒体等。"
   }
 }

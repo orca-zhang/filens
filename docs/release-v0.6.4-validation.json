@@ -1,7 +1,7 @@
 {
   "tag": "v0.6.4",
   "date": "2026-11-05",
-  "observedAt": "2026-11-05T04:41:58.571Z",
+  "observedAt": "2026-11-05T06:23:11.059Z",
   "status": "published-and-verified",
   "previousRelease": "v0.6.3",
   "source": {
@@ -14,7 +14,7 @@
     "preview": "0.3.4",
     "mobileSdk": "0.1.4",
     "cli": "0.5.6",
-    "dsh": "0.1.3",
+    "dsh": "0.1.5",
     "modules": {
       "@filens/archive": "0.1.1",
       "@filens/cad": "0.1.1",
@@ -127,16 +127,16 @@
     "dsh": {
       "unitTests": 18,
       "cliUnderTest": "0.5.6",
-      "isolatedFormatLoadingPaths": 15,
+      "isolatedFormatLoadingPaths": 16,
       "browserFormats": 12,
       "report": "dsh-plugin-validation.json",
       "modelCacheReport": "dsh-model-reopen-validation.json",
       "pdfCacheReport": "dsh-pdf-reopen-validation.json",
       "desktopInstallation": {
-        "version": "0.1.3",
-        "cli": "0.5.6",
-        "passed": true,
-        "recording": "assets/dsh-plugin/demo-recording.json"
+        "version": "0.1.5",
+        "source": "final tarball in isolated profile",
+        "formats": 6,
+        "nativeFullscreenTested": false
       },
       "pdfComparison": {
         "firstMs": 190,
@@ -148,7 +148,17 @@
         "rounds": 9,
         "source": "assets/dsh-plugin/pdf-preview-page-cache.json",
         "scope": "PDF pixel-cache implementation stage; separate matched rounds from Office."
-      }
+      },
+      "version": "0.1.5",
+      "previousDesktopInstallation": {
+        "version": "0.1.3",
+        "cli": "0.5.6",
+        "passed": true,
+        "recording": "assets/dsh-plugin/demo-recording.json"
+      },
+      "headerControlsReport": "dsh-header-controls-validation.json",
+      "runtimeAndClientMatchRecordedBuild": true,
+      "previewCopyVerified": true
     },
     "native": {
       "tag": "v0.6.4",

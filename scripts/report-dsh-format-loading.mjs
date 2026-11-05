@@ -38,7 +38,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await chromium.launch();
 const report = {
   observedAt: new Date().toISOString(), browser: browser.version(), node: process.version,
-  scope: 'Actual runtime requests in fresh browser contexts. Raw file bytes plus independently compressed gzip/Brotli estimates; excludes document bytes, HTTP headers and host application. Worker assets are included when requested. This is a loading-size comparison, not a latency or rendering-fidelity benchmark.',
+  scope: 'Current source checkout runtime, measured independently of the published npm archive. Actual runtime requests in fresh browser contexts. Raw file bytes plus independently compressed gzip/Brotli estimates; excludes document bytes, HTTP headers and host application. Worker assets are included when requested. This is a loading-size comparison, not a latency or rendering-fidelity benchmark.',
   builds: {}
 };
 const measure = async (root, files) => {

@@ -1,4 +1,4 @@
-.filens-dsh-view .pptxv-shell {
+.filens-dsh-view .pptxv-shell, .filens-dsh-controls {
   --pptxv-panel: var(--filens-panel);
   --pptxv-surface: var(--filens-surface);
   --pptxv-text: var(--filens-text);
@@ -44,7 +44,7 @@
 .filens-dsh-view .pptxv-pill { padding: 4px 7px; min-width: 0; border-radius: 5px; font: 500 11px/1.4 var(--filens-font); }
 .filens-dsh-view :is(.pptxv-pill--hidden, .pptxv-layer-menu--hidden) { display: none; }
 .filens-dsh-view[data-controls="false"] .pptxv-toolbar { display: none; }
-.filens-dsh-view[data-family="model3d"] .pptxv-toolbar { display: none; }
+
 .filens-dsh-view[data-zoom="false"] :is([data-action="zoom-in"], [data-action="zoom-out"], .pptxv-zoom-status),
 .filens-dsh-view[data-fullscreen="false"] [data-action="fullscreen"] { display: none; }
 .filens-dsh-view :is(.pptxv-main, .pptxv-viewer, .pptxv-loading) { min-height: 0; background: var(--filens-surface); }

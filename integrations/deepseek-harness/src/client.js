@@ -193,21 +193,16 @@ export function FilensBody(props) {
 export function FilensActions(props) {
   const { tab } = props.useTabInfo();
   const entry = useSyncExternalStore(subscribe, () => views.get(tab.id));
+  const target = useRef(null);
   const theme = useAppearance();
   const zh = theme.locale.toLowerCase().startsWith('zh');
-  const state = entry?.state;
-  if (!state || state.loading || state.error || state.family === 'model3d') return null;
-  const capabilities = state.capabilities ?? {};
-  if (!capabilities.zoom && !capabilities.fullscreen) return null;
-  const button = (action, label, child, onClick) => createElement('button', {
-    type: 'button', className: 'filens-dsh-tool', 'data-action': action, title: label, 'aria-label': label, onClick,
-  }, child);
-  return createElement('div', { className: 'filens-dsh-actions', role: 'group', 'aria-label': zh ? '预览控件' : 'Preview controls' },
-    capabilities.zoom ? button('zoom-out', zh ? '缩小' : 'Zoom out', '−', () => entry.viewer.setScale(Math.max(0.1, state.scale - 0.1))) : null,
-    capabilities.zoom ? createElement('output', { className: 'filens-dsh-zoom' }, `${Math.round((state.scale ?? 1) * 100)}%`) : null,
-    capabilities.zoom ? button('zoom-in', zh ? '放大' : 'Zoom in', '+', () => entry.viewer.setScale(Math.min(5, state.scale + 0.1))) : null,
-    capabilities.fullscreen ? button('fullscreen', zh ? '全屏' : 'Fullscreen', '⛶', () => { void entry.viewer.fullscreen(); }) : null,
-  );
+  useEffect(() => {
+    const controls = entry?.viewer.controls;
+    if (!controls || !target.current) return;
+    target.current.append(controls);
+    return () => controls.remove();
+  }, [entry?.viewer]);
+  return createElement('div', { ref: target, className: 'filens-dsh-actions', role: 'group', 'aria-label': zh ? '预览控件' : 'Preview controls' });
 }
 
 export function apply(ctx) {

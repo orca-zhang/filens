@@ -250,6 +250,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
 
     const toolbar = document.createElement('div');
     toolbar.className = 'archivev-toolbar';
+    toolbar.dataset.previewControls = '';
 
     const upButton = document.createElement('button');
     upButton.type = 'button';

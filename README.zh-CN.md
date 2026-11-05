@@ -19,7 +19,7 @@
 | 大概多大 | **Lite 基础组件 8.00–9.27 MiB · Full 基础组件 31.43–37.06 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.92–2.20 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、缓存和预览资源。Release 离线包另含预览运行时，完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.4 主运行时按分包合计 **4.73 MB Brotli**，单 JS 版预压缩产物为 **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.92–2.20 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、缓存和预览资源。Release 离线包另含预览运行时，完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.4 源码构建的主运行时按分包合计 **4.73 MB Brotli**，单 JS 版预压缩产物为 **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
@@ -89,11 +89,13 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ### DeepSeek Harness 插件
 
-[CLI 工具与原生侧栏预览](integrations/deepseek-harness/README.zh-CN.md)，支持 **450 种格式本地预览**（按扩展名，含本地 WASM 转换），统一安装、独立启停。支持 DSH 桌面版 0.2.1-rc.5 和 Web 0.2.2-alpha.3。在桌面版「插件 → 添加插件」中填写 `dsh-filens`，点击「安装 → 立即启用」；也可填写 `dsh-filens@0.1.3` 固定版本。[安装与配置](integrations/deepseek-harness/README.zh-CN.md#安装与构建)。
+[CLI 工具与原生侧栏预览](integrations/deepseek-harness/README.zh-CN.md)，支持 **450 种格式本地预览**（按扩展名，含本地 WASM 转换），统一安装、独立启停。支持 DSH 桌面版 0.2.1-rc.5 和 Web 0.2.2-alpha.3。在桌面版「插件 → 添加插件」中填写 `dsh-filens`，点击「安装 → 立即启用」；也可填写 `dsh-filens@0.1.5` 固定版本。[安装与配置](integrations/deepseek-harness/README.zh-CN.md#安装与构建)。
 
 <!-- dsh-package-metrics:start -->
-**dsh-filens 0.1.3：下载 6.53 MiB / 解包 19.57 MiB**，已含预览 0.3.4。CLI 0.5.6 / OCR、DSH 共享依赖和包管理器缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
+**已发布 dsh-filens 0.1.5：下载 6.53 MiB / 解包 19.58 MiB**，已含预览 0.3.4。CLI 0.5.6 / OCR、DSH 共享依赖和包管理器缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
 <!-- dsh-package-metrics:end -->
+
+[0.1.5 控件与包验证](docs/dsh-header-controls-validation.json)。性能表保留实际测量的 0.1.3 快照。
 
 ![在 DSH 桌面界面安装 dsh-filens，预览 Word、切换 Excel 工作表，并用 Page Down 全屏演示三页 PPT](docs/assets/dsh-plugin/install-and-preview.webp)
 
@@ -120,7 +122,7 @@ PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内�
 
 解析范围与各库完整能力不同，速度比不代表保真度或所有文件上的综合排名。[原始样本与复现](docs/featured-performance.md)。
 
-**DSH 0.1.3：** 预览直接挂载到侧栏，缩放与全屏接入 DSH 外层工具栏，并按文件类型加载对应驱动。入口 JS 从 **3.04 MiB 降至 345 KiB（约减少 89%）**；TXT 首开运行时资源从 **3.09 MiB 降至 449 KiB**。格式模块、共享代码与 WASM 首次使用后复用。[加载量与方法](docs/assets/dsh-plugin/format-loading.json)。安装演示使用 0.1.3。 PDF 重复打开复用已校验的首张像素；[PDF 计时与边界](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。插件下载 **6.53 MiB**、解包 **19.57 MiB**，CLI/OCR 等依赖另计。
+**DSH 0.1.5：**所有格式的控件集中在地址栏旁，包括翻页、旋转、工作表切换、压缩包搜索、音视频播放、附件与 3D 模型工具，不显示“适合窗口 / 宽度 / 高度”按钮。各格式驱动首次使用时加载，模块与 WASM 随后复用。入口 JS 请求合计 **350.3 KiB**，TXT 首开运行时请求合计 **454.8 KiB**，不含文档与 DSH 本身。[0.1.5 运行时实测](docs/assets/dsh-plugin/format-loading-current.json)。安装演示使用公开版 0.1.3，3D / 全景画廊使用与 0.1.5 相同的预览运行时。PDF 重复打开复用已校验的首张像素，最多 4 张 / 16 MiB，30 秒空闲后过期；每次仍加载并校验文档，关闭时释放 Worker，密码与打印路径不复用。[PDF 计时与边界](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
 
 0.1.3 同样支持 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。[完整测量、成本和边界](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
 
@@ -176,9 +178,9 @@ PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内�
 <!-- bundle-sizes:zh:start -->
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| 转换核心 WASM（Office 加密检测） | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
-| 图像 / RAW 核心 WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| 媒体 / 全景预览 | 230.0 KiB | 67.1 KiB | **57.3 KiB** |
+| 转换核心 WASM（Office 加密检测） | 910.9 KiB | 408.9 KiB | **329.8 KiB** |
+| 图像 / RAW 核心 WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
+| 媒体 / 全景预览 | 464.6 KiB | 128.7 KiB | **108.3 KiB** |
 | STEP truck WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
 文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载。媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
@@ -188,28 +190,41 @@ PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内�
 
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Office 解密 WASM（可选） | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
-| HEIC / HEIF 解码 WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| 演示站入口 | 213.6 KiB | 61.3 KiB | **51.6 KiB** |
-| Agent CLI 演示界面 | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| 共享第三方依赖 | 1407.1 KiB | 406.1 KiB | **339.8 KiB** |
-| PPTX / 核心运行时 | 353.8 KiB | 98.8 KiB | **83.6 KiB** |
-| Vue 预览容器 | 173.6 KiB | 49.2 KiB | **38.9 KiB** |
-| DOCX / XLSX / PDF | 43.7 KiB | 13.2 KiB | **11.8 KiB** |
+| Office 解密 WASM（可选） | 370.4 KiB | 160.3 KiB | **127.6 KiB** |
+| HEIC / HEIF 解码 WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
+| 演示站入口 | 239.9 KiB | 68.6 KiB | **57.4 KiB** |
+| Agent CLI 演示界面 | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
+| 共享第三方依赖 | 813.1 KiB | 229.7 KiB | **192.0 KiB** |
+| PPTX / 核心运行时 | 380.9 KiB | 106.6 KiB | **90.1 KiB** |
+| Vue 预览容器 | 198.3 KiB | 54.5 KiB | **43.5 KiB** |
+| DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
+| DOCX 按需引擎 | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
+| Office 附件 | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
+| 共享 XML 兼容层 | 27.2 KiB | 8.9 KiB | **8.0 KiB** |
+| 共享 ZIP 兼容层 | 41.5 KiB | 12.7 KiB | **11.6 KiB** |
+| 加密 ZIP 支持 | 99.1 KiB | 37.0 KiB | **32.3 KiB** |
 | PDF 按需引擎 | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork 预览 | 36.6 KiB | 11.2 KiB | **10.0 KiB** |
-| CAD / 思维导图 / 流程图 | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
-| 3D 预览 | 132.8 KiB | 37.5 KiB | **32.6 KiB** |
-| 媒体解码加载器 | 125.6 KiB | 46.1 KiB | **40.1 KiB** |
-| 压缩包预览 | 32.2 KiB | 10.4 KiB | **9.2 KiB** |
-| RAR / 7z 解压 WASM（可选） | 810.2 KiB | 322.5 KiB | **253.4 KiB** |
-| 压缩包 Worker（可选） | 51.2 KiB | 18.1 KiB | **16.2 KiB** |
-| 文本 / 电子书 | 29.8 KiB | 9.9 KiB | **8.8 KiB** |
-| iWork Worker | 883.5 KiB | 183.0 KiB | **152.7 KiB** |
+| iWork 预览 | 40.6 KiB | 12.2 KiB | **10.8 KiB** |
+| CAD / 思维导图 / 流程图 | 93.0 KiB | 26.0 KiB | **22.2 KiB** |
+| 3D 预览 | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
+| glTF / GLB 模型加载器 | 42.7 KiB | 12.6 KiB | **11.3 KiB** |
+| FBX 模型加载器 | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
+| OBJ 模型加载器 | 8.5 KiB | 2.9 KiB | **2.6 KiB** |
+| MTL 模型加载器 | 4.2 KiB | 1.7 KiB | **1.5 KiB** |
+| 3DS 模型加载器 | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
+| LDraw 模型加载器 | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
+| USDZ 模型加载器 | 8.5 KiB | 2.7 KiB | **2.4 KiB** |
+| VRML 模型加载器 | 178.0 KiB | 46.4 KiB | **39.7 KiB** |
+| 媒体解码加载器 | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
+| 压缩包预览 | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
+| RAR / 7z 解压 WASM（可选） | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
+| 压缩包 Worker（可选） | 51.5 KiB | 18.2 KiB | **16.3 KiB** |
+| 文本 / 电子书 | 18.1 KiB | 6.9 KiB | **6.1 KiB** |
+| iWork Worker | 884.9 KiB | 183.4 KiB | **153.3 KiB** |
 | PDF Worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | STEP truck 加载器 | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-本次构建的入口、预加载 JS 与 CSS 合计 **532.2 KiB Brotli**（原始 2204.5 KiB / gzip 633.2 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
+本次构建的入口、预加载 JS 与 CSS 合计 **459.5 KiB Brotli**（原始 1940.1 KiB / gzip 546.4 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
 
 </details>
 
@@ -287,31 +302,28 @@ ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`
 <details>
 <summary>展开查看 SOTA 实测对比</summary>
 
-| 实测任务 | filens | 当前对照 | 加速比\* |
-| --- | ---: | --- | ---: |
-| 11.1 MB、13 页 PPTX 解析 | **28.5 ms** | pptx-preview 1.0.7：56.6 ms | **1.99×** |
-| 11.1 MB、13 页 PPTX 首屏 | **48.8 ms** | pptx-preview 1.0.7：71.8 ms | **1.47×** |
-| 3840×1920 全景 JPEG 首屏 | **154.9 ms** | Photo Sphere Viewer 5.15.1：205.2 ms | **1.32×** |
-| X5 INSP 首屏，输入/模块/WASM 已就绪（10-27） | **354.5 ms** | Photo Sphere Viewer 5.15.1 双鱼眼：383.0 ms | **1.08×** |
-| 无内嵌 JPEG 的 NEF → 预览画布 | **152.7 ms** | LibRaw-Wasm 1.6.0 半尺寸：326.7 ms | **2.14×** |
-| 无内嵌 JPEG 的 DNG → 预览画布 | **167.7 ms** | LibRaw-Wasm 1.6.0 快速半尺寸：314.4 ms | **1.87×** |
-| STEP truck 几何导入：cube（11-01） | **11.9 ms** | occt-import-js 0.0.23: 62.0 ms | **5.21×** |
-| STEP truck 几何导入：as1_pe_203（11-01） | **61.2 ms** | occt-import-js 0.0.23: 195.0 ms | **3.19×** |
-| STEP truck 几何导入：as1-oc-214（11-01） | **224.2 ms** | occt-import-js 0.0.23: 243.8 ms | **1.09×** |
-| XLSX 数据读取（80,000 单元格） | **42.3 ms** | SheetJS CE 0.20.3: 109.6 ms | 2.59× |
-| XLS → XLSX 预览转换（6 工作表） | **12.3 ms** | x2t WASM v9.3.2+3: 49.1 ms | 4.00× |
-| 20,000×8 数值 CSV → XLSX | **137.6 ms** | x2t WASM v9.3.2+3: 198.8 ms | 1.44× |
+更新于 2026-11-05。解析精选保留大数据量且实测提升至少 **2×** 的场景；小样例和低收益结果保留在完整报告中。DSH 对比另保留 PDF。
 
-**与专业前端方案同场实测，多条路径稳定领先。** 每组重复至少 7 次；X5 原片重复 21 次。无内嵌 JPEG 的 5 份 RAW 样例，显影并绘制预览比所测 LibRaw 方案快 **1.11–2.14×**。
+**DSH 完整侧栏预览**
 
-<sub>\* 仅指本机、已测样例及表列对手，配对 bootstrap 95% 区间支持的领先；不含下载和库冷加载。Apple M4 Pro / Chromium 147；**全景使用 SwiftShader 软件渲染**。X5 原片中，PSV 通用双鱼眼投影有明显画面重复与硬接缝，filens 的局部重影更轻；速度标注限于这份原片的可读预览。RAW 比较统一画布上的显影与绘制，中间输出尺寸不同；STEP 使用当前 truck 读取器，无损二进制网格传递优化后 6 份均领先，as1-oc-214 为 224.2 对 243.8 ms；网格不同且通过近似几何筛查，不含场景构建与绘制；XLSX 仅比较数据读取；XLS 以相同预览器中的主要显示内容为准。[完整结果、边界与复现](docs/performance-comparison.zh-CN.md)。</sub>
+| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.3 | DSH 内置 | 首开提速 |
+| --- | ---: | ---: | ---: |
+| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
+| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
+| PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
-</details>
+表中倍数为首开提速；PDF 缓存打开提速 **1.43×**（110 → 77 ms）。Office 与 PDF 来自各自独立的 9 轮配对实测。
 
-<details>
-<summary>实测口径</summary>
+**大数据量解析与专业库对比**
 
-<sub>RAW 使用移除内嵌 JPEG、传感器数据未变的输入；对比 LibRaw 两种半尺寸配置，统一绘制到 1280×800 画布。中间输出分辨率、色调和裁切略有不同；计时包含显影、输出解码 / 传输与绘制。Numbers 完整模型和部分小 PPTX 首屏仍有优化空间，详见[完整实测与画面对照](docs/performance-comparison.zh-CN.md)。</sub>
+| 大数据量解析场景 | 对照实现 | 对照 / FiLens 中位数（ms） | 提速 |
+| --- | --- | ---: | ---: |
+| XLSX · 2,000 × 64，128,000 格 | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
+| XLSX · 8,000 × 64，512,000 格 | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
+| ZIP · 10,000 条目，展开 18.34 MiB | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
+| ZIP · 2,500 条目，展开 36.23 MiB | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
+
+预热 2 轮、测量 9 轮，交替执行顺序；逐格核对全部单元格值或逐条目核对完整文本。解析计时不含渲染、模块加载、网络与结果校验；DSH 行包含预览渲染。结论限于所列任务和对照，不代表所有格式的综合排名或相同能力范围。[方法、版本、原始样本与复现](docs/featured-performance.md) · [历史对比](docs/performance-comparison.zh-CN.md)。
 
 </details>
 

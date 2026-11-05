@@ -1,5 +1,17 @@
 # Changelog
 
+## DSH 0.1.5
+
+- Rename the preview entry to **FiLens Document Preview** / **FiLens 文档预览**. Keep its description focused on local previews for 400+ formats, including Office, PDF, iWork, CAD/3D, RAW and 360° media. The separate FiLens Tools entry keeps its own tool description. Includes the header controls and fixes from 0.1.4.
+
+## DSH 0.1.4
+
+- Move format controls beside DSH’s address bar: page navigation, zoom, rotation, fullscreen, worksheet tabs, archive search/sort, Office attachments, audio/video playback and the 3D inspector. Omit manual Fit / Width / Height buttons, including fullscreen.
+- Preserve original control nodes and handlers, per-tab state and cleanup. Hide retained parent controls while an attachment is open; bring controls into the fullscreen preview and restore them to the header on exit.
+- Fix narrow-header overflow, nested scrolling, intercepted button clicks and the misplaced 3D tools opener. Open the inspector below the header without shrinking the canvas; preserve keyboard tabs, Escape and focus restoration.
+- Re-record the 3D / panorama GIF, WebP and MP4 with header model/view/section tools, panorama zoom and video seeking/playback. Update the FiLens skill, README SOTA shortlist and current build/package measurements.
+- Validate 66 Vue tests, 17 attachment tests, 18 DSH tests, 16 isolated format-loading paths, 12 complete browser previews and six real Desktop formats. Browser fullscreen passes; Desktop native fullscreen is explicitly skipped. [Validation](docs/dsh-header-controls-validation.json).
+
 ## DSH 0.1.3
 
 - Add bounded parsed-model reuse for XLSX and iWork, and CPU mesh reuse for STEP: four entries share a 64 MiB accounting budget and expire after 30 idle seconds. Keep mutable formulas/fonts, DOM, workers and GPU resources independent per tab; restore Numbers archives only when a later sheet is requested. Password opens, including decrypted Office outputs, bypass reuse.
@@ -16,7 +28,7 @@
 
 ## 0.6.4
 
-CLI 0.5.6 · browser preview 0.3.4 · mobile source SDKs 0.1.4 · DSH adapter 0.1.3.
+CLI 0.5.6 · browser preview 0.3.4 · mobile source SDKs 0.1.4 · DSH adapter 0.1.5 (updated in this release).
 
 - Add `filens inspect FILE --json`: bounded content-based format/MIME detection in the shared WASM core, evidence categories, extension comparison and explicit unknown/ambiguous results. Inspect reads at most 256 KiB without copying the entire source into the workspace; refresh both terminal GIFs with real inspection output.
 - Expand CLI inputs from 334 to 349 formats: add TGA, DDS, DIB, CUR, PCX, JPEG XL, QOI, Farbfeld, PSD, PSB, ICO, ICNS, AI, EPS and PS to reading/OCR/search through the shared WASM decoders. Ship the expanded CLI as 0.5.6 and update the DSH dependency.

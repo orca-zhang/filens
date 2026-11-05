@@ -22,11 +22,11 @@ The historical 0.1.2 installation recording and its hashes remain in [history/0.
 
 [Gallery animated WebP](3d-and-panorama.webp) · [Gallery GIF](3d-and-panorama.gif) · [Full gallery MP4](3d-and-panorama.mp4) · [Recording evidence and hashes](3d-and-panorama-recording.json)
 
-The companion gallery is the historical **2026-11-04 dsh-filens@0.1.1** recording; it was not re-recorded for 0.1.3. It expands DSH's document pane, orbits and zooms a GLB space robot, inspects a multi-part 3MF gearbox, looks around a Milky Way panorama, then scrubs and plays a spherical NASA black-hole video while changing the view. These are actual pointer, wheel, timeline and playback interactions. The video is muted in the recording.
+The companion gallery was re-recorded on **2026-11-05** in the installed **DSH Desktop 0.2.1-rc.5**, using an isolated **current source build** with base version 0.1.3 and CLI 0.5.6. Its runtime hash is recorded in the evidence; this source build differs from public 0.1.3. Its exact preview runtime and client are shipped in 0.1.5, verified by hash. It expands the document pane, orbits and zooms a GLB space robot, opens model tools beside the address bar to change view/projection and section, then inspects a multi-part 3MF gearbox. It also looks around a Milky Way panorama, uses header zoom, then seeks and plays a spherical NASA black-hole video using the header timeline and playback controls. These are actual pointer, wheel and control interactions; the video is muted.
 
 The copied photo and video keep their original JPEG/WebM bytes, with `.pano` / `.360v` filenames selecting FiLens's spherical routes. Ordinary `.jpg` / `.webm` files open in the normal image/video viewer. This recording does not demonstrate automatic panorama detection.
 
-中文：补充演示展示太空机器人、行星齿轮箱、银河全景照片与 NASA 黑洞全景视频，包含真实旋转、缩放、环视、进度条定位和播放操作。照片、视频仅使用 `.pano` / `.360v` 扩展名选择球面预览，原始字节不变。
+中文：画廊已于 2026-11-05 使用隔离的当前源码构建重新录制，展示太空机器人、行星齿轮箱、银河全景照片与 NASA 黑洞全景视频；新增地址栏模型工具、视图 / 剖切、全景缩放、视频进度与播放控件的真实操作。录制时的源码版本与公开 npm 0.1.3 分别标记；相同运行时与客户端已用于 0.1.5，并以校验值核对。照片、视频仅使用 `.pano` / `.360v` 扩展名选择球面预览，原始字节不变。
 
 | Sample | Source and license |
 | --- | --- |
@@ -43,6 +43,8 @@ Office imagery credits are preserved in the samples and listed in [sample source
 | 0.1.1 | 402 | 0.5.4 / 0.3.3 | 4.23 MiB | 9.98 MiB |
 | 0.1.2 | 450 | 0.5.5 / 0.3.4 | 11.93 MiB | 16.40 MiB |
 | 0.1.3 | 450 | 0.5.6 / 0.3.4 | 6.53 MiB | 19.57 MiB |
+| 0.1.4 | 450 | 0.5.6 / 0.3.4 | 6.53 MiB | 19.58 MiB |
+| 0.1.5 | 450 | 0.5.6 / 0.3.4 | 6.53 MiB | 19.58 MiB |
 
 Sizes cover the adapter and its embedded preview runtime; separately installed CLI/OCR platform components, DSH shared dependencies and package-manager stores/caches are excluded. MiB = 1,048,576 bytes. Extension counts include direct previews and local WASM conversion routes, not independently validated files for every extension. [Exact public package integrity and byte counts](../../dsh-plugin-publication.json).
 
@@ -97,7 +99,7 @@ Sample: **Cosmic Atlas.pdf**, **689,455 bytes**. [File hash, environment, every 
 
 **Version 0.1.3 was developed after the public 0.1.2 measurements above.** npm versions are immutable; the 0.1.2 tarball is retained unchanged. The tables below retain their original measurement stages.
 
-The source adapter now mounts the shared preview directly into DSH's document body and contributes zoom/fullscreen to `sidebar.right.tab.document.action`, the existing outer header. The inner toolbar is disabled. Module initialization is reused across file opens; stylesheet references and viewer controls are released per tab. Desktop imports the same local runtime through its content-hashed static route, with CORS for modules/WASM and Blob workers for iWork/archives. Format drivers retain their own document isolation where required.
+The adapter mounts the shared preview directly into DSH's document body. Version 0.1.5 moves the format controls to `sidebar.right.tab.document.action`, beside the address bar: document navigation, rotation, sheet tabs, archive tools, attachments, audio/video controls and the model inspector. Fullscreen restores controls inside its own preview until exit. Module initialization is reused across file opens; stylesheet references and viewer controls are released per tab. Desktop imports the same local runtime through its content-hashed static route, with CORS for modules/WASM and Blob workers for iWork/archives. Format drivers retain their own document isolation where required.
 
 Profiling found two main delays in 0.1.2: each new viewer iframe initialized a **7,244,309-byte all-in-one JavaScript**, even when its download was cached, and PDF loading waited for **three visible pages** to finish. The split runtime removes packed-asset initialization from this path. The shared PDF driver now reveals the first **actually painted** page and continues nearby pages in the background. Non-virtual print/export previews still wait for all pages. The earlier split/iframe candidate's separate [108-open dataset](pdf-preview-optimization.json) is retained as an intermediate result; the following data measure the final direct-DOM candidate.
 

@@ -283,8 +283,10 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
   const highlights = gallery ? [
     ['Expand the preview and drag to orbit', 0.5, 1.5, '3D：拖拽旋转', '3D: drag to orbit'],
     ['Scroll to zoom into the model', 0, 0.6, '3D：滚轮缩放', '3D: scroll to zoom'],
+    ['Header model tools: view and section', 0.3, 3.5, '地址栏模型工具：视图与剖切', 'Header tools: view and section'],
     ['Orbit the assembly to inspect its gears', 0.2, 1.2, '3MF：查看齿轮结构', '3MF: inspect the gears'],
     ['Drag to look around the spherical panorama', 0.2, 1.3, '360° 照片：拖拽环视', '360° photo: look around'],
+    ['Header zoom for the spherical photo', 0, 1.5, '地址栏全景缩放', 'Panorama zoom beside the address bar'],
     ['Play the 360° video and look around while it runs', 0.6, 1.6, '360° 视频：边播放边环视', '360° video: play and look around']
   ].map(([en, skip, duration, zh, caption]) => {
     const segment = recording.segments.find(segment => segment.en === en);
@@ -345,7 +347,9 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
   const report = {
     recordedAt: recording.capturedAt ?? new Date().toISOString(), environment: recording.environment, plugin: `dsh-filens@${recording.plugin}`,
     installationSource: recording.installationSource, components: recording.components,
-    source: 'Installed Desktop application, public npm package, actual UI interactions',
+    source: recording.installationSource === 'isolated local source build'
+      ? 'Installed Desktop application, isolated local source build, actual UI interactions'
+      : 'Installed Desktop application, public npm package, actual UI interactions',
     editing: 'Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions and pointer are annotations. This is not a timing comparison.',
     encoding: { fps, webp: { width: 960, quality: 92, color: 'full color' }, gif: { width: gifWidth, colors: 256, palette: 'adaptive per scene', dither: 'sierra2_4a', optimization: 'lossless frame differences, displayed pixels and timing verified' }, highlightFrames: frames.length, highlightSeconds: frames.length / fps },
     modelCalls: 0, checks: recording.checks, documents: recording.documents, chapters, highlightChapters,

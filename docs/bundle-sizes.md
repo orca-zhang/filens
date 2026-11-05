@@ -4,32 +4,45 @@ Generated from the production demo by `npm run report:bundle-sizes`. Units are K
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM (Office detection) | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
-| Office decryption WASM (optional) | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
-| Image / RAW core WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| HEIC / HEIF decoder WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| Demo entry | 213.6 KiB | 61.3 KiB | **51.6 KiB** |
-| Agent CLI demo UI | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| Shared vendor dependencies | 1407.1 KiB | 406.1 KiB | **339.8 KiB** |
-| PPTX / core runtime | 353.8 KiB | 98.8 KiB | **83.6 KiB** |
-| Vue preview host | 173.6 KiB | 49.2 KiB | **38.9 KiB** |
-| DOCX / XLSX / PDF | 43.7 KiB | 13.2 KiB | **11.8 KiB** |
+| Conversion core WASM (Office detection) | 910.9 KiB | 408.9 KiB | **329.8 KiB** |
+| Office decryption WASM (optional) | 370.4 KiB | 160.3 KiB | **127.6 KiB** |
+| Image / RAW core WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
+| HEIC / HEIF decoder WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
+| Demo entry | 239.9 KiB | 68.6 KiB | **57.4 KiB** |
+| Agent CLI demo UI | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
+| Shared vendor dependencies | 813.1 KiB | 229.7 KiB | **192.0 KiB** |
+| PPTX / core runtime | 380.9 KiB | 106.6 KiB | **90.1 KiB** |
+| Vue preview host | 198.3 KiB | 54.5 KiB | **43.5 KiB** |
+| DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
+| On-demand DOCX engine | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
+| Office attachments | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
+| Shared XML compatibility | 27.2 KiB | 8.9 KiB | **8.0 KiB** |
+| Shared ZIP compatibility | 41.5 KiB | 12.7 KiB | **11.6 KiB** |
+| Encrypted ZIP support | 99.1 KiB | 37.0 KiB | **32.3 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork preview | 36.6 KiB | 11.2 KiB | **10.0 KiB** |
-| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
-| 3D preview | 132.8 KiB | 37.5 KiB | **32.6 KiB** |
-| Media / panorama preview | 230.0 KiB | 67.1 KiB | **57.3 KiB** |
-| Media decoder loader | 125.6 KiB | 46.1 KiB | **40.1 KiB** |
-| Archive preview | 32.2 KiB | 10.4 KiB | **9.2 KiB** |
-| RAR / 7z extraction WASM (optional) | 810.2 KiB | 322.5 KiB | **253.4 KiB** |
-| Archive worker (optional) | 51.2 KiB | 18.1 KiB | **16.2 KiB** |
-| Text / ebooks | 29.8 KiB | 9.9 KiB | **8.8 KiB** |
-| iWork worker | 883.5 KiB | 183.0 KiB | **152.7 KiB** |
+| iWork preview | 40.6 KiB | 12.2 KiB | **10.8 KiB** |
+| CAD / mind maps / diagrams | 93.0 KiB | 26.0 KiB | **22.2 KiB** |
+| 3D preview | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
+| glTF / GLB model loader | 42.7 KiB | 12.6 KiB | **11.3 KiB** |
+| FBX model loader | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
+| OBJ model loader | 8.5 KiB | 2.9 KiB | **2.6 KiB** |
+| MTL model loader | 4.2 KiB | 1.7 KiB | **1.5 KiB** |
+| 3DS model loader | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
+| LDraw model loader | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
+| USDZ model loader | 8.5 KiB | 2.7 KiB | **2.4 KiB** |
+| VRML model loader | 178.0 KiB | 46.4 KiB | **39.7 KiB** |
+| Media / panorama preview | 464.6 KiB | 128.7 KiB | **108.3 KiB** |
+| Media decoder loader | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
+| Archive preview | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
+| RAR / 7z extraction WASM (optional) | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
+| Archive worker (optional) | 51.5 KiB | 18.2 KiB | **16.3 KiB** |
+| Text / ebooks | 18.1 KiB | 6.9 KiB | **6.1 KiB** |
+| iWork worker | 884.9 KiB | 183.4 KiB | **153.3 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Initial entry, preload, and CSS: **2204.5 KiB raw / 633.2 KiB gzip / 532.2 KiB Brotli**. This excludes HTML, imagery, video, sample files, and later requests. Shared vendor dependencies are included here and must be considered when reading individual module sizes. PDF and iWork have separate workers.
+Initial entry, preload, and CSS: **1940.1 KiB raw / 546.4 KiB gzip / 459.5 KiB Brotli**. This excludes HTML, imagery, video, sample files, and later requests. Shared vendor dependencies are included here and must be considered when reading individual module sizes. PDF and iWork have separate workers.
 
 [Exact byte counts and file names](assets/bundle-sizes.json). Compression measurements use the actual build's gzip and Brotli artifacts; server negotiation and caching determine real network transfer. This is a build snapshot, not the size of a published npm tarball.
 

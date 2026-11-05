@@ -19,7 +19,7 @@
 | Approximate size | **Lite components: 8.00–9.27 MiB · Full components: 31.43–37.06 MiB**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.92–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.4 main runtimes: **4.73 MB Brotli** summed across split files, or **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.92–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.4 source-build main runtimes: **4.73 MB Brotli** summed across split files, or **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -89,11 +89,13 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ### DeepSeek Harness
 
-[CLI tools and native sidebar previews](integrations/deepseek-harness/README.md) for **450 file formats** (counted by extension, including local WASM conversion), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. In Desktop, open **Plugins → Add plugin**, enter `dsh-filens` (or `dsh-filens@0.1.3` to pin the version), click **Install**, then **Enable now**. [Installation and configuration](integrations/deepseek-harness/README.md#install-and-build).
+[CLI tools and native sidebar previews](integrations/deepseek-harness/README.md) for **450 file formats** (counted by extension, including local WASM conversion), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. In Desktop, open **Plugins → Add plugin**, enter `dsh-filens` (or `dsh-filens@0.1.5` to pin the version), click **Install**, then **Enable now**. [Installation and configuration](integrations/deepseek-harness/README.md#install-and-build).
 
 <!-- dsh-package-metrics:start -->
-**dsh-filens 0.1.3: 6.53 MiB download / 19.57 MiB unpacked**, including preview 0.3.4. CLI 0.5.6 / OCR, DSH shared dependencies and package-manager caches are separate. [Package measurements](docs/dsh-plugin-publication.json).
+**Published dsh-filens 0.1.5: 6.53 MiB download / 19.58 MiB unpacked**, including preview 0.3.4. CLI 0.5.6 / OCR, DSH shared dependencies and package-manager caches are separate. [Package measurements](docs/dsh-plugin-publication.json).
 <!-- dsh-package-metrics:end -->
+
+[0.1.5 controls and package validation](docs/dsh-header-controls-validation.json). Performance tables retain the measured 0.1.3 snapshot.
 
 ![Install dsh-filens in DSH Desktop, preview Word and Excel, then present three PPT slides fullscreen with Page Down](docs/assets/dsh-plugin/install-and-preview.webp)
 
@@ -120,7 +122,7 @@ The workloads below time complete parser calls on identical inputs, **excluding 
 
 Library feature/fidelity scopes differ; these ratios are not an overall ranking across files. [Raw samples and reproduction](docs/featured-performance.md).
 
-**DSH 0.1.3:** mount directly into the sidebar, use DSH's existing header controls and load the matching format driver on first use. Initial JS falls from **3.04 MiB to 345 KiB (about 89%)**; TXT first-open runtime requests fall from **3.09 MiB to 449 KiB**. Format modules, shared code and WASM are reused after first use. [Loading sizes and method](docs/assets/dsh-plugin/format-loading.json). The installation demo uses 0.1.3. PDF reopens reuse validated first-page pixels; [PDF timings and limits](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md). Plugin download: **6.53 MiB**, unpacked: **19.57 MiB**, excluding CLI/OCR and shared dependencies.
+**DSH 0.1.5:** all format controls sit beside the address bar: page navigation, rotation, worksheet tabs, archive search, audio/video playback, attachments and the 3D inspector. Manual Fit / Width / Height buttons are omitted. The matching driver loads on first use; modules and WASM are reused. Initial JS requests total **350.3 KiB**; TXT first-open runtime requests total **454.8 KiB**, excluding document bytes and DSH. [0.1.5 runtime measurements](docs/assets/dsh-plugin/format-loading-current.json). The installation recording uses public 0.1.3; the 3D/360° gallery records the same preview runtime shipped in 0.1.5. PDF reopens reuse validated first-page pixels, bounded to four pages / 16 MiB / 30 idle seconds; each open still loads and validates its document, and closing releases the worker. Password opens and printing bypass reuse. [PDF timings and limits](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
 Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB estimated model budget / 30-second idle lifetime. [Complete measurements, costs and limits](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
 
@@ -178,9 +180,9 @@ Library, sharing the offline frontend and WASM runtime. See the
 <!-- bundle-sizes:en:start -->
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM (Office detection) | 894.8 KiB | 403.3 KiB | **327.6 KiB** |
-| Image / RAW core WASM | 1099.9 KiB | 298.4 KiB | **216.3 KiB** |
-| Media / panorama preview | 230.0 KiB | 67.1 KiB | **57.3 KiB** |
+| Conversion core WASM (Office detection) | 910.9 KiB | 408.9 KiB | **329.8 KiB** |
+| Image / RAW core WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
+| Media / panorama preview | 464.6 KiB | 128.7 KiB | **108.3 KiB** |
 | truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
 Document, image / RAW, and STEP WASM modules load independently on demand. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
@@ -190,28 +192,41 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Office decryption WASM (optional) | 370.2 KiB | 160.1 KiB | **127.4 KiB** |
-| HEIC / HEIF decoder WASM | 1429.2 KiB | 474.4 KiB | **347.4 KiB** |
-| Demo entry | 213.6 KiB | 61.3 KiB | **51.6 KiB** |
-| Agent CLI demo UI | 28.8 KiB | 11.4 KiB | **9.3 KiB** |
-| Shared vendor dependencies | 1407.1 KiB | 406.1 KiB | **339.8 KiB** |
-| PPTX / core runtime | 353.8 KiB | 98.8 KiB | **83.6 KiB** |
-| Vue preview host | 173.6 KiB | 49.2 KiB | **38.9 KiB** |
-| DOCX / XLSX / PDF | 43.7 KiB | 13.2 KiB | **11.8 KiB** |
+| Office decryption WASM (optional) | 370.4 KiB | 160.3 KiB | **127.6 KiB** |
+| HEIC / HEIF decoder WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
+| Demo entry | 239.9 KiB | 68.6 KiB | **57.4 KiB** |
+| Agent CLI demo UI | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
+| Shared vendor dependencies | 813.1 KiB | 229.7 KiB | **192.0 KiB** |
+| PPTX / core runtime | 380.9 KiB | 106.6 KiB | **90.1 KiB** |
+| Vue preview host | 198.3 KiB | 54.5 KiB | **43.5 KiB** |
+| DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
+| On-demand DOCX engine | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
+| Office attachments | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
+| Shared XML compatibility | 27.2 KiB | 8.9 KiB | **8.0 KiB** |
+| Shared ZIP compatibility | 41.5 KiB | 12.7 KiB | **11.6 KiB** |
+| Encrypted ZIP support | 99.1 KiB | 37.0 KiB | **32.3 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork preview | 36.6 KiB | 11.2 KiB | **10.0 KiB** |
-| CAD / mind maps / diagrams | 92.1 KiB | 25.7 KiB | **22.0 KiB** |
-| 3D preview | 132.8 KiB | 37.5 KiB | **32.6 KiB** |
-| Media decoder loader | 125.6 KiB | 46.1 KiB | **40.1 KiB** |
-| Archive preview | 32.2 KiB | 10.4 KiB | **9.2 KiB** |
-| RAR / 7z extraction WASM (optional) | 810.2 KiB | 322.5 KiB | **253.4 KiB** |
-| Archive worker (optional) | 51.2 KiB | 18.1 KiB | **16.2 KiB** |
-| Text / ebooks | 29.8 KiB | 9.9 KiB | **8.8 KiB** |
-| iWork worker | 883.5 KiB | 183.0 KiB | **152.7 KiB** |
+| iWork preview | 40.6 KiB | 12.2 KiB | **10.8 KiB** |
+| CAD / mind maps / diagrams | 93.0 KiB | 26.0 KiB | **22.2 KiB** |
+| 3D preview | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
+| glTF / GLB model loader | 42.7 KiB | 12.6 KiB | **11.3 KiB** |
+| FBX model loader | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
+| OBJ model loader | 8.5 KiB | 2.9 KiB | **2.6 KiB** |
+| MTL model loader | 4.2 KiB | 1.7 KiB | **1.5 KiB** |
+| 3DS model loader | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
+| LDraw model loader | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
+| USDZ model loader | 8.5 KiB | 2.7 KiB | **2.4 KiB** |
+| VRML model loader | 178.0 KiB | 46.4 KiB | **39.7 KiB** |
+| Media decoder loader | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
+| Archive preview | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
+| RAR / 7z extraction WASM (optional) | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
+| Archive worker (optional) | 51.5 KiB | 18.2 KiB | **16.3 KiB** |
+| Text / ebooks | 18.1 KiB | 6.9 KiB | **6.1 KiB** |
+| iWork worker | 884.9 KiB | 183.4 KiB | **153.3 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Entry, preloaded JS, and CSS total **532.2 KiB Brotli** (2204.5 KiB raw / 633.2 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Entry, preloaded JS, and CSS total **459.5 KiB Brotli** (1940.1 KiB raw / 546.4 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
 
 </details>
 
@@ -293,31 +308,28 @@ HEIF decoder source versions, rebuild steps, and Apple-edited 10-bit color regre
 <details>
 <summary>Show SOTA benchmark results</summary>
 
-| Measured task | filens | Current peer | Speedup\* |
-| --- | ---: | --- | ---: |
-| 11.1 MB, 13-slide PPTX parse | **28.5 ms** | pptx-preview 1.0.7: 56.6 ms | **1.99×** |
-| 11.1 MB, 13-slide PPTX first preview | **48.8 ms** | pptx-preview 1.0.7: 71.8 ms | **1.47×** |
-| 3840×1920 panorama JPEG preview | **154.9 ms** | Photo Sphere Viewer 5.15.1: 205.2 ms | **1.32×** |
-| X5 INSP preview, input/modules/WASM ready (Oct 27) | **354.5 ms** | Photo Sphere Viewer 5.15.1 dual fisheye: 383.0 ms | **1.08×** |
-| NEF without embedded JPEG → preview canvas | **152.7 ms** | LibRaw-Wasm 1.6.0 half-size: 326.7 ms | **2.14×** |
-| DNG without embedded JPEG → preview canvas | **167.7 ms** | LibRaw-Wasm 1.6.0 fast half-size: 314.4 ms | **1.87×** |
-| STEP truck geometry import: cube (Nov 1) | **11.9 ms** | occt-import-js 0.0.23: 62.0 ms | **5.21×** |
-| STEP truck geometry import: as1_pe_203 (Nov 1) | **61.2 ms** | occt-import-js 0.0.23: 195.0 ms | **3.19×** |
-| STEP truck geometry import: as1-oc-214 (Nov 1) | **224.2 ms** | occt-import-js 0.0.23: 243.8 ms | **1.09×** |
-| XLSX data read (80,000 cells) | **42.3 ms** | SheetJS CE 0.20.3: 109.6 ms | 2.59× |
-| XLS → XLSX preview conversion (6 sheets) | **12.3 ms** | x2t WASM v9.3.2+3: 49.1 ms | 4.00× |
-| 20,000×8 numeric CSV → XLSX | **137.6 ms** | x2t WASM v9.3.2+3: 198.8 ms | 1.44× |
+Updated November 5, 2026. The parser shortlist retains larger inputs with at least **2×** measured speedups; smaller and lower-gain cases remain in the full reports. The DSH comparison also includes PDF.
 
-**Stable leads against specialized frontend libraries.** At least seven runs per configuration, with 21 for the X5 original; sensor development and preview drawing on five RAW inputs without embedded JPEGs are **1.11–2.14×** faster than the measured LibRaw paths.
+**Complete DSH sidebar previews**
 
-<sub>\* Limited to this machine, measured inputs and listed peers, supported by paired bootstrap 95% intervals; downloads and library cold loading excluded. Apple M4 Pro / Chromium 147; **panoramas use SwiftShader software rendering**. On the X5 original, PSV's generic dual-fisheye projection visibly repeats scene content across hard seams; filens has lighter, localized ghosting. The speed label covers readable previews of this original. RAW measures development and drawing to a common canvas with different intermediate sizes; STEP uses the current truck reader: all six tested files lead after lossless binary mesh transport; as1-oc-214 takes 224.2 vs 243.8 ms. Meshes differ and pass an approximate geometry screen; this excludes scene construction and rendering; XLSX compares data reading; XLS compares the main displayed content in the same viewer. [Full results, scope and reproduction](docs/performance-comparison.md).</sub>
+| Sample · first / cached median (ms) | FiLens 0.1.3 | DSH built in | First-open speedup |
+| --- | ---: | ---: | ---: |
+| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
+| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
+| PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
-</details>
+Ratios in this table describe first opens. PDF cached opens improve **1.43×** (110 → 77 ms). Office and PDF use separate nine-round paired measurements.
 
-<details>
-<summary>Measurement scope</summary>
+**Large-input parsing against specialized libraries**
 
-<sub>RAW inputs have embedded JPEGs removed and unchanged sensor data. Both LibRaw half-size configurations draw to the same 1280×800 canvas; intermediate resolution, tone and crop differ slightly. Timing includes development, output decode/transfer and drawing. The full Numbers model and several small PPTX first previews still have room to improve; see the [full results and preview comparisons](docs/performance-comparison.md).</sub>
+| Larger parsing workload | Baseline | Baseline / FiLens median (ms) | Speedup |
+| --- | --- | ---: | ---: |
+| XLSX · 2,000 × 64, 128,000 cells | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
+| XLSX · 8,000 × 64, 512,000 cells | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
+| ZIP · 10,000 entries, 18.34 MiB expanded | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
+| ZIP · 2,500 entries, 36.23 MiB expanded | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
+
+Nine measured rounds after two warmups, alternating library order; all cell values or complete entry texts verified. These parser timings exclude rendering, imports, network and verification. The DSH rows include preview rendering. Results are limited to the named workloads and baselines; they do not establish a universal ranking or identical feature coverage. [Methods, versions, raw samples and reproduction](docs/featured-performance.md) · [Historical comparisons](docs/performance-comparison.md).
 
 </details>
 

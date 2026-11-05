@@ -85,7 +85,7 @@ await cp(path.join(directory, 'dist/all-in-one/asset-packing.json'), path.join(r
 await cp(path.join(directory, 'dist/all-in-one/assets'), path.join(root, 'dist/preview/assets'), { recursive: true });
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));
 await cp(path.join(root, 'LICENSE'), path.join(directory, 'LICENSE'));
-await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), version, unit:'bytes', scope:'Versioned standalone runtime build, including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
+await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), version, unit:'bytes', scope:'Current source checkout runtime build (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
 
 async function measure(directory, prefix = '') {
   const files = [];

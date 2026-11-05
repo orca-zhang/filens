@@ -1,11 +1,11 @@
 {
-  "observedAt": "2026-11-05T04:39:36.508Z",
+  "observedAt": "2026-11-05T06:23:11.059Z",
   "tag": "v0.6.4",
   "language": "en",
   "files": {
-    "docs/release-v0.6.4.md": "6279d7ef4c1e58bc37d640c5e2c108739d217f53e58b5c5c9a5f29429ff3a4ab",
-    "docs/releases/v0.6.4.md": "6279d7ef4c1e58bc37d640c5e2c108739d217f53e58b5c5c9a5f29429ff3a4ab",
-    "CHANGELOG.md": "667f2f2a987e846f712ed0460a1c5068ee3aa74741c1560369713bd7b2a6fb9b"
+    "docs/release-v0.6.4.md": "c0fcc3e3762b1f92821916fa15019768f5e61567aeb0f280b05cd9c818a56403",
+    "docs/releases/v0.6.4.md": "c0fcc3e3762b1f92821916fa15019768f5e61567aeb0f280b05cd9c818a56403",
+    "CHANGELOG.md": "455b2040f253aeb112d6059d93efffc48b5095875826e4171e7425414c8867ce"
   },
   "checks": {
     "downloadTableFirst": true,
@@ -21,7 +21,10 @@
     "bodyMatchesBothReleaseDocuments": true,
     "pdfLatestMediansAndRatiosMatchRaw": true,
     "npmRegistryPackages": 30,
-    "repositoryLinksUseTagForCodeAndMainForPublicationReceipt": true
+    "repositoryLinksUseTagForCodeAndMainForPublicationReceipt": true,
+    "dshVersion": "0.1.5",
+    "headerControlsAndPreviewCopyDocumented": true,
+    "galleryUsesMatchingReleaseRuntime": true
   },
   "publication": {
     "status": "published-and-verified",

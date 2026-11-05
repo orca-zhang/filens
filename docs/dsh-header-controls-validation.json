@@ -1,0 +1,328 @@
+{
+  "observedAt": "2026-11-05T05:56:41.873Z",
+  "scope": "Implementation checks from the pre-versioning source build plus the immutable dsh-filens 0.1.5 publication. The package field retains its historical source candidate; release identifies the public archive.",
+  "baseCommit": "8828ede22bb5cf9ecaca8a284f560b63f4a62899",
+  "sourceSHA256": {
+    "integrations/deepseek-harness/src/client.css": "6db70dda1fd46ee4c81317e5c97a0c576eaa03011a00c169188bc50ba48a37ad",
+    "integrations/deepseek-harness/src/client.js": "1445d0056b7ee1581633ec62b1f5b82842414f6d212d9d27db502a92bddf089b",
+    "integrations/deepseek-harness/src/viewer.css": "4b0d405b11de79cda8eab26e8546db11dc8b074cb9b282998a0a1033ad857cef",
+    "integrations/deepseek-harness/src/viewer.js": "33d04240263d2b37d69573d330ddbe7cf349962554f9959bc1b95cdbdee132d8",
+    "packages/archive/src/preview-driver.ts": "54cfe3334fbf777638d104347811b01786a4db24308041014e36d0432f175d3a",
+    "packages/core/src/preview/attachment-session.ts": "52c945dba102b8c8eba7dbc23ef603c66ac14a9b78a399fec93b3c08da143b42",
+    "packages/core/src/preview/audio-player.ts": "83fc5394eb04cb4e6041591fc8f0c874fe0490e4129171e3750c404c63b837fd",
+    "packages/core/src/preview/video-controls.ts": "c92bb37a0bc174513876d12ca18024c7d0322cc77c007bb458388ce3ffc81dcc",
+    "packages/iwork/src/viewer/create-iwork-viewer.ts": "941606af77f6c060fd8cc7ea09345f2efed77fee2aaac1cc985760964d0eda6b",
+    "packages/preview/src/index.ts": "bb75ce6d1ea67343ff2063c697115764b97c6a97bc80851d578dc6b750f24a7c",
+    "packages/preview/src/public.d.ts": "eef7d6a9e423ad83757a834a1a6f1450681117164c1b45b29c255ab65f158a75",
+    "packages/vue/src/Preview.vue": "92c1e4ed917d048d5600069ed2df640e7ac122eb56b8c8572f21b95090efbc69",
+    "packages/vue/src/control-portal.ts": "bc05c33888a8ead03a908df558e7f95644f0d0d3feb525e81f9bfc44c3beb039",
+    "packages/xlsx/src/preview-driver.ts": "d74c29f77041facf3fb6e1f8f6be1072386586cbb51b61357bd29de69f30c363",
+    "scripts/build-preview.mjs": "ef801c592e449b312badff1111ca48041d6c2be12ac0f43939bb343b95c22afc",
+    "scripts/capture-dsh-plugin-demo.mjs": "619d2743345c7f30885f1158e5098e59b26685c2cd85dc71487613c8050856cf",
+    "scripts/capture-dsh-visual-demo.mjs": "e283afd3a72d301190435121c5aa8b5e56188d7cfebab7d9a2130615bd414c29",
+    "scripts/report-bundle-sizes.mjs": "1ac4a2a4ed6095afcdc8170ad3ccbc601fe79c37e3274ab9b68dccb793aec6a3",
+    "scripts/report-dsh-format-loading.mjs": "ee1e97353aeb7d5395319143704c675a6c22d60691b2183d5dcf557fccd5b63d",
+    "scripts/report-preview-sizes.mjs": "58c95d52738d0b30cfeed1723c762a543ce688bb2e8b0c50a581b40e59d9da82"
+  },
+  "plugin": {
+    "baseVersion": "0.1.3",
+    "cli": "0.5.6",
+    "preview": "0.3.4",
+    "extensions": 450,
+    "previewSHA256": "6c169ea7fc3803576b7ded0d0a5505bddc966326d854448010ff126f742eab1d",
+    "runtimeManifestSHA256": "d905f17ea3d51728c84ea467f9438b33d2d526aa9602574878aaa3e47fcfd516",
+    "clientSHA256": "accc993059493987f61d8b5fb6deb5afc9a2d22d7a75536e6ae31576eab35f2c"
+  },
+  "package": {
+    "observedAt": "2026-11-05T05:56:41.873Z",
+    "source": "current source checkout, measured separately from the public registry archive",
+    "name": "dsh-filens",
+    "baseVersion": "0.1.3",
+    "file": "dsh-filens-header-controls-source.tgz",
+    "bytes": 6849509,
+    "unpackedBytes": 20532829,
+    "sha256": "fda898f0a4ab6f994c17ccdc0ec2ee526b9b900fc33acc768f69d0e346274219"
+  },
+  "publicPackage": {
+    "version": "0.1.3",
+    "bytes": 6846421,
+    "unpackedBytes": 20516935,
+    "sha256": "1341c54436e20d265547290f26719d075023137e642bcf787e0ed65ee9bb73f7",
+    "receipt": "docs/dsh-plugin-publication.json"
+  },
+  "behavior": {
+    "location": "DSH address-bar action slot",
+    "omittedControls": [
+      "fit-contain",
+      "fit-width",
+      "fit-height"
+    ],
+    "fullscreen": "Controls move into fullscreen preview and return to header on exit; manual fit controls remain hidden",
+    "driverControls": "Actual nodes and handlers retained; hidden attachment parents and per-tab disposal respected"
+  },
+  "validation": {
+    "vue": {
+      "passed": 66,
+      "portalCases": 5
+    },
+    "coreAttachments": {
+      "passed": 17
+    },
+    "dsh": {
+      "passed": 18,
+      "node": "24.22.1"
+    },
+    "browser": {
+      "isolatedFormatPaths": 16,
+      "completeFormats": 12,
+      "interactions": [
+        "loading identifies the file and respects reduced motion",
+        "closing and reopening PDF releases each worker, reuses exact first-page pixels and skips repeated page decoding",
+        "cached Numbers restores its archive for lazy sheets, preserves sheet content and releases workers",
+        "header contains working page navigation, zoom and fullscreen, without manual fit buttons; keyboard navigation works",
+        "document fullscreen opens from the keyboard, contains controls and restores them to the header on exit",
+        "live DSH language and theme changes preserve the document and current page",
+        "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
+        "double-click restores the complete 3D model after orbit and zoom",
+        "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
+        "3D auto framing keeps the whole model visible in a tall narrow pane",
+        "Word pages fit narrow/resized panes and omit unavailable controls",
+        "resizing the Word pane preserves the reading position",
+        "late events from a previous document are ignored",
+        "localized parser failure exposes details and a working retry action",
+        "encrypted documents expose the password form and render after password entry",
+        "short panes do not inherit a fixed minimum height",
+        "concurrent tabs share runtime assets but keep controls and lifecycle independent"
+      ],
+      "errors": [],
+      "failures": []
+    },
+    "desktop": {
+      "environment": {
+        "version": "0.2.1-rc.5",
+        "node": "24.21.0",
+        "electron": "44.7.0",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "results": [
+        {
+          "name": "filens-cosmic-atlas.pdf",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-aurora-guide.docx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-field-notes.pptx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-weekend.key",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "rounded-cube.step",
+          "rendered": true,
+          "fillsPane": true,
+          "toolbar": false,
+          "orbitZoomAndReset": true
+        },
+        {
+          "name": "sample-nested-archives.zip",
+          "rendered": true,
+          "fillsPane": true
+        }
+      ],
+      "nativeFullscreenTested": false,
+      "errors": []
+    },
+    "skill": "quick_validate.py passed",
+    "builds": [
+      "DSH shared-source split runtime",
+      "Vue package and declarations",
+      "demo production",
+      "standalone split and all-in-one"
+    ]
+  },
+  "sizes": {
+    "standalone": "docs/preview-build-sizes.json",
+    "demo": "docs/assets/bundle-sizes.json",
+    "formatLoading": "docs/assets/dsh-plugin/format-loading-current.json"
+  },
+  "gallery": {
+    "receipt": "docs/assets/dsh-plugin/3d-and-panorama-recording.json",
+    "recordedAt": "2026-11-05T05:54:51.343Z",
+    "installationSource": "isolated local source build",
+    "encoding": {
+      "fps": 25,
+      "webp": {
+        "width": 960,
+        "quality": 92,
+        "color": "full color"
+      },
+      "gif": {
+        "width": 800,
+        "colors": 256,
+        "palette": "adaptive per scene",
+        "dither": "sierra2_4a",
+        "optimization": "lossless frame differences, displayed pixels and timing verified"
+      },
+      "highlightFrames": 276,
+      "highlightSeconds": 11.04
+    },
+    "checks": [
+      "model header view, projection, section and reset controls",
+      "GLB render, orbit and zoom through actual pointer input",
+      "3MF render and orbit",
+      "panorama header zoom controls",
+      "spherical photo render and look-around",
+      "panorama video timeline seeking",
+      "panorama video playback and look-around",
+      "all format controls in address-bar action slot"
+    ],
+    "artifacts": [
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.webp",
+        "bytes": 6555378,
+        "sha256": "6a1236d34e087a62432da663aba5acaf630e9ab9f6f0cda1b006bf7aa4c2b11c"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.gif",
+        "bytes": 17831071,
+        "sha256": "1cf6499f657e2b19094379d5aeff417cf3b15bb97971c502bda770ec3fd6a014"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.mp4",
+        "bytes": 5383923,
+        "sha256": "fc9f9175019011a2d180104ef59bc2d4d95e29c9dc67538d317283c29e467d78"
+      }
+    ]
+  },
+  "release": {
+    "name": "dsh-filens",
+    "version": "0.1.5",
+    "file": "dsh-filens-0.1.5.tgz",
+    "bytes": 6849481,
+    "unpackedBytes": 20532472,
+    "sha256": "5202a061c340e838699a97ce934b7189a41931d9edfffc1d6ca2025a8838fd42",
+    "integrity": "sha512-Of/OmWGtcrEjzandneCuHemxjgGu8HGJ4skm7Mz70TcXVv2rQ1OlilDdaPZFwZgeOwjxdu3Mv8N7kLvQnxWolw==",
+    "cliVersion": "0.5.6",
+    "previewVersion": "0.3.4",
+    "previewSHA256": "6c169ea7fc3803576b7ded0d0a5505bddc966326d854448010ff126f742eab1d",
+    "extensions": 450,
+    "privacyChecked": true,
+    "status": "publicly-available-integrity-verified",
+    "publishedAt": "2026-11-05T06:21:59.646Z",
+    "registryTarballDownloadVerified": true,
+    "runtimeAndClientMatchRecordedBuild": true,
+    "desktopPackageTest": {
+      "plugin": "dsh-filens@0.1.5",
+      "source": "final tarball installed in isolated Desktop profile; existing public CLI dependencies retained",
+      "environment": {
+        "version": "0.2.1-rc.5",
+        "node": "24.21.0",
+        "electron": "44.7.0",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "url": "dsh-app://app/",
+      "registrations": [
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/text",
+          "extensions": 0
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/markdown",
+          "extensions": 2
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/html",
+          "extensions": 2
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/image",
+          "extensions": 8
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/pdf",
+          "extensions": 1
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office",
+          "extensions": 4
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/excel",
+          "extensions": 4
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code",
+          "extensions": 115
+        },
+        {
+          "id": "dsh-filens",
+          "extensions": 450
+        }
+      ],
+      "results": [
+        {
+          "name": "filens-cosmic-atlas.pdf",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-aurora-guide.docx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-field-notes.pptx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-weekend.key",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "rounded-cube.step",
+          "rendered": true,
+          "fillsPane": true,
+          "toolbar": false,
+          "orbitZoomAndReset": true
+        },
+        {
+          "name": "sample-nested-archives.zip",
+          "rendered": true,
+          "fillsPane": true
+        }
+      ],
+      "nativeFullscreenTested": false,
+      "errors": []
+    },
+    "previewMetadata": {
+      "zh": {
+        "meta": {
+          "title": "FiLens 文档预览",
+          "description": "支持 400+ 种格式本地预览，涵盖 Office、PDF、iWork、CAD/3D、RAW、全景媒体等。"
+        }
+      },
+      "en": {
+        "meta": {
+          "title": "FiLens Document Preview",
+          "description": "Local previews for 400+ file formats, including Office, PDF, iWork, CAD/3D, RAW and 360° media."
+        }
+      }
+    },
+    "previewMetadataVerifiedInTarball": true,
+    "toolsMetadataUnchanged": true,
+    "publicationReceipt": "docs/dsh-plugin-publication.json"
+  }
+}

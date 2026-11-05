@@ -63,6 +63,7 @@ export class AudioPreviewPlayer {
       }
     });
     this.artwork.append(placeholder, this.play);
+    this.play.dataset.previewControls = '';
     const eyebrow = node('p', 'pptxv-audio-eyebrow', this.labels.now);
     album.append(this.artwork, eyebrow, this.title, this.details);
     album.append(this.fileButton(this.labels.cover, 'image/*', 'pptxv-audio-cover-input', async file => {
@@ -88,6 +89,7 @@ export class AudioPreviewPlayer {
     this.lyricList.setAttribute('aria-label', this.labels.lyrics);
     this.status.setAttribute('role', 'status');
     this.timing = node('div', 'pptxv-audio-timing');
+    this.timing.dataset.previewControls = '';
     const offset = node('output', '', '0.0s');
     offset.setAttribute('aria-label', this.labels.timing);
     const adjust = (value: number) => {
@@ -104,6 +106,7 @@ export class AudioPreviewPlayer {
     body.append(album, lyricPanel);
 
     const footer = node('div', 'pptxv-audio-footer');
+    footer.dataset.previewControls = '';
     const extras = node('div', 'pptxv-audio-extras');
     const repeat = this.button(this.labels.repeat, '↻', 'pptxv-audio-repeat', () => {
       media.loop = !media.loop;
@@ -272,6 +275,7 @@ export class AudioPreviewPlayer {
 
   private fileButton(label: string, accept: string, className: string, read: (file: File) => Promise<void>): HTMLElement {
     const wrapper = node('span', 'pptxv-audio-file');
+    wrapper.dataset.previewControls = '';
     const input = node('input', className);
     input.type = 'file'; input.accept = accept; input.hidden = true;
     input.setAttribute('aria-label', label);

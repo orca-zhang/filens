@@ -11,7 +11,7 @@
 
 Native sidebar previews embed directly in DSH's existing file preview pane. FiLens parses and renders locally, with no separate preview service. DOCX/PPTX render directly without a LibreOffice-to-PDF step; 3D and 360° media retain orbit, zoom, look-around and playback interactions.
 
-The published **`dsh-filens@0.1.3` supports 450 preview extensions**. Counts use unique extensions and include direct previews and previews after local WASM conversion. Source builds use the current shared manifest; their exact count is in the build's `lib/support.json`. See the [support matrix](../../docs/support-matrix.md) and [validation record](VALIDATION.md) for format coverage and fidelity limits.
+The published **`dsh-filens@0.1.5` supports 450 preview extensions**. Counts use unique extensions and include direct previews and previews after local WASM conversion. Source builds use the current shared manifest; their exact count is in the build's `lib/support.json`. See the [support matrix](../../docs/support-matrix.md) and [validation record](VALIDATION.md) for format coverage and fidelity limits.
 
 The adapter reuses `filens-cli@0.5.6` and builds the `filens-preview@0.3.4` runtime from the shared frontend source. It adds no parsing or conversion algorithms.
 
@@ -42,7 +42,7 @@ The workloads below time complete parser calls on identical inputs, **excluding 
 
 Library feature/fidelity scopes differ; these ratios are not an overall ranking across files. [Raw samples and reproduction](../../docs/featured-performance.md).
 
-**DSH 0.1.3:** mount directly into the sidebar, use DSH's existing header controls and load the matching format driver on first use. Initial JS falls from **3.04 MiB to 345 KiB (about 89%)**; TXT first-open runtime requests fall from **3.09 MiB to 449 KiB**. Format modules, shared code and WASM are reused after first use. [Loading sizes and method](../../docs/assets/dsh-plugin/format-loading.json). The installation demo uses 0.1.3. PDF reopens reuse painted first-page pixels keyed by complete content, viewport and pixel density: at most four pages / 16 MiB, expiring after 30 idle seconds. Password opens and printing bypass it. Each open still validates the PDF; closing releases its worker. [Latest timings, ranges and validation](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md). Plugin download: **6.53 MiB**, unpacked: **19.57 MiB**, excluding CLI/OCR and shared dependencies.
+**DSH 0.1.5:** all format controls sit beside the address bar: page navigation, rotation, worksheet tabs, archive search, audio/video playback, attachments and the 3D inspector. The matching driver loads on first use; modules and WASM are reused. Initial JS requests total **350.3 KiB**; TXT first-open runtime requests total **454.8 KiB**, excluding document bytes and DSH. [0.1.5 runtime measurements](../../docs/assets/dsh-plugin/format-loading-current.json). The installation recording uses public 0.1.3; the 3D/360° gallery records the same preview runtime shipped in 0.1.5. PDF reopens reuse validated first-page pixels, bounded to four pages / 16 MiB / 30 idle seconds; each open still loads and validates its document, and closing releases the worker. Password opens and printing bypass reuse. [PDF timings and limits](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
 Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB estimated model budget / 30-second idle lifetime. [Complete measurements, costs and limits](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
 
@@ -51,15 +51,17 @@ Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a 
 The same sidebar supports interactive 3D models and 360° media. Drag to orbit or look around; scroll to zoom. For spherical JPEG/video samples, use `.pano` / `.360v` filenames, preserving the original bytes; ordinary `.jpg` / `.webm` use the normal image/video view. [Gallery MP4, sources and recording details](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery).
 
 <!-- dsh-package-metrics:start -->
-**dsh-filens 0.1.3: 6.53 MiB download / 19.57 MiB unpacked**, including the shared preview 0.3.4 runtime and its archive sidecars. CLI 0.5.6 and OCR are separate platform dependencies; DSH shared dependencies, package-manager stores and caches are excluded. MiB = 1,048,576 bytes.
+**Published dsh-filens 0.1.5: 6.53 MiB download / 19.58 MiB unpacked**, including the shared preview 0.3.4 runtime and its archive sidecars. CLI 0.5.6 and OCR are separate platform dependencies; DSH shared dependencies, package-manager stores and caches are excluded. MiB = 1,048,576 bytes.
 <!-- dsh-package-metrics:end -->
+
+The 0.1.5 header controls and packaged runtime are covered by [the validation receipt](../../docs/dsh-header-controls-validation.json). Sidebar latency tables retain their measured 0.1.3 snapshot.
 
 ## Install and build
 
-Install [`dsh-filens@0.1.3`](https://www.npmjs.com/package/dsh-filens) directly from Desktop:
+Install [`dsh-filens@0.1.5`](https://www.npmjs.com/package/dsh-filens) directly from Desktop:
 
 1. Open **Plugins** and click **Add plugin**.
-2. Enter `dsh-filens`, or `dsh-filens@0.1.3` to pin the version, and click **Install**.
+2. Enter `dsh-filens`, or `dsh-filens@0.1.5` to pin the version, and click **Install**.
 3. When installation completes, click **Enable now**. The bundle provides separate FiLens Tools and FiLens Preview entries that can be enabled independently; the recorded Desktop version enables them immediately.
 
 Keep the default installation source; no registry change is needed.
@@ -67,9 +69,9 @@ Keep the default installation source; no registry change is needed.
 The CLI also installs into a specific profile. Fully quit Desktop before managing its profile from the CLI, then reopen it after installation:
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.3
+dsh plugin --profile desktop add dsh-filens@0.1.5
 # For a Web profile:
-dsh plugin --profile web add dsh-filens@0.1.3
+dsh plugin --profile web add dsh-filens@0.1.5
 ```
 
 The plugin includes its client, preview WASM, archive worker and notices. npm platform dependencies supply CLI/OCR binaries and models; no compilation or separate model download is needed. Keep optional dependencies enabled. Platforms are macOS arm64, Linux x64/arm64 and Windows x64; native execution was verified on macOS arm64, with cross-built Linux/Windows artifacts.
@@ -87,20 +89,20 @@ Artifacts and checksums are recorded in `dist/dsh-npm/release.json`. The build u
 For Web, use the DSH CLI matching the intended runtime:
 
 ```sh
-dsh plugin --profile web add /absolute/path/dsh-filens-0.1.3.tgz
+dsh plugin --profile web add /absolute/path/dsh-filens-0.1.5.tgz
 dsh web
 ```
 
 For Desktop, open the app once to initialize its profile, fully quit it, then:
 
 ```sh
-dsh plugin --profile desktop add /absolute/path/dsh-filens-0.1.3.tgz
+dsh plugin --profile desktop add /absolute/path/dsh-filens-0.1.5.tgz
 ```
 
 If macOS reports `dsh: command not found`, use the Desktop UI above or invoke the app's bundled CLI directly:
 
 ```sh
-"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile desktop add dsh-filens@0.1.3
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile desktop add dsh-filens@0.1.5
 ```
 
 Reopen Desktop after installation. The profile manager may print peer warnings because DSH supplies shared packages from its own runtime; startup and the checks below verify the actual shared instances.
@@ -139,7 +141,7 @@ For Office files or PDFs with native text, ask the agent: "Read the native docum
 
 Per-call `ocr` is `"auto"`, `"never"` or `"always"`; global `ocr: false` takes precedence. DSH defaults OpenXML Office paths to `never`, including named archive members; PDF, scans and other paths keep `auto`. Set `ocr: "auto"` explicitly when embedded image text matters. `never` retains native text and skips images/scans; `always` forces PDF page OCR. `ocr_min_confidence` defaults to 0.8; low/unscored lines are omitted with partial-result warnings. Scores are detector confidence, not recognition accuracy. OCR blocks are marked `source: "ocr"`; verify even high-scoring text.
 
-Plugin **0.1.3** requires its matching CLI **0.5.6** and WASM. Version 0.1.0 / CLI 0.5.2 only supported the global `ocr: false` setting or `--no-ocr`; update the complete package together.
+Plugin **0.1.5** requires its matching CLI **0.5.6** and WASM. Version 0.1.0 / CLI 0.5.2 only supported the global `ocr: false` setting or `--no-ocr`; update the complete package together.
 
 Plugin 0.1.2 treats intentional `ocr: "never"` as a successful native-text request: `textScope: "native-text"`, exit 0 and `complete: true` unless another failure/limit occurs. It still reports skipped image text. OCR-enabled scope is `"native-and-ocr"`; actual OCR errors and low-confidence omissions remain partial (exit 3). `content.ocr.results[]` locates each skipped/complete/partial/failed attempt by page, slide, shape and media where available. Published 0.1.0 / CLI 0.5.2 retain the earlier partial status for skipped OCR. Sidebar previews are unaffected.
 
@@ -178,7 +180,7 @@ In the profile's `cordis.patch.yml`:
   disabled: false
 ```
 
-Either row can set `disabled: true`, including through DSH's plugin UI. A tools-only/headless profile should disable `filens-preview`; preview requires the Web/Desktop client and `webServer`. Unloading Tools unregisters its seven tools and cancels active calls. Unloading Preview removes its client registration, route and startup injection; unmounting a viewer releases its iframe and workers.
+Either row can set `disabled: true`, including through DSH's plugin UI. A tools-only/headless profile should disable `filens-preview`; preview requires the Web/Desktop client and `webServer`. Unloading Tools unregisters its seven tools and cancels active calls. Unloading Preview removes its client registration, route and startup injection; unmounting a viewer releases its DOM controls and workers.
 
 Default command: DSH Host's Node/Electron executable plus the packaged CLI launcher. For a remote shell/container, configure `command: [filens]` and install the matching CLI **inside that execution environment**. A Host installation path is not assumed to exist remotely. Execution requires DSH's Bash-compatible `shell` provider; a PowerShell-only composition is not supported. The default CLI prebuild supports macOS arm64, Linux x64/arm64 and Windows x64; platform coverage here is inherited, not independently tested.
 
@@ -200,9 +202,9 @@ The new CLI requires the matching OCR byte-input ABI. An old OCR library fails i
 
 ## Preview resources and data flow
 
-The Host serves only enumerated, versioned library resources under `/_filens/<digest>/`. This static route has no document path parameter. DSH reads the selected document using its own Session file service. The **0.1.3 build** imports the shared split runtime once and mounts it directly into the sidebar DOM, passing a **copy** of the bytes so workers cannot detach DSH’s retained input. Zoom and fullscreen use the existing DSH header action slot; the inner toolbar is disabled. Version **0.1.2** used a viewer iframe; the installation recording above uses **0.1.3**.
+The Host serves only enumerated, versioned library resources under `/_filens/<digest>/`. This static route has no document path parameter. DSH reads the selected document using its own Session file service. The **0.1.3 build** imports the shared split runtime once and mounts it directly into the sidebar DOM, passing a **copy** of the bytes so workers cannot detach DSH’s retained input. Version 0.1.5 places the shared viewer’s controls in the existing DSH header action slot, including all format-specific controls. Version **0.1.2** used a viewer iframe; the installation recording above uses **0.1.3**.
 
-The preview fills its pane and follows DSH's colors, fonts and language without reopening the document or resetting its page. The source build adds only zoom out/in and fullscreen to the outer DSH header where supported; fit, rotation and page buttons are removed, while keyboard page navigation remains. Word pages fit the pane width and preserve reading position on resize. 3D files have no top toolbar and automatically frame the whole model, including in narrow panes. Drag to orbit, scroll to zoom and double-click to reset. The top-left button opens a compact inspector, collapsed by default, with View / Structure / Tools tabs. Model structure, materials, measurement, section and snapshot settings appear on demand without shrinking the canvas. Arrow keys switch tabs and Esc closes the inspector. Loading shows the filename, errors offer details and retry, and late messages from a previous file cannot replace the current state.
+The preview fills its pane and follows DSH's colors, fonts and language without reopening the document or resetting its page. Version 0.1.5 moves all existing format controls beside the address bar: page navigation, zoom, rotation, fullscreen, worksheet tabs, archive tools, attachment menus and media controls. Manual Fit / Width / Height buttons are omitted. Narrow headers scroll horizontally; keyboard focus brings controls into view. Fullscreen brings the controls into the fullscreen preview and restores them to the header on exit. Each tab keeps independent controls and releases them on close. Word pages fit the pane width and preserve reading position on resize. 3D files automatically frame the whole model, including in narrow panes. Drag to orbit, scroll to zoom and double-click to reset. The address-bar model-tools button opens a compact inspector below the header, collapsed by default, with View / Structure / Tools tabs. Model structure, materials, measurement, section and snapshot settings appear on demand without shrinking the canvas. Arrow keys switch tabs and Esc closes the inspector. Loading shows the filename, errors offer details and retry, and late messages from a previous file cannot replace the current state.
 
 The runtime includes archive WASM and its worker. Content-hashed static assets allow cross-origin module/WASM reads for Desktop; this route still exposes no document data. The directly mounted runtime follows DSH’s application policy. Workers remain separate execution contexts, and format drivers retain their own document isolation where needed. Format behavior, password handling and limitations remain FiLens's existing ones. DSH supplies one selected file; multipart archives requiring companion volumes are not covered by this integration's validation. Native codecs and fonts still affect rendering.
 

@@ -50,6 +50,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     this.root.className = 'xlsxv-preview';
     this.tabs = document.createElement('div');
     this.tabs.className = 'xlsxv-sheet-tabs';
+    this.tabs.dataset.previewControls = '';
     this.grid = document.createElement('div');
     this.grid.className = 'xlsxv-grid';
     this.root.replaceChildren(this.tabs, this.grid);

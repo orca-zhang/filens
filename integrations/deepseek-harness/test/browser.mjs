@@ -21,7 +21,16 @@ const fixturePaths = Object.fromEntries(samples.map(name => [name, path.join(rep
 for (const name of ['filens-cafe.dxf', 'pepper-carrot.epub', 'photo-alpine-lake.jpg', 'sample-video.mp4']) {
   fixturePaths[name] = path.join(repository, 'apps/demo/public/samples', name);
 }
+// A real 1-second PCM WAV keeps native audio coverage independent of optional samples.
+const audioFixture = Buffer.alloc(44 + 16000);
+audioFixture.write('RIFF', 0); audioFixture.writeUInt32LE(audioFixture.length - 8, 4);
+audioFixture.write('WAVEfmt ', 8); audioFixture.writeUInt32LE(16, 16);
+audioFixture.writeUInt16LE(1, 20); audioFixture.writeUInt16LE(1, 22);
+audioFixture.writeUInt32LE(8000, 24); audioFixture.writeUInt32LE(16000, 28);
+audioFixture.writeUInt16LE(2, 32); audioFixture.writeUInt16LE(16, 34);
+audioFixture.write('data', 36); audioFixture.writeUInt32LE(16000, 40);
 const fixtureText = {
+  'sample-audio.wav': audioFixture,
   'hello.txt': 'Hello from FiLens inside DSH.',
   'hello.mm': '<map version="1.0.1"><node TEXT="Lazy mindmap"><node TEXT="Child"/></node></map>',
   'hello.drawio': '<mxfile><diagram name="Page"><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="2" value="Lazy diagram" vertex="1" parent="1"><mxGeometry x="20" y="20" width="100" height="40" as="geometry"/></mxCell></root></mxGraphModel></diagram></mxfile>',
@@ -123,7 +132,7 @@ try {
     ['filens-weekend.key', 'iwork-driver'], ['rounded-cube.step', 'model3d-driver'],
     ['sample-nested-archives.zip', 'archive-driver'], ['filens-cafe.dxf', 'cad-driver'],
     ['pepper-carrot.epub', 'ebook-driver'], ['hello.mm', 'mindmap-driver'],
-    ['hello.drawio', 'diagram-driver'], ['sample-video.mp4', 'codec-preview-driver'],
+    ['hello.drawio', 'diagram-driver'], ['sample-video.mp4', 'codec-preview-driver'], ['sample-audio.wav', 'codec-preview-driver'],
     ['raw/pentax-k-r.dng', 'panorama-driver'],
   ]) {
     const isolated = await browser.newPage({ viewport: { width: 1000, height: 800 } });
@@ -137,6 +146,27 @@ try {
       await isolated.evaluate(name => window.openFile(name), name);
       await isolated.waitForFunction(() => ['ready', 'error'].includes(document.querySelector('.filens-dsh')?.dataset.phase), null, { timeout: 65000 });
       assert.equal(await isolated.locator('.filens-dsh').getAttribute('data-phase'), 'ready', `${name}: ${await isolated.locator('[role=alert]').allTextContents()}`);
+      assert.equal(await isolated.locator('.filens-dsh-view [data-preview-controls], .filens-dsh-view .pptxv-toolbar, .filens-dsh-view .pptxv-model-tools-toggle').count(), 0, name + ': controls must be beside the address bar');
+      if (['xlsx-driver', 'iwork-driver'].includes(expected) && name.endsWith('.xlsx')) assert.ok(await isolated.locator('.filens-dsh-actions .xlsxv-sheet-tab').count() > 1);
+      if (expected === 'archive-driver') assert.equal(await isolated.locator('.filens-dsh-actions .archivev-toolbar').count(), 1);
+      if (name === 'sample-video.mp4') assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-video-controls').count(), 1);
+      if (name === 'sample-audio.wav') {
+        assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-audio-footer audio').count(), 1);
+        const rate = isolated.locator('.filens-dsh-actions .pptxv-audio-speed');
+        await rate.selectOption('1.5');
+        assert.equal(await isolated.locator('audio').evaluate(media => media.playbackRate), 1.5);
+      }
+      if (name === 'sample-video.mp4') {
+        await isolated.getByRole('combobox', { name: 'Video playback speed', exact: true }).selectOption('2');
+        assert.equal(await isolated.locator('video').evaluate(media => media.playbackRate), 2);
+      }
+      if (expected === 'archive-driver') {
+        const search = isolated.locator('.filens-dsh-actions input[type=search]');
+        await search.fill('no-such-entry');
+        await isolated.waitForFunction(() => document.querySelector('.archivev-listing')?.textContent.includes('No matching files'));
+        await search.fill('');
+        assert.equal(await isolated.locator('.filens-dsh-actions .archivev-toolbar').count(), 1);
+      }
       const files = [...new Set(requested.map(url => new URL(url).pathname.split('/_filens/')[1].split('/').slice(1).join('/')))].sort();
       const drivers = files.filter(file => /\/(?:\w+-driver|native-drivers|codec-preview-driver)-/.test(file));
       assert.ok(files.some(file => file.startsWith(`chunks/${expected}-`)), `${name} did not load ${expected}: ${files}`);
@@ -219,7 +249,7 @@ try {
     await page.waitForFunction(() => window.pdfWorkerActivity.active === 0);
     await page.evaluate(() => window.openFile('a.numbers'));
     await page.waitForFunction(() => document.querySelector('.filens-dsh')?.dataset.phase === 'ready');
-    assert.equal(await page.locator('.xlsxv-sheet-tab').count(), 6);
+    assert.equal(await page.locator('.filens-dsh-actions .xlsxv-sheet-tab').count(), 6);
     await page.locator('.xlsxv-sheet-tab').nth(1).click();
     await page.waitForFunction(() => !document.querySelector('.iworkv-root')?.classList.contains('is-loading') && document.querySelectorAll('.xlsxv-grid tbody tr').length > 0);
     numbersSheets.push(await page.locator('.xlsxv-grid').innerText());
@@ -266,10 +296,14 @@ try {
   assert.equal(await previewFrame().evaluate(() => document.documentElement.scrollWidth), 420, 'Viewer must not overflow the pane');
   const position = previewFrame().locator('.filens-dsh-view');
   const toolbar = page.locator('.filens-dsh-actions');
-  assert.equal(await page.locator('.pptxv-toolbar').count(), 0, 'The inner viewer must not duplicate the DSH header controls');
-  assert.equal(await toolbar.getByRole('button').count(), 3, 'Only zoom out/in and fullscreen remain');
-  assert.equal(await toolbar.getByRole('button', { name: /Prev|Next|Fit|Width|Height|Rotate/ }).count(), 0);
-  const zoom = toolbar.locator('.filens-dsh-zoom');
+  assert.equal(await page.locator('.filens-dsh-view .pptxv-toolbar').count(), 0, 'The inner viewer must not duplicate the DSH header controls');
+  assert.ok(await toolbar.getByRole('button').count() >= 5, 'Page, zoom and fullscreen controls belong in the header');
+  await toolbar.getByRole('button', { name: 'Next', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('.filens-dsh-view').dataset.page === '1');
+  await toolbar.getByRole('button', { name: 'Prev', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('.filens-dsh-view').dataset.page === '0');
+  assert.equal(await toolbar.locator('[data-action^=fit-]:visible').count(), 0, 'DSH omits manual fit controls');
+  const zoom = toolbar.locator('.pptxv-zoom-status');
   const beforeZoom = await zoom.innerText();
   await toolbar.locator('[data-action="zoom-in"]').click();
   await zoom.filter({ hasText: beforeZoom }).waitFor({ state: 'hidden' });
@@ -281,11 +315,13 @@ try {
   await previewFrame().waitForFunction(first => document.querySelector('.filens-dsh-view').dataset.page !== first, firstPage);
   await shell.press('ArrowLeft');
   await previewFrame().waitForFunction(first => document.querySelector('.filens-dsh-view').dataset.page === first, firstPage);
-  interactions.push('toolbar contains only working zoom and fullscreen; keyboard navigation works');
+  interactions.push('header contains working page navigation, zoom and fullscreen, without manual fit buttons; keyboard navigation works');
   await shell.press('f');
-  await previewFrame().waitForFunction(() => Boolean(document.fullscreenElement), null, { timeout: 5000 });
+  await previewFrame().waitForFunction(() => document.fullscreenElement?.querySelector('.pptxv-toolbar'), null, { timeout: 5000 });
+  assert.equal(await page.locator('[data-action^=fit-]:visible').count(), 0, 'Fit controls stay hidden in DSH fullscreen');
   await previewFrame().evaluate(() => document.exitFullscreen());
-  interactions.push('document fullscreen opens from the keyboard and exits normally');
+  await page.locator('.filens-dsh-actions .pptxv-toolbar').waitFor();
+  interactions.push('document fullscreen opens from the keyboard, contains controls and restores them to the header on exit');
 
   const oldRequest = await previewFrame().locator('.filens-dsh-view').getAttribute('data-request-id');
   await page.evaluate(() => {
@@ -305,7 +341,7 @@ try {
   await page.evaluate(() => window.openFile('rounded-cube.step'));
   await ready();
   assert.equal(await previewFrame().locator('.filens-dsh-view').getAttribute('data-family'), 'model3d');
-  assert.equal(await previewFrame().locator('.pptxv-toolbar').isVisible(), false, '3D previews must not show a toolbar');
+  assert.equal(await previewFrame().locator('.filens-dsh-view .pptxv-toolbar').isVisible(), false, '3D previews must not show a toolbar');
   const canvas = previewFrame().locator('canvas').first();
   // Read a rendered screenshot, rather than the WebGL buffer (which may be
   // cleared after presentation). The STEP fixture should leave clear margins.
@@ -410,7 +446,7 @@ try {
   await page.evaluate(() => window.openFile('filens-aurora-guide.docx'));
   await ready();
   await previewFrame().waitForFunction(() => document.querySelector('.docxv-document .docx')?.getBoundingClientRect().width <= innerWidth - 30);
-  assert.equal(await previewFrame().locator('.pptxv-toolbar').isVisible(), false, 'Flow documents must not show controls they do not support');
+  assert.equal(await previewFrame().locator('.filens-dsh-view .pptxv-toolbar').isVisible(), false, 'Flow documents must not show controls they do not support');
   await page.screenshot({ path: path.join(artifacts, 'word-narrow-dark.png') });
   const readingPosition = await previewFrame().evaluate(() => {
     const view = document.querySelector('.docxv-preview');
@@ -472,9 +508,9 @@ try {
   await ready();
   await page.evaluate(() => window.openOtherFile('filens-cosmic-atlas.pdf'));
   await page.waitForFunction(() => [...document.querySelectorAll('.filens-dsh')].length === 2 && [...document.querySelectorAll('.filens-dsh')].every(node => node.dataset.phase === 'ready'));
-  const otherZoom = await page.locator('#other-root .filens-dsh-zoom').innerText();
+  const otherZoom = await page.locator('#other-root .pptxv-zoom-status').innerText();
   await page.locator('#root .filens-dsh-actions [data-action="zoom-in"]').click();
-  assert.equal(await page.locator('#other-root .filens-dsh-zoom').innerText(), otherZoom, 'Toolbar controls must affect only their own tab');
+  assert.equal(await page.locator('#other-root .pptxv-zoom-status').innerText(), otherZoom, 'Toolbar controls must affect only their own tab');
   assert.equal(await page.locator('link[data-filens-runtime]').count(), 1, 'Concurrent previews share one stylesheet');
   await page.evaluate(() => window.closeFile());
   assert.equal(await page.locator('link[data-filens-runtime]').count(), 1, 'Closing one tab must keep another tab styled');

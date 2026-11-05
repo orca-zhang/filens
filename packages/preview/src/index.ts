@@ -16,6 +16,8 @@ export interface BrowserPreviewOptions extends PreviewOptions {
   name?: string;
   extension?: string;
   toolbar?: boolean | 'minimal';
+  /** Render all preview controls beside the host application's address bar. */
+  controlsTarget?: HTMLElement;
   /** ZimaOS codes (zh_CN) and BCP 47 tags (zh-CN); defaults to browser language. */
   locale?: string;
   /** English source phrases mapped to host translations. */

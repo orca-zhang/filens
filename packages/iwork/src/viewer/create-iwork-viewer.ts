@@ -146,6 +146,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     preview.className = 'xlsxv-preview';
     const tabs = document.createElement('div');
     tabs.className = 'xlsxv-sheet-tabs';
+    tabs.dataset.previewControls = '';
     state.document.sheets.forEach((sheet, index) => {
       const button = document.createElement('button');
       button.type = 'button';

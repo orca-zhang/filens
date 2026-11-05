@@ -35,18 +35,19 @@ try {
       return ['ready', 'error'].includes([...document.querySelectorAll('.filens-dsh')].at(-1)?.dataset.phase);
     }, null, { timeout: 65000 });
     assert.equal(await page.locator('.filens-dsh').last().getAttribute('data-phase'), 'ready', await page.locator('.filens-dsh-state[role=alert]').allTextContents());
+    assert.equal(await page.locator('[data-action^=fit-]:visible').count(), 0, 'DSH omits manual fit buttons');
     const viewer = page;
     assert.equal(await page.locator('iframe[title="FiLens preview"]').count(), 0);
     const bounds = await page.locator('.filens-dsh-view').last().boundingBox();
     const shell = await viewer.locator('.pptxv-shell').boundingBox();
     assert.ok(Math.abs(bounds.height - shell.height) < 2, 'Preview must fill the actual DSH sidebar');
-    assert.equal(await viewer.locator('.pptxv-toolbar').count(), 0, 'Controls belong to the DSH header');
+    assert.equal(await viewer.locator('.filens-dsh-view .pptxv-toolbar').count(), 0, 'Controls belong to the DSH header');
     if (name.endsWith('.pdf') || name.endsWith('.pptx')) {
       const actions = page.locator('.filens-dsh-actions');
       await actions.waitFor();
-      const scale = await actions.locator('output').innerText();
+      const scale = await actions.locator('.pptxv-zoom-status').innerText();
       await actions.locator('[data-action="zoom-in"]').click();
-      await actions.locator('output').filter({ hasText: scale }).waitFor({ state: 'hidden' });
+      await actions.locator('.pptxv-zoom-status').filter({ hasText: scale }).waitFor({ state: 'hidden' });
       await actions.locator('[data-action="zoom-out"]').click();
       if (process.env.DSH_TEST_FULLSCREEN !== '0') {
         await actions.locator('[data-action="fullscreen"]').click();
@@ -58,6 +59,21 @@ try {
       assert.equal(await viewer.locator('.pptxv-toolbar').isVisible(), false);
       const canvas = viewer.locator('canvas').first();
       assert.equal(Math.round((await canvas.boundingBox()).height), Math.round(bounds.height));
+      const actions = page.locator('.filens-dsh-actions');
+      const toggle = actions.locator('.pptxv-model-tools-toggle');
+      await toggle.scrollIntoViewIfNeeded();
+      const header = await actions.boundingBox(), opener = await toggle.boundingBox();
+      assert.ok(opener.x >= header.x && opener.y >= header.y && opener.x + opener.width <= header.x + header.width + 1, 'Model tools opener must sit inside the address-bar actions');
+      const canvasBeforeInspector = await canvas.boundingBox();
+      await toggle.click();
+      const inspector = actions.locator('.pptxv-model-tools');
+      await inspector.waitFor({ state: 'visible' });
+      const popup = await inspector.boundingBox();
+      assert.ok(popup.y >= header.y + header.height, 'Model inspector must open below the header');
+      assert.deepEqual(await canvas.boundingBox(), canvasBeforeInspector, 'Inspector must preserve canvas dimensions');
+      await page.keyboard.press('Escape');
+      await inspector.waitFor({ state: 'hidden' });
+      assert.equal(await toggle.evaluate(button => document.activeElement === button), true);
       const initial = await canvas.screenshot();
       const center = await canvas.boundingBox();
       await page.mouse.move(center.x + center.width / 2, center.y + center.height / 2);

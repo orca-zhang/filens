@@ -1,6 +1,13 @@
 // Mount the shared frontend runtime directly into DSH's document body.
 export function mountViewer(host, createPreview, source, callbacks) {
   let viewer, disposed = false, renderedFrame = 0;
+  const controls = document.createElement('div');
+  controls.className = 'filens-dsh-controls';
+  const positionControls = () => {
+    const rect = controls.getBoundingClientRect();
+    controls.style.setProperty('--filens-controls-top', `${rect.bottom + 8}px`);
+    controls.style.setProperty('--filens-controls-left', `${Math.max(12, Math.min(innerWidth - 316, rect.right - 304))}px`);
+  };
   function localizeChrome() {
     const hint = host.querySelector('.model3dv-hint');
     const label = host.lang.toLowerCase().startsWith('zh')
@@ -38,12 +45,18 @@ export function mountViewer(host, createPreview, source, callbacks) {
   function applyAppearance(value) {
     if (!value || typeof value !== 'object') return;
     host.dataset.theme = value.dark ? 'dark' : 'light';
-    host.style.colorScheme = value.dark ? 'dark' : 'light';
+    host.style.colorScheme = controls.style.colorScheme = value.dark ? 'dark' : 'light';
     for (const key of ['panel', 'surface', 'text', 'muted', 'border', 'accent']) {
       const color = value.colors?.[key];
-      if (typeof color === 'string' && CSS.supports('color', color)) host.style.setProperty(`--filens-${key}`, color);
+      if (typeof color === 'string' && CSS.supports('color', color)) {
+        host.style.setProperty(`--filens-${key}`, color);
+        controls.style.setProperty(`--filens-${key}`, color);
+      }
     }
-    if (typeof value.font === 'string') host.style.setProperty('--filens-font', value.font);
+    if (typeof value.font === 'string') {
+      host.style.setProperty('--filens-font', value.font);
+      controls.style.setProperty('--filens-font', value.font);
+    }
     if (typeof value.locale === 'string') {
       host.lang = value.locale;
       viewer?.update({ locale: value.locale });
@@ -63,11 +76,15 @@ export function mountViewer(host, createPreview, source, callbacks) {
   observer.observe(host, { childList: true, subtree: true });
   const resize = new ResizeObserver(scheduleChrome);
   resize.observe(host);
+  const controlsResize = new ResizeObserver(positionControls);
+  controlsResize.observe(controls);
+  window.addEventListener('resize', positionControls);
+  window.addEventListener('scroll', positionControls, true);
 
 
   applyAppearance(source.appearance);
   viewer = createPreview(host, {
-    src: source.bytes, name: source.name, locale: host.lang, toolbar: false,
+    src: source.bytes, name: source.name, locale: host.lang, toolbar: true, controlsTarget: controls,
     onStateChange: state => {
       const capabilities = state.capabilities ?? {};
       host.dataset.family = state.family;
@@ -92,6 +109,7 @@ export function mountViewer(host, createPreview, source, callbacks) {
     onError: callbacks.onError,
   });
   return {
+    controls,
     getState: () => viewer.getState(),
     setScale: scale => viewer.setScale(scale),
     fullscreen: () => viewer.fullscreen(),
@@ -99,7 +117,10 @@ export function mountViewer(host, createPreview, source, callbacks) {
     destroy() {
       disposed = true; cancelAnimationFrame(renderedFrame);
       cancelAnimationFrame(chromeFrame);
-      observer.disconnect(); resize.disconnect(); viewer.destroy();
+      observer.disconnect(); resize.disconnect(); controlsResize.disconnect();
+      window.removeEventListener('resize', positionControls);
+      window.removeEventListener('scroll', positionControls, true);
+      viewer.destroy(); controls.remove();
     },
   };
 }

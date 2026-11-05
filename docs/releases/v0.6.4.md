@@ -12,7 +12,7 @@
 | Browser runtime: all-in-one | [filens-preview-0.3.4-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-preview-0.3.4-all-in-one.zip) | 11.90 MiB |
 | iOS source SDK | [filens-ios-sdk-0.1.4.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-ios-sdk-0.1.4.zip) | 6.38 MiB |
 | Android source SDK | [filens-android-sdk-0.1.4.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-android-sdk-0.1.4.zip) | 6.39 MiB |
-| dsh-filens 0.1.3 | [dsh-filens-0.1.3.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/dsh-filens-0.1.3.tgz) | 6.53 MiB |
+| dsh-filens 0.1.5 | [dsh-filens-0.1.5.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/dsh-filens-0.1.5.tgz) | 6.53 MiB |
 | Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/SHA256SUMS) | SHA-256 |
 | Build manifest | [filens-release-v0.6.4.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-release-v0.6.4.json) | Versions, sizes and validation |
 
@@ -24,7 +24,18 @@ CLI installers and library modules are available from npm: [`filens-cli`](https:
 
 Compared with [v0.6.3](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.3), FiLens expands browser previews from **402 to 450 extensions** and CLI inputs from **334 to 349 formats**, reduces format-specific startup work, and improves repeated document previews and local search. Parsing and conversion remain in the shared frontend/WASM core.
 
-Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 0.1.4**, **DSH plugin 0.1.3**, and updated `@filens/*` modules. The CLI and browser counts describe different capabilities; inspect `filens capacity --full --json` for each CLI operation.
+Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 0.1.4**, **DSH plugin 0.1.5**, and updated `@filens/*` modules. The CLI and browser counts describe different capabilities; inspect `filens capacity --full --json` for each CLI operation.
+
+### DSH 0.1.5 update — November 5, 2026
+
+- Rename the preview entry to **FiLens Document Preview** and simplify its description to local previews for 400+ formats. The separate FiLens Tools entry retains its reading, OCR, search, excerpt and conversion description.
+- Move format controls beside the address bar: page navigation, zoom, rotation, fullscreen, worksheet tabs, archive search/sort, Office attachments, audio/video playback and the 3D inspector. Remove manual **Fit / Width / Height** buttons in both the header and fullscreen.
+- Keep actual control nodes, handlers and independent tab state. Hide retained parent controls while an attachment is open. Move controls into the fullscreen preview and return them to the header on exit.
+- Fix narrow-header clipping, nested scroll containers, blocked button clicks and the misplaced 3D tools opener. The inspector opens below the header without shrinking the canvas, with keyboard tabs, Escape and focus restoration.
+- Re-record the [3D / panorama GIF, WebP and MP4](https://github.com/IceWhaleTech/filens/blob/main/docs/assets/dsh-plugin/README.md#3d-and-360-gallery), including header model/view/section tools, panorama zoom and video seeking/playback. Update the FiLens skill, README SOTA shortlist and measured bundle/package sizes.
+- Validate **66 Vue tests**, **17 core attachment tests**, **18 DSH tests**, **16 isolated format-loading paths**, **12 complete browser previews** and **six actual Desktop formats**. Browser fullscreen passes; the Desktop run explicitly skips native fullscreen. [0.1.5 checks and exact package bytes](https://github.com/IceWhaleTech/filens/blob/main/docs/dsh-header-controls-validation.json).
+
+DSH 0.1.5 uses CLI **0.5.6** and embeds the shared-source preview runtime **0.3.4** with the header-control changes. The standalone browser/npm and SDK archives keep their existing payloads. The sidebar timing table below retains its measured **0.1.3** snapshot; the 0.1.5 interface update does not introduce a new latency claim.
 
 ### Formats and features
 
@@ -37,7 +48,7 @@ Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 
 - Archive browsing gains name filtering, name/size/date sorting, empty-state messages, arrow-key navigation, Enter/Space to open, and Escape to clear filtering. Returning from a preview restores the query, scroll position and keyboard focus.
 - Add the optional `@filens/converter-client/format-detector` export. Importing it does not fetch WASM; instance creation loads the selected SIMD/scalar artifact. SIMD download, compilation or initialization failure falls back to the scalar build.
 - Expand image, code/text, archive and system-package examples. Remote opening handles encoded URLs, signed query strings, explicit filenames for extensionless URLs, same-origin relative paths, and browser history.
-- DSH mounts previews directly in the sidebar DOM and uses the outer DSH zoom/fullscreen toolbar. Update the installation/Office demo and retain the 3D/panorama gallery and historical benchmark evidence.
+- DSH mounts previews directly in the sidebar DOM. Version 0.1.5 places the format controls beside the address bar and refreshes the 3D/panorama gallery; the installation demo and timed 0.1.3 snapshots retain their own provenance.
 
 ## Performance improvements
 
@@ -151,7 +162,7 @@ The installation GIF/WebP/MP4 uses public **0.1.3** with CLI **0.5.6**. [Install
 ## Validation and limits
 
 - Full CLI bundles include OCR runtime/models; Lite keeps OCR optional. Both include offline preview assets. Mobile ZIPs are **source SDKs**, not precompiled AAR/XCFramework binaries.
-- DSH 0.1.3 depends on CLI **0.5.6** and embeds the shared preview runtime **0.3.4**. CLI/OCR installation bytes are separate from the plugin tarball.
+- DSH 0.1.5 depends on CLI **0.5.6** and embeds the shared preview runtime **0.3.4**. CLI/OCR installation bytes are separate from the plugin tarball.
 - See [release validation](https://github.com/IceWhaleTech/filens/blob/main/docs/release-v0.6.4-validation.json), [exact artifact sizes](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-release-v0.6.4.json), [format-loading checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-format-loading-validation.json), [PDF checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-pdf-reopen-validation.json) and [model-cache checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-model-reopen-validation.json). Each record identifies its own build/measurement stage.
 - Model reuse passed core/XLSX/iWork/3D/PDF/Vue/resource tests, 15 isolated browser format-loading paths, 12 complete preview types and six Desktop preview/zoom/3D-interaction cases. **Desktop native fullscreen-exit automation hung and was explicitly skipped on rerun; browser fullscreen checks passed.**
 - macOS arm64 native execution is verified; Linux x64/arm64 and Windows x64 are cross-built with the checks recorded in the validation report. No new physical-mobile-device validation is claimed. Fidelity, fonts, browser codecs, WebGL, DWG and HDR/EXR color limits follow the support matrix.

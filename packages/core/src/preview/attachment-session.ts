@@ -96,6 +96,7 @@ export function createAttachmentPreviewSession(
     childPanel.className = 'filens-attachment-panel';
     const navigation = doc.createElement('div');
     navigation.className = 'filens-attachment-navigation';
+    navigation.dataset.previewControls = '';
     const backButton = button(t('Back to document'), back);
     const label = doc.createElement('span');
     label.textContent = `${parentName ?? t('Document')} › ${attachment.name}`;
@@ -208,6 +209,7 @@ export function createAttachmentPreviewSession(
         if (!attachments.length) return;
         toolbar = doc.createElement('details');
         toolbar.className = 'filens-attachments';
+        toolbar.dataset.previewControls = '';
         const summary = doc.createElement('summary');
         summary.textContent = `${t('Attachments')} (${attachments.length})`;
         toolbar.append(summary);

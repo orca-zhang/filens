@@ -1,5 +1,36 @@
 # DSH integration validation
 
+## 0.1.5 address-bar controls and preview description — 2026-11-05
+
+Plugin 0.1.5 (CLI 0.5.6 / shared-source preview 0.3.4) places the shared
+controls in DSH’s address-bar action slot: page navigation, zoom, rotation,
+fullscreen, worksheet tabs, archive tools, attachments, media playback and the
+3D inspector. Manual **Fit / Width / Height** buttons are omitted in DSH,
+including fullscreen. Fullscreen restores the remaining controls inside its
+preview until exit. Standalone previews retain their normal toolbar behavior.
+Driver-owned controls keep their actual nodes and handlers; retained parent
+controls hide during attachment preview, and each tab cleans up independently.
+
+Validation: **66 Vue tests** (including five control-portal tests), **17 core
+attachment tests**, **18 DSH tool/resource tests**, **16 isolated format-loading
+paths**, **12 complete browser previews**, and **six actual Desktop formats**.
+Browser checks exercise header navigation, zoom, fullscreen and restoration,
+archive search, audio/video speed, worksheet switching, theme, model inspector,
+independent tabs and worker cleanup. Desktop checks include clickability in a
+narrow address bar, the model-tools opener’s bounds, inspector placement,
+Escape/focus restoration and unchanged canvas dimensions. Native macOS
+fullscreen is explicitly skipped in that Desktop run; browser fullscreen passes.
+
+The 3D / panorama gallery was re-recorded in the installed Desktop app using an
+isolated source-build profile, including address-bar model/view/section tools,
+panorama zoom and video seeking/playback. GIF, WebP and MP4 are actual UI captures;
+encoding verifies GIF colors and timing. The release runtime and client are verified against that recording’s source
+build. Package measurements identify the immutable 0.1.5 archive separately.
+[Exact source hashes, sizes and checks](../../docs/dsh-header-controls-validation.json)
+· [Gallery and provenance](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery).
+
+## Public 0.1.3 release checks
+
 Final 0.1.3 checks use CLI **0.5.6** and preview **0.3.4**: 18 tool/resource tests, 15 isolated format-loading paths and 12 complete browser previews. The release also verifies all 18 npm modules, 51 offline HTML cases across Chromium/Firefox/WebKit, and packaged content inspection. The terminal demonstrations include actual `inspect` output.
 
 ## 0.1.3 model-reopen candidate
@@ -90,7 +121,7 @@ The 9-round benchmark compares installed **0.1.1**, installed **0.1.2** and DSH'
 
 The separate **9-round PDF benchmark** covers **108 additional opens**, with PDF first in each fresh process. First / cached medians are **684 / 443 ms** for 0.1.2, **1,623 / 1,408 ms** for 0.1.1 and **328 / 111 ms** built in. The built-in path directly previews PDF. [Raw PDF timing and ranges](../../docs/assets/dsh-plugin/pdf-preview-benchmark.json). Office and PDF total **324 opens**.
 
-The companion GLB/3MF/360° gallery remains the historical **2026-11-04 0.1.1** recording. It is labeled separately in the [recording notes and attribution](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery).
+That release originally used a historical 0.1.1 gallery. The current [3D/360° recording](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery) has been replaced by a separately labeled source-build recording.
 
 ## Previous release: 0.1.0
 
@@ -148,7 +179,7 @@ These source changes are **not published** in `dsh-filens@0.1.0` / CLI `0.5.2`. 
 - Current-source regression results: **147 core unit tests (passing in both core/text binaries)**, **27 CLI unit tests**, **21 document inspection groups**, **44 search checks**, **53 archive/OCR checks**, **18 excerpt groups**, and **19 conversion checks** passed. Native and WASM search outputs agree after provenance normalization. `git diff --check` is clean.
 - The shared core owns XML/ZIP/image metadata parsing, selection, OCR policy and excerpt provenance. CLI and DSH only validate/forward requests and map results. Global OCR disable cannot be overridden per call.
 
-The earlier boolean per-call control passed 9 groups against the exact CLI/OCR 0.5.2 npm payloads before this wider change. The current string policy and inspection fields need the new source CLI. The source sidebar toolbar now contains only zoom out/in and fullscreen where supported; fit, rotate and page buttons are removed. The browser suite passes all 12 existing format cases and interaction checks, including actual zoom, keyboard navigation/fullscreen, toolbar absence for 3D, direct orbit/zoom/reset, Word resizing, passwords, retry and lifecycle. The full released Desktop checks remain separate evidence above.
+The earlier boolean per-call control passed 9 groups against the exact CLI/OCR 0.5.2 npm payloads before this wider change. The current string policy and inspection fields need the new source CLI. That earlier source snapshot limited the sidebar toolbar to zoom out/in and fullscreen; the current header-controls implementation restores every supported control in the address-bar action slot. The browser suite passes all 12 existing format cases and interaction checks, including actual zoom, keyboard navigation/fullscreen, toolbar absence for 3D, direct orbit/zoom/reset, Word resizing, passwords, retry and lifecycle. The full released Desktop checks remain separate evidence above.
 
 The source 3D inspector now uses one floating panel, collapsed by default, with View / Structure / Tools tabs and disclosures for advanced settings. The canvas dimensions stay unchanged when it opens. The built DSH browser suite also verifies the inspector in 420px dark and 240px panes, working zoom/fullscreen, keyboard tabs, structure search, section controls, Escape and focus restoration. Evidence: `artifacts/browser/report.json` and `artifacts/browser/model-tools-narrow-dark.png` (zero browser errors or failed requests). The Vue build/type declarations and 43 Vue/localization tests pass; seven demo browser cases cover all eight bundled models, narrow layouts, structure visibility, measurement/section controls, orbit and native touch gestures. These UI changes remain source-only.
 

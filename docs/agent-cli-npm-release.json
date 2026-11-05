@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-05T03:33:35.246Z",
+  "observedAt": "2026-11-05T05:32:51.406Z",
   "version": "0.5.6",
   "license": "MIT",
   "scope": "Actual npm pack artifacts; sum launcher and current platform packages. Full includes OCR runtime and models. Excludes Node.js, npm caches, filesystem overhead and optional frontend assets. CLI executable and frontend package are separately measured.",

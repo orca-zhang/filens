@@ -57,10 +57,12 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
   const mediaName = actions.mediaName ?? 'video';
   const controls = document.createElement('div');
   controls.className = 'pptxv-video-controls';
+  controls.dataset.previewControls = '';
   controls.setAttribute('role', 'group');
   controls.setAttribute('aria-label', `${mediaName === 'video' ? 'Video' : 'Panorama video'} controls`);
   const viewControls = document.createElement('div');
   viewControls.className = 'panoramav-view-controls';
+  viewControls.dataset.previewControls = '';
   viewControls.setAttribute('role', 'group');
   viewControls.setAttribute('aria-label', 'Panorama view controls');
   const button = (parent: HTMLElement, label: string, icon: Icon, action: () => void) => {

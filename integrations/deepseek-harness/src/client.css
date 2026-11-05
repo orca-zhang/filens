@@ -87,8 +87,38 @@
 @keyframes filens-dsh-progress { from { transform: translateX(-100%); } to { transform: translateX(350%); } }
 @media (prefers-reduced-motion: reduce) { .filens-dsh-progress span { animation: none; width: 100%; opacity: .5; } }
 
-.filens-dsh-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.filens-dsh-actions { display: flex; align-items: center; min-width: 28px; max-width: min(65vw, 740px); flex-shrink: 1; }
+.filens-dsh-controls { display: flex; align-items: center; gap: 6px; min-width: 28px; max-width: 100%; overflow-x: auto; scrollbar-width: none; color: var(--filens-text); background: var(--filens-panel); font: 12px/1.4 var(--filens-font); }
+.filens-dsh-controls::-webkit-scrollbar { display: none; }
+.filens-dsh-actions .filens-dsh-controls :is([data-preview-controls], .pptxv-toolbar) { flex-shrink: 0; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-toolbar, .filens-dsh-actions .filens-dsh-controls .pptxv-toolbar-group { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; flex: 0 0 auto; max-width: none; padding: 0; border: 0; background: transparent; overflow: visible; }
+.filens-dsh-actions .filens-dsh-controls :is(.pptxv-button, .archivev-button, .xlsxv-sheet-tab, .pptxv-audio-import) { min-height: 28px; padding: 3px 6px; border: 0; border-radius: 5px; background: transparent; color: inherit; font: inherit; white-space: nowrap; }
+.filens-dsh-actions .filens-dsh-controls :is(button, input, select, summary):focus-visible { outline: 2px solid var(--filens-accent); outline-offset: -2px; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-status { min-width: 0; max-width: none; padding: 0 4px; font: inherit; white-space: nowrap; }
+.filens-dsh-actions .filens-dsh-controls :is(.pptxv-pill--hidden, .pptxv-layer-menu--hidden) { display: none; }
+.filens-dsh-actions .filens-dsh-controls .xlsxv-sheet-tabs { display: flex; padding: 0; border: 0; overflow: visible; background: transparent; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-model-tools-toggle { position: static; width: 28px; height: 28px; }
+.filens-dsh-actions .filens-dsh-controls :is(.pptxv-model-tools, .pptxv-layer-popover) { position: fixed; top: var(--filens-controls-top); left: var(--filens-controls-left); z-index: 1000; width: min(304px, calc(100vw - 24px)); max-height: min(600px, calc(100dvh - var(--filens-controls-top) - 12px)); }
+.filens-dsh-actions .filens-dsh-controls .archivev-toolbar, .filens-dsh-actions .filens-dsh-controls .archivev-tools { display: flex; align-items: center; flex-wrap: nowrap; padding: 0; border: 0; gap: 4px; background: transparent; }
+.filens-dsh-actions .filens-dsh-controls .archivev-search { min-width: 120px; width: 150px; }
+.filens-dsh-actions .filens-dsh-controls .archivev-sort { max-width: 140px; }
+.filens-dsh-actions .filens-dsh-controls :is(.pptxv-video-controls, .panoramav-view-controls) { position: static; display: flex; align-items: center; gap: 4px; width: auto; opacity: 1; transform: none; padding: 0; border: 0; background: transparent; color: inherit; pointer-events: auto; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-video-control-row { display: flex; align-items: center; gap: 4px; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-video-controls button { width: 28px; height: 28px; padding: 3px; color: inherit; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-video-timeline { width: 100px; min-width: 80px; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-video-volume input { width: 50px; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-audio-footer { display: flex; padding: 0; border: 0; gap: 4px; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-audio-footer audio { width: 220px; height: 28px; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-audio-play { position: static; display: grid; width: 28px; height: 28px; transform: none; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-audio-timing { margin: 0; }
+.filens-dsh-actions .filens-dsh-controls [hidden] { display: none; }
+.filens-dsh-actions .filens-dsh-controls :is(.filens-attachments, .filens-attachment-navigation) { padding: 0; border: 0; background: transparent; color: inherit; font: inherit; flex-wrap: nowrap; white-space: nowrap; }
+.filens-dsh-actions .filens-dsh-controls .filens-attachments ul { position: fixed; top: var(--filens-controls-top); left: var(--filens-controls-left); z-index: 1000; width: min(304px, calc(100vw - 24px)); margin: 0; padding: 8px; border: 1px solid var(--filens-border); border-radius: 6px; background: var(--filens-panel); white-space: normal; }
+.filens-dsh-actions .filens-dsh-controls .filens-attachment-navigation span { max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 .filens-dsh-tool { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: inherit; font: 18px/1 system-ui, sans-serif; cursor: pointer; }
 .filens-dsh-tool:hover { background: var(--dsw-alias-bg-hover, #8882); }
 .filens-dsh-tool:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary, #4176e6); outline-offset: -2px; }
 .filens-dsh-zoom { min-width: 36px; text-align: center; font-size: 11px; font-variant-numeric: tabular-nums; }
+
+/* DSH keeps automatic sizing and zoom; omit the three manual fit buttons. */
+:is(.filens-dsh-actions, .filens-dsh-view) [data-action^="fit-"] { display: none; }

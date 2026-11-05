@@ -15,10 +15,23 @@ const labels = {
   core: ['PPTX / 核心运行时', 'PPTX / core runtime'],
   preview: ['Vue 预览容器', 'Vue preview host'],
   office: ['DOCX / XLSX / PDF', 'DOCX / XLSX / PDF'],
+  'docx-engine': ['DOCX 按需引擎', 'On-demand DOCX engine'],
+  'office-attachments': ['Office 附件', 'Office attachments'],
+  'xml-compat': ['共享 XML 兼容层', 'Shared XML compatibility'],
+  'zip-compat': ['共享 ZIP 兼容层', 'Shared ZIP compatibility'],
+  'zip-encrypted': ['加密 ZIP 支持', 'Encrypted ZIP support'],
   'pdf-runtime': ['PDF 按需引擎', 'On-demand PDF engine'],
   iwork: ['iWork 预览', 'iWork preview'],
   design: ['CAD / 思维导图 / 流程图', 'CAD / mind maps / diagrams'],
   model3d: ['3D 预览', '3D preview'],
+  'model-gltf': ['glTF / GLB 模型加载器', 'glTF / GLB model loader'],
+  'model-fbx': ['FBX 模型加载器', 'FBX model loader'],
+  'model-obj': ['OBJ 模型加载器', 'OBJ model loader'],
+  'model-mtl': ['MTL 模型加载器', 'MTL model loader'],
+  'model-3ds': ['3DS 模型加载器', '3DS model loader'],
+  'model-ldraw': ['LDraw 模型加载器', 'LDraw model loader'],
+  'model-usdz': ['USDZ 模型加载器', 'USDZ model loader'],
+  'model-vrml': ['VRML 模型加载器', 'VRML model loader'],
   media: ['媒体 / 全景预览', 'Media / panorama preview'],
   'media-runtime': ['媒体解码加载器', 'Media decoder loader'],
   archive: ['压缩包预览', 'Archive preview'],
@@ -43,7 +56,7 @@ for (const file of [...assets.map(file => `assets/${file}`), 'archive/7zz.wasm',
   row.brotli += (await stat(path.join(dist, `${file}.br`))).size;
   groups.set(name, row);
 }
-const rows = [...groups.values()].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+const rows = [...groups.values()].sort((a, b) => (order.includes(a.name) ? order.indexOf(a.name) : order.length) - (order.includes(b.name) ? order.indexOf(b.name) : order.length) || a.name.localeCompare(b.name));
 const size = bytes => `${(bytes / 1024).toFixed(1)} KiB`;
 function updateSizeLabels(source) {
   return source.replace(/<!-- bundle-size:([\w-]+) -->[\s\S]*?<!-- \/bundle-size -->/g, (_match, name) => {

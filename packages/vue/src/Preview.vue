@@ -34,6 +34,7 @@ import type { MediaPreviewDriverOptions } from '@filens/media';
 import { createVueDefaultPreviewDrivers } from './lazy-drivers';
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, useId, watch } from 'vue';
 import { createVueDefaultPreviewRoutes } from './defaults';
+import { createControlPortal } from './control-portal';
 
 type Model3dControlsPreviewer = PreviewerInstance & {
   setNodeVisibility?: (nodeId: string, visible: boolean) => void;
@@ -93,6 +94,7 @@ const props = withDefaults(
     minScale?: number;
     maxScale?: number;
     toolbar?: boolean | 'minimal';
+    controlsTarget?: HTMLElement;
     locale?: string;
     messages?: PreviewMessages;
     drivers?: PreviewDriver[];
@@ -137,6 +139,19 @@ const emit = defineEmits<{
 
 const viewerHost = ref<HTMLDivElement | null>(null);
 const shellRef = ref<HTMLDivElement | null>(null);
+const modelToolsRef = ref<HTMLElement | null>(null);
+const modelToggleRef = ref<HTMLButtonElement | null>(null);
+const isPreviewFullscreen = ref(false);
+const externalControlsTarget = computed(() => isPreviewFullscreen.value ? undefined : props.controlsTarget);
+let restoreDriverControls: (() => void) | undefined;
+function syncFullscreenControls() {
+  const element = document.fullscreenElement;
+  isPreviewFullscreen.value = Boolean(element && shellRef.value?.contains(element));
+}
+watch([viewerHost, externalControlsTarget], ([source, target]) => {
+  restoreDriverControls?.();
+  restoreDriverControls = source && target ? createControlPortal(source, target) : undefined;
+}, { flush: 'post' });
 const previewer = shallowRef<PreviewerInstance | null>(null);
 const previewState = ref<PreviewItemState>({
   loading: false,
@@ -231,6 +246,10 @@ const canZoomOut = computed(() => !isLoading.value && Boolean(previewState.value
 const canZoomIn = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.zoom) && scale.value < props.maxScale - 0.001);
 const canRotate = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.rotate));
 const canFullscreen = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.fullscreen));
+const hasViewerControls = computed(() => !previewState.value.loading && !previewState.value.error && (
+  canNavigate.value || canControlLayers.value || previewState.value.capabilities.zoom
+  || previewState.value.capabilities.fit || previewState.value.capabilities.rotate || previewState.value.capabilities.fullscreen
+));
 const previewLayers = computed(() => cadState.value?.layers ?? []);
 const activeLayerIds = computed(() => new Set(cadState.value?.activeLayerIds ?? []));
 const canControlLayers = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.layers) && previewLayers.value.length > 0);
@@ -619,6 +638,11 @@ function rotateClockwise(): void {
 }
 
 async function toggleFullscreen(): Promise<void> {
+  if (props.controlsTarget && shellRef.value?.requestFullscreen) {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await shellRef.value.requestFullscreen();
+    return;
+  }
   await previewer.value?.fullscreen();
 }
 
@@ -941,14 +965,14 @@ function onShellKeydown(event: KeyboardEvent): void {
 async function closeModelTools(): Promise<void> {
   modelToolsExpanded.value = false;
   await nextTick();
-  shellRef.value?.querySelector<HTMLButtonElement>('.pptxv-model-tools-toggle')?.focus();
+  modelToggleRef.value?.focus();
 }
 
 async function toggleModelTools(): Promise<void> {
   if (modelToolsExpanded.value) { closeModelTools(); return; }
   modelToolsExpanded.value = true;
   await nextTick();
-  shellRef.value?.querySelector<HTMLButtonElement>('.pptxv-model-tabs [aria-selected="true"]')?.focus();
+  modelToolsRef.value?.querySelector<HTMLButtonElement>('.pptxv-model-tabs [aria-selected="true"]')?.focus();
 }
 
 function onModelTabKeydown(event: KeyboardEvent): void {
@@ -962,7 +986,7 @@ function onModelTabKeydown(event: KeyboardEvent): void {
   event.preventDefault();
   event.stopPropagation();
   modelToolTab.value = modelToolTabs[next].id;
-  shellRef.value?.querySelectorAll<HTMLButtonElement>('.pptxv-model-tabs [role="tab"]')[next]?.focus();
+  modelToolsRef.value?.querySelectorAll<HTMLButtonElement>('.pptxv-model-tabs [role="tab"]')[next]?.focus();
 }
 
 function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
@@ -1166,6 +1190,7 @@ defineExpose({
 });
 
 onMounted(async () => {
+  document.addEventListener('fullscreenchange', syncFullscreenControls);
   await recreatePreviewer();
   await loadSource();
 });
@@ -1221,6 +1246,8 @@ watch(
 );
 
 onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', syncFullscreenControls);
+  restoreDriverControls?.();
   settlePassword?.(null);
   unsubs.forEach((unsubscribe) => unsubscribe());
   previewer.value?.destroy();
@@ -1238,11 +1265,12 @@ onUnmounted(() => {
     :aria-label="t('{family} preview', { family: familyLabel })"
     @keydown="onShellKeydown"
   >
-    <div v-if="toolbar && previewState.family !== 'model3d'" class="pptxv-toolbar">
+    <Teleport :to="externalControlsTarget || 'body'" :disabled="!externalControlsTarget">
+    <div v-if="toolbar && previewState.family !== 'model3d' && (!controlsTarget || (hasViewerControls && !['audio', 'video', 'panorama-video'].includes(previewState.family)))" class="pptxv-toolbar">
       <div v-if="toolbar !== 'minimal'" class="pptxv-toolbar-group">
-        <button type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousPage">{{ t('Prev') }}</button>
-        <button type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextPage">{{ t('Next') }}</button>
-        <span class="pptxv-status">{{ positionLabel }}</span>
+        <button v-if="!controlsTarget || canNavigate" type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousPage">{{ t('Prev') }}</button>
+        <button v-if="!controlsTarget || canNavigate" type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextPage">{{ t('Next') }}</button>
+        <span v-if="!controlsTarget || canNavigate" class="pptxv-status">{{ positionLabel }}</span>
         <span class="pptxv-pill" :class="{ 'pptxv-pill--hidden': !warningLabel }">{{ warningLabel || t('Warnings: {count}', { count: 0 }) }}</span>
         <details class="pptxv-layer-menu" :class="{ 'pptxv-layer-menu--hidden': !canControlLayers }">
           <summary class="pptxv-button pptxv-layer-summary">{{ t('Layers') }} {{ layerLabel }}</summary>
@@ -1264,27 +1292,34 @@ onUnmounted(() => {
         </details>
       </div>
       <div class="pptxv-toolbar-group">
+        <template v-if="!controlsTarget || previewState.capabilities.zoom">
         <button type="button" class="pptxv-button" data-action="zoom-out" :disabled="!canZoomOut" :aria-label="t('Zoom out')" @click="zoomOut">-</button>
         <span class="pptxv-status pptxv-zoom-status">{{ scaleLabel }}</span>
         <button type="button" class="pptxv-button" data-action="zoom-in" :disabled="!canZoomIn" :aria-label="t('Zoom in')" @click="zoomIn">+</button>
+        </template>
         <template v-if="toolbar !== 'minimal'">
-        <button type="button" class="pptxv-button" :disabled="isLoading || !previewState.capabilities.fit" @click="fitContain">
+        <template v-if="!controlsTarget || previewState.capabilities.fit">
+        <button type="button" class="pptxv-button" data-action="fit-contain" :disabled="isLoading || !previewState.capabilities.fit" @click="fitContain">
           {{ t('Fit') }}
         </button>
-        <button type="button" class="pptxv-button" :disabled="isLoading || !previewState.capabilities.fit" @click="fitWidth">
+        <button type="button" class="pptxv-button" data-action="fit-width" :disabled="isLoading || !previewState.capabilities.fit" @click="fitWidth">
           {{ t('Width') }}
         </button>
-        <button type="button" class="pptxv-button" :disabled="isLoading || !previewState.capabilities.fit" @click="fitHeight">
+        <button type="button" class="pptxv-button" data-action="fit-height" :disabled="isLoading || !previewState.capabilities.fit" @click="fitHeight">
           {{ t('Height') }}
         </button>
-        <button type="button" class="pptxv-button" :disabled="!canRotate" @click="rotateClockwise">{{ t('Rotate') }}</button>
         </template>
-        <button type="button" class="pptxv-button" data-action="fullscreen" :disabled="!canFullscreen" @click="toggleFullscreen">{{ t('Full') }}</button>
+        <button v-if="!controlsTarget || previewState.capabilities.rotate" type="button" class="pptxv-button" :disabled="!canRotate" @click="rotateClockwise">{{ t('Rotate') }}</button>
+        </template>
+        <button v-if="!controlsTarget || previewState.capabilities.fullscreen" type="button" class="pptxv-button" data-action="fullscreen" :disabled="!canFullscreen" @click="toggleFullscreen">{{ t('Full') }}</button>
       </div>
     </div>
+    </Teleport>
 
     <div class="pptxv-layout">
+      <Teleport :to="externalControlsTarget || 'body'" :disabled="!externalControlsTarget">
       <section
+        ref="modelToolsRef"
         v-if="previewState.family === 'model3d'"
         v-show="modelToolsExpanded"
         :id="modelToolsId"
@@ -1512,10 +1547,13 @@ onUnmounted(() => {
           </div>
         </div>
       </section>
+      </Teleport>
       <div class="pptxv-main">
         <div class="pptxv-main-stage">
           <div ref="viewerHost" class="pptxv-main-view" />
+          <Teleport :to="externalControlsTarget || 'body'" :disabled="!externalControlsTarget">
           <button
+            ref="modelToggleRef"
             v-if="previewState.family === 'model3d'"
             v-show="!modelToolsExpanded"
             type="button"
@@ -1530,6 +1568,7 @@ onUnmounted(() => {
               <path d="M3 5h14M3 10h14M3 15h14" /><path d="M7 3v4m6 1v4m-5 1v4" />
             </svg>
           </button>
+          </Teleport>
           <div v-if="passwordRequest" class="pptxv-overlay">
             <form class="pptxv-password-form" :aria-labelledby="passwordId + '-title'" @submit.prevent="submitPassword" @keydown.esc.stop="cancelPassword">
               <h2 :id="passwordId + '-title'">{{ t('Document is encrypted') }}</h2>

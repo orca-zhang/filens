@@ -1,7 +1,7 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.3",
-  "description": "Native DeepSeek Harness sidebar integration with local previews for 450 file formats, plus document reading, OCR, search, excerpts and conversion.",
+  "version": "0.1.5",
+  "description": "Local previews for 400+ file formats, including Office, PDF, iWork, CAD/3D, RAW and 360° media.",
   "type": "module",
   "license": "MIT",
   "author": "FiLens contributors",
