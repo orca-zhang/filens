@@ -25,4 +25,3 @@ export function pngPixels(png: Uint8Array) {
   }
   return { width, height, pixels: result };
 }
-

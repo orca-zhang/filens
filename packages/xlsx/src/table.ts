@@ -69,4 +69,3 @@ export function appendSheetRows(tbody: HTMLTableSectionElement, sheet: ParsedShe
   }
   tbody.appendChild(fragment);
 }
-

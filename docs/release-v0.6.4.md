@@ -145,35 +145,33 @@ Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 
 - **Direct DSH mounting:** handle Desktop cross-origin modules/WASM, Blob workers and shared-style lifetimes. Pass copied source bytes so worker transfer cannot damage the host's retained file; isolate tab controls and destruction.
 - **Cache correctness:** prevent cross-tab font/formula contamination, stale reuse after same-name edits, wrong PDF resolution after viewport changes, missing Numbers archive context on later sheets, and shared STEP geometry/material destruction. Cache failures return to normal parsing/rendering.
 
-## Measured DSH performance
+## Selected performance results
 
-The tables below describe separate implementation stages, with retained raw results and scope. They are not presented as one combined benchmark.
+The latest FiLens implementation is compared with named baselines. Ratios use baseline median ÷ FiLens median. Small inputs and low-gain controls are omitted from this summary; the complete raw reports retain them.
 
-**PDF pixel-cache stage:** 9 rounds, 36 fresh processes, 144 opens comparing the public 0.1.2, before/after pixel reuse, and the built-in PDF viewer.
+### Complete sidebar previews
 
-| Implementation | First open median (ms) | Reopen median (ms) |
-| --- | ---: | ---: |
-| Public 0.1.2 | 654 | 426 |
-| 0.1.3 before pixel reuse | 208 | 159 |
-| 0.1.3 after pixel reuse | 190 | 77 |
-| DSH built-in PDF | 329 | 110 |
-
-Pixel reuse reduced reopen time by **51.6%**, with identical first-page pixels, per-open validation and worker cleanup. [Raw data and scope](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md). Separate nine-round Office measurements recorded PPTX **135/81 ms** and DOCX **111/94 ms** for first open/reopen. [Office results](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/performance-retest.zh-CN.md).
-
-**Model-cache stage:** 9 paired rounds, 18 fresh processes and 432 actual sidebar opens, compared with the preceding PDF-cache implementation.
-
-| File | First open before → after (ms) | Reopen before → after (ms) | Reopen time reduction |
+| Sample · first / cached median (ms) | FiLens 0.1.3 | DSH built in | First-open speedup |
 | --- | ---: | ---: | ---: |
-| Small XLSX | 109 → 107 | 68 → 68 | No stable gain |
-| Large XLSX, 12,000 × 8 | 109 → 110 | 94 → 77 | 18.1% |
-| Pages | 227 → 225 | 177 → 77 | 56.5% |
-| Numbers | 193 → 227 | 176 → 93 | 47.2% |
-| Keynote | 177 → 176 | 177 → 94 | 46.9% |
-| STEP | 294 → 295 | 226 → 109 | 51.8% |
+| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
+| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
 
-The five larger/document cases reopened faster in **9/9 paired rounds**; small XLSX had no stable gain. **Numbers first open increased by 34 ms (17.6%)**: retaining a model snapshot has a cost. The STEP 377 ms first-open outlier remains in the results. The 64 MiB figure is an estimated cache budget rather than a hard JS-heap/GPU cap. Timings include file reading, hashing, copying, layout and GPU upload, exclude application startup, and describe samples on one macOS arm64 machine. [Per-open timings, scope and checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
+Nine paired rounds per format on Apple M4 Pro/macOS arm64 and DSH Desktop 0.2.1-rc.5, using 659,484-byte PPTX and 601,507-byte DOCX samples. Ratios describe **first opens**; first means first for that file/process, excluding application startup and retaining system/persistent caches. DOCX follows PPTX. The built-in Office path converts to PDF; FiLens renders directly. [All samples, ranges and method](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/performance-retest.zh-CN.md).
 
-The installation GIF/WebP/MP4 now uses public **0.1.3** with CLI **0.5.6**; the earlier 324-open Office/PDF comparison retains its original 0.1.2 measurement scope. [Installation demos and benchmark history](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/README.md).
+### Larger parsing workloads
+
+| Larger parsing workload | Baseline | Baseline / FiLens median (ms) | Speedup |
+| --- | --- | ---: | ---: |
+| XLSX · 2,000 × 64, 128,000 cells | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
+| XLSX · 8,000 × 64, 512,000 cells | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
+| ZIP · 10,000 entries, 18.34 MiB expanded | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
+| ZIP · 2,500 entries, 36.23 MiB expanded | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
+
+These measure complete parser calls on identical synthetic inputs, **not UI previews**. Two warmups and nine measured rounds alternate the libraries. All cell values or complete entry text match; imports, generation, verification, GC and rendering are outside timing. Feature/fidelity scopes differ. The summary selects at least 100,000 cells or 16 MiB expanded content, baseline latency of at least 100 ms and speed ratios of at least 2×. No overall state-of-the-art ranking is claimed. [Methods, library versions, raw samples and reproduction](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/featured-performance.md).
+
+PDF first-page pixel reuse and XLSX/iWork/STEP model reuse retain their separate nine-round measurements and costs in the [PDF report](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md) and [model-cache report](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md). PDF still validates each open and releases workers. The model-cache comparison observed a **34 ms (17.6%) Numbers first-open regression**; small XLSX had no stable gain. These controls remain in the raw data. The 64 MiB model budget is estimated accounting, not a hard JS-heap/GPU cap.
+
+The installation GIF/WebP/MP4 uses public **0.1.3** with CLI **0.5.6**. [Installation demos and historical measurements](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/README.md).
 
 ## Validation and limits
 

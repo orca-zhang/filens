@@ -2,9 +2,9 @@
 
 [Animated WebP](install-and-preview.webp) · [GIF](install-and-preview.gif) · [Full MP4](install-and-preview.mp4) · [Recording evidence](demo-recording.json) · [Office timings](office-preview-benchmark.json) · [PDF timings](pdf-preview-benchmark.json)
 
-Recorded on **2026-11-05**, using the installed **DeepSeek Harness Desktop 0.2.1-rc.5**, Electron **44.7.0**, macOS arm64 and the public npm package **dsh-filens@0.1.2**. The installed CLI is **0.5.5** and the shared preview runtime is **0.3.4**, registering **450 extensions**. All work used isolated temporary DSH profiles, with no model calls or changes to the normal user profile.
+Recorded on **2026-11-05**, using the installed **DeepSeek Harness Desktop 0.2.1-rc.5**, Electron **44.7.0**, macOS arm64 and the public npm package **dsh-filens@0.1.3**. The installed CLI is **0.5.6** and the shared preview runtime is **0.3.4**, registering **450 extensions**. All work used isolated temporary DSH profiles, with no model calls or changes to the normal user profile.
 
-The recording shows the actual Desktop installer using its **default installation source**: Plugins → Add plugin → `dsh-filens@0.1.2` → Install → Enable now. It then opens Word, switches Excel worksheets and presents all three PPT slides in actual fullscreen: click the slide to focus, use **Page Down**, then **Esc** to return to DSH. For the reverse direction, use **Page Up**. The visible pointer and bilingual captions are recording annotations. Download waits and workspace setup are cut; the retained actions play at their recorded speed. The edited recording is not a speed benchmark.
+The recording shows the actual Desktop installer using its **default installation source**: Plugins → Add plugin → `dsh-filens@0.1.3` → Install → Enable now. It then opens Word, switches Excel worksheets and presents all three PPT slides in actual fullscreen: click the slide to focus, use **Page Down**, then **Esc** to return to DSH. For the reverse direction, use **Page Up**. The visible pointer and bilingual captions are recording annotations. Download waits and workspace setup are cut; the retained actions play at their recorded speed. The edited recording is not a speed benchmark.
 
 中文：演示使用默认安装源，包含真实桌面安装、立即启用、Word 预览、Excel 工作表切换，以及 PPT 全屏翻页和 Esc 退出。全屏后点击画面，再用 **Page Down / Page Up** 翻页。下载等待与工作区准备已剪去，字幕与鼠标标记为录制注释；速度对比单独测量。
 
@@ -16,11 +16,13 @@ The capture viewport matches the display's aspect ratio, so native fullscreen sl
 
 录制画布跟随显示器比例，PPT 全屏画面填满录制区域，不补灰边；字幕单独放在画面下方。
 
+The historical 0.1.2 installation recording and its hashes remain in [history/0.1.2](history/0.1.2/demo-recording.json); performance tables below retain their original measurement stages.
+
 ## 3D and 360 gallery
 
 [Gallery animated WebP](3d-and-panorama.webp) · [Gallery GIF](3d-and-panorama.gif) · [Full gallery MP4](3d-and-panorama.mp4) · [Recording evidence and hashes](3d-and-panorama-recording.json)
 
-The companion gallery is the historical **2026-11-04 dsh-filens@0.1.1** recording; it was not re-recorded for 0.1.2. It expands DSH's document pane, orbits and zooms a GLB space robot, inspects a multi-part 3MF gearbox, looks around a Milky Way panorama, then scrubs and plays a spherical NASA black-hole video while changing the view. These are actual pointer, wheel, timeline and playback interactions. The video is muted in the recording.
+The companion gallery is the historical **2026-11-04 dsh-filens@0.1.1** recording; it was not re-recorded for 0.1.3. It expands DSH's document pane, orbits and zooms a GLB space robot, inspects a multi-part 3MF gearbox, looks around a Milky Way panorama, then scrubs and plays a spherical NASA black-hole video while changing the view. These are actual pointer, wheel, timeline and playback interactions. The video is muted in the recording.
 
 The copied photo and video keep their original JPEG/WebM bytes, with `.pano` / `.360v` filenames selecting FiLens's spherical routes. Ordinary `.jpg` / `.webm` files open in the normal image/video viewer. This recording does not demonstrate automatic panorama detection.
 
@@ -40,12 +42,15 @@ Office imagery credits are preserved in the samples and listed in [sample source
 | --- | ---: | --- | ---: | ---: |
 | 0.1.1 | 402 | 0.5.4 / 0.3.3 | 4.23 MiB | 9.98 MiB |
 | 0.1.2 | 450 | 0.5.5 / 0.3.4 | 11.93 MiB | 16.40 MiB |
+| 0.1.3 | 450 | 0.5.6 / 0.3.4 | 6.53 MiB | 19.57 MiB |
 
 Sizes cover the adapter and its embedded preview runtime; separately installed CLI/OCR platform components, DSH shared dependencies and package-manager stores/caches are excluded. MiB = 1,048,576 bytes. Extension counts include direct previews and local WASM conversion routes, not independently validated files for every extension. [Exact public package integrity and byte counts](../../dsh-plugin-publication.json).
 
-The new package carries the main JavaScript plus both gzip and Brotli representations, as well as archive WASM/worker sidecars. Those extra representations account for most of the npm download increase. A compressed main-JS figure does not describe the entire npm package or the DSH pane's transferred bytes.
+The 0.1.2 package carried the main JavaScript plus both gzip and Brotli representations, as well as archive WASM/worker sidecars. In 0.1.2, those extra representations account for most of the npm download increase. A compressed main-JS figure does not describe the entire npm package or the DSH pane's transferred bytes.
 
-中文：新版预览扩展名从 402 增至 450；插件本体下载与解包体积见上表，CLI/OCR 等依赖另计。包内同时保留 JS 原文件和 gzip/Brotli 产物，主要下载增量来自额外的预压缩文件；主 JS 压缩体积不能当作整个插件体积。
+中文：0.1.2 的预览扩展名从 402 增至 450；插件本体下载与解包体积见上表，CLI/OCR 等依赖另计。包内同时保留 JS 原文件和 gzip/Brotli 产物，主要下载增量来自额外的预压缩文件；主 JS 压缩体积不能当作整个插件体积。
+
+The 0.1.3 plugin embeds the split runtime and loads matching format engines on demand. The current README highlights [larger workloads against named public baselines](../../featured-performance.md); the following tables preserve historical versions and controls.
 
 ## First preview and cached preview
 

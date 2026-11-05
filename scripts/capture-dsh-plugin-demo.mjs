@@ -227,7 +227,7 @@ async function capture() {
       await ready('paged');
     }, 2600);
     await scene('进入全屏，点击画面开始演示', 'Enter fullscreen, then click the slide to focus', async () => {
-      await click(viewer().getByRole('button', { name: '全屏', exact: true }));
+      await click(page.locator('.filens-dsh-actions [data-action="fullscreen"]').last());
       await viewer().waitForFunction(() => Boolean(document.fullscreenElement));
       await viewer().locator('.pptxv-scroll-area').click({ position: { x: 20, y: 20 } });
     }, 2700);

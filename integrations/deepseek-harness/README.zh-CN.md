@@ -21,17 +21,27 @@
 
 点击 DSH 工作区文件列表中的 Office 文件，即可使用 FiLens 侧栏预览。Excel 可直接切换工作表；PPT 点击「全屏」后，点击画面，用 **Page Down / Page Up** 演示翻页，**Esc** 返回。DOCX/PPTX 直接渲染，省去 LibreOffice 转 PDF 的步骤。
 
-| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.1 | FiLens 0.1.2 | DSH 内置 |
+| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.3 | DSH 内置 | 首开提速 |
 | --- | ---: | ---: | ---: |
-| PPTX | 356 / 228 | 540 / 311 | 1,828 / 112 |
-| DOCX | 245 / 245 | 294 / 278 | 1,812 / 112 |
-| PDF | 1,623 / 1,408 | 684 / 443 | 328 / 111 |
+| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
+| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
 
-同机 9 轮实测。PDF 对比内置 PDF 预览；DOCX/PPTX 对比内置 Office 转 PDF。首开指每个进程首次打开，保留系统与持久缓存。[波动范围、原始数据与方法](../../docs/assets/dsh-plugin/README.md) · [MP4](../../docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](../../docs/assets/dsh-plugin/install-and-preview.gif)。
+同机 9 轮配对实测；提速倍数 = 同轮内置中位数 ÷ FiLens 中位数，表中倍数仅指**首开**。首开为进程内该文件首次打开，保留系统与持久缓存；内置 Office 转 PDF，FiLens 直接渲染。[范围与方法](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [MP4](../../docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](../../docs/assets/dsh-plugin/install-and-preview.gif)。
 
-**DSH 0.1.3：**预览直接挂载到侧栏，缩放与全屏接入 DSH 外层工具栏，并按文件类型加载对应驱动。入口 JS 从 **3.04 MiB 降至 345 KiB（约减少 89%）**；TXT 首开运行时资源从 **3.09 MiB 降至 449 KiB**。格式模块、共享代码与 WASM 首次使用后复用。[加载量与方法](../../docs/assets/dsh-plugin/format-loading.json)。上表保留 0.1.2 的历史测量，安装演示使用 0.1.3。 PDF 重复打开可复用已绘制首张的像素，按完整内容、视口与像素密度校验；缓存最多 4 张、16 MiB，30 秒未使用后清理，密码打开与打印路径不复用。每次仍正常解析 PDF，关闭时释放 worker。[最新耗时、波动与验证](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。 插件下载 **6.53 MiB**、解包 **19.57 MiB**，CLI/OCR 等依赖另计。
+以下是同一输入上的完整解析调用，**不含界面渲染**，与上表的侧栏耗时分别计量。每组交替运行、预热 2 轮、测量 9 轮；逐格核对单元格值或逐条目核对完整文本，未将小样例和低收益结果列入精选表。
 
-本轮继续加入 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。9 轮、432 次完整侧栏打开中，重开大 XLSX **94→77 ms**、Pages **177→77 ms**、Numbers **176→93 ms**、Keynote **177→94 ms**、STEP **226→109 ms**；小 XLSX 仍为 **68 ms**。Numbers 首开从 **193→227 ms**，保留快照有成本。[完整数据、范围和验证](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
+| 大数据量解析场景 | 对照实现 | 对照 / FiLens 中位数（ms） | 提速 |
+| --- | --- | ---: | ---: |
+| XLSX · 2,000 × 64，128,000 格 | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
+| XLSX · 8,000 × 64，512,000 格 | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
+| ZIP · 10,000 条目，展开 18.34 MiB | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
+| ZIP · 2,500 条目，展开 36.23 MiB | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
+
+解析范围与各库完整能力不同，速度比不代表保真度或所有文件上的综合排名。[原始样本与复现](../../docs/featured-performance.md)。
+
+**DSH 0.1.3：**预览直接挂载到侧栏，缩放与全屏接入 DSH 外层工具栏，并按文件类型加载对应驱动。入口 JS 从 **3.04 MiB 降至 345 KiB（约减少 89%）**；TXT 首开运行时资源从 **3.09 MiB 降至 449 KiB**。格式模块、共享代码与 WASM 首次使用后复用。[加载量与方法](../../docs/assets/dsh-plugin/format-loading.json)。安装演示使用 0.1.3。 PDF 重复打开可复用已绘制首张的像素，按完整内容、视口与像素密度校验；缓存最多 4 张、16 MiB，30 秒未使用后清理，密码打开与打印路径不复用。每次仍正常解析 PDF，关闭时释放 worker。[最新耗时、波动与验证](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。 插件下载 **6.53 MiB**、解包 **19.57 MiB**，CLI/OCR 等依赖另计。
+
+0.1.3 同样支持 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。[完整测量、成本和边界](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
 
 ![在 DSH 中旋转 GLB 和 3MF 模型，环视全景照片并播放 360° 视频](../../docs/assets/dsh-plugin/3d-and-panorama.webp)
 

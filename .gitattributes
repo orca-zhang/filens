@@ -1,2 +1,7 @@
 * text=auto eol=lf
 apps/demo/public/samples/text/station-recovery.log -text whitespace=cr-at-eol
+
+# Keep upstream fixtures, generated glue and license texts byte-for-byte.
+benchmarks/format-detection/corpus/** -whitespace
+packages/converter-client/vendor/** -whitespace
+packages/preview/vendor/** -whitespace

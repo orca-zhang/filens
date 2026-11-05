@@ -239,4 +239,3 @@ function tokenizeFormula(formula: string): string[] {
   }
   return tokens;
 }
-

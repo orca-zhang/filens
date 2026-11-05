@@ -1,156 +1,70 @@
 {
   "date": "2026-11-05",
-  "observedAt": "2026-11-04T17:07:47.079Z",
+  "observedAt": "2026-11-05T04:05:01.960Z",
   "status": "published-and-verified",
   "package": {
     "name": "dsh-filens",
-    "version": "0.1.2",
-    "file": "dsh-filens-0.1.2.tgz",
-    "bytes": 12506529,
-    "unpackedBytes": 17198635,
-    "sha256": "c8597a62d191fde19c2677495c8f6b47d7a100ce16a8511d5d6f66c776e23320",
-    "integrity": "sha512-J5lK+ML+sEydpHZ99w3ziuBVnS6cSZLuw1GE6ItOMDU9MmHBKf5vuUSgx5fBXKFpcBGMh96Fe5bHIB4J2pxbXQ==",
-    "cliVersion": "0.5.5",
+    "version": "0.1.3",
+    "file": "dsh-filens-0.1.3.tgz",
+    "bytes": 6846421,
+    "unpackedBytes": 20516935,
+    "sha256": "1341c54436e20d265547290f26719d075023137e642bcf787e0ed65ee9bb73f7",
+    "integrity": "sha512-GgOwnFNeyZgCKGDZc0QudTC5e1uYi4wOC2VvCXDXPeZ748xhRmpY443D1yY+85WccJ51TvOSXUOz/spwRnv2dg==",
+    "cliVersion": "0.5.6",
     "previewVersion": "0.3.4",
-    "previewSHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d",
+    "previewSHA256": "7879174b4700bd77150e4fda21667f336e2b504db3754de280e1d590a6413cca",
     "extensions": 450,
     "privacyChecked": true
   },
   "dependencies": {
-    "cli": "0.5.5",
+    "cli": "0.5.6",
     "preview": "0.3.4"
   },
   "unitTests": {
-    "count": 18,
     "passed": 18,
-    "node": "24.22.1",
-    "platform": "darwin-arm64",
-    "realCli": true,
-    "command": "FILENS_TEST_COMMAND=[local CLI] node --test integrations/deepseek-harness/test/*.test.mjs"
+    "skipped": 0,
+    "cli": "installed public 0.5.6"
   },
   "browser": {
-    "results": [
-      {
-        "name": "hello.txt",
-        "rendered": true,
-        "ms": 38
-      },
-      {
-        "name": "filens-cosmic-atlas.pdf",
-        "rendered": true,
-        "ms": 94
-      },
-      {
-        "name": "filens-aurora-guide.docx",
-        "rendered": true,
-        "ms": 65
-      },
-      {
-        "name": "filens-observatory.xlsx",
-        "rendered": true,
-        "ms": 27
-      },
-      {
-        "name": "filens-field-notes.pptx",
-        "rendered": true,
-        "ms": 44
-      },
-      {
-        "name": "a.pages",
-        "rendered": true,
-        "ms": 154
-      },
-      {
-        "name": "a.numbers",
-        "rendered": true,
-        "ms": 195
-      },
-      {
-        "name": "filens-weekend.key",
-        "rendered": true,
-        "ms": 138
-      },
-      {
-        "name": "rounded-cube.step",
-        "rendered": true,
-        "ms": 278
-      },
-      {
-        "name": "raw/pentax-k-r.dng",
-        "rendered": true,
-        "ms": 184
-      },
-      {
-        "name": "sample-nested-archives.zip",
-        "rendered": true,
-        "ms": 33
-      },
-      {
-        "name": "encrypted.rar",
-        "rendered": true,
-        "ms": 58
-      }
-    ],
-    "interactions": [
-      "loading identifies the file and respects reduced motion",
-      "closing and reopening PDF reuses cached runtime and preserves canvas pixels",
-      "toolbar contains only working zoom and fullscreen; keyboard navigation works",
-      "document fullscreen opens from the keyboard and exits normally",
-      "live DSH language and theme changes preserve the document and current page",
-      "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
-      "double-click restores the complete 3D model after orbit and zoom",
-      "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
-      "3D auto framing keeps the whole model visible in a tall narrow pane",
-      "Word pages fit narrow/resized panes and omit unavailable controls",
-      "resizing the Word pane preserves the reading position",
-      "late events from a previous document are ignored",
-      "localized parser failure exposes details and a working retry action",
-      "encrypted documents expose the password form and render after password entry",
-      "short panes do not inherit a fixed minimum height"
-    ],
-    "errors": [],
-    "failures": []
+    "isolatedFormatLoadingPaths": 15,
+    "completeFormats": 12,
+    "directMount": true,
+    "outerToolbar": true
   },
-  "limits": [
-    "Native execution and Desktop recording were verified on macOS arm64 only. Linux and Windows components were cross-built; public tarball hashes were verified.",
-    "The 3D/360 gallery remains a historical dsh-filens@0.1.1 recording. Earlier profile and account/model-trial observations belong to the versions named in VALIDATION.md.",
-    "First is the median of the first opening of each file in each fresh process; the engine may be warm for DOCX after PPTX. Cached median pools the next three opens per process. OS filesystem and persistent application caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup.",
-    "Two small authored files on one macOS arm64 machine. This measures latency, not fidelity; results are not a guarantee for other files or platforms. The edited walkthrough GIF is not benchmark evidence.",
-    "First is the median of the first opening of each file in each fresh process; PDF is the first document opened in that process. Cached median pools the next three opens per process. OS filesystem and persistent application caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup."
-  ],
-  "publication": {
-    "report": "dsh-plugin-publication.json",
-    "cliDependenciesReport": "dsh-cli-dependencies-publication.json",
-    "publicTarballs": "Exact SHA-256 verified for the plugin and all 10 CLI/platform/OCR dependency packages.",
-    "cliEntryTags": {
-      "latest": "0.5.4",
-      "dsh": "0.5.5",
-      "reason": "DSH pins CLI 0.5.5 and embeds its preview runtime. Standalone CLI 0.5.5 preview commands need filens-preview@0.3.4, which is still pending full-release confirmation; stable latest remains 0.5.4 until that runtime is published."
-    }
-  },
-  "registryCli": {
-    "command": "node scripts/test-agent-npm.mjs --registry --cli-only",
-    "platform": "darwin-arm64",
-    "passed": true,
-    "observedAt": "2026-11-04T16:39:37.260Z",
-    "freshNpmCache": true,
-    "preview": false
-  },
-  "desktop": {
-    "recordedAt": "2026-11-04T16:45:09.451Z",
+  "desktopInstallation": {
+    "recordedAt": "2026-11-05T04:03:42.396Z",
     "environment": {
       "dsh": "0.2.1-rc.5",
       "platform": "darwin",
       "arch": "arm64",
       "electron": "44.7.0"
     },
-    "plugin": "dsh-filens@0.1.2",
+    "plugin": "dsh-filens@0.1.3",
     "installationSource": "安装源\n中国大陆镜像源",
     "components": {
-      "cli": "0.5.5",
+      "cli": "0.5.6",
       "preview": "0.3.4",
       "extensions": 450,
-      "previewSHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d"
+      "previewSHA256": "7879174b4700bd77150e4fda21667f336e2b504db3754de280e1d590a6413cca"
+    },
+    "source": "Installed Desktop application, public npm package, actual UI interactions",
+    "editing": "Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions and pointer are annotations. This is not a timing comparison.",
+    "encoding": {
+      "fps": 25,
+      "webp": {
+        "width": 960,
+        "quality": 92,
+        "color": "full color"
+      },
+      "gif": {
+        "width": 960,
+        "colors": 256,
+        "palette": "adaptive per scene",
+        "dither": "sierra2_4a",
+        "optimization": "lossless frame differences, displayed pixels and timing verified"
+      },
+      "highlightFrames": 376,
+      "highlightSeconds": 15.04
     },
     "modelCalls": 0,
     "checks": [
@@ -163,124 +77,211 @@
       "Page Down navigation through all three slides",
       "Escape exits fullscreen"
     ],
-    "recordingReport": "assets/dsh-plugin/demo-recording.json",
+    "documents": [
+      {
+        "name": "Aurora Guide.docx",
+        "source": "apps/demo/public/samples/filens-aurora-guide.docx",
+        "bytes": 601507,
+        "sha256": "3dd79b9a3ad29476dd80d91e79553c52706b2cdfa916771641ec43454f9763a1"
+      },
+      {
+        "name": "Observatory.xlsx",
+        "source": "apps/demo/public/samples/filens-observatory.xlsx",
+        "bytes": 6393,
+        "sha256": "3449d35a12a7097ff224546543a71e67c15166bde20f14bf81e0afaf0560268e"
+      },
+      {
+        "name": "Field Notes.pptx",
+        "source": "apps/demo/public/samples/filens-field-notes.pptx",
+        "bytes": 659484,
+        "sha256": "1d19a97f7eb03bdbc6b32b52307cb4ebff4e7436554dde4155883d2b56aed7a1"
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "duration": 2.2,
+        "sourceStart": 0,
+        "zh": "插件 → 添加插件",
+        "en": "Plugins → Add plugin"
+      },
+      {
+        "start": 2.2,
+        "duration": 3.32,
+        "sourceStart": 2.207,
+        "zh": "填写 dsh-filens@0.1.3，点击安装",
+        "en": "Enter dsh-filens@0.1.3 and click Install"
+      },
+      {
+        "start": 5.52,
+        "duration": 2.32,
+        "sourceStart": 6.813,
+        "zh": "安装完成，立即启用",
+        "en": "Installation complete → Enable now"
+      },
+      {
+        "start": 7.84,
+        "duration": 2.2,
+        "sourceStart": 9.125,
+        "zh": "文档工具与预览一起启用",
+        "en": "FiLens Tools and Preview are enabled together"
+      },
+      {
+        "start": 10.04,
+        "duration": 1.6,
+        "sourceStart": 11.476,
+        "zh": "在工作区文件列表中，点击 Office 文件",
+        "en": "Click an Office file in the workspace"
+      },
+      {
+        "start": 11.64,
+        "duration": 2.6,
+        "sourceStart": 13.079,
+        "zh": "Word 文档：直接在侧栏阅读",
+        "en": "Word: read directly in the sidebar"
+      },
+      {
+        "start": 14.24,
+        "duration": 2.92,
+        "sourceStart": 15.681,
+        "zh": "Excel：保留工作表，可直接切换",
+        "en": "Excel: switch worksheets inside the preview"
+      },
+      {
+        "start": 17.16,
+        "duration": 2.6,
+        "sourceStart": 18.584,
+        "zh": "PPT：图片和文字直接呈现",
+        "en": "PowerPoint: open slides directly in DSH"
+      },
+      {
+        "start": 19.76,
+        "duration": 2.72,
+        "sourceStart": 21.186,
+        "zh": "进入全屏，点击画面开始演示",
+        "en": "Enter fullscreen, then click the slide to focus"
+      },
+      {
+        "start": 22.48,
+        "duration": 2.4,
+        "sourceStart": 24.332,
+        "zh": "Page Down：第二页",
+        "en": "Page Down → Slide 2"
+      },
+      {
+        "start": 24.88,
+        "duration": 2.4,
+        "sourceStart": 27.243,
+        "zh": "Page Down：第三页",
+        "en": "Page Down → Slide 3"
+      },
+      {
+        "start": 27.28,
+        "duration": 1.8,
+        "sourceStart": 30.032,
+        "zh": "Esc 退出全屏，回到 DSH",
+        "en": "Esc returns to DSH"
+      }
+    ],
+    "highlightChapters": [
+      {
+        "start": 0,
+        "duration": 1.2,
+        "sourceStart": 0,
+        "zh": "插件 → 添加插件",
+        "en": "Plugins → Add plugin"
+      },
+      {
+        "start": 1.2,
+        "duration": 2.8,
+        "sourceStart": 2.207,
+        "zh": "填写 dsh-filens@0.1.3，点击安装",
+        "en": "Enter dsh-filens@0.1.3 and click Install"
+      },
+      {
+        "start": 4,
+        "duration": 1.44,
+        "sourceStart": 6.813,
+        "zh": "安装完成，立即启用",
+        "en": "Installation complete → Enable now"
+      },
+      {
+        "start": 5.44,
+        "duration": 1.2,
+        "sourceStart": 9.125,
+        "zh": "文档工具与预览一起启用",
+        "en": "FiLens Tools and Preview are enabled together"
+      },
+      {
+        "start": 6.64,
+        "duration": 1.2,
+        "sourceStart": 13.079,
+        "zh": "Word 文档：直接在侧栏阅读",
+        "en": "Word: read directly in the sidebar"
+      },
+      {
+        "start": 7.84,
+        "duration": 1.2,
+        "sourceStart": 15.681,
+        "zh": "Excel：保留工作表，可直接切换",
+        "en": "Excel: switch worksheets inside the preview"
+      },
+      {
+        "start": 9.04,
+        "duration": 1.2,
+        "sourceStart": 18.584,
+        "zh": "PPT：图片和文字直接呈现",
+        "en": "PowerPoint: open slides directly in DSH"
+      },
+      {
+        "start": 10.24,
+        "duration": 1.2,
+        "sourceStart": 21.186,
+        "zh": "进入全屏，点击画面开始演示",
+        "en": "Enter fullscreen, then click the slide to focus"
+      },
+      {
+        "start": 11.44,
+        "duration": 1.2,
+        "sourceStart": 24.332,
+        "zh": "Page Down：第二页",
+        "en": "Page Down → Slide 2"
+      },
+      {
+        "start": 12.64,
+        "duration": 1.2,
+        "sourceStart": 27.243,
+        "zh": "Page Down：第三页",
+        "en": "Page Down → Slide 3"
+      },
+      {
+        "start": 13.84,
+        "duration": 1.2,
+        "sourceStart": 30.032,
+        "zh": "Esc 退出全屏，回到 DSH",
+        "en": "Esc returns to DSH"
+      }
+    ],
     "artifacts": [
       {
         "path": "docs/assets/dsh-plugin/install-and-preview.webp",
-        "bytes": 5803648,
-        "sha256": "e13fd86ccf809c221d14a2dcc9c55b38a78c2e178493decf1d80274a18be6da0"
+        "bytes": 5716044,
+        "sha256": "a8708d570f5077a5cc85cc9f87538c9c5c2618340e246cff45f51d740c528d6a"
       },
       {
         "path": "docs/assets/dsh-plugin/install-and-preview.gif",
-        "bytes": 17327040,
-        "sha256": "18f89d815aaf97549218023d08f1b95ed99456c320362567d8d21c204311b09e"
+        "bytes": 17634894,
+        "sha256": "ef59a5b081c2b2b2ab3c71a79f129ba53afc4b5f368f7de264a79841e8d20c58"
       },
       {
         "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
-        "bytes": 3751766,
-        "sha256": "dbf96572efd7afc7010573a8fa716181699906cee830e465ade929c315bea2e9"
-      }
-    ],
-    "installedArtifacts": [
-      {
-        "name": "dsh-filens",
-        "version": "0.1.2",
-        "matchingPackagedFiles": 28,
-        "allFilesMatch": true
-      },
-      {
-        "name": "filens-cli",
-        "version": "0.5.5",
-        "matchingPackagedFiles": 10,
-        "allFilesMatch": true
-      },
-      {
-        "name": "filens-cli-darwin-arm64",
-        "version": "0.5.5",
-        "matchingPackagedFiles": 33,
-        "allFilesMatch": true
-      },
-      {
-        "name": "filens-ocr-darwin-arm64",
-        "version": "0.5.5",
-        "matchingPackagedFiles": 43,
-        "allFilesMatch": true
+        "bytes": 3475083,
+        "sha256": "b84f15c01677b6181b443c5e6d6721ec1861704b821c36a2754cb0d0b1340cf8"
       }
     ]
   },
-  "performance": {
-    "report": "assets/dsh-plugin/office-preview-benchmark.json",
-    "pdfReport": "assets/dsh-plugin/pdf-preview-benchmark.json",
-    "initialThreeRoundsReport": "assets/dsh-plugin/office-preview-benchmark-3-rounds.json",
-    "historical011Report": "assets/dsh-plugin/office-preview-benchmark-0.1.1.json",
-    "rounds": 9,
-    "actualOpens": 324,
-    "officeOpens": 216,
-    "pdfOpens": 108,
-    "results": [
-      {
-        "renderer": "filens",
-        "plugin": "dsh-filens@0.1.2",
-        "name": "Field Notes.pptx",
-        "firstMs": 540,
-        "cachedMedianMs": 311
-      },
-      {
-        "renderer": "filens",
-        "plugin": "dsh-filens@0.1.2",
-        "name": "Aurora Guide.docx",
-        "firstMs": 294,
-        "cachedMedianMs": 278
-      },
-      {
-        "renderer": "previous",
-        "plugin": "dsh-filens@0.1.1",
-        "name": "Field Notes.pptx",
-        "firstMs": 356,
-        "cachedMedianMs": 228
-      },
-      {
-        "renderer": "previous",
-        "plugin": "dsh-filens@0.1.1",
-        "name": "Aurora Guide.docx",
-        "firstMs": 245,
-        "cachedMedianMs": 245
-      },
-      {
-        "renderer": "builtin",
-        "plugin": "DSH built-in Office-to-PDF",
-        "name": "Field Notes.pptx",
-        "firstMs": 1828,
-        "cachedMedianMs": 112
-      },
-      {
-        "renderer": "builtin",
-        "plugin": "DSH built-in Office-to-PDF",
-        "name": "Aurora Guide.docx",
-        "firstMs": 1812,
-        "cachedMedianMs": 112
-      },
-      {
-        "renderer": "filens",
-        "plugin": "dsh-filens@0.1.2",
-        "name": "Cosmic Atlas.pdf",
-        "firstMs": 684,
-        "cachedMedianMs": 443
-      },
-      {
-        "renderer": "previous",
-        "plugin": "dsh-filens@0.1.1",
-        "name": "Cosmic Atlas.pdf",
-        "firstMs": 1623,
-        "cachedMedianMs": 1408
-      },
-      {
-        "renderer": "builtin",
-        "plugin": "DSH built-in PDF",
-        "name": "Cosmic Atlas.pdf",
-        "firstMs": 328,
-        "cachedMedianMs": 111
-      }
-    ]
-  }
+  "historical012Report": "assets/dsh-plugin/history/0.1.2/validation.json",
+  "modelReuse": "dsh-model-reopen-validation.json",
+  "pdfReuse": "dsh-pdf-reopen-validation.json",
+  "performanceScope": "Performance results describe their original implementation stages; no cumulative speedup is inferred."
 }

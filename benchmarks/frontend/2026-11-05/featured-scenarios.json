@@ -1,0 +1,183 @@
+{
+  "measuredAt": "2026-11-05T03:59:26.779Z",
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "platform": "darwin",
+  "arch": "arm64",
+  "warmupRounds": 2,
+  "measuredRounds": 9,
+  "order": "Alternating implementations per round; explicit GC outside timing where available",
+  "scope": "Synthetic larger workloads. Timings include ZIP indexing/decompression and parsing into each library model; exclude input generation, imports, value validation/hashing, networking and rendering. Common cell values or complete entry text are compared, not full feature/fidelity equivalence. No universal state-of-the-art claim.",
+  "baselines": {
+    "sheetjs": {
+      "version": "0.20.3",
+      "url": "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs",
+      "sha256": "1a0fb062ee9781b13f6687371b202aaefc53b6ce55b530c027e01f9c087b77db"
+    },
+    "jszip": {
+      "version": "3.10.1"
+    }
+  },
+  "filens": {
+    "core": "0.1.2",
+    "xlsx": "0.1.1",
+    "bindings": {
+      "coreZip": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475",
+      "xlsx": "2e445a0c8d3e735b5e1afd1b4d3d9fefdac877a5360faad7e31814faa4b43f82"
+    }
+  },
+  "cases": [
+    {
+      "name": "xlsx-2000x64",
+      "workload": "Complete styled XLSX parse",
+      "rows": 2000,
+      "columns": 64,
+      "cells": 128000,
+      "expandedBytes": 3951886,
+      "baseline": "SheetJS CE 0.20.3 default read()",
+      "inputBytes": 544780,
+      "inputSHA256": "5b79f0a3663dcc9cb1e360f61135286f2b93ea7d92ad1257d30b03c83fc4b929",
+      "verifiedValuesSHA256": "5ed2c44becd4ae31f095866be33e1994e384ccba68234e3f493ee5c17fb1535c",
+      "samplesMs": {
+        "filens": [
+          58.169000000000096,
+          62.581500000000005,
+          61.724791000000096,
+          63.36445800000001,
+          60.92500000000018,
+          62.40095900000006,
+          63.77500000000009,
+          58.42345800000021,
+          57.914582999999766
+        ],
+        "baseline": [
+          148.83354099999997,
+          141.03979100000015,
+          155.32887500000015,
+          148.60304199999973,
+          168.59662500000013,
+          153.55987499999992,
+          157.79495799999995,
+          150.16754100000026,
+          150.94225000000006
+        ]
+      },
+      "filensMedianMs": 61.724791000000096,
+      "baselineMedianMs": 150.94225000000006,
+      "speedRatio": 2.4454072270572746
+    },
+    {
+      "name": "xlsx-8000x64",
+      "workload": "Complete styled XLSX parse",
+      "rows": 8000,
+      "columns": 64,
+      "cells": 512000,
+      "expandedBytes": 16270444,
+      "baseline": "SheetJS CE 0.20.3 default read()",
+      "inputBytes": 2195276,
+      "inputSHA256": "c804bd0f1dc81d65a423fdfaba348312197561029f8e68884cc8160eb84719c7",
+      "verifiedValuesSHA256": "64a93ced20c39013077b0ed05d9246792b1a2786654e9bccfd47231af7f6c08e",
+      "samplesMs": {
+        "filens": [
+          213.1397080000006,
+          214.45879199999945,
+          213.49945800000023,
+          221.00558300000012,
+          215.27883400000064,
+          214.53783300000032,
+          212.4005840000009,
+          212.93412499999977,
+          209.98754199999894
+        ],
+        "baseline": [
+          624.1419589999996,
+          581.8768749999999,
+          625.6245419999996,
+          584.4349160000002,
+          629.1298330000009,
+          590.1429580000004,
+          628.0481249999993,
+          598.0926249999993,
+          615.7138750000013
+        ]
+      },
+      "filensMedianMs": 213.49945800000023,
+      "baselineMedianMs": 615.7138750000013,
+      "speedRatio": 2.8839130589268316
+    },
+    {
+      "name": "zip-10000-entries",
+      "workload": "Open new ZIP and read every XML entry",
+      "entryCount": 10000,
+      "expandedBytes": 19228890,
+      "baseline": "JSZip 3.10.1 loadAsync() + entry.async(text)",
+      "inputBytes": 1828903,
+      "inputSHA256": "2960c61a3a4f59bd7954ec36ccd5bd0427435f138720a2bf7e8d565e5fae1201",
+      "verifiedValuesSHA256": "55941d1c0b21a4fd5a44cf916b7f40298ae89a85474181475544ec7dc8eda616",
+      "samplesMs": {
+        "filens": [
+          55.52233400000114,
+          60.660415999998804,
+          54.29533300000185,
+          62.63891700000022,
+          53.94708399999945,
+          62.54829199999949,
+          53.3012920000001,
+          63.373333000003186,
+          53.51633299999958
+        ],
+        "baseline": [
+          698.1163750000014,
+          701.4601670000011,
+          695.4178749999992,
+          693.6125839999986,
+          696.044208000003,
+          700.5505420000009,
+          700.8088749999988,
+          708.6593749999993,
+          702.1166250000024
+        ]
+      },
+      "filensMedianMs": 55.52233400000114,
+      "baselineMedianMs": 700.5505420000009,
+      "speedRatio": 12.617454842586165
+    },
+    {
+      "name": "zip-2500-entries",
+      "workload": "Open new ZIP and read every XML entry",
+      "entryCount": 2500,
+      "expandedBytes": 37993890,
+      "baseline": "JSZip 3.10.1 loadAsync() + entry.async(text)",
+      "inputBytes": 575337,
+      "inputSHA256": "a88f2ada584bb6df70dd704db317bc55615cfcd923f162ac048121b24a88d6e2",
+      "verifiedValuesSHA256": "f2537679ceb481f05e54b1cf75bb73f65335c89dad6b0cc0ae263f6791680947",
+      "samplesMs": {
+        "filens": [
+          93.24791600000026,
+          99.22550000000047,
+          95.04670800000167,
+          102.3284590000003,
+          94.82645800000319,
+          101.22095900000204,
+          95.37316699999792,
+          102.40541699999812,
+          93.7923750000009
+        ],
+        "baseline": [
+          247.5505000000012,
+          248.03329200000007,
+          248.26808300000266,
+          249.87587500000154,
+          249.03283300000112,
+          247.3645830000023,
+          247.98533400000088,
+          247.14033299999937,
+          247.88266600000134
+        ]
+      },
+      "filensMedianMs": 95.37316699999792,
+      "baselineMedianMs": 247.98533400000088,
+      "speedRatio": 2.60015832335741
+    }
+  ]
+}

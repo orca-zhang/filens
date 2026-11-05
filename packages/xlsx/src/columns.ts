@@ -26,4 +26,3 @@ export function parseCellRef(ref: string): { row: number; column: number } {
     row: Number(match[2] ?? 1)
   };
 }
-

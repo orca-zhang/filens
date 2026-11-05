@@ -99,17 +99,27 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 Preview Office files directly in the sidebar, switch worksheets, and present PPT slides fullscreen: click the fullscreen slide to focus, use **Page Down / Page Up**, then **Esc** to return to DSH. DOCX/PPTX render locally without an Office-to-PDF step.
 
-| Sample · first / cached median (ms) | FiLens 0.1.1 | FiLens 0.1.2 | DSH built in |
+| Sample · first / cached median (ms) | FiLens 0.1.3 | DSH built in | First-open speedup |
 | --- | ---: | ---: | ---: |
-| PPTX | 356 / 228 | 540 / 311 | 1,828 / 112 |
-| DOCX | 245 / 245 | 294 / 278 | 1,812 / 112 |
-| PDF | 1,623 / 1,408 | 684 / 443 | 328 / 111 |
+| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
+| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
 
-Nine rounds on the same macOS machine. PDF uses the native built-in PDF path; DOCX/PPTX use built-in Office-to-PDF. First means first per process, with system/persistent caches retained. [Ranges, raw samples and method](docs/assets/dsh-plugin/README.md) · [MP4](docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](docs/assets/dsh-plugin/install-and-preview.gif).
+Nine paired rounds on one macOS machine. Speedup = matched built-in median ÷ FiLens median; ratios describe **first opens**. First means the first opening of that file per process; system/persistent caches remain. Built-in Office converts to PDF; FiLens renders directly. [Ranges and method](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [MP4](docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](docs/assets/dsh-plugin/install-and-preview.gif).
 
-**DSH 0.1.3:** mount directly into the sidebar, use DSH's existing header controls and load the matching format driver on first use. Initial JS falls from **3.04 MiB to 345 KiB (about 89%)**; TXT first-open runtime requests fall from **3.09 MiB to 449 KiB**. Format modules, shared code and WASM are reused after first use. [Loading sizes and method](docs/assets/dsh-plugin/format-loading.json). The table retains the public 0.1.2 measurements; the installation demo uses 0.1.3. At the PDF pixel-cache stage, the nine-round run measured **190 / 77 ms** first / reopened, versus **208 / 159 ms** before pixel reuse and **329 / 110 ms** built in. Reopens take about **52% less time**. [Raw timings, ranges and implementation](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md) · [Nine-round Word/PPT retest](docs/assets/dsh-plugin/performance-retest.zh-CN.md). Plugin download: **6.53 MiB**, unpacked: **19.57 MiB**, excluding CLI/OCR and shared dependencies.
+The workloads below time complete parser calls on identical inputs, **excluding UI rendering**; these are separate from sidebar latency. Engines alternate over two warmups and nine measured rounds. Every cell value or complete entry text is verified. Small examples and low-gain cases are omitted from the featured tables.
 
-Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB accounting budget / 30-second idle lifetime. Across nine rounds and 432 complete sidebar opens, reopened large XLSX falls **94→77 ms**, Pages **177→77 ms**, Numbers **176→93 ms**, Keynote **177→94 ms** and STEP **226→109 ms**. Small XLSX stays **68 ms**; Numbers first open rises **193→227 ms** because snapshots have a cost. [Timings, ranges and validation](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
+| Larger parsing workload | Baseline | Baseline / FiLens median (ms) | Speedup |
+| --- | --- | ---: | ---: |
+| XLSX · 2,000 × 64, 128,000 cells | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
+| XLSX · 8,000 × 64, 512,000 cells | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
+| ZIP · 10,000 entries, 18.34 MiB expanded | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
+| ZIP · 2,500 entries, 36.23 MiB expanded | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
+
+Library feature/fidelity scopes differ; these ratios are not an overall ranking across files. [Raw samples and reproduction](docs/featured-performance.md).
+
+**DSH 0.1.3:** mount directly into the sidebar, use DSH's existing header controls and load the matching format driver on first use. Initial JS falls from **3.04 MiB to 345 KiB (about 89%)**; TXT first-open runtime requests fall from **3.09 MiB to 449 KiB**. Format modules, shared code and WASM are reused after first use. [Loading sizes and method](docs/assets/dsh-plugin/format-loading.json). The installation demo uses 0.1.3. PDF reopens reuse validated first-page pixels; [PDF timings and limits](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md). Plugin download: **6.53 MiB**, unpacked: **19.57 MiB**, excluding CLI/OCR and shared dependencies.
+
+Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB estimated model budget / 30-second idle lifetime. [Complete measurements, costs and limits](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
 
 ![FiLens in DSH: orbit a space robot and planetary gearbox, look around a Milky Way panorama, and play NASA's 360-degree black-hole video](docs/assets/dsh-plugin/3d-and-panorama.webp)
 
