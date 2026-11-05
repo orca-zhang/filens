@@ -18,7 +18,7 @@
   "registryHttpStatus": 200,
   "tarball": "https://registry.npmjs.org/dsh-filens/-/dsh-filens-0.1.6.tgz",
   "status": "publicly-available-integrity-verified",
-  "observedAt": "2026-11-05T07:17:54.168Z",
+  "observedAt": "2026-11-05T07:26:47.164Z",
   "cliDependenciesReport": "dsh-cli-dependencies-publication.json",
   "previewSource": "shared frontend split runtime with compact address-bar controls embedded in the plugin",
   "registryTarballDownloadVerified": true,
@@ -43,5 +43,12 @@
       "unpackedBytes": 20516935,
       "publishedAt": "2026-11-05T03:59:23.205Z"
     }
-  ]
+  ],
+  "sourceCommit": "449143a0c5c02d9a00b3eb66d26221008b930786",
+  "githubRelease": {
+    "tag": "v0.6.4",
+    "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
+    "file": "dsh-filens-0.1.6.tgz",
+    "verifiedAt": "2026-11-05T07:26:47.164Z"
+  }
 }

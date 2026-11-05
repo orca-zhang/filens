@@ -172,5 +172,15 @@
     }
   },
   "benchmarkScope": "12 existing peer comparisons, with measurement dates and stage boundaries. No new latency or universal SOTA claim. DSH timing snapshot remains 0.1.3; gallery remains 0.1.5.",
-  "publicationReceipt": "dsh-plugin-publication.json"
+  "publicationReceipt": "dsh-plugin-publication.json",
+  "release": {
+    "sourceCommit": "449143a0c5c02d9a00b3eb66d26221008b930786",
+    "documentationCommit": "fd4b0acc19e1422ddbbb30f7be2dce4be729c808",
+    "githubRelease": {
+      "tag": "v0.6.4",
+      "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
+      "file": "dsh-filens-0.1.6.tgz",
+      "verifiedAt": "2026-11-05T07:26:47.164Z"
+    }
+  }
 }
