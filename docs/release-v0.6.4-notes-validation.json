@@ -3,8 +3,8 @@
   "tag": "v0.6.4",
   "language": "en",
   "files": {
-    "docs/release-v0.6.4.md": "e8c5fc2abc5d944a7a528ad754e0a066e96c179d8d48fbf9e4c1d62176c0fcb5",
-    "docs/releases/v0.6.4.md": "e8c5fc2abc5d944a7a528ad754e0a066e96c179d8d48fbf9e4c1d62176c0fcb5",
+    "docs/release-v0.6.4.md": "1b81ad4e30bcf24b670460b207a843b235514e2f4f0888fe0251126b1af54a95",
+    "docs/releases/v0.6.4.md": "1b81ad4e30bcf24b670460b207a843b235514e2f4f0888fe0251126b1af54a95",
     "CHANGELOG.md": "32dad7ec05001cc1e80fbab336fb73446e22627370a3fa879c26edc606dfae7a"
   },
   "checks": {
