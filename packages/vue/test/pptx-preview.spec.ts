@@ -228,6 +228,45 @@ afterAll(() => {
 });
 
 describe('PptxPreview', () => {
+  it('keeps the compact host toolbar minimal while retaining slide keyboard navigation', async () => {
+    const target = document.createElement('div'); document.body.append(target);
+    const wrapper = mount(Preview, { attachTo: document.body, props: {
+      src: new Uint8Array(await readFile(sampleDeckPath)), name: 'slides.pptx', toolbar: 'minimal', controlsTarget: target, locale: 'en_US'
+    } });
+    try {
+      await waitFor(() => expect(wrapper.emitted('rendered')).toBeTruthy());
+      expect([...target.querySelectorAll('.pptxv-toolbar-group > button')].map(button => (button as HTMLElement).dataset.action)).toEqual(['zoom-out', 'zoom-in', 'fullscreen']);
+      expect(target.textContent).not.toMatch(/Prev|Next|Rotate|Fit|Width|Height|Warnings/);
+      expect(target.querySelector('.pptxv-pill')).toBeNull();
+      expect(wrapper.find('.pptxv-toolbar').exists()).toBe(false);
+      const initial = Number(target.querySelector('.pptxv-zoom-status')?.textContent?.replace('%', ''));
+      (target.querySelector('[data-action="zoom-in"]') as HTMLButtonElement).click(); await nextTick();
+      expect(target.querySelector('.pptxv-zoom-status')?.textContent).toBe(`${initial + 10}%`);
+      const before = (wrapper.vm as unknown as { getState(): { pageIndex: number } }).getState().pageIndex;
+      await wrapper.trigger('keydown', { key: 'ArrowRight' });
+      await waitFor(() => expect((wrapper.vm as unknown as { getState(): { pageIndex: number } }).getState().pageIndex).toBe(before + 1));
+    } finally { wrapper.unmount(); target.remove(); }
+  });
+
+  it('provides real text zoom and shell fullscreen without native driver capabilities', async () => {
+    const target = document.createElement('div'); document.body.append(target);
+    const wrapper = mount(Preview, { attachTo: document.body, props: {
+      src: new TextEncoder().encode('Readable document'), name: 'notes.txt', toolbar: 'minimal', controlsTarget: target, locale: 'en_US'
+    } });
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(wrapper.element, 'requestFullscreen', { value: requestFullscreen, configurable: true });
+    try {
+      await waitFor(() => expect(wrapper.emitted('rendered')).toBeTruthy());
+      (target.querySelector('[data-action="zoom-in"]') as HTMLButtonElement).click(); await nextTick();
+      expect((wrapper.find('.pptxv-main-view').element as HTMLElement).style.getPropertyValue('--pptxv-surface-scale')).toBe('1.1');
+      expect(target.querySelector('.pptxv-zoom-status')?.textContent).toBe('110%');
+      (target.querySelector('[data-action="fullscreen"]') as HTMLButtonElement).click(); await nextTick();
+      expect(requestFullscreen).toHaveBeenCalledOnce();
+      await wrapper.setProps({ src: new TextEncoder().encode('Another document') });
+      await waitFor(() => expect(target.querySelector('.pptxv-zoom-status')?.textContent).toBe('100%'));
+    } finally { wrapper.unmount(); target.remove(); }
+  });
+
   it('switches toolbar language without reloading the presentation', async () => {
     const bytes = new Uint8Array(await readFile(fixturePath));
     const wrapper = mount(PptxPreview, { props: { src: bytes, locale: 'zh_CN' } });

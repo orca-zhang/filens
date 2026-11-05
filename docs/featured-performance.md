@@ -1,6 +1,6 @@
 # Selected performance workloads
 
-Measured on 2026-11-05. These tables show only the latest FiLens implementation against named public baselines. Larger parser cases must have at least 100,000 cells or 16 MiB of expanded content, a baseline median of at least 100 ms, and a measured speed ratio of at least 2×. Selection affects the summary only: all timed samples remain in the raw report. No universal state-of-the-art or rendering-fidelity claim is made.
+Updated 2026-11-05. This selection contains 12 scenarios across DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload keeps its latest recorded result against a named baseline; browser dates and stage boundaries are stated below. Larger synthetic parser cases retain the existing thresholds (100,000 cells or 16 MiB expanded, baseline median at least 100 ms and speed ratio at least 2×). Tiny examples and marginal gains remain in the full reports. No universal state-of-the-art or rendering-fidelity claim is made.
 
 ## Complete sidebar previews
 
@@ -36,3 +36,17 @@ Reproduce after building core/XLSX with:
 ```sh
 node --expose-gc scripts/benchmark-featured-scenarios.mjs
 ```
+
+## Browser preview and geometry workloads
+
+**PPTX, RAW and STEP: latest recorded browser comparisons**
+
+| Workload | FiLens (ms) | Baseline (ms) | Speedup | Measured |
+| --- | ---: | --- | ---: | --- |
+| PPTX · 11.1 MB, 13 slides, complete parse | **28.5** | pptx-preview 1.0.7: 56.6 | **1.99×** | Oct 23–24 |
+| NEF · Nikon D3S, sensor → preview canvas | **152.7** | LibRaw-Wasm 1.6.0 half-size: 326.7 | **2.14×** | Oct 23–24 |
+| DNG · Pentax K-r, sensor → preview canvas | **167.7** | LibRaw-Wasm 1.6.0 fast half-size: 314.4 | **1.87×** | Oct 23–24 |
+| STEP · as1_pe_203 assembly, geometry import | **61.2** | occt-import-js 0.0.23: 195.0 | **3.19×** | Nov 1 |
+| STEP · tailturbine, geometry import | **50.6** | occt-import-js 0.0.23: 153.9 | **3.04×** | Nov 1 |
+
+All dates are in 2026. RAW inputs have no embedded JPEG; preview resolution/tone differs from LibRaw. STEP compares parsing/tessellation and validated geometry, with different triangulations; scene construction and drawing are excluded. PPTX measures complete parsing. These are the latest recorded runs for each workload, with inputs/modules ready before timing. [Browser methods, confidence intervals and raw evidence](performance-comparison.md).

@@ -42,13 +42,20 @@ try {
     const shell = await viewer.locator('.pptxv-shell').boundingBox();
     assert.ok(Math.abs(bounds.height - shell.height) < 2, 'Preview must fill the actual DSH sidebar');
     assert.equal(await viewer.locator('.filens-dsh-view .pptxv-toolbar').count(), 0, 'Controls belong to the DSH header');
-    if (name.endsWith('.pdf') || name.endsWith('.pptx')) {
+    {
       const actions = page.locator('.filens-dsh-actions');
       await actions.waitFor();
+      assert.equal(await actions.locator('.pptxv-toolbar-group > button').count(), 3);
+      assert.equal(await actions.getByRole('button', { name: /^(Next|Prev|上一页|下一页)$/ }).count(), 0);
       const scale = await actions.locator('.pptxv-zoom-status').innerText();
       await actions.locator('[data-action="zoom-in"]').click();
       await actions.locator('.pptxv-zoom-status').filter({ hasText: scale }).waitFor({ state: 'hidden' });
       await actions.locator('[data-action="zoom-out"]').click();
+      const headerBounds = await actions.boundingBox();
+      for (const selector of ['[data-action="zoom-out"]', '.pptxv-zoom-status', '[data-action="zoom-in"]', '[data-action="fullscreen"]']) {
+        const control = await actions.locator(selector).boundingBox();
+        assert.ok(control.x >= headerBounds.x - 1 && control.x + control.width <= headerBounds.x + headerBounds.width + 1, `${name}: ${selector} must be visible beside the address bar without scrolling`);
+      }
       if (process.env.DSH_TEST_FULLSCREEN !== '0') {
         await actions.locator('[data-action="fullscreen"]').click();
         await page.waitForFunction(() => Boolean(document.fullscreenElement));
@@ -56,7 +63,7 @@ try {
       }
     }
     if (name.endsWith('.step')) {
-      assert.equal(await viewer.locator('.pptxv-toolbar').isVisible(), false);
+      assert.equal(await viewer.locator('.filens-dsh-view .pptxv-toolbar').count(), 0);
       const canvas = viewer.locator('canvas').first();
       assert.equal(Math.round((await canvas.boundingBox()).height), Math.round(bounds.height));
       const actions = page.locator('.filens-dsh-actions');

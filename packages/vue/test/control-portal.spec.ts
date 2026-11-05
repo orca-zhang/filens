@@ -13,6 +13,17 @@ function fixture() {
 }
 
 describe('driver control portal', () => {
+  it('retains playback controls in the player while moving selected controls', async () => {
+    const { source, target, button } = fixture();
+    const media = document.createElement('section'); media.className = 'player';
+    const timeline = document.createElement('input'); timeline.dataset.previewControls = ''; media.append(timeline); source.append(media);
+    const restore = createControlPortal(source, target, element => !element.closest('.player'));
+    expect(target.querySelector('button')).toBe(button);
+    expect(media.firstChild).toBe(timeline);
+    const playback = document.createElement('button'); playback.dataset.previewControls = ''; media.append(playback); await flush();
+    expect(media.lastChild).toBe(playback); expect(target.querySelectorAll('[data-preview-controls]')).toHaveLength(1);
+    restore(); expect(media.firstChild).toBe(timeline);
+  });
   it('preserves actual nodes, values and handlers and restores them on detach', () => {
     const { source, target, owner, button } = fixture();
     const click = vi.fn(); button.onclick = click;

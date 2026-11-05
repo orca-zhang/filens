@@ -45,8 +45,6 @@
 .filens-dsh-view :is(.pptxv-pill--hidden, .pptxv-layer-menu--hidden) { display: none; }
 .filens-dsh-view[data-controls="false"] .pptxv-toolbar { display: none; }
 
-.filens-dsh-view[data-zoom="false"] :is([data-action="zoom-in"], [data-action="zoom-out"], .pptxv-zoom-status),
-.filens-dsh-view[data-fullscreen="false"] [data-action="fullscreen"] { display: none; }
 .filens-dsh-view :is(.pptxv-main, .pptxv-viewer, .pptxv-loading) { min-height: 0; background: var(--filens-surface); }
 .filens-dsh-view :is(.pptxv-main-view, .pptxv-native-preview) { min-height: 0; }
 .filens-dsh-view .pptxv-main-stage { min-height: 0; }

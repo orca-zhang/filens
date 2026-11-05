@@ -1,0 +1,176 @@
+{
+  "observedAt": "2026-11-05T07:17:54.168Z",
+  "plugin": "dsh-filens@0.1.6",
+  "sourceSHA256": {
+    "integrations/deepseek-harness/src/client.css": "886ef4cd1694bc51583a5c9c84130c2a5142e5a0ef8e8b1dc3ac95720e3d352d",
+    "integrations/deepseek-harness/src/viewer.js": "0bf6455aba9a9f2d2d333714c516d108c4263aba56c7cdb1aa54c5e275220639",
+    "integrations/deepseek-harness/src/viewer.css": "a53c19a5c10b122f4e84a0c1fdf36761d756580e909ec8244a4274772c60cfa4",
+    "packages/vue/src/Preview.vue": "28d31eaf6e2296d21b6d3a266f07ba999117c74981fb2475017f6a00652e82d6",
+    "packages/vue/src/style.css": "a3f76a84da063fcd71f8bc773b7d49211769447aeb6913d7336e221088964726",
+    "packages/vue/src/control-portal.ts": "1f1a2e1b15b44152e1a58a606fd385a0b3efa96fe7ed721f3608a109d548bc1f",
+    "packages/preview/src/index.ts": "f692bcfad13fe71fefb202b323487cd639689055332b93318d41018068cb87e2",
+    "packages/preview/src/public.d.ts": "bd95f17c8d15da512a09ccd9177d7dc358b8a246c1d3d11a382118ce5a062a9e",
+    "integrations/deepseek-harness/test/browser.mjs": "98b26972e30c640af39b0f77f29ed92d52276590b8d3e70e050cd6d611e6952f",
+    "integrations/deepseek-harness/test/desktop.mjs": "26716de174d3b2c8a8b0123750f6b9e2e2ab4a0816430aee0fa87fac0701e5c3",
+    "packages/vue/test/pptx-preview.spec.ts": "5bebbad583d762d7e04ce770958d37f53fa52c5d7c25b57cf1636d4bd9bef2d9",
+    "packages/vue/test/control-portal.spec.ts": "f48172af8b06abd5c6cd720e67c5edb08a2d00ac05f2a4f5554a369b457853b1"
+  },
+  "package": {
+    "name": "dsh-filens",
+    "version": "0.1.6",
+    "file": "dsh-filens-0.1.6.tgz",
+    "bytes": 6849586,
+    "unpackedBytes": 20536588,
+    "sha256": "58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
+    "integrity": "sha512-CHr8kf5evB1Zog0UJycNWLwZlTCIgZ/UVjs8qNKeQxkKc1Xke/dhwjbM5r85PHMgzaEhXAXJrqy5ZEbvAIatuA==",
+    "cliVersion": "0.5.6",
+    "previewVersion": "0.3.4",
+    "previewSHA256": "727a8fbe06a40b0c3da759f48b5db4f66343e2415e31e16423bd62894285786e",
+    "extensions": 450,
+    "privacyChecked": true
+  },
+  "behavior": {
+    "addressBarPrimaryControls": [
+      "zoom-out",
+      "percentage",
+      "zoom-in",
+      "fullscreen"
+    ],
+    "zoomPercentageWidth": "4ch",
+    "allPrimaryControlsVisibleWithoutHorizontalScrolling": true,
+    "pageControls": false,
+    "rotationControls": false,
+    "manualFitControls": false,
+    "keyboardSlideNavigation": true,
+    "cadLayersAndModelInspector": true,
+    "toolsMenu": [
+      "worksheets",
+      "archive",
+      "attachments"
+    ],
+    "playbackControlsAndTimeline": "retained below the audio/video player",
+    "sharedViewZoomForDriversWithoutNativeZoom": true,
+    "wordAutoFitIndependentOfUserZoom": true,
+    "fullscreenControlsRestoredToHeader": true,
+    "warningCountBadges": false
+  },
+  "validation": {
+    "vueTestsPassed": 69,
+    "controlPortalTestsIncluded": 6,
+    "dshToolResourceTestsPassed": 18,
+    "isolatedFormatLoadingPaths": 16,
+    "completeBrowserFormats": 12,
+    "browserFullscreen": true,
+    "desktopFormats": 6,
+    "desktopSource": "final npm tarball extracted in isolated Desktop profile; existing CLI dependencies retained",
+    "nativeDesktopFullscreen": false,
+    "errors": [],
+    "desktop": {
+      "environment": {
+        "version": "0.2.1-rc.5",
+        "node": "24.21.0",
+        "electron": "44.7.0",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "url": "dsh-app://app/",
+      "registrations": [
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/text",
+          "extensions": 0
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/markdown",
+          "extensions": 2
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/html",
+          "extensions": 2
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/image",
+          "extensions": 8
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/pdf",
+          "extensions": 1
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office",
+          "extensions": 4
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/excel",
+          "extensions": 4
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code",
+          "extensions": 115
+        },
+        {
+          "id": "dsh-filens",
+          "extensions": 450
+        }
+      ],
+      "results": [
+        {
+          "name": "filens-cosmic-atlas.pdf",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-aurora-guide.docx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-field-notes.pptx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-weekend.key",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "rounded-cube.step",
+          "rendered": true,
+          "fillsPane": true,
+          "toolbar": false,
+          "orbitZoomAndReset": true
+        },
+        {
+          "name": "sample-nested-archives.zip",
+          "rendered": true,
+          "fillsPane": true
+        }
+      ],
+      "nativeFullscreenTested": false,
+      "errors": []
+    },
+    "committedComponentRuntimeRebuild": {
+      "matchedFiles": 58,
+      "allRuntimeBytesAndSHA256Match": true,
+      "scope": "Isolated output build using committed Vue/converter export surfaces; unrelated demo work is excluded."
+    }
+  },
+  "clientSHA256": "48c5e3d5db40e252c8e9caccc6f00246c44c37d34a73b29fd5398c901dd4f932",
+  "runtimeManifestSHA256": "42019a5e54eb2f122fa0b0df570dd9566fc54f7a035d2d2b6d82e465832a01fd",
+  "readmes": {
+    "README.md": {
+      "dshSectionLinesBefore": 42,
+      "dshSectionLinesAfter": 9,
+      "featuredScenarios": 12,
+      "sha256": "72c513d89a12a6d1847fe8e40763ecae9a66ef5050bf8e222e1782ff88e52866"
+    },
+    "README.zh-CN.md": {
+      "dshSectionLinesBefore": 42,
+      "dshSectionLinesAfter": 9,
+      "featuredScenarios": 12,
+      "sha256": "358781167377b707cf02a2714e383946fbe04d346a2568f442254ddeb0117365"
+    }
+  },
+  "benchmarkScope": "12 existing peer comparisons, with measurement dates and stage boundaries. No new latency or universal SOTA claim. DSH timing snapshot remains 0.1.3; gallery remains 0.1.5.",
+  "publicationReceipt": "dsh-plugin-publication.json"
+}

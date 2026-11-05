@@ -15,8 +15,9 @@ export interface BrowserPreviewOptions extends PreviewOptions {
   src: PreviewSource | SourceDescriptor;
   name?: string;
   extension?: string;
+  /** With controlsTarget, 'minimal' keeps zoom/fullscreen and compact tool menus. */
   toolbar?: boolean | 'minimal';
-  /** Render all preview controls beside the host application's address bar. */
+  /** Render preview controls beside the host application's address bar. */
   controlsTarget?: HTMLElement;
   /** ZimaOS codes (zh_CN) and BCP 47 tags (zh-CN); defaults to browser language. */
   locale?: string;

@@ -19,7 +19,7 @@
 | Approximate size | **Lite components: 8.00–9.27 MiB · Full components: 31.43–37.06 MiB**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.92–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.4 source-build main runtimes: **4.73 MB Brotli** summed across split files, or **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.92–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Recorded preview 0.3.4 build snapshot: **4.73 MB Brotli** summed across split files, or **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -89,46 +89,13 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ### DeepSeek Harness
 
-[CLI tools and native sidebar previews](integrations/deepseek-harness/README.md) for **450 file formats** (counted by extension, including local WASM conversion), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. In Desktop, open **Plugins → Add plugin**, enter `dsh-filens` (or `dsh-filens@0.1.5` to pin the version), click **Install**, then **Enable now**. [Installation and configuration](integrations/deepseek-harness/README.md#install-and-build).
+Install [`dsh-filens@0.1.6`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
 
 <!-- dsh-package-metrics:start -->
-**Published dsh-filens 0.1.5: 6.53 MiB download / 19.58 MiB unpacked**, including preview 0.3.4. CLI 0.5.6 / OCR, DSH shared dependencies and package-manager caches are separate. [Package measurements](docs/dsh-plugin-publication.json).
+**DSH 0.1.6: 6.53 MiB download / 19.59 MiB unpacked**; CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-publication.json).
 <!-- dsh-package-metrics:end -->
 
-[0.1.5 controls and package validation](docs/dsh-header-controls-validation.json). Performance tables retain the measured 0.1.3 snapshot.
-
-![Install dsh-filens in DSH Desktop, preview Word and Excel, then present three PPT slides fullscreen with Page Down](docs/assets/dsh-plugin/install-and-preview.webp)
-
-Preview Office files directly in the sidebar, switch worksheets, and present PPT slides fullscreen: click the fullscreen slide to focus, use **Page Down / Page Up**, then **Esc** to return to DSH. DOCX/PPTX render locally without an Office-to-PDF step.
-
-| Sample · first / cached median (ms) | FiLens 0.1.3 | DSH built in | First-open speedup |
-| --- | ---: | ---: | ---: |
-| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
-| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
-| PDF | **190 / 77** | 329 / 110 | **1.73×** |
-
-Nine paired rounds on one macOS machine. Speedup = matched built-in median ÷ FiLens median; ratios describe **first opens**. First means the first opening of that file per process; system/persistent caches remain. Built-in Office converts to PDF; FiLens renders directly. [Ranges and method](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [MP4](docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](docs/assets/dsh-plugin/install-and-preview.gif).
-
-PDF uses a separate nine-round paired run after first-page pixel reuse: cached opens are **1.43×** faster than built in (**110 → 77 ms**, **30.0%** less time). The 689,455-byte sample still loads and validates on every open; closing releases the worker. [PDF samples, ranges and method](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
-
-The workloads below time complete parser calls on identical inputs, **excluding UI rendering**; these are separate from sidebar latency. Engines alternate over two warmups and nine measured rounds. Every cell value or complete entry text is verified. Small examples and low-gain cases are omitted from the featured tables.
-
-| Larger parsing workload | Baseline | Baseline / FiLens median (ms) | Speedup |
-| --- | --- | ---: | ---: |
-| XLSX · 2,000 × 64, 128,000 cells | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
-| XLSX · 8,000 × 64, 512,000 cells | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
-| ZIP · 10,000 entries, 18.34 MiB expanded | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
-| ZIP · 2,500 entries, 36.23 MiB expanded | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
-
-Library feature/fidelity scopes differ; these ratios are not an overall ranking across files. [Raw samples and reproduction](docs/featured-performance.md).
-
-**DSH 0.1.5:** all format controls sit beside the address bar: page navigation, rotation, worksheet tabs, archive search, audio/video playback, attachments and the 3D inspector. Manual Fit / Width / Height buttons are omitted. The matching driver loads on first use; modules and WASM are reused. Initial JS requests total **350.3 KiB**; TXT first-open runtime requests total **454.8 KiB**, excluding document bytes and DSH. [0.1.5 runtime measurements](docs/assets/dsh-plugin/format-loading-current.json). The installation recording uses public 0.1.3; the 3D/360° gallery records the same preview runtime shipped in 0.1.5. PDF reopens reuse validated first-page pixels, bounded to four pages / 16 MiB / 30 idle seconds; each open still loads and validates its document, and closing releases the worker. Password opens and printing bypass reuse. [PDF timings and limits](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
-
-Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB estimated model budget / 30-second idle lifetime. [Complete measurements, costs and limits](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
-
-![FiLens in DSH: orbit a space robot and planetary gearbox, look around a Milky Way panorama, and play NASA's 360-degree black-hole video](docs/assets/dsh-plugin/3d-and-panorama.webp)
-
-Drag to orbit **GLB / 3MF models**, zoom into details, look around **360° photos**, and change your view while **360° video plays**. The panorama samples use `.pano` / `.360v` filenames to select spherical viewing. [Full gallery MP4 and sample credits](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [GIF](docs/assets/dsh-plugin/3d-and-panorama.gif).
+![Install FiLens in DSH Desktop, preview Office files and present PPT slides fullscreen](docs/assets/dsh-plugin/install-and-preview.webp)
 
 ### Browser integration: single file or split modules
 
@@ -308,7 +275,7 @@ HEIF decoder source versions, rebuild steps, and Apple-edited 10-bit color regre
 <details>
 <summary>Show SOTA benchmark results</summary>
 
-Updated November 5, 2026. The parser shortlist retains larger inputs with at least **2×** measured speedups; smaller and lower-gain cases remain in the full reports. The DSH comparison also includes PDF.
+Updated November 5, 2026. **12 measured scenarios** cover DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload shows its latest recorded FiLens result against the named baseline; measurement dates and stages are stated. Tiny examples and marginal gains remain in the full reports.
 
 **Complete DSH sidebar previews**
 
@@ -330,6 +297,18 @@ Ratios in this table describe first opens. PDF cached opens improve **1.43×** (
 | ZIP · 2,500 entries, 36.23 MiB expanded | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
 
 Nine measured rounds after two warmups, alternating library order; all cell values or complete entry texts verified. These parser timings exclude rendering, imports, network and verification. The DSH rows include preview rendering. Results are limited to the named workloads and baselines; they do not establish a universal ranking or identical feature coverage. [Methods, versions, raw samples and reproduction](docs/featured-performance.md) · [Historical comparisons](docs/performance-comparison.md).
+
+**PPTX, RAW and STEP: latest recorded browser comparisons**
+
+| Workload | FiLens (ms) | Baseline (ms) | Speedup | Measured |
+| --- | ---: | --- | ---: | --- |
+| PPTX · 11.1 MB, 13 slides, complete parse | **28.5** | pptx-preview 1.0.7: 56.6 | **1.99×** | Oct 23–24 |
+| NEF · Nikon D3S, sensor → preview canvas | **152.7** | LibRaw-Wasm 1.6.0 half-size: 326.7 | **2.14×** | Oct 23–24 |
+| DNG · Pentax K-r, sensor → preview canvas | **167.7** | LibRaw-Wasm 1.6.0 fast half-size: 314.4 | **1.87×** | Oct 23–24 |
+| STEP · as1_pe_203 assembly, geometry import | **61.2** | occt-import-js 0.0.23: 195.0 | **3.19×** | Nov 1 |
+| STEP · tailturbine, geometry import | **50.6** | occt-import-js 0.0.23: 153.9 | **3.04×** | Nov 1 |
+
+All dates are in 2026. RAW inputs have no embedded JPEG; preview resolution/tone differs from LibRaw. STEP compares parsing/tessellation and validated geometry, with different triangulations; scene construction and drawing are excluded. PPTX measures complete parsing. These are the latest recorded runs for each workload, with inputs/modules ready before timing. [Browser methods, confidence intervals and raw evidence](docs/performance-comparison.md).
 
 </details>
 

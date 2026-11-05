@@ -23,7 +23,9 @@ export function mountViewer(host, createPreview, source, callbacks) {
     for (const page of wrapper.querySelectorAll('.docx')) width = Math.max(width, page.offsetWidth);
     if (!width) return;
     const style = getComputedStyle(documentView);
-    const available = documentView.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
+    // Base fitting follows the pane width; user zoom is applied by the shared
+    // viewer outside the document and must not be cancelled by another fit.
+    const available = host.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
     const scale = Math.min(1, Math.max(0.1, available / width));
     const previous = Number(wrapper.style.zoom) || 1;
     if (Math.abs(scale - previous) < 0.0001) return;
@@ -84,7 +86,7 @@ export function mountViewer(host, createPreview, source, callbacks) {
 
   applyAppearance(source.appearance);
   viewer = createPreview(host, {
-    src: source.bytes, name: source.name, locale: host.lang, toolbar: true, controlsTarget: controls,
+    src: source.bytes, name: source.name, locale: host.lang, toolbar: 'minimal', controlsTarget: controls,
     onStateChange: state => {
       const capabilities = state.capabilities ?? {};
       host.dataset.family = state.family;

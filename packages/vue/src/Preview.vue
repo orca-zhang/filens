@@ -143,14 +143,20 @@ const modelToolsRef = ref<HTMLElement | null>(null);
 const modelToggleRef = ref<HTMLButtonElement | null>(null);
 const isPreviewFullscreen = ref(false);
 const externalControlsTarget = computed(() => isPreviewFullscreen.value ? undefined : props.controlsTarget);
+const compactControls = computed(() => props.toolbar === 'minimal' && Boolean(props.controlsTarget));
+const driverControlsHost = ref<HTMLElement | null>(null);
+const surfaceScale = ref(props.initialScale);
 let restoreDriverControls: (() => void) | undefined;
 function syncFullscreenControls() {
   const element = document.fullscreenElement;
   isPreviewFullscreen.value = Boolean(element && shellRef.value?.contains(element));
 }
-watch([viewerHost, externalControlsTarget], ([source, target]) => {
+watch([viewerHost, externalControlsTarget, driverControlsHost, compactControls], ([source, externalTarget, compactTarget, compact]) => {
   restoreDriverControls?.();
-  restoreDriverControls = source && target ? createControlPortal(source, target) : undefined;
+  const target = compact ? compactTarget : externalTarget;
+  restoreDriverControls = source && target ? createControlPortal(source, target,
+    compact ? element => !element.closest('.pptxv-audio-player, .pptxv-has-video-controls') : undefined
+  ) : undefined;
 }, { flush: 'post' });
 const previewer = shallowRef<PreviewerInstance | null>(null);
 const previewState = ref<PreviewItemState>({
@@ -235,19 +241,23 @@ const mindmapState = computed(() => (previewState.value.family === 'mindmap' ? (
 const diagramState = computed(() => (previewState.value.family === 'diagram' ? (previewState.value as DiagramPreviewState) : null));
 const activeIndex = computed(() => pagedState.value?.pageIndex ?? workbookState.value?.activeSheetIndex ?? ebookState.value?.chapterIndex ?? diagramState.value?.pageIndex ?? 0);
 const activeCount = computed(() => pagedState.value?.pageCount ?? workbookState.value?.sheets.length ?? ebookState.value?.chapterCount ?? diagramState.value?.pageCount ?? 0);
-const scale = computed(() => pagedState.value?.scale ?? workbookState.value?.scale ?? imageState.value?.scale ?? cadState.value?.scale ?? model3dState.value?.scale ?? mindmapState.value?.scale ?? diagramState.value?.scale ?? props.initialScale);
+const usesSurfaceZoom = computed(() => compactControls.value && !previewState.value.capabilities.zoom);
+const scale = computed(() => usesSurfaceZoom.value ? surfaceScale.value : (
+  (previewState.value as PreviewItemState & { scale?: number }).scale ?? props.initialScale
+));
+const surfaceZoomStyle = computed(() => usesSurfaceZoom.value ? { '--pptxv-surface-scale': surfaceScale.value } : undefined);
 const scaleLabel = computed(() => `${Math.round(scale.value * 100)}%`);
 const canNavigate = computed(() => Boolean(previewState.value.capabilities.paged || previewState.value.capabilities.sheets || previewState.value.capabilities.chapters));
 const canGoPrev = computed(() => !isLoading.value && canNavigate.value && activeIndex.value > 0);
 const canGoNext = computed(
   () => !isLoading.value && canNavigate.value && activeIndex.value < activeCount.value - 1
 );
-const canZoomOut = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.zoom) && scale.value > props.minScale + 0.001);
-const canZoomIn = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.zoom) && scale.value < props.maxScale - 0.001);
+const canZoomOut = computed(() => !isLoading.value && (compactControls.value || Boolean(previewState.value.capabilities.zoom)) && scale.value > props.minScale + 0.001);
+const canZoomIn = computed(() => !isLoading.value && (compactControls.value || Boolean(previewState.value.capabilities.zoom)) && scale.value < props.maxScale - 0.001);
 const canRotate = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.rotate));
-const canFullscreen = computed(() => !isLoading.value && Boolean(previewState.value.capabilities.fullscreen));
+const canFullscreen = computed(() => !isLoading.value && (compactControls.value || Boolean(previewState.value.capabilities.fullscreen)));
 const hasViewerControls = computed(() => !previewState.value.loading && !previewState.value.error && (
-  canNavigate.value || canControlLayers.value || previewState.value.capabilities.zoom
+  compactControls.value || canNavigate.value || canControlLayers.value || previewState.value.capabilities.zoom
   || previewState.value.capabilities.fit || previewState.value.capabilities.rotate || previewState.value.capabilities.fullscreen
 ));
 const previewLayers = computed(() => cadState.value?.layers ?? []);
@@ -591,6 +601,7 @@ async function recreatePreviewer(): Promise<void> {
 }
 
 async function loadSource(): Promise<void> {
+  surfaceScale.value = props.initialScale;
   if (!previewer.value || props.src == null) {
     return;
   }
@@ -608,12 +619,17 @@ async function loadSource(): Promise<void> {
 }
 
 function zoomIn(): void {
-  previewer.value?.setScale(scale.value + 0.1);
-  syncState();
+  setScale(scale.value + 0.1);
 }
 
 function zoomOut(): void {
-  previewer.value?.setScale(scale.value - 0.1);
+  setScale(scale.value - 0.1);
+}
+
+function setScale(value: number): void {
+  const nextScale = Math.min(props.maxScale, Math.max(props.minScale, value));
+  if (usesSurfaceZoom.value) surfaceScale.value = nextScale;
+  else previewer.value?.setScale(nextScale);
   syncState();
 }
 
@@ -1178,15 +1194,12 @@ defineExpose({
     previewer.value?.fit(mode);
     syncState();
   },
-  setScale: (nextScale: number) => {
-    previewer.value?.setScale(nextScale);
-    syncState();
-  },
+  setScale,
   rotate: (degrees?: number) => {
     previewer.value?.rotate(degrees);
     syncState();
   },
-  getState: () => previewState.value
+  getState: () => usesSurfaceZoom.value ? { ...previewState.value, scale: surfaceScale.value } : previewState.value
 });
 
 onMounted(async () => {
@@ -1198,6 +1211,7 @@ onMounted(async () => {
 watch(
   () => props.src,
   async () => {
+    surfaceScale.value = props.initialScale;
     modelToolsExpanded.value = false;
     modelToolTab.value = 'view';
     collapsedModelNodes.value = new Set();
@@ -1259,6 +1273,7 @@ onUnmounted(() => {
   <div
     ref="shellRef"
     class="pptxv-shell pptxv-generic-shell"
+    :class="{ 'pptxv-compact-controls': compactControls }"
     :lang="locale.replace('_', '-')"
     tabindex="0"
     role="region"
@@ -1266,7 +1281,7 @@ onUnmounted(() => {
     @keydown="onShellKeydown"
   >
     <Teleport :to="externalControlsTarget || 'body'" :disabled="!externalControlsTarget">
-    <div v-if="toolbar && previewState.family !== 'model3d' && (!controlsTarget || (hasViewerControls && !['audio', 'video', 'panorama-video'].includes(previewState.family)))" class="pptxv-toolbar">
+    <div v-if="toolbar && (compactControls || previewState.family !== 'model3d') && (!controlsTarget || (hasViewerControls && (compactControls || !['audio', 'video', 'panorama-video'].includes(previewState.family))))" class="pptxv-toolbar">
       <div v-if="toolbar !== 'minimal'" class="pptxv-toolbar-group">
         <button v-if="!controlsTarget || canNavigate" type="button" class="pptxv-button" :disabled="!canGoPrev" @click="previousPage">{{ t('Prev') }}</button>
         <button v-if="!controlsTarget || canNavigate" type="button" class="pptxv-button" :disabled="!canGoNext" @click="nextPage">{{ t('Next') }}</button>
@@ -1292,7 +1307,7 @@ onUnmounted(() => {
         </details>
       </div>
       <div class="pptxv-toolbar-group">
-        <template v-if="!controlsTarget || previewState.capabilities.zoom">
+        <template v-if="compactControls || !controlsTarget || previewState.capabilities.zoom">
         <button type="button" class="pptxv-button" data-action="zoom-out" :disabled="!canZoomOut" :aria-label="t('Zoom out')" @click="zoomOut">-</button>
         <span class="pptxv-status pptxv-zoom-status">{{ scaleLabel }}</span>
         <button type="button" class="pptxv-button" data-action="zoom-in" :disabled="!canZoomIn" :aria-label="t('Zoom in')" @click="zoomIn">+</button>
@@ -1311,7 +1326,24 @@ onUnmounted(() => {
         </template>
         <button v-if="!controlsTarget || previewState.capabilities.rotate" type="button" class="pptxv-button" :disabled="!canRotate" @click="rotateClockwise">{{ t('Rotate') }}</button>
         </template>
-        <button v-if="!controlsTarget || previewState.capabilities.fullscreen" type="button" class="pptxv-button" data-action="fullscreen" :disabled="!canFullscreen" @click="toggleFullscreen">{{ t('Full') }}</button>
+        <button v-if="compactControls || !controlsTarget || previewState.capabilities.fullscreen" type="button" class="pptxv-button" data-action="fullscreen" :disabled="!canFullscreen" @click="toggleFullscreen">{{ t('Full') }}</button>
+        <details v-if="compactControls && canControlLayers" class="pptxv-layer-menu">
+          <summary class="pptxv-button pptxv-layer-summary">{{ t('Layers') }} {{ layerLabel }}</summary>
+          <div class="pptxv-layer-popover">
+            <div class="pptxv-layer-actions">
+              <button type="button" class="pptxv-layer-action" @click="showAllLayers">{{ t('All') }}</button>
+              <button type="button" class="pptxv-layer-action" @click="hideAllLayers">{{ t('None') }}</button>
+            </div>
+            <label v-for="layer in previewLayers" :key="layer.id" class="pptxv-layer-row">
+              <input type="checkbox" :checked="activeLayerIds.has(layer.id)" @change="toggleLayer(layer.id, $event)" />
+              <span class="pptxv-layer-name">{{ layer.name }}</span>
+            </label>
+          </div>
+        </details>
+        <details v-if="compactControls" class="pptxv-format-controls" @keydown.esc.stop="($event.currentTarget as HTMLDetailsElement).open = false">
+          <summary class="pptxv-button">{{ t('Tools') }}</summary>
+          <div ref="driverControlsHost" class="pptxv-format-controls-panel" />
+        </details>
       </div>
     </div>
     </Teleport>
@@ -1357,7 +1389,7 @@ onUnmounted(() => {
                 <option v-for="mode in modelDisplayModes" :key="mode" :value="mode">{{ displayModeLabel(mode) }}</option>
               </select>
             </label>
-            <div class="pptxv-model-view-actions">
+            <div v-if="!compactControls" class="pptxv-model-view-actions">
               <div class="pptxv-model-zoom">
                 <button type="button" class="pptxv-model-icon-button" :aria-label="t('Zoom out')" :disabled="!canZoomOut" @click="zoomOut">−</button>
                 <output class="pptxv-status pptxv-zoom-status">{{ scaleLabel }}</output>
@@ -1550,7 +1582,7 @@ onUnmounted(() => {
       </Teleport>
       <div class="pptxv-main">
         <div class="pptxv-main-stage">
-          <div ref="viewerHost" class="pptxv-main-view" />
+          <div ref="viewerHost" class="pptxv-main-view" :style="surfaceZoomStyle" />
           <Teleport :to="externalControlsTarget || 'body'" :disabled="!externalControlsTarget">
           <button
             ref="modelToggleRef"

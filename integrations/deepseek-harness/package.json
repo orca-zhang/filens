@@ -1,6 +1,6 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Local previews for 400+ file formats, including Office, PDF, iWork, CAD/3D, RAW and 360° media.",
   "type": "module",
   "license": "MIT",

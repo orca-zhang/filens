@@ -15,6 +15,7 @@ export interface BrowserPreviewOptions {
   contentType?: string;
   password?: string;
   fit?: 'contain' | 'width' | 'height' | 'none';
+  /** With controlsTarget, 'minimal' keeps zoom/fullscreen and compact tool menus. */
   toolbar?: boolean | 'minimal';
   /** Mount preview controls in an application-owned element. */
   controlsTarget?: HTMLElement;

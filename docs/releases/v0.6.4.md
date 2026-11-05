@@ -12,7 +12,7 @@
 | Browser runtime: all-in-one | [filens-preview-0.3.4-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-preview-0.3.4-all-in-one.zip) | 11.90 MiB |
 | iOS source SDK | [filens-ios-sdk-0.1.4.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-ios-sdk-0.1.4.zip) | 6.38 MiB |
 | Android source SDK | [filens-android-sdk-0.1.4.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-android-sdk-0.1.4.zip) | 6.39 MiB |
-| dsh-filens 0.1.5 | [dsh-filens-0.1.5.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/dsh-filens-0.1.5.tgz) | 6.53 MiB |
+| dsh-filens 0.1.6 | [dsh-filens-0.1.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/dsh-filens-0.1.6.tgz) | 6.53 MiB |
 | Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/SHA256SUMS) | SHA-256 |
 | Build manifest | [filens-release-v0.6.4.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-release-v0.6.4.json) | Versions, sizes and validation |
 
@@ -24,7 +24,15 @@ CLI installers and library modules are available from npm: [`filens-cli`](https:
 
 Compared with [v0.6.3](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.3), FiLens expands browser previews from **402 to 450 extensions** and CLI inputs from **334 to 349 formats**, reduces format-specific startup work, and improves repeated document previews and local search. Parsing and conversion remain in the shared frontend/WASM core.
 
-Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 0.1.4**, **DSH plugin 0.1.5**, and updated `@filens/*` modules. The CLI and browser counts describe different capabilities; inspect `filens capacity --full --json` for each CLI operation.
+Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 0.1.4**, **DSH plugin 0.1.6**, and updated `@filens/*` modules. The CLI and browser counts describe different capabilities; inspect `filens capacity --full --json` for each CLI operation.
+
+### DSH 0.1.6 update — November 5, 2026
+
+- Keep **zoom out / percentage / zoom in / fullscreen** beside the DSH address bar for every format. Remove page, rotation and manual fit buttons and warning-count badges; retain PPTX keyboard navigation.
+- Reuse native zoom and provide shared view zoom/fullscreen for text, Word, archives and media. Word auto-fit follows pane width independently of user zoom.
+- Keep CAD layers and the 3D inspector as compact entries. Group worksheet, archive and attachment controls under **Tools**, retaining their actual nodes and handlers. Keep audio/video playback and progress below the player, and size the zoom percentage to four characters. Controls move into fullscreen and return to the address bar on exit.
+- Validate 69 Vue tests, 18 DSH tests, 16 isolated format-loading paths, 12 complete browser previews and six actual Desktop formats. Browser fullscreen passes; native Desktop fullscreen is excluded.
+- Shorten the English/Chinese README DSH section and expand the featured comparisons to **12 measured scenarios** across DSH, XLSX, ZIP, PPTX, RAW and STEP, with measurement dates and stage boundaries. [Compact-toolbar checks](https://github.com/IceWhaleTech/filens/blob/main/docs/dsh-compact-controls-validation.json).
 
 ### DSH 0.1.5 update — November 5, 2026
 
@@ -35,7 +43,7 @@ Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 
 - Re-record the [3D / panorama GIF, WebP and MP4](https://github.com/IceWhaleTech/filens/blob/main/docs/assets/dsh-plugin/README.md#3d-and-360-gallery), including header model/view/section tools, panorama zoom and video seeking/playback. Update the FiLens skill, README SOTA shortlist and measured bundle/package sizes.
 - Validate **66 Vue tests**, **17 core attachment tests**, **18 DSH tests**, **16 isolated format-loading paths**, **12 complete browser previews** and **six actual Desktop formats**. Browser fullscreen passes; the Desktop run explicitly skips native fullscreen. [0.1.5 checks and exact package bytes](https://github.com/IceWhaleTech/filens/blob/main/docs/dsh-header-controls-validation.json).
 
-DSH 0.1.5 uses CLI **0.5.6** and embeds the shared-source preview runtime **0.3.4** with the header-control changes. The standalone browser/npm and SDK archives keep their existing payloads. The sidebar timing table below retains its measured **0.1.3** snapshot; the 0.1.5 interface update does not introduce a new latency claim.
+DSH 0.1.6 uses CLI **0.5.6** and embeds the shared-source preview runtime **0.3.4** with the header-control changes. The standalone browser/npm and SDK archives keep their existing payloads. The sidebar timing table below retains its measured **0.1.3** snapshot; the 0.1.6 interface update does not introduce a new latency claim.
 
 ### Formats and features
 
@@ -48,7 +56,7 @@ DSH 0.1.5 uses CLI **0.5.6** and embeds the shared-source preview runtime **0.3.
 - Archive browsing gains name filtering, name/size/date sorting, empty-state messages, arrow-key navigation, Enter/Space to open, and Escape to clear filtering. Returning from a preview restores the query, scroll position and keyboard focus.
 - Add the optional `@filens/converter-client/format-detector` export. Importing it does not fetch WASM; instance creation loads the selected SIMD/scalar artifact. SIMD download, compilation or initialization failure falls back to the scalar build.
 - Expand image, code/text, archive and system-package examples. Remote opening handles encoded URLs, signed query strings, explicit filenames for extensionless URLs, same-origin relative paths, and browser history.
-- DSH mounts previews directly in the sidebar DOM. Version 0.1.5 places the format controls beside the address bar and refreshes the 3D/panorama gallery; the installation demo and timed 0.1.3 snapshots retain their own provenance.
+- DSH mounts previews directly in the sidebar DOM. Version 0.1.6 uses a compact address-bar toolbar and dedicated tool menus; the 3D/panorama gallery records 0.1.5; the installation demo and timed 0.1.3 snapshots retain their own provenance.
 
 ## Performance improvements
 

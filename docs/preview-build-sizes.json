@@ -2,7 +2,7 @@
   "date": "2026-11-05",
   "version": "0.3.4",
   "unit": "bytes",
-  "scope": "Current source checkout runtime build (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
+  "scope": "Recorded runtime build snapshot at ac7632195709e40c32fa9ae3f7887dca99f0112c (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
   "builds": {
     "split": {
       "files": [
@@ -418,5 +418,6 @@
         "limit": 4000000
       }
     }
-  }
+  },
+  "sourceCommit": "ac7632195709e40c32fa9ae3f7887dca99f0112c"
 }

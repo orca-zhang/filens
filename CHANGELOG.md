@@ -1,5 +1,12 @@
 # Changelog
 
+## DSH 0.1.6
+
+- Keep zoom out, the zoom percentage, zoom in and fullscreen beside the DSH address bar for every preview type. Remove page, rotation and manual fit buttons and warning-count badges; retain PPTX keyboard navigation.
+- Reuse native zoom where supported and provide shared view zoom/fullscreen for text, Word, archives and media. Keep Word pane fitting independent of user zoom.
+- Keep CAD layers and the 3D inspector as compact entries; group worksheet, archive and attachment controls in a Tools menu. Keep audio/video playback, timeline, volume and speed below the player; use a compact 4-character zoom percentage. Preserve driver handlers, independent tabs and fullscreen restoration.
+- Shorten the English/Chinese README DSH section and consolidate benchmark tables at the bottom. Expand the featured comparisons to 12 measured scenarios across DSH, XLSX, ZIP, PPTX, RAW and STEP, with dates and stage boundaries.
+
 ## DSH 0.1.5
 
 - Rename the preview entry to **FiLens Document Preview** / **FiLens 文档预览**. Keep its description focused on local previews for 400+ formats, including Office, PDF, iWork, CAD/3D, RAW and 360° media. The separate FiLens Tools entry keeps its own tool description. Includes the header controls and fixes from 0.1.4.
@@ -28,7 +35,7 @@
 
 ## 0.6.4
 
-CLI 0.5.6 · browser preview 0.3.4 · mobile source SDKs 0.1.4 · DSH adapter 0.1.5 (updated in this release).
+CLI 0.5.6 · browser preview 0.3.4 · mobile source SDKs 0.1.4 · DSH adapter 0.1.6 (updated in this release).
 
 - Add `filens inspect FILE --json`: bounded content-based format/MIME detection in the shared WASM core, evidence categories, extension comparison and explicit unknown/ambiguous results. Inspect reads at most 256 KiB without copying the entire source into the workspace; refresh both terminal GIFs with real inspection output.
 - Expand CLI inputs from 334 to 349 formats: add TGA, DDS, DIB, CUR, PCX, JPEG XL, QOI, Farbfeld, PSD, PSB, ICO, ICNS, AI, EPS and PS to reading/OCR/search through the shared WASM decoders. Ship the expanded CLI as 0.5.6 and update the DSH dependency.

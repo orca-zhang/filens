@@ -1,5 +1,16 @@
 # DSH integration validation
 
+## 0.1.6 compact address-bar controls — 2026-11-05
+
+Every format keeps **zoom out / percentage / zoom in / fullscreen** in the
+DSH address-bar action slot. Page, rotation and fit buttons are omitted; PPTX
+keyboard navigation remains. Driver-native zoom is reused; other documents
+use shared view zoom without cancelling Word auto-fit. CAD layers and the 3D
+inspector keep compact entries, while worksheet/archive/attachment controls
+are grouped under Tools. Audio/video playback and progress stay below the
+player. The percentage uses a compact four-character width. Controls follow fullscreen and return to
+the address bar on exit. [Checks and exact package bytes](../../docs/dsh-compact-controls-validation.json).
+
 ## 0.1.5 address-bar controls and preview description — 2026-11-05
 
 Plugin 0.1.5 (CLI 0.5.6 / shared-source preview 0.3.4) places the shared

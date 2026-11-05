@@ -3,7 +3,7 @@
  * which retires the corresponding external controls on the same microtask.
  * Vue-owned controls use Teleport instead.
  */
-export function createControlPortal(source: HTMLElement, target: HTMLElement) {
+export function createControlPortal(source: HTMLElement, target: HTMLElement, shouldMove: (element: HTMLElement) => boolean = () => true) {
   const entries = new Map<HTMLElement, { anchor: Comment; frame: HTMLElement }>();
   function sync() {
     for (const [element, { anchor, frame }] of entries) {
@@ -12,6 +12,7 @@ export function createControlPortal(source: HTMLElement, target: HTMLElement) {
       }
     }
     for (const element of source.querySelectorAll<HTMLElement>('[data-preview-controls]')) {
+      if (!shouldMove(element)) continue;
       if (element.parentElement?.closest('[data-preview-controls]')) continue;
       const anchor = source.ownerDocument.createComment('preview controls');
       const frame = source.ownerDocument.createElement('span');

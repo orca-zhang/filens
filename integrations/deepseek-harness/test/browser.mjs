@@ -146,13 +146,22 @@ try {
       await isolated.evaluate(name => window.openFile(name), name);
       await isolated.waitForFunction(() => ['ready', 'error'].includes(document.querySelector('.filens-dsh')?.dataset.phase), null, { timeout: 65000 });
       assert.equal(await isolated.locator('.filens-dsh').getAttribute('data-phase'), 'ready', `${name}: ${await isolated.locator('[role=alert]').allTextContents()}`);
-      assert.equal(await isolated.locator('.filens-dsh-view [data-preview-controls], .filens-dsh-view .pptxv-toolbar, .filens-dsh-view .pptxv-model-tools-toggle').count(), 0, name + ': controls must be beside the address bar');
+      assert.equal(await isolated.locator('.filens-dsh-view .pptxv-toolbar, .filens-dsh-view .pptxv-model-tools-toggle').count(), 0, name + ': common controls must be beside the address bar');
+      const percent = isolated.locator('.filens-dsh-actions .pptxv-toolbar-group > .pptxv-zoom-status');
+      assert.ok((await percent.boundingBox()).width < 44, 'Zoom percentage stays compact');
+      assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-pill').count(), 0, 'Warning-count badges are omitted');
+      const formatTools = isolated.locator('.pptxv-format-controls > summary');
+      if (await formatTools.isVisible()) await formatTools.click();
       if (['xlsx-driver', 'iwork-driver'].includes(expected) && name.endsWith('.xlsx')) assert.ok(await isolated.locator('.filens-dsh-actions .xlsxv-sheet-tab').count() > 1);
       if (expected === 'archive-driver') assert.equal(await isolated.locator('.filens-dsh-actions .archivev-toolbar').count(), 1);
-      if (name === 'sample-video.mp4') assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-video-controls').count(), 1);
+      if (name === 'sample-video.mp4') {
+        assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-video-controls').count(), 0);
+        assert.equal(await isolated.locator('.filens-dsh-view .pptxv-video-controls').count(), 1);
+      }
       if (name === 'sample-audio.wav') {
-        assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-audio-footer audio').count(), 1);
-        const rate = isolated.locator('.filens-dsh-actions .pptxv-audio-speed');
+        assert.equal(await isolated.locator('.filens-dsh-actions .pptxv-audio-footer audio').count(), 0);
+        assert.equal(await isolated.locator('.filens-dsh-view .pptxv-audio-footer audio').count(), 1);
+        const rate = isolated.locator('.filens-dsh-view .pptxv-audio-speed');
         await rate.selectOption('1.5');
         assert.equal(await isolated.locator('audio').evaluate(media => media.playbackRate), 1.5);
       }
@@ -175,6 +184,16 @@ try {
       if (expected !== 'model3d-driver') assert.ok(!files.some(file => /\/model-(?:gltf|fbx|vrml|3ds|obj|mtl|usdz|ldraw)-/.test(file)), `${name} loaded a 3D model loader`);
       if (expected !== 'pdf-driver') assert.ok(!files.some(file => /\/pdf-|pdf\.worker/.test(file)), `${name} loaded PDF.js`);
       assert.deepEqual(scriptErrors, []);
+      const common = isolated.locator('.filens-dsh-actions .pptxv-toolbar');
+      assert.equal(await common.locator('.pptxv-toolbar-group > button').count(), 3, `${name}: only zoom out/in and fullscreen are primary actions`);
+      assert.equal(await common.getByRole('button', { name: /^(Prev|Next)$/ }).count(), 0, `${name}: no page buttons`);
+      const scale = common.locator('.pptxv-toolbar-group > .pptxv-zoom-status');
+      const initialZoom = await scale.innerText();
+      const videoWidth = name === 'sample-video.mp4' ? (await isolated.locator('video').boundingBox()).width : undefined;
+      await common.locator('[data-action="zoom-in"]').click();
+      await scale.filter({ hasText: initialZoom }).waitFor({ state: 'hidden' });
+      if (videoWidth) assert.ok((await isolated.locator('video').boundingBox()).width > videoWidth * 1.05, 'Video zoom visibly enlarges the video');
+      await common.locator('[data-action="zoom-out"]').click();
       const runtimeFiles = files.filter(file => /\.(?:js|mjs|wasm|css)$/.test(file));
       const rawBytes = (await Promise.all(runtimeFiles.map(file => readFile(path.join(root, 'lib/runtime', file))))).reduce((sum, bytes) => sum + bytes.length, 0);
       const before = requested.length;
@@ -250,6 +269,7 @@ try {
     await page.evaluate(() => window.openFile('a.numbers'));
     await page.waitForFunction(() => document.querySelector('.filens-dsh')?.dataset.phase === 'ready');
     assert.equal(await page.locator('.filens-dsh-actions .xlsxv-sheet-tab').count(), 6);
+    await page.locator('.pptxv-format-controls > summary').click();
     await page.locator('.xlsxv-sheet-tab').nth(1).click();
     await page.waitForFunction(() => !document.querySelector('.iworkv-root')?.classList.contains('is-loading') && document.querySelectorAll('.xlsxv-grid tbody tr').length > 0);
     numbersSheets.push(await page.locator('.xlsxv-grid').innerText());
@@ -297,11 +317,8 @@ try {
   const position = previewFrame().locator('.filens-dsh-view');
   const toolbar = page.locator('.filens-dsh-actions');
   assert.equal(await page.locator('.filens-dsh-view .pptxv-toolbar').count(), 0, 'The inner viewer must not duplicate the DSH header controls');
-  assert.ok(await toolbar.getByRole('button').count() >= 5, 'Page, zoom and fullscreen controls belong in the header');
-  await toolbar.getByRole('button', { name: 'Next', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('.filens-dsh-view').dataset.page === '1');
-  await toolbar.getByRole('button', { name: 'Prev', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('.filens-dsh-view').dataset.page === '0');
+  assert.equal(await toolbar.locator('.pptxv-toolbar-group > button').count(), 3, 'Zoom out/in and fullscreen are the only primary controls');
+  assert.equal(await toolbar.getByRole('button', { name: /^(Next|Prev)$/ }).count(), 0, 'Page controls are omitted');
   assert.equal(await toolbar.locator('[data-action^=fit-]:visible').count(), 0, 'DSH omits manual fit controls');
   const zoom = toolbar.locator('.pptxv-zoom-status');
   const beforeZoom = await zoom.innerText();
@@ -315,10 +332,11 @@ try {
   await previewFrame().waitForFunction(first => document.querySelector('.filens-dsh-view').dataset.page !== first, firstPage);
   await shell.press('ArrowLeft');
   await previewFrame().waitForFunction(first => document.querySelector('.filens-dsh-view').dataset.page === first, firstPage);
-  interactions.push('header contains working page navigation, zoom and fullscreen, without manual fit buttons; keyboard navigation works');
+  interactions.push('all 16 format paths retain working zoom and fullscreen; PPTX omits page/fit/rotation controls and keeps keyboard slide navigation');
   await shell.press('f');
   await previewFrame().waitForFunction(() => document.fullscreenElement?.querySelector('.pptxv-toolbar'), null, { timeout: 5000 });
   assert.equal(await page.locator('[data-action^=fit-]:visible').count(), 0, 'Fit controls stay hidden in DSH fullscreen');
+  assert.equal(await page.locator('.pptxv-pill').count(), 0, 'Warning-count badges remain omitted in fullscreen');
   await previewFrame().evaluate(() => document.exitFullscreen());
   await page.locator('.filens-dsh-actions .pptxv-toolbar').waitFor();
   interactions.push('document fullscreen opens from the keyboard, contains controls and restores them to the header on exit');
@@ -345,6 +363,7 @@ try {
   const canvas = previewFrame().locator('canvas').first();
   // Read a rendered screenshot, rather than the WebGL buffer (which may be
   // cleared after presentation). The STEP fixture should leave clear margins.
+  const modelScreenshot = () => canvas.screenshot({ style: '.harness-actions { visibility: hidden; }' });
   const assertModelFramed = async () => {
     const pixels = await previewFrame().evaluate(async data => {
       const bitmap = await createImageBitmap(await (await fetch(data)).blob());
@@ -355,14 +374,14 @@ try {
       const at = (x, y) => [...ctx.getImageData(x, y, 1, 1).data];
       const w = surface.width, h = surface.height;
       return { background: at(2, 2), center: at(w / 2, h / 2), edges: [at(2, h / 2), at(w - 3, h / 2), at(w / 2, 2), at(w / 2, h - 3)] };
-    }, `data:image/png;base64,${(await canvas.screenshot()).toString('base64')}`);
+    }, `data:image/png;base64,${(await modelScreenshot()).toString('base64')}`);
     for (const edge of pixels.edges) assert.deepEqual(edge, pixels.background, 'Model must leave visible margins');
     assert.notDeepEqual(pixels.center, pixels.background, 'Model must remain visible in the center');
   };
   const modelBounds = await canvas.boundingBox();
   assert.equal(Math.round(modelBounds.height), 540, '3D canvas must fill the pane');
   await assertModelFramed();
-  const beforeOrbit = await canvas.screenshot();
+  const beforeOrbit = await modelScreenshot();
   const modelDifference = async screenshot => previewFrame().evaluate(async images => {
     const decoded = await Promise.all(images.map(async data => {
       const bitmap = await createImageBitmap(await (await fetch(data)).blob());
@@ -388,11 +407,11 @@ try {
   await page.mouse.move(x + 60, y + 20, { steps: 8 });
   await page.mouse.up();
   await page.mouse.wheel(0, -100);
-  assert.ok((await modelDifference(await canvas.screenshot())).changed > 0.01, 'Direct drag/zoom must visibly change the rendered model');
+  assert.ok((await modelDifference(await modelScreenshot())).changed > 0.01, 'Direct drag/zoom must visibly change the rendered model');
   await page.screenshot({ path: path.join(artifacts, 'model-narrow-dark.png') });
   interactions.push('3D canvas fills the pane without a toolbar and supports direct orbit/zoom');
   await canvas.dblclick();
-  const resetModel = await canvas.screenshot();
+  const resetModel = await modelScreenshot();
   await writeFile(path.join(artifacts, 'model-before-orbit.png'), beforeOrbit);
   await writeFile(path.join(artifacts, 'model-after-reset.png'), resetModel);
   const difference = await modelDifference(resetModel);
@@ -407,13 +426,14 @@ try {
   assert.deepEqual(await canvas.boundingBox(), modelBounds, 'Opening model tools must not shrink the canvas');
   const inspectorBounds = await modelTools.boundingBox();
   assert.ok(inspectorBounds.x >= 0 && inspectorBounds.x + inspectorBounds.width <= 420, 'Inspector must fit the narrow pane');
-  await modelTools.getByRole('button', { name: '放大', exact: true }).click();
-  assert.equal(await modelTools.locator('.pptxv-zoom-status').innerText(), '110%');
+  await toolbar.getByRole('button', { name: '放大', exact: true }).click();
+  assert.equal(await toolbar.locator('.pptxv-zoom-status').innerText(), '110%');
   await modelTools.getByRole('button', { name: '重置视图', exact: true }).click();
-  assert.equal(await modelTools.locator('.pptxv-zoom-status').innerText(), '100%');
-  await modelTools.getByRole('button', { name: '全屏', exact: true }).click();
+  assert.equal(await toolbar.locator('.pptxv-zoom-status').innerText(), '100%');
+  await toolbar.getByRole('button', { name: '全屏', exact: true }).click();
   await previewFrame().waitForFunction(() => Boolean(document.fullscreenElement));
   await previewFrame().evaluate(() => document.exitFullscreen());
+  await page.locator('.filens-dsh-actions .pptxv-toolbar').waitFor();
   await modelTools.getByRole('tab', { name: '视图', exact: true }).focus();
   await page.keyboard.press('ArrowRight');
   assert.equal(await modelTools.getByRole('tab', { name: '结构', exact: true }).getAttribute('aria-selected'), 'true');
@@ -448,6 +468,14 @@ try {
   await previewFrame().waitForFunction(() => document.querySelector('.docxv-document .docx')?.getBoundingClientRect().width <= innerWidth - 30);
   assert.equal(await previewFrame().locator('.filens-dsh-view .pptxv-toolbar').isVisible(), false, 'Flow documents must not show controls they do not support');
   await page.screenshot({ path: path.join(artifacts, 'word-narrow-dark.png') });
+  const documentWidth = await page.locator('.docxv-document .docx').first().evaluate(node => node.getBoundingClientRect().width);
+  await toolbar.locator('[data-action="zoom-in"]').click();
+  await page.waitForFunction(width => document.querySelector('.docxv-document .docx').getBoundingClientRect().width > width * 1.05, documentWidth);
+  await toolbar.locator('[data-action="zoom-out"]').click();
+  await toolbar.locator('[data-action="fullscreen"]').click();
+  await page.waitForFunction(() => Boolean(document.fullscreenElement));
+  await page.evaluate(() => document.exitFullscreen());
+  await page.locator('.filens-dsh-actions .pptxv-toolbar').waitFor();
   const readingPosition = await previewFrame().evaluate(() => {
     const view = document.querySelector('.docxv-preview');
     const zoom = Number(view.querySelector('.docx-wrapper').style.zoom);
@@ -464,7 +492,7 @@ try {
     return view.scrollTop / Number(view.querySelector('.docx-wrapper').style.zoom);
   });
   assert.ok(readingPosition > 0 && Math.abs(restoredPosition - readingPosition) < 5, `Reading position moved: ${readingPosition} → ${restoredPosition}`);
-  interactions.push('Word pages fit narrow/resized panes and omit unavailable controls');
+  interactions.push('Word pages fit narrow/resized panes, visibly zoom and support fullscreen through the common controls');
   interactions.push('resizing the Word pane preserves the reading position');
 
   // A completion from the prior file must not clear the current file's state.

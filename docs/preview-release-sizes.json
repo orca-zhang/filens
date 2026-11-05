@@ -6,7 +6,7 @@
     "preview": "0.3.4",
     "mobileSdk": "0.1.4",
     "cli": "0.5.6",
-    "dsh": "0.1.5"
+    "dsh": "0.1.6"
   },
   "scope": "Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.",
   "assets": [
@@ -111,13 +111,13 @@
       "binaryBytes": 1000448
     },
     {
-      "file": "dsh-filens-0.1.5.tgz",
+      "file": "dsh-filens-0.1.6.tgz",
       "kind": "npm-package",
-      "bytes": 6849481,
-      "unpackedBytes": 20532472,
-      "sha256": "5202a061c340e838699a97ce934b7189a41931d9edfffc1d6ca2025a8838fd42",
+      "bytes": 6849586,
+      "unpackedBytes": 20536588,
+      "sha256": "58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
       "name": "dsh-filens",
-      "version": "0.1.5"
+      "version": "0.1.6"
     }
   ],
   "npmDistribution": {

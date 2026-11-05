@@ -611,6 +611,32 @@
   overflow: auto;
 }
 
+/* The host's compact toolbar keeps format-specific controls in one disclosure. */
+.pptxv-compact-controls .pptxv-main-view {
+  zoom: var(--pptxv-surface-scale, 1);
+  min-height: 0;
+}
+.pptxv-compact-controls .pptxv-zoom-status { flex: 0 0 4ch; width: 4ch; min-width: 0; max-width: 4ch; padding: 0; }
+.pptxv-compact-controls .pptxv-native-media--video { transform: scale(var(--pptxv-surface-scale, 1)); transform-origin: center; }
+.pptxv-format-controls { position: relative; }
+.pptxv-format-controls:not(:has(> .pptxv-format-controls-panel > span:not([hidden]) > [data-preview-controls]:not([hidden]))) { display: none; }
+.pptxv-format-controls-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(440px, 70vh);
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--pptxv-border);
+  border-radius: 6px;
+  color: var(--pptxv-text);
+  background: var(--pptxv-panel);
+}
+.pptxv-format-controls-panel [data-preview-controls] { position: static; width: auto; max-width: 100%; flex-wrap: wrap; }
+.pptxv-format-controls-panel [hidden] { display: none; }
+
 .pptxv-button {
   flex: 0 0 auto;
   min-height: 28px;

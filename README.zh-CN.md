@@ -19,7 +19,7 @@
 | 大概多大 | **Lite 基础组件 8.00–9.27 MiB · Full 基础组件 31.43–37.06 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.92–2.20 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、缓存和预览资源。Release 离线包另含预览运行时，完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.4 源码构建的主运行时按分包合计 **4.73 MB Brotli**，单 JS 版预压缩产物为 **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.92–2.20 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、缓存和预览资源。Release 离线包另含预览运行时，完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。已记录的预览 0.3.4 构建快照，其主运行时按分包合计 **4.73 MB Brotli**，单 JS 版预压缩产物为 **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
@@ -89,46 +89,13 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ### DeepSeek Harness 插件
 
-[CLI 工具与原生侧栏预览](integrations/deepseek-harness/README.zh-CN.md)，支持 **450 种格式本地预览**（按扩展名，含本地 WASM 转换），统一安装、独立启停。支持 DSH 桌面版 0.2.1-rc.5 和 Web 0.2.2-alpha.3。在桌面版「插件 → 添加插件」中填写 `dsh-filens`，点击「安装 → 立即启用」；也可填写 `dsh-filens@0.1.5` 固定版本。[安装与配置](integrations/deepseek-harness/README.zh-CN.md#安装与构建)。
+在「插件 → 添加插件」中填写 [`dsh-filens@0.1.6`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
 
 <!-- dsh-package-metrics:start -->
-**已发布 dsh-filens 0.1.5：下载 6.53 MiB / 解包 19.58 MiB**，已含预览 0.3.4。CLI 0.5.6 / OCR、DSH 共享依赖和包管理器缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
+**DSH 0.1.6：下载 6.53 MiB / 解包 19.59 MiB**；CLI/OCR 依赖与 DSH 缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
 <!-- dsh-package-metrics:end -->
 
-[0.1.5 控件与包验证](docs/dsh-header-controls-validation.json)。性能表保留实际测量的 0.1.3 快照。
-
-![在 DSH 桌面界面安装 dsh-filens，预览 Word、切换 Excel 工作表，并用 Page Down 全屏演示三页 PPT](docs/assets/dsh-plugin/install-and-preview.webp)
-
-Office 文件直接在侧栏预览，Excel 可切换工作表，PPT 可全屏演示：全屏后点击画面，用 **Page Down / Page Up** 翻页，**Esc** 返回 DSH。DOCX/PPTX 在本地直接渲染，省去 Office 转 PDF 的步骤。
-
-| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.3 | DSH 内置 | 首开提速 |
-| --- | ---: | ---: | ---: |
-| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
-| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
-| PDF | **190 / 77** | 329 / 110 | **1.73×** |
-
-同机 9 轮配对实测；提速倍数 = 同轮内置中位数 ÷ FiLens 中位数，表中倍数仅指**首开**。首开为进程内该文件首次打开，保留系统与持久缓存；内置 Office 转 PDF，FiLens 直接渲染。[范围与方法](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [MP4](docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](docs/assets/dsh-plugin/install-and-preview.gif)。
-
-PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内置提速 **1.43×**（**110 → 77 ms**，耗时减少 **30.0%**）。样例为 689,455 字节，每次仍加载并校验文档，关闭时释放 worker。[PDF 全部样本、波动与方法](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
-
-以下是同一输入上的完整解析调用，**不含界面渲染**，与上表的侧栏耗时分别计量。每组交替运行、预热 2 轮、测量 9 轮；逐格核对单元格值或逐条目核对完整文本，未将小样例和低收益结果列入精选表。
-
-| 大数据量解析场景 | 对照实现 | 对照 / FiLens 中位数（ms） | 提速 |
-| --- | --- | ---: | ---: |
-| XLSX · 2,000 × 64，128,000 格 | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
-| XLSX · 8,000 × 64，512,000 格 | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
-| ZIP · 10,000 条目，展开 18.34 MiB | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
-| ZIP · 2,500 条目，展开 36.23 MiB | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
-
-解析范围与各库完整能力不同，速度比不代表保真度或所有文件上的综合排名。[原始样本与复现](docs/featured-performance.md)。
-
-**DSH 0.1.5：**所有格式的控件集中在地址栏旁，包括翻页、旋转、工作表切换、压缩包搜索、音视频播放、附件与 3D 模型工具，不显示“适合窗口 / 宽度 / 高度”按钮。各格式驱动首次使用时加载，模块与 WASM 随后复用。入口 JS 请求合计 **350.3 KiB**，TXT 首开运行时请求合计 **454.8 KiB**，不含文档与 DSH 本身。[0.1.5 运行时实测](docs/assets/dsh-plugin/format-loading-current.json)。安装演示使用公开版 0.1.3，3D / 全景画廊使用与 0.1.5 相同的预览运行时。PDF 重复打开复用已校验的首张像素，最多 4 张 / 16 MiB，30 秒空闲后过期；每次仍加载并校验文档，关闭时释放 Worker，密码与打印路径不复用。[PDF 计时与边界](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
-
-0.1.3 同样支持 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。[完整测量、成本和边界](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
-
-![在 DSH 中旋转太空机器人和行星齿轮箱，环视银河全景照片，并播放 NASA 黑洞 360° 视频](docs/assets/dsh-plugin/3d-and-panorama.webp)
-
-拖拽旋转 **GLB / 3MF 模型**、缩放查看细节，环视 **360° 全景照片**，也可边播放 **全景视频** 边改变视角。全景样例用 `.pano` / `.360v` 文件名选择球面预览。[完整画廊 MP4 与素材来源](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [GIF](docs/assets/dsh-plugin/3d-and-panorama.gif)。
+![在 DSH 桌面安装 FiLens、预览 Office 文件并全屏演示 PPT](docs/assets/dsh-plugin/install-and-preview.webp)
 
 ### 浏览器集成：单文件与按需分包
 
@@ -302,7 +269,7 @@ ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`
 <details>
 <summary>展开查看 SOTA 实测对比</summary>
 
-更新于 2026-11-05。解析精选保留大数据量且实测提升至少 **2×** 的场景；小样例和低收益结果保留在完整报告中。DSH 对比另保留 PDF。
+更新于 2026 年 11 月 5 日。**12 个实测场景**覆盖 DSH、XLSX、ZIP、PPTX、RAW 与 STEP；每个场景只列最近一次记录的 FiLens 结果与对应基线，并标明测量日期和阶段。小样例与边际提升保留在完整报告。
 
 **DSH 完整侧栏预览**
 
@@ -324,6 +291,18 @@ ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`
 | ZIP · 2,500 条目，展开 36.23 MiB | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
 
 预热 2 轮、测量 9 轮，交替执行顺序；逐格核对全部单元格值或逐条目核对完整文本。解析计时不含渲染、模块加载、网络与结果校验；DSH 行包含预览渲染。结论限于所列任务和对照，不代表所有格式的综合排名或相同能力范围。[方法、版本、原始样本与复现](docs/featured-performance.md) · [历史对比](docs/performance-comparison.zh-CN.md)。
+
+**PPTX、RAW 与 STEP：各场景最近一次浏览器对照**
+
+| 场景 | FiLens（ms） | 对照（ms） | 提速 | 测量日期 |
+| --- | ---: | --- | ---: | --- |
+| PPTX · 11.1 MB、13 页，完整解析 | **28.5** | pptx-preview 1.0.7：56.6 | **1.99×** | 10 月 23–24 日 |
+| NEF · Nikon D3S，传感器数据 → 预览画布 | **152.7** | LibRaw-Wasm 1.6.0 半尺寸：326.7 | **2.14×** | 10 月 23–24 日 |
+| DNG · Pentax K-r，传感器数据 → 预览画布 | **167.7** | LibRaw-Wasm 1.6.0 快速半尺寸：314.4 | **1.87×** | 10 月 23–24 日 |
+| STEP · as1_pe_203 装配体，几何导入 | **61.2** | occt-import-js 0.0.23：195.0 | **3.19×** | 11 月 1 日 |
+| STEP · tailturbine，几何导入 | **50.6** | occt-import-js 0.0.23：153.9 | **3.04×** | 11 月 1 日 |
+
+日期均为 2026 年。RAW 样本已去掉嵌入 JPEG，输出分辨率与色调和 LibRaw 有差异；STEP 比较解析、细分与校验后的几何，三角剖分不同，不含场景构建和绘制；PPTX 计完整解析。各行采用该场景最近一次记录，输入、模块与 WASM 已就绪。[浏览器方法、置信区间与原始证据](docs/performance-comparison.zh-CN.md)。
 
 </details>
 
