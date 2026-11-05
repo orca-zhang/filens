@@ -25,8 +25,11 @@ Open Office files in DSH's file sidebar to use FiLens. Switch Excel worksheets i
 | --- | ---: | ---: | ---: |
 | PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
 | DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
+| PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
 Nine paired rounds on one macOS machine. Speedup = matched built-in median ÷ FiLens median; ratios describe **first opens**. First means the first opening of that file per process; system/persistent caches remain. Built-in Office converts to PDF; FiLens renders directly. [Ranges and method](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [MP4](../../docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](../../docs/assets/dsh-plugin/install-and-preview.gif).
+
+PDF uses a separate nine-round paired run after first-page pixel reuse: cached opens are **1.43×** faster than built in (**110 → 77 ms**, **30.0%** less time). The 689,455-byte sample still loads and validates on every open; closing releases the worker. [PDF samples, ranges and method](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
 The workloads below time complete parser calls on identical inputs, **excluding UI rendering**; these are separate from sidebar latency. Engines alternate over two warmups and nine measured rounds. Every cell value or complete entry text is verified. Small examples and low-gain cases are omitted from the featured tables.
 

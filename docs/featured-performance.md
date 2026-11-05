@@ -8,10 +8,13 @@ Measured on 2026-11-05. These tables show only the latest FiLens implementation 
 | --- | ---: | ---: | ---: |
 | PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
 | DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
+| PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
 These retained Office measurements use nine paired rounds per format on Apple M4 Pro, macOS arm64 and DSH Desktop 0.2.1-rc.5. PPTX is 659,484 bytes; DOCX is 601,507 bytes. First is first per file/process; application startup is excluded and OS/persistent caches are retained. DOCX follows PPTX and may reuse initialized host code. The built-in path converts Office to PDF; FiLens renders directly. Ratios compare matched medians, not added percentage improvements. [All Office samples and scope](assets/dsh-plugin/performance-retest.zh-CN.md).
 
-PDF, workbook/iWork/STEP reopen behavior and all lower-gain/control cases remain in the [PDF report](assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md) and [model report](assets/dsh-plugin/model-reopen-optimization.zh-CN.md). They are not promoted as headline comparisons.
+PDF uses a separate nine-round paired run after first-page pixel reuse, on the same machine and DSH version with a 689,455-byte sample. Cached opens are **1.43×** faster than built in (**110 → 77 ms**, **30.0%** less time); first opens are **1.73×** faster. Each renderer starts a fresh process per round and opens/closes the file four times: first medians use nine opens and cached medians pool the next 27. Timing includes document reading, validation and rendering to ready plus two animation frames; application startup is excluded and OS/persistent caches remain. Each open still validates the PDF and closing releases its worker. [PDF samples, ranges and method](assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+
+Workbook/iWork/STEP reopen behavior and lower-gain/control cases remain in the [model report](assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
 
 ## Complete parsing calls on larger inputs
 

@@ -12,41 +12,13 @@
 | Browser runtime: all-in-one | [filens-preview-0.3.4-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-preview-0.3.4-all-in-one.zip) | 11.90 MiB |
 | iOS source SDK | [filens-ios-sdk-0.1.4.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-ios-sdk-0.1.4.zip) | 6.38 MiB |
 | Android source SDK | [filens-android-sdk-0.1.4.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-android-sdk-0.1.4.zip) | 6.39 MiB |
-| filens-cli-darwin-arm64 0.5.6 | [filens-cli-darwin-arm64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-cli-darwin-arm64-0.5.6.tgz) | 7.21 MiB |
-| filens-ocr-darwin-arm64 0.5.6 | [filens-ocr-darwin-arm64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-ocr-darwin-arm64-0.5.6.tgz) | 14.20 MiB |
-| filens-cli-linux-x64 0.5.6 | [filens-cli-linux-x64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-cli-linux-x64-0.5.6.tgz) | 7.01 MiB |
-| filens-ocr-linux-x64 0.5.6 | [filens-ocr-linux-x64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-ocr-linux-x64-0.5.6.tgz) | 15.98 MiB |
-| filens-cli-linux-arm64 0.5.6 | [filens-cli-linux-arm64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-cli-linux-arm64-0.5.6.tgz) | 6.90 MiB |
-| filens-ocr-linux-arm64 0.5.6 | [filens-ocr-linux-arm64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-ocr-linux-arm64-0.5.6.tgz) | 13.78 MiB |
-| @orca.zhang/filens-cli-win32-x64 0.5.6 | [orca.zhang-filens-cli-win32-x64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/orca.zhang-filens-cli-win32-x64-0.5.6.tgz) | 6.92 MiB |
-| @orca.zhang/filens-ocr-win32-x64 0.5.6 | [orca.zhang-filens-ocr-win32-x64-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/orca.zhang-filens-ocr-win32-x64-0.5.6.tgz) | 16.23 MiB |
-| filens-cli 0.5.6 | [filens-cli-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-cli-0.5.6.tgz) | 0.02 MiB |
-| filens-cli-lite 0.5.6 | [filens-cli-lite-0.5.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-cli-lite-0.5.6.tgz) | 0.02 MiB |
-| filens-preview 0.3.4 | [filens-preview-0.3.4.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-preview-0.3.4.tgz) | 18.26 MiB |
-| @filens/archive 0.1.1 | [filens-archive-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-archive-0.1.1.tgz) | 0.47 MiB |
-| @filens/cad 0.1.1 | [filens-cad-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-cad-0.1.1.tgz) | 0.03 MiB |
-| @filens/converter-client 0.1.2 | [filens-converter-client-0.1.2.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-converter-client-0.1.2.tgz) | 1.26 MiB |
-| @filens/core 0.1.2 | [filens-core-0.1.2.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-core-0.1.2.tgz) | 0.14 MiB |
-| @filens/design 0.1.1 | [filens-design-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-design-0.1.1.tgz) | 0.00 MiB |
-| @filens/diagram 0.1.1 | [filens-diagram-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-diagram-0.1.1.tgz) | 0.01 MiB |
-| @filens/docx 0.1.1 | [filens-docx-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-docx-0.1.1.tgz) | 0.01 MiB |
-| @filens/books 0.1.1 | [filens-books-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-books-0.1.1.tgz) | 0.01 MiB |
-| @filens/iwork 0.1.1 | [filens-iwork-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-iwork-0.1.1.tgz) | 1.48 MiB |
-| @filens/media 0.1.1 | [filens-media-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-media-0.1.1.tgz) | 0.11 MiB |
-| @filens/mindmap 0.1.1 | [filens-mindmap-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-mindmap-0.1.1.tgz) | 0.01 MiB |
-| @filens/model3d 0.1.2 | [filens-model3d-0.1.2.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-model3d-0.1.2.tgz) | 0.05 MiB |
-| @filens/office 0.1.1 | [filens-office-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-office-0.1.1.tgz) | 0.01 MiB |
-| @filens/panorama 0.1.1 | [filens-panorama-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-panorama-0.1.1.tgz) | 0.07 MiB |
-| @filens/pdf 0.1.1 | [filens-pdf-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-pdf-0.1.1.tgz) | 0.29 MiB |
-| @filens/text 0.1.1 | [filens-text-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-text-0.1.1.tgz) | 0.01 MiB |
-| @filens/vue 0.1.2 | [filens-vue-0.1.2.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-vue-0.1.2.tgz) | 0.09 MiB |
-| @filens/xlsx 0.1.1 | [filens-xlsx-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-xlsx-0.1.1.tgz) | 0.01 MiB |
 | dsh-filens 0.1.3 | [dsh-filens-0.1.3.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/dsh-filens-0.1.3.tgz) | 6.53 MiB |
-| filens-step 0.1.0-rc.1 | [filens-step-0.1.0-rc.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-step-0.1.0-rc.1.tgz) | 0.35 MiB |
 | Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/SHA256SUMS) | SHA-256 |
 | Build manifest | [filens-release-v0.6.4.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-release-v0.6.4.json) | Versions, sizes and validation |
 
-**43 package downloads + manifest + checksums.** Full CLI includes OCR; Lite keeps OCR optional. Native bundles include the offline viewer. Mobile downloads are source SDKs. MiB = 1,048,576 bytes.
+**13 package downloads + manifest + checksums (15 assets).** Full CLI includes OCR; Lite keeps OCR optional. Native bundles include the offline viewer. Mobile downloads are source SDKs. MiB = 1,048,576 bytes.
+
+CLI installers and library modules are available from npm: [`filens-cli`](https://www.npmjs.com/package/filens-cli), [`filens-cli-lite`](https://www.npmjs.com/package/filens-cli-lite), [`filens-preview`](https://www.npmjs.com/package/filens-preview), [`dsh-filens`](https://www.npmjs.com/package/dsh-filens) and [`@filens/*`](https://www.npmjs.com/org/filens). Platform/OCR dependencies install automatically through npm; use the Full/Lite archives above for offline installation.
 
 ## What's new
 
@@ -147,7 +119,7 @@ Components: **CLI 0.5.6**, **browser preview 0.3.4**, **iOS/Android source SDKs 
 
 ## Selected performance results
 
-The latest FiLens implementation is compared with named baselines. Ratios use baseline median ÷ FiLens median. Small inputs and low-gain controls are omitted from this summary; the complete raw reports retain them.
+The latest FiLens implementation is compared with named baselines. Ratios use baseline median ÷ FiLens median. The larger parser table selects substantial inputs and speedups; the complete raw reports retain all controls. The DSH table also includes the PDF comparison.
 
 ### Complete sidebar previews
 
@@ -155,8 +127,11 @@ The latest FiLens implementation is compared with named baselines. Ratios use ba
 | --- | ---: | ---: | ---: |
 | PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
 | DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
+| PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
 Nine paired rounds per format on Apple M4 Pro/macOS arm64 and DSH Desktop 0.2.1-rc.5, using 659,484-byte PPTX and 601,507-byte DOCX samples. Ratios describe **first opens**; first means first for that file/process, excluding application startup and retaining system/persistent caches. DOCX follows PPTX. The built-in Office path converts to PDF; FiLens renders directly. [All samples, ranges and method](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/performance-retest.zh-CN.md).
+
+PDF uses a separate nine-round paired run on the same machine after first-page pixel reuse, with a 689,455-byte sample. Cached opens are **1.43×** faster than built in (**110 → 77 ms**, **30.0%** less time). First medians use nine opens and cached medians pool the next 27; each round starts a fresh process per renderer. Timing includes document reading, validation and rendering to ready plus two animation frames, excluding application startup and retaining OS/persistent caches. Each open still validates the PDF and closing releases its worker. [PDF samples, ranges and method](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
 ### Larger parsing workloads
 
@@ -177,7 +152,7 @@ The installation GIF/WebP/MP4 uses public **0.1.3** with CLI **0.5.6**. [Install
 
 - Full CLI bundles include OCR runtime/models; Lite keeps OCR optional. Both include offline preview assets. Mobile ZIPs are **source SDKs**, not precompiled AAR/XCFramework binaries.
 - DSH 0.1.3 depends on CLI **0.5.6** and embeds the shared preview runtime **0.3.4**. CLI/OCR installation bytes are separate from the plugin tarball.
-- See [release validation](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/release-v0.6.4-validation.json), [exact artifact sizes](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/preview-release-sizes.json), [format-loading checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-format-loading-validation.json), [PDF checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-pdf-reopen-validation.json) and [model-cache checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-model-reopen-validation.json). Each record identifies its own build/measurement stage.
+- See [release validation](https://github.com/IceWhaleTech/filens/blob/main/docs/release-v0.6.4-validation.json), [exact artifact sizes](https://github.com/IceWhaleTech/filens/releases/download/v0.6.4/filens-release-v0.6.4.json), [format-loading checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-format-loading-validation.json), [PDF checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-pdf-reopen-validation.json) and [model-cache checks](https://github.com/IceWhaleTech/filens/blob/v0.6.4/docs/dsh-model-reopen-validation.json). Each record identifies its own build/measurement stage.
 - Model reuse passed core/XLSX/iWork/3D/PDF/Vue/resource tests, 15 isolated browser format-loading paths, 12 complete preview types and six Desktop preview/zoom/3D-interaction cases. **Desktop native fullscreen-exit automation hung and was explicitly skipped on rerun; browser fullscreen checks passed.**
 - macOS arm64 native execution is verified; Linux x64/arm64 and Windows x64 are cross-built with the checks recorded in the validation report. No new physical-mobile-device validation is claimed. Fidelity, fonts, browser codecs, WebGL, DWG and HDR/EXR color limits follow the support matrix.
 - Requested runtime bytes, compressed files, npm package sizes, parser microbenchmarks and complete sidebar timings use separate measurements. Percentages from successive optimization rounds are not added together.

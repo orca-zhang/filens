@@ -135,6 +135,17 @@
         "cli": "0.5.6",
         "passed": true,
         "recording": "assets/dsh-plugin/demo-recording.json"
+      },
+      "pdfComparison": {
+        "firstMs": 190,
+        "cachedMedianMs": 77,
+        "builtinFirstMs": 329,
+        "builtinCachedMedianMs": 110,
+        "firstSpeedup": 1.73,
+        "cachedSpeedup": 1.43,
+        "rounds": 9,
+        "source": "assets/dsh-plugin/pdf-preview-page-cache.json",
+        "scope": "PDF pixel-cache implementation stage; separate matched rounds from Office."
       }
     },
     "native": {
@@ -313,9 +324,10 @@
   },
   "assets": {
     "packageArchives": 12,
-    "npmTarballs": 31,
+    "npmTarballs": 1,
+    "npmTarballsOnRegistry": 30,
     "metadataFiles": 2,
-    "total": 45,
+    "total": 15,
     "report": "preview-release-sizes.json"
   },
   "limits": [

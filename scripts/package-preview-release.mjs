@@ -66,9 +66,10 @@ for (const item of native?.assets ?? []) {
   if (artifact.sha256 !== item.sha256) throw new Error('Native CLI archive differs from the measured artifact');
   assets.push({ ...artifact, platform: item.platform, binaryBytes: item.binaryBytes });
 }
-// Ship the exact npm archives too. A release is complete only when the
-// platform components, entry packages, modules and DSH adapter are attached.
-for (const source of ['dist/npm', 'dist/workspace-npm', 'dist/dsh-npm', 'dist/step-npm']) {
+// Native bundles already contain their CLI, preview and optional OCR resources.
+// Keep npm launchers, platform dependencies and library modules on the registry;
+// attach the DSH adapter as a distinct plugin download.
+for (const source of ['dist/dsh-npm']) {
   const metadata = await read(`${source}/release.json`);
   for (const item of metadata.packages ?? [metadata]) {
     if (assets.some(asset => asset.file === item.file)) throw new Error(`Duplicate release asset: ${item.file}`);

@@ -1,23 +1,26 @@
 {
-  "observedAt": "2026-11-05T04:05:49.962Z",
+  "observedAt": "2026-11-05T04:39:36.508Z",
   "tag": "v0.6.4",
   "language": "en",
   "files": {
-    "docs/release-v0.6.4.md": "247be9649eab056396eeb684aa3ad9d35e89b3f72193dba6cd6321c0c8391bc9",
-    "docs/releases/v0.6.4.md": "247be9649eab056396eeb684aa3ad9d35e89b3f72193dba6cd6321c0c8391bc9",
-    "CHANGELOG.md": "f82cf152d6406447d67e97ae283a656c935e14865d56efd7efff381dfea9ad0d"
+    "docs/release-v0.6.4.md": "6279d7ef4c1e58bc37d640c5e2c108739d217f53e58b5c5c9a5f29429ff3a4ab",
+    "docs/releases/v0.6.4.md": "6279d7ef4c1e58bc37d640c5e2c108739d217f53e58b5c5c9a5f29429ff3a4ab",
+    "CHANGELOG.md": "667f2f2a987e846f712ed0460a1c5068ee3aa74741c1560369713bd7b2a6fb9b"
   },
   "checks": {
     "downloadTableFirst": true,
-    "downloadLinks": 45,
+    "downloadLinks": 15,
     "localReferenceTargetsChecked": 49,
-    "githubBodyUsesTagAbsoluteRepositoryLinks": true,
+    "githubBodyUsesTagAbsoluteRepositoryLinks": false,
     "performanceInventoryItems": 40,
     "bugfixInventoryItems": 15,
     "zimaosBannerPresent": true,
     "zimaosSeparateVersionsPreserved": true,
     "inspectSpelling": true,
     "publicationStatusWordingAbsent": true,
-    "bodyMatchesBothReleaseDocuments": true
+    "bodyMatchesBothReleaseDocuments": true,
+    "pdfLatestMediansAndRatiosMatchRaw": true,
+    "npmRegistryPackages": 30,
+    "repositoryLinksUseTagForCodeAndMainForPublicationReceipt": true
   }
 }

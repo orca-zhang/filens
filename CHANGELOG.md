@@ -11,7 +11,7 @@
 - Reveal PDF after the first painted page while continuing nearby pages in the background. Preserve complete rendering for non-virtual print/export previews.
 - Preserve source-byte ownership, passwords, live appearance, file switching, independent tab controls and cleanup. Support Desktop's cross-origin local modules/WASM with scoped stylesheet lifetime and Blob workers.
 - Reuse exact first-page PDF pixels by full content digest, CSS viewport and pixel resolution, bounded to four pages / 16 MiB / 30 idle seconds. Password, URL and non-virtual print/export paths bypass the cache. Every open still validates the PDF; closing releases each document and worker. Remove the extra PDF loading-cover frame.
-- Nine-round matched PDF comparison (144 opens): **208 → 190 ms** first per process, **159 → 77 ms** reopened, versus built-in **329 / 110 ms**. Reopened latency falls **51.6%** versus the preceding candidate. Pixel equality and worker cleanup verified. [Results and limits](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+- Nine-round matched PDF comparison (144 opens): latest FiLens **190 / 77 ms** first / cached versus built-in **329 / 110 ms**, a **1.73× / 1.43×** speedup. Reopened latency falls **51.6%** versus the preceding candidate. Pixel equality and worker cleanup verified. [Results and limits](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 - The separate nine-round Office retest gives PPTX **135 / 81 ms** and DOCX **111 / 94 ms** (first / reopened). Preserve all 324 pre-optimization Office/PDF opens separately. [Full samples](docs/assets/dsh-plugin/performance-retest.zh-CN.md).
 
 ## 0.6.4
