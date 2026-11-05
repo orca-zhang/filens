@@ -63,6 +63,8 @@ pub fn windows_1252_char(byte: u8) -> char {
     }
 }
 
+// Only native search uses this; WASM converters share the decoders above.
+#[allow(dead_code)]
 pub fn supported(source: &str) -> bool {
     matches!(
         source,

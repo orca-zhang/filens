@@ -157,6 +157,7 @@ fn map_error(error: Error) -> ConvertError {
 /// WASI entry for the optional decrypt-only engine. Parsing and cryptography stay
 /// in Rust; hosts simply pass its output back through the ordinary converter.
 #[cfg(feature = "office-crypto")]
+#[allow(dead_code)] // Only converter-office uses this shared entry point.
 pub(super) fn decrypt_main() {
     let started = Instant::now();
     let mut request = Request::default();
