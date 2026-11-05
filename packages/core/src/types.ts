@@ -444,28 +444,46 @@ export interface TableItem extends BaseSlideItem {
   cells: TableCell[];
 }
 
+export type ChartTextStyle = Pick<TextRun, 'fontFamily' | 'fontSize' | 'color' | 'colorAlpha' | 'bold' | 'italic'>;
+
 export interface ChartSeries {
   name: string;
   values: Array<number | null>;
   color: string;
   alpha?: number;
   pointStyles?: Array<{ color: string; alpha?: number }>;
+  dataLabels?: {
+    showValue: boolean;
+    position?: string;
+    formatCode?: string;
+    textStyle?: ChartTextStyle;
+  };
 }
 
 export interface ChartItem extends BaseSlideItem {
   kind: 'chart';
-  chartType: 'column' | 'pie';
+  chartType: 'column' | 'bar' | 'pie';
   grouping: 'clustered' | 'stacked' | 'percentStacked';
   firstSliceAngle?: number;
   title?: string;
   categories: string[];
   series: ChartSeries[];
+  textStyle?: ChartTextStyle;
+  gapWidth?: number;
   legendPosition?: 'top' | 'right' | 'bottom' | 'left' | 'none';
+  categoryAxis?: {
+    reversed?: boolean;
+    textStyle?: ChartTextStyle;
+    line?: LineStyle | null;
+  };
   valueAxis?: {
     min?: number;
     max?: number;
     majorUnit?: number;
     formatCode?: string;
+    textStyle?: ChartTextStyle;
+    line?: LineStyle | null;
+    majorGridline?: LineStyle | null;
   };
 }
 

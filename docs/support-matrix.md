@@ -2,7 +2,9 @@
 
 English | [简体中文](support-matrix.zh-CN.md)
 
-filens provides read-only file previews in modern browsers. The complete preview host currently covers **450 file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
+filens provides read-only file previews in modern browsers. The complete preview host currently covers **450 source-file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
+
+Checked against the current source on **2026-11-05**. The default Vue routes register **451 unique extensions**: 319 direct source formats, 131 conversion source formats, and the internal `cad-json` drawing-model entry. The internal entry is excluded from the 450 source-file count; applications with custom routes or older releases may differ.
 
 The demo lists supported formats only, distinguishing built-in samples from formats that require importing a file. A missing sample does not mean the decoder is missing. HEIC/HEIF primary-image decoding is already available through the media driver and local WASM fallback; the demo includes original samples.
 
@@ -62,9 +64,11 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Format | Extensions | Path | Preview coverage | Limits |
 | --- | --- | --- | --- | --- |
 | Browser images | `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif`, `apng`, `ico`, `svg`, `bmp` | Direct | Zoom, fit width/height, pan, rotation, fullscreen. | Browser decoding determines availability. |
+| HEIC / HEIF | `heic`, `heif` | Direct; local WASM fallback | Primary still image; fallback preserves source depth for ICC or fixed PQ/HLG-to-sRGB previews. | No sequence-only files or gain-map reproduction. Fallback: 64 MiB input, 64 MP, 16,384 px per edge, 4 MiB ICC, 30 s decode. |
 | TIFF | `tif`, `tiff` | Convert → `png` | First image, common TIFF compression, grayscale/RGB and 16-bit samples; orientation applied. | Requires `graphicsWasm`; 8-bit preview, additional pages and print profiles are omitted. |
 | Other raster images | `tga`, `pgm`, `pbm`, `pnm`, `dds`, `hdr`, `dib`, `cur`, `pcx`, `exr`, `jxl`, `qoi`, `ff` | Convert → `png` | Local WASM decoding to RGBA, including cursor/TGA alpha, indexed/RGB PCX, DXT DDS textures and linear HDR/EXR to sRGB. | 64 MiB input, 32 megapixels; first DDS surface / JXL frame / largest cursor image only; EXR uses the default image and color channels; HDR/EXR dynamic range is reduced to 8-bit. |
 | Apple icons | `icns` | Convert → `png` | Largest embedded PNG icon. | Raw icon planes and JPEG 2000 chunks are not decoded. |
+| Windows application icons | `exe`, `dll`, `mui`, `mun` | Convert → `png` | Extract a PNG or supported DIB icon from PE resources in the shared WASM core. | Icon preview only; no execution. APK/IPA icon extraction and ICO normalization are also available as explicit conversion pairs. |
 | Portable pixmaps | `ppm` | Convert → `png` | P3 text and P6 binary; comments, arbitrary maxval, 8/16-bit RGB. | First image in a stream; [decode, runtime, and verification limits](#ppm-conversion). |
 | Camera RAW | `dng`, `cr2`, `cr3`, `nef`, and [more](#camera-raw-conversion) | Convert → `jpg` | Embedded JPEG or lightweight sensor preview. | Full RAW development is unavailable. |
 | Audio | `mp3`, `wav`, `aac`, `m4a`, `flac`, `ogg`, `oga`, `opus` | Direct | Native browser playback and controls. | Codec support varies. |
@@ -79,6 +83,8 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Photoshop | `psd`, `psb` | Convert → `png` | Saved merged composite, decoded in the frontend WASM core. | 8-bit RGB/grayscale; no layer editing or ICC processing. [Design preview limits](design-preview.md). |
 | Illustrator / PostScript | `ai`, `eps`, `ps` | Convert → `pdf` | PDF-compatible AI preserves PDF bytes; supported PostScript artwork becomes vector PDF, including multiple PS pages. | Preview subset; missing fonts and unsupported artwork fail explicitly. The EPS/PS module loads on demand. [Compatibility and download budget](design-preview.md). |
 | 2D CAD | `dxf` | Direct | SVG geometry, text, layers, blocks, raster references. | Partial entity and text fidelity; [DXF matrix](#dxf-cad). |
+| DWG drawings | `dwg` | Convert → `cad-json` | WASM reads the drawing model directly for the same SVG 2D renderer. | Requires `cadWasm`, `graphicsWasm` or a combined core; partial entity coverage, external references and SHX fonts. [DWG limits](#dwg-and-cad-drawing-models). |
+| CAD drawing models | `cad-json` | Direct | Internal drawing-model interchange format emitted by DWG conversion. | Schema version 1 with DWG source metadata; excluded from the source-file format count. |
 | CAD solids | `step`, `stp` | Direct + truck Rust WASM | Lazy-loaded triangulation for viewing. | CAD editing is unavailable. |
 | 3D models and scenes | `stl`, `obj`, `ply`, `gltf`, `glb`, `3mf`, and [more](#3d-models-and-inspection) | Direct | Three.js meshes, materials, and scenes. | Format-specific material and resource limits. |
 | Toolpaths, point clouds, voxels, motion, molecules | `gcode`, `gco`, `nc`, `pcd`, `xyz`, `vtk`, `vox`, `bvh`, `pdb`, `nrrd`, `nhdr` | Direct | Supported data subsets. | [Import and inspection matrix](#3d-models-and-inspection). |
@@ -96,6 +102,7 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Comic books | `cbz`; `cbr`, `cb7`, `cbt` | Direct | CBZ provides image page sequences; CBR/CB7/CBT reuse RAR/7z/TAR browsing and individual image previews. | Sequential reading is available for CBZ only. CBR/CB7 require the external archive engine. |
 | ZIP-compatible archives | `zip`, `jar`, `war`, `ear`, `apk`, `ipa`, `xpi`, `crx` | Direct | Listings, directory/nested browsing, entry preview, extraction helpers. | Read-only; no bulk extraction UI. |
 | ZIPX | `zipx` | Direct + WASM | Existing ZIP decoder, including Deflate, Deflate64, BZip2 and LZMA; listings, nested browsing and entry preview. | Requires the external archive engine; proprietary WinZip methods may be unsupported. |
+| RAR / 7-Zip | `rar`, `7z` | Direct + WASM | Listings, nested browsing, entry preview, passwords, encrypted filenames, solid and multi-volume archives. | Requires the external archive engine and all volume parts; shared archive limits apply. |
 | TAR / GZIP | `tar`, `tgz`, `tar.gz`, `gz` | Direct | TAR/TGZ listings with PAX / GNU long paths; single-file GZIP extraction. | Read-only. |
 | Compressed streams | `bz2`, `bzip2`, `xz`, `lzma`, `lzma86`, `zst`, `zstd`, `z`; TAR aliases `tbz`, `tbz2`, `txz`, `tlz`, `tzst`, `taz` | Direct + WASM | Single-file extraction; compressed TARs open as directories. CPIO payloads named `.cpio.xz` / `.cpio.zst` also open as directories. Includes BCJ-filtered LZMA86 and concatenated BZip2/XZ/Zstandard streams. | Requires the external archive engine. Output is bounded to 128 MiB, including streams without a declared size. Unix compress has no checksum. |
 | AR / Debian / CPIO | `ar`, `deb`, `cpio` | Direct + WASM | File browsing and entry previews; Debian packages expose nested control/data archives through the same readers. | Read-only; packages are not installed or executed. Archive links are omitted. |
@@ -126,8 +133,11 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 | Excel templates and macro-enabled packages | `xlsm`, `xltx`, `xltm` | `xlsx` |
 | OpenDocument / legacy OpenOffice spreadsheets | `ods`, `ots`, `fods`, `sxc`, `stc` | `xlsx` |
 | Table-like inputs | `dbf`, `slk`, `dif`, `csv`, `tsv`, `tab`, `psv`, `json`, `jsonl`, `ndjson`, `jsonlines`, `ldjson` | `xlsx` |
+| DWG drawings | `dwg` | `cad-json` (default preview), `dxf` (explicit conversion) |
+| TIFF and other raster images | `tif`, `tiff`, `tga`, `pgm`, `pbm`, `pnm`, `dds`, `hdr`, `dib`, `cur`, `pcx`, `exr`, `jxl`, `qoi`, `ff` | `png` |
 | Camera RAW | [Complete RAW list](#camera-raw-conversion) | `jpg` |
 | Apple icons | `icns` | `png` |
+| Application icons / ICO normalization | `apk`, `ipa`, `exe`, `dll`, `mui`, `mun`, `ico` | `png` |
 | Portable pixmaps | `ppm` | `png` |
 | Photoshop saved composites | `psd`, `psb` | `png` |
 | Illustrator / PostScript artwork | `ai`, `eps`, `ps` | `pdf` |
@@ -140,6 +150,9 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 | `json` | Direct source text | `docx` or `xlsx` |
 | `html` | Direct sandboxed iframe | `docx` |
 | `epub` | Direct ebook driver | `docx` |
+| `dwg` | Convert to `cad-json`, then use the CAD driver | `dxf` |
+| `apk`, `ipa` | Direct archive browsing | `png` (application icon) |
+| `ico` | Direct browser image | `png` |
 | `ppm` / `image/x-portable-pixmap` | Convert to PNG, then use the image driver | `png` |
 
 | Rule | Behavior |
@@ -152,6 +165,7 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 | Source or result | Current boundary |
 | --- | --- |
 | Macro-enabled OpenXML | Macro parts are removed before normalization. |
+| Encrypted Office | Supported modern OpenXML and legacy DOC/XLS/PPT encryption can be opened with a password. The split core requires `officeWasm`; missing and incorrect passwords have distinct errors. This does not imply support for every encryption scheme. |
 | Legacy binary, ODF, and table-like inputs | Layout, styles, media, charts, formulas, and embedded objects may be simplified or omitted. |
 | CSV / TSV / TAB / PSV → XLSX | Reads complete input, including CRLF / CR / LF and quoted newlines, up to 1,000,000 cells, 16,384 columns per row and the XLSX row limit. Exceeding a limit raises an explicit error instead of producing a truncated workbook. Direct CSV preview does not use this conversion limit. |
 | PPM | Dimensions and RGB samples are retained at 8/16-bit depth; nonstandard maxval values are scaled to the PNG range with rounding. Comments are not copied to PNG metadata. |
@@ -162,9 +176,13 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 
 | Component | Role | Reference |
 | --- | --- | --- |
-| Browser WASM client | `createWasmConverterClient({ wasm, imageWasm, postscriptWasm })`; runs the shared core and optional image/PostScript modules locally. | [Converter client API](../packages/converter-client/src/index.ts) |
+| Browser WASM client | `createWasmConverterClient({ wasm, officeWasm, imageWasm, postscriptWasm, graphicsWasm, cadWasm })`; runs the shared core and optional modules locally, loading them on demand. | [Converter client API](../packages/converter-client/src/index.ts) |
 | Document / panorama / PPM core | Production conversion WASM built from Rust; includes PPM → PNG without the optional image module. | [Rust core](../wasm/converter-core-rust/README.md) |
+| Optional Office decryptor | `officeWasm` supplies `converter-office.wasm` when the split core requests Office decryption. | [Password checks](../packages/converter-client/test/password.spec.ts) |
 | Optional image core | Separate image/RAW WASM module built from Rust. | [Rust image module](../wasm/converter-image-rust/README.md) |
+| Optional CAD core | `cadWasm` supplies the compact `converter-cad.wasm` DWG reader and takes priority over `graphicsWasm` for DWG. | [WASM client](../packages/converter-client/src/wasm-client.ts) |
+| Optional graphics core | `graphicsWasm` accepts `converter-raster.wasm` for raster formats or `converter-graphics.wasm` for both DWG and raster formats. `converter-core-full.wasm` includes both implementations. | [Graphics checks](../packages/converter-client/test/graphics-preview.spec.ts) |
+| Optional PostScript core | `postscriptWasm` supplies `converter-postscript.wasm` for EPS/PS and non-PDF-compatible AI. | [Design preview limits](design-preview.md) |
 | HTTP adapter | Invokes the configured conversion service. | [Adapter APIs](#routes-and-source-loading) |
 | Go/wazero host | Thin shell around the same WASM core: CLI/HTTP, validation, temporary files, result/error mapping, OpenXML output validation. | [Go/wazero example](../examples/go-wazero-converter/README.md) |
 
@@ -174,7 +192,7 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 
 | Capability | Coverage and boundary |
 | --- | --- |
-| Input recognition | `.ppm` (case-insensitive) or `image/x-portable-pixmap` routes to PNG conversion. Other Netpbm extensions have no default route. |
+| Input recognition | `.ppm` (case-insensitive) or `image/x-portable-pixmap` routes to PNG conversion in the document core. PBM/PGM/PNM use the graphics module; PAM/PFM have no default route. |
 | P3 / P6 | P3 decimal text and P6 binary RGB; P6 samples above 255 use two bytes in big-endian order. |
 | Header and text raster | ASCII whitespace, LF/CRLF headers, header comments, and comments between P3 samples. Binary whitespace and `#` bytes remain pixel data. |
 | Sample values | `maxval` 1–255 produces 8-bit PNG; 256–65535 produces 16-bit PNG. Values are normalized to 255/65535 with rounding. |
@@ -237,7 +255,7 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | Unsupported content placeholders | Supported | Unsupported content can be represented by placeholders. |
 | Exact source-font parity | Partial | Depends on installed fonts, app-provided webfonts, and format metadata. Embedded Office/iWork font loading is not implemented. |
 | Animations and transitions | Unavailable | Not implemented in the PPTX renderer. |
-| Charts | Partial | Cached 2D column charts (clustered, stacked and percent-stacked) and pie charts, including titles and legends. Other chart types and advanced formatting are unavailable. |
+| Charts | Partial | Cached 2D column and horizontal bar charts (clustered, stacked and percent-stacked) and pie charts, including titles and legends. Bar/column charts also support value labels, basic text styles and axis/gridline colors. Other chart types and advanced formatting are unavailable. |
 | Embedded audio/video | Unavailable | Standalone media playback does not imply playback inside slides. |
 | OLE objects | Unavailable | Embedded object rendering is not implemented. |
 | Comments, notes, and review metadata | Unavailable | Not exposed by the PPTX renderer. |
@@ -281,6 +299,16 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | CSV | Read-only tables for UTF-8/browser-readable sources; CRLF/CR/LF, quoted multiline text, escaped quotes and empty records. | Rich type inference and workbook styling are unavailable. |
 | Workbook row loading | Rows are appended in batches on scroll. | Loaded rows remain mounted; large-sheet virtualization is unavailable. |
 
+### DWG and CAD drawing models
+
+| Area | Preview coverage | Limits |
+| --- | --- | --- |
+| Default path | The frontend WASM core reads DWG into `cad-json`; the CAD driver renders that model as SVG without a DXF round trip. | Use `cadWasm`, the combined graphics module via `graphicsWasm`, or the combined core. Explicit DWG → UTF-8 DXF conversion remains available. |
+| Drawing content | Common 2D geometry, text, layers, line styles, block/array expansion, attributes, hatches, raster references and basic dimensions. | Partial DWG fidelity; unsupported entities are skipped with warnings. Proxy objects, external references, SHX glyphs and full CAD layout are incomplete. DXF entity coverage below does not imply identical DWG coverage. |
+| Direct model input | `.cad-json` or `application/vnd.filens.cad+json`; `loadCadDrawing()` loads the model emitted by the converter. | Schema version 1 and DWG source metadata; not arbitrary JSON or a CAD editing API. |
+| File-format versions | R14/AC1014 through AC1032 (2018 saved-file format). | R12 is unsupported and R13 is unverified. [13-drawing compatibility/performance audit](dwg-preview-optimization.md); saved-file versions do not establish support for every newer CAD application. |
+| Verification | [WASM integration checks](../packages/converter-client/test/graphics-preview.spec.ts) cover R2000/R2018 drawing models and explicit DXF output. | These fixtures establish regression coverage, not compatibility with every DWG version or entity. |
+
 ### DXF CAD
 
 <details>
@@ -299,7 +327,7 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | Layers and colors | Names, basic ACI colors, true color, transparency, hidden/off/frozen/locked flags, entity invisibility/color overrides, SVG attributes, Vue layer toggles. | Coverage remains partial. |
 | Line styles | `LTYPE` dash patterns, global/entity (`48`) line-type scale, entity/layer `LINEWEIGHT`. | Exact source styling is not guaranteed. |
 | Fonts | TrueType/OpenType-style references map to CSS fallbacks. | Exact SHX glyph rendering is unavailable; SHX references warn and use browser fonts. |
-| DWG | Local WASM conversion to UTF-8 DXF, then the same SVG 2D renderer. | Requires `graphicsWasm`; complex entities, proxy objects, xrefs and SHX fonts may be simplified or omitted. Verified R2000 and R2018 samples. |
+| DWG | Local WASM reads a drawing model for the same SVG 2D renderer; optional UTF-8 DXF output remains available. | Separate partial coverage; see [DWG and CAD drawing models](#dwg-and-cad-drawing-models). |
 | DGN | Unavailable. | No native preview route. |
 
 </details>
@@ -408,6 +436,9 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | iWork runtime | `detectIworkType()`, `loadIwork()`, `createIworkViewer()`, worker parsing, and page/sheet navigation. |
 | Vue wrappers | `PptxPreview`, `IworkPreview`, and generic `Preview`; direct `src`, toolbar, thumbnails where applicable, source switching, and warning/error emits. Controls depend on driver capabilities. |
 | Converter adapters | Optional WASM, HTTP, and mock adapters. HTTP non-2xx JSON or `X-Preview-*` responses surface as `HttpConversionError` with stable converter metadata. |
+| Content detection | Optional `createAutoFormatDetector()` from `@filens/converter-client/format-detector`; separate SIMD/scalar WASM assets with automatic fallback. |
+
+Content detection provides routing evidence, not full-file validation, and does not change preview routes automatically. See the [detector API and hosting requirements](../packages/converter-client/README.md#content-detection-with-optional-simd128).
 
 <sub>The shared runtime settles superseded preview calls on replacement or destruction, aborts their load signals and ignores late results/events. Failed loads release their sessions and remain visible in state. Custom drivers own their resources; work that ignores cancellation may still finish. [Regression checks](../benchmarks/frontend/2026-10-24/preview-runtime-review.json).</sub>
 
@@ -422,8 +453,8 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 
 | Hook / helper | Current consumers | Limits or integration notes |
 | --- | --- | --- |
-| `fontResolver` | Currently consumed by DXF. | Available in preview options and Vue `Preview`; not universal font loading across drivers. |
-| `resourceResolver` | DXF raster references, glTF buffers/textures, OBJ materials/textures, supported 3D sidecars, missing EPUB assets, camera panorama companions. | Available in preview options and Vue `Preview`; supported resource types depend on the driver. |
+| `fontResolver` | Currently consumed by the CAD driver for DXF and DWG drawing models. | Available in preview options and Vue `Preview`; not universal font loading across drivers. |
+| `resourceResolver` | CAD raster references, glTF buffers/textures, OBJ materials/textures, supported 3D sidecars, missing EPUB assets, camera panorama companions. | Available in preview options and Vue `Preview`; supported resource types depend on the driver. |
 | File-set resolver | Core helper for multi-file uploads and sidecar resolution. | Resolves resources from the provided file set. |
 | Archive resolvers | `@filens/archive` helpers expose entries as resources. | Includes ZIP-backed compound bundles. |
 
@@ -439,10 +470,9 @@ Gaps below apply to shipped preview paths. Hosts can supply custom drivers or co
 
 | Area | Formats or workflow | Current boundary |
 | --- | --- | --- |
-| Native CAD | DGN, FreeCAD projects, IGES/BREP | No native preview route; STEP/STP and DXF are covered above. |
+| Native CAD | DGN, FreeCAD projects, IGES/BREP | No native preview route; STEP/STP, DXF and partial DWG are covered above. |
 | BIM | Revit, IFC | No native preview route. |
 | ECAD / fabrication | Gerber/Excellon, layered KiCad PCB | No native preview route. |
-| HEIC/HEIF | Native image decoding; local WASM fallback preserves source depth for ICC or fixed PQ/HLG-to-sRGB previews. | Primary still only; no sequence-only files or gain-map reproduction. Fallback: 64 MiB input, 64 MP, 16,384 px per edge, 4 MiB ICC, 30 s decode. |
 | Design editing | PSD/PSB layers, Illustrator editing data | Read-only saved-composite or vector preview; no design editor. [Supported subsets](design-preview.md). |
 | Other Netpbm extensions | `pam`, `pfm` | No default preview/conversion routes. PBM/PGM/PNM and PPM are supported as described above. |
 | Office add-ins | Add-ins and embedded application behavior | Outside the default conversion policy. |

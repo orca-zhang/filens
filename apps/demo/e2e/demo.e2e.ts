@@ -2,23 +2,22 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
 async function selectVueOfficeRegressionDeck(page: Page): Promise<void> {
-  await page.locator('.wb-side-tab').last().click();
-  await page.locator('button.wb-variant').filter({ hasText: 'vue-office-test.pptx' }).click();
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles(path.resolve('apps/demo/public/samples/vue-office-test.pptx'));
+  await page.getByRole('button', { name: '显示工具栏', exact: true }).click();
   await expect(page.locator('.pptxv-status').first()).toContainText('/ 13', { timeout: 20000 });
-  const shell = page.locator('.pptxv-shell').first();
-  await shell.focus();
-  await shell.press('Home');
 }
 
 async function goToSlide(page: Page, index: number): Promise<void> {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const shell = page.locator('.pptxv-shell').first();
-  await shell.focus();
-  await shell.press('Home');
-  for (let current = 0; current < index; current += 1) {
-    await shell.getByRole('button', { name: 'Next' }).click();
-    await expect(page.locator('.pptxv-status').first()).toContainText(`${current + 2} /`);
-    await page.waitForTimeout(450);
+  await shell.locator('.pptxv-scroll-area').evaluate((element: HTMLElement) => { element.style.scrollBehavior = 'auto'; });
+  const status = page.locator('.pptxv-status').first();
+  let current = Number((await status.innerText()).split('/')[0]) - 1;
+  while (current !== index) {
+    const next = current + (current < index ? 1 : -1);
+    await shell.getByRole('button', { name: next > current ? 'Next' : 'Prev', exact: true }).click();
+    await expect(status).toContainText(`${next + 1} /`);
+    current = next;
   }
 }
 
@@ -34,7 +33,7 @@ test('switches preview formats and uses PDF page and zoom controls', async ({ pa
   await shell.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(shell.locator('.pptxv-status').first()).toHaveText('2 / 3');
   await expect(page.locator('canvas.pdfv-page[data-page-index="1"][data-rendered="true"]')).toBeVisible();
-  await shell.getByRole('button', { name: '+', exact: true }).click();
+  await shell.getByRole('button', { name: 'Zoom in', exact: true }).click();
   await expect(shell.locator('.pptxv-status').nth(1)).toHaveText('110%');
   await expect(shell.getByRole('button', { name: 'Width', exact: true })).toBeEnabled();
   await shell.getByRole('button', { name: 'Width', exact: true }).click();
@@ -71,8 +70,8 @@ test('renders rich built-in document, workbook, and presentation samples', async
   await expect(page.locator('.wb-preview-stage')).toContainText('TRACKING');
 
   await page.getByRole('button', { name: 'PPTX', exact: true }).click();
-  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-field-notes.pptx');
-  await expect(page.locator('.wb-preview-stage')).toContainText('BEYOND');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.zh-CN.pptx');
+  await expect(page.locator('.wb-preview-stage')).toContainText('把文件理解');
   await expect(page.locator('.wb-note.is-error')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'PPS', exact: true }).click();
@@ -82,11 +81,33 @@ test('renders rich built-in document, workbook, and presentation samples', async
   await expect(page.locator('.wb-preview-title strong')).toHaveText('legacy-strategy.dps');
 });
 
-test('loads a polished presentation sample by default', async ({ page }) => {
+test('loads the Chinese filens introduction by default', async ({ page }) => {
   await page.goto('./?view=preview');
   await expect(page.locator('.pptxv-shell')).toBeVisible();
-  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-field-notes.pptx');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.zh-CN.pptx');
   await expect(page.locator('.pptxv-slide-stage').first()).toBeVisible();
+  await expect(page.locator('.wb-preview-stage')).toContainText('把文件理解');
+  await page.getByRole('button', { name: '显示工具栏', exact: true }).click();
+  await expect(page.locator('.pptxv-status').first()).toHaveText('1 / 14');
+});
+
+test('loads the English introduction and switches the sample with the interface language', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.en.pptx');
+  await expect(page.locator('.wb-preview-stage')).toContainText('File intelligence');
+  await page.getByRole('button', { name: 'Show toolbar', exact: true }).click();
+  await expect(page.locator('.pptxv-status').first()).toHaveText('1 / 14');
+
+  await page.getByRole('button', { name: '切换到中文', exact: true }).click();
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.zh-CN.pptx');
+  await expect(page.locator('.wb-preview-stage')).toContainText('把文件理解');
+
+  await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.en.pptx');
+  await page.getByRole('button', { name: 'PDF', exact: true }).first().click();
+  await page.getByRole('button', { name: 'PPTX', exact: true }).click();
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.en.pptx');
+  await expect(page.locator('.wb-preview-stage')).toContainText('File intelligence');
 });
 
 test('keeps rendering the regression deck when navigating past slide 5', async ({ page }) => {
@@ -103,6 +124,7 @@ test('keeps rendering the regression deck when navigating past slide 5', async (
 
 test('renders remote bullets, shape text, and table styles on key slides', async ({ page }) => {
   test.setTimeout(45000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('./?view=preview');
   await selectVueOfficeRegressionDeck(page);
   const status = page.locator('.pptxv-status').first();
@@ -151,7 +173,7 @@ test('renders remote bullets, shape text, and table styles on key slides', async
 
   expect(slide1Typography.titleLineHeight).toBe('0.9');
   expect(slide1Typography.titleLetterSpacing).toBe('-0.04em');
-  expect(slide1Typography.titleFontWeight).toBe('300');
+  expect(slide1Typography.titleFontWeight).toBe('310');
   expect(slide1Typography.supportLetterSpacing).toBe('-0.04em');
 
   await goToSlide(page, 1);

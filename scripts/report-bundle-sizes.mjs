@@ -8,6 +8,9 @@ const labels = {
   'converter-core': ['转换核心 WASM（Office 加密检测）', 'Conversion core WASM (Office detection)'],
   'converter-office': ['Office 解密 WASM（可选）', 'Office decryption WASM (optional)'],
   'converter-image': ['图像 / RAW 核心 WASM', 'Image / RAW core WASM'],
+  'converter-cad': ['DWG 读取 WASM（按需）', 'DWG reader WASM (on demand)'],
+  'converter-raster': ['光栅图像预览 WASM（按需）', 'Raster preview WASM (on demand)'],
+  'converter-postscript': ['PostScript WASM（可选）', 'PostScript WASM (optional)'],
   libheif: ['HEIC / HEIF 解码 WASM', 'HEIC / HEIF decoder WASM'],
   index: ['演示站入口', 'Demo entry'],
   AgentWorkbench: ['Agent CLI 演示界面', 'Agent CLI demo UI'],
@@ -47,7 +50,8 @@ const order = Object.keys(labels);
 const groups = new Map();
 const assets = (await readdir(path.join(dist, 'assets'))).filter(file => /\.(?:js|mjs|css|wasm)$/.test(file));
 if (assets.some(file => /occt/i.test(file))) throw new Error('Default demo must exclude OCCT; rebuild before reporting sizes.');
-for (const file of [...assets.map(file => `assets/${file}`), 'archive/7zz.wasm', 'externals/converter-core.wasm', 'externals/converter-office.wasm', 'externals/converter-image.wasm']) {
+const externals = (await readdir(path.join(dist, 'externals'))).filter(file => file.endsWith('.wasm'));
+for (const file of [...assets.map(file => `assets/${file}`), 'archive/7zz.wasm', ...externals.map(file => `externals/${file}`)]) {
   const name = file === 'archive/7zz.wasm' ? 'archive-engine' : path.basename(file).replace(/-[\w-]{8}(?=\.)/, '').replace(/\.(?:js|mjs|css|wasm)$/, '');
   const row = groups.get(name) ?? { name, files: [], raw: 0, gzip: 0, brotli: 0 };
   row.files.push(file);

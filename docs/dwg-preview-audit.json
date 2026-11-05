@@ -1,0 +1,1007 @@
+{
+  "date": "2026-11-05T09:19:38.679Z",
+  "runtime": "v20.20.2",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M4 Pro",
+  "timing": "Node, compiled WASM reused; WASI instantiation, decoding, serialization and TS drawing load included; no SVG layout, DOM paint or network. Alternating order, two warmups, nine measured runs per path.",
+  "current": {
+    "raw": 908040,
+    "gzip": 442809,
+    "brotli": 360226,
+    "sha256": "6f8195d3b5f1a7b46f112c6884a43088845e885263f990ddc01d431b1046bb8e"
+  },
+  "baseline": {
+    "raw": 5007118,
+    "gzip": 1980976,
+    "brotli": 1501121,
+    "sha256": "a92ac31c5001aa539e14d0dc72b08982a4f1245d2e41c270756dc3cd3369531c"
+  },
+  "rows": [
+    {
+      "file": "sample_AC1014.dwg",
+      "sha256": "d1ec4519be14ac49ecab5ec024ad951271e00261a1851f623a784a97ba6ede73",
+      "header": "AC1014",
+      "entities": 230,
+      "layers": 21,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 218602,
+      "medianMs": 13.250709000000029,
+      "samplesMs": [
+        11.891124999999988,
+        18.942000000000007,
+        13.754790999999955,
+        20.343375000000037,
+        11.719375000000014,
+        13.250709000000029,
+        13.238042000000064,
+        17.399333999999953,
+        11.948333000000048
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 2834709,
+        "medianMs": 28.620584000000008,
+        "samplesMs": [
+          28.298000000000002,
+          28.620584000000008,
+          26.393249999999966,
+          34.21141699999998,
+          28.688083000000006,
+          30.07945799999993,
+          26.63133300000004,
+          34.34775000000002,
+          28.269207999999935
+        ]
+      }
+    },
+    {
+      "file": "sample_AC1015.dwg",
+      "sha256": "8ffbdc713f5838cbbb1596a8422e2b607e5c9e79921e852cbb5abee4af76ea4e",
+      "header": "AC1015",
+      "entities": 230,
+      "layers": 21,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 215157,
+      "medianMs": 12.4084170000001,
+      "samplesMs": [
+        10.969125000000076,
+        14.693125000000009,
+        10.981999999999971,
+        12.4084170000001,
+        11.326790999999957,
+        13.263958000000002,
+        33.91441699999996,
+        12.51887499999998,
+        10.862957999999935
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 2793652,
+        "medianMs": 24.151458000000048,
+        "samplesMs": [
+          24.151458000000048,
+          35.38341700000001,
+          23.6010839999999,
+          28.261250000000018,
+          23.37299999999982,
+          27.864749999999958,
+          23.628708999999844,
+          27.64562500000011,
+          23.176790999999866
+        ]
+      }
+    },
+    {
+      "file": "sample_AC1018.dwg",
+      "sha256": "7d26f908516ec5fb89cc8054af33aff233b68a7b63208bbc5b7f9f4d9bff9866",
+      "header": "AC1018",
+      "entities": 230,
+      "layers": 21,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 216273,
+      "medianMs": 14.211915999999974,
+      "samplesMs": [
+        12.753375000000005,
+        16.727374999999938,
+        14.36674999999991,
+        15.84066699999994,
+        12.729500000000144,
+        13.558665999999903,
+        14.211915999999974,
+        19.91991699999994,
+        12.887083000000075
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 2840114,
+        "medianMs": 28.13345800000002,
+        "samplesMs": [
+          26.76020799999992,
+          28.223416999999927,
+          28.13345800000002,
+          31.47137500000008,
+          26.885375000000067,
+          28.425625000000082,
+          28.019166999999925,
+          31.15150000000017,
+          27.318917000000056
+        ]
+      }
+    },
+    {
+      "file": "sample_AC1021.dwg",
+      "sha256": "70b5efec9a3c230a9892e810154a760fe72311b1e730fb582f22950135da770a",
+      "header": "AC1021",
+      "entities": 230,
+      "layers": 21,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 216059,
+      "medianMs": 18.000833000000057,
+      "samplesMs": [
+        17.77883299999985,
+        19.343332999999802,
+        18.000833000000057,
+        19.378416000000016,
+        17.88883399999986,
+        19.505084000000352,
+        17.821750000000065,
+        19.569500000000062,
+        17.822749999999814
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 2827481,
+        "medianMs": 25.24850000000015,
+        "samplesMs": [
+          24.675416999999925,
+          30.09008300000005,
+          24.36933399999998,
+          29.52212499999996,
+          24.636124999999993,
+          30.173917000000074,
+          24.5637499999998,
+          29.700332999999773,
+          25.24850000000015
+        ]
+      }
+    },
+    {
+      "file": "sample_AC1024.dwg",
+      "sha256": "53ecc28e54ff0bbfb022989c47fd1cb16eb07a98825309b66cdf316d900fe4ce",
+      "header": "AC1024",
+      "entities": 230,
+      "layers": 19,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 215120,
+      "medianMs": 15.517334000000119,
+      "samplesMs": [
+        14.62570900000037,
+        17.014083000000028,
+        14.587791999999808,
+        16.871750000000247,
+        14.649457999999868,
+        16.964249999999993,
+        14.50470899999982,
+        16.96849999999995,
+        15.517334000000119
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 3324486,
+        "medianMs": 27.463416999999936,
+        "samplesMs": [
+          27.129333000000315,
+          31.523959000000104,
+          27.37620799999968,
+          31.116375000000062,
+          27.154833999999937,
+          31.363209000000097,
+          27.463416999999936,
+          30.988749999999982,
+          27.405459000000064
+        ]
+      }
+    },
+    {
+      "file": "sample_AC1027.dwg",
+      "sha256": "4c63508dd794d5cdfb56c60aded47928999b02619ea8c2ef435a4b74e60d24d6",
+      "header": "AC1027",
+      "entities": 230,
+      "layers": 19,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 214782,
+      "medianMs": 12.55987499999992,
+      "samplesMs": [
+        12.28170799999998,
+        14.21462500000007,
+        12.278833000000304,
+        13.805042000000412,
+        12.417832999999973,
+        14.761791999999787,
+        12.55987499999992,
+        14.164374999999836,
+        12.467874999999822
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 2653425,
+        "medianMs": 23.12379200000032,
+        "samplesMs": [
+          23.12379200000032,
+          28.74587500000007,
+          23.106374999999844,
+          28.593166999999994,
+          22.990791000000172,
+          36.21025000000009,
+          23.07554200000004,
+          28.641791999999896,
+          23.048416999999972
+        ]
+      }
+    },
+    {
+      "file": "sample_AC1032.dwg",
+      "sha256": "0e8faaca949c9429c92240082d9ea4d3524aca5baf7c7815ec439245c321b528",
+      "header": "AC1032",
+      "entities": 230,
+      "layers": 19,
+      "types": {
+        "point": 40,
+        "line": 69,
+        "polyline": 27,
+        "circle": 12,
+        "arc": 3,
+        "ellipse": 1,
+        "face": 16,
+        "hatch": 8,
+        "construction-line": 2,
+        "text": 49,
+        "spline": 2,
+        "image": 1
+      },
+      "warnings": [
+        "DWG MESH is not supported in the 2D preview; skipped.",
+        "DWG MLINE is not supported in the 2D preview; skipped.",
+        "DWG WIPEOUT is not supported in the 2D preview; skipped.",
+        "DWG ACAD_TABLE is not supported in the 2D preview; skipped.",
+        "DWG MULTILEADER is not supported in the 2D preview; skipped.",
+        "DWG TOLERANCE is not supported in the 2D preview; skipped.",
+        "DWG SHAPE is not supported in the 2D preview; skipped.",
+        "DWG PDFUNDERLAY is not supported in the 2D preview; skipped.",
+        "DWG 3DSOLID is not supported in the 2D preview; skipped.",
+        "DWG REGION is not supported in the 2D preview; skipped.",
+        "2 3DSOLID entities mapped to Unknown",
+        "2 ACAD_TABLE entities mapped to Unknown",
+        "2 MESH entities mapped to Unknown",
+        "3 MLINE entities mapped to Unknown",
+        "15 MULTILEADER entities mapped to Unknown",
+        "1 PDFUNDERLAY entities mapped to Unknown",
+        "1 REGION entities mapped to Unknown",
+        "1 SHAPE entities mapped to Unknown",
+        "3 TOLERANCE entities mapped to Unknown",
+        "1 WIPEOUT entities mapped to Unknown",
+        "DXF references SHX font files (D:\\Albert DC\\Documents\\Visual Studio 2022\\Repos\\ACadSharp\\samples\\sample_base\\test_shape.shx), which browsers cannot render directly; CSS fallback fonts are used.",
+        "DXF IMAGE source \".\\image.JPG\" requires an application resource resolver; placeholder is shown."
+      ],
+      "bounds": {
+        "minX": -15.417609863958205,
+        "minY": -566.1685822008872,
+        "maxX": 2159.648928079041,
+        "maxY": 111.23549508976582
+      },
+      "outputBytes": 214177,
+      "medianMs": 13.334082999999737,
+      "samplesMs": [
+        12.740416000000096,
+        14.040750000000116,
+        12.596417000000201,
+        13.734458000000359,
+        13.334082999999737,
+        13.650583000000097,
+        12.226958000000195,
+        14.04516700000022,
+        12.32995800000026
+      ],
+      "baseline": {
+        "entities": 236,
+        "types": {
+          "point": 40,
+          "line": 69,
+          "polyline": 28,
+          "circle": 12,
+          "arc": 3,
+          "ellipse": 1,
+          "face": 14,
+          "hatch": 8,
+          "construction-line": 2,
+          "text": 56,
+          "spline": 2,
+          "image": 1
+        },
+        "outputBytes": 2647507,
+        "medianMs": 23.553207999999813,
+        "samplesMs": [
+          23.553207999999813,
+          29.005125000000135,
+          23.114458000000013,
+          28.777250000000095,
+          22.89941699999963,
+          28.566583000000264,
+          22.874624999999924,
+          28.22654199999988,
+          22.989708000000064
+        ]
+      }
+    },
+    {
+      "file": "testDWG-AC1032.dwg",
+      "sha256": "2de8f0e86939df1c4c77422deecd474fd958efcf9619554a1bdf83157f9176b2",
+      "header": "AC1032",
+      "entities": 4,
+      "layers": 2,
+      "types": {
+        "circle": 1,
+        "arc": 1,
+        "polyline": 2
+      },
+      "warnings": [
+        "DXF references SHX font files (ltypeshp.shx), which browsers cannot render directly; CSS fallback fonts are used."
+      ],
+      "bounds": {
+        "minX": -11.661903789690601,
+        "minY": -11.661903789690601,
+        "maxX": 11.661903789690601,
+        "maxY": 11.661903789690601
+      },
+      "outputBytes": 11959,
+      "medianMs": 6.1024170000000595,
+      "samplesMs": [
+        5.761167000000114,
+        6.219125000000076,
+        6.788457999999991,
+        6.186709000000064,
+        7.431499999999687,
+        5.8530000000000655,
+        6.1024170000000595,
+        5.8428329999997,
+        5.701833000000079
+      ],
+      "baseline": {
+        "entities": 4,
+        "types": {
+          "circle": 1,
+          "arc": 1,
+          "polyline": 2
+        },
+        "outputBytes": 300250,
+        "medianMs": 9.595083000000159,
+        "samplesMs": [
+          9.432208000000173,
+          11.379665999999816,
+          9.590666000000056,
+          9.335000000000036,
+          10.060249999999542,
+          9.595083000000159,
+          10.79004199999963,
+          10.664291999999477,
+          9.223125000000437
+        ]
+      }
+    },
+    {
+      "file": "testDWG-AC1027.dwg",
+      "sha256": "c63d82327430e6759d8e6930e5b457afb76538ce3311a2abd15ba12726ac277b",
+      "header": "AC1027",
+      "entities": 3231,
+      "layers": 92,
+      "types": {
+        "line": 1825,
+        "text": 48,
+        "arc": 813,
+        "circle": 43,
+        "polyline": 269,
+        "point": 31,
+        "spline": 176,
+        "hatch": 26
+      },
+      "warnings": [
+        "DXF references SHX font files (DokaTools_Symbols.shx, romand.shx, romans.shx), which browsers cannot render directly; CSS fallback fonts are used."
+      ],
+      "bounds": {
+        "minX": 1708.2813602516128,
+        "minY": -24854.85882790672,
+        "maxX": 33390.9577235314,
+        "maxY": -1829.1661558954406
+      },
+      "outputBytes": 538335,
+      "medianMs": 39.53391600000032,
+      "samplesMs": [
+        41.50404199999957,
+        36.76654199999939,
+        39.854708999999275,
+        43.7933750000002,
+        39.53391600000032,
+        36.43895799999973,
+        39.45979199999965,
+        36.00500000000011,
+        39.54791699999987
+      ],
+      "baseline": {
+        "entities": 3494,
+        "types": {
+          "line": 1825,
+          "text": 311,
+          "arc": 813,
+          "circle": 43,
+          "polyline": 269,
+          "point": 31,
+          "spline": 176,
+          "hatch": 26
+        },
+        "outputBytes": 1588107,
+        "medianMs": 97.6362079999999,
+        "samplesMs": [
+          101.5369580000006,
+          95.22912499999984,
+          98.19362499999988,
+          98.22016600000006,
+          97.2636250000005,
+          97.58758299999954,
+          101.4092499999997,
+          96.18662500000028,
+          97.6362079999999
+        ]
+      }
+    },
+    {
+      "file": "testDWG2010.dwg",
+      "sha256": "887781c9e0e151cb9d22738913bcfc35ee13f552c69c0a6c53de7311583dfe2d",
+      "header": "AC1024",
+      "entities": 7,
+      "layers": 1,
+      "types": {
+        "text": 7
+      },
+      "warnings": [],
+      "bounds": {
+        "minX": 10.679632484361122,
+        "minY": 8.714784089754767,
+        "maxX": 17.407632484361123,
+        "maxY": 14.542645777054105
+      },
+      "outputBytes": 4906,
+      "medianMs": 1.2934580000001006,
+      "samplesMs": [
+        1.2934580000001006,
+        1.3460839999997916,
+        1.258958000000348,
+        1.4130839999997988,
+        1.2339169999995647,
+        1.4985829999995985,
+        1.668374999999287,
+        1.2600830000001224,
+        1.198207999999795
+      ],
+      "baseline": {
+        "entities": 7,
+        "types": {
+          "text": 7
+        },
+        "outputBytes": 73085,
+        "medianMs": 3.1598750000002838,
+        "samplesMs": [
+          3.738249999999425,
+          2.8428750000002765,
+          3.1598750000002838,
+          3.843542000000525,
+          3.3863750000000437,
+          3.8799169999992955,
+          2.8116250000002765,
+          2.7625419999994847,
+          2.6957499999998618
+        ]
+      }
+    },
+    {
+      "file": "testDWG2007.dwg",
+      "sha256": "758b15d93758b0284ef33389f908c94b23d899a7408a30ea5c5f0843f53bbf1a",
+      "header": "AC1021",
+      "entities": 7,
+      "layers": 1,
+      "types": {
+        "text": 7
+      },
+      "warnings": [],
+      "bounds": {
+        "minX": 10.679632484361122,
+        "minY": 8.714784089754767,
+        "maxX": 17.407632484361123,
+        "maxY": 14.542645777054105
+      },
+      "outputBytes": 4906,
+      "medianMs": 1.1897909999997864,
+      "samplesMs": [
+        1.1711669999995138,
+        1.1500839999998789,
+        1.1358749999999418,
+        2.221542000000227,
+        1.262499999999818,
+        1.1897909999997864,
+        1.148084000000381,
+        2.312583999999333,
+        1.3225419999998849
+      ],
+      "baseline": {
+        "entities": 7,
+        "types": {
+          "text": 7
+        },
+        "outputBytes": 103009,
+        "medianMs": 3.063208000000486,
+        "samplesMs": [
+          3.0540829999999914,
+          3.021125000000211,
+          3.0299580000000788,
+          3.6433749999996508,
+          3.4046660000003612,
+          3.078708000000006,
+          3.047375000000102,
+          3.6705830000000788,
+          3.063208000000486
+        ]
+      }
+    },
+    {
+      "file": "filens-cafe-2000.dwg",
+      "sha256": "a9115e01fba5ca234baa2c0df404a235092a9dc5f908044bc20fc76a1d366538",
+      "header": "AC1015",
+      "entities": 223,
+      "layers": 8,
+      "types": {
+        "line": 173,
+        "arc": 1,
+        "text": 15,
+        "circle": 34
+      },
+      "warnings": [],
+      "bounds": {
+        "minX": -1500,
+        "minY": -1700,
+        "maxX": 10280,
+        "maxY": 7146
+      },
+      "outputBytes": 61689,
+      "medianMs": 3.0215420000004087,
+      "samplesMs": [
+        3.0094159999998737,
+        3.3204169999999067,
+        3.0246250000000146,
+        3.0215420000004087,
+        2.9820840000002136,
+        2.983624999999847,
+        3.836250000000291,
+        3.2542090000006283,
+        2.972250000000713
+      ],
+      "baseline": {
+        "entities": 223,
+        "types": {
+          "line": 173,
+          "arc": 1,
+          "text": 15,
+          "circle": 34
+        },
+        "outputBytes": 50611,
+        "medianMs": 2.960957999999664,
+        "samplesMs": [
+          3.8160409999991316,
+          4.006875000000036,
+          2.960957999999664,
+          2.942250000000058,
+          2.9254579999997077,
+          2.83391599999959,
+          7.589582999999948,
+          4.288833000000523,
+          2.93316699999923
+        ]
+      }
+    },
+    {
+      "file": "filens-cafe-2018.dwg",
+      "sha256": "e347548e8b8de0a68a2819b845e866c0e1a2d46cea0de9ed0ec6d89047fc1153",
+      "header": "AC1032",
+      "entities": 223,
+      "layers": 8,
+      "types": {
+        "line": 173,
+        "arc": 1,
+        "text": 15,
+        "circle": 34
+      },
+      "warnings": [],
+      "bounds": {
+        "minX": -1500,
+        "minY": -1700,
+        "maxX": 10280,
+        "maxY": 7146
+      },
+      "outputBytes": 61689,
+      "medianMs": 4.221791999999368,
+      "samplesMs": [
+        4.236207999999351,
+        4.239875000000211,
+        4.04845800000021,
+        4.1562089999997625,
+        4.246791999999914,
+        4.589375000000473,
+        4.103458000000501,
+        4.221791999999368,
+        4.048749999999927
+      ],
+      "baseline": {
+        "entities": 223,
+        "types": {
+          "line": 173,
+          "arc": 1,
+          "text": 15,
+          "circle": 34
+        },
+        "outputBytes": 82048,
+        "medianMs": 4.992291000000478,
+        "samplesMs": [
+          5.607167000000118,
+          5.280957999999373,
+          4.068709000000126,
+          3.9816250000003492,
+          5.700915999999779,
+          4.0028749999992215,
+          4.992291000000478,
+          5.02587499999936,
+          4.041459000000032
+        ]
+      }
+    }
+  ]
+}

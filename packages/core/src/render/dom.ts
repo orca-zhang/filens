@@ -1,4 +1,5 @@
 import type {
+  ChartTextStyle,
   CustomShapePath,
   FillStyle,
   InsetBox,
@@ -892,14 +893,21 @@ function renderChartItem(item: Extract<SlideItem, { kind: 'chart' }>): HTMLEleme
   svg.setAttribute('width', String(width));
   svg.setAttribute('height', String(height));
   svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', item.title ?? item.name ?? (item.chartType === 'pie' ? 'Pie chart' : 'Column chart'));
+  svg.setAttribute('aria-label', item.title ?? item.name ?? (item.chartType === 'pie' ? 'Pie chart' : item.chartType === 'bar' ? 'Bar chart' : 'Column chart'));
+  applyChartTextStyle(svg, item.textStyle);
 
   const legendPosition = item.legendPosition ?? 'right';
   const titleHeight = item.title ? height * 0.13 : height * 0.04;
   const legendBottomHeight = legendPosition === 'bottom' ? height * 0.15 : 0;
   const legendTopHeight = legendPosition === 'top' ? height * 0.13 : 0;
   const legendSideWidth = legendPosition === 'left' || legendPosition === 'right' ? width * 0.2 : 0;
-  const plotLeft = width * (item.chartType === 'pie' ? 0.04 : 0.125) + (legendPosition === 'left' ? legendSideWidth : 0);
+  const categoryStyle = { ...item.textStyle, ...item.categoryAxis?.textStyle };
+  const categoryLabelWidth = item.chartType === 'bar'
+    ? Math.min(width * 0.4, Math.max(0, ...item.categories.map(text => estimateTextWidth(
+        text, categoryStyle.fontSize ?? Math.max(10, height * 0.042), categoryStyle.fontFamily, categoryStyle.bold
+      ))) + 20)
+    : 0;
+  const plotLeft = Math.max(categoryLabelWidth, width * (item.chartType === 'pie' ? 0.04 : 0.125)) + (legendPosition === 'left' ? legendSideWidth : 0);
   const plotRight = width - width * (item.chartType === 'pie' ? 0.04 : 0.068) - (legendPosition === 'right' ? legendSideWidth : 0);
   const plotTop = Math.max(height * 0.08, titleHeight + legendTopHeight + height * 0.035);
   const plotBottom = height - height * 0.08 - legendBottomHeight;
@@ -920,7 +928,7 @@ function renderChartItem(item: Extract<SlideItem, { kind: 'chart' }>): HTMLEleme
   if (item.chartType === 'pie') {
     renderPieChart(svg, item, bounds);
   } else {
-    renderColumnChart(svg, item, bounds);
+    renderBarChart(svg, item, bounds);
   }
   renderChartLegend(svg, item, bounds);
   element.appendChild(svg);
@@ -982,7 +990,7 @@ function renderPieChart(
   });
 }
 
-function renderColumnChart(
+function renderBarChart(
   svg: SVGSVGElement,
   item: Extract<SlideItem, { kind: 'chart' }>,
   bounds: ChartPlotBounds
@@ -990,39 +998,54 @@ function renderColumnChart(
   const { height, plotLeft, plotRight, plotTop, plotBottom } = bounds;
   const plotWidth = Math.max(plotRight - plotLeft, 1);
   const plotHeight = Math.max(plotBottom - plotTop, 1);
-  const axis = resolveColumnChartAxis(item);
-  const yForValue = (value: number) => plotBottom - ((value - axis.min) / (axis.max - axis.min)) * plotHeight;
+  const horizontal = item.chartType === 'bar';
+  const axis = resolveBarChartAxis(item);
+  const positionForValue = (value: number) => horizontal
+    ? plotLeft + ((value - axis.min) / (axis.max - axis.min)) * plotWidth
+    : plotBottom - ((value - axis.min) / (axis.max - axis.min)) * plotHeight;
 
   for (let tick = axis.min; tick <= axis.max + axis.majorUnit / 2; tick += axis.majorUnit) {
     const normalizedTick = Math.abs(tick) < axis.majorUnit / 1000 ? 0 : tick;
-    const y = yForValue(normalizedTick);
+    const position = positionForValue(normalizedTick);
     if (normalizedTick !== 0) {
-      const gridline = createChartSvgNode('line', { x1: plotLeft, y1: y, x2: plotRight, y2: y });
+      const gridline = createChartSvgNode('line', horizontal
+        ? { x1: position, y1: plotTop, x2: position, y2: plotBottom }
+        : { x1: plotLeft, y1: position, x2: plotRight, y2: position });
       gridline.classList.add('pptxv-chart-gridline');
+      applyChartLineStyle(gridline, item.valueAxis?.majorGridline);
       svg.appendChild(gridline);
     }
 
-    const tickMark = createChartSvgNode('line', { x1: plotLeft - 4, y1: y, x2: plotLeft, y2: y });
+    const tickMark = createChartSvgNode('line', horizontal
+      ? { x1: position, y1: plotBottom, x2: position, y2: plotBottom + 4 }
+      : { x1: plotLeft - 4, y1: position, x2: plotLeft, y2: position });
     tickMark.classList.add('pptxv-chart-axis');
+    applyChartLineStyle(tickMark, item.valueAxis?.line);
     svg.appendChild(tickMark);
 
     const label = createChartSvgNode('text', {
-      x: plotLeft - 10,
-      y,
-      'text-anchor': 'end',
+      x: horizontal ? position : plotLeft - 10,
+      y: horizontal ? plotBottom + height * 0.057 : position,
+      'text-anchor': horizontal ? 'middle' : 'end',
       'dominant-baseline': 'middle'
     });
     label.classList.add('pptxv-chart-axis-label');
     label.setAttribute('font-size', String(Math.max(9, height * 0.036)));
+    applyChartTextStyle(label, item.valueAxis?.textStyle);
     label.textContent = formatChartAxisValue(normalizedTick, item);
     svg.appendChild(label);
   }
 
-  const zeroY = yForValue(Math.min(axis.max, Math.max(axis.min, 0)));
+  const zeroPosition = positionForValue(Math.min(axis.max, Math.max(axis.min, 0)));
   const categoryCount = Math.max(item.categories.length, ...item.series.map((series) => series.values.length), 1);
-  const categoryWidth = plotWidth / categoryCount;
+  const categoryWidth = (horizontal ? plotHeight : plotWidth) / categoryCount;
+  const categoryStart = (index: number) => {
+    const orderedIndex = item.categoryAxis?.reversed ? categoryCount - index - 1 : index;
+    return horizontal ? plotBottom - (orderedIndex + 1) * categoryWidth : plotLeft + orderedIndex * categoryWidth;
+  };
+  const groupFraction = item.gapWidth == null ? (item.grouping === 'clustered' ? 0.74 : 0.5) : 100 / (100 + Math.max(0, item.gapWidth));
   if (item.grouping === 'clustered') {
-    const groupWidth = categoryWidth * 0.74;
+    const groupWidth = categoryWidth * groupFraction;
     const barWidth = groupWidth / Math.max(item.series.length, 1);
     item.series.forEach((series, seriesIndex) => {
       series.values.forEach((rawValue, categoryIndex) => {
@@ -1031,19 +1054,26 @@ function renderColumnChart(
         }
 
         const value = normalizeChartValue(rawValue, item, categoryIndex);
-        const valueY = yForValue(value);
-        const rect = createChartSvgNode('rect', {
-          x: plotLeft + categoryIndex * categoryWidth + (categoryWidth - groupWidth) / 2 + seriesIndex * barWidth,
-          y: Math.min(zeroY, valueY),
+        const valuePosition = positionForValue(value);
+        const categoryPosition = categoryStart(categoryIndex) + (categoryWidth - groupWidth) / 2 + seriesIndex * barWidth;
+        const rect = createChartSvgNode('rect', horizontal ? {
+          x: Math.min(zeroPosition, valuePosition),
+          y: categoryPosition,
+          width: Math.abs(zeroPosition - valuePosition),
+          height: Math.max(barWidth, 0.5)
+        } : {
+          x: categoryPosition,
+          y: Math.min(zeroPosition, valuePosition),
           width: Math.max(barWidth, 0.5),
-          height: Math.max(Math.abs(zeroY - valueY), 0)
+          height: Math.abs(zeroPosition - valuePosition)
         });
         applyChartBarStyles(rect, item, seriesIndex, categoryIndex, value);
         svg.appendChild(rect);
+        appendChartDataLabel(svg, item, seriesIndex, rawValue, zeroPosition, valuePosition, categoryPosition + barWidth / 2, horizontal);
       });
     });
   } else {
-    const barWidth = categoryWidth * 0.5;
+    const barWidth = categoryWidth * groupFraction;
     const positiveOffsets = Array<number>(categoryCount).fill(0);
     const negativeOffsets = Array<number>(categoryCount).fill(0);
     item.series.forEach((series, seriesIndex) => {
@@ -1061,44 +1091,119 @@ function renderColumnChart(
           negativeOffsets[categoryIndex] = end;
         }
 
-        const startY = yForValue(start);
-        const endY = yForValue(end);
-        const rect = createChartSvgNode('rect', {
-          x: plotLeft + categoryIndex * categoryWidth + (categoryWidth - barWidth) / 2,
-          y: Math.min(startY, endY),
+        const startPosition = positionForValue(start);
+        const endPosition = positionForValue(end);
+        const categoryPosition = categoryStart(categoryIndex) + (categoryWidth - barWidth) / 2;
+        const rect = createChartSvgNode('rect', horizontal ? {
+          x: Math.min(startPosition, endPosition),
+          y: categoryPosition,
+          width: Math.abs(startPosition - endPosition),
+          height: Math.max(barWidth, 0.5)
+        } : {
+          x: categoryPosition,
+          y: Math.min(startPosition, endPosition),
           width: Math.max(barWidth, 0.5),
-          height: Math.max(Math.abs(startY - endY), 0)
+          height: Math.abs(startPosition - endPosition)
         });
         applyChartBarStyles(rect, item, seriesIndex, categoryIndex, value);
         svg.appendChild(rect);
+        appendChartDataLabel(svg, item, seriesIndex, rawValue, startPosition, endPosition, categoryPosition + barWidth / 2, horizontal);
       });
     });
   }
 
-  const xAxis = createChartSvgNode('line', { x1: plotLeft, y1: zeroY, x2: plotRight, y2: zeroY });
+  const xAxis = createChartSvgNode('line', horizontal
+    ? { x1: plotLeft, y1: plotBottom, x2: plotRight, y2: plotBottom }
+    : { x1: plotLeft, y1: zeroPosition, x2: plotRight, y2: zeroPosition });
   xAxis.classList.add('pptxv-chart-axis');
+  applyChartLineStyle(xAxis, horizontal ? item.valueAxis?.line : item.categoryAxis?.line);
   svg.appendChild(xAxis);
-  const yAxis = createChartSvgNode('line', { x1: plotLeft, y1: plotTop, x2: plotLeft, y2: plotBottom });
+  const yAxis = createChartSvgNode('line', { x1: horizontal ? zeroPosition : plotLeft, y1: plotTop, x2: horizontal ? zeroPosition : plotLeft, y2: plotBottom });
   yAxis.classList.add('pptxv-chart-axis');
+  applyChartLineStyle(yAxis, horizontal ? item.categoryAxis?.line : item.valueAxis?.line);
   svg.appendChild(yAxis);
 
   for (let categoryIndex = 0; categoryIndex < categoryCount; categoryIndex += 1) {
-    const x = plotLeft + (categoryIndex + 0.5) * categoryWidth;
-    const tickMark = createChartSvgNode('line', { x1: x, y1: zeroY, x2: x, y2: zeroY + 2 });
+    const position = categoryStart(categoryIndex) + categoryWidth / 2;
+    const tickMark = createChartSvgNode('line', horizontal
+      ? { x1: zeroPosition - 2, y1: position, x2: zeroPosition, y2: position }
+      : { x1: position, y1: zeroPosition, x2: position, y2: zeroPosition + 2 });
     tickMark.classList.add('pptxv-chart-axis');
+    applyChartLineStyle(tickMark, item.categoryAxis?.line);
     svg.appendChild(tickMark);
 
     const label = createChartSvgNode('text', {
-      x,
-      y: plotBottom + height * 0.057,
-      'text-anchor': 'middle',
+      x: horizontal ? plotLeft - 10 : position,
+      y: horizontal ? position : plotBottom + height * 0.057,
+      'text-anchor': horizontal ? 'end' : 'middle',
       'dominant-baseline': 'middle'
     });
     label.classList.add('pptxv-chart-category-label');
     label.setAttribute('font-size', String(Math.max(10, height * 0.042)));
+    applyChartTextStyle(label, item.categoryAxis?.textStyle);
     label.textContent = item.categories[categoryIndex] ?? String(categoryIndex + 1);
     svg.appendChild(label);
   }
+}
+
+function applyChartTextStyle(node: SVGElement, style: ChartTextStyle | undefined): void {
+  if (style?.color) node.style.fill = colorWithAlpha(style.color, style.colorAlpha);
+  if (style?.fontSize != null) node.style.fontSize = `${style.fontSize}px`;
+  if (style?.fontFamily) node.style.fontFamily = buildFontFamilyStack(style.fontFamily);
+  if (style?.bold != null) node.style.fontWeight = style.bold ? '700' : '400';
+  if (style?.italic != null) node.style.fontStyle = style.italic ? 'italic' : 'normal';
+}
+
+function applyChartLineStyle(node: SVGElement, line: LineStyle | null | undefined): void {
+  if (line === undefined) return;
+  node.style.stroke = line === null ? 'none' : colorWithAlpha(line.color ?? '#000000', line.alpha);
+  if (line?.width != null) node.style.strokeWidth = String(line.width);
+  applySvgLineStyles(node, line ?? undefined);
+}
+
+function appendChartDataLabel(
+  svg: SVGSVGElement,
+  item: Extract<SlideItem, { kind: 'chart' }>,
+  seriesIndex: number,
+  value: number,
+  start: number,
+  end: number,
+  categoryPosition: number,
+  horizontal: boolean
+): void {
+  const settings = item.series[seriesIndex].dataLabels;
+  if (!settings?.showValue) return;
+  const position = settings.position ?? 'outEnd';
+  const direction = Math.sign(end - start) || (horizontal ? 1 : -1);
+  const outside = position === 'outEnd';
+  const centered = position === 'ctr';
+  const labelPosition = centered ? (start + end) / 2
+    : position === 'inBase' ? start + direction * 6 : end + direction * (outside ? 6 : -6);
+  const anchorAtStart = position === 'inBase' ? direction > 0 : outside === (direction > 0);
+  const label = createChartSvgNode('text', {
+    x: horizontal ? labelPosition : categoryPosition,
+    y: horizontal ? categoryPosition : labelPosition,
+    'text-anchor': horizontal && !centered ? anchorAtStart ? 'start' : 'end' : 'middle',
+    'dominant-baseline': horizontal || centered ? 'middle' : anchorAtStart ? 'hanging' : 'auto',
+    'font-size': Math.max(9, item.transform.height * 0.036)
+  });
+  label.classList.add('pptxv-chart-data-label');
+  applyChartTextStyle(label, settings.textStyle);
+  label.textContent = formatChartDataValue(value, settings.formatCode);
+  svg.appendChild(label);
+}
+
+function formatChartDataValue(value: number, formatCode: string | undefined): string {
+  // shortcut: basic decimal and percent formats only; extend for other Excel number formats.
+  const format = /^([#,0]+)(?:\.([0#]+))?(%)?$/.exec(formatCode ?? '');
+  if (!format) return String(value);
+  const decimals = format[2] ?? '';
+  const formatted = (format[3] ? value * 100 : value).toLocaleString('en-US', {
+    useGrouping: format[1].includes(','),
+    minimumFractionDigits: Math.min(decimals.replace(/#/g, '').length, 20),
+    maximumFractionDigits: Math.min(decimals.length, 20)
+  });
+  return formatted + (format[3] ?? '');
 }
 
 function createChartSvgNode(name: string, attributes: Record<string, string | number>): SVGElement {
@@ -1109,7 +1214,7 @@ function createChartSvgNode(name: string, attributes: Record<string, string | nu
   return node;
 }
 
-function resolveColumnChartAxis(item: Extract<SlideItem, { kind: 'chart' }>): {
+function resolveBarChartAxis(item: Extract<SlideItem, { kind: 'chart' }>): {
   min: number;
   max: number;
   majorUnit: number;

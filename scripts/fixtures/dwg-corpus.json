@@ -1,0 +1,68 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1014.dwg",
+    "sha256": "d1ec4519be14ac49ecab5ec024ad951271e00261a1851f623a784a97ba6ede73",
+    "size": 1312281,
+    "header": "AC1014"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1015.dwg",
+    "sha256": "8ffbdc713f5838cbbb1596a8422e2b607e5c9e79921e852cbb5abee4af76ea4e",
+    "size": 1297511,
+    "header": "AC1015"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1018.dwg",
+    "sha256": "7d26f908516ec5fb89cc8054af33aff233b68a7b63208bbc5b7f9f4d9bff9866",
+    "size": 1097214,
+    "header": "AC1018"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1021.dwg",
+    "sha256": "70b5efec9a3c230a9892e810154a760fe72311b1e730fb582f22950135da770a",
+    "size": 1063168,
+    "header": "AC1021"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1024.dwg",
+    "sha256": "53ecc28e54ff0bbfb022989c47fd1cb16eb07a98825309b66cdf316d900fe4ce",
+    "size": 1122389,
+    "header": "AC1024"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1027.dwg",
+    "sha256": "4c63508dd794d5cdfb56c60aded47928999b02619ea8c2ef435a4b74e60d24d6",
+    "size": 1091959,
+    "header": "AC1027"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/DomCR/ACadSharp/master/samples/sample_AC1032.dwg",
+    "sha256": "0e8faaca949c9429c92240082d9ea4d3524aca5baf7c7815ec439245c321b528",
+    "size": 1081979,
+    "header": "AC1032"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/apache/tika/main/tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-cad-module/src/test/resources/test-documents/testDWG-AC1032.dwg",
+    "sha256": "2de8f0e86939df1c4c77422deecd474fd958efcf9619554a1bdf83157f9176b2",
+    "size": 158593,
+    "header": "AC1032"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/apache/tika/main/tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-cad-module/src/test/resources/test-documents/testDWG-AC1027.dwg",
+    "sha256": "c63d82327430e6759d8e6930e5b457afb76538ce3311a2abd15ba12726ac277b",
+    "size": 265260,
+    "header": "AC1027"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/apache/tika/main/tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-cad-module/src/test/resources/test-documents/testDWG2010.dwg",
+    "sha256": "887781c9e0e151cb9d22738913bcfc35ee13f552c69c0a6c53de7311583dfe2d",
+    "size": 59562,
+    "header": "AC1024"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/apache/tika/main/tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-cad-module/src/test/resources/test-documents/testDWG2007.dwg",
+    "sha256": "758b15d93758b0284ef33389f908c94b23d899a7408a30ea5c5f0843f53bbf1a",
+    "size": 73088,
+    "header": "AC1021"
+  }
+]

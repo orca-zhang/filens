@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.6.5 — 2026-11-05
+
+- Highlight the three measured DSH first-open comparisons at the start of both README plugin sections: PPTX **13.56×**, DOCX **16.46×** and PDF **1.73×**, retaining benchmark versions and source reports.
+- Preview **0.3.5** reads DWG directly as a CAD model, loads a dedicated **443 KB gzip** CAD reader, caches repeated blocks and retains explicit DWG-to-DXF export. Thirteen drawings cover R14/AC1014–AC1032, with partial 2D limits and bounded expansion.
+- Reduce browser ZIP downloads to **5.61 MiB split / 10.59 MiB all-in-one**. Supplied main JS is **3.53 MB gzip / 3.40 MB Brotli**, excluding optional archive sidecars.
+- Add horizontal PPTX bars, formatted value labels and basic chart text/axis styles; add Chinese/English introduction decks that follow the demo language; align the compact Tools disclosure control.
+- Refresh all eight CLI **0.5.6** offline bundles with preview **0.3.5**, retaining CLI/OCR binaries and resources byte-for-byte. Mobile source SDKs move to **0.1.5**. DSH **0.1.6** retains its published preview **0.3.4**; npm and ZimaOS versions are unchanged.
+- Validate 856 unit checks, 2,128 policy checks, 328/328 WASM conversions, 64 installed browser previews, 22 mobile-bridge checks, 17 offline-HTML checks and native macOS Full/Lite/OCR. Linux/Windows payloads are verified against the previous release; native execution and physical mobile devices are not retested.
+
+[Downloads, detailed changes and ZimaOS installation](docs/release-v0.6.5.md) · [Validation](docs/release-v0.6.5-validation.json)
+
 ## DSH 0.1.6
 
 - Keep zoom out, the zoom percentage, zoom in and fullscreen beside the DSH address bar for every preview type. Remove page, rotation and manual fit buttons and warning-count badges; retain PPTX keyboard navigation.

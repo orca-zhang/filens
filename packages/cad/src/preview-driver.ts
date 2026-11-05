@@ -501,7 +501,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
       checkCadAborted(signal);
       const format = normalizeFormat(context.route?.sourceFormat ?? context.descriptor.extension);
       if (format !== 'dxf' && format !== 'cad-json') {
-        throw new Error(`CAD preview currently supports browser-native DXF files, got ${format || 'unknown'}.`);
+        throw new Error(`CAD preview supports DXF and native CAD drawing models, got ${format || 'unknown'}.`);
       }
 
       const text = await sourceToText(source, { ...context, signal });
@@ -738,7 +738,7 @@ export function createCadPreviewDriver(): PreviewDriver<CadPreviewState> {
   };
 }
 
-/** Load the native DWG drawing model emitted by converter-graphics.wasm. */
+/** Load the native DWG drawing model emitted by the CAD WASM reader. */
 export function loadCadDrawing(source: string): CadDrawing {
   const model = JSON.parse(source) as CadModel;
   if (model.schema_version !== 1 || model.source?.format !== 'dwg'
@@ -751,10 +751,12 @@ export function loadCadDrawing(source: string): CadDrawing {
     fontFamily: style.font && !isShxFont(style.font) ? fontFileToFamily(style.font) : undefined
   }]));
   const blocks = new Map(model.blocks.map(block => [block.name, block]));
+  const blockCache = new Map<string, CadEntity[]>();
+  const cyclicBlocks = new Set<string>();
   // Bound expansion as well as binary decoding: small files can contain huge INSERT arrays.
   let remaining = 500_000;
-  const expand = (list: ModelEntity[], stack: string[] = []): CadEntity[] => {
-    if (stack.length > 32) throw new Error('CAD block nesting exceeds the 32 level preview limit.');
+  const expand = (list: ModelEntity[], stack: string[] = [], depth = 0): CadEntity[] => {
+    if (depth > 32) throw new Error('CAD block nesting exceeds the 32 level preview limit.');
     const output: CadEntity[] = [];
     for (const entity of list) {
       if (--remaining < 0) throw new Error('CAD drawing exceeds the 500,000 entity preview limit.');
@@ -765,14 +767,25 @@ export function loadCadDrawing(source: string): CadDrawing {
         const block = blocks.get(name);
         if (!block || stack.includes(name)) {
           warnings.push(`DWG block "${name}" is missing or cyclic; skipped.`);
+          if (stack.includes(name)) for (const ancestor of stack) cyclicBlocks.add(ancestor);
+          if (geometry.type === 'dimension') {
+            for (const child of modelGeometryEntities(entity, styles, warnings)) output.push({ ...style, ...child });
+          }
           continue;
         }
-        const blockEntities = expand(block.entities, [...stack, name]);
+        let blockEntities = blockCache.get(name);
+        if (!blockEntities) {
+          blockEntities = expand(block.entities, [...stack, name], depth + 1);
+          if (!cyclicBlocks.has(name)) blockCache.set(name, blockEntities);
+        }
         if (geometry.type === 'dimension') {
+          remaining -= Math.max(0, blockEntities.length - 1);
+          if (remaining < 0) throw new Error('CAD dimensions exceed the preview limit.');
           for (const child of blockEntities) output.push(inheritInsertEntityMetadata(child, style));
         } else {
           const count = geometry.rows * geometry.columns;
-          if (!Number.isSafeInteger(count) || count < 1 || count > remaining
+          if (!Number.isSafeInteger(geometry.rows) || !Number.isSafeInteger(geometry.columns)
+            || geometry.rows < 1 || geometry.columns < 1 || !Number.isSafeInteger(count) || count > remaining
             || count * blockEntities.length > remaining) throw new Error('CAD INSERT array exceeds the preview limit.');
           remaining -= count * blockEntities.length;
           const insert: CadInsertEntity = { ...style, blockName: name, point: geometry.position,
@@ -785,8 +798,12 @@ export function loadCadDrawing(source: string): CadDrawing {
           }
         }
       } else if (geometry.type === 'group') {
-        for (const child of expand(geometry.children, stack)) output.push(inheritInsertEntityMetadata(child, style));
+        for (const child of expand(geometry.children, stack, depth + 1)) output.push(inheritInsertEntityMetadata(child, style));
       } else {
+        if (geometry.type === 'mesh') {
+          remaining -= Math.max(0, geometry.faces.length - 1);
+          if (remaining < 0) throw new Error('CAD mesh exceeds the preview limit.');
+        }
         for (const child of modelGeometryEntities(entity, styles, warnings)) output.push({ ...style, ...child });
       }
       for (const attribute of entity.attributes) {
@@ -801,8 +818,8 @@ export function loadCadDrawing(source: string): CadDrawing {
     }
     return output;
   };
-  const space = model.models.find(space => space.kind === 'model') ?? model.models[0];
-  const entities = expand(space?.entities ?? []);
+  // Preserve model and paper-space content, as in the existing DXF preview.
+  const entities = expand(model.models.flatMap(space => space.entities));
   const lineTypeMap = new Map<string, CadLineType>(model.linetypes.map(line => [normalizeLineTypeName(line.name)!, {
     name: line.name, description: line.description ?? undefined, pattern: line.pattern
   }]));
@@ -884,9 +901,24 @@ function modelGeometryEntities(entity: ModelEntity, styles: Map<string, CadTextS
         height: Math.max(distance(start, end) * 0.08, 1) }];
     }
     case 'unknown': {
+      if (g.type_name === 'dwg.ATTDEF') {
+        const flags = Number(entity.props['dwg.flags']);
+        // Variable definitions are templates; their placed ATTRIB values are drawn above.
+        if (!(flags & 2) || (flags & 1)) return [];
+        const position = entity.props['dwg.insertion_point'];
+        const value = entity.props['dwg.default'];
+        if (Array.isArray(position) && position.length >= 2 && position.slice(0, 2).every(Number.isFinite)
+          && typeof value === 'string' && value) {
+          return [{ type: 'text', point: { x: position[0], y: position[1] }, value: normalizeDxfText(value),
+            height: Number(entity.props['dwg.height']) || 1, rotation: 0, widthFactor: 1, obliqueAngle: 0,
+            horizontalAlign: 'left', verticalAlign: 'baseline' }];
+        }
+        return [];
+      }
       // cadkit decodes RAY/XLINE coordinates into props even though its model has no ray kind.
       const point = entity.props['dwg.point'], direction = entity.props['dwg.direction'];
       if (['dwg.RAY', 'dwg.XLINE'].includes(g.type_name) && Array.isArray(point) && Array.isArray(direction)
+        && point.length >= 2 && direction.length >= 2
         && point.slice(0, 2).every(Number.isFinite) && direction.slice(0, 2).every(Number.isFinite)) {
         return [{ type: 'construction-line', point: { x: point[0], y: point[1] },
           direction: { x: direction[0], y: direction[1] }, ray: g.type_name === 'dwg.RAY' }];
@@ -3897,10 +3929,12 @@ async function applyCadResourceResolver(
   }
 
   const textStyleMap = new Map(drawing.textStyles.map((style) => [normalizeTextStyleName(style.name), style]));
+  const previousWarnings = collectDrawingWarnings(drawing.entities, textStyleMap);
   return {
     ...drawing,
     entities,
-    warnings: [...collectDrawingWarnings(entities, textStyleMap), ...resolverWarnings]
+    warnings: uniqueWarnings([...drawing.warnings.filter(warning => !previousWarnings.includes(warning)),
+      ...collectDrawingWarnings(entities, textStyleMap), ...resolverWarnings])
   };
 }
 
@@ -4015,10 +4049,12 @@ function applyCadFontResolver(drawing: CadDrawing, fontResolver: PreviewFontReso
   });
 
   const textStyleMap = new Map(drawing.textStyles.map((style) => [normalizeTextStyleName(style.name), style]));
+  const previousWarnings = collectDrawingWarnings(drawing.entities, textStyleMap);
   return {
     ...drawing,
     entities,
-    warnings: [...collectDrawingWarnings(entities, textStyleMap, resolvedFontFiles), ...resolverWarnings]
+    warnings: uniqueWarnings([...drawing.warnings.filter(warning => !previousWarnings.includes(warning)),
+      ...collectDrawingWarnings(entities, textStyleMap, resolvedFontFiles), ...resolverWarnings])
   };
 }
 

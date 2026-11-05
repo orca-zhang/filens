@@ -1993,11 +1993,12 @@ function parseChartGraphicFrameDraft(
   const barChart = asArray(plotArea?.['c:barChart'])[0] as XmlRecord | undefined;
   const pieChart = asArray(plotArea?.['c:pieChart'])[0] as XmlRecord | undefined;
   const chart = barChart ?? pieChart;
-  if (!chartNode || !plotArea || !chart || (barChart && String(barChart['c:barDir']?.val ?? 'col') !== 'col')) {
+  const barDirection = String(barChart?.['c:barDir']?.val ?? 'col');
+  if (!chartNode || !plotArea || !chart || (barChart && !['col', 'bar'].includes(barDirection))) {
     return undefined;
   }
 
-  const chartType = barChart ? 'column' : 'pie';
+  const chartType = barChart ? barDirection === 'bar' ? 'bar' : 'column' : 'pie';
   const seriesNodes = asArray(chart['c:ser']).slice(0, chartType === 'pie' ? 1 : undefined);
   const categories = readChartStrings(seriesNodes[0]?.['c:cat']);
   const series = seriesNodes.map((seriesNode, index) => {
@@ -2026,12 +2027,19 @@ function parseChartGraphicFrameDraft(
         };
       }
     }
+    const dataLabels = (seriesNode['c:dLbls'] ?? chart['c:dLbls']) as XmlRecord | undefined;
     return {
       name: readChartText(seriesNode['c:tx']) ?? `Series ${index + 1}`,
       values,
       color,
       alpha,
-      pointStyles
+      pointStyles,
+      dataLabels: dataLabels ? {
+        showValue: ['1', 'true'].includes(String(dataLabels['c:showVal']?.val ?? '0')),
+        position: dataLabels['c:dLblPos']?.val,
+        formatCode: dataLabels['c:numFmt']?.formatCode,
+        textStyle: parseChartTextStyle(dataLabels['c:txPr'], context)
+      } : undefined
     };
   });
   if (!series.length || !series.some((entry) => entry.values.some((value) => value != null))) {
@@ -2039,6 +2047,7 @@ function parseChartGraphicFrameDraft(
   }
 
   const valueAxisNode = asArray(plotArea['c:valAx'])[0] as XmlRecord | undefined;
+  const categoryAxisNode = asArray(plotArea['c:catAx'])[0] as XmlRecord | undefined;
   const valueAxis = valueAxisNode
     ? {
         min: readFiniteNumber(valueAxisNode['c:scaling']?.['c:min']?.val),
@@ -2046,7 +2055,10 @@ function parseChartGraphicFrameDraft(
         majorUnit: readFiniteNumber(valueAxisNode['c:majorUnit']?.val),
         formatCode: typeof valueAxisNode['c:numFmt']?.formatCode === 'string'
           ? String(valueAxisNode['c:numFmt'].formatCode)
-          : undefined
+          : undefined,
+        textStyle: parseChartTextStyle(valueAxisNode['c:txPr'], context),
+        line: parseChartLine(valueAxisNode['c:spPr']?.['a:ln'], context),
+        majorGridline: parseChartLine(valueAxisNode['c:majorGridlines']?.['c:spPr']?.['a:ln'], context)
       }
     : undefined;
   const transformInfo = parseTransform(node['p:xfrm'], context.group);
@@ -2061,6 +2073,13 @@ function parseChartGraphicFrameDraft(
     title: readChartText(chartNode['c:title']?.['c:tx']),
     categories,
     series,
+    textStyle: parseChartTextStyle(chartSpace?.['c:txPr'], context),
+    gapWidth: barChart ? readFiniteNumber(barChart['c:gapWidth']?.val) : undefined,
+    categoryAxis: categoryAxisNode ? {
+      reversed: categoryAxisNode['c:scaling']?.['c:orientation']?.val === 'maxMin',
+      textStyle: parseChartTextStyle(categoryAxisNode['c:txPr'], context),
+      line: parseChartLine(categoryAxisNode['c:spPr']?.['a:ln'], context)
+    } : undefined,
     legendPosition: resolveChartLegendPosition(chartNode['c:legend']),
     valueAxis,
     transform: transformInfo.transform,
@@ -2077,6 +2096,14 @@ function parseChartGraphicFrameDraft(
     hasFill: false,
     hasLine: false
   };
+}
+
+function parseChartTextStyle(node: XmlRecord | undefined, context: ParseContext): TextRunStyle {
+  return parseRunStyle(asArray(node?.['a:p'])[0]?.['a:pPr']?.['a:defRPr'], context);
+}
+
+function parseChartLine(node: XmlRecord | undefined, context: ParseContext): LineStyle | null | undefined {
+  return node ? parseLineInfo(node, context.theme, context.colorMap).line ?? null : undefined;
 }
 
 function readChartText(node: XmlRecord | undefined): string | undefined {

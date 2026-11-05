@@ -7171,6 +7171,82 @@ describe('renderSlideToElement', () => {
     expect(clusteredBars[0]?.getAttribute('data-value')).toBe('4');
   });
 
+  it('renders horizontal bars with readable category and formatted value labels', () => {
+    const item: ChartItem = {
+      ...createChartItem('bar', 'clustered', 0),
+      chartType: 'bar', title: undefined, legendPosition: 'none', gapWidth: 72,
+      categories: ['iWork 预览', '图像 / RAW 核心'],
+      textStyle: { color: '#C8CFDD', fontFamily: 'Avenir Next' },
+      categoryAxis: { textStyle: { color: '#F4F6FB', bold: true }, line: { color: '#FFFFFF', alpha: 0.16 } },
+      valueAxis: { min: 0, max: 800, majorUnit: 200, textStyle: { color: '#939CB2' }, line: null, majorGridline: { color: '#FFFFFF', alpha: 0.07 } },
+      series: [{ name: 'Brotli KiB', values: [10.8, 713.2], color: '#2FC8FF', dataLabels: {
+        showValue: true, position: 'outEnd', formatCode: '#,##0.0', textStyle: { color: '#F4F6FB', bold: true }
+      } }]
+    };
+    const slide = createBaseSlide([item]);
+    const rendered = renderSlideToElement(slide, createPresentation(slide));
+    const bars = rendered.querySelectorAll('.pptxv-chart-bar');
+    const labels = rendered.querySelectorAll<SVGElement>('.pptxv-chart-data-label');
+    const categories = rendered.querySelectorAll<SVGElement>('.pptxv-chart-category-label');
+    const attr = (element: Element, name: string) => Number(element.getAttribute(name));
+
+    expect(bars).toHaveLength(2);
+    expect(attr(bars[1], 'width') / attr(bars[0], 'width')).toBeCloseTo(713.2 / 10.8, 1);
+    expect(attr(bars[0], 'y')).toBeGreaterThan(attr(bars[1], 'y'));
+    expect(bars[0].getAttribute('x')).toBe(bars[1].getAttribute('x'));
+    expect(labels).toHaveLength(2);
+    expect(Array.from(labels, label => label.textContent)).toEqual(['10.8', '713.2']);
+    expect(attr(labels[1], 'x')).toBeGreaterThan(attr(bars[1], 'x') + attr(bars[1], 'width'));
+    expect(labels[0].style.fill).toBe('#F4F6FB');
+    expect(labels[0].style.fontWeight).toBe('700');
+    expect(categories[0].style.fill).toBe('#F4F6FB');
+    expect(attr(categories[0], 'x')).toBeLessThan(attr(bars[0], 'x'));
+    expect(rendered.querySelector<SVGElement>('.pptxv-chart-axis-label')?.style.fill).toBe('#939CB2');
+    expect(rendered.querySelector<SVGElement>('.pptxv-chart-gridline')?.style.stroke).toBe('rgba(255, 255, 255, 0.07)');
+  });
+
+  it.each([
+    { value: 1234.5, formatCode: '#,##0.0', expected: '1,234.5' },
+    { value: 0.125, formatCode: '0.0%', expected: '12.5%' },
+    { value: 2.5, formatCode: 'General', expected: '2.5' },
+    { value: 2.5, formatCode: `0.${'0'.repeat(30)}`, expected: `2.5${'0'.repeat(19)}` }
+  ])('formats chart data labels with $formatCode', ({ value, formatCode, expected }) => {
+    const item = createChartItem('labels', 'clustered', 0);
+    item.series = [{ name: 'Values', values: [value], color: '#4472C4', dataLabels: { showValue: true, formatCode } }];
+    const slide = createBaseSlide([item]);
+    expect(renderSlideToElement(slide, createPresentation(slide)).querySelector('.pptxv-chart-data-label')?.textContent).toBe(expected);
+    item.series[0].dataLabels!.showValue = false;
+    expect(renderSlideToElement(slide, createPresentation(slide)).querySelector('.pptxv-chart-data-label')).toBeNull();
+  });
+
+  it.each(['clustered', 'stacked', 'percentStacked'] as const)('renders %s horizontal bars with negative and missing values and reversed categories', grouping => {
+    const item: ChartItem = {
+      ...createChartItem('bar', grouping, 0), chartType: 'bar',
+      categoryAxis: { reversed: true }, valueAxis: { min: -100, max: 100, majorUnit: 50 },
+      series: [
+        { name: 'A', values: [4, -2, null], color: '#4472C4' },
+        { name: 'B', values: [2, -3, 1], color: '#ED7D31' }
+      ]
+    };
+    const slide = createBaseSlide([item]);
+    const rendered = renderSlideToElement(slide, createPresentation(slide));
+    const bars = rendered.querySelectorAll('.pptxv-chart-bar');
+    const positive = bars[0], negative = bars[1], nextSeries = bars[2];
+    const attr = (element: Element, name: string) => Number(element.getAttribute(name));
+    expect(bars).toHaveLength(5);
+    expect(attr(positive, 'y')).toBeLessThan(attr(negative, 'y'));
+    expect(attr(negative, 'x')).toBeLessThan(attr(positive, 'x'));
+    if (grouping === 'clustered') {
+      expect(attr(nextSeries, 'x')).toBe(attr(positive, 'x'));
+      expect(attr(nextSeries, 'y')).toBeGreaterThan(attr(positive, 'y'));
+    } else {
+      expect(attr(nextSeries, 'x')).toBeCloseTo(attr(positive, 'x') + attr(positive, 'width'), 2);
+      expect(attr(nextSeries, 'y')).toBe(attr(positive, 'y'));
+    }
+    if (grouping === 'percentStacked') expect(Number(positive.getAttribute('data-value'))).toBeCloseTo(100 * 4 / 6);
+    for (const bar of bars) expect(bar.outerHTML).not.toMatch(/NaN|Infinity/);
+  });
+
   it('renders the real shapes sample pie chart with its cached data and category legend', async () => {
     const presentation = await loadPptx(await readFixture('../../apps/demo/public/samples/rich-pptx-shapes.pptx'));
     const rendered = renderSlideToElement(presentation.slides[0], presentation);

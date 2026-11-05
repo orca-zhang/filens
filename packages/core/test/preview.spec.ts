@@ -488,7 +488,8 @@ describe('preview format routing', () => {
       xlsx: 'workbook',
       jpg: 'image',
       png: 'image',
-      dxf: 'cad'
+      dxf: 'cad',
+      'cad-json': 'cad'
     } as const;
 
     const defaultPairs = conversionManifest.filter((pair) => pair.sourceFormat !== pair.targetFormat).filter((pair, index, pairs) =>
@@ -499,7 +500,7 @@ describe('preview format routing', () => {
         sourceFormat: pair.sourceFormat,
         targetFormat: pair.targetFormat,
         family: expectedFamilies[pair.targetFormat as keyof typeof expectedFamilies],
-        driverId: pair.targetFormat === 'dxf' ? 'cad' : ['jpg', 'png'].includes(pair.targetFormat) ? 'image' : pair.targetFormat,
+        driverId: ['dxf', 'cad-json'].includes(pair.targetFormat) ? 'cad' : ['jpg', 'png'].includes(pair.targetFormat) ? 'image' : pair.targetFormat,
         conversion: { required: true }
       });
     }

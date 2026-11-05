@@ -52,7 +52,8 @@ test('opens TIFF, DWG and raster samples with current format status', async ({ p
   await expect(page.locator('.cadv-preview svg')).toContainText('FIELD NOTES / CAFE');
   await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-cafe-2018.dwg');
   await expect(page.getByRole('button', { name: 'DGN', exact: true })).toHaveCount(0);
-  expect(engines.filter(url => url.includes('converter-graphics.wasm'))).toHaveLength(1);
+  expect(engines.filter(url => url.includes('converter-raster.wasm'))).toHaveLength(1);
+  expect(engines.filter(url => url.includes('converter-cad.wasm'))).toHaveLength(1);
 });
 
 test('uploads original TIFF and DWG files through the same local route', async ({ page }) => {

@@ -22,6 +22,8 @@ const files = [
   path.join(work, '中文 preview.txt'),
   path.join(root, 'apps/demo/public/samples/filens-aurora-guide.docx'),
   path.join(root, 'apps/demo/public/samples/filens-cosmic-atlas.pdf'),
+  ...['filens-cafe-2000.dwg', 'filens-cafe-2018.dwg', 'field-notes.tiff']
+    .map(name => path.join(root, 'apps/demo/public/samples/graphics', name)),
   ...['still-form.psd', 'after-hours.psb', 'forma-identity.ai', 'orbit-marks.eps', 'studio-editions.ps']
     .map(name => path.join(root, 'apps/demo/public/samples/design', name)),
   path.join(root, 'apps/demo/public/samples/a.pages'),
@@ -131,6 +133,17 @@ try {
           assert.equal(await icon.evaluate(img => img.naturalWidth), 1, `${mode}: ${file}`);
         }
         if (file.endsWith('.txt')) assert.match(state.text, /FILENS_PREVIEW_2026/);
+        if (file.endsWith('.dwg')) {
+          await page.locator('.cadv-preview svg').getByText('FIELD NOTES / CAFE', { exact: true }).waitFor();
+          if (mode === 'split') {
+            assert.equal(requests.filter(url => url.includes('converter-cad.wasm')).length, 1);
+            assert.equal(requests.filter(url => /converter-(raster|graphics|core)\.wasm/.test(url)).length, 0);
+          }
+        }
+        if (file.endsWith('.tiff') && mode === 'split') {
+          assert.equal(requests.filter(url => url.includes('converter-raster.wasm')).length, 1);
+          assert.equal(requests.filter(url => /converter-(cad|graphics|core)\.wasm/.test(url)).length, 0);
+        }
         if (file.endsWith('.ods')) {
           assert.match(state.text, /Test spreadsheet/);
           assert.match(state.text, /2nd row 2nd column/);

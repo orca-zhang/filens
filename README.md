@@ -10,16 +10,18 @@
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
+**Latest release: [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5)** · CLI **0.5.6** · preview **0.3.5** · mobile SDKs **0.1.5** · DSH **0.1.6**.
+
 [▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
 
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
 | Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite components: 8.00–9.27 MiB · Full components: 31.43–37.06 MiB**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Approximate size | **Lite: 17.49–17.76 MiB · Full: 31.24–33.78 MiB** offline downloads, including preview assets; Full includes OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.92–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Recorded preview 0.3.4 build snapshot: **4.73 MB Brotli** summed across split files, or **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.92–2.20 MiB**. The CLI sizes above measure complete **v0.6.5 offline archive downloads**, including preview **0.3.5**; Full also includes OCR runtime and models. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.6 component installations remain **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.5 source-build main runtimes: **4.15 MB Brotli** summed across split files, or **3.40 MB Brotli / 3.53 MB gzip / 6.66 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -47,7 +49,7 @@ filens capacity --json
 
 ### Offline browser previews
 
-**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. Release bundles include preview 0.3.4. Other installation methods can prepare preview assets in advance with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.5 release bundles include preview 0.3.5; npm CLI 0.5.6 and DSH 0.1.6 retain their published runtime versions. Other installation methods can prepare preview assets in advance with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -68,7 +70,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.20 MiB · Lite 9.27 MiB · Full 32.49 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.6 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.20 MiB · Lite 17.76 MiB · Full 31.89 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.5 offline downloads · macOS arm64 · CLI 0.5.6 / preview 0.3.5; Full includes OCR models; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -89,6 +91,16 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ### DeepSeek Harness
 
+**Faster first previews than DSH built in: PPTX 13.56× · DOCX 16.46× · PDF 1.73×.**
+
+| Typical file | DSH built in · first open | FiLens 0.1.3 · first open | Speedup |
+| --- | ---: | ---: | ---: |
+| PPTX presentation | 1,830 ms | **135 ms** | **13.56×** |
+| DOCX document | 1,827 ms | **111 ms** | **16.46×** |
+| PDF document | 329 ms | **190 ms** | **1.73×** |
+
+Recorded November 5, 2026 on Apple M4 Pro/macOS and DSH Desktop 0.2.1-rc.5: nine paired rounds per format, medians through render readiness, excluding application startup. Office and PDF use separate runs; these are retained FiLens 0.1.3 measurements. PDF cached opens also improve from **110 to 77 ms (1.43×)**. [Office samples and method](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [PDF samples and method](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+
 Install [`dsh-filens@0.1.6`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
 
 <!-- dsh-package-metrics:start -->
@@ -103,7 +115,7 @@ Rotate and zoom 3D models, look around 360° photos and play panoramic video in 
 
 ### Browser integration: single file or split modules
 
-Download a browser preview ZIP from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
+**Preview 0.3.5:** split ZIP **5.61 MiB**, all-in-one ZIP **10.59 MiB**. Download from [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
 
@@ -125,6 +137,7 @@ Deploy the extracted runtime directory and import its `filens.js` over HTTP(S). 
 
 ### iOS / Android SDKs
 
+**SDK 0.1.5 / preview 0.3.5:** iOS ZIP **5.63 MiB**, Android ZIP **5.64 MiB**.
 Source SDKs are available as a local Swift Package and an Android
 Library, sharing the offline frontend and WASM runtime. See the
 [mobile SDK integration guide](sdk/README.md) and
@@ -151,9 +164,9 @@ Library, sharing the offline frontend and WASM runtime. See the
 <!-- bundle-sizes:en:start -->
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM (Office detection) | 910.9 KiB | 408.9 KiB | **329.8 KiB** |
+| Conversion core WASM (Office detection) | 927.9 KiB | 414.3 KiB | **334.3 KiB** |
 | Image / RAW core WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
-| Media / panorama preview | 464.6 KiB | 128.7 KiB | **108.3 KiB** |
+| Media / panorama preview | 464.6 KiB | 128.7 KiB | **108.2 KiB** |
 | truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
 Document, image / RAW, and STEP WASM modules load independently on demand. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
@@ -163,13 +176,16 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Office decryption WASM (optional) | 370.4 KiB | 160.3 KiB | **127.6 KiB** |
+| Office decryption WASM (optional) | 370.6 KiB | 160.3 KiB | **127.4 KiB** |
+| DWG reader WASM (on demand) | 886.8 KiB | 432.4 KiB | **351.8 KiB** |
+| Raster preview WASM (on demand) | 1747.7 KiB | 717.4 KiB | **537.7 KiB** |
+| PostScript WASM (optional) | 2429.4 KiB | 745.6 KiB | **516.0 KiB** |
 | HEIC / HEIF decoder WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
-| Demo entry | 239.9 KiB | 68.6 KiB | **57.4 KiB** |
+| Demo entry | 241.8 KiB | 69.5 KiB | **58.1 KiB** |
 | Agent CLI demo UI | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
-| Shared vendor dependencies | 813.1 KiB | 229.7 KiB | **192.0 KiB** |
-| PPTX / core runtime | 380.9 KiB | 106.6 KiB | **90.1 KiB** |
-| Vue preview host | 198.3 KiB | 54.5 KiB | **43.5 KiB** |
+| Shared vendor dependencies | 813.1 KiB | 229.7 KiB | **192.1 KiB** |
+| PPTX / core runtime | 384.7 KiB | 108.0 KiB | **91.5 KiB** |
+| Vue preview host | 213.8 KiB | 58.2 KiB | **46.5 KiB** |
 | DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
 | On-demand DOCX engine | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
 | Office attachments | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
@@ -177,16 +193,16 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 | Shared ZIP compatibility | 41.5 KiB | 12.7 KiB | **11.6 KiB** |
 | Encrypted ZIP support | 99.1 KiB | 37.0 KiB | **32.3 KiB** |
 | On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
-| iWork preview | 40.6 KiB | 12.2 KiB | **10.8 KiB** |
-| CAD / mind maps / diagrams | 93.0 KiB | 26.0 KiB | **22.2 KiB** |
+| iWork preview | 40.5 KiB | 12.1 KiB | **10.8 KiB** |
+| CAD / mind maps / diagrams | 100.6 KiB | 28.4 KiB | **24.4 KiB** |
 | 3D preview | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
-| glTF / GLB model loader | 42.7 KiB | 12.6 KiB | **11.3 KiB** |
+| glTF / GLB model loader | 42.7 KiB | 12.6 KiB | **11.2 KiB** |
 | FBX model loader | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
 | OBJ model loader | 8.5 KiB | 2.9 KiB | **2.6 KiB** |
 | MTL model loader | 4.2 KiB | 1.7 KiB | **1.5 KiB** |
 | 3DS model loader | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
 | LDraw model loader | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
-| USDZ model loader | 8.5 KiB | 2.7 KiB | **2.4 KiB** |
+| USDZ model loader | 8.5 KiB | 2.6 KiB | **2.4 KiB** |
 | VRML model loader | 178.0 KiB | 46.4 KiB | **39.7 KiB** |
 | Media decoder loader | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
 | Archive preview | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
@@ -197,7 +213,7 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Entry, preloaded JS, and CSS total **459.5 KiB Brotli** (1940.1 KiB raw / 546.4 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Entry, preloaded JS, and CSS total **461.4 KiB Brotli** (1945.7 KiB raw / 548.5 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
 
 </details>
 
@@ -207,7 +223,9 @@ Measured from the demo build. Compression columns describe artifacts; actual tra
 The [format package audit](docs/format-package-sizes.md) records dependency sharing,
 worker packaging and measured savings for applications combining the npm libraries.
 
-The table above is the recorded demo-build snapshot. The new standalone builds have their own [complete measurements](docs/preview-build-sizes.json), including embedded dependencies. Individual chunks are not independent per-format download totals.
+The [DWG optimization audit](docs/dwg-preview-optimization.md) records the compact CAD reader (443 KB gzip), direct drawing-model loading, and measurements across 13 drawings; the reader is included in the build measurements above.
+
+The table above measures the v0.6.5 production demo build. The new standalone builds have their own [complete measurements](docs/preview-build-sizes.json), including embedded dependencies. Individual chunks are not independent per-format download totals.
 
 </details>
 
@@ -253,7 +271,7 @@ npm run build:wasm
 npm run dev --workspace @filens/demo
 ```
 
-Open [the local demo](http://localhost:5173/modules/filens/?lang=en), choose a sample or drop in a file. For hosting, see the [Vercel guide](docs/deploy-vercel.md).
+Open [the local demo](http://localhost:5173/modules/filens/?lang=en) (requires local deployment; otherwise, open [the Vercel online demo](https://filens-six.vercel.app/?lang=en)), then choose a sample or drop in a file. For hosting, see the [Vercel guide](docs/deploy-vercel.md).
 
 ## Install on ZimaOS
 

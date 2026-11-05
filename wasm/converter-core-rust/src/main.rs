@@ -11271,11 +11271,21 @@ fn rewrite_xml(
 
 fn validate_output(path: &str, target: &str) -> Result<(), ConvertError> {
     if target == "cad-json" {
+        #[derive(Deserialize)]
+        struct CadSourceContract { format: String }
+        #[derive(Deserialize)]
+        struct CadModelContract {
+            schema_version: u32,
+            source: CadSourceContract,
+            #[serde(rename = "models")]
+            _models: Vec<serde::de::IgnoredAny>,
+            #[serde(rename = "layers")]
+            _layers: Vec<serde::de::IgnoredAny>,
+        }
         let file = File::open(path).map_err(|e| conversion_error(format!("read CAD model: {e}")))?;
-        let model: serde_json::Value = serde_json::from_reader(file)
+        let model: CadModelContract = serde_json::from_reader(std::io::BufReader::new(file))
             .map_err(|e| conversion_error(format!("Invalid CAD model: {e}")))?;
-        if model["schema_version"] != 1 || model["source"]["format"] != "dwg"
-            || !model["models"].is_array() || !model["layers"].is_array() {
+        if model.schema_version != 1 || model.source.format != "dwg" {
             return Err(conversion_error("Invalid CAD drawing model".into()));
         }
         return Ok(());

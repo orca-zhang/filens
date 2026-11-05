@@ -1,0 +1,232 @@
+{
+  "observedAt": "2026-11-05T10:25:04.052Z",
+  "tag": "v0.6.5",
+  "cliVersion": "0.5.6",
+  "previewVersion": "0.3.5",
+  "platform": "darwin-arm64",
+  "emptyPATH": true,
+  "resourceOverrides": false,
+  "archives": [
+    {
+      "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
+      "kind": "cli-lite",
+      "platform": "darwin-arm64",
+      "bytes": 18625319,
+      "unpackedBytes": 25229469,
+      "binaryBytes": 2306336,
+      "sha256": "9902c250defd238094c67d10a517f66a4b244ada1cbc654239b359ef10f014da",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": true
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
+      "kind": "cli-full",
+      "platform": "darwin-arm64",
+      "bytes": 33440050,
+      "unpackedBytes": 49559818,
+      "binaryBytes": 2306336,
+      "sha256": "0d574a3024cc5d58febbcc898ba77da4d2539549f20fff5bf088faa46695e10c",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": true
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-lite.tar.gz",
+      "kind": "cli-lite",
+      "platform": "linux-x64",
+      "bytes": 18460198,
+      "unpackedBytes": 24008551,
+      "binaryBytes": 1085420,
+      "sha256": "af2e222323251e050f7a1f08155c598e70f355f7fbdc78139e33b83a3d55297d",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": false
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
+      "kind": "cli-full",
+      "platform": "linux-x64",
+      "bytes": 35185926,
+      "unpackedBytes": 54354212,
+      "binaryBytes": 1085720,
+      "sha256": "9f8c80961cd809b1afdc99dc0966b10fa426fc7608d2e733922731fb90aea532",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": false
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
+      "kind": "cli-lite",
+      "platform": "linux-arm64",
+      "bytes": 18343759,
+      "unpackedBytes": 23892509,
+      "binaryBytes": 969376,
+      "sha256": "0b5101205e552d46dbb33db20817ce63b708f1cd96e6f58320a11616fe7e1e37",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": false
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
+      "kind": "cli-full",
+      "platform": "linux-arm64",
+      "bytes": 32760945,
+      "unpackedBytes": 48445018,
+      "binaryBytes": 971504,
+      "sha256": "b3412d5c4c396bc6c3a262ab0989a0b2542d8a8621f8652fd7ac42b090566091",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": false
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-lite.zip",
+      "kind": "cli-lite",
+      "platform": "win32-x64",
+      "bytes": 18395251,
+      "unpackedBytes": 23923085,
+      "binaryBytes": 999936,
+      "sha256": "8ba32a2bca58ffc370b1a8d74c7bc87bbe8f9b518bd9c95ff2c270b8d4e09c08",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": false
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-full.zip",
+      "kind": "cli-full",
+      "platform": "win32-x64",
+      "bytes": 35417895,
+      "unpackedBytes": 54082204,
+      "binaryBytes": 1000448,
+      "sha256": "1d22e00e652823fa9a835c024f282aefa68227b90e2f2e09ff23372d466c87ee",
+      "archiveIntegrity": true,
+      "extractedPayloadMatches": true,
+      "wasmValid": true,
+      "previewMatches": true,
+      "nativeExecuted": false
+    }
+  ],
+  "commands": [
+    {
+      "profile": "cli-lite",
+      "capacity": true,
+      "textRead": true,
+      "ocr": false,
+      "emptyPATH": true,
+      "resourceOverrides": false
+    },
+    {
+      "profile": "cli-full",
+      "capacity": true,
+      "textRead": true,
+      "ocr": true,
+      "emptyPATH": true,
+      "resourceOverrides": false
+    }
+  ],
+  "offlineBrowserPreviews": [
+    {
+      "profile": "cli-lite",
+      "input": "evidence.txt",
+      "passed": true,
+      "externalRequests": 0
+    },
+    {
+      "profile": "cli-full",
+      "input": "evidence.txt",
+      "passed": true,
+      "externalRequests": 0
+    },
+    {
+      "profile": "cli-full",
+      "input": "filens-cafe-2018.dwg",
+      "passed": true,
+      "externalRequests": 0
+    }
+  ],
+  "provenance": [
+    {
+      "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "f32a258e6224115b62f6fcc60cae456c5b46a506b58d303a4dce61855fe0a4f5",
+      "unchangedCLIAndOCRFiles": 34,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "7b712c3acbf08496fb9f08f158d657a10c6e07744c96f73da57baf11db43aea9",
+      "unchangedCLIAndOCRFiles": 73,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-lite.tar.gz",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "b855823471ebf727110d05c9e75660237e2e0489391ef4f62a88200a59e85ffd",
+      "unchangedCLIAndOCRFiles": 34,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "89ac38e5d159a326041843b91d711382917d048b08190f7e1db1b7128ebf7e55",
+      "unchangedCLIAndOCRFiles": 71,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "7ad751535a9d119976b58fb86b5ae2221ab713517c908edd42bf986c7c909387",
+      "unchangedCLIAndOCRFiles": 34,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "5338bdc4025fcc070b23327f71abd2416736771b9c491966ccdac550c1ef95a9",
+      "unchangedCLIAndOCRFiles": 71,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-lite.zip",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "4755da9e1987db869e72a0f8f100fecae1752369b3c7d4a4944d7c24b04490f5",
+      "unchangedCLIAndOCRFiles": 34,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-full.zip",
+      "previousTag": "v0.6.4",
+      "previousSHA256": "21d8edcbe5a1c9430c5c7f6efad6f08379551ddf22f5e0e248ce51ef18347a81",
+      "unchangedCLIAndOCRFiles": 73,
+      "unchangedCLIAndOCRPayloads": true,
+      "previewMatches": true
+    }
+  ],
+  "passed": true,
+  "limits": [
+    "Linux/Windows native execution was not repeated; their exact previously published CLI/OCR payloads were retained and verified byte-for-byte.",
+    "No mobile physical-device validation."
+  ]
+}

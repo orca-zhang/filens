@@ -8,7 +8,8 @@ import coreWasm from '../../../wasm/converter-core/dist/converter-core.wasm?url'
 import imageWasm from '../../../wasm/converter-image/dist/converter-image.wasm?url';
 import officeWasm from '../../../wasm/converter-core/dist/converter-office.wasm?url';
 import postscriptWasm from '../../../wasm/converter-core/dist/converter-postscript.wasm?url';
-import graphicsWasm from '../../../wasm/converter-core/dist/converter-graphics.wasm?url';
+import graphicsWasm from '../../../wasm/converter-core/dist/converter-raster.wasm?url';
+import cadWasm from '../../../wasm/converter-core/dist/converter-cad.wasm?url';
 export { isArchiveVolumeName, selectArchiveVolumes } from '@filens/core/archive-volumes';
 
 export interface BrowserPreviewOptions extends PreviewOptions {
@@ -35,7 +36,7 @@ export interface BrowserPreviewOptions extends PreviewOptions {
 export function createPreview(element: Element | string, options: BrowserPreviewOptions) {
   const props = shallowReactive({
     ...options,
-    converter: options.converter ?? createWasmConverterClient({ wasm: coreWasm, imageWasm, officeWasm, postscriptWasm, graphicsWasm }),
+    converter: options.converter ?? createWasmConverterClient({ wasm: coreWasm, imageWasm, officeWasm, postscriptWasm, graphicsWasm, cadWasm }),
     panoramaProcessor: options.panoramaProcessor ?? createWasmPanoramaProcessor({ wasm: coreWasm, imageWasm })
   });
   const preview = shallowRef<InstanceType<typeof Preview>>();

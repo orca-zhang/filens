@@ -5,6 +5,7 @@ export {
   CadPreviewSession,
   createCadPreviewDriver,
   createCadPreviewRoutes,
+  loadCadDrawing,
   loadDxfDrawing,
   type CadArcEntity,
   type CadCircleEntity,

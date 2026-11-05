@@ -1341,7 +1341,10 @@ onUnmounted(() => {
           </div>
         </details>
         <details v-if="compactControls" class="pptxv-format-controls" @keydown.esc.stop="($event.currentTarget as HTMLDetailsElement).open = false">
-          <summary class="pptxv-button">{{ t('Tools') }}</summary>
+          <summary class="pptxv-button">
+            <span>{{ t('Tools') }}</span>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+          </summary>
           <div ref="driverControlsHost" class="pptxv-format-controls-panel" />
         </details>
       </div>

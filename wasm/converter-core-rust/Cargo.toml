@@ -43,6 +43,18 @@ path = "src/graphics_main.rs"
 required-features = ["graphics-preview"]
 test = false
 
+[[bin]]
+name = "converter-cad"
+path = "src/cad_main.rs"
+required-features = ["graphics-preview"]
+test = false
+
+[[bin]]
+name = "converter-raster"
+path = "src/raster_main.rs"
+required-features = ["graphics-preview"]
+test = false
+
 [features]
 default = ["office-crypto"]
 format-detection = []

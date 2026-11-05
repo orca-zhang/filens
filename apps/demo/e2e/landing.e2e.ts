@@ -199,22 +199,22 @@ test('plays the actual demo video on request with translated captions', async ({
   await expect(video).toHaveAttribute('controls', '');
 });
 
-test('opens the showcase through a shareable link and renders all three slides', async ({ page }) => {
+test('opens the filens introduction through a shareable link with all 14 slides', async ({ page }) => {
   await page.goto('./?view=preview&format=showcase');
-  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-field-notes.pptx');
-  await expect(page.locator('.wb-preview-stage')).toContainText('BEYOND');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.zh-CN.pptx');
+  await expect(page.locator('.wb-preview-stage')).toContainText('把文件理解');
   await expect(page.locator('.wb-preview-stage')).not.toContainText('Master Title');
-  await expect(page.locator('.pptxv-slide-shell')).toHaveCount(3);
+  await expect(page.locator('.pptxv-slide-shell')).toHaveCount(14);
   await expect(page.locator('.pptxv-toolbar')).toHaveCount(0);
   await page.getByRole('button', { name: '显示工具栏', exact: true }).click();
   await expect(page.getByRole('button', { name: '隐藏工具栏', exact: true })).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(page.locator('.pptxv-status').first()).toHaveText('2 / 3');
+  await expect(page.locator('.pptxv-status').first()).toHaveText('2 / 14');
   await page.getByRole('button', { name: '隐藏工具栏', exact: true }).click();
   await expect(page.locator('.pptxv-toolbar')).toHaveCount(0);
   await page.locator('.pptxv-shell').first().press('ArrowLeft');
   await page.getByRole('button', { name: '显示工具栏', exact: true }).click();
-  await expect(page.locator('.pptxv-status').first()).toHaveText('1 / 3');
+  await expect(page.locator('.pptxv-status').first()).toHaveText('1 / 14');
 });
 
 test('opens the public Keynote night-sky sample with three slides', async ({ page }) => {

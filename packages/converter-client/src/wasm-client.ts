@@ -41,6 +41,8 @@ export interface WasmConverterClientOptions {
   postscriptWasm?: WasmModuleSource;
   /** Loaded on demand for TIFF, DWG and other non-browser graphics formats. */
   graphicsWasm?: WasmModuleSource;
+  /** Optional compact DWG reader; takes priority over the combined graphics module. */
+  cadWasm?: WasmModuleSource;
   fetch?: typeof fetch;
 }
 
@@ -81,6 +83,9 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
   const runGraphics = options.graphicsWasm
     ? createWasmCoreRunner({ wasm: options.graphicsWasm, fetch: options.fetch })
     : undefined;
+  const runCad = options.cadWasm
+    ? createWasmCoreRunner({ wasm: options.cadWasm, fetch: options.fetch })
+    : undefined;
   const imageModule = options.imageWasm
     ? retryableLoader(() => loadWasmModule(options.imageWasm!, options.fetch))
     : undefined;
@@ -114,7 +119,7 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
       }
       const usePostscriptConverter = Boolean(runPostscript && targetFormat === 'pdf' && ['eps', 'ps', 'ai'].includes(sourceFormat));
       const useGraphicsConverter = Boolean(runGraphics && ['dwg', 'tif', 'tiff', 'tga', 'pgm', 'pbm', 'pnm', 'dds', 'hdr', 'dib', 'cur', 'pcx', 'exr', 'jxl', 'qoi', 'ff'].includes(sourceFormat));
-      const runConverter = useGraphicsConverter ? runGraphics! : usePostscriptConverter ? runPostscript! : useImageConverter ? runImage! : runCore;
+      const runConverter = runCad && sourceFormat === 'dwg' ? runCad : useGraphicsConverter ? runGraphics! : usePostscriptConverter ? runPostscript! : useImageConverter ? runImage! : runCore;
       const invoke = (runner: typeof runCore, bytes: Uint8Array) => runner({
         args: [
           useImageConverter ? 'converter-image' : 'converter-core',

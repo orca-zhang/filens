@@ -196,6 +196,40 @@ describe('loadPptx', () => {
     expect(presentation.warnings).toEqual([]);
   });
 
+  it('parses horizontal bars with cached workbook values, data labels and dark-slide styles', async () => {
+    const zip = await JSZip.loadAsync(await buildColumnChartFixture());
+    zip.file('ppt/charts/chart1.xml', await readFixture('test/fixtures/bar-chart.xml'));
+    const presentation = await loadPptx(await zip.generateAsync({ type: 'uint8array' }));
+    const chart = presentation.slides[0].items.find((item) => item.kind === 'chart');
+
+    expect(chart).toMatchObject({
+      kind: 'chart', chartType: 'bar', grouping: 'clustered', gapWidth: 72,
+      categories: ['iWork 预览', '3D 预览', 'PPTX 核心运行时', 'PDF 引擎', '媒体 / 全景', 'STEP truck', '转换核心 WASM', '图像 / RAW 核心'],
+      legendPosition: 'none',
+      textStyle: { color: '#C8CFDD', fontFamily: 'Avenir Next' },
+      categoryAxis: { reversed: false, textStyle: { color: '#F4F6FB', bold: true }, line: { color: '#FFFFFF', alpha: 0.16 } },
+      valueAxis: { max: 800, majorUnit: 200, textStyle: { color: '#939CB2' }, line: null, majorGridline: { color: '#FFFFFF', alpha: 0.07 } },
+      series: [{
+        name: 'Brotli KiB', color: '#2FC8FF', values: [10.8, 27.7, 90.1, 106.9, 108.3, 255, 329.8, 713.2],
+        dataLabels: { showValue: true, position: 'outEnd', formatCode: '#,##0.0', textStyle: { color: '#F4F6FB', bold: true } }
+      }]
+    });
+    expect(presentation.slides[0].items.some((item) => item.kind === 'unsupported')).toBe(false);
+    expect(presentation.warnings).toEqual([]);
+  });
+
+  it.each(['clustered', 'stacked', 'percentStacked'])('preserves %s horizontal grouping and reversed categories', async (grouping) => {
+    const zip = await JSZip.loadAsync(await buildColumnChartFixture());
+    const xml = await zip.file('ppt/charts/chart1.xml')!.async('text');
+    zip.file('ppt/charts/chart1.xml', xml.replace('val="col"', 'val="bar"')
+      .replace('val="clustered"', `val="${grouping}"`)
+      .replace('</c:plotArea>', '<c:catAx><c:scaling><c:orientation val="maxMin"/></c:scaling></c:catAx></c:plotArea>'));
+    const presentation = await loadPptx(await zip.generateAsync({ type: 'uint8array' }));
+    expect(presentation.slides[0].items.find((item) => item.kind === 'chart')).toMatchObject({
+      chartType: 'bar', grouping, categoryAxis: { reversed: true }
+    });
+  });
+
   it('parses the pie chart in the real shapes sample instead of an unsupported frame', async () => {
     const presentation = await loadPptx(await readFixture('../../apps/demo/public/samples/rich-pptx-shapes.pptx'));
     const chart = presentation.slides[0].items.find((item) => item.kind === 'chart');

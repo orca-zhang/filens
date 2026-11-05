@@ -2,6 +2,26 @@
 
 Optional WASM, HTTP and mock conversion adapters for Filens. See the [project documentation](https://github.com/IceWhaleTech/filens) for conversion and preview APIs.
 
+## CAD and raster engines
+
+The browser bundle loads DWG and raster engines separately. Custom hosts can use
+the same modules without downloading image decoders when opening a DWG:
+
+```ts
+import { createWasmConverterClient } from '@filens/converter-client';
+
+const converter = createWasmConverterClient({
+  wasm: '/wasm/converter-core.wasm',
+  cadWasm: '/wasm/converter-cad.wasm',
+  graphicsWasm: '/wasm/converter-raster.wasm'
+});
+```
+
+DWG previews use the `cad-json` drawing model directly; explicit `dwg` → `dxf`
+conversion is also supported. Existing hosts may continue supplying the combined
+`converter-graphics.wasm` as `graphicsWasm` without `cadWasm`. The all-in-one bundle
+uses a shared combined core and includes the CAD reader in its main JavaScript.
+
 ## Search with optional SIMD128
 
 Build the shared production text core in both variants with `npm run build:search:wasm`.

@@ -28,6 +28,20 @@ const converters = [
     outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
   },
   {
+    name: 'converter-cad',
+    optimization: '-Oz',
+    cargoArgs: ['--no-default-features', '--features', 'graphics-preview'],
+    crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
+    outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
+  },
+  {
+    name: 'converter-raster',
+    optimization: '-Oz',
+    cargoArgs: ['--no-default-features', '--features', 'graphics-preview'],
+    crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
+    outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
+  },
+  {
     name: 'converter-office',
     cargoArgs: ['--no-default-features', '--features', 'office-crypto'],
     crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),

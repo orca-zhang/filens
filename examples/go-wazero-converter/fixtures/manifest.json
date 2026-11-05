@@ -47,6 +47,12 @@
     },
     {
       "inputPath": "./fixtures/graphics/sample.dwg",
+      "outputPath": "./tmp/sample.dwg.cad-json",
+      "sourceFormat": "dwg",
+      "targetFormat": "cad-json"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.dwg",
       "outputPath": "./tmp/sample.dwg.dxf",
       "sourceFormat": "dwg",
       "targetFormat": "dxf"

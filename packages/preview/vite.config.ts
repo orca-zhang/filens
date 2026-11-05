@@ -41,7 +41,7 @@ function embeddedAssets() {
       // A single file downloads every embedded engine anyway. Use the combined
       // core there to avoid shipping duplicate WASI/CFB code with the decryptor.
       const converterDir = path.join(root, 'wasm/converter-core/dist');
-      if (single && ['converter-office.wasm', 'converter-postscript.wasm', 'converter-graphics.wasm'].some(name => file === path.join(converterDir, name))) {
+      if (single && ['converter-office.wasm', 'converter-postscript.wasm', 'converter-graphics.wasm', 'converter-cad.wasm', 'converter-raster.wasm'].some(name => file === path.join(converterDir, name))) {
         return 'export default undefined;';
       }
       const asset = single && file === path.join(converterDir, 'converter-core.wasm')

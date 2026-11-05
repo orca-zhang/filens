@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { readFile } from 'node:fs/promises';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { loadDxfDrawing } from '@filens/cad';
+import { loadCadDrawing, loadDxfDrawing } from '@filens/cad';
 import { createWasmConverterClient } from '../src';
 import { createWasmCoreRunner } from '../src/wasi-runner';
 import { pngPixels } from './helpers/png-rgba';
@@ -11,15 +11,29 @@ const context = { descriptor: { source: new Uint8Array() } };
 const sample = (name: string) => readFile(new URL(`apps/demo/public/samples/graphics/${name}`, root));
 let wasm: WebAssembly.Module;
 let graphicsWasm: WebAssembly.Module;
+let cadWasm: WebAssembly.Module;
+let rasterWasm: WebAssembly.Module;
 let client: ReturnType<typeof createWasmConverterClient>;
 
 beforeAll(async () => {
-  [wasm, graphicsWasm] = await Promise.all(['converter-core', 'converter-graphics'].map(async name =>
+  [wasm, graphicsWasm, cadWasm, rasterWasm] = await Promise.all(['converter-core', 'converter-graphics', 'converter-cad', 'converter-raster'].map(async name =>
     WebAssembly.compile(await readFile(new URL(`wasm/converter-core/dist/${name}.wasm`, root)))));
-  client = createWasmConverterClient({ wasm, graphicsWasm });
+  client = createWasmConverterClient({ wasm, graphicsWasm: rasterWasm, cadWasm });
 });
 
 describe('graphics previews through the shared WASM conversion core', () => {
+  it.each(['2000', '2018'])('reads DWG %s directly into a drawing model without DXF', async version => {
+    const result = await client.convert({ source: await sample(`filens-cafe-${version}.dwg`), sourceFormat: 'dwg', targetFormat: 'cad-json' }, context);
+    expect(result).toMatchObject({ format: 'cad-json', contentType: 'application/vnd.filens.cad+json' });
+    const json = new TextDecoder().decode(result.source as Uint8Array);
+    const model = JSON.parse(json);
+    expect(model.source).toMatchObject({ format: 'dwg', version: version === '2018' ? 'AC1032' : 'AC1015' });
+    const drawing = loadCadDrawing(json);
+    expect(drawing.entities).toHaveLength(223);
+    expect(drawing.layers).toHaveLength(8);
+    expect(drawing.entities.some(entity => entity.type === 'text' && entity.value.includes('FIELD NOTES / CAFE'))).toBe(true);
+    expect(drawing.bounds).toEqual({ minX: -1500, minY: -1700, maxX: 10280, maxY: 7146 });
+  });
   it.each([
     ['tiff', 'field-notes.tiff', 1200, 800],
     ['tif', 'tonal-ramp-16bit.tif', 768, 512],
@@ -79,8 +93,24 @@ describe('graphics previews through the shared WASM conversion core', () => {
     expect(graphics).toHaveBeenCalledTimes(1);
   });
 
-  it.each([['txt', 'docx'], ['tga', 'dxf']])('rejects %s to %s sent directly to the graphics module', async (source, target) => {
-    const run = createWasmCoreRunner({ wasm: graphicsWasm });
+  it('loads the compact CAD reader for DWG and the raster engine only for raster files', async () => {
+    const core = vi.fn(() => { throw new Error('Unexpected document core download'); });
+    const cad = vi.fn(() => cadWasm), raster = vi.fn(() => rasterWasm);
+    const local = createWasmConverterClient({ wasm: core, cadWasm: cad, graphicsWasm: raster });
+    for (let index = 0; index < 2; index++) {
+      const result = await local.convert({ source: await sample('filens-cafe-2018.dwg'), sourceFormat: 'dwg', targetFormat: 'cad-json' }, context);
+      expect(loadCadDrawing(new TextDecoder().decode(result.source as Uint8Array)).entities).toHaveLength(223);
+    }
+    expect(cad).toHaveBeenCalledTimes(1);
+    expect(raster).not.toHaveBeenCalled();
+    await local.convert({ source: await sample('field-notes.tiff'), sourceFormat: 'tiff', targetFormat: 'png' }, context);
+    expect(raster).toHaveBeenCalledTimes(1);
+    expect(core).not.toHaveBeenCalled();
+  });
+
+  it.each([['graphics', 'txt', 'docx'], ['graphics', 'tga', 'dxf'], ['cad', 'tiff', 'png'], ['raster', 'dwg', 'cad-json']])
+  ('%s rejects unrelated %s to %s requests sent directly to the module', async (module, source, target) => {
+    const run = createWasmCoreRunner({ wasm: module === 'cad' ? cadWasm : module === 'raster' ? rasterWasm : graphicsWasm });
     const invocation = await run({
       args: ['converter-graphics', '--input', '/work/input', '--output', '/work/output',
         '--source', source, '--target', target, '--result', '/work/result.json'],
@@ -110,6 +140,8 @@ describe('graphics previews through the shared WASM conversion core', () => {
     expect(result).toMatchObject({ format: 'png', contentType: 'image/png' });
     const cad = await combined.convert({ source: await sample('filens-cafe-2018.dwg'), sourceFormat: 'dwg', targetFormat: 'dxf' }, context);
     expect(new TextDecoder().decode(cad.source as Uint8Array)).toContain('FIELD NOTES / CAFE');
+    const model = await combined.convert({ source: await sample('filens-cafe-2018.dwg'), sourceFormat: 'dwg', targetFormat: 'cad-json' }, context);
+    expect(loadCadDrawing(new TextDecoder().decode(model.source as Uint8Array)).entities).toHaveLength(223);
   });
 
   it.each(['dwg', 'tiff', 'tga', 'dds', 'hdr', 'pnm', 'dib', 'cur', 'pcx', 'exr', 'jxl', 'qoi', 'ff'])('rejects unrelated bytes presented as %s', async sourceFormat => {

@@ -190,7 +190,7 @@ Good coverage today:
 - master/layout inheritance
 - common preset arrows and polygon shapes
 - slide links and external hyperlinks
-- cached 2D column and pie charts, with titles and legends
+- cached 2D column, horizontal bar and pie charts, with titles and legends; bar/column charts also support value labels and basic text styles
 
 Still limited:
 

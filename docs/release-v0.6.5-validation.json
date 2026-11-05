@@ -1,0 +1,163 @@
+{
+  "observedAt": "2026-11-05T10:42:01.578Z",
+  "tag": "v0.6.5",
+  "title": "Direct DWG Previews & Smaller Offline Bundles",
+  "components": {
+    "cli": "0.5.6",
+    "preview": "0.3.5",
+    "mobileSdk": "0.1.5",
+    "dsh": "0.1.6",
+    "dshPreview": "0.3.4",
+    "zimaos": "0.5.1"
+  },
+  "releaseChecksPassed": true,
+  "checks": {
+    "productionWasmBuild": "passed",
+    "productionDemoBuild": "passed",
+    "splitAndAllInOneBuilds": "passed",
+    "unit": {
+      "passed": 856,
+      "skipped": 13,
+      "suites": [
+        {
+          "workspace": "@filens/core",
+          "passed": 472,
+          "skipped": 11
+        },
+        {
+          "workspace": "@filens/cad",
+          "passed": 73,
+          "skipped": 0
+        },
+        {
+          "workspace": "@filens/converter-client",
+          "passed": 235,
+          "skipped": 2
+        },
+        {
+          "workspace": "@filens/vue",
+          "passed": 69,
+          "skipped": 0
+        },
+        {
+          "workspace": "@filens/demo",
+          "passed": 7,
+          "skipped": 0
+        }
+      ]
+    },
+    "conversionPolicy": {
+      "passed": 2128
+    },
+    "controlledWasmConversions": {
+      "passed": 328,
+      "total": 328
+    },
+    "goWrappers": "passed",
+    "previewPackage": {
+      "observedAt": "2026-11-05T10:23:36.088Z",
+      "name": "filens-preview",
+      "version": "0.3.5",
+      "source": "offline npm tarball",
+      "platform": "darwin-arm64",
+      "passed": true,
+      "checks": [
+        "Standalone installation without runtime dependencies",
+        "MIT license and third-party notices",
+        "TypeScript consumer imports of split and all-in-one exports",
+        "64 real browser previews from installed assets",
+        "No external runtime requests",
+        "Single JavaScript runtime request for all-in-one",
+        "CLI loopback HTTP restrictions",
+        "Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg",
+        "12 PDF/iWork/RAW/STEP/HEIF/RAR previews after Vite production bundling of npm exports"
+      ],
+      "mediaBrowser": "chromium",
+      "browserReport": "preview-validation.json"
+    },
+    "offlineHtml": {
+      "passed": 17,
+      "browser": "chromium",
+      "externalRequests": 0
+    },
+    "mobileBridge": {
+      "passed": 22,
+      "browsers": [
+        "chromium",
+        "webkit"
+      ],
+      "physicalDevices": false
+    },
+    "targetedDemoE2E": {
+      "passed": 23,
+      "legacyDetailedPresentationCase": "known existing failure; see knownIssues"
+    },
+    "native": {
+      "archives": 8,
+      "passed": true,
+      "nativeExecuted": "macOS arm64 Full and Lite",
+      "emptyPATH": true,
+      "ocr": "Full passed",
+      "offlineBrowserExports": 3,
+      "externalRequests": 0
+    },
+    "privacy": "Each packaged directory and npm archive passed the existing release privacy audit.",
+    "checksums": "13 payload SHA-256 values matched; manifest is refreshed after the source commit.",
+    "readmeVersionsAndSizes": "Both languages checked against artifact receipts and measured runtime files.",
+    "dshComparisons": "Three first-open ratios appear at the start of each README DSH section, with original benchmark versions and links."
+  },
+  "artifactCount": {
+    "packages": 13,
+    "manifest": 1,
+    "checksums": 1,
+    "total": 15
+  },
+  "delivery": {
+    "raw": 6659807,
+    "gzip": 3533344,
+    "brotli": 3395083,
+    "gzipEncoder": "Zopfli 15 iterations",
+    "brotliEncoder": "Brotli quality 11",
+    "gzipFile": "filens.js.gz",
+    "brotliFile": "filens.js.br",
+    "limit": 4000000
+  },
+  "provenance": {
+    "nativeCLIAndOCR": "Verified byte-for-byte reuse of v0.6.4 CLI 0.5.6 binaries/resources, with only preview and bundle README refreshed.",
+    "nativeReport": "release-v0.6.5-native-validation.json",
+    "dsh": "Unchanged published dsh-filens-0.1.6.tgz; embeds preview 0.3.4.",
+    "npm": "No npm registry publication in this GitHub release.",
+    "sourceSDKs": "New offline runtime plus source; no AAR/XCFramework."
+  },
+  "readmeSHA256": {
+    "README.md": "4faae340add2d6ab726600b02699e7b30a430380fe998cbf17e2daf38d538595",
+    "README.zh-CN.md": "2732417875f8972a19947336716285235ab46130d995ac2cefe77d2a8e345b55"
+  },
+  "knownIssues": [
+    {
+      "test": "demo.e2e.ts: renders remote bullets, shape text, and table styles on key slides",
+      "assertion": "Slide 5 expects at least 19 non-empty bullet markers.",
+      "observed": [
+        {
+          "profile": "baseline",
+          "version": "0.3.4",
+          "bulletCount": 13
+        },
+        {
+          "profile": "current",
+          "version": "0.3.5",
+          "bulletCount": 13
+        }
+      ],
+      "regression": false,
+      "explanation": "Both the previously published preview 0.3.4 and this preview 0.3.5 produce 13 markers on the same unchanged regression fixture. The original fidelity assertion is retained and the case is not counted as passed."
+    }
+  ],
+  "limits": [
+    "Linux/Windows native execution was not repeated; exact previously published native payloads were retained and verified.",
+    "No physical-mobile-device or precompiled AAR/XCFramework validation.",
+    "The 4,000,000-byte budget covers supplied precompressed main JS, excluding optional archive sidecars and complete archive overhead.",
+    "The complete repository E2E suite was not run; targeted demo, installed production runtime, offline HTML and mobile checks are recorded separately.",
+    "DSH speed comparisons retain the 0.1.3 measurement stage; DSH 0.1.6 was not benchmarked again."
+  ]
+}

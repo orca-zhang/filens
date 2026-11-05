@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-05T09:20:04.399Z",
+  "scope": "Local source build; published npm baseline is filens-preview@0.3.4. Engine gzip level 9, Brotli quality 11; all-in-one uses supplied precompressed files. All-in-one excludes unchanged optional archive sidecars.",
+  "engines": {
+    "converter-cad": {
+      "raw": 908040,
+      "gzip": 442809,
+      "brotli": 360226,
+      "sha256": "6f8195d3b5f1a7b46f112c6884a43088845e885263f990ddc01d431b1046bb8e"
+    },
+    "converter-raster": {
+      "raw": 1789624,
+      "gzip": 734588,
+      "brotli": 550637,
+      "sha256": "a3fde4a2318af800bfa3be4a02e8675530e85544ca4cd69734f717ca39004184"
+    },
+    "converter-graphics": {
+      "raw": 2490703,
+      "gzip": 1077863,
+      "brotli": 818594,
+      "sha256": "acaa7d2826b2dd69d4602d7903821bb74d5c8db13ea3165353b380cabb1773b7"
+    }
+  },
+  "allInOne": {
+    "baseline": {
+      "raw": 7258142,
+      "sha256": "b1d75c45b54e0bb34e6255d7a7d5add7d355a2df71e7b41ba66558f35e0f8957",
+      "gzip": 3992298,
+      "brotli": 3852757
+    },
+    "current": {
+      "raw": 6653452,
+      "gzip": 3530166,
+      "brotli": 3392433,
+      "sha256": "07cac0e82c361e3b07b138c4b71a3e6874ca82d8e4090e62a7a39c7266bd2276"
+    }
+  }
+}

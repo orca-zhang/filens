@@ -29,25 +29,38 @@ pub fn convert(_input: &str, _output: &str, _source: &str, _target: &str) -> Res
 
 #[cfg(feature = "graphics-preview")]
 pub fn convert(input: &str, output: &str, source: &str, target: &str) -> Result<(), ConvertError> {
+    if source == "dwg" { convert_dwg(input, output, target) }
+    else { convert_raster(input, output, source) }
+}
+
+#[cfg(feature = "graphics-preview")]
+pub fn convert_dwg(input: &str, output: &str, target: &str) -> Result<(), ConvertError> {
     use super::{conversion_error, io_error, parse_error};
-    use std::{fs::File, io::{BufReader, Cursor}};
-    if source == "dwg" {
-        let bytes = std::fs::read(input).map_err(|e| io_error(e.to_string()))?;
-        let options = cadkit_core::ReadOptions::default().with_limits(cadkit_core::Limits::strict());
-        let document = cadkit_dwg::read(&bytes, &options)
-            .map_err(|e| parse_error(format!("Read DWG: {e}")))?;
-        if target == "cad-json" {
-            // Pass the native drawing model to the viewer, without a DXF round trip.
-            let file = File::create(output).map_err(|e| io_error(e.to_string()))?;
-            return serde_json::to_writer(file, &document)
-                .map_err(|e| conversion_error(format!("Write CAD model: {e}")));
-        }
-        // Modern DXF uses UTF-8; retaining an older DWG code page would garble
-        // non-ASCII text in the browser's existing DXF reader.
-        let dxf = cadkit_dxf::write(&document, cadkit_dxf::DxfVersion::R2018)
-            .map_err(|e| conversion_error(format!("Write DXF: {e}")))?;
-        return std::fs::write(output, dxf).map_err(|e| io_error(e.to_string()));
+    use std::{fs::File, io::{BufWriter, Write}};
+    let bytes = std::fs::read(input).map_err(|e| io_error(e.to_string()))?;
+    let options = cadkit_core::ReadOptions::default().with_limits(cadkit_core::Limits::strict());
+    let mut document = cadkit_dwg::read(&bytes, &options)
+        .map_err(|e| parse_error(format!("Read DWG: {e}")))?;
+    if target == "cad-json" {
+        // Pass the native drawing model to the viewer, without a DXF round trip.
+        // Header/class dumps are unused by the preview and can dwarf simple drawings.
+        document.props.clear();
+        let mut file = BufWriter::new(File::create(output).map_err(|e| io_error(e.to_string()))?);
+        serde_json::to_writer(&mut file, &document)
+            .map_err(|e| conversion_error(format!("Write CAD model: {e}")))?;
+        return file.flush().map_err(|e| io_error(e.to_string()));
     }
+    // Modern DXF uses UTF-8; retaining an older DWG code page would garble
+    // non-ASCII text in the browser's existing DXF reader.
+    let dxf = cadkit_dxf::write(&document, cadkit_dxf::DxfVersion::R2018)
+        .map_err(|e| conversion_error(format!("Write DXF: {e}")))?;
+    std::fs::write(output, dxf).map_err(|e| io_error(e.to_string()))
+}
+
+#[cfg(feature = "graphics-preview")]
+pub fn convert_raster(input: &str, output: &str, source: &str) -> Result<(), ConvertError> {
+    use super::{io_error, parse_error};
+    use std::{fs::File, io::{BufReader, Cursor}};
     use raster_codec::{ImageDecoder, ImageFormat, ImageReader, Limits};
     if source == "pcx" {
         return write_png(output, read_pcx(input)?);

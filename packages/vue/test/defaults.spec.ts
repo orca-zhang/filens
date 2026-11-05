@@ -44,10 +44,14 @@ describe('createVueDefaultPreviewRoutes', () => {
 
     expect(conversionFormats.map((format) => `${format.extension}->${format.targetFormat}`).sort()).toEqual(
       conversionManifest
-        .filter((pair) => !['epub', 'apk', 'ipa'].includes(pair.sourceFormat) && pair.sourceFormat !== pair.targetFormat)
+        .filter((pair) => !['epub', 'apk', 'ipa'].includes(pair.sourceFormat) && pair.sourceFormat !== pair.targetFormat
+          && !(pair.sourceFormat === 'dwg' && pair.targetFormat === 'dxf'))
         .map((pair) => `${pair.sourceFormat}->${pair.targetFormat}`).sort()
     );
     expect(resolveFormatRoute({ name: 'book.epub' }, { routes })).toMatchObject({ driverId: 'ebook', targetFormat: 'epub' });
+    expect(resolveFormatRoute({ name: 'drawing.dwg' }, { routes })).toMatchObject({
+      driverId: 'cad', targetFormat: 'cad-json', conversion: { required: true }
+    });
 
     for (const testCase of [
       'photo.jpg',

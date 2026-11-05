@@ -100,7 +100,7 @@ describe('DXF load and raster resource lifetime', () => {
 
   it('clears a previous drawing on invalid input and resets pan for the next drawing', async () => {
     const { host, session } = setup(); await session.load(bytes(), context(bytes())); session.pan?.(100, 50);
-    await expect(session.load(bytes(), context(bytes(), 'bad.unsupported'))).rejects.toThrow('browser-native DXF');
+    await expect(session.load(bytes(), context(bytes(), 'bad.unsupported'))).rejects.toThrow('CAD preview supports');
     expect(host.querySelector('svg')).toBeNull(); expect(session.getState().layers).toEqual([]);
     await session.load(bytes(), context(bytes())); expect(host.querySelector('svg')?.style.transform).toBe('translate(0px, 0px) scale(1)');
   });

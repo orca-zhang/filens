@@ -2,7 +2,9 @@
 
 [English](support-matrix.md) | 简体中文
 
-filens 在现代浏览器中提供只读文件预览。当前完整预览宿主覆盖 **450 种文件格式**，按扩展名去重统计，包含直接预览与本地 WASM 转换后预览。支持某种格式，不代表完整兼容该格式的原始编辑软件。
+filens 在现代浏览器中提供只读文件预览。当前完整预览宿主覆盖 **450 种源文件格式**，按扩展名去重统计，包含直接预览与本地 WASM 转换后预览。支持某种格式，不代表完整兼容该格式的原始编辑软件。
+
+已于 **2026-11-05** 对照当前源码核对。Vue 默认路由共注册 **451 个唯一扩展名**：319 种直接预览源格式、131 种转换后预览源格式，以及内部 `cad-json` 图纸模型入口。450 种源文件的统计不包含该内部入口；自定义路由或旧版本的覆盖范围可能不同。
 
 演示台只列出已支持的格式，区分“可预览示例”和“已支持，需导入”。缺少示例不等于缺少解码能力；HEIC/HEIF 已有媒体驱动和本地 WASM 解码兜底，并提供原格式示例。
 
@@ -62,9 +64,11 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 格式 | 扩展名 | 预览路径 | 支持范围 | 限制 |
 | --- | --- | --- | --- | --- |
 | 浏览器图片 | `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif`, `apng`, `ico`, `svg`, `bmp` | 直接预览 | 缩放、适应宽度或高度、平移、旋转、全屏。 | 是否可用取决于浏览器解码能力。 |
+| HEIC / HEIF | `heic`, `heif` | 直接预览；本地 WASM 回退 | 静态主图；回退保留源位深，支持 ICC 或固定 PQ/HLG 到 sRGB 预览。 | 不支持纯序列文件或增益图还原。回退限制：输入 64 MiB、6400 万像素、单边 16,384 像素、ICC 4 MiB、解码 30 秒。 |
 | TIFF | `tif`, `tiff` | 转换 → `png` | 首页、常见压缩、灰度/RGB 与 16 位图像，应用方向信息。 | 需要 `graphicsWasm`；8 位预览，不保留后续页和印刷色彩配置。 |
 | 其他位图 | `tga`, `pgm`, `pbm`, `pnm`, `dds`, `hdr`, `dib`, `cur`, `pcx`, `exr`, `jxl`, `qoi`, `ff` | 转换 → `png` | 本地 WASM 解码为 RGBA，含光标/TGA 透明通道、索引色/RGB PCX、DXT DDS 纹理，以及 HDR/EXR 线性采样转 sRGB。 | 输入 64 MiB、3200 万像素；DDS 仅首个表面、JXL 仅首帧、CUR 仅最大图像；EXR 使用默认图像和颜色通道；HDR/EXR 降为 8 位动态范围。 |
 | Apple 图标 | `icns` | 转换 → `png` | 提取最大的内嵌 PNG 图标。 | 不解码原始图标平面或 JPEG 2000 数据块。 |
+| Windows 应用图标 | `exe`, `dll`, `mui`, `mun` | 转换 → `png` | 共享 WASM 核心从 PE 资源中提取 PNG 或受支持的 DIB 图标。 | 仅预览图标，不执行程序；还可显式调用 APK/IPA 图标提取与 ICO 规范化转换。 |
 | PPM 图片 | `ppm` | 转换 → `png` | P3 文本、P6 二进制、注释、任意最大色值与 8/16 位 RGB。 | 多图像流仅读取首张；见[解码、运行时与验证边界](#ppm-转换)。 |
 | 相机 RAW | `dng`, `cr2`, `cr3`, `nef` 等，[完整列表](#相机-raw-转换) | 转换 → `jpg` | 提取内嵌 JPEG 或生成轻量传感器预览。 | 不提供完整 RAW 显影。 |
 | 音频 | `mp3`, `wav`, `aac`, `m4a`, `flac`, `ogg`, `oga`, `opus` | 直接预览 | 浏览器原生播放与控件。 | 编解码器支持因浏览器而异。 |
@@ -79,6 +83,8 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | Photoshop | `psd`, `psb` | 转换 → `png` | 前端 WASM 核心解码文件中保存的合成图。 | 8 位 RGB / 灰度；不提供图层编辑或 ICC 处理。[设计稿预览限制](design-preview.md)。 |
 | Illustrator / PostScript | `ai`, `eps`, `ps` | 转换 → `pdf` | PDF 兼容 AI 保留 PDF 原始字节；受支持的 PostScript 转为矢量 PDF，PS 保留多页。 | 预览子集；缺失字体或不支持的绘图会明确报错；EPS/PS 模块按需加载。[兼容范围与下载体积](design-preview.md)。 |
 | 二维 CAD | `dxf` | 直接预览 | SVG 几何图形、文本、图层、块与栅格图像引用。 | 实体与文本保真度仅部分支持；见[DXF 矩阵](#dxf-cad)。 |
+| DWG 图纸 | `dwg` | 转换 → `cad-json` | WASM 直接读取图纸模型，复用 SVG 二维预览器。 | 需要 `cadWasm`、`graphicsWasm` 或合并核心；实体、外部参照和 SHX 字体仅部分覆盖。见[DWG 限制](#dwg-与-cad-图纸模型)。 |
+| CAD 图纸模型 | `cad-json` | 直接预览 | DWG 转换输出的内部图纸模型交换格式。 | schema 版本为 1，带 DWG 源格式元数据；不计入源文件格式数量。 |
 | CAD 实体 | `step`, `stp` | 直接预览 + truck Rust WASM | 按需加载并三角化，用于查看。 | 不提供 CAD 编辑。 |
 | 3D 模型与场景 | `stl`, `obj`, `ply`, `gltf`, `glb`, `3mf` 等，[完整列表](#3d-模型与检查) | 直接预览 | Three.js 网格、材质与场景。 | 材质与资源限制因格式而异。 |
 | 刀路、点云、体素、动作与分子 | `gcode`, `gco`, `nc`, `pcd`, `xyz`, `vtk`, `vox`, `bvh`, `pdb`, `nrrd`, `nhdr` | 直接预览 | 支持部分数据子集。 | 见[导入与检查矩阵](#3d-模型与检查)。 |
@@ -96,6 +102,7 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 漫画书 | `cbz`；`cbr`, `cb7`, `cbt` | 直接预览 | CBZ 提供图片页面序列；CBR/CB7/CBT 复用 RAR/7z/TAR 浏览与逐张图片预览。 | 连续翻页阅读仅限 CBZ；CBR/CB7 需要独立压缩包引擎资源。 |
 | ZIP 兼容压缩包 | `zip`, `jar`, `war`, `ear`, `apk`, `ipa`, `xpi`, `crx` | 直接预览 | 文件列表、目录与嵌套压缩包浏览、条目预览、提取辅助函数。 | 只读；没有批量解压界面；CRX2/CRX3 读取 ZIP 内容，不验证签名。 |
 | ZIPX | `zipx` | 直接预览 + WASM | 复用 ZIP 解码器，支持 Deflate、Deflate64、BZip2、LZMA；提供列表、嵌套浏览和条目预览。 | 需要独立压缩包引擎；部分 WinZip 专有压缩方式可能无法读取。 |
+| RAR / 7-Zip | `rar`, `7z` | 直接预览 + WASM | 文件列表、嵌套浏览、条目预览、密码、加密文件名、固实压缩与分卷。 | 需要独立压缩包引擎和完整分卷；受共享压缩包限制约束。 |
 | 压缩流 | `bz2`, `bzip2`, `xz`, `lzma`, `lzma86`, `zst`, `zstd`, `z`；TAR 别名 `tbz`, `tbz2`, `txz`, `tlz`, `tzst`, `taz` | 直接预览 + WASM | 单文件解压；压缩的 TAR 直接展开目录；`.cpio.xz` / `.cpio.zst` 也直接展开 CPIO 目录。支持 BCJ 过滤的 LZMA86 和 BZip2/XZ/Zstandard 拼接流。 | 需要独立压缩包引擎；输出上限 128 MiB，也适用于未声明解压大小的流；Unix compress 没有校验和。 |
 | AR / Debian / CPIO | `ar`, `deb`, `cpio` | 直接预览 + WASM | 浏览目录、预览条目；Debian 包内的 control/data 压缩包复用同一套嵌套读取器。 | 只读；不安装或运行软件包；归档中的链接不展示。 |
 | LHA / XAR / RPM | `lha`, `lzh`, `xar`, `rpm` | 直接预览 + WASM | LHA/LZH 归档条目，含 LH5/LH6；XAR 的 zlib/BZip2 内容；RPM 压缩 CPIO 内容复用嵌套读取器。 | 只读浏览与文件预览，不安装或运行软件包。 |
@@ -126,8 +133,11 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | Excel 模板与启用宏的文件 | `xlsm`, `xltx`, `xltm` | `xlsx` |
 | OpenDocument / 旧版 OpenOffice 表格 | `ods`, `ots`, `fods`, `sxc`, `stc` | `xlsx` |
 | 表格型输入 | `dbf`, `slk`, `dif`, `csv`, `tsv`, `tab`, `psv`, `json`, `jsonl`, `ndjson`, `jsonlines`, `ldjson` | `xlsx` |
+| DWG 图纸 | `dwg` | `cad-json`（默认预览）、`dxf`（显式转换） |
+| TIFF 与其他位图 | `tif`, `tiff`, `tga`, `pgm`, `pbm`, `pnm`, `dds`, `hdr`, `dib`, `cur`, `pcx`, `exr`, `jxl`, `qoi`, `ff` | `png` |
 | 相机 RAW | [完整 RAW 列表](#相机-raw-转换) | `jpg` |
 | Apple 图标 | `icns` | `png` |
+| 应用图标 / ICO 规范化 | `apk`, `ipa`, `exe`, `dll`, `mui`, `mun`, `ico` | `png` |
 | PPM 图片 | `ppm` | `png` |
 | Photoshop 已保存合成图 | `psd`, `psb` | `png` |
 | Illustrator / PostScript 设计稿 | `ai`, `eps`, `ps` | `pdf` |
@@ -140,6 +150,9 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | `json` | 直接显示源码 | `docx` 或 `xlsx` |
 | `html` | 直接使用沙箱 iframe | `docx` |
 | `epub` | 直接使用电子书驱动 | `docx` |
+| `dwg` | 转为 `cad-json` 后使用 CAD 驱动 | `dxf` |
+| `apk`, `ipa` | 直接浏览压缩包 | `png`（应用图标） |
+| `ico` | 直接作为浏览器图片预览 | `png` |
 | `ppm` / `image/x-portable-pixmap` | 转为 PNG 后使用图片驱动 | `png` |
 
 | 规则 | 行为 |
@@ -152,6 +165,7 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 源格式或结果 | 当前边界 |
 | --- | --- |
 | 启用宏的 OpenXML | 转换前移除宏部件。 |
+| 加密 Office | 受支持的现代 OpenXML 和旧版 DOC/XLS/PPT 加密文件可用密码打开。拆分核心需要 `officeWasm`；缺失密码与密码错误分别报错。不代表覆盖所有加密方案。 |
 | 旧版二进制、ODF 与表格型输入 | 版式、样式、媒体、图表、公式与嵌入对象可能被简化或省略。 |
 | CSV / TSV / TAB / PSV → XLSX | 完整读取，支持 CRLF / CR / LF 与引号内换行；最多 1,000,000 个单元格、每行 16,384 列，并遵守 XLSX 行数上限。超限明确报错，不生成截断工作簿；直接 CSV 预览不使用此转换上限。 |
 | PPM | 保留尺寸与 8/16 位 RGB 采样精度；非标准 maxval 按 PNG 范围缩放并取整。注释不写入 PNG 元数据。 |
@@ -162,9 +176,13 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 
 | 组件 | 职责 | 参考 |
 | --- | --- | --- |
-| 浏览器 WASM 客户端 | `createWasmConverterClient({ wasm, imageWasm, postscriptWasm })`；在本地运行共享核心与可选图像 / PostScript 模块。 | [转换客户端 API](../packages/converter-client/src/index.ts) |
+| 浏览器 WASM 客户端 | `createWasmConverterClient({ wasm, officeWasm, imageWasm, postscriptWasm, graphicsWasm, cadWasm })`；在本地运行共享核心与可选模块，按需加载。 | [转换客户端 API](../packages/converter-client/src/index.ts) |
 | 文档 / 全景 / PPM 核心 | 由 Rust 构建的生产转换 WASM；包含 PPM → PNG，无需可选图像模块。 | [Rust 核心](../wasm/converter-core-rust/README.md) |
+| 可选 Office 解密模块 | 拆分核心请求 Office 解密时，由 `officeWasm` 提供 `converter-office.wasm`。 | [密码检查](../packages/converter-client/test/password.spec.ts) |
 | 可选图像核心 | 由 Rust 构建的独立图像/RAW WASM 模块。 | [Rust 图像模块](../wasm/converter-image-rust/README.md) |
+| 可选 CAD 核心 | `cadWasm` 提供精简的 `converter-cad.wasm` DWG 读取器，DWG 优先使用它，再考虑 `graphicsWasm`。 | [WASM 客户端](../packages/converter-client/src/wasm-client.ts) |
+| 可选图形核心 | `graphicsWasm` 可配置 `converter-raster.wasm` 处理位图，或配置 `converter-graphics.wasm` 同时处理 DWG 与位图；`converter-core-full.wasm` 已包含两者实现。 | [图形检查](../packages/converter-client/test/graphics-preview.spec.ts) |
+| 可选 PostScript 核心 | `postscriptWasm` 提供 `converter-postscript.wasm`，用于 EPS/PS 和非 PDF 兼容 AI。 | [设计稿预览限制](design-preview.md) |
 | HTTP 适配器 | 调用配置的转换服务。 | [适配器 API](#路由与数据源加载) |
 | Go/wazero 宿主 | 包装同一 WASM 核心的薄壳：CLI/HTTP、校验、临时文件、结果与错误映射、OpenXML 输出校验。 | [Go/wazero 示例](../examples/go-wazero-converter/README.md) |
 
@@ -174,7 +192,7 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 
 | 能力 | 支持范围与边界 |
 | --- | --- |
-| 输入识别 | `.ppm`（大小写不敏感）或 `image/x-portable-pixmap` 路由到 PNG 转换。其他 Netpbm 扩展名没有默认路由。 |
+| 输入识别 | `.ppm`（大小写不敏感）或 `image/x-portable-pixmap` 路由到文档核心的 PNG 转换；PBM/PGM/PNM 使用图形模块；PAM/PFM 没有默认路由。 |
 | P3 / P6 | P3 十进制文本与 P6 二进制 RGB；P6 最大色值超过 255 时，每个采样使用大端双字节。 |
 | 头部与文本像素 | ASCII 空白、LF/CRLF 头部、头部注释及 P3 采样间注释。二进制像素中的空白与 `#` 保留为像素数据。 |
 | 采样值 | `maxval` 1–255 输出 8 位 PNG；256–65535 输出 16 位 PNG。采样值按 255/65535 范围缩放并取整。 |
@@ -236,7 +254,7 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 | 不支持内容的占位显示 | 支持 | 可使用占位符表示暂不支持的内容。 |
 | 原始字体精确还原 | 部分支持 | 取决于已安装字体、应用提供的 Web 字体与格式元数据。未实现 Office/iWork 内嵌字体加载。 |
 | 动画与切换效果 | 暂不支持 | PPTX 渲染器尚未实现。 |
-| 图表 | 部分支持 | 使用缓存数据渲染二维柱状图（簇状、堆积和百分比堆积）与饼图，支持标题和图例。其他图表类型与高级格式暂不支持。 |
+| 图表 | 部分支持 | 使用缓存数据渲染二维柱状图、横向条形图（簇状、堆积和百分比堆积）与饼图，支持标题和图例。柱状图和条形图还支持数值标签、基本文字样式及坐标轴与网格线颜色。其他图表类型与高级格式暂不支持。 |
 | 内嵌音频/视频 | 暂不支持 | 独立媒体可播放，不代表幻灯片内媒体可播放。 |
 | OLE 对象 | 暂不支持 | 尚未实现嵌入对象渲染。 |
 | 批注、备注与审阅元数据 | 暂不支持 | PPTX 渲染器未提供这些内容。 |
@@ -280,6 +298,16 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 | CSV | UTF-8/浏览器可读取来源的只读表格；支持 CRLF / CR / LF、引号内换行、转义引号和空记录。 | 不提供丰富的类型推断或工作簿样式。 |
 | 工作簿行加载 | 滚动时按批次追加行。 | 已加载的行会保留在页面中；不提供大工作表虚拟化。 |
 
+### DWG 与 CAD 图纸模型
+
+| 范围 | 支持内容 | 限制 |
+| --- | --- | --- |
+| 默认路径 | 前端 WASM 核心将 DWG 读取为 `cad-json`，CAD 驱动直接将模型渲染为 SVG，不经过 DXF 往返转换。 | 可使用 `cadWasm`、通过 `graphicsWasm` 配置的合并图形模块，或合并核心；仍可显式转换为 UTF-8 DXF。 |
+| 图纸内容 | 常见二维几何、文本、图层、线型、块/阵列展开、属性、填充、栅格引用和基础尺寸标注。 | DWG 保真度有限；不支持的实体跳过并产生警告，代理对象、外部参照、SHX 字形和完整 CAD 布局尚不完整。下方 DXF 实体列表不代表 DWG 具有完全相同的覆盖范围。 |
+| 直接模型输入 | `.cad-json` 或 `application/vnd.filens.cad+json`；`loadCadDrawing()` 加载转换器输出的模型。 | schema 版本为 1，含 DWG 源格式元数据；不是任意 JSON，也不是 CAD 编辑 API。 |
+| 文件格式版本 | R14/AC1014 至 AC1032（2018 保存格式）。 | 不支持 R12，R13 尚未验证。见 [13 份图纸的兼容性与性能实测](dwg-preview-optimization.md)；保存格式版本不代表覆盖所有新版 CAD 应用输出。 |
+| 验证 | [WASM 集成检查](../packages/converter-client/test/graphics-preview.spec.ts)覆盖 R2000/R2018 图纸模型与显式 DXF 输出。 | 样例用于回归验证，不代表兼容所有 DWG 版本或实体。 |
+
 ### DXF CAD
 
 <details>
@@ -298,7 +326,7 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 | 图层与颜色 | 名称、基础 ACI 颜色、真彩色、透明度、隐藏/关闭/冻结/锁定标志、实体不可见性/颜色覆盖、SVG 属性、Vue 图层开关。 | 覆盖范围仍有限。 |
 | 线型 | `LTYPE` 虚线模式、全局/实体（`48`）线型比例、实体/图层 `LINEWEIGHT`。 | 不保证精确复现源样式。 |
 | 字体 | TrueType/OpenType 类字体引用映射到 CSS 回退字体。 | 不提供精确 SHX 字形渲染；SHX 引用会产生警告并使用浏览器字体。 |
-| DWG | 本地 WASM 转 UTF-8 DXF，再复用 SVG 二维预览器。 | 需要 `graphicsWasm`；复杂实体、代理对象、外部参照与 SHX 字体可能简化或省略。已验证 R2000、R2018 样例。 |
+| DWG | 本地 WASM 读取图纸模型，复用 SVG 二维预览器；仍可按需输出 UTF-8 DXF。 | 单独的部分覆盖范围，见 [DWG 与 CAD 图纸模型](#dwg-与-cad-图纸模型)。 |
 | DGN | 暂不支持。 | 没有原生预览路由。 |
 
 </details>
@@ -406,6 +434,9 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 | iWork 运行时 | `detectIworkType()`、`loadIwork()`、`createIworkViewer()`、Worker 解析、页面/工作表导航。 |
 | Vue 封装 | `PptxPreview`、`IworkPreview` 与通用 `Preview`；直接传入 `src`、工具栏、适用格式的缩略图、数据源切换、警告/错误事件。控件取决于驱动能力。 |
 | 转换适配器 | 可选 WASM、HTTP 与 mock 适配器。HTTP 非 2xx 的 JSON 或 `X-Preview-*` 响应会以 `HttpConversionError` 暴露，并携带稳定的转换器元数据。 |
+| 内容检测 | 可选 `@filens/converter-client/format-detector` 的 `createAutoFormatDetector()`；独立 SIMD / 标量 WASM 资源，自动回退。 |
+
+内容检测提供路由线索，不代表完整文件校验，也不会自动改变预览路由。见[检测 API 与托管要求](../packages/converter-client/README.md#content-detection-with-optional-simd128)。
 
 <sub>统一运行时在切换或销毁时结束旧预览调用的等待，取消其加载信号并丢弃迟到的结果与事件。加载失败会释放会话，错误可从状态中读取。自定义驱动负责自身资源清理；不响应取消的任务仍可能完成。[回归检查](../benchmarks/frontend/2026-10-24/preview-runtime-review.json)。</sub>
 
@@ -420,8 +451,8 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 
 | 钩子 / 辅助函数 | 当前使用方 | 限制或集成说明 |
 | --- | --- | --- |
-| `fontResolver` | 目前由 DXF 使用。 | 可通过预览选项与 Vue `Preview` 传入；不提供跨驱动的通用字体加载。 |
-| `resourceResolver` | DXF 栅格引用、glTF 缓冲区/纹理、OBJ 材质/纹理、支持的 3D 配套资源、缺失的 EPUB 资源、相机全景配套文件。 | 可通过预览选项与 Vue `Preview` 传入；支持的资源类型取决于驱动。 |
+| `fontResolver` | 目前由 CAD 驱动用于 DXF 与 DWG 图纸模型。 | 可通过预览选项与 Vue `Preview` 传入；不提供跨驱动的通用字体加载。 |
+| `resourceResolver` | CAD 栅格引用、glTF 缓冲区/纹理、OBJ 材质/纹理、支持的 3D 配套资源、缺失的 EPUB 资源、相机全景配套文件。 | 可通过预览选项与 Vue `Preview` 传入；支持的资源类型取决于驱动。 |
 | 文件集解析器 | 核心包提供多文件上传与配套资源解析辅助函数。 | 从传入的文件集中解析资源。 |
 | 压缩包解析器 | `@filens/archive` 辅助函数可将条目暴露为资源。 | 包括基于 ZIP 的复合资源包。 |
 
@@ -437,10 +468,9 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 
 | 领域 | 格式或工作流 | 当前边界 |
 | --- | --- | --- |
-| 原生 CAD | DGN、FreeCAD 项目、IGES/BREP | 没有原生预览路由；STEP/STP 与 DXF 见上文。 |
+| 原生 CAD | DGN、FreeCAD 项目、IGES/BREP | 没有原生预览路由；STEP/STP、DXF 与部分 DWG 支持见上文。 |
 | BIM | Revit、IFC | 没有原生预览路由。 |
 | ECAD / 制造 | Gerber/Excellon、分层 KiCad PCB | 没有原生预览路由。 |
-| HEIC/HEIF | 优先原生显示；本地 WASM 回退保留源位深，支持 ICC 或固定 PQ/HLG 到 sRGB 预览。 | 仅静态主图；不支持纯序列文件或增益图还原。回退限制：输入 64 MiB、6400 万像素、单边 16,384 像素、ICC 4 MiB、解码 30 秒。 |
 | 设计稿编辑 | PSD/PSB 图层、Illustrator 编辑数据 | 只读合成图或矢量预览；不提供设计稿编辑。[支持子集](design-preview.md)。 |
 | 其他 Netpbm 扩展名 | `pam`, `pfm` | 没有默认预览或转换路由；PBM/PGM/PNM 与 PPM 的支持范围见上文。 |
 | Office 加载项 | 加载项与嵌入式应用行为 | 不在默认转换策略范围内。 |

@@ -109,12 +109,30 @@ const conversionKindBySource = new Map<string, DemoKind>(
 // Keep conversion modules outside the main graph; each module is fetched on its first matching route.
 const brandIconUrl = `${import.meta.env.BASE_URL}brand/filens-icon.svg`;
 const converterCoreWasmUrl = `${import.meta.env.BASE_URL}externals/converter-core.wasm`;
-const converterGraphicsWasmUrl = `${import.meta.env.BASE_URL}externals/converter-graphics.wasm`;
+const converterGraphicsWasmUrl = `${import.meta.env.BASE_URL}externals/converter-raster.wasm`;
+const converterCadWasmUrl = `${import.meta.env.BASE_URL}externals/converter-cad.wasm`;
 const converterPostscriptWasmUrl = `${import.meta.env.BASE_URL}externals/converter-postscript.wasm`;
 const converterOfficeWasmUrl = `${import.meta.env.BASE_URL}externals/converter-office.wasm`;
 const converterImageWasmUrl = `${import.meta.env.BASE_URL}externals/converter-image.wasm`;
 
+const presentationSamples = [
+  {
+    kind: 'pptx',
+    label: '探微 · filens 介绍（中文）',
+    name: 'filens-introduction.zh-CN.pptx',
+    source: '/samples/filens-introduction.zh-CN.pptx'
+  },
+  {
+    kind: 'pptx',
+    label: 'filens Introduction (English)',
+    name: 'filens-introduction.en.pptx',
+    source: '/samples/filens-introduction.en.pptx'
+  }
+] satisfies DemoSource[];
+const presentationSample = computed(() => presentationSamples[isEnglish.value ? 1 : 0]!);
+
 const staticSamples: DemoSource[] = [
+  ...presentationSamples,
   {
     kind: 'pptx',
     label: 'Beyond the Visible',
@@ -1192,7 +1210,7 @@ const staticSamples: DemoSource[] = [
   }
 ];
 
-const defaultRemoteUrl = 'https://filens-six.vercel.app/samples/filens-field-notes.pptx';
+const defaultRemoteUrl = computed(() => new URL(resolvePublicSamplePath(presentationSample.value.source), window.location.href).href);
 const remotePrefetchKinds = new Set<DemoKind>(['pptx', 'key', 'pages', 'numbers', 'pdf', 'docx', 'xlsx', 'csv', 'ppt']);
 let sdkLoadRanges: Array<TimeRange & { selection?: number }> = [];
 let resourceTimings: PerformanceResourceTiming[] = [];
@@ -1268,8 +1286,7 @@ const showcaseDocxSample = staticSamples.find((sample) => sample.name === 'filen
 if (showcaseDocxSample) sampleByExtension.set('docx', showcaseDocxSample);
 const showcaseXlsxSample = staticSamples.find((sample) => sample.name === 'filens-observatory.xlsx');
 if (showcaseXlsxSample) sampleByExtension.set('xlsx', showcaseXlsxSample);
-const presentationSample = staticSamples.find((sample) => sample.name === 'filens-field-notes.pptx');
-if (presentationSample) sampleByExtension.set('pptx', presentationSample);
+sampleByExtension.set('pptx', presentationSample.value);
 const livePhotoFormats = [
   ['apple-live-photo', 'Apple · iPhone 15'],
   ['google-motion-photo', 'Google · Pixel 9 Pro XL'],
@@ -1415,7 +1432,7 @@ const formatCatalog = computed(() => [
     label
   }))
 ]);
-const initialSample = presentationSample ?? staticSamples[0]!;
+const initialSample = presentationSample.value;
 const current = shallowRef<DemoSource>({
   ...initialSample,
   source: resolveSampleSource(initialSample.source)
@@ -1428,7 +1445,7 @@ const selectedFormatFamilyId = ref<BusinessFormatFamilyId>(
 );
 let manuallySelectedFormatFamily = false;
 const sourceMode = ref<SourceMode>('sample');
-const remoteUrl = ref(defaultRemoteUrl);
+const remoteUrl = ref(defaultRemoteUrl.value);
 const initialParams = new URLSearchParams(window.location.search);
 const remoteLoadState = ref<'idle' | 'loading' | 'error'>(initialParams.has('url') ? 'loading' : 'idle');
 const thirdPartySource = computed(() => {
@@ -1504,9 +1521,16 @@ function syncPageFromUrl(): void {
     appliedUrlFormat = format;
     selectLandingSample(format);
   } else if (leavingRemote && !format) {
-    void useSample(initialSample);
+    void useSample(presentationSample.value);
   }
 }
+
+watch(presentationSample, (sample, previous) => {
+  sampleByExtension.set('pptx', sample);
+  if (sourceMode.value === 'sample' && presentationSamples.some(candidate => candidate.name === current.value.name)) void useSample(sample);
+  const previousRemoteUrl = new URL(resolvePublicSamplePath(previous.source), window.location.href).href;
+  if (remoteUrl.value === previousRemoteUrl) remoteUrl.value = defaultRemoteUrl.value;
+});
 
 watch([locale, showWorkbench, workbenchSection], () => {
   document.documentElement.lang = isEnglish.value ? 'en' : 'zh-CN';
@@ -1528,7 +1552,7 @@ function selectWorkbenchSection(section: 'preview' | 'agent'): void {
 
 function selectLandingSample(extension: string): void {
   if (extension === 'showcase') {
-    void useSample(staticSamples[0]!);
+    void useSample(presentationSample.value);
   } else {
     useFormatSample(extension);
   }
@@ -1578,7 +1602,8 @@ const converterCore = createWasmConverterClient({
   imageWasm: measuredWasm(converterImageWasmUrl),
   officeWasm: measuredWasm(converterOfficeWasmUrl),
   postscriptWasm: measuredWasm(converterPostscriptWasmUrl),
-  graphicsWasm: measuredWasm(converterGraphicsWasmUrl)
+  graphicsWasm: measuredWasm(converterGraphicsWasmUrl),
+  cadWasm: measuredWasm(converterCadWasmUrl)
 });
 const converter: ConverterClient = {
   async convert(request, context) {
@@ -1607,6 +1632,9 @@ onUnmounted(() => {
 
 function demoKindForConversionTarget(targetFormat: string): DemoKind {
   switch (targetFormat) {
+    case 'dxf':
+    case 'cad-json':
+      return 'cad';
     case 'pdf':
       return 'pdf';
     case 'jpg':

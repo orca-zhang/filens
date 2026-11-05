@@ -620,6 +620,18 @@
 .pptxv-compact-controls .pptxv-native-media--video { transform: scale(var(--pptxv-surface-scale, 1)); transform-origin: center; }
 .pptxv-format-controls { position: relative; }
 .pptxv-format-controls:not(:has(> .pptxv-format-controls-panel > span:not([hidden]) > [data-preview-controls]:not([hidden]))) { display: none; }
+.pptxv-format-controls > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  list-style: none;
+  cursor: pointer;
+}
+.pptxv-format-controls > summary::-webkit-details-marker { display: none; }
+.pptxv-format-controls > summary > svg { flex: 0 0 12px; width: 12px; height: 12px; }
+.pptxv-format-controls[open] > summary > svg { transform: rotate(180deg); }
 .pptxv-format-controls-panel {
   position: absolute;
   top: 100%;

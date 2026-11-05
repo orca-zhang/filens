@@ -25,9 +25,14 @@ npm run test:wasm-smoke
 
 TIFF (`tif`, `tiff`), TGA, PGM/PBM/PNM, DDS, Radiance HDR, DIB, CUR, PCX,
 OpenEXR, JPEG XL, QOI and Farbfeld (`ff`) convert to PNG in
-`converter-graphics.wasm`; DWG converts to UTF-8 DXF for the existing 2D viewer.
+`converter-raster.wasm`; DWG is read directly into a drawing model by
+`converter-cad.wasm`, without a DXF preview round trip. Explicit DWG-to-DXF export
+is retained. CAD supports R14 through AC1032 (2018-format files, including files
+saved in that format by newer CAD applications).
 The module uses the `graphics-preview` feature and is loaded only when needed.
-Browser hosts configure `createWasmConverterClient({ wasm, graphicsWasm })`; the
+Browser hosts configure `createWasmConverterClient({ wasm, graphicsWasm: rasterWasm, cadWasm })`.
+`converter-graphics.wasm` remains a compatible combined CAD/raster engine for
+existing hosts configured with `graphicsWasm`. The
 Go shell follows `requiredModule: "graphics"` and invokes the adjacent module.
 The combined `converter-core-full.wasm` includes it. TIFF shows only the first
 image, DDS only the first surface, JPEG XL only the first frame, and CUR only

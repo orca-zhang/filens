@@ -1,0 +1,31 @@
+{
+  "observedAt": "2026-11-05T10:42:01.580Z",
+  "tag": "v0.6.5",
+  "language": "en",
+  "files": {
+    "docs/release-v0.6.5.md": "daf6ab3aca7ae632b4a6447f7da8549b82faea43f262404d5a3f455719920e59",
+    "docs/releases/v0.6.5.md": "daf6ab3aca7ae632b4a6447f7da8549b82faea43f262404d5a3f455719920e59",
+    "CHANGELOG.md": "a53bc9081c3671d8dd8080e1775ad6a89495c3742ea75c253f8c7aebd60c5972",
+    "README.md": "4faae340add2d6ab726600b02699e7b30a430380fe998cbf17e2daf38d538595",
+    "README.zh-CN.md": "2732417875f8972a19947336716285235ab46130d995ac2cefe77d2a8e345b55"
+  },
+  "checks": {
+    "downloadTableFirst": true,
+    "downloadLinks": 15,
+    "tableMatchesMeasuredAssets": true,
+    "requiredOrder": [
+      "download table",
+      "Changelog",
+      "ZimaOS banner"
+    ],
+    "zimaosBannerPresent": true,
+    "zimaosSeparateVersionsPreserved": true,
+    "dshRuntimeVersionExplicit": true,
+    "npmPublicationNotClaimed": true,
+    "sourceSDKsLabeled": true,
+    "nativeReuseExplained": true,
+    "bothReleaseDocumentsMatch": true,
+    "readmeVersionsAndSizesUpdated": true,
+    "readmeDshThreeComparisonsProminent": true
+  }
+}
