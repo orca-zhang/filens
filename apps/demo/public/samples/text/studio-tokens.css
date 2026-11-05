@@ -1,0 +1,28 @@
+/* A visual system inspired by paper, ink and terracotta. */
+:root {
+  color-scheme: light dark;
+  --paper: #f6f2e9;
+  --ink: #24352e;
+  --accent: #b76140;
+}
+
+.reading-card {
+  display: grid;
+  gap: 1rem;
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 1rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1rem/1.7 system-ui, sans-serif;
+}
+
+.reading-card h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 3.4rem); }
+.reading-card a { color: var(--accent); text-underline-offset: 0.2em; }
+.reading-card a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #202924; --ink: #e8e5dc; --accent: #efa17e; }
+}

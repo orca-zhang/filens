@@ -1,6 +1,7 @@
 //! Bounded primary-item HEVC VUI color hints.
 //! Read configuration SPSs only; compressed image samples stay with libheif.
 use serde::Serialize;
+use std::collections::{BTreeMap, BTreeSet};
 
 type Result<T> = std::result::Result<T, &'static str>;
 const INVALID: &str = "Invalid HEIF color metadata";
@@ -113,8 +114,8 @@ pub fn item_color(input: &[u8], item_id: u32) -> Result<Option<Color>> {
         return Err(INVALID);
     }
     let mut total = 0;
-    let mut selected = None;
-    let mut seen = std::collections::BTreeSet::new();
+    let mut colors = BTreeMap::new();
+    let mut seen = BTreeSet::new();
     for _ in 0..count {
         let id = cursor.number(if version == 0 { 2 } else { 4 })?;
         if id == 0 || !seen.insert(id) {
@@ -126,7 +127,7 @@ pub fn item_color(input: &[u8], item_id: u32) -> Result<Option<Color>> {
             return Err(INVALID);
         }
         let mut hvcc = None;
-        let mut declared = false;
+        let mut declared = None;
         for _ in 0..n {
             let index = cursor.number(if flags == 0 { 1 } else { 2 })?
                 & if flags == 0 { 127 } else { 32767 };
@@ -134,29 +135,152 @@ pub fn item_color(input: &[u8], item_id: u32) -> Result<Option<Color>> {
                 continue;
             }
             let property = properties.get(index as usize - 1).ok_or(INVALID)?;
-            if id != item_id {
-                continue;
-            }
             if property.kind == b"hvcC" {
                 if hvcc.replace(property.data).is_some() {
                     return Err(INVALID);
                 }
             }
             if property.kind == b"colr" && property.data.starts_with(b"nclx") {
-                if declared || property.data.len() != 11 {
+                if declared.is_some() || property.data.len() != 11 {
                     return Err(INVALID);
                 }
-                declared = true;
+                let data = property.data;
+                declared = Some(Color {
+                    primaries: u16::from_be_bytes([data[4], data[5]]),
+                    transfer: u16::from_be_bytes([data[6], data[7]]),
+                    matrix: u16::from_be_bytes([data[8], data[9]]),
+                    full_range: data[10] & 128 != 0,
+                });
             }
         }
-        if id == item_id && !declared {
-            selected = hvcc.map(configuration_color).transpose()?.flatten();
-        }
+        colors.insert(id, (declared, hvcc));
     }
     if cursor.at != ipma.len() {
         return Err(INVALID);
     }
-    Ok(selected)
+    let grids = grid_references(&mut parser, &children)?;
+    let mut resolved = BTreeMap::new();
+    let mut active = BTreeSet::new();
+    let mut pending = vec![(item_id, false, 0)];
+    while let Some((id, expanded, depth)) = pending.pop() {
+        if resolved.contains_key(&id) {
+            continue;
+        }
+        if depth > 32 {
+            return Err(INVALID);
+        }
+        let (declared, configuration) = colors.get(&id).ok_or(INVALID)?;
+        if let Some(color) = declared {
+            resolved.insert(id, Some(*color));
+            continue;
+        }
+        if let Some(tiles) = grids.get(&id) {
+            if !expanded {
+                if !active.insert(id) {
+                    return Err(INVALID);
+                }
+                pending.push((id, true, depth));
+                for child in tiles.iter().rev() {
+                    pending.push((*child, false, depth + 1));
+                }
+                continue;
+            }
+            active.remove(&id);
+            let common = *resolved.get(&tiles[0]).ok_or(INVALID)?;
+            if tiles
+                .iter()
+                .any(|child| resolved.get(child) != Some(&common))
+            {
+                return Err(INVALID);
+            }
+            resolved.insert(id, common);
+        } else {
+            resolved.insert(
+                id,
+                configuration
+                    .map(configuration_color)
+                    .transpose()?
+                    .flatten(),
+            );
+        }
+    }
+    Ok(resolved.remove(&item_id).flatten())
+}
+
+// Follow only grid dimg dependencies. Auxiliary alpha, thumbnails and tone maps
+// have their own sample interpretation and must never supply RGB color hints.
+fn grid_references(parser: &mut Boxes, meta: &[BoxRef<'_>]) -> Result<BTreeMap<u32, Vec<u32>>> {
+    let mut grids = BTreeSet::new();
+    if let Some(iinf) = find(meta, b"iinf")? {
+        let mut cursor = Cursor { data: iinf, at: 0 };
+        let version = cursor.number(1)?;
+        if version > 1 || cursor.number(3)? != 0 {
+            return Err(INVALID);
+        }
+        let count = cursor.number(if version == 0 { 2 } else { 4 })? as usize;
+        if count > 4096 {
+            return Err(INVALID);
+        }
+        let entries = parser.read(&iinf[cursor.at..])?;
+        if entries.len() != count {
+            return Err(INVALID);
+        }
+        for entry in entries {
+            if entry.kind != b"infe" {
+                return Err(INVALID);
+            }
+            let mut cursor = Cursor {
+                data: entry.data,
+                at: 0,
+            };
+            let version = cursor.number(1)?;
+            cursor.take(3)?;
+            if version < 2 {
+                continue;
+            }
+            if version > 3 {
+                return Err(INVALID);
+            }
+            let id = cursor.number(if version == 2 { 2 } else { 4 })?;
+            cursor.take(2)?;
+            if cursor.take(4)? == b"grid" && !grids.insert(id) {
+                return Err(INVALID);
+            }
+        }
+    }
+    let mut refs = BTreeMap::new();
+    if let Some(iref) = find(meta, b"iref")? {
+        let mut cursor = Cursor { data: iref, at: 0 };
+        let version = cursor.number(1)?;
+        if version > 1 || cursor.number(3)? != 0 {
+            return Err(INVALID);
+        }
+        let width = if version == 0 { 2 } else { 4 };
+        let mut total = 0;
+        for entry in parser.read(&iref[4..])? {
+            if entry.kind != b"dimg" {
+                continue;
+            }
+            let mut cursor = Cursor {
+                data: entry.data,
+                at: 0,
+            };
+            let id = cursor.number(width)?;
+            let count = cursor.number(2)? as usize;
+            total += count;
+            if count == 0 || total > 16384 || entry.data.len() != width + 2 + count * width {
+                return Err(INVALID);
+            }
+            let mut children = Vec::with_capacity(count);
+            for _ in 0..count {
+                children.push(cursor.number(width)?);
+            }
+            if grids.contains(&id) && refs.insert(id, children).is_some() {
+                return Err(INVALID);
+            }
+        }
+    }
+    Ok(refs)
 }
 
 fn configuration_color(data: &[u8]) -> Result<Option<Color>> {
@@ -396,6 +520,136 @@ fn sps_color(nal: &[u8]) -> Result<Option<Color>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn box_bytes(kind: &[u8; 4], data: &[u8]) -> Vec<u8> {
+        let mut output = ((data.len() + 8) as u32).to_be_bytes().to_vec();
+        output.extend_from_slice(kind);
+        output.extend_from_slice(data);
+        output
+    }
+
+    fn grid_fixture(items: &[(u16, bool, Option<Color>)], links: &[(u16, &[u16])]) -> Vec<u8> {
+        let mut iinf = vec![0; 4];
+        iinf.extend_from_slice(&(items.len() as u16).to_be_bytes());
+        let mut ipco = Vec::new();
+        let mut ipma = vec![0; 4];
+        ipma.extend_from_slice(&(items.len() as u32).to_be_bytes());
+        let mut property = 0;
+        for &(id, grid, color) in items {
+            let mut infe = vec![2, 0, 0, 0];
+            infe.extend_from_slice(&id.to_be_bytes());
+            infe.extend_from_slice(&[0, 0]);
+            infe.extend_from_slice(if grid { b"grid" } else { b"hvc1" });
+            infe.push(0);
+            iinf.extend(box_bytes(b"infe", &infe));
+            ipma.extend_from_slice(&id.to_be_bytes());
+            ipma.push(u8::from(color.is_some()));
+            if let Some(color) = color {
+                let mut data = b"nclx".to_vec();
+                data.extend_from_slice(&color.primaries.to_be_bytes());
+                data.extend_from_slice(&color.transfer.to_be_bytes());
+                data.extend_from_slice(&color.matrix.to_be_bytes());
+                data.push(if color.full_range { 128 } else { 0 });
+                ipco.extend(box_bytes(b"colr", &data));
+                property += 1;
+                ipma.push(property);
+            }
+        }
+        let mut iref = vec![0; 4];
+        for &(id, children) in links {
+            let mut dimg = id.to_be_bytes().to_vec();
+            dimg.extend_from_slice(&(children.len() as u16).to_be_bytes());
+            for child in children {
+                dimg.extend_from_slice(&child.to_be_bytes());
+            }
+            iref.extend(box_bytes(b"dimg", &dimg));
+        }
+        let mut iprp = box_bytes(b"ipco", &ipco);
+        iprp.extend(box_bytes(b"ipma", &ipma));
+        let mut meta = vec![0; 4];
+        meta.extend(box_bytes(b"iinf", &iinf));
+        meta.extend(box_bytes(b"iref", &iref));
+        meta.extend(box_bytes(b"iprp", &iprp));
+        box_bytes(b"meta", &meta)
+    }
+
+    #[test]
+    fn nested_grids_inherit_only_rgb_dependencies_and_root_color_wins() {
+        let rgb = Color {
+            primaries: 12,
+            transfer: 13,
+            matrix: 6,
+            full_range: true,
+        };
+        let alpha = Color {
+            primaries: 2,
+            transfer: 8,
+            matrix: 2,
+            full_range: true,
+        };
+        let items = [
+            (1, true, None),
+            (2, true, None),
+            (3, false, Some(rgb)),
+            (4, false, Some(alpha)),
+        ];
+        assert_eq!(
+            item_color(&grid_fixture(&items, &[(1, &[2]), (2, &[3])]), 1),
+            Ok(Some(rgb))
+        );
+        let mut explicit = items;
+        explicit[0].2 = Some(alpha);
+        assert_eq!(
+            item_color(&grid_fixture(&explicit, &[(1, &[2, 4]), (2, &[3])]), 1),
+            Ok(Some(alpha))
+        );
+        // A non-grid item's dimg relation must not borrow another image's color.
+        let ordinary = [(1, false, None), (3, false, Some(rgb))];
+        assert_eq!(
+            item_color(&grid_fixture(&ordinary, &[(1, &[3])]), 1),
+            Ok(None)
+        );
+    }
+
+    #[test]
+    fn rejects_grid_cycles_missing_tiles_mixed_colors_and_excessive_depth() {
+        let color = Color {
+            primaries: 1,
+            transfer: 13,
+            matrix: 6,
+            full_range: true,
+        };
+        let other = Color {
+            primaries: 12,
+            ..color
+        };
+        let items = [
+            (1, true, None),
+            (2, true, None),
+            (3, false, Some(color)),
+            (4, false, Some(other)),
+        ];
+        for links in [
+            vec![(1, &[2][..]), (2, &[1][..])],
+            vec![(1, &[9][..])],
+            vec![(1, &[3, 4][..])],
+        ] {
+            assert!(item_color(&grid_fixture(&items, &links), 1).is_err());
+        }
+        let missing = [(1, true, None), (3, false, Some(color)), (4, false, None)];
+        assert!(item_color(&grid_fixture(&missing, &[(1, &[3, 4])]), 1).is_err());
+        let items: Vec<_> = (1..=35)
+            .map(|id| (id, id < 35, if id == 35 { Some(color) } else { None }))
+            .collect();
+        let children: Vec<_> = (2..=35).map(|id| vec![id]).collect();
+        let links: Vec<_> = children
+            .iter()
+            .enumerate()
+            .map(|(i, ids)| ((i + 1) as u16, ids.as_slice()))
+            .collect();
+        assert!(item_color(&grid_fixture(&items, &links), 1).is_err());
+    }
+
     #[test]
     fn rejects_truncated_boxes_and_malformed_configuration_records() {
         for bytes in [&[][..], &[0; 7], &[0, 0, 0, 7, b'm', b'e', b't', b'a']] {

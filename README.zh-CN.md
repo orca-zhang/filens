@@ -15,15 +15,15 @@
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
-| 支持格式（按扩展名） | **334 种**。 | **402 种**，含直接预览与本地 WASM 转换后预览。 |
-| 大概多大 | **Lite 基础组件 8.27–8.64 MiB · Full 基础组件 31.70–37.34 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 支持格式（按扩展名） | **349 种**。 | **450 种**，含直接预览与本地 WASM 转换后预览。 |
+| 大概多大 | **Lite 基础组件 8.00–9.27 MiB · Full 基础组件 31.43–37.06 MiB**，完整版含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **1.82–2.20 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、缓存和预览资源。Release 离线包另含预览运行时，完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.3 主运行时按分包合计 **3.20 MB Brotli**，单 JS 版为 **3.66 MB Brotli / 3.97 MB gzip / 8.91 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.92–2.20 MiB**。Lite 和 Full 的安装体积包含启动器、可执行文件和文档 WASM，Full 额外包含 OCR 运行时与模型；随平台变化，不含 Node.js、缓存和预览资源。Release 离线包另含预览运行时，完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。前端分包说的是压缩产物。预览 0.3.4 主运行时按分包合计 **4.73 MB Brotli**，单 JS 版预压缩产物为 **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
-**支持 334 种文件格式（按扩展名统计）**，在本地读取 PDF、Office、表格、扫描件和图片；搜索目录与嵌套压缩包、提取关键原文、查找重复文件与相似图片。输出 text、JSON、Markdown、HTML、YAML、XML、CSV 或 TSV，保留可用的页码坐标与文档结构。具体能力以 `filens capacity --json` 为准，提取保真度因格式而异。改写总结、翻译和问答由调用它的 Agent 完成。
+**支持 349 种文件格式（按扩展名统计）**，在本地读取 PDF、Office、表格、扫描件和图片；搜索目录与嵌套压缩包、提取关键原文、查找重复文件与相似图片。输出 text、JSON、Markdown、HTML、YAML、XML、CSV 或 TSV，保留可用的页码坐标与文档结构。具体能力以 `filens capacity --json` 为准，提取保真度因格式而异。改写总结、翻译和问答由调用它的 Agent 完成。
 
 ### 安装与使用
 
@@ -39,12 +39,15 @@ filens '在 "./documents" 中搜索 "预算 风险"，以 JSON 输出'
 filens summarize report.pdf --query '预算 风险' --json
 filens convert report.doc report.docx
 
+filens inspect unknown-file --json
 filens capacity --json
 ```
 
+`filens inspect 文件 --json` 通过有界内容读取识别实际格式，返回 MIME、证据等级及扩展名是否匹配；无法确定时保留未知。无需 OCR，不代表完整文件校验。
+
 ### 离线浏览器预览
 
-**CLI 0.5.4：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。Release 离线包已内置预览 0.3.3，解压后即可使用。其他安装方式可提前运行 `filens setup-preview` 准备预览资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。Release 离线包已内置预览 0.3.4，解压后即可使用。其他安装方式可提前运行 `filens setup-preview` 准备预览资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -65,7 +68,7 @@ filens preview report.pdf --mode serve
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.20 MiB · Lite 8.64 MiB · Full 31.87 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.4 · macOS arm64 · Lite/Full 为基础组件体积，离线预览资源另计；Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.20 MiB · Lite 9.27 MiB · Full 32.49 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.6 · macOS arm64 · Lite/Full 为基础组件体积，离线预览资源另计；Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -82,11 +85,35 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ## 纯前端预览
 
-**支持 402 种文件格式，在浏览器本地解析和渲染，无需上传或转换服务器。** 按扩展名统计，包含直接预览与本地 WASM 转换后预览。直接浏览 Keynote 幻灯片、Pages 页面、Numbers 表格，读取 Office 与 PDF，检查 CAD / 3D 模型，查看 RAW 和 360° 照片、视频。各格式的支持范围与限制见[支持矩阵](docs/support-matrix.zh-CN.md)。
+**支持 450 种文件格式，在浏览器本地解析和渲染，无需上传或转换服务器。** 按扩展名统计，包含直接预览与本地 WASM 转换后预览。直接浏览 Keynote 幻灯片、Pages 页面、Numbers 表格，读取 Office 与 PDF，检查 CAD / 3D 模型，查看 RAW 和 360° 照片、视频。各格式的支持范围与限制见[支持矩阵](docs/support-matrix.zh-CN.md)。
 
 ### DeepSeek Harness 插件
 
-[CLI 工具与侧栏预览](integrations/deepseek-harness/README.zh-CN.md)，统一安装、独立启停。支持 DSH 桌面版 0.2.1-rc.5 和 Web 0.2.2-alpha.3。在桌面版「插件 → 添加插件」中填写 `dsh-filens`，点击「安装」；也可填写 `dsh-filens@0.1.1` 固定版本。[命令行安装与配置](integrations/deepseek-harness/README.zh-CN.md#安装与构建)。
+[CLI 工具与原生侧栏预览](integrations/deepseek-harness/README.zh-CN.md)，支持 **450 种格式本地预览**（按扩展名，含本地 WASM 转换），统一安装、独立启停。支持 DSH 桌面版 0.2.1-rc.5 和 Web 0.2.2-alpha.3。在桌面版「插件 → 添加插件」中填写 `dsh-filens`，点击「安装 → 立即启用」；也可填写 `dsh-filens@0.1.3` 固定版本。[安装与配置](integrations/deepseek-harness/README.zh-CN.md#安装与构建)。
+
+<!-- dsh-package-metrics:start -->
+**dsh-filens 0.1.3：下载 6.53 MiB / 解包 19.57 MiB**，已含预览 0.3.4。CLI 0.5.6 / OCR、DSH 共享依赖和包管理器缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
+<!-- dsh-package-metrics:end -->
+
+![在 DSH 桌面界面安装 dsh-filens，预览 Word、切换 Excel 工作表，并用 Page Down 全屏演示三页 PPT](docs/assets/dsh-plugin/install-and-preview.webp)
+
+Office 文件直接在侧栏预览，Excel 可切换工作表，PPT 可全屏演示：全屏后点击画面，用 **Page Down / Page Up** 翻页，**Esc** 返回 DSH。DOCX/PPTX 在本地直接渲染，省去 Office 转 PDF 的步骤。
+
+| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.1 | FiLens 0.1.2 | DSH 内置 |
+| --- | ---: | ---: | ---: |
+| PPTX | 356 / 228 | 540 / 311 | 1,828 / 112 |
+| DOCX | 245 / 245 | 294 / 278 | 1,812 / 112 |
+| PDF | 1,623 / 1,408 | 684 / 443 | 328 / 111 |
+
+同机 9 轮实测。PDF 对比内置 PDF 预览；DOCX/PPTX 对比内置 Office 转 PDF。首开指每个进程首次打开，保留系统与持久缓存。[波动范围、原始数据与方法](docs/assets/dsh-plugin/README.md) · [MP4](docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](docs/assets/dsh-plugin/install-and-preview.gif)。
+
+**DSH 0.1.3：**预览直接挂载到侧栏，缩放与全屏接入 DSH 外层工具栏，并按文件类型加载对应驱动。入口 JS 从 **3.04 MiB 降至 345 KiB（约减少 89%）**；TXT 首开运行时资源从 **3.09 MiB 降至 449 KiB**。格式模块、共享代码与 WASM 首次使用后复用。[加载量与方法](docs/assets/dsh-plugin/format-loading.json)。上表保留 0.1.2 的历史测量，安装演示使用 0.1.3。 PDF 像素优化阶段的 9 轮首开 / 重复打开为 **190 / 77 ms**，同轮优化前为 **208 / 159 ms**、内置为 **329 / 110 ms**；首张像素复用使重开耗时减少约 **52%**。[原始计时、范围与优化说明](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。Word / PPT 的 9 轮结果见[完整复测](docs/assets/dsh-plugin/performance-retest.zh-CN.md)。 插件下载 **6.53 MiB**、解包 **19.57 MiB**，CLI/OCR 等依赖另计。
+
+本轮继续加入 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。9 轮、432 次完整侧栏打开中，重开大 XLSX **94→77 ms**、Pages **177→77 ms**、Numbers **176→93 ms**、Keynote **177→94 ms**、STEP **226→109 ms**；小 XLSX 仍为 **68 ms**。Numbers 首开从 **193→227 ms**，保留快照有成本。[完整数据、范围和验证](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
+
+![在 DSH 中旋转太空机器人和行星齿轮箱，环视银河全景照片，并播放 NASA 黑洞 360° 视频](docs/assets/dsh-plugin/3d-and-panorama.webp)
+
+拖拽旋转 **GLB / 3MF 模型**、缩放查看细节，环视 **360° 全景照片**，也可边播放 **全景视频** 边改变视角。全景样例用 `.pano` / `.360v` 文件名选择球面预览。[完整画廊 MP4 与素材来源](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [GIF](docs/assets/dsh-plugin/3d-and-panorama.gif)。
 
 ### 浏览器集成：单文件与按需分包
 

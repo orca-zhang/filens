@@ -487,7 +487,8 @@ describe('preview format routing', () => {
       docx: 'flow',
       xlsx: 'workbook',
       jpg: 'image',
-      png: 'image'
+      png: 'image',
+      dxf: 'cad'
     } as const;
 
     const defaultPairs = conversionManifest.filter((pair) => pair.sourceFormat !== pair.targetFormat).filter((pair, index, pairs) =>
@@ -498,7 +499,7 @@ describe('preview format routing', () => {
         sourceFormat: pair.sourceFormat,
         targetFormat: pair.targetFormat,
         family: expectedFamilies[pair.targetFormat as keyof typeof expectedFamilies],
-        driverId: ['jpg', 'png'].includes(pair.targetFormat) ? 'image' : pair.targetFormat,
+        driverId: pair.targetFormat === 'dxf' ? 'cad' : ['jpg', 'png'].includes(pair.targetFormat) ? 'image' : pair.targetFormat,
         conversion: { required: true }
       });
     }
@@ -510,7 +511,6 @@ describe('preview format routing', () => {
       'movie.mkv',
       'bundle.rar',
       'comic.cbr',
-      'floorplan.dwg',
       'part.step',
       'brainstorm.xmind',
       'flow.graffle',
@@ -1186,7 +1186,6 @@ describe('preview format routing', () => {
     }
 
     for (const extension of [
-      'dwg',
       'step',
       'wbk',
       'xlk',
@@ -1370,6 +1369,29 @@ describe('preview format routing', () => {
 });
 
 describe('file set resource resolver', () => {
+  it('preserves alias precedence, encoded segments and malformed escapes', () => {
+    const resources = [
+      { name: 'first.png', path: 'scene/a/shared.png', source: 'first' },
+      { name: 'second.png', path: 'scene/a/shared.png', source: 'second' },
+      { name: 'encoded%20name.png', path: 'scene/%2E%2E/encoded%20name.png', source: 'encoded' },
+      { name: 'bad%ZZ.png', path: 'scene/raw/bad%ZZ.png', source: 'malformed' },
+      { name: 'nested/path.png', source: 'nested' },
+      { name: 'nested/path.png', source: 'replacement' },
+      { name: '', path: 'scene/path-only.bin', source: 'path-only' }
+    ];
+    const index = createFileSetResourceIndex(resources, { root: ' /scene/ ' });
+    expect(index.read('a/shared.png')).toBe(resources[1]);
+    expect(index.read('first.png')).toBe(resources[0]);
+    expect(index.read('https://example.com/scene/./a/../a/shared.png?raw#view')).toBe(resources[1]);
+    expect(index.read('%2E%2E/encoded%20name.png')).toBe(resources[2]);
+    expect(index.read('encoded name.png')).toBe(resources[2]);
+    expect(index.read('raw/bad%ZZ.png')).toBe(resources[3]);
+    expect(index.read('path.png')).toBeUndefined();
+    expect(index.read('nested/path.png')).toBe(resources[5]);
+    expect(index.read('path-only.bin')).toBe(resources[6]);
+    expect(index.resolve({ source: 'a/shared.png', name: 'first.png' })).toEqual({ source: 'second' });
+  });
+
   it('resolves related uploaded resources by path and unique basename', async () => {
     const image = new File([new Uint8Array([1, 2, 3])], 'textures/diffuse.png', { type: 'image/png' });
     const buffer = new File([new Uint8Array([4, 5])], 'model.bin');

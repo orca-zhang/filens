@@ -21,6 +21,15 @@ beforeEach(() => { FakeWorker.instances = []; vi.stubGlobal('Worker', FakeWorker
 afterEach(() => vi.unstubAllGlobals());
 
 describe('iWork worker lifecycle', () => {
+  it('restores a cached Numbers archive without transferring the viewer buffers', async () => {
+    const client = new IworkWorkerClient(), worker = FakeWorker.instances[0];
+    const document = { archive: { type: 'numbers', records: {} }, media: { data: new Uint8Array([1, 2]) } } as any;
+    const task = client.parseSheet(1, document), request = worker.messages[0];
+    expect(request.context).toEqual({ archive: document.archive, media: document.media });
+    expect(document.media.data.byteLength).toBe(2);
+    worker.reply({ id: request.id, sheet: { index: 1, loaded: true } });
+    await expect(task).resolves.toEqual({ index: 1, loaded: true }); client.destroy();
+  });
   it('terminates busy parsing immediately and recreates the worker on the next request', async () => {
     const client = new IworkWorkerClient(), first = FakeWorker.instances[0], task = client.parse(input());
     const rejected = expect(task).rejects.toMatchObject({ name: 'AbortError' }); client.cancel(); await rejected;

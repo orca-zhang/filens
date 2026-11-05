@@ -1,0 +1,22 @@
+// JSON5 allows comments, unquoted keys and trailing commas.
+{
+  name: '城市的清晨',
+  translatedTitle: 'The city before nine',
+  fictional: true,
+  sampleRate: 48000,
+  tracks: [
+    {
+      title: '河边的风',
+      durationSeconds: 92.5,
+      location: '东桥',
+      tags: ['wind', 'river'],
+    },
+    {
+      title: '书店开门时',
+      durationSeconds: 64,
+      location: '旧街书店',
+      tags: ['street', 'morning'],
+    },
+  ],
+  notes: '每一段录音，都保留开始与结束前的几秒安静。',
+}

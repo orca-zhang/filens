@@ -1,0 +1,212 @@
+{
+  "node": "v20.20.2",
+  "browser": "147.0.7727.15",
+  "builds": {
+    "current": {
+      "startup": {
+        "raw": 1998316,
+        "gzip": 565145,
+        "brotli": 478903
+      },
+      "startupFiles": {
+        "split/chunks/archive-DUMS7x2n.js": {
+          "raw": 28003,
+          "gzip": 8900,
+          "brotli": 8021,
+          "sha256": "63b7e69d89dac625f7f226ffe1d6ebc42c5a1c475f595804f6d3bea32f461dae"
+        },
+        "split/chunks/cad-CdcbDQWP.js": {
+          "raw": 54506,
+          "gzip": 16725,
+          "brotli": 14637,
+          "sha256": "da8c863e580b1bdc88d02b336973c3c4b5b460b92a12ccc035065d40a99d1815"
+        },
+        "split/chunks/core-I3MND37u.js": {
+          "raw": 363769,
+          "gzip": 100708,
+          "brotli": 85468,
+          "sha256": "efc35300da497560ccb0ebe05eca35ac50319336325c42f7617ed9023dd84eed"
+        },
+        "split/chunks/diagram-BJKsxK-v.js": {
+          "raw": 21748,
+          "gzip": 6993,
+          "brotli": 6231,
+          "sha256": "8b732d19e0e8c012fb6a327a8932aec0c37a20d772f622813744f16e90543de1"
+        },
+        "split/chunks/docx-BaDiqT6R.js": {
+          "raw": 8938,
+          "gzip": 3309,
+          "brotli": 2943,
+          "sha256": "8be2c277fc5570256ad6c664d74c20359acbca94a6795613e92a25b8ecccd480"
+        },
+        "split/chunks/ebook-bWVOeWyN.js": {
+          "raw": 16903,
+          "gzip": 6327,
+          "brotli": 5654,
+          "sha256": "8045bebf8df4d829f2f9ed89cc5afba07cb07a92353da8d4736d218a57a1437a"
+        },
+        "split/chunks/index-CHdDXEXA.js": {
+          "raw": 180874,
+          "gzip": 49185,
+          "brotli": 40024,
+          "sha256": "31160f5794bd8d13f56178eb5d24457d04e3cf82d814248761f3855d083f547f"
+        },
+        "split/chunks/iwork-eCXmw6Mi.js": {
+          "raw": 22895,
+          "gzip": 7447,
+          "brotli": 6714,
+          "sha256": "acb6dc0e4bece830bf31ab969eddeadc600ec04a9ac37d3ee9ac4b344175ff87"
+        },
+        "split/chunks/mindmap-CwKqIOlA.js": {
+          "raw": 15846,
+          "gzip": 5054,
+          "brotli": 4501,
+          "sha256": "851ceff1e7f5716b15e4d8ac3f123a85a241986b7afca45c46eb7fad68f52023"
+        },
+        "split/chunks/model3d-BA85D-hJ.js": {
+          "raw": 117483,
+          "gzip": 32420,
+          "brotli": 28389,
+          "sha256": "183acc45913a83f2a72f2bd96dfde7d23f69b8971799a4cb214c4bbd6c00d65b"
+        },
+        "split/chunks/panorama-C_j0wAs8.js": {
+          "raw": 219787,
+          "gzip": 64826,
+          "brotli": 55480,
+          "sha256": "10945e6a1c4c9fabc83d521177c677da201131edd75b9f39117d08a324bb31b4"
+        },
+        "split/chunks/vendor-CHXjTfDd.js": {
+          "raw": 874244,
+          "gzip": 245241,
+          "brotli": 204781,
+          "sha256": "7c26235a993c830a0d589fff60e80bc17dc08bcf086c3284c93363d9e4c3448a"
+        },
+        "split/chunks/xlsx-CuzaQFZU.js": {
+          "raw": 23435,
+          "gzip": 8011,
+          "brotli": 7247,
+          "sha256": "d3e8404eaaa35aa1f708edfee9bd7ccbb3b65cd4957808223fe6d816744d64c4"
+        },
+        "split/filens.js": {
+          "raw": 49885,
+          "gzip": 9999,
+          "brotli": 8813,
+          "sha256": "42ffd5cbfc5c8d5e7e747ce40562ce3e200174a37444883041eaeb1121cd3955"
+        }
+      },
+      "splitAllJs": {
+        "raw": 5419453,
+        "gzip": 1486354,
+        "brotli": 1250484
+      },
+      "allInOneJs": {
+        "raw": 10970600,
+        "gzip": 5530856,
+        "brotli": 5213441
+      }
+    },
+    "baseline": {
+      "startup": {
+        "raw": 2182891,
+        "gzip": 611990,
+        "brotli": 518181
+      },
+      "startupFiles": {
+        "split/chunks/archive-BSU81JQ7.js": {
+          "raw": 28003,
+          "gzip": 8894,
+          "brotli": 8019,
+          "sha256": "641eb7a677729893873dd4f0342a353c4d6fb9d374b8c57df4e567e16f437e77"
+        },
+        "split/chunks/cad-DOmC8Jg_.js": {
+          "raw": 54506,
+          "gzip": 16724,
+          "brotli": 14627,
+          "sha256": "bdd001d77cd5ef6c3ee73a5b75d4843db2f10c281f931ba6aa848e468ab658d4"
+        },
+        "split/chunks/core-Biuk1L-e.js": {
+          "raw": 363769,
+          "gzip": 100712,
+          "brotli": 85521,
+          "sha256": "e419a9ad912e5a344dd39a49d4c998fcfdf0223431bdc23c8126742124bf3036"
+        },
+        "split/chunks/diagram-Bv5guZAn.js": {
+          "raw": 21748,
+          "gzip": 6990,
+          "brotli": 6225,
+          "sha256": "981c5004ec34a4f0b5a0d2d18f1e2080a16d11b1e2369e4d4f881fe7561d93d4"
+        },
+        "split/chunks/docx-DaJDJlU0.js": {
+          "raw": 8938,
+          "gzip": 3311,
+          "brotli": 2941,
+          "sha256": "fcd44f0d50333fc84a13bac20052649e629fec9dec90cef62fca15c0eb178e32"
+        },
+        "split/chunks/ebook-DyJOFaLM.js": {
+          "raw": 16903,
+          "gzip": 6325,
+          "brotli": 5648,
+          "sha256": "723d3136e9289a0aa6e4bf9ee67c67dbcb8f3f2c345dabf7b6b1547659f03ef6"
+        },
+        "split/chunks/index-DslpXtV6.js": {
+          "raw": 180874,
+          "gzip": 49181,
+          "brotli": 40023,
+          "sha256": "1e80539e2d6e57609da5500499ba42db71f5d3f2ba0c0ad6aa6d85f065f04876"
+        },
+        "split/chunks/iwork-Dw370s-J.js": {
+          "raw": 22895,
+          "gzip": 7444,
+          "brotli": 6727,
+          "sha256": "4342518ca83a093090ce096babeaf4e8239045458acf2c2ff01682dc38e13595"
+        },
+        "split/chunks/mindmap-DFNOzAml.js": {
+          "raw": 15846,
+          "gzip": 5052,
+          "brotli": 4502,
+          "sha256": "8eca273dbeb7fe132518e914c3ddfef9c33c1c1e607b2edd634320587f6ef319"
+        },
+        "split/chunks/model3d-BQOe2ngL.js": {
+          "raw": 118350,
+          "gzip": 32298,
+          "brotli": 28342,
+          "sha256": "800e99dda640d68f13bc070ef80b37a6bd611fcda5beb0d98c19344580e871a2"
+        },
+        "split/chunks/panorama-Cq9ODgeB.js": {
+          "raw": 219786,
+          "gzip": 64824,
+          "brotli": 55509,
+          "sha256": "401493c13b4c1f327e1122efb2c27e27efefa5f2c9ea5740897ce540e9e7a643"
+        },
+        "split/chunks/vendor-DOQzyp-e.js": {
+          "raw": 1057953,
+          "gzip": 292232,
+          "brotli": 244031,
+          "sha256": "ba26219cca04389bc96d940b35b53fe850819faff61e2eb9c35e6f1fc3bb24e1"
+        },
+        "split/chunks/xlsx-CMhjcFSe.js": {
+          "raw": 23435,
+          "gzip": 8009,
+          "brotli": 7255,
+          "sha256": "a5ed4fbb4258ccac5f08b01e88f533d3fa68833bf2ef903733a9730e300aae87"
+        },
+        "split/filens.js": {
+          "raw": 49885,
+          "gzip": 9994,
+          "brotli": 8811,
+          "sha256": "1ae13c9429e52000a9a5b7f1e92b94ab18fabf341fab0de742d04e1b784213e6"
+        }
+      },
+      "splitAllJs": {
+        "raw": 5420192,
+        "gzip": 1485357,
+        "brotli": 1248806
+      },
+      "allInOneJs": {
+        "raw": 10970324,
+        "gzip": 5530122,
+        "brotli": 5212510
+      }
+    }
+  }
+}

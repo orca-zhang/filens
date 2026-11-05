@@ -1,6 +1,6 @@
 {
   "name": "@filens/media",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Image, audio, video, and panorama preview drivers for @filens.",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,10 +18,19 @@
     "./engine": {
       "types": "./dist/engine.d.ts",
       "import": "./dist/engine.js"
+    },
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    },
+    "./codecs": {
+      "types": "./dist/codec-preview-driver.d.ts",
+      "import": "./dist/codecs.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build",
@@ -30,11 +39,11 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
-    "@filens/converter-client": "^0.1.0",
-    "@filens/panorama": "^0.1.0"
+    "@filens/converter-client": "^0.1.2",
+    "@filens/panorama": "^0.1.1"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
     "@filens/core": "file:../core",

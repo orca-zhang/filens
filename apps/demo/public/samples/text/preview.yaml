@@ -1,0 +1,26 @@
+# Fictional community workshop schedule.
+studio: 岸线工作室
+timezone: Asia/Shanghai
+season: autumn-2026
+
+defaults: &workshop
+  capacity: 12
+  materials_included: true
+  languages: [zh-CN, en]
+
+workshops:
+  - <<: *workshop
+    title: 纸张与拓印
+    starts_at: "2026-11-07T10:00:00+08:00"
+    duration_minutes: 90
+    supplies: [厚纸, 水性油墨, 软胶板]
+
+  - <<: *workshop
+    title: 城市声音采集
+    capacity: 8
+    starts_at: "2026-11-08T13:30:00+08:00"
+    duration_minutes: 120
+
+welcome: |
+  从一个小小的观察开始。
+  带上好奇心，其他材料由工作室准备。

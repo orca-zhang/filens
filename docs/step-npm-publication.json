@@ -1,0 +1,54 @@
+{
+  "observedAt": "2026-11-05T03:43:39.126Z",
+  "name": "filens-step",
+  "version": "0.1.0-rc.1",
+  "distTag": "next",
+  "published": true,
+  "publication": "published and verified on the public npm registry",
+  "file": "filens-step-0.1.0-rc.1.tgz",
+  "bytes": 363531,
+  "unpackedBytes": 1282858,
+  "sha256": "9df2319aa2ede9c0b791e50ecb454867042b376d19cf6d9f8f249bf1d035081e",
+  "integrity": "sha512-q7Ji5nxClYVjo2FMNTxyf/qve7JrmWVxUrvteiHRWTdgA0oqm+6frsRODIdrUOdY35cQHbp8lLFWPuWOSvn9Gg==",
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1076
+    },
+    {
+      "path": "README.md",
+      "bytes": 3541
+    },
+    {
+      "path": "dist/filens-step-manifest.json",
+      "bytes": 1541
+    },
+    {
+      "path": "dist/filens-step-THIRD-PARTY-NOTICES.txt",
+      "bytes": 309782
+    },
+    {
+      "path": "dist/filens-step.wasm",
+      "bytes": 947729
+    },
+    {
+      "path": "dist/index.d.ts",
+      "bytes": 1804
+    },
+    {
+      "path": "dist/index.js",
+      "bytes": 16554
+    },
+    {
+      "path": "package.json",
+      "bytes": 831
+    }
+  ],
+  "privacyChecked": true,
+  "acceptedAt": "2026-11-01T02:50:22.375Z",
+  "publishedAt": "2026-11-01T02:50:57.674Z",
+  "verifiedAt": "2026-11-01T02:52:36.796Z",
+  "registry": "https://registry.npmjs.org/",
+  "tarball": "https://registry.npmjs.org/filens-step/-/filens-step-0.1.0-rc.1.tgz",
+  "status": "existing-public-version-integrity-verified"
+}

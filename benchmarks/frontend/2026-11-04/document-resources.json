@@ -1,0 +1,722 @@
+{
+  "date": "2026-11-04",
+  "baseline": "Working-tree build after shared-readers round; includes prior uncommitted work, not Git HEAD. Four production dist snapshots and six pre-change source files saved in tmp/document-resources-baseline.",
+  "scope": "EPUB CSS scanning, Blob and opaque-frame resource preparation, MindManager nearest-child topic traversal, skipping non-rendered Visio containers, and Base64 preparation for synchronous model texture resolution. No backend conversion changes, new dependencies or main-entry export changes.",
+  "method": "Chromium production parser entries loaded through Vite import resolution. Internal CSS/frame/texture stages bundled with identical esbuild options and source overrides for baseline. Shared current core/dependencies, alternating engines, 2 warmups and 7 measured runs. Input generation/transfer, imports, mode overrides, output serialization, byte decoding, hashing and validation outside timers. Complete parser models, resolver calls, CSS output, URL strings and Blob byte hashes compared on every run. No rendering in timing.",
+  "sourceSha256": {
+    "packages/ebook/src/css-resources.ts": "fb249829d55f560f89a872f5949bccc9d201e1d5f9d13ba22715ef601febaa41",
+    "packages/ebook/src/frame-resource-url.ts": "8fb5b237d627827697a91c87f61370a3c2170cd44b4768fe07bae2166f1f29b0",
+    "packages/ebook/src/epub-resources.ts": "435a4e51629474399fd9c47640567812f266dcf3a5333e16d53f0519e2286daa",
+    "packages/model3d/src/resource-utils.ts": "dace01572fee0031c6377abd30e945ced659f046cefbeb8940e7a7a11c244a26",
+    "packages/mindmap/src/preview-driver.ts": "84df9f87ef66da04da024608df47a7c270591729e27bc918907c33742436728a",
+    "packages/diagram/src/preview-driver.ts": "56a8bc378fd372f5f7f7d4cd9e9cf2c407ff828b0c827780915d2ccce2208fbd",
+    "packages/ebook/test/frame-resource-url.spec.ts": "c74155fcd7e7baf18a4b5ffbea84c85e6adf02b631a3989d16ac00d832f8e4e1",
+    "packages/ebook/test/resources.spec.ts": "1d526433053fbb4de7b9c200138133fdeff0371311c305a9c1d57abca6848a42",
+    "packages/mindmap/test/preview-driver.spec.ts": "9950b19367fba0121673e345fef660415e5e4d67ff2cef2703d4d5c171f12efa",
+    "packages/diagram/test/preview-driver.spec.ts": "03cfa5b0a1abeae22919587e61c75103719b92560bbe59f18e9ca0ffc2d21303",
+    "packages/model3d/test/texture-resources.spec.ts": "442b3ecfd7d32078a74a0c9eae9f155bcac11f2dfa0eec2c09bd409dc173ec7e",
+    "apps/demo/e2e/model3d-lifecycle.e2e.ts": "b5e2f266742247e7ee480eb226a5f915695acebccba9b83d41976927148eaddc",
+    "scripts/benchmark-document-resources.mjs": "6062d54be1909a8d401890113abbbc6eae64ad0b7ae55afffd2d279949a2ef9a"
+  },
+  "baselineSourceSha256": {
+    "packages/ebook/src/css-resources.ts": "da1c5ce3a9e39c8800e0c331f84aa312d0da54d5338a2e8359a2568cb2427e2e",
+    "packages/ebook/src/frame-resource-url.ts": "46820c35bd5cee05140070f4f22f3d901f23b9cf1197016416ce4e8fc6063515",
+    "packages/ebook/src/epub-resources.ts": "4e5f80dfbe598546bccada6d3a90b1479773cb318a7ebd75ab10ea04271d7873",
+    "packages/model3d/src/resource-utils.ts": "442f0979cb87b62cccbd8252ee3312d37ba19a2e353fd58f334bf8a64413922c",
+    "packages/mindmap/src/preview-driver.ts": "1003228cb9949c1ec21d5eb9fea9a1fe39bea767d414f5b89fdc69609bdbde63",
+    "packages/diagram/src/preview-driver.ts": "c949cb65fa723854a75931808b3796e27212d344a58c2e22a0335336b115170a"
+  },
+  "runtime": {
+    "baseline": {
+      "ebook": {
+        "rawBytes": 22118,
+        "gzip9Bytes": 7129,
+        "brotliBytes": 6300
+      },
+      "mindmap": {
+        "rawBytes": 20280,
+        "gzip9Bytes": 5763,
+        "brotliBytes": 5073
+      },
+      "diagram": {
+        "rawBytes": 27557,
+        "gzip9Bytes": 7863,
+        "brotliBytes": 6937
+      },
+      "model3d": {
+        "rawBytes": 183564,
+        "gzip9Bytes": 46587,
+        "brotliBytes": 40034
+      },
+      "total": {
+        "rawBytes": 253519,
+        "gzip9Bytes": 67342,
+        "brotliBytes": 58344
+      }
+    },
+    "current": {
+      "ebook": {
+        "rawBytes": 22422,
+        "gzip9Bytes": 7182,
+        "brotliBytes": 6344
+      },
+      "mindmap": {
+        "rawBytes": 20150,
+        "gzip9Bytes": 5747,
+        "brotliBytes": 5053
+      },
+      "diagram": {
+        "rawBytes": 27561,
+        "gzip9Bytes": 7867,
+        "brotliBytes": 6937
+      },
+      "model3d": {
+        "rawBytes": 183844,
+        "gzip9Bytes": 46670,
+        "brotliBytes": 40116
+      },
+      "total": {
+        "rawBytes": 253977,
+        "gzip9Bytes": 67466,
+        "brotliBytes": 58450
+      }
+    }
+  },
+  "measurements": {
+    "date": "2026-11-04",
+    "node": "v20.20.2",
+    "cpu": "Apple M4 Pro",
+    "warmupIterations": 2,
+    "measuredIterations": 7,
+    "artifacts": {
+      "baseline": {
+        "ebook": [
+          {
+            "file": "index.js",
+            "sha256": "10bd614b67208cdca13a073f369ab9e25d2e348b24d4809899d74410e8c68dcc",
+            "rawBytes": 22118,
+            "gzip9Bytes": 7129,
+            "brotliBytes": 6300
+          }
+        ],
+        "mindmap": [
+          {
+            "file": "index.js",
+            "sha256": "64175d236da2501210be2623806c7352b6629861270a4fbf7d00c0265484dc1f",
+            "rawBytes": 20280,
+            "gzip9Bytes": 5763,
+            "brotliBytes": 5073
+          }
+        ],
+        "diagram": [
+          {
+            "file": "index.js",
+            "sha256": "0077c768f173466dda5b57ef691f693b1bb378d4ba559083e7e535eedeefe48b",
+            "rawBytes": 27557,
+            "gzip9Bytes": 7863,
+            "brotliBytes": 6937
+          }
+        ],
+        "model3d": [
+          {
+            "file": "LDrawLoader-DNyeVv2b.js",
+            "sha256": "0dfbe8f9304599262953c54dc2f3dbfea6284fa2555091af74d8f30ce8fd50a9",
+            "rawBytes": 35190,
+            "gzip9Bytes": 10127,
+            "brotliBytes": 8712
+          },
+          {
+            "file": "index.js",
+            "sha256": "0261db288897ed993c471f930bdc837629bc6e3508090e3d6b546c3a42325852",
+            "rawBytes": 147872,
+            "gzip9Bytes": 36146,
+            "brotliBytes": 31060
+          },
+          {
+            "file": "rust-step-importer-BRQzvs8z.js",
+            "sha256": "74087a9d364204c5c9a28c833d153335d36165e26acbfd94f4a037fe7f325e01",
+            "rawBytes": 502,
+            "gzip9Bytes": 314,
+            "brotliBytes": 262
+          }
+        ],
+        "resourceEntry": {
+          "sha256": "b5c264b6c7fd470beb136f031e91418ce42f0f2bbc1d3f56cf51229b65f72d48"
+        }
+      },
+      "current": {
+        "ebook": [
+          {
+            "file": "index.js",
+            "sha256": "e927efcf6bec5bc4c258c458b39c87a6e9fea22376545cf8d3e015fec69ed88f",
+            "rawBytes": 22422,
+            "gzip9Bytes": 7182,
+            "brotliBytes": 6344
+          }
+        ],
+        "mindmap": [
+          {
+            "file": "index.js",
+            "sha256": "b0cd54b6235a29268c2699fd37430ed5a79c5186f85ca39001b5f752a0bbae57",
+            "rawBytes": 20150,
+            "gzip9Bytes": 5747,
+            "brotliBytes": 5053
+          }
+        ],
+        "diagram": [
+          {
+            "file": "index.js",
+            "sha256": "d13c50c2ca5d61d97abc12b4e91fe17c59ab6bffa08f4368f6b49338ade5b198",
+            "rawBytes": 27561,
+            "gzip9Bytes": 7867,
+            "brotliBytes": 6937
+          }
+        ],
+        "model3d": [
+          {
+            "file": "LDrawLoader-DNyeVv2b.js",
+            "sha256": "0dfbe8f9304599262953c54dc2f3dbfea6284fa2555091af74d8f30ce8fd50a9",
+            "rawBytes": 35190,
+            "gzip9Bytes": 10127,
+            "brotliBytes": 8712
+          },
+          {
+            "file": "index.js",
+            "sha256": "6cb5fc7a82b7d0823cc952246169c586ce3c06b6f9056a9e0a722950c592ecd1",
+            "rawBytes": 148152,
+            "gzip9Bytes": 36229,
+            "brotliBytes": 31142
+          },
+          {
+            "file": "rust-step-importer-BRQzvs8z.js",
+            "sha256": "74087a9d364204c5c9a28c833d153335d36165e26acbfd94f4a037fe7f325e01",
+            "rawBytes": 502,
+            "gzip9Bytes": 314,
+            "brotliBytes": 262
+          }
+        ],
+        "resourceEntry": {
+          "sha256": "968852adaefd0aa8dcdb59d9fe83bff39f8827466cf5ea27903672133e040e95"
+        }
+      }
+    },
+    "sourceSha256": {
+      "packages/ebook/src/css-resources.ts": "fb249829d55f560f89a872f5949bccc9d201e1d5f9d13ba22715ef601febaa41",
+      "packages/ebook/src/frame-resource-url.ts": "8fb5b237d627827697a91c87f61370a3c2170cd44b4768fe07bae2166f1f29b0",
+      "packages/ebook/src/epub-resources.ts": "435a4e51629474399fd9c47640567812f266dcf3a5333e16d53f0519e2286daa",
+      "packages/model3d/src/resource-utils.ts": "dace01572fee0031c6377abd30e945ced659f046cefbeb8940e7a7a11c244a26",
+      "packages/mindmap/src/preview-driver.ts": "84df9f87ef66da04da024608df47a7c270591729e27bc918907c33742436728a",
+      "packages/diagram/src/preview-driver.ts": "56a8bc378fd372f5f7f7d4cd9e9cf2c407ff828b0c827780915d2ccce2208fbd"
+    },
+    "cases": {
+      "mindmanager-flat": {
+        "topics": 2001,
+        "wrapperDepth": 0,
+        "archiveBytes": 8500,
+        "inputSha256": "149150d8092fbc32aca49b352bb10d4a9e018376dbfe45757bf206704b670266",
+        "outputSha256": "2d2af750814f343a337d35d141fdd9156a6f30d26a6789d37b2d9e3eeb8645b9",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              5.0999999940395355,
+              4.799999982118607,
+              4.5999999940395355,
+              4.5,
+              4.5,
+              4.4000000059604645,
+              5
+            ],
+            "medianMs": 4.5999999940395355
+          },
+          "current": {
+            "samplesMs": [
+              4.5,
+              3.5,
+              3.5,
+              3.399999976158142,
+              3.5999999940395355,
+              3.800000011920929,
+              3.9000000059604645
+            ],
+            "medianMs": 3.5999999940395355
+          }
+        }
+      },
+      "mindmanager-wrapped": {
+        "topics": 2001,
+        "wrapperDepth": 160,
+        "archiveBytes": 8568,
+        "inputSha256": "2de699a1e77143630311781551fd66aa0def1d1bde2028495f457cfd1551b236",
+        "outputSha256": "2d2af750814f343a337d35d141fdd9156a6f30d26a6789d37b2d9e3eeb8645b9",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              27.30000001192093,
+              26.80000001192093,
+              26.80000001192093,
+              26.80000001192093,
+              26.30000001192093,
+              26.69999998807907,
+              30.900000005960464
+            ],
+            "medianMs": 26.80000001192093
+          },
+          "current": {
+            "samplesMs": [
+              3.4000000059604645,
+              3.2999999821186066,
+              3.5999999940395355,
+              3.4000000059604645,
+              3.399999976158142,
+              3.4000000059604645,
+              3.5
+            ],
+            "medianMs": 3.4000000059604645
+          }
+        }
+      },
+      "visio-flat": {
+        "shapes": 2000,
+        "groupDepth": 0,
+        "inputBytes": 213810,
+        "inputSha256": "e7ba05828e9308618b00b5670d5d37ae90d928bedc2f146ed92eb5f63261607d",
+        "outputSha256": "9d51de2080a930ad33ba960beb0fde299610aa7be5e4dac1ba992e1f398c7ff9",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              9.099999994039536,
+              9.199999988079071,
+              8.300000011920929,
+              8.700000017881393,
+              8.199999988079071,
+              8.199999988079071,
+              8.200000017881393
+            ],
+            "medianMs": 8.300000011920929
+          },
+          "current": {
+            "samplesMs": [
+              9.099999994039536,
+              9.399999976158142,
+              8.800000011920929,
+              8.199999988079071,
+              8.699999988079071,
+              8.800000011920929,
+              8.099999994039536
+            ],
+            "medianMs": 8.800000011920929
+          }
+        }
+      },
+      "visio-grouped": {
+        "shapes": 2000,
+        "groupDepth": 100,
+        "inputBytes": 218310,
+        "inputSha256": "5c5d9cf15c4f0b0d88bc402c37283b337af46f4f1d91173be9a1a66169a67f3f",
+        "outputSha256": "9d51de2080a930ad33ba960beb0fde299610aa7be5e4dac1ba992e1f398c7ff9",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              81.09999999403954,
+              81.09999999403954,
+              81.40000000596046,
+              81.7999999821186,
+              80.90000000596046,
+              80.7999999821186,
+              81.09999999403954
+            ],
+            "medianMs": 81.09999999403954
+          },
+          "current": {
+            "samplesMs": [
+              9.099999994039536,
+              8.300000011920929,
+              8.800000011920929,
+              8.599999994039536,
+              8.700000017881393,
+              8.699999988079071,
+              8.300000011920929
+            ],
+            "medianMs": 8.699999988079071
+          }
+        }
+      },
+      "css-plain": {
+        "inputBytes": 830000,
+        "inputSha256": "b35e2b8a99bc8ad64e2231285ce7c5fedfe83301bd8976bc3fe43fad54599211",
+        "outputSha256": "97f16bfc134304268f6c71debdab4d35f6de15a73e50042853954fcfaf67a5e1",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              21.900000005960464,
+              22,
+              21.599999994039536,
+              21.799999982118607,
+              23.30000001192093,
+              23.5,
+              22
+            ],
+            "medianMs": 22
+          },
+          "current": {
+            "samplesMs": [
+              1.9000000059604645,
+              1.9000000059604645,
+              1.7999999821186066,
+              1.9000000059604645,
+              2,
+              1.9000000059604645,
+              2.0999999940395355
+            ],
+            "medianMs": 1.9000000059604645
+          }
+        }
+      },
+      "css-references": {
+        "inputBytes": 138000,
+        "inputSha256": "27afac932c845cd531351f2f13119af832e0f1065131087e6d8de066fe5ac3c8",
+        "outputSha256": "99d7a1b6e40efd716f360ab84859e5ce33acd17143a3362c37080f5f2218a3fb",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              5.5999999940395355,
+              2.2000000178813934,
+              2.399999976158142,
+              2.5,
+              2.199999988079071,
+              2.0999999940395355,
+              2.100000023841858
+            ],
+            "medianMs": 2.2000000178813934
+          },
+          "current": {
+            "samplesMs": [
+              1.0999999940395355,
+              1.100000023841858,
+              1.199999988079071,
+              1,
+              0.800000011920929,
+              0.800000011920929,
+              1
+            ],
+            "medianMs": 1
+          }
+        }
+      },
+      "epub-stylesheet-book": {
+        "archiveBytes": 6933,
+        "addedCssBytes": 830000,
+        "inputSha256": "1876c218d7e30ed8612afd4f66fba6f576dc809aa239417731bc618d745e045c",
+        "outputSha256": "8db9d4dc568d43d75c530dc9652c99b551c0c7358c681acc676e6beb13660294",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              41.900000005960464,
+              26.400000005960464,
+              26.200000017881393,
+              33.70000001788139,
+              26.100000023841858,
+              26.099999994039536,
+              25.900000005960464
+            ],
+            "medianMs": 26.200000017881393
+          },
+          "current": {
+            "samplesMs": [
+              16.600000023841858,
+              16.5,
+              5.5999999940395355,
+              5,
+              6.200000017881393,
+              5,
+              6
+            ],
+            "medianMs": 6
+          }
+        }
+      },
+      "texture-base64-native": {
+        "resources": 4,
+        "bytesPerResource": 1048576,
+        "slicedInput": true,
+        "outputSha256": "bf7b5c1786aee1cd32d9b876b6adf97eed15f1d53002758574ceaca1e3106301",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              57.5,
+              36.80000001192093,
+              37.80000001192093,
+              37.900000005960464,
+              36.19999998807907,
+              34.400000005960464,
+              34.80000001192093
+            ],
+            "medianMs": 36.80000001192093
+          },
+          "current": {
+            "samplesMs": [
+              0.4000000059604645,
+              0.20000001788139343,
+              0.19999998807907104,
+              0.29999998211860657,
+              0.6000000238418579,
+              0.29999998211860657,
+              0.19999998807907104
+            ],
+            "medianMs": 0.29999998211860657
+          }
+        }
+      },
+      "texture-base64-compatibility": {
+        "resources": 4,
+        "bytesPerResource": 1048576,
+        "slicedInput": true,
+        "outputSha256": "bf7b5c1786aee1cd32d9b876b6adf97eed15f1d53002758574ceaca1e3106301",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              34.5,
+              34.69999998807907,
+              34.400000005960464,
+              36.400000005960464,
+              36.900000005960464,
+              38.89999997615814,
+              36.39999997615814
+            ],
+            "medianMs": 36.39999997615814
+          },
+          "current": {
+            "samplesMs": [
+              10.299999982118607,
+              10.5,
+              10.300000011920929,
+              10,
+              10.099999994039536,
+              10.099999994039536,
+              10.099999994039536
+            ],
+            "medianMs": 10.099999994039536
+          }
+        }
+      },
+      "frame-base64-native": {
+        "resources": 4,
+        "bytesPerResource": 1048576,
+        "slicedInput": true,
+        "outputSha256": "bf7b5c1786aee1cd32d9b876b6adf97eed15f1d53002758574ceaca1e3106301",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              54.29999998211861,
+              54.69999998807907,
+              55.30000001192093,
+              53.599999994039536,
+              53.80000001192093,
+              54.19999998807907,
+              53
+            ],
+            "medianMs": 54.19999998807907
+          },
+          "current": {
+            "samplesMs": [
+              0.19999998807907104,
+              0.20000001788139343,
+              0.10000002384185791,
+              0.30000001192092896,
+              0.20000001788139343,
+              0.19999998807907104,
+              0.19999998807907104
+            ],
+            "medianMs": 0.19999998807907104
+          }
+        }
+      },
+      "frame-base64-compatibility": {
+        "resources": 4,
+        "bytesPerResource": 1048576,
+        "slicedInput": true,
+        "outputSha256": "bf7b5c1786aee1cd32d9b876b6adf97eed15f1d53002758574ceaca1e3106301",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              53,
+              54.900000005960464,
+              53.5,
+              54.400000005960464,
+              54.69999998807907,
+              53.5,
+              55.099999994039536
+            ],
+            "medianMs": 54.400000005960464
+          },
+          "current": {
+            "samplesMs": [
+              9.599999994039536,
+              10.199999988079071,
+              9.699999988079071,
+              9.400000005960464,
+              9.300000011920929,
+              9.699999988079071,
+              9.5
+            ],
+            "medianMs": 9.599999994039536
+          }
+        }
+      },
+      "frame-blob": {
+        "resources": 4,
+        "bytesPerResource": 1048576,
+        "slicedInput": true,
+        "outputSha256": "be5f7f1315c095c3ee7547379a1f2d56bce4b0592eca78237695ce61407cb296",
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              0.9000000059604645,
+              1.2000000178813934,
+              1.199999988079071,
+              0.7999999821186066,
+              0.9000000059604645,
+              1,
+              1
+            ],
+            "medianMs": 1
+          },
+          "current": {
+            "samplesMs": [
+              1,
+              1.100000023841858,
+              0.8999999761581421,
+              0.7999999821186066,
+              1,
+              0.800000011920929,
+              0.800000011920929
+            ],
+            "medianMs": 0.8999999761581421
+          }
+        }
+      }
+    },
+    "browser": "147.0.7727.15",
+    "errors": []
+  },
+  "validation": {
+    "unitTestsByPackage": {
+      "books": 37,
+      "mindmap": 26,
+      "diagram": 32,
+      "model3d": 343
+    },
+    "unitTestsPassed": 438,
+    "unitTestsSkipped": 0,
+    "browserTestsPassed": 18,
+    "browserTestsSkipped": 1,
+    "browserSkipReason": "Three pinned real VSDX controls require unavailable external corpus.",
+    "browserRetry": "The original broad upload selector matched two file inputs. Scoped the existing model3d upload test to .wb-upload, then reran that test successfully; other 17 passed cases were retained.",
+    "declarationBuildsPassed": [
+      "books",
+      "mindmap",
+      "diagram",
+      "model3d"
+    ],
+    "mainEntryExports": {
+      "ebook": {
+        "exports": [
+          "EBOOK_FORMAT_ROUTES",
+          "EpubPreviewSession",
+          "createEbookPreviewDriver",
+          "createEbookPreviewRoutes",
+          "loadCbzBook",
+          "loadEpubBook"
+        ],
+        "exportCount": 6,
+        "routesEqual": true
+      },
+      "mindmap": {
+        "exports": [
+          "MINDMAP_FORMAT_ROUTES",
+          "MindmapPreviewSession",
+          "createMindmapPreviewDriver",
+          "createMindmapPreviewRoutes",
+          "loadMindmanagerDocument",
+          "loadMindmapDocument",
+          "loadXmindDocument"
+        ],
+        "exportCount": 7,
+        "routesEqual": true
+      },
+      "diagram": {
+        "exports": [
+          "DIAGRAM_FORMAT_ROUTES",
+          "DiagramPreviewSession",
+          "createDiagramPreviewDriver",
+          "createDiagramPreviewRoutes",
+          "decodeCompressedDrawioPayload",
+          "loadDrawioDiagram",
+          "loadVdxDiagram",
+          "loadVsdxDiagram"
+        ],
+        "exportCount": 8,
+        "routesEqual": true
+      },
+      "model3d": {
+        "exports": [
+          "MODEL3D_FORMAT_ROUTES",
+          "Model3dPreviewSession",
+          "createModel3dPreviewDriver",
+          "createModel3dPreviewRoutes",
+          "listExternalGltfResources",
+          "listObjMaterialLibraries",
+          "load3dsObject",
+          "load3dsObjectWithWarnings",
+          "load3mfGeometry",
+          "load3mfGeometryWithWarnings",
+          "loadAmfObject",
+          "loadBvhObject",
+          "loadColladaObject",
+          "loadColladaObjectWithWarnings",
+          "loadFbxObject",
+          "loadFbxObjectWithWarnings",
+          "loadGCodeObject",
+          "loadGlbObject",
+          "loadGltfObject",
+          "loadGltfObjectWithWarnings",
+          "loadKmzObject",
+          "loadKmzObjectWithWarnings",
+          "loadLDrawObject",
+          "loadLDrawObjectWithWarnings",
+          "loadLwoObject",
+          "loadLwoObjectWithWarnings",
+          "loadMd2Object",
+          "loadNrrdObject",
+          "loadObjGeometry",
+          "loadObjObject",
+          "loadObjObjectWithWarnings",
+          "loadPcdObject",
+          "loadPdbObject",
+          "loadPlyGeometry",
+          "loadStepObject",
+          "loadStlGeometry",
+          "loadUsdzObject",
+          "loadVoxObject",
+          "loadVrmlObject",
+          "loadVrmlObjectWithWarnings",
+          "loadVtkObject",
+          "loadXyzObject",
+          "resolveNhdrBuffer"
+        ],
+        "exportCount": 43,
+        "routesEqual": true
+      }
+    },
+    "conversionPolicyChecksPassed": 2122,
+    "categoryBoundariesPassed": true
+  },
+  "limitations": [
+    "Generated inputs deliberately exercise deep wrappers (160) and groups (100). The large ratios do not apply to every MindManager or Visio document; the flat Visio control is slightly slower.",
+    "The EPUB case uses the styled-book fixture plus 830000 bytes of plain CSS. This is complete ZIP-to-book parsing with captured Blob content, not complete browser-first-paint latency.",
+    "Four 1 MiB binary views measure resource preparation only, not model geometry parsing, image decode, GPU upload or rendering.",
+    "The compatibility measurement disables native Uint8Array.toBase64 in current Chromium. It is not a measurement on an old browser.",
+    "An initial spread-based compatibility encoder regressed. Final measurements use Reflect.apply; preliminary samples remain in tmp/document-resources-current/results.json.",
+    "Total runtime JS gzip grows by 124 bytes across the four packages; source-map publishing settings from earlier rounds are unchanged. No peak-memory or complete-preview-startup measurement."
+  ]
+}

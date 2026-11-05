@@ -1,10 +1,10 @@
 import './style.css';
 
-import type { FormatDefinition, PreviewDriver } from '@filens/core';
-import { createCadPreviewDriver, createCadPreviewRoutes } from '@filens/cad';
-import { createDiagramPreviewDriver, createDiagramPreviewRoutes } from '@filens/diagram';
-import { createMindmapPreviewDriver, createMindmapPreviewRoutes } from '@filens/mindmap';
-import { createModel3dPreviewDriver, createModel3dPreviewRoutes } from '@filens/model3d';
+import type { PreviewDriver } from '@filens/core';
+import { createCadPreviewDriver } from '@filens/cad';
+import { createDiagramPreviewDriver } from '@filens/diagram';
+import { createMindmapPreviewDriver } from '@filens/mindmap';
+import { createModel3dPreviewDriver } from '@filens/model3d';
 
 export function createDesignPreviewDrivers(): PreviewDriver[] {
   return [
@@ -15,8 +15,4 @@ export function createDesignPreviewDrivers(): PreviewDriver[] {
   ];
 }
 
-export function createDesignPreviewRoutes(baseRoutes: FormatDefinition[] = []): FormatDefinition[] {
-  return createCadPreviewRoutes(
-    createDiagramPreviewRoutes(createModel3dPreviewRoutes(createMindmapPreviewRoutes(baseRoutes)))
-  );
-}
+export { createDesignPreviewRoutes } from './routes';

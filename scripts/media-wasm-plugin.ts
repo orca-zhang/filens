@@ -3,13 +3,17 @@ import { readFile } from 'node:fs/promises';
 /** Keep the optional HEIF decoder separate in library mode. */
 export function mediaWasmAsset() {
   return [
-    libraryAsset('/libheif-js/libheif-wasm/libheif.wasm?url', 'libheif.wasm'),
+    libraryAsset('/converter-client/vendor/libheif/libheif.wasm?url', 'libheif.wasm'),
     libraryAsset('/wasm/converter-image/dist/converter-image.wasm?url', 'converter-image.wasm'),
     {
       name: 'filens-image-core-notices', apply: 'build' as const,
       async generateBundle(this: { emitFile(asset: { type: 'asset'; fileName: string; source: string }): string }) {
-        this.emitFile({ type: 'asset', fileName: 'THIRD-PARTY-NOTICES.txt', source: await readFile(
-          new URL('../wasm/converter-image/THIRD-PARTY-NOTICES.txt', import.meta.url), 'utf8') });
+        this.emitFile({ type: 'asset', fileName: 'THIRD-PARTY-NOTICES.txt', source: (await Promise.all([
+          '../wasm/converter-image/THIRD-PARTY-NOTICES.txt',
+          '../packages/converter-client/vendor/libheif/NOTICE.txt',
+          '../packages/converter-client/vendor/libheif/COPYING.libheif',
+          '../packages/converter-client/vendor/libheif/COPYING.libde265'
+        ].map(path => readFile(new URL(path, import.meta.url), 'utf8')))).join('\n\n') });
       }
     }
   ];
@@ -18,6 +22,14 @@ export function mediaWasmAsset() {
 /** Keep PDF's existing worker as a file instead of a Base64 URL module. */
 export function pdfWorkerAsset() {
   return libraryAsset('/pdfjs-dist/build/pdf.worker.min.mjs?url', 'pdf.worker.min.mjs');
+}
+
+/** Emit both variants separately; the loader fetches only the selected one. */
+export function formatDetectorWasmAssets() {
+  return [
+    libraryAsset('/wasm/format-detector/dist/converter-detect-scalar.wasm?url', 'converter-detect-scalar.wasm'),
+    libraryAsset('/wasm/format-detector/dist/converter-detect-simd.wasm?url', 'converter-detect-simd.wasm'),
+  ];
 }
 
 function libraryAsset(suffix: string, name: string) {

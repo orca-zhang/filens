@@ -1,0 +1,74 @@
+{
+  "node": "v20.20.2",
+  "wasm": {
+    "wasm/converter-core/dist/converter-core.wasm": "fb4f4bbc7651d7dc846159fff3088d303b339fa87f4800c4b3b616ffed8afc93",
+    "wasm/converter-core/dist/converter-core-full.wasm": "e66117ef75b41519c8b40076a9d386b777bae81025cd289ef2a5c9acaf4f2007",
+    "wasm/converter-core/dist/converter-office.wasm": "51a6aafdb77d5819181c3535f9ec7678e6705fe6a5469b38ac96abfe9abc1446",
+    "wasm/converter-core/dist/converter-postscript.wasm": "c154e4aba087d3b7f3d3280911e1c87bfc065568a031107d2cac50a3bfbf200c",
+    "wasm/converter-core/dist/converter-graphics.wasm": "1183cb28496e281646fdb3b9b5ff4e7fa299972db41d38f552b3bb2894034a0a",
+    "wasm/converter-image/dist/converter-image.wasm": "a3ed9ee14c24ae13724cb96fc6fbce6ee3e1d8e30e2e9fc4aa33bab0be8f5d50"
+  },
+  "bindings": {
+    "current": "c45c3e46f63d42dd57497ee0a6604ab4a0ec17e64b8e76800e5854e42ac5882b",
+    "adapter": "bec069fdc9c6299019c87349e22994eb1d2fe1a297c09fc56fa8fae3cf88d1e0",
+    "baseline": "3c4d1daf56a9173564c7d4008ce9c9bf9f82d0ac7e8cde649def1f1bf5f2efb9"
+  },
+  "builds": {
+    "split": {
+      "baseline": {
+        "startupJs": {
+          "raw": 2236203,
+          "gzip": 627391,
+          "brotli": 531455
+        },
+        "allJs": {
+          "raw": 8037063,
+          "gzip": 2469029,
+          "brotli": 1903566
+        },
+        "hasPakoEncoder": true
+      },
+      "current": {
+        "startupJs": {
+          "raw": 2217529,
+          "gzip": 622939,
+          "brotli": 527167
+        },
+        "allJs": {
+          "raw": 8018742,
+          "gzip": 2464682,
+          "brotli": 1899647
+        },
+        "hasPakoEncoder": false
+      }
+    },
+    "all-in-one": {
+      "baseline": {
+        "startupJs": {
+          "raw": 11515108,
+          "gzip": 4960795,
+          "brotli": 4320435
+        },
+        "allJs": {
+          "raw": 11567544,
+          "gzip": 4979324,
+          "brotli": 4337033
+        },
+        "hasPakoEncoder": true
+      },
+      "current": {
+        "startupJs": {
+          "raw": 11493926,
+          "gzip": 4955401,
+          "brotli": 4316646
+        },
+        "allJs": {
+          "raw": 11546362,
+          "gzip": 4973930,
+          "brotli": 4333244
+        },
+        "hasPakoEncoder": false
+      }
+    }
+  }
+}

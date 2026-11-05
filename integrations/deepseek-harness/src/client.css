@@ -12,7 +12,7 @@
   font-size: 13px;
   line-height: 1.5;
 }
-.filens-dsh > iframe {
+.filens-dsh-view {
   display: block;
   flex: 1 1 0;
   width: 100%;
@@ -32,6 +32,11 @@
   padding: 24px;
   box-sizing: border-box;
   background: var(--filens-surface);
+}
+/* Keep the covered preview composited while loading. An opaque overlay makes
+   Chromium throttle PDF.js animation frames to 1 Hz, delaying each page. */
+.filens-dsh[data-phase="loading"] .filens-dsh-state {
+  background: color-mix(in srgb, var(--filens-surface) 99%, transparent);
 }
 .filens-dsh-state-content {
   display: flex;
@@ -81,3 +86,9 @@
 .filens-dsh-progress span { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--filens-accent); animation: filens-dsh-progress 1.5s ease-in-out infinite; }
 @keyframes filens-dsh-progress { from { transform: translateX(-100%); } to { transform: translateX(350%); } }
 @media (prefers-reduced-motion: reduce) { .filens-dsh-progress span { animation: none; width: 100%; opacity: .5; } }
+
+.filens-dsh-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.filens-dsh-tool { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: inherit; font: 18px/1 system-ui, sans-serif; cursor: pointer; }
+.filens-dsh-tool:hover { background: var(--dsw-alias-bg-hover, #8882); }
+.filens-dsh-tool:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary, #4176e6); outline-offset: -2px; }
+.filens-dsh-zoom { min-width: 36px; text-align: center; font-size: 11px; font-variant-numeric: tabular-nums; }

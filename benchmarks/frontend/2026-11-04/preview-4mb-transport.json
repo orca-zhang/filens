@@ -1,0 +1,44 @@
+{
+  "browser": "147.0.7727.15",
+  "limit": 4000000,
+  "exactEncodings": true,
+  "es2020": true,
+  "cases": [
+    {
+      "encoding": "gzip",
+      "bytes": 3983554,
+      "samplesMs": [
+        338.10000002384186,
+        337.09999999403954,
+        338.59999999403954
+      ],
+      "medianImportMs": 338.10000002384186,
+      "cspWithoutJsEval": true,
+      "textAndStep": true
+    },
+    {
+      "encoding": "br",
+      "bytes": 3845830,
+      "samplesMs": [
+        341.2000000178814,
+        341.89999997615814,
+        340
+      ],
+      "medianImportMs": 341.2000000178814,
+      "cspWithoutJsEval": true,
+      "textAndStep": true
+    },
+    {
+      "encoding": "baseline",
+      "bytes": 5532123,
+      "samplesMs": [
+        188.90000000596046,
+        187.09999999403954,
+        196.40000000596046
+      ],
+      "medianImportMs": 188.90000000596046,
+      "cspWithoutJsEval": true,
+      "textAndStep": true
+    }
+  ]
+}

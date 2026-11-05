@@ -93,6 +93,22 @@ describe('font diagnostics', () => {
     context.measureText.mockReturnValue({ width });
     expect(analyzePreviewFonts([{ fontFamily: 'Unverified' }]).fonts[0].status).toBe('unknown');
   });
+
+  it('keeps classification outputs independent and reflects trait edits on later analyses', () => {
+    mockFonts();
+    const traits = { weight: 600, serif: true };
+    const references = [
+      { fontFamily: 'Book', styleName: 'First', traits },
+      { fontFamily: 'Book', styleName: 'Second', traits },
+      { fontFamily: 'Book', styleName: 'Third', traits: { weight: 300 } }
+    ];
+    const first = analyzePreviewFonts(references);
+    expect(first.fonts.map(font => font.classification?.weight)).toEqual([600, 600, 300]);
+    first.fonts[0].classification!.weight = 900;
+    expect(first.fonts[1].classification?.weight).toBe(600);
+    traits.weight = 500;
+    expect(analyzePreviewFonts(references).fonts.map(font => font.classification?.weight)).toEqual([500, 500, 300]);
+  });
 });
 
 describe('scene font discovery', () => {
@@ -161,5 +177,31 @@ describe('scene font discovery', () => {
     expect(collectSlideFontLoadingReferences(slides).map(ref => ref.fontFamily)).toEqual(['Source Book', 'Source Book', 'Source Book']);
     applySlideFontMappings(slides, references);
     expect([regular.fontFamily, italic.fontFamily, bold.fontFamily]).toEqual(['Web Book', 'Source Book', 'Backup Book']);
+  });
+
+  it('preserves family spelling, face order and exact bounded samples across repeated runs', () => {
+    const runs = [
+      { text: 'a'.repeat(4095), fontFamily: 'Book' },
+      { text: '😀tail', fontFamily: 'BOOK' },
+      { text: 'ignored'.repeat(10000), fontFamily: 'Book' },
+      { text: 'Regular', fontFamily: 'book', bold: false },
+      { text: 'Bold', fontFamily: 'BOOK', bold: true },
+      { text: 'Italic', fontFamily: 'Book', italic: true },
+      { text: 'Regular italic', fontFamily: 'book', bold: false, italic: true },
+      { text: 'Bold italic', fontFamily: 'BOOK', bold: true, italic: true },
+      { text: 'Other', fontFamily: ' "Other" ' },
+      { text: 'Last', fontFamily: 'bOoK' }
+    ];
+    const slides = [{ items: [{ kind: 'text', textFrame: { paragraphs: [{ bullet: { char: '•', fontFamily: 'Bullet' }, runs }] } }] }] as unknown as SlideModel[];
+    const refs = collectSlideFontLoadingReferences(slides);
+    expect(refs.map(ref => [ref.fontFamily, ref.traits?.weight, ref.fontStyle])).toEqual([
+      ['Bullet', undefined, 'normal'], ['Book', undefined, 'normal'], ['book', 400, 'normal'],
+      ['BOOK', 700, 'normal'], ['Book', undefined, 'italic'], ['book', 400, 'italic'],
+      ['BOOK', 700, 'italic'], [' "Other" ', undefined, 'normal']
+    ]);
+    expect(refs[1].text).toBe(('a'.repeat(4095) + '😀tail').slice(0, 4096));
+    expect(collectSlideFontReferences(slides)).toEqual([{ fontFamily: 'Bullet' }, { fontFamily: 'bOoK' }, { fontFamily: 'Other' }]);
+    runs[0].text = 'Changed';
+    expect(collectSlideFontLoadingReferences(slides)[1].text).toBe(('Changed😀tail' + runs[2].text + 'Last').slice(0, 4096));
   });
 });

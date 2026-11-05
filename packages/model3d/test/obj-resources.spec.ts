@@ -82,7 +82,7 @@ describe('native OBJ materials and managed texture lifetime', () => {
     holdImages = true; let done = false;
     const pending = loadObjObjectWithWarnings(obj(), { resourceResolver: ({ relation }) => relation === 'material'
       ? encode(`${mtl}map_Kd color.png\nnorm normal.png\n`) : new Blob(['texture']) }).then(value => { done = true; return value; });
-    await settle(); expect(loads).toHaveLength(2); expect(done).toBe(false); expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(loads).toHaveLength(2)); expect(done).toBe(false); expect(URL.revokeObjectURL).not.toHaveBeenCalled();
     loads[0].finish(); await settle(); expect(done).toBe(false); expect(URL.revokeObjectURL).not.toHaveBeenCalled();
     loads[1].finish(); const result = await pending;
     expect(material(result.object).map!.image.width).toBe(2); expect(material(result.object).normalMap!.image.height).toBe(2);
@@ -92,7 +92,7 @@ describe('native OBJ materials and managed texture lifetime', () => {
   it('leaves borrowed URLs caller-owned on image failure', async () => {
     holdImages = true;
     const pending = loadObjObjectWithWarnings(obj(), { resourceResolver: ({ relation }) => relation === 'material' ? encode(`${mtl}map_Kd x.png`) : 'blob:borrowed' });
-    await settle(); loads[0].finish(true); const result = await pending;
+    await vi.waitFor(() => expect(loads).toHaveLength(1)); loads[0].finish(true); const result = await pending;
     expect(result.warnings.join(' ')).toMatch(/texture.*failed/i); expect(result.object.children).toHaveLength(1);
     expect(URL.createObjectURL).not.toHaveBeenCalled(); expect(URL.revokeObjectURL).not.toHaveBeenCalled();
   });
@@ -109,7 +109,7 @@ describe('native OBJ materials and managed texture lifetime', () => {
     const resolver = vi.fn(request => request.relation === relation ? held.promise : encode(`${mtl}map_Kd x.png`));
     const pending = loadObjObjectWithWarnings(obj(), { signal: controller.signal, resourceResolver: resolver });
     const checked = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
-    await settle(); controller.abort(); await checked;
+    await vi.waitFor(() => expect(resolver).toHaveBeenCalledWith(expect.objectContaining({ relation }))); controller.abort(); await checked;
     held.reject(new Error('late resolver failure')); await settle();
     expect(loads).toHaveLength(0); expect(URL.revokeObjectURL).toHaveBeenCalledTimes(blobs.size);
   });
@@ -141,7 +141,7 @@ describe('native OBJ materials and managed texture lifetime', () => {
     const pending = loadObjObjectWithWarnings(obj(), { signal: controller.signal, resourceResolver: ({ relation }) => relation === 'material'
       ? encode(`${mtl}map_Kd x.png`) : new Blob(['image']) });
     const checked = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
-    await settle(); expect(loads).toHaveLength(1); controller.abort(); await checked;
+    await vi.waitFor(() => expect(loads).toHaveLength(1)); controller.abort(); await checked;
     expect(geometryDispose).toHaveBeenCalledTimes(1); expect(materialDispose).toHaveBeenCalledTimes(1); expect(textureDispose).toHaveBeenCalledTimes(1);
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1); expect(URL.revokeObjectURL).toHaveBeenCalledWith(loads[0].url);
     loads[0].finish(); await settle(); expect(textureDispose).toHaveBeenCalledTimes(1);

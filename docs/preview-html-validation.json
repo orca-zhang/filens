@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-01T09:19:15.849Z",
+  "observedAt": "2026-11-05T03:31:16.745Z",
   "platform": "darwin-arm64",
   "scope": "Real embedded HTML opened via file:// after CLI exit. Chromium/Firefox use offline mode; WebKit uses blocked HTTP(S) routes because its automation offline switch also blocks local files. Readiness is checked; no pixel-fidelity claim or OS default-browser-launch validation.",
   "checks": [
@@ -105,6 +105,13 @@
     },
     {
       "browser": "chromium",
+      "file": "rar5-encrypted.rar",
+      "state": "external-archive-engine-required",
+      "compatibilityMode": "serve",
+      "compatibilityState": "ready"
+    },
+    {
+      "browser": "chromium",
       "version": "147.0.7727.15",
       "file": "cube.stp",
       "state": "ready",
@@ -233,6 +240,13 @@
     },
     {
       "browser": "firefox",
+      "file": "rar5-encrypted.rar",
+      "state": "external-archive-engine-required",
+      "compatibilityMode": "serve",
+      "compatibilityState": "ready"
+    },
+    {
+      "browser": "firefox",
       "version": "148.0.2",
       "file": "cube.stp",
       "state": "ready",
@@ -364,6 +378,13 @@
       "state": "ready",
       "externalRequests": 0,
       "networkIsolation": "HTTP(S) routes blocked; automation offline switch also blocks local files"
+    },
+    {
+      "browser": "webkit",
+      "file": "rar5-encrypted.rar",
+      "state": "external-archive-engine-required",
+      "compatibilityMode": "serve",
+      "compatibilityState": "ready"
     },
     {
       "browser": "webkit",

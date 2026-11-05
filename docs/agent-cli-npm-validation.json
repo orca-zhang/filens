@@ -1,20 +1,12 @@
 {
-  "version": "0.5.4",
+  "version": "0.5.6",
   "tests": {
     "offline": {
       "command": "node scripts/test-agent-npm.mjs",
       "platform": "darwin-arm64",
       "passed": true,
-      "observedAt": "2026-11-04T06:02:54.478Z",
+      "observedAt": "2026-11-05T03:30:46.662Z",
       "freshNpmCache": false,
-      "preview": true
-    },
-    "registry": {
-      "command": "node scripts/test-agent-npm.mjs --registry",
-      "platform": "darwin-arm64",
-      "passed": true,
-      "observedAt": "2026-11-04T06:11:07.667Z",
-      "freshNpmCache": true,
       "preview": true
     }
   }

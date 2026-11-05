@@ -1,0 +1,2416 @@
+{
+  "measuredAt": "2026-11-05T02:15:44.131Z",
+  "startedAt": "2026-11-05T02:13:47.403Z",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "cores": 12,
+    "memoryBytes": 25769803776,
+    "osRelease": "25.6.0",
+    "node": "24.22.1"
+  },
+  "plugin": "dsh-filens@0.1.3",
+  "status": "complete",
+  "rounds": 9,
+  "timedOpens": 432,
+  "runtimeBuilds": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "entrySHA256": "7879174b4700bd77150e4fda21667f336e2b504db3754de280e1d590a6413cca"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "entrySHA256": "28d7b1dfdcc9a6f2c8384aa4d470b8a0d71f793be37af0a3eaaed19ade19cba4"
+    }
+  ],
+  "environments": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Observatory.xlsx",
+      "bytes": 6393,
+      "sha256": "3449d35a12a7097ff224546543a71e67c15166bde20f14bf81e0afaf0560268e"
+    },
+    {
+      "name": "Large workbook.xlsx",
+      "bytes": 412964,
+      "sha256": "7ce20cd60311631db4f4178fec33ba96cee532fccd61e52f799c27a8e8eedbd8"
+    },
+    {
+      "name": "Document.pages",
+      "bytes": 858258,
+      "sha256": "4714477138d0a4090fc2ee2ba2ebb6adcd0fb6ce20a28897a6247a8e17d1ddce"
+    },
+    {
+      "name": "Workbook.numbers",
+      "bytes": 543034,
+      "sha256": "be5e02bd170683345595e928a71979d3b4582ea0ca44214a35c643957a281ab0"
+    },
+    {
+      "name": "Weekend.key",
+      "bytes": 1088999,
+      "sha256": "0d1fa06a23395434089ea24ce284fce2dfee4c7e1e51138be6038bb2ab41befb"
+    },
+    {
+      "name": "Flanged bearing.step",
+      "bytes": 602483,
+      "sha256": "d2e035696f91d641abf29f72c109d833d0270ad39eb4b2a98777a11829507dc0"
+    }
+  ],
+  "method": "Each renderer/round uses a fresh DSH Desktop process. Open each of six files four times, closing the tab between opens. Timing starts immediately before sidebar.openResource and ends after actual ready content and two animation frames. Includes file reads, full-byte hashing, model cloning, DOM layout, scene creation and GPU upload. No model calls. The supervisor alternates renderer order per round. Neither renderer uses an iframe.",
+  "cache": "First is the first open of each document in each process; shared engines may be warm from earlier formats. Cached pools the next three opens per file. OS filesystem and persistent application caches are not cleared. Excludes application startup. Baseline is the preceding unpublished 0.1.3 with PDF pixel reuse but without model reuse.",
+  "limits": "Six files on one macOS arm64 machine, including a deterministic 12000-row by 8-column generated workbook. Measures complete sidebar latency, not just parsing or model-clone time. Does not establish performance for other documents or platforms. Short-term cache entries can expire or be evicted by the shared 64 MiB/four-entry budget.",
+  "runner": {
+    "script": "scripts/benchmark-dsh-model-reopen.mjs",
+    "scriptSHA256": "9203052d9d2ebaeba6e457f2e4c329a532a6064451b93407edb103881d2b99f2",
+    "launchHelperSHA256": "bceb9cd7337b34586c641d82d83f57ec54af38090127a48255288a3f471b25d3",
+    "execution": "Independent one-renderer/one-round invocations, externally ordered filens/previous, rotating each round. A new Desktop process each invocation. 240-second watchdog per invocation; no retries or samples removed.",
+    "failures": []
+  },
+  "candidateRuntime": {
+    "manifestSHA256": "2dfcb9d16eeed0e8878b3114603984b3972e17d3d429924dc73798fac83411db"
+  },
+  "baselinePackage": {
+    "file": "dist/release-v0.6.4/dsh-next/history/dsh-filens-0.1.3-pdf-pixels.tgz",
+    "sha256": "97de854658dffb74d8c8b779d7a5b708dbe2444baa0c83f4f88d9303b0ddcc41"
+  },
+  "results": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Observatory.xlsx",
+      "firstMs": 107,
+      "cachedMedianMs": 68,
+      "freshProcessRangeMs": [
+        101,
+        115
+      ],
+      "cachedRangeMs": [
+        60,
+        78
+      ],
+      "freshProcessSamplesMs": [
+        112,
+        101,
+        114,
+        107,
+        107,
+        103,
+        110,
+        107,
+        115
+      ],
+      "cachedSamplesMs": [
+        68,
+        77,
+        61,
+        78,
+        77,
+        77,
+        68,
+        60,
+        60,
+        69,
+        63,
+        61,
+        64,
+        77,
+        77,
+        68,
+        77,
+        61,
+        64,
+        76,
+        61,
+        65,
+        76,
+        62,
+        64,
+        76,
+        61
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 77,
+      "freshProcessRangeMs": [
+        108,
+        111
+      ],
+      "cachedRangeMs": [
+        75,
+        79
+      ],
+      "freshProcessSamplesMs": [
+        110,
+        111,
+        110,
+        110,
+        111,
+        110,
+        111,
+        108,
+        110
+      ],
+      "cachedSamplesMs": [
+        77,
+        77,
+        77,
+        78,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        75,
+        78,
+        77,
+        79,
+        75,
+        77,
+        77,
+        77,
+        78,
+        76,
+        77,
+        79,
+        77,
+        77,
+        77,
+        76,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 77,
+      "freshProcessRangeMs": [
+        224,
+        225
+      ],
+      "cachedRangeMs": [
+        76,
+        93
+      ],
+      "freshProcessSamplesMs": [
+        225,
+        225,
+        225,
+        225,
+        224,
+        224,
+        225,
+        225,
+        225
+      ],
+      "cachedSamplesMs": [
+        93,
+        78,
+        78,
+        76,
+        78,
+        77,
+        93,
+        78,
+        77,
+        78,
+        78,
+        77,
+        79,
+        77,
+        79,
+        77,
+        79,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "freshProcessRangeMs": [
+        225,
+        227
+      ],
+      "cachedRangeMs": [
+        92,
+        99
+      ],
+      "freshProcessSamplesMs": [
+        227,
+        227,
+        227,
+        227,
+        225,
+        227,
+        227,
+        227,
+        227
+      ],
+      "cachedSamplesMs": [
+        93,
+        93,
+        99,
+        93,
+        93,
+        93,
+        93,
+        92,
+        95,
+        93,
+        93,
+        93,
+        93,
+        93,
+        94,
+        93,
+        93,
+        93,
+        93,
+        93,
+        93,
+        93,
+        93,
+        92,
+        93,
+        93,
+        99
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 94,
+      "freshProcessRangeMs": [
+        170,
+        177
+      ],
+      "cachedRangeMs": [
+        93,
+        94
+      ],
+      "freshProcessSamplesMs": [
+        170,
+        174,
+        176,
+        177,
+        176,
+        176,
+        177,
+        177,
+        171
+      ],
+      "cachedSamplesMs": [
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        93,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 109,
+      "freshProcessRangeMs": [
+        294,
+        377
+      ],
+      "cachedRangeMs": [
+        94,
+        130
+      ],
+      "freshProcessSamplesMs": [
+        295,
+        295,
+        377,
+        295,
+        294,
+        295,
+        295,
+        294,
+        295
+      ],
+      "cachedSamplesMs": [
+        110,
+        108,
+        95,
+        110,
+        108,
+        130,
+        109,
+        111,
+        111,
+        110,
+        109,
+        109,
+        110,
+        107,
+        112,
+        110,
+        109,
+        111,
+        110,
+        109,
+        94,
+        110,
+        109,
+        94,
+        110,
+        109,
+        94
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Observatory.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 68,
+      "freshProcessRangeMs": [
+        101,
+        113
+      ],
+      "cachedRangeMs": [
+        61,
+        77
+      ],
+      "freshProcessSamplesMs": [
+        107,
+        112,
+        113,
+        103,
+        112,
+        101,
+        109,
+        113,
+        109
+      ],
+      "cachedSamplesMs": [
+        64,
+        77,
+        62,
+        64,
+        77,
+        61,
+        66,
+        75,
+        77,
+        68,
+        77,
+        62,
+        64,
+        77,
+        77,
+        65,
+        77,
+        63,
+        68,
+        77,
+        77,
+        67,
+        75,
+        77,
+        64,
+        77,
+        63
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Large workbook.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 94,
+      "freshProcessRangeMs": [
+        108,
+        111
+      ],
+      "cachedRangeMs": [
+        93,
+        110
+      ],
+      "freshProcessSamplesMs": [
+        110,
+        109,
+        110,
+        109,
+        111,
+        108,
+        109,
+        110,
+        108
+      ],
+      "cachedSamplesMs": [
+        93,
+        94,
+        109,
+        93,
+        93,
+        110,
+        94,
+        94,
+        108,
+        93,
+        94,
+        110,
+        109,
+        94,
+        109,
+        93,
+        94,
+        110,
+        94,
+        94,
+        110,
+        93,
+        94,
+        110,
+        93,
+        93,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "freshProcessRangeMs": [
+        225,
+        227
+      ],
+      "cachedRangeMs": [
+        176,
+        178
+      ],
+      "freshProcessSamplesMs": [
+        227,
+        225,
+        227,
+        227,
+        227,
+        227,
+        227,
+        227,
+        227
+      ],
+      "cachedSamplesMs": [
+        177,
+        177,
+        177,
+        178,
+        177,
+        176,
+        176,
+        177,
+        177,
+        176,
+        178,
+        177,
+        177,
+        176,
+        177,
+        177,
+        176,
+        177,
+        176,
+        177,
+        177,
+        176,
+        177,
+        177,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Workbook.numbers",
+      "firstMs": 193,
+      "cachedMedianMs": 176,
+      "freshProcessRangeMs": [
+        191,
+        194
+      ],
+      "cachedRangeMs": [
+        174,
+        179
+      ],
+      "freshProcessSamplesMs": [
+        193,
+        194,
+        193,
+        191,
+        193,
+        194,
+        193,
+        193,
+        194
+      ],
+      "cachedSamplesMs": [
+        176,
+        177,
+        176,
+        176,
+        177,
+        176,
+        175,
+        179,
+        176,
+        178,
+        177,
+        176,
+        176,
+        177,
+        176,
+        176,
+        177,
+        176,
+        176,
+        177,
+        176,
+        175,
+        178,
+        176,
+        176,
+        177,
+        174
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 177,
+      "freshProcessRangeMs": [
+        176,
+        179
+      ],
+      "cachedRangeMs": [
+        159,
+        179
+      ],
+      "freshProcessSamplesMs": [
+        179,
+        177,
+        176,
+        177,
+        176,
+        177,
+        177,
+        176,
+        178
+      ],
+      "cachedSamplesMs": [
+        175,
+        177,
+        160,
+        177,
+        160,
+        159,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        161,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        179,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 226,
+      "freshProcessRangeMs": [
+        292,
+        296
+      ],
+      "cachedRangeMs": [
+        225,
+        228
+      ],
+      "freshProcessSamplesMs": [
+        295,
+        296,
+        294,
+        294,
+        294,
+        294,
+        293,
+        292,
+        294
+      ],
+      "cachedSamplesMs": [
+        225,
+        227,
+        226,
+        225,
+        228,
+        225,
+        225,
+        227,
+        225,
+        225,
+        227,
+        226,
+        225,
+        227,
+        226,
+        225,
+        227,
+        226,
+        226,
+        228,
+        225,
+        225,
+        227,
+        226,
+        225,
+        227,
+        225
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Observatory.xlsx",
+      "firstMs": 112,
+      "cachedMedianMs": 68,
+      "samplesMs": [
+        112,
+        68,
+        77,
+        61
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        110,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 78,
+      "samplesMs": [
+        225,
+        93,
+        78,
+        78
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        99
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Weekend.key",
+      "firstMs": 170,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        170,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 108,
+      "samplesMs": [
+        295,
+        110,
+        108,
+        95
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Observatory.xlsx",
+      "firstMs": 107,
+      "cachedMedianMs": 64,
+      "samplesMs": [
+        107,
+        64,
+        77,
+        62
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        110,
+        93,
+        94,
+        109
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Workbook.numbers",
+      "firstMs": 193,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        193,
+        176,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Weekend.key",
+      "firstMs": 179,
+      "cachedMedianMs": 175,
+      "samplesMs": [
+        179,
+        175,
+        177,
+        160
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 226,
+      "samplesMs": [
+        295,
+        225,
+        227,
+        226
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Observatory.xlsx",
+      "firstMs": 112,
+      "cachedMedianMs": 64,
+      "samplesMs": [
+        112,
+        64,
+        77,
+        61
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Large workbook.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        109,
+        93,
+        93,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        225,
+        178,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Workbook.numbers",
+      "firstMs": 194,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        194,
+        176,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 160,
+      "samplesMs": [
+        177,
+        177,
+        160,
+        159
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Flanged bearing.step",
+      "firstMs": 296,
+      "cachedMedianMs": 225,
+      "samplesMs": [
+        296,
+        225,
+        228,
+        225
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Observatory.xlsx",
+      "firstMs": 101,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        101,
+        78,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Large workbook.xlsx",
+      "firstMs": 111,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        111,
+        78,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        225,
+        76,
+        78,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Weekend.key",
+      "firstMs": 174,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        174,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        295,
+        110,
+        108,
+        130
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Observatory.xlsx",
+      "firstMs": 114,
+      "cachedMedianMs": 60,
+      "samplesMs": [
+        114,
+        68,
+        60,
+        60
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        110,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 78,
+      "samplesMs": [
+        225,
+        93,
+        78,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        92,
+        95
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        176,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Flanged bearing.step",
+      "firstMs": 377,
+      "cachedMedianMs": 111,
+      "samplesMs": [
+        377,
+        109,
+        111,
+        111
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Observatory.xlsx",
+      "firstMs": 113,
+      "cachedMedianMs": 75,
+      "samplesMs": [
+        113,
+        66,
+        75,
+        77
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        110,
+        94,
+        94,
+        108
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        176,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Workbook.numbers",
+      "firstMs": 193,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        193,
+        175,
+        179,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        176,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 225,
+      "samplesMs": [
+        294,
+        225,
+        227,
+        225
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Observatory.xlsx",
+      "firstMs": 103,
+      "cachedMedianMs": 68,
+      "samplesMs": [
+        103,
+        68,
+        77,
+        62
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Large workbook.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        109,
+        93,
+        94,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        176,
+        178,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Workbook.numbers",
+      "firstMs": 191,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        191,
+        178,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        177,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 226,
+      "samplesMs": [
+        294,
+        225,
+        227,
+        226
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Observatory.xlsx",
+      "firstMs": 107,
+      "cachedMedianMs": 63,
+      "samplesMs": [
+        107,
+        69,
+        63,
+        61
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        110,
+        77,
+        75,
+        78
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 78,
+      "samplesMs": [
+        225,
+        78,
+        78,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        177,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        295,
+        110,
+        109,
+        109
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Observatory.xlsx",
+      "firstMs": 107,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        107,
+        64,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Large workbook.xlsx",
+      "firstMs": 111,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        111,
+        77,
+        79,
+        75
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Document.pages",
+      "firstMs": 224,
+      "cachedMedianMs": 79,
+      "samplesMs": [
+        224,
+        79,
+        77,
+        79
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Workbook.numbers",
+      "firstMs": 225,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        225,
+        93,
+        93,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        176,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        294,
+        110,
+        107,
+        112
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Observatory.xlsx",
+      "firstMs": 112,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        112,
+        64,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Large workbook.xlsx",
+      "firstMs": 111,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        111,
+        109,
+        94,
+        109
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        177,
+        176,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Workbook.numbers",
+      "firstMs": 193,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        193,
+        176,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        176,
+        161,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 226,
+      "samplesMs": [
+        294,
+        225,
+        227,
+        226
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Observatory.xlsx",
+      "firstMs": 101,
+      "cachedMedianMs": 65,
+      "samplesMs": [
+        101,
+        65,
+        77,
+        63
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Large workbook.xlsx",
+      "firstMs": 108,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        108,
+        93,
+        94,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        177,
+        176,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Workbook.numbers",
+      "firstMs": 194,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        194,
+        176,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        177,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 226,
+      "samplesMs": [
+        294,
+        225,
+        227,
+        226
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Observatory.xlsx",
+      "firstMs": 103,
+      "cachedMedianMs": 68,
+      "samplesMs": [
+        103,
+        68,
+        77,
+        61
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        110,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Document.pages",
+      "firstMs": 224,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        224,
+        77,
+        79,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        176,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        295,
+        110,
+        109,
+        111
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Observatory.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 64,
+      "samplesMs": [
+        110,
+        64,
+        76,
+        61
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Large workbook.xlsx",
+      "firstMs": 111,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        111,
+        78,
+        76,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        225,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        177,
+        93,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        295,
+        110,
+        109,
+        94
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Observatory.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        109,
+        68,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Large workbook.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        109,
+        94,
+        94,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        176,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Workbook.numbers",
+      "firstMs": 193,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        193,
+        176,
+        177,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        177,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Flanged bearing.step",
+      "firstMs": 293,
+      "cachedMedianMs": 226,
+      "samplesMs": [
+        293,
+        226,
+        228,
+        225
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Observatory.xlsx",
+      "firstMs": 113,
+      "cachedMedianMs": 75,
+      "samplesMs": [
+        113,
+        67,
+        75,
+        77
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        110,
+        93,
+        94,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        176,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Workbook.numbers",
+      "firstMs": 193,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        193,
+        175,
+        178,
+        176
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Weekend.key",
+      "firstMs": 176,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        176,
+        177,
+        177,
+        179
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Flanged bearing.step",
+      "firstMs": 292,
+      "cachedMedianMs": 226,
+      "samplesMs": [
+        292,
+        225,
+        227,
+        226
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Observatory.xlsx",
+      "firstMs": 107,
+      "cachedMedianMs": 65,
+      "samplesMs": [
+        107,
+        65,
+        76,
+        62
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Large workbook.xlsx",
+      "firstMs": 108,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        108,
+        79,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        225,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Weekend.key",
+      "firstMs": 177,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        177,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        294,
+        110,
+        109,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Observatory.xlsx",
+      "firstMs": 115,
+      "cachedMedianMs": 64,
+      "samplesMs": [
+        115,
+        64,
+        76,
+        61
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Large workbook.xlsx",
+      "firstMs": 110,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        110,
+        77,
+        76,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Document.pages",
+      "firstMs": 225,
+      "cachedMedianMs": 77,
+      "samplesMs": [
+        225,
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Workbook.numbers",
+      "firstMs": 227,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        227,
+        93,
+        93,
+        99
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Weekend.key",
+      "firstMs": 171,
+      "cachedMedianMs": 94,
+      "samplesMs": [
+        171,
+        94,
+        94,
+        94
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Flanged bearing.step",
+      "firstMs": 295,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        295,
+        110,
+        109,
+        94
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Observatory.xlsx",
+      "firstMs": 109,
+      "cachedMedianMs": 64,
+      "samplesMs": [
+        109,
+        64,
+        77,
+        63
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Large workbook.xlsx",
+      "firstMs": 108,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        108,
+        93,
+        93,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Document.pages",
+      "firstMs": 227,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        227,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Workbook.numbers",
+      "firstMs": 194,
+      "cachedMedianMs": 176,
+      "samplesMs": [
+        194,
+        176,
+        177,
+        174
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Weekend.key",
+      "firstMs": 178,
+      "cachedMedianMs": 177,
+      "samplesMs": [
+        178,
+        177,
+        177,
+        177
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Flanged bearing.step",
+      "firstMs": 294,
+      "cachedMedianMs": 225,
+      "samplesMs": [
+        294,
+        225,
+        227,
+        225
+      ]
+    }
+  ]
+}

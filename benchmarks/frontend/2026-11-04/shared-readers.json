@@ -1,0 +1,2205 @@
+{
+  "date": "2026-11-04",
+  "baseline": "Working-tree build immediately after the XLSX XML round; includes earlier uncommitted work, not Git HEAD. Saved in tmp/shared-readers-baseline. npm baselines are packed from saved dist and pre-change package metadata; archive CSS is held identical to current because stylesheet changes are outside this round.",
+  "scope": "Shared format-name inference, ZIP directory indexing, ordered XML to lookup conversion, archive sorting/filtering/keyboard navigation, and excluding maps from core/archive npm packages. No new runtime dependencies or format algorithms in Go.",
+  "method": "Core/ZIP/format measurements use production ESM builds in Node. Internal XML view uses an esbuild entry with baseline source overrides. Alternating paired runs, 3 warmups and 9 measured runs; full outputs hashed outside timers. Complete PPTX load uses fresh entry modules before timing to reset generated IDs, preserving exact comparison. Browser controls use production archive JS through Vite import resolution, shared current core/CSS, 2 warmups and 7 alternating measured runs. Runtime sizes include every JS/MJS file including worker, compressed per file using Node gzip level 9/default Brotli; exclude dependencies, CSS, maps and WASM. npm sizes include the actual package files and WASM but exclude dependencies.",
+  "runtime": {
+    "node": "v20.20.2",
+    "zlib": "1.3.1-e00f703",
+    "brotli": "1.1.0"
+  },
+  "builds": {
+    "baseline": {
+      "core": {
+        "npm": {
+          "id": "@filens/core@0.1.1",
+          "name": "@filens/core",
+          "version": "0.1.1",
+          "size": 440943,
+          "unpackedSize": 1954995,
+          "shasum": "7303cffc84fccc0f1dff380ab52e7d6da34bf082",
+          "integrity": "sha512-MShNIkWE0jZhSqDW9G1WJX9s1fl9hiMbDnFjaMPMAHFFqHtyVHrb6A5skJsto0BkeeRChM0RaorghziXXD6Atg==",
+          "filename": "filens-core-0.1.1.tgz",
+          "files": [
+            {
+              "path": "README.md",
+              "size": 7625,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive-volumes.d.ts",
+              "size": 220,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive-volumes.d.ts.map",
+              "size": 236,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive-volumes.js",
+              "size": 3070,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive-volumes.js.map",
+              "size": 8043,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.css",
+              "size": 15821,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.d.ts",
+              "size": 1331,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.d.ts.map",
+              "size": 1021,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.js",
+              "size": 494374,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.js.map",
+              "size": 1248575,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/archive-volumes.d.ts",
+              "size": 867,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/archive-volumes.d.ts.map",
+              "size": 548,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/archive.d.ts",
+              "size": 594,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/archive.d.ts.map",
+              "size": 666,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/attachments.d.ts",
+              "size": 776,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/attachments.d.ts.map",
+              "size": 497,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/load-pptx.d.ts",
+              "size": 261,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/load-pptx.d.ts.map",
+              "size": 323,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/load-source.d.ts",
+              "size": 324,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/load-source.d.ts.map",
+              "size": 379,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/ordered-xml.d.ts",
+              "size": 158,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/ordered-xml.d.ts.map",
+              "size": 236,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/xml.d.ts",
+              "size": 386,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/xml.d.ts.map",
+              "size": 492,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/zip-reader.d.ts",
+              "size": 681,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/zip-reader.d.ts.map",
+              "size": 676,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/zip.d.ts",
+              "size": 355,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/zip.d.ts.map",
+              "size": 354,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/attachment-session.d.ts",
+              "size": 462,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/attachment-session.d.ts.map",
+              "size": 355,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/audio-lyrics.d.ts",
+              "size": 635,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/audio-lyrics.d.ts.map",
+              "size": 527,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/audio-player.d.ts",
+              "size": 1299,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/audio-player.d.ts.map",
+              "size": 1311,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/containers.d.ts",
+              "size": 987,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/containers.d.ts.map",
+              "size": 850,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-loading.d.ts",
+              "size": 677,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-loading.d.ts.map",
+              "size": 491,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-matching.d.ts",
+              "size": 1410,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-matching.d.ts.map",
+              "size": 1017,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-metadata.d.ts",
+              "size": 474,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-metadata.d.ts.map",
+              "size": 437,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-packs.d.ts",
+              "size": 288,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-packs.d.ts.map",
+              "size": 285,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-panose.d.ts",
+              "size": 357,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-panose.d.ts.map",
+              "size": 333,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-scenes.d.ts",
+              "size": 592,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-scenes.d.ts.map",
+              "size": 533,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/fonts.d.ts",
+              "size": 957,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/fonts.d.ts.map",
+              "size": 699,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/formats.d.ts",
+              "size": 3007,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/formats.d.ts.map",
+              "size": 2420,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/index.d.ts",
+              "size": 556,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/index.d.ts.map",
+              "size": 484,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/native-drivers.d.ts",
+              "size": 3913,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/native-drivers.d.ts.map",
+              "size": 3543,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/password.d.ts",
+              "size": 472,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/password.d.ts.map",
+              "size": 355,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/pptx-driver.d.ts",
+              "size": 1461,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/pptx-driver.d.ts.map",
+              "size": 1351,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/previewer.d.ts",
+              "size": 3378,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/previewer.d.ts.map",
+              "size": 3228,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/registry.d.ts",
+              "size": 1105,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/registry.d.ts.map",
+              "size": 1019,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/resource-resolver.d.ts",
+              "size": 820,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/resource-resolver.d.ts.map",
+              "size": 770,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/svg-selection.d.ts",
+              "size": 345,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/svg-selection.d.ts.map",
+              "size": 344,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/touch-gestures.d.ts",
+              "size": 561,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/touch-gestures.d.ts.map",
+              "size": 598,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/types.d.ts",
+              "size": 20202,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/types.d.ts.map",
+              "size": 19519,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/video-controls.d.ts",
+              "size": 914,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/video-controls.d.ts.map",
+              "size": 890,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/video-player.d.ts",
+              "size": 235,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/video-player.d.ts.map",
+              "size": 229,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/dom.d.ts",
+              "size": 641,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/dom.d.ts.map",
+              "size": 641,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/geometry.d.ts",
+              "size": 4356,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/geometry.d.ts.map",
+              "size": 4426,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/preset-definitions.d.ts",
+              "size": 3042,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/preset-definitions.d.ts.map",
+              "size": 2679,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/preset-geometry.d.ts",
+              "size": 915,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/preset-geometry.d.ts.map",
+              "size": 957,
+              "mode": 420
+            },
+            {
+              "path": "dist/types.d.ts",
+              "size": 10626,
+              "mode": 420
+            },
+            {
+              "path": "dist/types.d.ts.map",
+              "size": 11447,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/colors.d.ts",
+              "size": 642,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/colors.d.ts.map",
+              "size": 738,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/common.d.ts",
+              "size": 640,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/common.d.ts.map",
+              "size": 779,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/fonts.d.ts",
+              "size": 193,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/fonts.d.ts.map",
+              "size": 223,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/units.d.ts",
+              "size": 251,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/units.d.ts.map",
+              "size": 282,
+              "mode": 420
+            },
+            {
+              "path": "dist/viewer.d.ts",
+              "size": 2212,
+              "mode": 420
+            },
+            {
+              "path": "dist/viewer.d.ts.map",
+              "size": 2065,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip-DxQiKfxy.js",
+              "size": 7815,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip-DxQiKfxy.js.map",
+              "size": 21645,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip.d.ts",
+              "size": 210,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip.d.ts.map",
+              "size": 237,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip.js",
+              "size": 147,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip.js.map",
+              "size": 88,
+              "mode": 420
+            },
+            {
+              "path": "package.json",
+              "size": 1514,
+              "mode": 420
+            }
+          ],
+          "entryCount": 103,
+          "bundled": []
+        },
+        "tarSha256": "b042874eb994d91543aae3d8c4c13003f0f17c91deef6006344fec22b8ec7478",
+        "runtime": {
+          "files": [
+            {
+              "file": "archive-volumes.js",
+              "sha256": "d8a9a05565391624ddcce094deec4a860d6fe6757b8cffce866035a69d9418f7",
+              "rawBytes": 3070,
+              "gzip9Bytes": 1134,
+              "brotliBytes": 1009
+            },
+            {
+              "file": "index.js",
+              "sha256": "77f6e3b0dc9d412a5d49d54b2a51778c44c8b18ad7d2ce6360b0f17469a16482",
+              "rawBytes": 494374,
+              "gzip9Bytes": 113256,
+              "brotliBytes": 94234
+            },
+            {
+              "file": "zip-DxQiKfxy.js",
+              "sha256": "44832fb5394c7c47c753191f7d69a0c6f1ad2af4506858e7ff3e045550ec4cb4",
+              "rawBytes": 7815,
+              "gzip9Bytes": 2837,
+              "brotliBytes": 2504
+            },
+            {
+              "file": "zip.js",
+              "sha256": "c9b2bfd0e04b95015f3197a3dbf160a865e89a2114adea7a836f9fea16b9ee29",
+              "rawBytes": 147,
+              "gzip9Bytes": 141,
+              "brotliBytes": 116
+            }
+          ],
+          "totals": {
+            "rawBytes": 505406,
+            "gzip9Bytes": 117368,
+            "brotliBytes": 97863
+          }
+        }
+      },
+      "archive": {
+        "npm": {
+          "id": "@filens/archive@0.1.0",
+          "name": "@filens/archive",
+          "version": "0.1.0",
+          "size": 572150,
+          "unpackedSize": 1578552,
+          "shasum": "94f8ea5b5ed2b89d76cf4b6507f927567930e331",
+          "integrity": "sha512-z3zY43YxwPOyYPlHJwBwwYHNCF7HYfqI3GJAbZP+cJOtX4t+a/V/RUeWh/KTVrBr7eylirVAmDRhvPAhRgWWAA==",
+          "filename": "filens-archive-0.1.0.tgz",
+          "files": [
+            {
+              "path": "THIRD-PARTY-NOTICES.txt",
+              "size": 33627,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive/7zz.wasm",
+              "size": 1116075,
+              "mode": 420
+            },
+            {
+              "path": "dist/assets/archive-worker-nr0FPBJ4.js",
+              "size": 52768,
+              "mode": 420
+            },
+            {
+              "path": "dist/assets/archive-worker-nr0FPBJ4.js.map",
+              "size": 170418,
+              "mode": 420
+            },
+            {
+              "path": "dist/client-M7bxJIij.js",
+              "size": 3253,
+              "mode": 420
+            },
+            {
+              "path": "dist/client-M7bxJIij.js.map",
+              "size": 7593,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.css",
+              "size": 8627,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.d.ts",
+              "size": 654,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.d.ts.map",
+              "size": 493,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.js",
+              "size": 49079,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.js.map",
+              "size": 121723,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview-driver.d.ts",
+              "size": 3637,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview-driver.d.ts.map",
+              "size": 3104,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/archive-worker.d.ts",
+              "size": 55,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/archive-worker.d.ts.map",
+              "size": 134,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/client.d.ts",
+              "size": 277,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/client.d.ts.map",
+              "size": 326,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/engine.d.ts",
+              "size": 838,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/engine.d.ts.map",
+              "size": 949,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/module.d.ts",
+              "size": 205,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/module.d.ts.map",
+              "size": 210,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/runtime.d.ts",
+              "size": 1403,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/runtime.d.ts.map",
+              "size": 1259,
+              "mode": 420
+            },
+            {
+              "path": "dist/volumes.d.ts",
+              "size": 220,
+              "mode": 420
+            },
+            {
+              "path": "dist/volumes.d.ts.map",
+              "size": 220,
+              "mode": 420
+            },
+            {
+              "path": "package.json",
+              "size": 1405,
+              "mode": 420
+            }
+          ],
+          "entryCount": 26,
+          "bundled": []
+        },
+        "tarSha256": "5b3d9276bf991dc59020071e3d8c47b50cd76bc383ebf6b61d5c8960b6b407df",
+        "runtime": {
+          "files": [
+            {
+              "file": "assets/archive-worker-nr0FPBJ4.js",
+              "sha256": "57956795a922881e9e4143efb14e9b5574c20a5fe7cd7789a5792f5308840019",
+              "rawBytes": 52768,
+              "gzip9Bytes": 18672,
+              "brotliBytes": 16711
+            },
+            {
+              "file": "client-M7bxJIij.js",
+              "sha256": "aa1fb18efa1cf4f0998e235af7eb1a305d10166f4b2d2111902a9b11df1ff81c",
+              "rawBytes": 3253,
+              "gzip9Bytes": 1499,
+              "brotliBytes": 1296
+            },
+            {
+              "file": "index.js",
+              "sha256": "284c5d507d7b70c3d90cc360eaa989b8d542eb45f71dad583d4c00731082ab43",
+              "rawBytes": 49079,
+              "gzip9Bytes": 13164,
+              "brotliBytes": 11716
+            }
+          ],
+          "totals": {
+            "rawBytes": 105100,
+            "gzip9Bytes": 33335,
+            "brotliBytes": 29723
+          }
+        },
+        "wasm": {
+          "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc",
+          "bytes": 1116075,
+          "valid": true
+        }
+      }
+    },
+    "current": {
+      "core": {
+        "npm": {
+          "id": "@filens/core@0.1.1",
+          "name": "@filens/core",
+          "version": "0.1.1",
+          "size": 142090,
+          "unpackedSize": 603494,
+          "shasum": "88dcf8564b68be2fe588e6edf6c712eccb0c0e2b",
+          "integrity": "sha512-cHpi7JFEsnpr53ZTOUZ99VbMVrN31eEQaiUmKpC+2zx2seOxjH2/g0itULJim8xS0A26k+wch1dbb2LP2GNtdg==",
+          "filename": "filens-core-0.1.1.tgz",
+          "files": [
+            {
+              "path": "README.md",
+              "size": 7625,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive-volumes.d.ts",
+              "size": 175,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive-volumes.js",
+              "size": 3026,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.css",
+              "size": 15821,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.d.ts",
+              "size": 1296,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.js",
+              "size": 494559,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/archive-volumes.d.ts",
+              "size": 822,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/archive.d.ts",
+              "size": 557,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/attachments.d.ts",
+              "size": 735,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/load-pptx.d.ts",
+              "size": 222,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/load-source.d.ts",
+              "size": 283,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/ordered-xml.d.ts",
+              "size": 117,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/xml.d.ts",
+              "size": 353,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/zip-reader.d.ts",
+              "size": 641,
+              "mode": 420
+            },
+            {
+              "path": "dist/parser/zip.d.ts",
+              "size": 322,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/attachment-session.d.ts",
+              "size": 414,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/audio-lyrics.d.ts",
+              "size": 593,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/audio-player.d.ts",
+              "size": 1257,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/containers.d.ts",
+              "size": 947,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-loading.d.ts",
+              "size": 635,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-matching.d.ts",
+              "size": 1367,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-metadata.d.ts",
+              "size": 431,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-packs.d.ts",
+              "size": 248,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-panose.d.ts",
+              "size": 316,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/font-scenes.d.ts",
+              "size": 551,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/fonts.d.ts",
+              "size": 922,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/formats.d.ts",
+              "size": 2970,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/index.d.ts",
+              "size": 521,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/native-drivers.d.ts",
+              "size": 3869,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/password.d.ts",
+              "size": 434,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/pptx-driver.d.ts",
+              "size": 1420,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/previewer.d.ts",
+              "size": 3339,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/registry.d.ts",
+              "size": 1067,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/resource-resolver.d.ts",
+              "size": 773,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/svg-selection.d.ts",
+              "size": 302,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/touch-gestures.d.ts",
+              "size": 517,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/types.d.ts",
+              "size": 20167,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/video-controls.d.ts",
+              "size": 870,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview/video-player.d.ts",
+              "size": 193,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/dom.d.ts",
+              "size": 608,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/geometry.d.ts",
+              "size": 4318,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/preset-definitions.d.ts",
+              "size": 2994,
+              "mode": 420
+            },
+            {
+              "path": "dist/render/preset-geometry.d.ts",
+              "size": 870,
+              "mode": 420
+            },
+            {
+              "path": "dist/types.d.ts",
+              "size": 10591,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/colors.d.ts",
+              "size": 606,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/common.d.ts",
+              "size": 604,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/fonts.d.ts",
+              "size": 158,
+              "mode": 420
+            },
+            {
+              "path": "dist/utils/units.d.ts",
+              "size": 216,
+              "mode": 420
+            },
+            {
+              "path": "dist/viewer.d.ts",
+              "size": 2176,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip-BktKyBUV.js",
+              "size": 7848,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip.d.ts",
+              "size": 177,
+              "mode": 420
+            },
+            {
+              "path": "dist/zip.js",
+              "size": 115,
+              "mode": 420
+            },
+            {
+              "path": "package.json",
+              "size": 1536,
+              "mode": 420
+            }
+          ],
+          "entryCount": 53,
+          "bundled": []
+        },
+        "tarSha256": "1e8edafcac46a8d8b631b879c277a09531991efe5b1c862978eaca0d3d434a6c",
+        "runtime": {
+          "files": [
+            {
+              "file": "archive-volumes.js",
+              "sha256": "c2c78c4eaaf76d51cd7bc1ea0ff4e32dc2cba95ceeb50c39c02b262e8825498b",
+              "rawBytes": 3026,
+              "gzip9Bytes": 1106,
+              "brotliBytes": 987
+            },
+            {
+              "file": "index.js",
+              "sha256": "1a7500081b536ea2334fbbd2c5566ed63f029efc91037e5289d4f4eb8c4fe6db",
+              "rawBytes": 494559,
+              "gzip9Bytes": 113298,
+              "brotliBytes": 94261
+            },
+            {
+              "file": "zip-BktKyBUV.js",
+              "sha256": "5b696d14c48d8a09289895748acb7b64387a08bb7a7e1b39db87821d309bb3da",
+              "rawBytes": 7848,
+              "gzip9Bytes": 2831,
+              "brotliBytes": 2510
+            },
+            {
+              "file": "zip.js",
+              "sha256": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475",
+              "rawBytes": 115,
+              "gzip9Bytes": 115,
+              "brotliBytes": 98
+            }
+          ],
+          "totals": {
+            "rawBytes": 505548,
+            "gzip9Bytes": 117350,
+            "brotliBytes": 97856
+          }
+        }
+      },
+      "archive": {
+        "npm": {
+          "id": "@filens/archive@0.1.0",
+          "name": "@filens/archive",
+          "version": "0.1.0",
+          "size": 489201,
+          "unpackedSize": 1271782,
+          "shasum": "3392f017adb9861af12ca233a9b5a7f0e68ccc4d",
+          "integrity": "sha512-slsoltGnMaFDitZoHQngie0CZrjSkMjKejbDULzcRZ7K8kDKgy2dIn7GOUsN9kCTTWdY8/uPiMtrCvyrcNId1A==",
+          "filename": "filens-archive-0.1.0.tgz",
+          "files": [
+            {
+              "path": "THIRD-PARTY-NOTICES.txt",
+              "size": 33627,
+              "mode": 420
+            },
+            {
+              "path": "dist/archive/7zz.wasm",
+              "size": 1116075,
+              "mode": 420
+            },
+            {
+              "path": "dist/assets/archive-worker-nr0FPBJ4.js",
+              "size": 52716,
+              "mode": 420
+            },
+            {
+              "path": "dist/client-M7bxJIij.js",
+              "size": 3209,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.css",
+              "size": 8627,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.d.ts",
+              "size": 619,
+              "mode": 420
+            },
+            {
+              "path": "dist/index.js",
+              "size": 49117,
+              "mode": 420
+            },
+            {
+              "path": "dist/preview-driver.d.ts",
+              "size": 3593,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/archive-worker.d.ts",
+              "size": 11,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/client.d.ts",
+              "size": 241,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/engine.d.ts",
+              "size": 802,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/module.d.ts",
+              "size": 169,
+              "mode": 420
+            },
+            {
+              "path": "dist/sevenzip/runtime.d.ts",
+              "size": 1366,
+              "mode": 420
+            },
+            {
+              "path": "dist/volumes.d.ts",
+              "size": 183,
+              "mode": 420
+            },
+            {
+              "path": "package.json",
+              "size": 1427,
+              "mode": 420
+            }
+          ],
+          "entryCount": 15,
+          "bundled": []
+        },
+        "tarSha256": "2e4ec1fd804c682e3fd22e80ba6849697bd662dd1b041297211d3e7f3e910cc5",
+        "runtime": {
+          "files": [
+            {
+              "file": "assets/archive-worker-nr0FPBJ4.js",
+              "sha256": "ff399f49dfab31df13526bfd0e81a4ab3aa56bd28bd0767bf9d53c6623ed80a9",
+              "rawBytes": 52716,
+              "gzip9Bytes": 18630,
+              "brotliBytes": 16666
+            },
+            {
+              "file": "client-M7bxJIij.js",
+              "sha256": "a418763dadea0eab8134ead5cc4f6dc247eddaf0ff3c207e8478106c991ef16a",
+              "rawBytes": 3209,
+              "gzip9Bytes": 1463,
+              "brotliBytes": 1271
+            },
+            {
+              "file": "index.js",
+              "sha256": "d23334e3d0532ad157be9f345a2d4e9078bd43429c01e547a501f53db0715f41",
+              "rawBytes": 49117,
+              "gzip9Bytes": 13163,
+              "brotliBytes": 11728
+            }
+          ],
+          "totals": {
+            "rawBytes": 105042,
+            "gzip9Bytes": 33256,
+            "brotliBytes": 29665
+          }
+        },
+        "wasm": {
+          "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc",
+          "bytes": 1116075,
+          "valid": true
+        }
+      }
+    }
+  },
+  "sourceSha256": {
+    "packages/core/src/preview/formats.ts": "3316cc26ef66078097360c0b489350a92fe280ffcd46e7ab92c780311a82b3ff",
+    "packages/core/src/parser/zip-reader.ts": "2c0fc9772793154e1c43e08eb7ac982ca1dc7bf0c800b5832ab6e1f6aef2e22f",
+    "packages/core/src/parser/xml.ts": "406205354f12692d832909ba10c61b9d43333ff2f9e5ec0e454db059be89377b",
+    "packages/archive/src/preview-driver.ts": "1ccf8adc87ec39de11d652062dc1eb4f77a120c08bf52d9d3b109f5b046c4452",
+    "packages/core/package.json": "9c3004a28ac25dd679ecb5b877a58d3ee62e6a32559441821641bce697666202",
+    "packages/core/vite.config.ts": "66899a6023742ccc05c1e21fc63d1f0a2e4e297e396dc2db13005c08d29f34a4",
+    "packages/archive/package.json": "a5194f265d49b110ad8bdaedfe33565e0047c07017608fd03cce03b8fcaa5bdc",
+    "packages/archive/vite.config.ts": "d9b8afe4b69ee89f6336494fc9267363487da11aaf9c7ffe050ad702efc35b67",
+    "packages/core/test/format-index.spec.ts": "13f29b344272e9aedc2e35cf57961bdd44eb81d31983f1b4184f7cfcc20b8c51",
+    "packages/core/test/zip.spec.ts": "ac975be44b112ac7592af552507b1b4c56a3bb50c3a5a0cf85373e8f6fe2e6db",
+    "packages/core/test/xml.spec.ts": "b8f15b8a13642e396da869127cd676640385846419e472cc24f9551352234442",
+    "packages/archive/test/browser-ui.spec.ts": "fe6960440e4e121dd1689652dc9f3a5c3be90ed2dba5aa868be1dfe05faaa84e",
+    "scripts/benchmark-shared-readers.mjs": "205339d0ac2d5ccd85cb910c771506de990aac59e9ddc47cb69a53390041da93",
+    "scripts/benchmark-archive-controls.mjs": "94581d96e36df9dc1bf8918bc35d2db641fe93008519b8e2327d94a914b78f99",
+    "scripts/verify-shared-reader-packages.mjs": "7a1158df02f3e276f710fb0dd6bbd53e890978b02d7b98ac658d32f290af3430"
+  },
+  "baselineSourceSha256": {
+    "packages/core/src/preview/formats.ts": "12870681a6c7c6d201bd7383d011cd5b40997667f2f00fa8406069984cee991b",
+    "packages/core/src/parser/zip-reader.ts": "756f4c291d1e5cb830cd2006405395fc77677e3e93c426c7befae67703accdde",
+    "packages/core/src/parser/xml.ts": "1b7c1a81479cff294cccc945f5f578579cc7ae05b5a94dfb8be95aadac0b8f43",
+    "packages/archive/src/preview-driver.ts": "0e039eee02c7585a14dd4248c1dadbf63ca4ae4c6d1ceaa9b205971d72cd3ca9",
+    "packages/core/package.json": "a766c4f9e1dff8b3ff748e6de23bb9b21539a8b259dfac32f8947b26614e2e4b",
+    "packages/core/vite.config.ts": "7326b2857c38304a6798ca2b47b85032df10d6ce29ca62b09d2b8c60de3756ed",
+    "packages/archive/package.json": "8562571f67290e246fed68de006415d09c35a30a40eb8440fd76c6295059c6bb",
+    "packages/archive/vite.config.ts": "4c40cc7fc4409698c850c53b9bda68806bffb936663d78bf5b54047bac2a353e"
+  },
+  "validation": {
+    "unitTestsPassed": 1621,
+    "unitTestsByPackage": {
+      "core": 445,
+      "archive": 310,
+      "books": 30,
+      "mindmap": 25,
+      "diagram": 31,
+      "model3d": 340,
+      "iwork": 336,
+      "xlsx": 80,
+      "docx": 24
+    },
+    "unitTestsSkipped": 11,
+    "browserTestsPassed": 19,
+    "conversionPolicyChecksPassed": 2122,
+    "categoryBoundariesPassed": true,
+    "coreAndArchiveDeclarationBuildsPassed": true,
+    "packedPackages": {
+      "core": {
+        "exportCount": 81,
+        "exports": [
+          "ARCHIVE_VOLUME_LIMITS",
+          "CONVERSION_FORMAT_ROUTES",
+          "DEFAULT_FORMAT_ROUTES",
+          "DIRECT_FORMAT_ROUTES",
+          "HtmlPreviewSession",
+          "ImagePreviewSession",
+          "MediaPreviewSession",
+          "MediaRegistry",
+          "PREVIEW_CONTAINER_LIMITS",
+          "PptxPreviewSession",
+          "PptxViewer",
+          "PreviewPasswordError",
+          "PreviewRegistry",
+          "Previewer",
+          "TextPreviewSession",
+          "analyzeLoadedPreviewFonts",
+          "analyzePreviewFonts",
+          "applySlideFontMappings",
+          "attachmentFilename",
+          "bindPreviewFontLoading",
+          "bindPreviewSvgSelection",
+          "bindPreviewTouchGestures",
+          "buildPreviewFontStack",
+          "classifyPreviewFont",
+          "classifyPreviewFormat",
+          "collectSlideFontLoadingReferences",
+          "collectSlideFontReferences",
+          "createDefaultNativePreviewDrivers",
+          "createDefaultPreviewDrivers",
+          "createDefaultPreviewRoutes",
+          "createFileSetResourceIndex",
+          "createFileSetResourceResolver",
+          "createFormatRouteResolver",
+          "createHtmlPreviewDriver",
+          "createImagePreviewDriver",
+          "createMediaPreviewDriver",
+          "createPptxPreviewDriver",
+          "createPreviewAcceptAttribute",
+          "createPreviewContainerContext",
+          "createPreviewRegistry",
+          "createPreviewer",
+          "createTextPreviewDriver",
+          "createUnsupportedState",
+          "createVideoPlaybackControls",
+          "createVideoPreviewPlayer",
+          "createViewer",
+          "createWebFontPacks",
+          "descendPreviewContainer",
+          "findAudioLyricIndex",
+          "fontTraitsFromPanose",
+          "getFontFallbackCandidates",
+          "getPreviewFontWarnings",
+          "getPreviewFormatGroupLabel",
+          "inferExtensionFromName",
+          "init",
+          "isArchiveVolumeName",
+          "listPreviewExtensions",
+          "listPreviewFormatGroups",
+          "listPreviewFormats",
+          "loadPptx",
+          "normalizeExtension",
+          "normalizeSourceDescriptor",
+          "officeFontTraits",
+          "openZipArchive",
+          "originalSceneFontFamily",
+          "parseAudioLyrics",
+          "parseFontPanose",
+          "pptxPreviewDriver",
+          "previewPasswordErrorCode",
+          "rankPreviewFontCandidates",
+          "readOfficeAttachments",
+          "readPreviewContainerEntry",
+          "readPreviewFontMetadata",
+          "readWithPreviewPassword",
+          "renderSlideToElement",
+          "resolveFormatRoute",
+          "selectArchiveVolumes",
+          "splitPreviewFontFamilies",
+          "toPagedPreviewState",
+          "unwrapOfficeAttachment",
+          "waitForContainerTask"
+        ],
+        "files": [
+          "archive-volumes.d.ts",
+          "archive-volumes.js",
+          "index.css",
+          "index.d.ts",
+          "index.js",
+          "parser",
+          "parser/archive-volumes.d.ts",
+          "parser/archive.d.ts",
+          "parser/attachments.d.ts",
+          "parser/load-pptx.d.ts",
+          "parser/load-source.d.ts",
+          "parser/ordered-xml.d.ts",
+          "parser/xml.d.ts",
+          "parser/zip-reader.d.ts",
+          "parser/zip.d.ts",
+          "preview",
+          "preview/attachment-session.d.ts",
+          "preview/audio-lyrics.d.ts",
+          "preview/audio-player.d.ts",
+          "preview/containers.d.ts",
+          "preview/font-loading.d.ts",
+          "preview/font-matching.d.ts",
+          "preview/font-metadata.d.ts",
+          "preview/font-packs.d.ts",
+          "preview/font-panose.d.ts",
+          "preview/font-scenes.d.ts",
+          "preview/fonts.d.ts",
+          "preview/formats.d.ts",
+          "preview/index.d.ts",
+          "preview/native-drivers.d.ts",
+          "preview/password.d.ts",
+          "preview/pptx-driver.d.ts",
+          "preview/previewer.d.ts",
+          "preview/registry.d.ts",
+          "preview/resource-resolver.d.ts",
+          "preview/svg-selection.d.ts",
+          "preview/touch-gestures.d.ts",
+          "preview/types.d.ts",
+          "preview/video-controls.d.ts",
+          "preview/video-player.d.ts",
+          "render",
+          "render/dom.d.ts",
+          "render/geometry.d.ts",
+          "render/preset-definitions.d.ts",
+          "render/preset-geometry.d.ts",
+          "types.d.ts",
+          "utils",
+          "utils/colors.d.ts",
+          "utils/common.d.ts",
+          "utils/fonts.d.ts",
+          "utils/units.d.ts",
+          "viewer.d.ts",
+          "zip-BktKyBUV.js",
+          "zip.d.ts",
+          "zip.js"
+        ],
+        "relativeDeclarations": 76,
+        "noSourceMaps": true,
+        "publicPathsResolve": true,
+        "completeModelsEqual": true
+      },
+      "archive": {
+        "exportCount": 12,
+        "exports": [
+          "ARCHIVE_FORMAT_ROUTES",
+          "ARCHIVE_VOLUME_LIMITS",
+          "ArchivePreviewSession",
+          "createArchiveCategoryPreviewRoutes",
+          "createArchivePreviewDriver",
+          "createArchivePreviewRoutes",
+          "createArchiveResourceIndex",
+          "createArchiveResourceResolver",
+          "createZipArchiveResourceIndex",
+          "createZipResourceResolver",
+          "isArchiveVolumeName",
+          "selectArchiveVolumes"
+        ],
+        "files": [
+          "archive",
+          "archive/7zz.wasm",
+          "assets",
+          "assets/archive-worker-nr0FPBJ4.js",
+          "client-M7bxJIij.js",
+          "index.css",
+          "index.d.ts",
+          "index.js",
+          "preview-driver.d.ts",
+          "sevenzip",
+          "sevenzip/archive-worker.d.ts",
+          "sevenzip/client.d.ts",
+          "sevenzip/engine.d.ts",
+          "sevenzip/module.d.ts",
+          "sevenzip/runtime.d.ts",
+          "volumes.d.ts"
+        ],
+        "relativeDeclarations": 6,
+        "noSourceMaps": true,
+        "publicPathsResolve": true,
+        "completeModelsEqual": true
+      }
+    },
+    "skippedReasons": {
+      "missingExternalFixtures": 7,
+      "previouslyDisabled": 4
+    }
+  },
+  "core": {
+    "date": "2026-11-04",
+    "node": "v20.20.2",
+    "cpu": "Apple M4 Pro",
+    "warmupIterations": 3,
+    "measuredIterations": 9,
+    "artifacts": {
+      "baseline": {
+        "archive-volumes.js": {
+          "sha256": "d8a9a05565391624ddcce094deec4a860d6fe6757b8cffce866035a69d9418f7",
+          "bytes": 3070,
+          "gzip9Bytes": 1134,
+          "brotliBytes": 1009
+        },
+        "index.js": {
+          "sha256": "77f6e3b0dc9d412a5d49d54b2a51778c44c8b18ad7d2ce6360b0f17469a16482",
+          "bytes": 494374,
+          "gzip9Bytes": 113256,
+          "brotliBytes": 94234
+        },
+        "zip-DxQiKfxy.js": {
+          "sha256": "44832fb5394c7c47c753191f7d69a0c6f1ad2af4506858e7ff3e045550ec4cb4",
+          "bytes": 7815,
+          "gzip9Bytes": 2837,
+          "brotliBytes": 2504
+        },
+        "zip.js": {
+          "sha256": "c9b2bfd0e04b95015f3197a3dbf160a865e89a2114adea7a836f9fea16b9ee29",
+          "bytes": 147,
+          "gzip9Bytes": 141,
+          "brotliBytes": 116
+        },
+        "xmlBenchmark": {
+          "sha256": "19a7e1f5db47c8e2b845354fe8c08f56afea53aa834b7507ff4a4a20f55959c2"
+        }
+      },
+      "current": {
+        "archive-volumes.js": {
+          "sha256": "c2c78c4eaaf76d51cd7bc1ea0ff4e32dc2cba95ceeb50c39c02b262e8825498b",
+          "bytes": 3026,
+          "gzip9Bytes": 1106,
+          "brotliBytes": 987
+        },
+        "index.js": {
+          "sha256": "1a7500081b536ea2334fbbd2c5566ed63f029efc91037e5289d4f4eb8c4fe6db",
+          "bytes": 494559,
+          "gzip9Bytes": 113298,
+          "brotliBytes": 94261
+        },
+        "zip-BktKyBUV.js": {
+          "sha256": "5b696d14c48d8a09289895748acb7b64387a08bb7a7e1b39db87821d309bb3da",
+          "bytes": 7848,
+          "gzip9Bytes": 2831,
+          "brotliBytes": 2510
+        },
+        "zip.js": {
+          "sha256": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475",
+          "bytes": 115,
+          "gzip9Bytes": 115,
+          "brotliBytes": 98
+        },
+        "xmlBenchmark": {
+          "sha256": "0692fde6ebc73ad1bdb8119c52e4a05c1c0eece97803aa9f5a4e7b6608ab1afa"
+        }
+      }
+    },
+    "sourceSha256": {
+      "packages/core/src/preview/formats.ts": "3316cc26ef66078097360c0b489350a92fe280ffcd46e7ab92c780311a82b3ff",
+      "packages/core/src/parser/zip-reader.ts": "2c0fc9772793154e1c43e08eb7ac982ca1dc7bf0c800b5832ab6e1f6aef2e22f",
+      "packages/core/src/parser/xml.ts": "406205354f12692d832909ba10c61b9d43333ff2f9e5ec0e454db059be89377b",
+      "packages/archive/src/preview-driver.ts": "1ccf8adc87ec39de11d652062dc1eb4f77a120c08bf52d9d3b109f5b046c4452",
+      "packages/core/package.json": "9c3004a28ac25dd679ecb5b877a58d3ee62e6a32559441821641bce697666202",
+      "packages/core/vite.config.ts": "66899a6023742ccc05c1e21fc63d1f0a2e4e297e396dc2db13005c08d29f34a4",
+      "packages/archive/package.json": "a5194f265d49b110ad8bdaedfe33565e0047c07017608fd03cce03b8fcaa5bdc",
+      "packages/archive/vite.config.ts": "d9b8afe4b69ee89f6336494fc9267363487da11aaf9c7ffe050ad702efc35b67"
+    },
+    "cases": {
+      "infer-100000-paths": {
+        "files": 100000,
+        "inputSha256": "2dfb6098bf02c7939f41a8bc6de5d4791344249d1f281d46cc66c2508cde6ddf",
+        "outputSha256": "49da5bf132042aaa7542833cceaaf6845194a3344329ff87d3d645b920fdffbf",
+        "timings": {
+          "baseline": {
+            "medianMs": 33.31120799999985,
+            "samplesMs": [
+              33.30899999999997,
+              33.989958000000115,
+              33.790250000000015,
+              33.175915999999916,
+              33.31120799999985,
+              32.637917000000016,
+              32.933042000000114,
+              34.321874999999864,
+              33.55775000000017
+            ]
+          },
+          "current": {
+            "medianMs": 21.719125000000076,
+            "samplesMs": [
+              22.816250000000082,
+              19.880292000000054,
+              22.96641600000021,
+              20.826084000000037,
+              22.418083000000024,
+              20.53379199999995,
+              21.719125000000076,
+              31.354458000000022,
+              20.34308299999998
+            ]
+          }
+        }
+      },
+      "resolve-100000-paths": {
+        "files": 100000,
+        "inputSha256": "2dfb6098bf02c7939f41a8bc6de5d4791344249d1f281d46cc66c2508cde6ddf",
+        "outputSha256": "f63d78fa72ff0df87544c2560fab3161f4b4355a145128b32b0f8c4dbe297d37",
+        "timings": {
+          "baseline": {
+            "medianMs": 37.71729100000039,
+            "samplesMs": [
+              37.475374999999985,
+              37.83399999999983,
+              38.63654099999985,
+              37.71729100000039,
+              37.557624999999916,
+              37.87149999999974,
+              42.4474580000001,
+              36.82516600000008,
+              36.92833299999984
+            ]
+          },
+          "current": {
+            "medianMs": 24.740499999999884,
+            "samplesMs": [
+              24.940874999999778,
+              25.107124999999996,
+              24.38533299999972,
+              24.740499999999884,
+              24.738749999999982,
+              25.19404200000008,
+              25.465250000000196,
+              24.45520899999974,
+              24.159000000000106
+            ]
+          }
+        }
+      },
+      "zip-index-1000": {
+        "entries": 1000,
+        "archiveBytes": 161692,
+        "archiveSha256": "f8d6db3bb1987f0aeef75d025a9961940838ced06ae1eb23fcd4a11b435317d4",
+        "outputSha256": "cb090f288d89e9d5ea2501ae5bb2a6d1397bd9d5e2a7347ef71175ffc67e4ba9",
+        "timings": {
+          "baseline": {
+            "medianMs": 0.62237499999992,
+            "samplesMs": [
+              1.0441670000000158,
+              1.023707999999715,
+              0.632542000000285,
+              0.6555829999997513,
+              0.6128749999998035,
+              0.5627500000000509,
+              0.5635829999996531,
+              0.569416999999703,
+              0.62237499999992
+            ]
+          },
+          "current": {
+            "medianMs": 0.426665999999841,
+            "samplesMs": [
+              0.71875,
+              0.4177500000000691,
+              0.8324999999999818,
+              0.47058300000026065,
+              0.426665999999841,
+              0.40791699999999764,
+              0.41150000000016007,
+              0.41383399999995163,
+              0.43779200000017227
+            ]
+          }
+        }
+      },
+      "zip-read-1000": {
+        "entries": 1000,
+        "archiveBytes": 161692,
+        "archiveSha256": "f8d6db3bb1987f0aeef75d025a9961940838ced06ae1eb23fcd4a11b435317d4",
+        "outputSha256": "b5daed4356d873313c26f7f3d3feeed021bb89811c5d425d0dbab2d150cfce0a",
+        "timings": {
+          "baseline": {
+            "medianMs": 1.350666000000274,
+            "samplesMs": [
+              1.4655830000001515,
+              1.1156670000000304,
+              1.4826669999997648,
+              1.0704579999996895,
+              1.350666000000274,
+              1.0968329999996058,
+              1.4835840000000644,
+              1.0851250000000618,
+              1.532832999999755
+            ]
+          },
+          "current": {
+            "medianMs": 0.9137500000001637,
+            "samplesMs": [
+              0.9549579999998059,
+              0.9733340000002499,
+              0.9137500000001637,
+              0.8996670000001359,
+              0.8993329999998423,
+              0.918999999999869,
+              0.9780000000000655,
+              0.8837090000001808,
+              0.8908329999999296
+            ]
+          }
+        }
+      },
+      "zip-index-20000": {
+        "entries": 20000,
+        "archiveBytes": 3326617,
+        "archiveSha256": "c50e9717c9620dae824d73a12c9a9668a6340e509e880c91950d21319c6fb67a",
+        "outputSha256": "7bfe5eeba7426381c6810cb68fb9dedaf1834bebdd1cd92e0c36a0faffc25f0e",
+        "timings": {
+          "baseline": {
+            "medianMs": 18.695791999999983,
+            "samplesMs": [
+              16.429415999999947,
+              17.52774999999974,
+              20.929541999999856,
+              18.695791999999983,
+              15.573750000000018,
+              19.560833999999886,
+              26.53770799999984,
+              18.623167000000194,
+              19.117999999999938
+            ]
+          },
+          "current": {
+            "medianMs": 13.661209000000326,
+            "samplesMs": [
+              11.236541999999645,
+              15.450249999999869,
+              13.380666999999903,
+              18.514458000000104,
+              11.497332999999799,
+              15.089958000000024,
+              15.1237500000002,
+              13.661209000000326,
+              12.235333999999966
+            ]
+          }
+        }
+      },
+      "xml-ordered-and-lookup-20000": {
+        "parts": 20000,
+        "inputBytes": 2135579,
+        "inputSha256": "1dbc145ec3737deb2db9f57a23cc36975d90746a079431ac44444e5318b13fb3",
+        "includes": "tokenization and lookup grouping; no ZIP or byte decoding",
+        "outputSha256": "9cb32e1155ab699ba4e94a3525c32f395c617c3a202cfec0ae9b502ee57226ab",
+        "timings": {
+          "baseline": {
+            "medianMs": 38.08808399999998,
+            "samplesMs": [
+              38.13254199999983,
+              50.07524999999987,
+              37.174457999999504,
+              37.451208999999835,
+              38.08808399999998,
+              43.728250000000116,
+              35.702540999999655,
+              34.50187499999993,
+              47.49695900000006
+            ]
+          },
+          "current": {
+            "medianMs": 34.487708000000566,
+            "samplesMs": [
+              37.53862500000014,
+              36.68591699999979,
+              36.36370799999986,
+              34.487708000000566,
+              36.728667000000314,
+              33.430584000000636,
+              33.10762499999964,
+              34.476041999999325,
+              34.33391699999993
+            ]
+          }
+        }
+      },
+      "pptx-sample-deck.pptx": {
+        "archiveBytes": 67274,
+        "archiveSha256": "8b39cd1facb3f676e4f1d42544868608eb44f114904209caba6396bed2cf1ea5",
+        "includes": "complete loadPptx model; no rendering or module import; fresh entry module resets generated IDs before each timed invocation",
+        "outputSha256": "9e35af7278c5301555cd984aabd20d8eca40d05e05e702306bd54869c449ca38",
+        "timings": {
+          "baseline": {
+            "medianMs": 13.07024999999976,
+            "samplesMs": [
+              11.381624999999985,
+              13.07024999999976,
+              11.841749999999593,
+              14.850750000000517,
+              13.109707999999955,
+              15.039209000000483,
+              14.365624999999454,
+              11.383041000000048,
+              12.052416999999878
+            ]
+          },
+          "current": {
+            "medianMs": 13.06420800000069,
+            "samplesMs": [
+              13.679458999999952,
+              14.340916999999536,
+              11.422832999999628,
+              11.833959000000505,
+              11.280832999999802,
+              11.530375000000276,
+              13.06420800000069,
+              13.122290999999677,
+              14.667250000000422
+            ]
+          }
+        }
+      },
+      "pptx-rich-pptx-shapes.pptx": {
+        "archiveBytes": 125205,
+        "archiveSha256": "302dc642b791f49da6057b69a7ef2a0804f61d9469e7e49e9e734ae3305951cc",
+        "includes": "complete loadPptx model; no rendering or module import; fresh entry module resets generated IDs before each timed invocation",
+        "outputSha256": "78c349a6f2b12b1084a5d6087794c1d8e319df644c698605aded9c2fc0e2a12f",
+        "timings": {
+          "baseline": {
+            "medianMs": 11.300707999999759,
+            "samplesMs": [
+              11.569542000000183,
+              10.017958000000363,
+              11.792374999999993,
+              10.16308299999946,
+              11.300707999999759,
+              10.102042000000438,
+              12.072832999999264,
+              9.820082999999613,
+              11.93079200000011
+            ]
+          },
+          "current": {
+            "medianMs": 10.125541999999768,
+            "samplesMs": [
+              9.879874999999629,
+              11.981041999999434,
+              9.66595899999993,
+              11.712875000000167,
+              10.125541999999768,
+              11.773333000000093,
+              9.875082999999904,
+              11.643958999999995,
+              9.897957999999562
+            ]
+          }
+        }
+      }
+    }
+  },
+  "archive": {
+    "date": "2026-11-04",
+    "cpu": "Apple M4 Pro",
+    "node": "v20.20.2",
+    "browser": "147.0.7727.15",
+    "warmupIterations": 2,
+    "measuredIterations": 7,
+    "keyboardEvents": 200,
+    "method": "Real archive sessions loaded from production JS through Vite import resolution. Alternating old/current implementations, fresh session per iteration. Both share current core and CSS. Input creation, module loading, warmup, DOM/HTML validation and hashing are outside timings. Keyboard events include synchronous event handling and focus; filtering includes full synchronous result DOM rebuilds. No animation-frame or physical paint measurement.",
+    "artifacts": {
+      "tmp/shared-readers-baseline/archive-dist/index.js": "284c5d507d7b70c3d90cc360eaa989b8d542eb45f71dad583d4c00731082ab43",
+      "packages/archive/dist/index.js": "d23334e3d0532ad157be9f345a2d4e9078bd43429c01e547a501f53db0715f41",
+      "packages/core/dist/index.js": "1a7500081b536ea2334fbbd2c5566ed63f029efc91037e5289d4f4eb8c4fe6db",
+      "packages/archive/dist/index.css": "9fd361a959ad841cff533b670a10b3a3e17e9b6841718e59cfb099fade8aa484",
+      "packages/archive/src/preview-driver.ts": "1ccf8adc87ec39de11d652062dc1eb4f77a120c08bf52d9d3b109f5b046c4452"
+    },
+    "cases": {
+      "200": {
+        "files": 200,
+        "archiveBytes": 22022,
+        "archiveSha256": "5151b21e67ec63bbb91374a78575171b1e262d9992cb5340a57f84bc6862d59f",
+        "outputSha256": "fb8d6ac7ae52a3ba5f6b9ee3e9d0231abe609207c2382a6ba3511d764c98c438",
+        "timings": {
+          "baseline": {
+            "samples": [
+              {
+                "loadMs": 2.0999999940395355,
+                "keyboardMs": 7.5,
+                "filtersMs": 4.800000011920929,
+                "filterSamplesMs": [
+                  4,
+                  0.5999999940395355,
+                  0.20000001788139343,
+                  0
+                ]
+              },
+              {
+                "loadMs": 2.2000000178813934,
+                "keyboardMs": 9.299999982118607,
+                "filtersMs": 4.5,
+                "filterSamplesMs": [
+                  3.5999999940395355,
+                  0.7000000178813934,
+                  0.19999998807907104,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.9000000059604645,
+                "keyboardMs": 7.299999982118607,
+                "filtersMs": 4.299999982118607,
+                "filterSamplesMs": [
+                  3.5999999940395355,
+                  0.5999999940395355,
+                  0.09999999403953552,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.7000000178813934,
+                "keyboardMs": 7.5999999940395355,
+                "filtersMs": 4.300000011920929,
+                "filterSamplesMs": [
+                  3.5,
+                  0.5999999940395355,
+                  0,
+                  0.20000001788139343
+                ]
+              },
+              {
+                "loadMs": 1.9000000059604645,
+                "keyboardMs": 7.5999999940395355,
+                "filtersMs": 5.4000000059604645,
+                "filterSamplesMs": [
+                  4.5,
+                  0.7000000178813934,
+                  0.19999998807907104,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.7000000178813934,
+                "keyboardMs": 7.199999988079071,
+                "filtersMs": 4.5,
+                "filterSamplesMs": [
+                  3.5999999940395355,
+                  0.699999988079071,
+                  0.20000001788139343,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.7999999821186066,
+                "keyboardMs": 8.099999994039536,
+                "filtersMs": 4.299999982118607,
+                "filterSamplesMs": [
+                  3.5999999940395355,
+                  0.5999999940395355,
+                  0.09999999403953552,
+                  0
+                ]
+              }
+            ],
+            "medians": {
+              "loadMs": 1.9000000059604645,
+              "keyboardMs": 7.5999999940395355,
+              "filtersMs": 4.5
+            }
+          },
+          "current": {
+            "samples": [
+              {
+                "loadMs": 2.2000000178813934,
+                "keyboardMs": 4.700000017881393,
+                "filtersMs": 4.999999970197678,
+                "filterSamplesMs": [
+                  4,
+                  0.7999999821186066,
+                  0.09999999403953552,
+                  0.09999999403953552
+                ]
+              },
+              {
+                "loadMs": 1.899999976158142,
+                "keyboardMs": 4.800000011920929,
+                "filtersMs": 5.300000011920929,
+                "filterSamplesMs": [
+                  4.300000011920929,
+                  0.7999999821186066,
+                  0.10000002384185791,
+                  0.09999999403953552
+                ]
+              },
+              {
+                "loadMs": 2,
+                "keyboardMs": 4.5,
+                "filtersMs": 5.799999982118607,
+                "filterSamplesMs": [
+                  4.799999982118607,
+                  0.9000000059604645,
+                  0,
+                  0.09999999403953552
+                ]
+              },
+              {
+                "loadMs": 1.699999988079071,
+                "keyboardMs": 4.9000000059604645,
+                "filtersMs": 4.600000023841858,
+                "filterSamplesMs": [
+                  3.9000000059604645,
+                  0.5,
+                  0.20000001788139343,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.800000011920929,
+                "keyboardMs": 4.700000017881393,
+                "filtersMs": 4.300000011920929,
+                "filterSamplesMs": [
+                  3.5999999940395355,
+                  0.6000000238418579,
+                  0.09999999403953552,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.7999999821186066,
+                "keyboardMs": 5.100000023841858,
+                "filtersMs": 5.599999964237213,
+                "filterSamplesMs": [
+                  4.799999982118607,
+                  0.699999988079071,
+                  0.09999999403953552,
+                  0
+                ]
+              },
+              {
+                "loadMs": 1.7000000178813934,
+                "keyboardMs": 4.399999976158142,
+                "filtersMs": 4.4000000059604645,
+                "filterSamplesMs": [
+                  3.4000000059604645,
+                  0.800000011920929,
+                  0.09999999403953552,
+                  0.09999999403953552
+                ]
+              }
+            ],
+            "medians": {
+              "loadMs": 1.800000011920929,
+              "keyboardMs": 4.700000017881393,
+              "filtersMs": 4.999999970197678
+            }
+          }
+        }
+      },
+      "5000": {
+        "files": 5000,
+        "archiveBytes": 550022,
+        "archiveSha256": "77dd462ab6140e136f7644f8c4f2829b01972db077bbdfe09f58fb9a7db21a4a",
+        "outputSha256": "ee86efa668d71d5306669c049e9c3b142d62ba6c6dc4eaddd30b35ab409b30a6",
+        "timings": {
+          "baseline": {
+            "samples": [
+              {
+                "loadMs": 36.80000001192093,
+                "keyboardMs": 72.59999999403954,
+                "filtersMs": 22.30000001192093,
+                "filterSamplesMs": [
+                  18,
+                  0.9000000059604645,
+                  0.19999998807907104,
+                  3.2000000178813934
+                ]
+              },
+              {
+                "loadMs": 43.79999998211861,
+                "keyboardMs": 80.30000001192093,
+                "filtersMs": 22.19999998807907,
+                "filterSamplesMs": [
+                  17.799999982118607,
+                  0.800000011920929,
+                  0.29999998211860657,
+                  3.300000011920929
+                ]
+              },
+              {
+                "loadMs": 40.099999994039536,
+                "keyboardMs": 70.69999998807907,
+                "filtersMs": 21.400000035762787,
+                "filterSamplesMs": [
+                  17.5,
+                  0.800000011920929,
+                  0.20000001788139343,
+                  2.9000000059604645
+                ]
+              },
+              {
+                "loadMs": 36.10000002384186,
+                "keyboardMs": 74.7000000178814,
+                "filtersMs": 21.499999970197678,
+                "filterSamplesMs": [
+                  17.599999994039536,
+                  0.699999988079071,
+                  0.09999999403953552,
+                  3.0999999940395355
+                ]
+              },
+              {
+                "loadMs": 38.60000002384186,
+                "keyboardMs": 82.2999999821186,
+                "filtersMs": 20.999999970197678,
+                "filterSamplesMs": [
+                  16.900000005960464,
+                  0.7999999821186066,
+                  0.19999998807907104,
+                  3.0999999940395355
+                ]
+              },
+              {
+                "loadMs": 35.900000005960464,
+                "keyboardMs": 75.59999999403954,
+                "filtersMs": 21.499999970197678,
+                "filterSamplesMs": [
+                  17,
+                  0.7999999821186066,
+                  0.19999998807907104,
+                  3.5
+                ]
+              },
+              {
+                "loadMs": 39,
+                "keyboardMs": 77.30000001192093,
+                "filtersMs": 20.69999998807907,
+                "filterSamplesMs": [
+                  16.80000001192093,
+                  0.800000011920929,
+                  0.19999998807907104,
+                  2.899999976158142
+                ]
+              }
+            ],
+            "medians": {
+              "loadMs": 38.60000002384186,
+              "keyboardMs": 75.59999999403954,
+              "filtersMs": 21.499999970197678
+            }
+          },
+          "current": {
+            "samples": [
+              {
+                "loadMs": 39.099999994039536,
+                "keyboardMs": 5.200000017881393,
+                "filtersMs": 23.200000017881393,
+                "filterSamplesMs": [
+                  18.700000017881393,
+                  1.0999999940395355,
+                  0.20000001788139343,
+                  3.199999988079071
+                ]
+              },
+              {
+                "loadMs": 38.19999998807907,
+                "keyboardMs": 4.800000011920929,
+                "filtersMs": 21.399999976158142,
+                "filterSamplesMs": [
+                  17.5,
+                  0.7999999821186066,
+                  0.19999998807907104,
+                  2.9000000059604645
+                ]
+              },
+              {
+                "loadMs": 38.29999998211861,
+                "keyboardMs": 4.700000017881393,
+                "filtersMs": 22.599999994039536,
+                "filterSamplesMs": [
+                  18.19999998807907,
+                  0.9000000059604645,
+                  0.29999998211860657,
+                  3.2000000178813934
+                ]
+              },
+              {
+                "loadMs": 36.30000001192093,
+                "keyboardMs": 4.4000000059604645,
+                "filtersMs": 24.500000029802322,
+                "filterSamplesMs": [
+                  17.200000017881393,
+                  0.699999988079071,
+                  3.600000023841858,
+                  3
+                ]
+              },
+              {
+                "loadMs": 37.29999998211861,
+                "keyboardMs": 5,
+                "filtersMs": 21.400000005960464,
+                "filterSamplesMs": [
+                  17.30000001192093,
+                  0.699999988079071,
+                  0.30000001192092896,
+                  3.0999999940395355
+                ]
+              },
+              {
+                "loadMs": 36.099999994039536,
+                "keyboardMs": 4.5,
+                "filtersMs": 21.19999998807907,
+                "filterSamplesMs": [
+                  16.900000005960464,
+                  0.9000000059604645,
+                  0.29999998211860657,
+                  3.0999999940395355
+                ]
+              },
+              {
+                "loadMs": 37.5,
+                "keyboardMs": 4.700000017881393,
+                "filtersMs": 22.5,
+                "filterSamplesMs": [
+                  18.19999998807907,
+                  0.800000011920929,
+                  0.30000001192092896,
+                  3.199999988079071
+                ]
+              }
+            ],
+            "medians": {
+              "loadMs": 37.5,
+              "keyboardMs": 4.700000017881393,
+              "filtersMs": 22.5
+            }
+          }
+        }
+      }
+    },
+    "errors": []
+  },
+  "limitations": [
+    "Generated paths, ZIPs and XML are scoped workloads, not whole application speedups or product rankings. Only two representative PPTX files are timed; one is unchanged.",
+    "Keyboard measurements cover 200 synthetic key events and synchronous focus changes, not physical input-to-paint latency. Filtering still rebuilds matching DOM and does not improve consistently.",
+    "Initial broad tests failed to start because of disk exhaustion; retried successfully after cargo clean removed 223.8 MiB of regenerable cross-target dependency caches. These failures are not counted as passed tests.",
+    "Runtime raw JS grows by 84 bytes; gzip sum shrinks by 97 bytes. The much larger npm package reduction comes mainly from excluding source/declaration maps. Local JS maps are still generated in hidden mode.",
+    "No peak-memory, network-transfer, complete preview startup or end-to-end directory search measurement."
+  ]
+}

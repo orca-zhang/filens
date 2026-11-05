@@ -1,15 +1,8 @@
 import type { PptxArchive, PptxArchiveEntry } from './archive';
-import { XMLParser } from 'fast-xml-parser';
+import type { XMLParser } from 'fast-xml-parser';
 import { parseOpenXml } from './ordered-xml';
 
-const orderedParser = new XMLParser({
-  preserveOrder: true,
-  ignoreAttributes: false,
-  attributeNamePrefix: '',
-  parseTagValue: false,
-  trimValues: false,
-  parseAttributeValue: false
-});
+let orderedParser: Promise<XMLParser> | undefined;
 
 export type XmlNode = Record<string, unknown>;
 export type OrderedXmlNode = Array<Record<string, unknown>>;
@@ -22,7 +15,16 @@ const lookupCache = new WeakMap<PptxArchiveEntry, XmlNode>();
 function orderedXml(file: PptxArchiveEntry): Promise<OrderedXmlNode> {
   let ordered = orderedCache.get(file);
   if (!ordered) {
-    ordered = file.async('text').then(content => parseOpenXml(content) ?? orderedParser.parse(content) as OrderedXmlNode);
+    ordered = file.async('text').then(content => {
+      const simple = parseOpenXml(content);
+      if (simple) return simple;
+      // Ordinary OpenXML needs no general XML engine at startup.
+      orderedParser ??= import('fast-xml-parser').then(({ XMLParser }) => new XMLParser({
+        preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: '',
+        parseTagValue: false, trimValues: false, parseAttributeValue: false
+      }));
+      return orderedParser.then(parser => parser.parse(content) as OrderedXmlNode);
+    });
     orderedCache.set(file, ordered);
   }
   return ordered;
@@ -55,7 +57,10 @@ function groupXmlNodes(nodes: OrderedXmlNode): XmlNode {
   const result: XmlNode = {};
   let text: unknown;
   for (const node of nodes) {
-    const tag = Object.keys(node).find(key => key !== ':@');
+    let tag: string | undefined;
+    for (const key in node) {
+      if (key !== ':@' && Object.prototype.hasOwnProperty.call(node, key)) { tag = key; break; }
+    }
     if (!tag) continue;
     if (tag === '#text') {
       text = text === undefined ? node[tag] : String(text) + String(node[tag]);
@@ -66,11 +71,16 @@ function groupXmlNodes(nodes: OrderedXmlNode): XmlNode {
     const attributes = node[':@'] as XmlNode | undefined;
     let value: unknown = children;
     if (attributes) {
-      for (const [key, attribute] of Object.entries(attributes)) defineXmlProperty(children, key, attribute);
+      for (const key in attributes) {
+        if (Object.prototype.hasOwnProperty.call(attributes, key)) defineXmlProperty(children, key, attributes[key]);
+      }
     } else {
-      const keys = Object.keys(children);
-      if (keys.length === 0) value = '';
-      else if (keys.length === 1 && children['#text'] !== undefined) value = children['#text'];
+      let count = 0;
+      for (const key in children) {
+        if (Object.prototype.hasOwnProperty.call(children, key) && ++count === 2) break;
+      }
+      if (count === 0) value = '';
+      else if (count === 1 && children['#text'] !== undefined) value = children['#text'];
     }
     if (Object.prototype.hasOwnProperty.call(result, tag) && result[tag] !== undefined) {
       const existing = result[tag];

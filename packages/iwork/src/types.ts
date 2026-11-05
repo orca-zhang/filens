@@ -204,7 +204,7 @@ export interface IworkViewerEventMap {
 
 export interface IworkViewerInstance {
   refreshFonts?(): void;
-  preview(source: IworkSource, options?: { signal?: AbortSignal }): Promise<void>;
+  preview(source: IworkSource, options?: { signal?: AbortSignal; cache?: boolean }): Promise<void>;
   destroy(): void;
   setScale(scale: number): void;
   fit(mode?: IworkFitMode): void;

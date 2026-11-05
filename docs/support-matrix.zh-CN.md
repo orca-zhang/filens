@@ -2,7 +2,9 @@
 
 [English](support-matrix.md) | 简体中文
 
-filens 在现代浏览器中提供只读文件预览。当前完整预览宿主覆盖 **402 种文件格式**，按扩展名去重统计，包含直接预览与本地 WASM 转换后预览。支持某种格式，不代表完整兼容该格式的原始编辑软件。
+filens 在现代浏览器中提供只读文件预览。当前完整预览宿主覆盖 **450 种文件格式**，按扩展名去重统计，包含直接预览与本地 WASM 转换后预览。支持某种格式，不代表完整兼容该格式的原始编辑软件。
+
+演示台只列出已支持的格式，区分“可预览示例”和“已支持，需导入”。缺少示例不等于缺少解码能力；HEIC/HEIF 已有媒体驱动和本地 WASM 解码兜底，并提供原格式示例。
 
 | 查找内容 | 对应章节 |
 | --- | --- |
@@ -60,6 +62,8 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 格式 | 扩展名 | 预览路径 | 支持范围 | 限制 |
 | --- | --- | --- | --- | --- |
 | 浏览器图片 | `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif`, `apng`, `ico`, `svg`, `bmp` | 直接预览 | 缩放、适应宽度或高度、平移、旋转、全屏。 | 是否可用取决于浏览器解码能力。 |
+| TIFF | `tif`, `tiff` | 转换 → `png` | 首页、常见压缩、灰度/RGB 与 16 位图像，应用方向信息。 | 需要 `graphicsWasm`；8 位预览，不保留后续页和印刷色彩配置。 |
+| 其他位图 | `tga`, `pgm`, `pbm`, `pnm`, `dds`, `hdr`, `dib`, `cur`, `pcx`, `exr`, `jxl`, `qoi`, `ff` | 转换 → `png` | 本地 WASM 解码为 RGBA，含光标/TGA 透明通道、索引色/RGB PCX、DXT DDS 纹理，以及 HDR/EXR 线性采样转 sRGB。 | 输入 64 MiB、3200 万像素；DDS 仅首个表面、JXL 仅首帧、CUR 仅最大图像；EXR 使用默认图像和颜色通道；HDR/EXR 降为 8 位动态范围。 |
 | Apple 图标 | `icns` | 转换 → `png` | 提取最大的内嵌 PNG 图标。 | 不解码原始图标平面或 JPEG 2000 数据块。 |
 | PPM 图片 | `ppm` | 转换 → `png` | P3 文本、P6 二进制、注释、任意最大色值与 8/16 位 RGB。 | 多图像流仅读取首张；见[解码、运行时与验证边界](#ppm-转换)。 |
 | 相机 RAW | `dng`, `cr2`, `cr3`, `nef` 等，[完整列表](#相机-raw-转换) | 转换 → `jpg` | 提取内嵌 JPEG 或生成轻量传感器预览。 | 不提供完整 RAW 显影。 |
@@ -89,8 +93,14 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 代码、标记与配置 | 示例：`js`, `ts`, `py`, `go`, `json`, `xml`, `yaml`, `toml`, `ini`, `md`, `tex` | 直接预览 | 语言元数据、行号、不自动换行的源码显示；20 万字符以内提供轻量语法高亮。 | Markdown、LaTeX、Mermaid 等按源码显示。 |
 | HTML / XHTML | `html`, `htm`, `shtml`, `xhtml`, `xht`, `xhtm` | 直接预览 | 沙箱 iframe，支持 URL、HTML data URL 与内联片段。 | 沙箱禁用脚本。 |
 | EPUB | `epub` | 直接预览 | 按 spine 顺序显示 XHTML 章节，支持 CSS 导入、字体、背景图与 SVG 图片引用，以及本地或应用解析的资源。 | 暂不提供高级电子书导航与主题。 |
-| 漫画书 | `cbz` | 直接预览 | ZIP 内图片组成的页面序列。 | 暂不提供其他漫画格式的原生预览。 |
-| ZIP 兼容压缩包 | `zip`, `jar`, `war`, `ear`, `apk`, `ipa` | 直接预览 | 文件列表、目录与嵌套压缩包浏览、条目预览、提取辅助函数。 | 只读；没有批量解压界面。 |
+| 漫画书 | `cbz`；`cbr`, `cb7`, `cbt` | 直接预览 | CBZ 提供图片页面序列；CBR/CB7/CBT 复用 RAR/7z/TAR 浏览与逐张图片预览。 | 连续翻页阅读仅限 CBZ；CBR/CB7 需要独立压缩包引擎资源。 |
+| ZIP 兼容压缩包 | `zip`, `jar`, `war`, `ear`, `apk`, `ipa`, `xpi`, `crx` | 直接预览 | 文件列表、目录与嵌套压缩包浏览、条目预览、提取辅助函数。 | 只读；没有批量解压界面；CRX2/CRX3 读取 ZIP 内容，不验证签名。 |
+| ZIPX | `zipx` | 直接预览 + WASM | 复用 ZIP 解码器，支持 Deflate、Deflate64、BZip2、LZMA；提供列表、嵌套浏览和条目预览。 | 需要独立压缩包引擎；部分 WinZip 专有压缩方式可能无法读取。 |
+| 压缩流 | `bz2`, `bzip2`, `xz`, `lzma`, `lzma86`, `zst`, `zstd`, `z`；TAR 别名 `tbz`, `tbz2`, `txz`, `tlz`, `tzst`, `taz` | 直接预览 + WASM | 单文件解压；压缩的 TAR 直接展开目录；`.cpio.xz` / `.cpio.zst` 也直接展开 CPIO 目录。支持 BCJ 过滤的 LZMA86 和 BZip2/XZ/Zstandard 拼接流。 | 需要独立压缩包引擎；输出上限 128 MiB，也适用于未声明解压大小的流；Unix compress 没有校验和。 |
+| AR / Debian / CPIO | `ar`, `deb`, `cpio` | 直接预览 + WASM | 浏览目录、预览条目；Debian 包内的 control/data 压缩包复用同一套嵌套读取器。 | 只读；不安装或运行软件包；归档中的链接不展示。 |
+| LHA / XAR / RPM | `lha`, `lzh`, `xar`, `rpm` | 直接预览 + WASM | LHA/LZH 归档条目，含 LH5/LH6；XAR 的 zlib/BZip2 内容；RPM 压缩 CPIO 内容复用嵌套读取器。 | 只读浏览与文件预览，不安装或运行软件包。 |
+| Windows 镜像 | `wim`, `esd` | 直接预览 + WASM | 浏览单个或多个映像中的文件，支持 LZX、XPRESS 和 solid LZMS 解码。 | 需要独立压缩包引擎；不支持分卷 SWM 和安装映像。 |
+| Cabinet / 光盘镜像 | `cab`, `iso`, `udf` | 直接预览 + WASM | Cabinet 文件浏览，含 MSZIP；ISO 9660 / Joliet / UDF 目录与文件；`.iso` 按需回退至 UDF 读取器。 | 需要独立压缩包引擎；不提供挂载或安装。 |
 | TAR / GZIP | `tar`, `tgz`, `tar.gz`, `gz` | 直接预览 | TAR/TGZ 文件列表，支持 PAX / GNU 长路径；GZIP 单文件提取。 | 只读。 |
 | 其他可读取输入 | 示例：`fb2`, `eml`, `msg`, `ics`, `vcf` | 转换 → `docx` | 提取内容用于预览。 | 具体转换对以转换清单为准。 |
 
@@ -288,7 +298,8 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 | 图层与颜色 | 名称、基础 ACI 颜色、真彩色、透明度、隐藏/关闭/冻结/锁定标志、实体不可见性/颜色覆盖、SVG 属性、Vue 图层开关。 | 覆盖范围仍有限。 |
 | 线型 | `LTYPE` 虚线模式、全局/实体（`48`）线型比例、实体/图层 `LINEWEIGHT`。 | 不保证精确复现源样式。 |
 | 字体 | TrueType/OpenType 类字体引用映射到 CSS 回退字体。 | 不提供精确 SHX 字形渲染；SHX 引用会产生警告并使用浏览器字体。 |
-| 原生 DWG / DGN | 暂不支持。 | 没有原生预览路由。 |
+| DWG | 本地 WASM 转 UTF-8 DXF，再复用 SVG 二维预览器。 | 需要 `graphicsWasm`；复杂实体、代理对象、外部参照与 SHX 字体可能简化或省略。已验证 R2000、R2018 样例。 |
+| DGN | 暂不支持。 | 没有原生预览路由。 |
 
 </details>
 
@@ -426,13 +437,12 @@ Vue 预览同时配置 `converter` 和 `panoramaProcessor` 时启用全景 DNG �
 
 | 领域 | 格式或工作流 | 当前边界 |
 | --- | --- | --- |
-| 原生 CAD | DWG、DGN、FreeCAD 项目、IGES/BREP | 没有原生预览路由；STEP/STP 与 DXF 见上文。 |
+| 原生 CAD | DGN、FreeCAD 项目、IGES/BREP | 没有原生预览路由；STEP/STP 与 DXF 见上文。 |
 | BIM | Revit、IFC | 没有原生预览路由。 |
 | ECAD / 制造 | Gerber/Excellon、分层 KiCad PCB | 没有原生预览路由。 |
 | HEIC/HEIF | 优先原生显示；本地 WASM 回退保留源位深，支持 ICC 或固定 PQ/HLG 到 sRGB 预览。 | 仅静态主图；不支持纯序列文件或增益图还原。回退限制：输入 64 MiB、6400 万像素、单边 16,384 像素、ICC 4 MiB、解码 30 秒。 |
 | 设计稿编辑 | PSD/PSB 图层、Illustrator 编辑数据 | 只读合成图或矢量预览；不提供设计稿编辑。[支持子集](design-preview.md)。 |
-| 其他 Netpbm 扩展名 | `pbm`, `pgm`, `pnm`, `pam`, `pfm` | 这些扩展名没有默认预览或转换路由。PPM 仅覆盖 P3/P6 RGB。 |
-| 其他压缩包 | RAR、7z | 没有默认独立路由。 |
+| 其他 Netpbm 扩展名 | `pam`, `pfm` | 没有默认预览或转换路由；PBM/PGM/PNM 与 PPM 的支持范围见上文。 |
 | Office 加载项 | 加载项与嵌入式应用行为 | 不在默认转换策略范围内。 |
 | 未列出的转换对 | 清单中不存在的任意转换对 | 不在默认转换策略范围内；宏移除仅适用于列出的启用宏的 OpenXML 源格式。 |
 | 编辑 | Office/iWork/CAD/图示创作 | 不提供完整编辑器。 |

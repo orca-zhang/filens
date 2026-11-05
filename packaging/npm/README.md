@@ -1,14 +1,14 @@
 # filens Agent CLI
 
 <!-- agent-cli-size:npm:start -->
-**v0.5.4 · MIT · CLI executable 2.20 MiB · Lite 8.64 MiB · Full 31.87 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
+**v0.5.6 · MIT · CLI executable 2.20 MiB · Lite 9.27 MiB · Full 32.49 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
 
 | Platform | CLI executable | Lite installed / download | Full installed / download |
 | --- | ---: | ---: | ---: |
-| darwin-arm64 | 2.20 MiB | 8.64 / 6.72 MiB | 31.87 / 20.93 MiB |
-| linux-x64 | 1.93 MiB | 8.38 / 7.43 MiB | 37.34 / 23.41 MiB |
-| linux-arm64 | 1.82 MiB | 8.27 / 7.32 MiB | 31.70 / 21.11 MiB |
-| win32-x64 | 1.85 MiB | 8.29 / 7.35 MiB | 37.07 / 23.58 MiB |
+| darwin-arm64 | 2.20 MiB | 9.27 / 7.23 MiB | 32.49 / 21.43 MiB |
+| linux-x64 | 1.04 MiB | 8.11 / 7.03 MiB | 37.06 / 23.00 MiB |
+| linux-arm64 | 0.92 MiB | 8.00 / 6.91 MiB | 31.43 / 20.70 MiB |
+| win32-x64 | 0.95 MiB | 8.02 / 6.94 MiB | 36.80 / 23.18 MiB |
 
 Totals add the launcher and selected platform packages from npm pack. Node.js, npm caches, filesystem overhead and the optional frontend preview package are excluded. Bundled dependencies retain their own licenses; see THIRD-PARTY-NOTICES.md in the platform packages.
 <!-- agent-cli-size:npm:end -->
@@ -107,9 +107,9 @@ filens 'search "documents.zip" for "budget risk" as json'
 filens read 'documents.zip!/attachments.tar.gz!/report.pdf' --layout --json
 ```
 
-macOS uses native FTS and does not embed hdrw. Windows/Linux embed compiled
-private hdrw WASI for mounted-directory enumeration; no private source or raw
-device access is needed. Search keeps its catalog and extracted text in request-local
+macOS uses native FTS; Windows batches NTFS directory metadata and falls back
+to native traversal on other filesystems; Linux uses native traversal. No
+administrator privileges or raw device access is needed. Search keeps its catalog and extracted text in request-local
 memory, with no persistent index/body cache or source hashing. Common text decoding and
 ranking reuse the frontend Rust core directly; document extraction uses WASM.
 Embedding-based semantic retrieval is not implemented. See the
@@ -212,4 +212,4 @@ one profile at a time. Platform packages are implementation components.
 [Protocol, limitations and source build](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
-`npm install -g /path/to/filens-cli-0.5.4.tgz /path/to/filens-cli-PLATFORM-0.5.4.tgz /path/to/filens-ocr-PLATFORM-0.5.4.tgz`.
+`npm install -g /path/to/filens-cli-0.5.6.tgz /path/to/filens-cli-PLATFORM-0.5.6.tgz /path/to/filens-ocr-PLATFORM-0.5.6.tgz`.

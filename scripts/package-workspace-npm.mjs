@@ -26,7 +26,7 @@ for (const entry of await readdir(path.join(root, 'packages'))) {
   await mkdir(directory, { recursive: true });
   // Keep debug maps in local builds; production packages need runtime, types
   // and notices, without source copies or machine-specific map paths.
-  for (const file of metadata.files) await cp(path.join(source, file), path.join(directory, file), {
+  for (const file of metadata.files.filter(file => !file.startsWith('!'))) await cp(path.join(source, file), path.join(directory, file), {
     recursive: true, filter: file => !file.endsWith('.map')
   });
   await removeMapReferences(directory);

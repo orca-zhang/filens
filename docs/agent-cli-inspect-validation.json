@@ -1,0 +1,27 @@
+{
+  "observedAt": "2026-11-05T03:31:21.641Z",
+  "cliVersion": "0.5.6",
+  "platform": "darwin-arm64",
+  "checks": [
+    "misleading and missing extensions",
+    "OOXML structure and ambiguous ZIP",
+    "unknown, empty and ambiguous text",
+    "512 MiB sparse file, bounded reads and no memory-workspace copy",
+    "stdin protocol, eight serializers and capacity",
+    "directory/missing input, incompatible flags and timeout"
+  ],
+  "example": {
+    "bytesRead": 8192,
+    "confidence": "high",
+    "container": null,
+    "evidence": "signature",
+    "extension": "pdf",
+    "extensionMatches": false,
+    "fileBytes": 21224,
+    "format": "png",
+    "mime": "image/png",
+    "reason": "file-header",
+    "validation": "Format evidence only; not full-file validation."
+  },
+  "passed": true
+}

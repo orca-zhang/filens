@@ -1,0 +1,337 @@
+{
+  "observedAt": "2026-11-05T02:20:13.046460+00:00",
+  "status": "packaged-unpublished-awaiting-user-confirmation",
+  "name": "dsh-filens",
+  "version": "0.1.3",
+  "package": {
+    "name": "dsh-filens",
+    "version": "0.1.3",
+    "file": "dsh-filens-0.1.3.tgz",
+    "bytes": 6846409,
+    "unpackedBytes": 20517034,
+    "sha256": "770e35e042beda8610feb130edd83d7ba440d0b9872cd467c4d1da1e2594467a",
+    "integrity": "sha512-tlMdo6ZuzpMo6YWDJQpcmg25ERKJnxSb5d1CpuP3KcPAFWb3Ofvcr7KzSbDb7F/WMLwNAxhV1UsogAZHeaJblw==",
+    "cliVersion": "0.5.5",
+    "previewVersion": "0.3.4",
+    "previewSHA256": "7879174b4700bd77150e4fda21667f336e2b504db3754de280e1d590a6413cca",
+    "extensions": 450,
+    "privacyChecked": true
+  },
+  "publishedVersionUnchanged": "0.1.2",
+  "sourceFilesSHA256": {
+    "packages/core/src/preview/model-cache.ts": "b61464529d7101cd944c013f58cfe543f765bd042402fa99750c8669f439330a",
+    "packages/core/src/preview/previewer.ts": "74fc89efa42e6521bc5878c6e2ebaf97d2656274bf4544c4fc17e45ee874ba2d",
+    "packages/core/src/preview/index.ts": "4a41b81aae60af0d05af63b1ecf717269c88713564b48e5e8c2bcf287b905725",
+    "packages/core/src/preview-runtime.ts": "efef1167b52c11e4a1f5f38c95a7de1bbe863280fc462a7c2eedfba1f5d6c974",
+    "packages/core/test/model-cache.spec.ts": "613606a3ec280b5f4736e2b7cba89aa7394d6f106dbc2113885a1a23e53a8530",
+    "packages/core/test/runtime-lifecycle.spec.ts": "439e06c911eff2925d8d87b1b2e769a58f7ce80dd443b3781a9847ecd84ea4d0",
+    "packages/xlsx/src/workbook-cache.ts": "8fb3026a6d90c9afe0c0feb20355e2b53718a16a9d5026d76530a6ae9f8989f4",
+    "packages/xlsx/src/preview-driver.ts": "c14d598403ff9f48eb22da9e07fade651df9f72bbeec06d90466fa9c047f79d5",
+    "packages/xlsx/test/workbook-cache.spec.ts": "6e355b08923d140caa796bf6c868f9263814c38120e98a510368c4abd712ec20",
+    "packages/iwork/src/preview-driver.ts": "a85b583088f4c8f20bf42659406323bafdadcca4791a6d66437ff961f8132411",
+    "packages/iwork/src/types.ts": "7a94c3420aec9fa5095cf01952928fffaf23e9ad0f07fd74018f441dc357fa31",
+    "packages/iwork/src/viewer/create-iwork-viewer.ts": "d9287ad9e34deacfb6faf798b8b4a204377b9d2cd1c361e1e1cfaad8bc44319c",
+    "packages/iwork/src/worker/client.ts": "ad8f5351ffcf48435398d85fc8c0a4d4bf2b987e12b0943c6fe04e2a82402785",
+    "packages/iwork/src/worker/iwork-worker.ts": "b2c6118ec49427336e85c70fa6d16e481339549bd973b356af7b6281839d9cb2",
+    "packages/iwork/test/worker-client.spec.ts": "4bb3b6b69531c43442cd50ec076fe770be6fbb9f5a07787a732647a38cc9d3bd",
+    "packages/iwork/test/lifecycle.spec.ts": "47c15bbfcfb8e9f9056fdd524e1f0056679aac82dd3d6a4424195df606df79b9",
+    "packages/model3d/src/preview-driver.ts": "75f68bca4a8d7e270d19ba922ff29eec0b665a3d79bcdab10ef8e151930ef6a1",
+    "packages/model3d/test/load-cancellation.spec.ts": "12260ebe00f1715b3557886e666fda3a8880aab59b8af784fa2bf7da7c484b1c",
+    "integrations/deepseek-harness/test/browser.mjs": "f4fc9193b66c175c41f2423dec7bb889332b3aa0d149d1704a1e150b73320033",
+    "integrations/deepseek-harness/test/desktop.mjs": "fae0bd95cc4639753bfb054659aab1bac99960e582d996b1f8d22829ac4fb56d",
+    "scripts/benchmark-dsh-model-reopen.mjs": "9203052d9d2ebaeba6e457f2e4c329a532a6064451b93407edb103881d2b99f2",
+    "scripts/prepare-dsh-model-benchmark.mjs": "91576367c4436e6f01b8d81013d8988ad9de9fb8887eb723b6c8378bec074787"
+  },
+  "checks": {
+    "coreCacheAndRuntimeLifecycleTests": 31,
+    "xlsxTests": 83,
+    "iworkTests": 344,
+    "model3dTests": 345,
+    "pdfTests": 28,
+    "vueTests": 61,
+    "dshResourceTests": 2,
+    "isolatedFormatCategories": 15,
+    "browserIntegrationFormats": 12,
+    "actualDesktopFormats": 6,
+    "keynoteReopenSkipsDocumentParse": true,
+    "numbersReopenLoadsLaterSheetsFromRestoredArchive": true,
+    "numbersSecondSheetContentIdentical": true,
+    "eachClosedIworkWorkerReleased": true,
+    "independentFormulaFontAndMeshModels": true,
+    "passwordOpensIncludingConvertedOfficeBypass": true,
+    "pdfPixelEqualityAndWorkerCleanupRegressionsPass": true,
+    "browserFullscreenPass": true,
+    "desktopNativeFullscreen": {
+      "status": "not-counted-as-pass",
+      "reason": "Electron/macOS native exitFullscreen hung in the first attempt; native-window exit also timed out after 15 s. Final six-format Desktop run explicitly used DSH_TEST_FULLSCREEN=0; browser fullscreen passed."
+    },
+    "cache": {
+      "maxEntries": 4,
+      "maxAccountedBytes": 67108864,
+      "idleTtlMs": 30000,
+      "contentKey": "SHA-256 of complete owned bytes plus format/options",
+      "budgetIsEstimateNotHeapMeasurement": true,
+      "retainsDomWorkersGpuOrObjectUrls": false
+    },
+    "packagedLibFilesMatchMeasuredProfile": 65,
+    "runtimeManifestSHA256": "2dfcb9d16eeed0e8878b3114603984b3972e17d3d429924dc73798fac83411db"
+  },
+  "browserValidation": {
+    "report": "docs/assets/dsh-plugin/model-reopen-browser-validation.json",
+    "sha256": "6547fe9ff6b790874fcf22f90f323fa7631cb7e62b4f982b8f18f7d7b9577960"
+  },
+  "desktopValidation": {
+    "report": "docs/assets/dsh-plugin/model-reopen-desktop-validation.json",
+    "sha256": "a8e3ca7223765b1786b526588d1c4c93b9617d18f5b3856e91308902c11351c0"
+  },
+  "performance": {
+    "report": "docs/assets/dsh-plugin/model-reopen-benchmark.json",
+    "reportSHA256": "a92688715c77110423f70edce1b047e8fac2438f995d2dcbc97ef5a6e39f86c3",
+    "notes": "docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md",
+    "rounds": 9,
+    "timedOpens": 432,
+    "processStarts": 18,
+    "failures": 0,
+    "results": [
+      {
+        "name": "Observatory.xlsx",
+        "firstBeforeMs": 109,
+        "firstAfterMs": 107,
+        "reopenBeforeMs": 68,
+        "reopenAfterMs": 68,
+        "reopenReductionPercent": 0.0,
+        "pairedFasterRounds": 4,
+        "pairedEqualRounds": 2,
+        "pairedSlowerRounds": 3,
+        "pairedReopenSavingsMs": [
+          -4,
+          -13,
+          15,
+          5,
+          0,
+          -3,
+          13,
+          10,
+          0
+        ],
+        "firstBeforeRangeMs": [
+          101,
+          113
+        ],
+        "firstAfterRangeMs": [
+          101,
+          115
+        ],
+        "reopenBeforeRangeMs": [
+          61,
+          77
+        ],
+        "reopenAfterRangeMs": [
+          60,
+          78
+        ]
+      },
+      {
+        "name": "Large workbook.xlsx",
+        "firstBeforeMs": 109,
+        "firstAfterMs": 110,
+        "reopenBeforeMs": 94,
+        "reopenAfterMs": 77,
+        "reopenReductionPercent": 18.1,
+        "pairedFasterRounds": 9,
+        "pairedEqualRounds": 0,
+        "pairedSlowerRounds": 0,
+        "pairedReopenSavingsMs": [
+          17,
+          16,
+          17,
+          17,
+          32,
+          17,
+          17,
+          17,
+          16
+        ],
+        "firstBeforeRangeMs": [
+          108,
+          111
+        ],
+        "firstAfterRangeMs": [
+          108,
+          111
+        ],
+        "reopenBeforeRangeMs": [
+          93,
+          110
+        ],
+        "reopenAfterRangeMs": [
+          75,
+          79
+        ]
+      },
+      {
+        "name": "Document.pages",
+        "firstBeforeMs": 227,
+        "firstAfterMs": 225,
+        "reopenBeforeMs": 177,
+        "reopenAfterMs": 77,
+        "reopenReductionPercent": 56.5,
+        "pairedFasterRounds": 9,
+        "pairedEqualRounds": 0,
+        "pairedSlowerRounds": 0,
+        "pairedReopenSavingsMs": [
+          99,
+          100,
+          99,
+          99,
+          98,
+          100,
+          100,
+          100,
+          100
+        ],
+        "firstBeforeRangeMs": [
+          225,
+          227
+        ],
+        "firstAfterRangeMs": [
+          224,
+          225
+        ],
+        "reopenBeforeRangeMs": [
+          176,
+          178
+        ],
+        "reopenAfterRangeMs": [
+          76,
+          93
+        ]
+      },
+      {
+        "name": "Workbook.numbers",
+        "firstBeforeMs": 193,
+        "firstAfterMs": 227,
+        "reopenBeforeMs": 176,
+        "reopenAfterMs": 93,
+        "reopenReductionPercent": 47.2,
+        "pairedFasterRounds": 9,
+        "pairedEqualRounds": 0,
+        "pairedSlowerRounds": 0,
+        "pairedReopenSavingsMs": [
+          83,
+          83,
+          83,
+          84,
+          83,
+          83,
+          83,
+          83,
+          83
+        ],
+        "firstBeforeRangeMs": [
+          191,
+          194
+        ],
+        "firstAfterRangeMs": [
+          225,
+          227
+        ],
+        "reopenBeforeRangeMs": [
+          174,
+          179
+        ],
+        "reopenAfterRangeMs": [
+          92,
+          99
+        ]
+      },
+      {
+        "name": "Weekend.key",
+        "firstBeforeMs": 177,
+        "firstAfterMs": 176,
+        "reopenBeforeMs": 177,
+        "reopenAfterMs": 94,
+        "reopenReductionPercent": 46.9,
+        "pairedFasterRounds": 9,
+        "pairedEqualRounds": 0,
+        "pairedSlowerRounds": 0,
+        "pairedReopenSavingsMs": [
+          81,
+          66,
+          83,
+          83,
+          83,
+          83,
+          83,
+          83,
+          83
+        ],
+        "firstBeforeRangeMs": [
+          176,
+          179
+        ],
+        "firstAfterRangeMs": [
+          170,
+          177
+        ],
+        "reopenBeforeRangeMs": [
+          159,
+          179
+        ],
+        "reopenAfterRangeMs": [
+          93,
+          94
+        ]
+      },
+      {
+        "name": "Flanged bearing.step",
+        "firstBeforeMs": 294,
+        "firstAfterMs": 295,
+        "reopenBeforeMs": 226,
+        "reopenAfterMs": 109,
+        "reopenReductionPercent": 51.8,
+        "pairedFasterRounds": 9,
+        "pairedEqualRounds": 0,
+        "pairedSlowerRounds": 0,
+        "pairedReopenSavingsMs": [
+          118,
+          115,
+          114,
+          117,
+          116,
+          116,
+          117,
+          117,
+          116
+        ],
+        "firstBeforeRangeMs": [
+          292,
+          296
+        ],
+        "firstAfterRangeMs": [
+          294,
+          377
+        ],
+        "reopenBeforeRangeMs": [
+          225,
+          228
+        ],
+        "reopenAfterRangeMs": [
+          94,
+          130
+        ]
+      }
+    ],
+    "baselinePackage": {
+      "file": "dist/release-v0.6.4/dsh-next/history/dsh-filens-0.1.3-pdf-pixels.tgz",
+      "sha256": "97de854658dffb74d8c8b779d7a5b708dbe2444baa0c83f4f88d9303b0ddcc41"
+    },
+    "currentEntryMatchesMeasuredEntry": true
+  },
+  "historicalPdfPerformance": {
+    "report": "docs/assets/dsh-plugin/pdf-preview-page-cache.json",
+    "measuredPackage": "dist/release-v0.6.4/dsh-next/history/dsh-filens-0.1.3-pdf-pixels.tgz",
+    "sha256": "97de854658dffb74d8c8b779d7a5b708dbe2444baa0c83f4f88d9303b0ddcc41",
+    "note": "Historical PDF timings belong to the saved PDF-pixels package, whose then-current path is retained in the original raw report. The current candidate was regression-tested, not given a new nine-round PDF benchmark."
+  }
+}

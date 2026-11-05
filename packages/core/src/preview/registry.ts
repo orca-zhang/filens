@@ -1,10 +1,12 @@
-import { resolveFormatRoute, type FormatDefinition } from './formats';
+import { createFormatRouteResolver, resolveFormatRoute, type FormatDefinition } from './formats';
 import type { FormatRoute, PreviewDriver, PreviewItemState, PreviewOptions, SourceDescriptor } from './types';
 
 export interface PreviewRegistryOptions {
   drivers?: PreviewDriver[];
   routes?: FormatDefinition[];
 }
+
+let defaultRouteResolver: ReturnType<typeof createFormatRouteResolver> | undefined;
 
 export class PreviewRegistry {
   private readonly drivers = new Map<string, PreviewDriver>();
@@ -34,9 +36,11 @@ export class PreviewRegistry {
   }
 
   resolve(descriptor: Pick<SourceDescriptor, 'extension' | 'name' | 'contentType'>): ResolvedPreviewRoute | null {
-    const route = resolveFormatRoute(descriptor, {
-      routes: this.routes
-    });
+    // Keep custom arrays live; share the lazily compiled built-in configuration
+    // across registries, including child previewers in archives.
+    const route = this.routes
+      ? resolveFormatRoute(descriptor, { routes: this.routes })
+      : (defaultRouteResolver ??= createFormatRouteResolver())(descriptor);
     if (!route) {
       return null;
     }

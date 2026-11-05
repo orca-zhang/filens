@@ -1,9 +1,24 @@
 import { describe, expect, it, vi } from 'vitest';
+import * as core from '@filens/core';
 import JSZip from 'jszip';
 import { createMindmapPreviewDriver, createMindmapPreviewRoutes, loadMindmanagerDocument, loadMindmapDocument, loadXmindDocument } from '../src';
 import { createWideMmFixture, mixedMmFixture } from './fixtures/maps.mjs';
 
 describe('mindmap preview driver', () => {
+  it('keeps MindManager wrapper order, nearest topic ancestry and fallback IDs', async () => {
+    const zip = new JSZip().file('Document.xml', '<Root xmlns:a="urn:topics"><Metadata><Other/></Metadata>' +
+      '<a:Topic ID="root" Text="Root"><Wrapper><Metadata/><Nested>' +
+      '<a:Topic Text="First"><Children><a:Topic Id="grand" TEXT="Grand"/></Children></a:Topic>' +
+      '<Empty/><a:TOPIC Text="Second"/></Nested></Wrapper><a:topic Text="Third"/></a:Topic>' +
+      '<a:Topic Text="Unrelated"/></Root>');
+    expect(await loadMindmanagerDocument(await zip.generateAsync({ type: 'arraybuffer' }))).toEqual({
+      title: 'Root', nodeCount: 5, root: { id: 'root', text: 'Root', children: [
+        { id: 'root-1', text: 'First', children: [{ id: 'grand', text: 'Grand', children: [] }] },
+        { id: 'root-2', text: 'Second', children: [] }, { id: 'root-3', text: 'Third', children: [] }
+      ] }
+    });
+  });
+
   it('preserves fallback IDs across wrappers, metadata, namespaces and explicit IDs', () => {
     const model = loadMindmapDocument(mixedMmFixture, 'mm');
     expect(model).toEqual({
@@ -101,11 +116,11 @@ describe('mindmap preview driver', () => {
     const bytes = format === 'mmap' ? await createMindmanagerFixture()
       : format === 'xmind-xml' ? await createXmindXmlFixture() : await createXmindJsonFixture();
     const loader = format === 'mmap' ? loadMindmanagerDocument : loadXmindDocument;
-    const zip = await JSZip.loadAsync(bytes);
-    const entry = zip.file(format === 'mmap' ? 'Document.xml' : format === 'xmind-xml' ? 'content.xml' : 'content.json')!;
+    const zip = await core.openZipArchive(new Uint8Array(bytes));
+    const entry = zip.get(format === 'mmap' ? 'Document.xml' : format === 'xmind-xml' ? 'content.xml' : 'content.json')!;
     const controller = new AbortController();
-    const extraction = vi.spyOn(entry, 'async');
-    const load = vi.spyOn(JSZip, 'loadAsync');
+    const extraction = vi.spyOn(entry, 'text');
+    const load = vi.spyOn(core, 'openZipArchive');
     try {
       load.mockImplementationOnce(async () => { controller.abort(); return zip; });
       await expect(loader(bytes, { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
@@ -292,14 +307,18 @@ describe('mindmap preview driver', () => {
     expect(host.querySelector('.mindmapv-canvas')?.textContent).toContain('Launch Plan');
 
     const release = Array.from(host.querySelectorAll<SVGGElement>('.mindmapv-node')).find((node) => node.textContent?.includes('Release notes'));
-    release?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    release?.querySelector('rect')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(session.getState().selectedNodeId).toBe('release-notes');
+    expect(host.querySelectorAll('.is-selected')).toHaveLength(1);
+    expect(release?.classList.contains('is-selected')).toBe(true);
 
     session.setScale?.(1.3);
     expect(session.getState().scale).toBe(1.3);
     expect(renderedStates).toHaveLength(1);
 
     session.destroy();
+    release?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(session.getState().selectedNodeId).toBeUndefined();
     host.remove();
   });
 

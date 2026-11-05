@@ -1,0 +1,27 @@
+# Station names and measurements are fictional.
+project: qinglan-observatory
+version: 1
+
+stations:
+  riverside:
+    label: 河口湿地
+    sensors: [temperature, humidity, light]
+    interval_seconds: 60
+  ridge:
+    label: 东岭观景台
+    sensors: [temperature, wind]
+    interval_seconds: 120
+
+quality:
+  temperature_celsius: { min: -20, max: 50 }
+  humidity_percent: { min: 0, max: 100 }
+  on_missing: keep_gap
+
+exports:
+  directory: ./observations
+  filename_pattern: "station-YYYY-MM-DD.csv"
+  include_units: true
+
+notes: >
+  Empty readings remain empty.
+  Values outside the expected range are flagged for review.

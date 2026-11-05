@@ -15,7 +15,8 @@ const platform=`${process.platform}-${process.arch}`;
 const coreName=platformPackageName('cli',platform),ocrName=platformPackageName('ocr',platform);
 const fullName='filens-cli';
 const liteName='filens-cli-lite';
-const hasPreview=release.packages.some(pkg=>pkg.name==='filens-preview');
+const cliOnly=process.argv.includes('--cli-only');
+const hasPreview=!cliOnly&&release.packages.some(pkg=>pkg.name==='filens-preview');
 const registry=process.argv.includes('--registry');
 const installFlags=['--ignore-scripts','--no-audit','--no-fund',...(registry?['--registry=https://registry.npmjs.org/']:['--offline'])];
 const archive=name=>{const pkg=release.packages.find(p=>p.name===name);assert.ok(pkg,`Missing package ${name}`);return path.join(output,pkg.file);};
@@ -123,10 +124,10 @@ try {
     const previous=JSON.parse(await readFile(validationFile,'utf8'));
     if(previous.version===release.version)validation=previous;
   } catch(error) {if(error.code!=='ENOENT')throw error;}
-  validation.tests[registry?'registry':'offline']={command:`node scripts/test-agent-npm.mjs${registry?' --registry':''}`,
+  validation.tests[registry?'registry':'offline']={command:`node scripts/test-agent-npm.mjs${registry?' --registry':''}${cliOnly?' --cli-only':''}`,
     platform,passed:true,observedAt:new Date().toISOString(),freshNpmCache:registry,preview:hasPreview};
   await writeFile(validationFile,JSON.stringify(validation,null,2)+'\n');
-  console.log(`npm packages: ${registry?'public registry (fresh npm cache)':'offline tarball'} Full/Lite installs${registry?', automatic platform selection':''}, stdin JSON, native execution without Python, first-use preview installation/JSON server, and one-command OCR component installation passed.`);
+  console.log(`npm packages: ${registry?'public registry (fresh npm cache)':'offline tarball'} Full/Lite installs${registry?', automatic platform selection':''}, stdin JSON, native execution without Python${hasPreview?', first-use preview installation/JSON startup':''}, and one-command OCR component installation passed.`);
 } finally {await rm(work,{recursive:true,force:true});}
 function run(command,args,input) {
   if(command==='npm') ({command,args}=npmInvocation(args));

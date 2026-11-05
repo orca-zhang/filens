@@ -49,7 +49,7 @@ describe('XLSX font styles', () => {
     } finally { session.destroy(); vi.unstubAllGlobals(); delete (document as unknown as { fonts?: unknown }).fonts; }
   });
   it.each([false, true])('keeps default, cell, row and inherited font styles on the numeric/general parser (general: %s)', async general => {
-    const source = await workbook(`<worksheet><sheetData${general ? ' custom="1"' : ''}><row r="1"><c r="A1"><v>1</v></c><c r="B1" s="1"><v>2</v></c><c r="C1" s="3"><v>3</v></c></row><row r="2" s="2" customFormat="1"><c r="A2"><v>4</v></c><c r="B2" s="0"><v>5</v></c></row></sheetData></worksheet>`);
+    const source = await workbook(`<worksheet><sheetData${general ? ' custom="1"' : ''}>${general ? '<!-- general XML parser -->' : ''}<row r="1"><c r="A1"><v>1</v></c><c r="B1" s="1"><v>2</v></c><c r="C1" s="3"><v>3</v></c></row><row r="2" s="2" customFormat="1"><c r="A2"><v>4</v></c><c r="B2" s="0"><v>5</v></c></row></sheetData></worksheet>`);
     const result = await loadXlsxWorkbook(source);
     expect(result.fonts).toMatchObject([{ traits: { serif: true } }, { traits: { monospace: true } }, { traits: { style: 'decorative' } }]);
     expect(result.sheets[0].rows.flatMap(row => row.cells.map(cell => cell.font?.fontFamily))).toEqual(['Book Face', 'Code Face', 'Code Face', 'Art Face', 'Book Face']);
@@ -59,6 +59,49 @@ describe('XLSX font styles', () => {
     const source = await workbook('<worksheet><cols><col min="2" max="3" style="2"/></cols><sheetData><row r="1"><c r="A1"><v>1</v></c><c r="B1"><v>2</v></c><c r="C1" s="1"><v>3</v></c></row><row r="2" customFormat="1" s="0"><c r="B2"><v>4</v></c></row></sheetData></worksheet>');
     const result = await loadXlsxWorkbook(source);
     expect(result.sheets[0].rows.flatMap(row => row.cells.map(cell => cell.font?.fontFamily))).toEqual(['Book Face', 'Art Face', 'Code Face', 'Book Face']);
+  });
+
+  it('preserves first-match overlaps, default ranges, row/cell overrides and missing fonts on both parsers', async () => {
+    const columns = '<cols><col min="4" max="4" style="99"/><col min="2" max="3"/>' +
+      '<col min="1" max="3" style="2"/><col min="5" max="4294967295" style="1"/></cols>';
+    const rows = '<row r="1"><c r="E1"><v>5</v></c><c r="B1"><v>2</v></c><c r="A1"><v>1</v></c>' +
+      '<c r="C1" s="1"><v>3</v></c><c r="D1"><v>4</v></c><c r="F1" s="0"><v>6</v></c></row>' +
+      '<row r="3" s="2" customFormat="true"><c r="B3"><v>7</v></c><c r="E3" s="0"><v>8</v></c></row>' +
+      '<row r="4"><c r="B4"><v>9</v></c><c r="D4"><v>10</v></c><c r="E4"><v>11</v></c></row>';
+    const fast = await loadXlsxWorkbook(await workbook(`<worksheet>${columns}<sheetData>${rows}</sheetData></worksheet>`));
+    const general = await loadXlsxWorkbook(await workbook(`<worksheet>${columns}<sheetData custom="1"><!-- general XML parser -->${rows}</sheetData></worksheet>`));
+    expect(fast).toEqual(general);
+    expect(fast.sheets[0].rows.flatMap(row => row.cells.map(cell => cell.font?.fontFamily))).toEqual([
+      'Code Face', 'Book Face', 'Art Face', 'Code Face', undefined, 'Book Face',
+      'Art Face', 'Book Face', 'Book Face', undefined, 'Code Face'
+    ]);
+  });
+
+  it.each([
+    '<cols><col min="&#50;" max="3" style="&#50;"></col></cols>',
+    '<cols/>',
+    '<cols><col min="2" max="3" style="2"/></cols><cols><col min="1" max="3" style="1"/></cols>',
+    '<extLst><ext><cols><col min="1" max="3" style="2"/></cols></ext></extLst>'
+  ])('keeps metadata XML semantics for %s', async columns => {
+    const rows = '<row r="1"><c r="A1"><v>1</v></c><c r="B1"><v>2</v></c><c r="C1"><v>3</v></c></row>';
+    const fast = await loadXlsxWorkbook(await workbook(`<worksheet>${columns}<sheetData>${rows}</sheetData></worksheet>`));
+    const general = await loadXlsxWorkbook(await workbook(`<worksheet>${columns}<sheetData custom="1"><!-- general XML parser -->${rows}</sheetData></worksheet>`));
+    expect(fast).toEqual(general);
+  });
+
+  it('uses the general path for column declarations after cells and for rich cell content', async () => {
+    const columns = '<cols><col min="1" max="3" style="2"/></cols>';
+    const rows = '<row r="1"><c r="A1" t="inlineStr"><is><t>Rich &amp; 中文</t></is></c>' +
+      '<c r="B1"><f>1+2</f><v>3</v></c><c r="C1" t="b"><v>true</v></c></row>';
+    for (const xml of [`${columns}<sheetData>${rows}</sheetData>`, `<sheetData>${rows}</sheetData>${columns}`]) {
+      const result = await loadXlsxWorkbook(await workbook(`<worksheet>${xml}</worksheet>`));
+      const cells = result.sheets[0].rows[0].cells;
+      expect(cells.map(cell => cell.value)).toEqual(['Rich & 中文', '3', 'TRUE']);
+      expect(cells.map(cell => cell.font?.fontFamily)).toEqual(['Art Face', 'Art Face', 'Art Face']);
+      expect(cells[1].formula).toBe('1+2');
+    }
+    const numeric = await loadXlsxWorkbook(await workbook(`<worksheet><sheetData><row r="1"><c r="B1"><v>2</v></c></row></sheetData>${columns}</worksheet>`));
+    expect(numeric.sheets[0].rows[0].cells[0]).toMatchObject({ value: '2', font: { fontFamily: 'Art Face' } });
   });
 
   it('resolves a theme font with a non-default XML prefix', async () => {

@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "FiLens document tools and previews",
-    "description": "Read, OCR, search, convert and preview local files with the shared FiLens engines."
+    "description": "Native DSH sidebar integration with local previews for 400+ formats: Office, PDF, iWork, CAD/3D, RAW and 360° media, with fullscreen PPT presentations. Includes reading, OCR, search, excerpts and conversion. Counted by extension, including direct and local WASM conversion-assisted previews."
   }
 }

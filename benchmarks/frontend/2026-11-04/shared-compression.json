@@ -1,0 +1,129 @@
+{
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "checks": [
+    "read/write DEFLATE level default, Unicode, binary strings, views and empty entries",
+    "read/write DEFLATE level -1, Unicode, binary strings, views and empty entries",
+    "read/write DEFLATE level 0, Unicode, binary strings, views and empty entries",
+    "read/write DEFLATE level 1, Unicode, binary strings, views and empty entries",
+    "read/write DEFLATE level 6, Unicode, binary strings, views and empty entries",
+    "read/write DEFLATE level 9, Unicode, binary strings, views and empty entries",
+    "streamed ZIP generation, data descriptors, pause/resume and metadata",
+    "malformed DEFLATE rejects entry reads and CRC validation",
+    "TIFF complete pixels (zlib)",
+    "TIFF complete pixels (gzip)",
+    "TIFF complete pixels (uncompressed)",
+    "TIFF rejects corrupt zlib checksums",
+    "TIFF rejects corrupt gzip checksums"
+  ],
+  "bindings": {
+    "current": {
+      "sha256": "5ac0c7b8c34f5d4f0e034efdf396cb12bf6bf3d6474b0562cfe9e0bbd1a120e5",
+      "hasPakoDeflate": false
+    },
+    "baseline": {
+      "sha256": "58856cf222c093612047dcab33505f1d007e6fb1d828e67fbab62d82616fa461",
+      "hasPakoDeflate": true
+    }
+  },
+  "cases": {
+    "zip-compat": {
+      "inputBytes": 79602,
+      "inputSha256": "7018a31f706ea2bf91f4c376ca0f61d46a816bebadedc77af59339241fc33d3a",
+      "outputCount": 100,
+      "outputSha256": "ed34c563f3164f02b6966b13d5d3c31c66d61191a8b022ebe9a9863acd03cafb",
+      "timings": {
+        "current": {
+          "medianMs": 12.880582999999888,
+          "samplesMs": [
+            12.558999999999969,
+            12.699917000000141,
+            13.089832999999999,
+            12.829375000000027,
+            12.880582999999888,
+            25.255084000000124,
+            18.657083000000057
+          ]
+        },
+        "baseline": {
+          "medianMs": 13.020499999999856,
+          "samplesMs": [
+            13.107417000000169,
+            12.686709000000064,
+            13.020499999999856,
+            13.076458000000002,
+            12.548999999999978,
+            12.432833000000073,
+            25.622666999999865
+          ]
+        }
+      }
+    },
+    "tiff-deflate": {
+      "inputBytes": 8595,
+      "inputSha256": "3e6ec916a2c3c7cece261757e69eec37e7f5b89119bce00b8b3bc81a45c6523e",
+      "outputCount": 1,
+      "outputSha256": "13ebfa2ac8829850a7727ec76ee2ff8361682e4e1d537ec7083d9115826b0cd0",
+      "timings": {
+        "current": {
+          "medianMs": 4.603666999999859,
+          "samplesMs": [
+            5.036207999999988,
+            5.550458999999819,
+            4.603666999999859,
+            5.492915999999923,
+            4.458666999999878,
+            4.466666000000032,
+            4.466083000000026
+          ]
+        },
+        "baseline": {
+          "medianMs": 4.557416999999987,
+          "samplesMs": [
+            5.309624999999869,
+            5.183416999999963,
+            4.557416999999987,
+            4.4980410000000575,
+            7.991166999999905,
+            4.545375000000149,
+            4.446540999999797
+          ]
+        }
+      }
+    },
+    "zip-write": {
+      "inputBytes": 1048649,
+      "inputSha256": "6ffaeae7586f4c954f92e938d5cdcc65884928e991949681a6d3aaf27fe9930f",
+      "outputCount": 1,
+      "outputSha256": "4ea83b4023f9db759efa1544199b18581654bf6a89e608e3955b7114e102d673",
+      "timings": {
+        "current": {
+          "medianMs": 11.30554200000006,
+          "samplesMs": [
+            11.559790999999905,
+            10.055624999999964,
+            11.661209000000099,
+            9.897624999999834,
+            11.400791000000027,
+            9.927500000000009,
+            11.30554200000006
+          ]
+        },
+        "baseline": {
+          "medianMs": 11.186791999999969,
+          "samplesMs": [
+            16.71462500000007,
+            10.15541600000006,
+            10.21137500000009,
+            11.186791999999969,
+            10.141708000000108,
+            11.802832999999964,
+            12.056917000000112
+          ]
+        }
+      }
+    }
+  },
+  "warmupIterations": 2,
+  "measuredIterations": 7
+}

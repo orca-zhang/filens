@@ -1,0 +1,19 @@
+2026-10-24T08:30:00+08:00 INFO  event=studio.open name="岸线工作室" capacity=20
+2026-10-24T08:32:14+08:00 INFO  event=materials.checked paper=120 ink=8 plates=24
+2026-10-24T08:41:03+08:00 INFO  event=exhibit.ready title="纸上的天气" works=12
+2026-10-24T09:00:00+08:00 INFO  event=doors.open visitors=0
+2026-10-24T09:17:22+08:00 INFO  event=visitor.arrived group_size=2
+2026-10-24T09:26:40+08:00 INFO  event=visitor.arrived group_size=3
+2026-10-24T09:45:12+08:00 WARN  event=materials.low item="厚纸" remaining=18
+2026-10-24T09:48:05+08:00 INFO  event=materials.restocked item="厚纸" added=60
+2026-10-24T10:00:00+08:00 INFO  event=workshop.started title="纸张与拓印" participants=12
+2026-10-24T10:38:51+08:00 DEBUG event=print.completed station=3 edition=2
+2026-10-24T11:30:00+08:00 INFO  event=workshop.completed duration_minutes=90
+2026-10-24T12:05:19+08:00 INFO  event=guestbook.signed message="下次想参加声音采集"
+2026-10-24T13:30:00+08:00 INFO  event=walk.started route="旧街—河岸" participants=8
+2026-10-24T14:12:08+08:00 WARN  event=weather.changed condition="小雨" action="返回室内"
+2026-10-24T15:00:00+08:00 INFO  event=listening.started recordings=6
+2026-10-24T16:00:00+08:00 INFO  event=sharing.started works=18
+2026-10-24T17:15:33+08:00 INFO  event=cleanup.completed tools_returned=true
+2026-10-24T17:30:00+08:00 INFO  event=studio.closed visitors_total=48
+# All events, counts and measurements in this log are fictional.

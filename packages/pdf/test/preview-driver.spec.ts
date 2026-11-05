@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { getDocument } from 'pdfjs-dist';
+import { webcrypto } from 'node:crypto';
 import { createPdfPreviewDriver, createPdfPreviewRoutes } from '../src';
+import { pdfPageCache } from '../src/page-cache';
 
 const destroy = vi.fn(async () => undefined);
 const render = vi.fn(() => ({ promise: Promise.resolve() }));
@@ -24,7 +26,11 @@ beforeAll(() => {
   Object.defineProperty(globalThis, 'devicePixelRatio', { value: 1, configurable: true });
 });
 
-beforeEach(() => { vi.clearAllMocks(); });
+beforeEach(() => {
+  vi.clearAllMocks();
+  // These lifecycle tests mock PDF.js drawing; actual pixels are checked in Chromium.
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+});
 afterEach(() => { document.body.replaceChildren(); vi.restoreAllMocks(); });
 
 afterAll(() => {
@@ -32,6 +38,55 @@ afterAll(() => {
 });
 
 describe('PDF preview driver', () => {
+  it('reuses only matching painted pixels after validating each new document and releasing each worker', async () => {
+    vi.stubGlobal('crypto', webcrypto);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as never);
+    const page = { getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }), render };
+    const pdf = { numPages: 1, destroy, getPage: vi.fn(async () => page) };
+    const sessions: ReturnType<ReturnType<typeof createPdfPreviewDriver>['createSession']>[] = [];
+    const open = async (bytes: Uint8Array, password?: string) => {
+      const session = createPdfPreviewDriver().createSession(document.createElement('div'));
+      sessions.push(session);
+      await session.load(bytes, { descriptor: { source: bytes, name: 'same-name.pdf', password } });
+      return session;
+    };
+    try {
+      vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve(pdf), destroy } as never);
+      const first = await open(new Uint8Array([1]));
+      expect(render).toHaveBeenCalledTimes(1);
+      first.destroy();
+      expect(destroy).toHaveBeenCalledTimes(1);
+
+      let release!: (value: unknown) => void;
+      vi.mocked(getDocument).mockReturnValueOnce({ promise: new Promise(resolve => { release = resolve; }), destroy } as never);
+      const reopening = open(new Uint8Array([1]));
+      await vi.waitFor(() => expect(getDocument).toHaveBeenCalledTimes(2));
+      expect(sessions.at(-1)!.getState().loading).toBe(true);
+      release(pdf);
+      const second = await reopening;
+      expect(second.getState()).toMatchObject({ loading: false, pageCount: 1, error: null });
+      expect(render).toHaveBeenCalledTimes(1);
+      second.destroy();
+      expect(destroy).toHaveBeenCalledTimes(2);
+
+      vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve(pdf), destroy } as never);
+      (await open(new Uint8Array([2]))).destroy();
+      expect(render).toHaveBeenCalledTimes(2);
+      vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve(pdf), destroy } as never);
+      (await open(new Uint8Array([1]), 'secret')).destroy();
+      expect(render).toHaveBeenCalledTimes(3);
+
+      const failure = Promise.reject(new Error('Invalid PDF')); failure.catch(() => undefined);
+      vi.mocked(getDocument).mockReturnValueOnce({ promise: failure, destroy } as never);
+      await expect(open(new Uint8Array([1]))).rejects.toThrow('Invalid PDF');
+      expect(sessions.at(-1)!.getState()).toMatchObject({ error: 'Invalid PDF', loading: false });
+    } finally {
+      for (const session of sessions) session.destroy();
+      pdfPageCache.clear();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('exposes attachment payloads and rejects reads after the parent PDF closes', async () => {
     const content = new TextEncoder().encode('PDF attachment text');
     const page = { getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }), render };
@@ -200,13 +255,115 @@ describe('PDF preview driver', () => {
     const page = { getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }), render };
     vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve({ numPages: 20, destroy, getPage: vi.fn(async () => page) }), destroy } as never);
     await session.load(new Uint8Array(), { descriptor: { source: new Uint8Array() } });
-    for (let index = 0; index < 8; index++) expect(host.querySelector(`canvas[data-page-index="${index}"][data-rendered="true"]`)).not.toBeNull();
+    await vi.waitFor(() => {
+      for (let index = 0; index < 8; index++) expect(host.querySelector(`canvas[data-page-index="${index}"][data-rendered="true"]`)).not.toBeNull();
+    });
     session.setScale?.(2);
     await vi.waitFor(() => expect(host.querySelector('canvas')?.width).toBe(900));
     session.fit?.('width');
     await vi.waitFor(() => expect(host.querySelector('canvas')?.width).toBe(1600));
     session.setScale?.(NaN); expect(session.getState().scale).toBe(2);
     session.destroy();
+  });
+
+  it('waits for the first painted page but reveals it before other visible pages finish loading', async () => {
+    mockLayout();
+    let finishFirst!: () => void, finishSecond!: (value: unknown) => void;
+    const firstDraw = new Promise<void>(resolve => { finishFirst = resolve; });
+    const secondPage = new Promise(resolve => { finishSecond = resolve; });
+    render.mockReturnValueOnce({ promise: firstDraw } as never);
+    const page = { getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }), render };
+    const getPage = vi.fn((number: number) => number === 2 ? secondPage : Promise.resolve(page));
+    vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve({ numPages: 3, destroy, getPage }), destroy } as never);
+    const host = document.body.appendChild(document.createElement('div'));
+    const session = createPdfPreviewDriver().createSession(host, { initialScale: 0.1 });
+    const ready = vi.fn(); session.on('rendered', ready);
+    try {
+      const loading = session.load(new Uint8Array(), { descriptor: { source: new Uint8Array() } });
+      await vi.waitFor(() => expect(render).toHaveBeenCalledTimes(1));
+      expect(ready).not.toHaveBeenCalled();
+      expect(session.getState().loading).toBe(true);
+      finishFirst(); await loading;
+      expect(host.querySelector('canvas[data-page-index="0"][data-rendered="true"]')).not.toBeNull();
+      expect(ready).toHaveBeenCalledTimes(1);
+      expect(session.getState().loading).toBe(false);
+      await vi.waitFor(() => expect(getPage).toHaveBeenCalledWith(2));
+      expect(host.querySelector('canvas[data-page-index="1"]')).toBeNull();
+      finishSecond(page);
+      await vi.waitFor(() => expect(host.querySelector('canvas[data-page-index="1"][data-rendered="true"]')).not.toBeNull());
+      expect(ready).toHaveBeenCalledTimes(1);
+    } finally { finishFirst(); finishSecond(page); session.destroy(); }
+  });
+
+  it('keeps non-virtual previews loading until every page is painted', async () => {
+    let finishLast!: () => void;
+    const lastDraw = new Promise<void>(resolve => { finishLast = resolve; });
+    render.mockReturnValueOnce({ promise: Promise.resolve() }).mockReturnValueOnce({ promise: lastDraw });
+    const host = document.body.appendChild(document.createElement('div'));
+    const session = createPdfPreviewDriver().createSession(host, { virtual: false });
+    const ready = vi.fn(); session.on('rendered', ready);
+    try {
+      const loading = session.load(new Uint8Array(), { descriptor: { source: new Uint8Array() } });
+      await vi.waitFor(() => expect(render).toHaveBeenCalledTimes(2));
+      expect(host.querySelector('canvas[data-page-index="0"][data-rendered="true"]')).not.toBeNull();
+      expect(session.getState().loading).toBe(true);
+      expect(ready).not.toHaveBeenCalled();
+      finishLast(); await loading;
+      expect(host.querySelector('canvas[data-page-index="1"][data-rendered="true"]')).not.toBeNull();
+      expect(session.getState().loading).toBe(false);
+      expect(ready).toHaveBeenCalledTimes(1);
+    } finally { finishLast(); session.destroy(); }
+  });
+
+  it('matches full visibility scans at page edges, gaps and mixed heights using bounded layout reads', async () => {
+    mockLayout();
+    const host = document.body.appendChild(document.createElement('div'));
+    const session = createPdfPreviewDriver().createSession(host, { fit: 'none' });
+    const page = { getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }), render };
+    vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve({ numPages: 2048, destroy, getPage: vi.fn(async () => page) }), destroy } as never);
+    try {
+      await session.load(new Uint8Array(), { descriptor: { source: new Uint8Array() } });
+      const root = host.querySelector<HTMLElement>('.pdfv-preview')!;
+      const slots = [...host.querySelectorAll<HTMLElement>('.pdfv-page-slot')];
+      const starts: number[] = [];
+      let top = 0;
+      slots.forEach((slot, index) => {
+        starts.push(top);
+        const height = [80, 800, 1600][index % 3];
+        slot.style.height = `${height}px`;
+        top += height + 16;
+      });
+      const positions = new Map(slots.map((slot, index) => [slot, starts[index]]));
+      const rects = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
+      rects.mockImplementation(function () {
+        const start = positions.get(this as HTMLElement);
+        const top = start === undefined ? 0 : start - root.scrollTop;
+        const height = start === undefined ? 600 : parseFloat((this as HTMLElement).style.height);
+        return { top, bottom: top + height, left: 0, right: 800, width: 800, height, x: 0, y: top, toJSON() {} };
+      });
+      // Exercise the driver's selection synchronously, before background frames
+      // replace the deliberately mixed layout with real page dimensions.
+      const selection = session as unknown as { visiblePages(): number[]; state: { loading: boolean; pageIndex: number } };
+      for (const loading of [true, false]) for (const scroll of [0, 79.5, 80, 95.5, 96, ...[400, 1000, 2047].flatMap(index => [starts[index] - 600, starts[index], starts[index] + 80])]) {
+        root.scrollTop = scroll;
+        selection.state.loading = loading;
+        selection.state.pageIndex = 19;
+        const margin = loading ? 0 : 300;
+        const expected: number[] = [];
+        let active = 19, overlap = -1;
+        for (let index = 0; index < slots.length; index++) {
+          const start = starts[index] - scroll;
+          const end = start + parseFloat(slots[index].style.height);
+          if (end > -margin && start < 600 + margin) expected.push(index);
+          const visible = Math.min(end, 600) - Math.max(start, 0);
+          if (visible > overlap) { active = index; overlap = visible; }
+        }
+        rects.mockClear();
+        expect(selection.visiblePages()).toEqual(expected);
+        expect(selection.state.pageIndex).toBe(active);
+        expect(rects.mock.calls.length).toBeLessThan(30);
+      }
+    } finally { session.destroy(); }
   });
 
   it('does not start PDF.js after a file read is aborted', async () => {

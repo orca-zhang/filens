@@ -1,0 +1,144 @@
+{
+  "id": "@filens/converter-client@0.1.1",
+  "name": "@filens/converter-client",
+  "version": "0.1.1",
+  "size": 1317193,
+  "unpackedSize": 3935115,
+  "shasum": "9e1141251e823084dbfd7634ebc72c58b4137105",
+  "integrity": "sha512-J0IjzrNAwrH+dL+wfSK7UXK/ntA76RlR5xRMJKsXzVp5GX/NX1Az8evu43gxwfdvD2YN2fYhtpD2sDLYQNO81A==",
+  "filename": "filens-converter-client-0.1.1.tgz",
+  "files": [
+    {
+      "path": "README.md",
+      "size": 2380,
+      "mode": 420
+    },
+    {
+      "path": "dist/converter-detect-scalar.wasm",
+      "size": 224259,
+      "mode": 420
+    },
+    {
+      "path": "dist/converter-detect-simd.wasm",
+      "size": 225355,
+      "mode": 420
+    },
+    {
+      "path": "dist/converter-image.wasm",
+      "size": 1492779,
+      "mode": 420
+    },
+    {
+      "path": "dist/converter-postscript-NOTICES.txt",
+      "size": 171937,
+      "mode": 420
+    },
+    {
+      "path": "dist/format-detector-assets.d.ts",
+      "size": 86,
+      "mode": 420
+    },
+    {
+      "path": "dist/format-detector-auto.d.ts",
+      "size": 997,
+      "mode": 420
+    },
+    {
+      "path": "dist/format-detector-auto.js",
+      "size": 3200,
+      "mode": 420
+    },
+    {
+      "path": "dist/format-detector.d.ts",
+      "size": 531,
+      "mode": 420
+    },
+    {
+      "path": "dist/heif-color.d.ts",
+      "size": 357,
+      "mode": 420
+    },
+    {
+      "path": "dist/heif-decoder.d.ts",
+      "size": 2916,
+      "mode": 420
+    },
+    {
+      "path": "dist/index-DEI0Iwll.js",
+      "size": 66035,
+      "mode": 420
+    },
+    {
+      "path": "dist/index.d.ts",
+      "size": 1510,
+      "mode": 420
+    },
+    {
+      "path": "dist/index.js",
+      "size": 327,
+      "mode": 420
+    },
+    {
+      "path": "dist/libheif.wasm",
+      "size": 1457990,
+      "mode": 420
+    },
+    {
+      "path": "dist/media-client.d.ts",
+      "size": 196,
+      "mode": 420
+    },
+    {
+      "path": "dist/media-runtime-DCysNPdc.js",
+      "size": 146913,
+      "mode": 420
+    },
+    {
+      "path": "dist/media-runtime.d.ts",
+      "size": 171,
+      "mode": 420
+    },
+    {
+      "path": "dist/media-worker.d.ts",
+      "size": 11,
+      "mode": 420
+    },
+    {
+      "path": "dist/source.d.ts",
+      "size": 754,
+      "mode": 420
+    },
+    {
+      "path": "dist/THIRD-PARTY-NOTICES.txt",
+      "size": 130571,
+      "mode": 420
+    },
+    {
+      "path": "dist/wasi-runner.d.ts",
+      "size": 2656,
+      "mode": 420
+    },
+    {
+      "path": "dist/wasm-client.d.ts",
+      "size": 1505,
+      "mode": 420
+    },
+    {
+      "path": "dist/wasm-response.d.ts",
+      "size": 237,
+      "mode": 420
+    },
+    {
+      "path": "dist/wasm-simd.d.ts",
+      "size": 53,
+      "mode": 420
+    },
+    {
+      "path": "package.json",
+      "size": 1389,
+      "mode": 420
+    }
+  ],
+  "entryCount": 26,
+  "bundled": []
+}

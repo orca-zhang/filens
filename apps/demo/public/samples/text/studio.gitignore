@@ -1,0 +1,23 @@
+# Local writing tools
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Generated reading copies
+/exports/
+/thumbnails/
+/.cache/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Private local settings
+.env
+.env.local
+
+# Keep the fictional public example
+!observatory.env

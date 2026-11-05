@@ -9,7 +9,7 @@ import { executableName } from './agent-platforms.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const binary = process.env.FILENS_AGENT_BINARY || path.join(root, 'dist/agent-lite', executableName(`${process.platform}-${process.arch}`));
-const work = path.join(root, 'dist/agent-similarity-tests' + (process.env.FILENS_WALKER === 'hdrw-wasi' ? '-hdrw' : ''));
+const work = path.join(root, 'dist/agent-similarity-tests' + (process.env.FILENS_WALKER === 'read-dir' ? '-read-dir' : ''));
 await rm(work, { recursive:true, force:true });
 await mkdir(work, { recursive:true });
 const observations = [];

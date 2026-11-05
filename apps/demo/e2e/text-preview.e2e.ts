@@ -72,7 +72,7 @@ test('previews highlighted code through the demo upload flow', async ({ page }) 
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('./?view=preview');
   const text = 'const answer: number = 42;\nconsole.log(answer);';
-  await page.locator('input[type="file"]').setInputFiles({ name: 'answer.ts', mimeType: 'text/plain', buffer: Buffer.from(text) });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'answer.ts', mimeType: 'text/plain', buffer: Buffer.from(text) });
   await expect(page.locator('pre.pptxv-native-text')).toHaveText(text);
   await expect(page.locator('.pptxv-native-text-gutter')).toHaveText('1\n2');
   await expect(page.locator('.pptxv-token--keyword').first()).toHaveText('const');

@@ -66,6 +66,18 @@ for (const item of native?.assets ?? []) {
   if (artifact.sha256 !== item.sha256) throw new Error('Native CLI archive differs from the measured artifact');
   assets.push({ ...artifact, platform: item.platform, binaryBytes: item.binaryBytes });
 }
+// Ship the exact npm archives too. A release is complete only when the
+// platform components, entry packages, modules and DSH adapter are attached.
+for (const source of ['dist/npm', 'dist/workspace-npm', 'dist/dsh-npm', 'dist/step-npm']) {
+  const metadata = await read(`${source}/release.json`);
+  for (const item of metadata.packages ?? [metadata]) {
+    if (assets.some(asset => asset.file === item.file)) throw new Error(`Duplicate release asset: ${item.file}`);
+    await cp(path.join(root, source, item.file), path.join(directory, item.file));
+    const artifact = await measure(item.file, 'npm-package', item.unpackedBytes);
+    if (artifact.sha256 !== item.sha256) throw new Error(`npm archive differs from the measured artifact: ${item.file}`);
+    assets.push({ ...artifact, name: item.name, version: item.version ?? metadata.version });
+  }
+}
 const tags = spawnSync('git', ['tag', '--list', '--sort=-v:refname'], { cwd: root, encoding: 'utf8' });
 if (tags.status !== 0) throw new Error('Cannot identify the previous release');
 const previousRelease = tags.stdout.trim().split('\n').find(value => value && value !== tag);
@@ -84,8 +96,10 @@ async function measure(file, kind, unpackedBytes) {
 async function writeManifest(report) {
   const commit = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
   if (commit.status !== 0) throw new Error('Cannot identify release source commit');
+  const status = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
+  if (status.status !== 0) throw new Error('Cannot identify release source state');
   const manifestName = `filens-release-${tag}.json`;
-  const manifest = { ...report, sourceCommit: commit.stdout.trim(),
+  const manifest = { ...report, sourceCommit: commit.stdout.trim(), sourceDirty: Boolean(status.stdout.trim()),
     validation: await read('docs/preview-npm-validation.json') };
   await writeFile(path.join(directory, manifestName), `${JSON.stringify(manifest, null, 2)}\n`);
   const manifestAsset = await measure(manifestName, 'manifest');

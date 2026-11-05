@@ -6,23 +6,32 @@ import { runtime } from '../lib/runtime-manifest.js';
 
 test('static resources serve enumerated code only, with CSP and proper HEAD', async () => {
   const url = `http://127.0.0.1${runtime.basePath}`;
-  const html = await Preview.runtimeResource(new Request(`${url}viewer.html`));
+  const html = await Preview.runtimeResource(new Request(`${url}filens.js`));
   assert.equal(html.status, 200);
+  assert.equal(html.headers.get('cache-control'), 'public, max-age=31536000, immutable');
   assert.match(html.headers.get('content-security-policy'), /connect-src 'self' data: blob:/);
-  assert.match(await html.text(), /viewer.js/);
-  const css = await Preview.runtimeResource(new Request(`${url}viewer.css`));
+  assert.equal(html.headers.get('access-control-allow-origin'), '*');
+  assert.match(await html.text(), /createPreview/);
+  const css = await Preview.runtimeResource(new Request(`${url}style.css`));
   assert.match(css.headers.get('content-type'), /^text\/css/);
   await css.body.cancel();
   const head = await Preview.runtimeResource(new Request(`${url}filens.js`, { method: 'HEAD' }));
   assert.equal(head.status, 200);
+  assert.equal(head.headers.get('cache-control'), html.headers.get('cache-control'));
   assert.equal(head.headers.get('content-length'), String(runtime.files['filens.js'].bytes));
   assert.equal(await head.text(), '');
-  for (const file of ['../../package.json', '%2e%2e%2fpackage.json', 'viewer.js?file=/etc/passwd', 'secret.docx']) {
+  const moduleWorker = Object.keys(runtime.files).find(file => file.endsWith('.mjs'));
+  assert.ok(moduleWorker, 'The split runtime must expose its PDF module worker.');
+  const worker = await Preview.runtimeResource(new Request(`${url}${moduleWorker}`));
+  assert.equal(worker.status, 200);
+  assert.match(worker.headers.get('content-type'), /^text\/javascript/);
+  await worker.body.cancel();
+  for (const file of ['../../package.json', '%2e%2e%2fpackage.json', 'filens.js?file=/etc/passwd', 'secret.docx']) {
     const result = await Preview.runtimeResource(new Request(`${url}${file}`));
-    assert.equal(result.status, file.startsWith('viewer.js?') ? 200 : 404);
+    assert.equal(result.status, file.startsWith('filens.js?') ? 200 : 404);
     await result.body?.cancel();
   }
-  assert.equal((await Preview.runtimeResource(new Request(`${url}viewer.html`, { method: 'POST' }))).status, 405);
+  assert.equal((await Preview.runtimeResource(new Request(`${url}filens.js`, { method: 'POST' }))).status, 405);
 });
 
 test('Host route and startup injection are removed with the Preview plugin', async () => {

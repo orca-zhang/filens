@@ -1,0 +1,840 @@
+{
+  "observedAt": "2026-11-04T22:32:49.141Z",
+  "browser": "147.0.7727.15",
+  "node": "v20.20.2",
+  "scope": "Actual runtime requests in fresh browser contexts. Raw file bytes plus independently compressed gzip/Brotli estimates; excludes document bytes, HTTP headers and host application. Worker assets are included when requested. This is a loading-size comparison, not a latency or rendering-fidelity benchmark.",
+  "builds": {
+    "current": {
+      "importOnly": {
+        "total": {
+          "raw": 352871,
+          "gzip": 105371,
+          "brotli": 89429
+        },
+        "files": {
+          "chunks/compression-CLhefix_.js": {
+            "raw": 12546,
+            "gzip": 5729,
+            "brotli": 5191,
+            "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+          },
+          "chunks/index-BmW6eggB.js": {
+            "raw": 275067,
+            "gzip": 73900,
+            "brotli": 60848,
+            "sha256": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73"
+          },
+          "chunks/vue-4lD-xgIj.js": {
+            "raw": 65084,
+            "gzip": 25592,
+            "brotli": 23244,
+            "sha256": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0"
+          },
+          "filens.js": {
+            "raw": 174,
+            "gzip": 150,
+            "brotli": 146,
+            "sha256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+          }
+        }
+      },
+      "hello.txt": {
+        "total": {
+          "raw": 459606,
+          "gzip": 132980,
+          "brotli": 114041
+        },
+        "files": {
+          "chunks/compression-CLhefix_.js": {
+            "raw": 12546,
+            "gzip": 5729,
+            "brotli": 5191,
+            "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+          },
+          "chunks/index-BmW6eggB.js": {
+            "raw": 275067,
+            "gzip": 73900,
+            "brotli": 60848,
+            "sha256": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73"
+          },
+          "chunks/native-drivers-BEmEi2o2.js": {
+            "raw": 49468,
+            "gzip": 15898,
+            "brotli": 14196,
+            "sha256": "17395cbb3cce4968e65b837355e16867951973937ba67c2f3b6c2e3e2140237f"
+          },
+          "chunks/touch-gestures-CIlEOGpc.js": {
+            "raw": 2240,
+            "gzip": 1012,
+            "brotli": 917,
+            "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe"
+          },
+          "chunks/vue-4lD-xgIj.js": {
+            "raw": 65084,
+            "gzip": 25592,
+            "brotli": 23244,
+            "sha256": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0"
+          },
+          "filens.js": {
+            "raw": 174,
+            "gzip": 150,
+            "brotli": 146,
+            "sha256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10699,
+            "brotli": 9499,
+            "sha256": "57de23c0c398d4db3c0d637f34b33d3fd758fb60563431fe44a32a388e5a760f"
+          }
+        }
+      },
+      "filens-cosmic-atlas.pdf": {
+        "total": {
+          "raw": 1960089,
+          "gzip": 554883,
+          "brotli": 455836
+        },
+        "files": {
+          "chunks/compression-CLhefix_.js": {
+            "raw": 12546,
+            "gzip": 5729,
+            "brotli": 5191,
+            "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+          },
+          "chunks/font-matching-9VMxhVQV.js": {
+            "raw": 10512,
+            "gzip": 4019,
+            "brotli": 3721,
+            "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9"
+          },
+          "chunks/index-BmW6eggB.js": {
+            "raw": 275067,
+            "gzip": 73900,
+            "brotli": 60848,
+            "sha256": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73"
+          },
+          "chunks/pdf-Dzzffz3p.js": {
+            "raw": 448320,
+            "gzip": 131530,
+            "brotli": 109850,
+            "sha256": "a1b4b73ebccdcb52e068879ed366080825bd8c199d36f32b1dc0cc4b82bb8b68"
+          },
+          "chunks/pdf-driver-BoOePKKx.js": {
+            "raw": 12507,
+            "gzip": 4185,
+            "brotli": 3768,
+            "sha256": "9d343ec849b6d4599e3097899f592ee5684a046c47109adfe5bdbcbe2ccdf366"
+          },
+          "chunks/touch-gestures-CIlEOGpc.js": {
+            "raw": 2240,
+            "gzip": 1012,
+            "brotli": 917,
+            "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe"
+          },
+          "chunks/vue-4lD-xgIj.js": {
+            "raw": 65084,
+            "gzip": 25592,
+            "brotli": 23244,
+            "sha256": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0"
+          },
+          "filens.js": {
+            "raw": 174,
+            "gzip": 150,
+            "brotli": 146,
+            "sha256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+          },
+          "pdf.worker.min.mjs": {
+            "raw": 1078612,
+            "gzip": 298067,
+            "brotli": 238652,
+            "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10699,
+            "brotli": 9499,
+            "sha256": "57de23c0c398d4db3c0d637f34b33d3fd758fb60563431fe44a32a388e5a760f"
+          }
+        }
+      },
+      "filens-aurora-guide.docx": {
+        "total": {
+          "raw": 594077,
+          "gzip": 174301,
+          "brotli": 151229
+        },
+        "files": {
+          "chunks/compression-CLhefix_.js": {
+            "raw": 12546,
+            "gzip": 5729,
+            "brotli": 5191,
+            "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+          },
+          "chunks/docx-driver-B6QZ2CeD.js": {
+            "raw": 8989,
+            "gzip": 3338,
+            "brotli": 2980,
+            "sha256": "1a7c8341acc86da0ea1214397a1cec2d839c5cf6e733c6bdfa498ad3efe61861"
+          },
+          "chunks/docx-engine-DhLsMf1L.js": {
+            "raw": 76591,
+            "gzip": 20601,
+            "brotli": 18515,
+            "sha256": "572db05323e763a697cce0927d14e18d8c2e804635a09a03b24eb24f2b71fc26"
+          },
+          "chunks/font-loading-BPv1ZV5e.js": {
+            "raw": 19219,
+            "gzip": 7399,
+            "brotli": 6634,
+            "sha256": "6cda0d6fe419fa03836b37f4e1cf23ea4d4f24551ea81c18a2cddb0eac670925"
+          },
+          "chunks/font-matching-9VMxhVQV.js": {
+            "raw": 10512,
+            "gzip": 4019,
+            "brotli": 3721,
+            "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9"
+          },
+          "chunks/index-BmW6eggB.js": {
+            "raw": 275067,
+            "gzip": 73900,
+            "brotli": 60848,
+            "sha256": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73"
+          },
+          "chunks/vendor-DMYWoejl.js": {
+            "raw": 823,
+            "gzip": 439,
+            "brotli": 367,
+            "sha256": "a1f8328eb6976868c90b362e7d21c5e17f60c1e760b0752fe50ffc7f34bc71d4"
+          },
+          "chunks/vue-4lD-xgIj.js": {
+            "raw": 65084,
+            "gzip": 25592,
+            "brotli": 23244,
+            "sha256": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0"
+          },
+          "chunks/zip-compat-Bqyft7N6.js": {
+            "raw": 70045,
+            "gzip": 22435,
+            "brotli": 20084,
+            "sha256": "253e93f6cd2e7a036038ba99542a42367568aeebab4e829a779b35ad34379264"
+          },
+          "filens.js": {
+            "raw": 174,
+            "gzip": 150,
+            "brotli": 146,
+            "sha256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10699,
+            "brotli": 9499,
+            "sha256": "57de23c0c398d4db3c0d637f34b33d3fd758fb60563431fe44a32a388e5a760f"
+          }
+        }
+      },
+      "filens-field-notes.pptx": {
+        "total": {
+          "raw": 797435,
+          "gzip": 237457,
+          "brotli": 206556
+        },
+        "files": {
+          "chunks/compression-CLhefix_.js": {
+            "raw": 12546,
+            "gzip": 5729,
+            "brotli": 5191,
+            "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+          },
+          "chunks/dom-BjwBxkAm.js": {
+            "raw": 157889,
+            "gzip": 45217,
+            "brotli": 39324,
+            "sha256": "bf01fc06cb902aca5fe07bf9da8660d74b9b5e2936118fa52ab57da978da9d2d"
+          },
+          "chunks/font-loading-BPv1ZV5e.js": {
+            "raw": 19219,
+            "gzip": 7399,
+            "brotli": 6634,
+            "sha256": "6cda0d6fe419fa03836b37f4e1cf23ea4d4f24551ea81c18a2cddb0eac670925"
+          },
+          "chunks/font-matching-9VMxhVQV.js": {
+            "raw": 10512,
+            "gzip": 4019,
+            "brotli": 3721,
+            "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9"
+          },
+          "chunks/index-BmW6eggB.js": {
+            "raw": 275067,
+            "gzip": 73900,
+            "brotli": 60848,
+            "sha256": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73"
+          },
+          "chunks/office-attachments-CprbjlU9.js": {
+            "raw": 32456,
+            "gzip": 12533,
+            "brotli": 11325,
+            "sha256": "7a21b1b278f4d1ad0e64f5e8c493fec7421489a40e517e1a3cd3a7926b32a9a8"
+          },
+          "chunks/pptx-driver-BBqnGep5.js": {
+            "raw": 96353,
+            "gzip": 28333,
+            "brotli": 25256,
+            "sha256": "c0974357949d70ba00ec6e93e3b81f0c7a740b6e0678fabcdf5424bbee7ecb38"
+          },
+          "chunks/touch-gestures-CIlEOGpc.js": {
+            "raw": 2240,
+            "gzip": 1012,
+            "brotli": 917,
+            "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe"
+          },
+          "chunks/vendor-DMYWoejl.js": {
+            "raw": 823,
+            "gzip": 439,
+            "brotli": 367,
+            "sha256": "a1f8328eb6976868c90b362e7d21c5e17f60c1e760b0752fe50ffc7f34bc71d4"
+          },
+          "chunks/vue-4lD-xgIj.js": {
+            "raw": 65084,
+            "gzip": 25592,
+            "brotli": 23244,
+            "sha256": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0"
+          },
+          "chunks/zip-compat-Bqyft7N6.js": {
+            "raw": 70045,
+            "gzip": 22435,
+            "brotli": 20084,
+            "sha256": "253e93f6cd2e7a036038ba99542a42367568aeebab4e829a779b35ad34379264"
+          },
+          "filens.js": {
+            "raw": 174,
+            "gzip": 150,
+            "brotli": 146,
+            "sha256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10699,
+            "brotli": 9499,
+            "sha256": "57de23c0c398d4db3c0d637f34b33d3fd758fb60563431fe44a32a388e5a760f"
+          }
+        }
+      }
+    },
+    "baseline": {
+      "importOnly": {
+        "total": {
+          "raw": 3185254,
+          "gzip": 864112,
+          "brotli": 712199
+        },
+        "files": {
+          "chunks/archive-gmTeFEgR.js": {
+            "raw": 109195,
+            "gzip": 41074,
+            "brotli": 35793,
+            "sha256": "81f0eec3fc94a502954b1ea9dc36c297cb2e6d6ac4ab7536c3a653ccb0c21d32"
+          },
+          "chunks/cad-BmYR6dlE.js": {
+            "raw": 54512,
+            "gzip": 16724,
+            "brotli": 14624,
+            "sha256": "eb70ce8217d7e3cd4aa5499911364db52aede66ce6dbeeb640791704ce4a77fc"
+          },
+          "chunks/core-DiKnQZGc.js": {
+            "raw": 364705,
+            "gzip": 101033,
+            "brotli": 85708,
+            "sha256": "7ca9f026b0e16bafccf6e7410298a4175d08061869fcb6dfb7bcd8c6fc55ed00"
+          },
+          "chunks/diagram-Cc6l7pRH.js": {
+            "raw": 21754,
+            "gzip": 6993,
+            "brotli": 6227,
+            "sha256": "0a210892afc934e5b76662b882b3e0ef9f0202aa9c29f8b363289096254b9ed3"
+          },
+          "chunks/docx-DpkOSPt1.js": {
+            "raw": 8938,
+            "gzip": 3308,
+            "brotli": 2931,
+            "sha256": "499885ab320f24b2338639b8939fdc1dc60801a595f7a18dddeeaf03ff5667dd"
+          },
+          "chunks/ebook-B4Xd8IhA.js": {
+            "raw": 17181,
+            "gzip": 6378,
+            "brotli": 5707,
+            "sha256": "fa47db73efe9186d4edc6e9a900bf47e4701a4d96f7c18b75d71f587a1a05fec"
+          },
+          "chunks/index-DzHEW6Nz.js": {
+            "raw": 181480,
+            "gzip": 49379,
+            "brotli": 40212,
+            "sha256": "6a5cb3b53781f30bf00f0ab1844492a16faf4aef11312c3626733f50216dfa5e"
+          },
+          "chunks/iwork-dPiXgw0F.js": {
+            "raw": 1231428,
+            "gzip": 297620,
+            "brotli": 231822,
+            "sha256": "ba1b75a1011d76187616dfaeaa570893b8ce8d767d3dc35952975bec427e26eb"
+          },
+          "chunks/mindmap-C3u9smL7.js": {
+            "raw": 15736,
+            "gzip": 5053,
+            "brotli": 4505,
+            "sha256": "768c1d9e76bc5f820538739d5734221c7d15912486d8c7867e88e93dcc7edd7d"
+          },
+          "chunks/model3d-C5Nd7Ujg.js": {
+            "raw": 112084,
+            "gzip": 32725,
+            "brotli": 28634,
+            "sha256": "b841d7b49f7d7e672103a949983545b9ca8142ae9941d22fe791e9c844b8ccc0"
+          },
+          "chunks/panorama-PpYbJBfn.js": {
+            "raw": 220057,
+            "gzip": 64953,
+            "brotli": 55557,
+            "sha256": "500001a5d5929200b1e0aa725ac91e2a3eae4c0c9c207ce7f16ee1c18657c360"
+          },
+          "chunks/vendor-CxuYsDz_.js": {
+            "raw": 822024,
+            "gzip": 229641,
+            "brotli": 192130,
+            "sha256": "0233c5e20230e38e2609136336ec5c6b871fa34d388c16e461cec920e974131f"
+          },
+          "chunks/xlsx-DxSVdp_R.js": {
+            "raw": 25907,
+            "gzip": 9046,
+            "brotli": 8185,
+            "sha256": "dd611aaa86749445b395f56af7ecfa37a497dfec0ca73b1fd21b40890ccec605"
+          },
+          "filens.js": {
+            "raw": 253,
+            "gzip": 185,
+            "brotli": 164,
+            "sha256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af"
+          }
+        }
+      },
+      "hello.txt": {
+        "total": {
+          "raw": 3240281,
+          "gzip": 874867,
+          "brotli": 721694
+        },
+        "files": {
+          "chunks/archive-gmTeFEgR.js": {
+            "raw": 109195,
+            "gzip": 41074,
+            "brotli": 35793,
+            "sha256": "81f0eec3fc94a502954b1ea9dc36c297cb2e6d6ac4ab7536c3a653ccb0c21d32"
+          },
+          "chunks/cad-BmYR6dlE.js": {
+            "raw": 54512,
+            "gzip": 16724,
+            "brotli": 14624,
+            "sha256": "eb70ce8217d7e3cd4aa5499911364db52aede66ce6dbeeb640791704ce4a77fc"
+          },
+          "chunks/core-DiKnQZGc.js": {
+            "raw": 364705,
+            "gzip": 101033,
+            "brotli": 85708,
+            "sha256": "7ca9f026b0e16bafccf6e7410298a4175d08061869fcb6dfb7bcd8c6fc55ed00"
+          },
+          "chunks/diagram-Cc6l7pRH.js": {
+            "raw": 21754,
+            "gzip": 6993,
+            "brotli": 6227,
+            "sha256": "0a210892afc934e5b76662b882b3e0ef9f0202aa9c29f8b363289096254b9ed3"
+          },
+          "chunks/docx-DpkOSPt1.js": {
+            "raw": 8938,
+            "gzip": 3308,
+            "brotli": 2931,
+            "sha256": "499885ab320f24b2338639b8939fdc1dc60801a595f7a18dddeeaf03ff5667dd"
+          },
+          "chunks/ebook-B4Xd8IhA.js": {
+            "raw": 17181,
+            "gzip": 6378,
+            "brotli": 5707,
+            "sha256": "fa47db73efe9186d4edc6e9a900bf47e4701a4d96f7c18b75d71f587a1a05fec"
+          },
+          "chunks/index-DzHEW6Nz.js": {
+            "raw": 181480,
+            "gzip": 49379,
+            "brotli": 40212,
+            "sha256": "6a5cb3b53781f30bf00f0ab1844492a16faf4aef11312c3626733f50216dfa5e"
+          },
+          "chunks/iwork-dPiXgw0F.js": {
+            "raw": 1231428,
+            "gzip": 297620,
+            "brotli": 231822,
+            "sha256": "ba1b75a1011d76187616dfaeaa570893b8ce8d767d3dc35952975bec427e26eb"
+          },
+          "chunks/mindmap-C3u9smL7.js": {
+            "raw": 15736,
+            "gzip": 5053,
+            "brotli": 4505,
+            "sha256": "768c1d9e76bc5f820538739d5734221c7d15912486d8c7867e88e93dcc7edd7d"
+          },
+          "chunks/model3d-C5Nd7Ujg.js": {
+            "raw": 112084,
+            "gzip": 32725,
+            "brotli": 28634,
+            "sha256": "b841d7b49f7d7e672103a949983545b9ca8142ae9941d22fe791e9c844b8ccc0"
+          },
+          "chunks/panorama-PpYbJBfn.js": {
+            "raw": 220057,
+            "gzip": 64953,
+            "brotli": 55557,
+            "sha256": "500001a5d5929200b1e0aa725ac91e2a3eae4c0c9c207ce7f16ee1c18657c360"
+          },
+          "chunks/vendor-CxuYsDz_.js": {
+            "raw": 822024,
+            "gzip": 229641,
+            "brotli": 192130,
+            "sha256": "0233c5e20230e38e2609136336ec5c6b871fa34d388c16e461cec920e974131f"
+          },
+          "chunks/xlsx-DxSVdp_R.js": {
+            "raw": 25907,
+            "gzip": 9046,
+            "brotli": 8185,
+            "sha256": "dd611aaa86749445b395f56af7ecfa37a497dfec0ca73b1fd21b40890ccec605"
+          },
+          "filens.js": {
+            "raw": 253,
+            "gzip": 185,
+            "brotli": 164,
+            "sha256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10755,
+            "brotli": 9495,
+            "sha256": "bec2f8f1748c465045350efc7d6f2503272ff1f4cadde8bb35524aabbd61cc10"
+          }
+        }
+      },
+      "filens-cosmic-atlas.pdf": {
+        "total": {
+          "raw": 4767213,
+          "gzip": 1304464,
+          "brotli": 1070196
+        },
+        "files": {
+          "chunks/archive-gmTeFEgR.js": {
+            "raw": 109195,
+            "gzip": 41074,
+            "brotli": 35793,
+            "sha256": "81f0eec3fc94a502954b1ea9dc36c297cb2e6d6ac4ab7536c3a653ccb0c21d32"
+          },
+          "chunks/cad-BmYR6dlE.js": {
+            "raw": 54512,
+            "gzip": 16724,
+            "brotli": 14624,
+            "sha256": "eb70ce8217d7e3cd4aa5499911364db52aede66ce6dbeeb640791704ce4a77fc"
+          },
+          "chunks/core-DiKnQZGc.js": {
+            "raw": 364705,
+            "gzip": 101033,
+            "brotli": 85708,
+            "sha256": "7ca9f026b0e16bafccf6e7410298a4175d08061869fcb6dfb7bcd8c6fc55ed00"
+          },
+          "chunks/diagram-Cc6l7pRH.js": {
+            "raw": 21754,
+            "gzip": 6993,
+            "brotli": 6227,
+            "sha256": "0a210892afc934e5b76662b882b3e0ef9f0202aa9c29f8b363289096254b9ed3"
+          },
+          "chunks/docx-DpkOSPt1.js": {
+            "raw": 8938,
+            "gzip": 3308,
+            "brotli": 2931,
+            "sha256": "499885ab320f24b2338639b8939fdc1dc60801a595f7a18dddeeaf03ff5667dd"
+          },
+          "chunks/ebook-B4Xd8IhA.js": {
+            "raw": 17181,
+            "gzip": 6378,
+            "brotli": 5707,
+            "sha256": "fa47db73efe9186d4edc6e9a900bf47e4701a4d96f7c18b75d71f587a1a05fec"
+          },
+          "chunks/index-DzHEW6Nz.js": {
+            "raw": 181480,
+            "gzip": 49379,
+            "brotli": 40212,
+            "sha256": "6a5cb3b53781f30bf00f0ab1844492a16faf4aef11312c3626733f50216dfa5e"
+          },
+          "chunks/iwork-dPiXgw0F.js": {
+            "raw": 1231428,
+            "gzip": 297620,
+            "brotli": 231822,
+            "sha256": "ba1b75a1011d76187616dfaeaa570893b8ce8d767d3dc35952975bec427e26eb"
+          },
+          "chunks/mindmap-C3u9smL7.js": {
+            "raw": 15736,
+            "gzip": 5053,
+            "brotli": 4505,
+            "sha256": "768c1d9e76bc5f820538739d5734221c7d15912486d8c7867e88e93dcc7edd7d"
+          },
+          "chunks/model3d-C5Nd7Ujg.js": {
+            "raw": 112084,
+            "gzip": 32725,
+            "brotli": 28634,
+            "sha256": "b841d7b49f7d7e672103a949983545b9ca8142ae9941d22fe791e9c844b8ccc0"
+          },
+          "chunks/panorama-PpYbJBfn.js": {
+            "raw": 220057,
+            "gzip": 64953,
+            "brotli": 55557,
+            "sha256": "500001a5d5929200b1e0aa725ac91e2a3eae4c0c9c207ce7f16ee1c18657c360"
+          },
+          "chunks/pdf-Dzzffz3p.js": {
+            "raw": 448320,
+            "gzip": 131530,
+            "brotli": 109850,
+            "sha256": "a1b4b73ebccdcb52e068879ed366080825bd8c199d36f32b1dc0cc4b82bb8b68"
+          },
+          "chunks/vendor-CxuYsDz_.js": {
+            "raw": 822024,
+            "gzip": 229641,
+            "brotli": 192130,
+            "sha256": "0233c5e20230e38e2609136336ec5c6b871fa34d388c16e461cec920e974131f"
+          },
+          "chunks/xlsx-DxSVdp_R.js": {
+            "raw": 25907,
+            "gzip": 9046,
+            "brotli": 8185,
+            "sha256": "dd611aaa86749445b395f56af7ecfa37a497dfec0ca73b1fd21b40890ccec605"
+          },
+          "filens.js": {
+            "raw": 253,
+            "gzip": 185,
+            "brotli": 164,
+            "sha256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af"
+          },
+          "pdf.worker.min.mjs": {
+            "raw": 1078612,
+            "gzip": 298067,
+            "brotli": 238652,
+            "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10755,
+            "brotli": 9495,
+            "sha256": "bec2f8f1748c465045350efc7d6f2503272ff1f4cadde8bb35524aabbd61cc10"
+          }
+        }
+      },
+      "filens-aurora-guide.docx": {
+        "total": {
+          "raw": 3359611,
+          "gzip": 908546,
+          "brotli": 752139
+        },
+        "files": {
+          "chunks/archive-gmTeFEgR.js": {
+            "raw": 109195,
+            "gzip": 41074,
+            "brotli": 35793,
+            "sha256": "81f0eec3fc94a502954b1ea9dc36c297cb2e6d6ac4ab7536c3a653ccb0c21d32"
+          },
+          "chunks/cad-BmYR6dlE.js": {
+            "raw": 54512,
+            "gzip": 16724,
+            "brotli": 14624,
+            "sha256": "eb70ce8217d7e3cd4aa5499911364db52aede66ce6dbeeb640791704ce4a77fc"
+          },
+          "chunks/core-DiKnQZGc.js": {
+            "raw": 364705,
+            "gzip": 101033,
+            "brotli": 85708,
+            "sha256": "7ca9f026b0e16bafccf6e7410298a4175d08061869fcb6dfb7bcd8c6fc55ed00"
+          },
+          "chunks/diagram-Cc6l7pRH.js": {
+            "raw": 21754,
+            "gzip": 6993,
+            "brotli": 6227,
+            "sha256": "0a210892afc934e5b76662b882b3e0ef9f0202aa9c29f8b363289096254b9ed3"
+          },
+          "chunks/docx-DpkOSPt1.js": {
+            "raw": 8938,
+            "gzip": 3308,
+            "brotli": 2931,
+            "sha256": "499885ab320f24b2338639b8939fdc1dc60801a595f7a18dddeeaf03ff5667dd"
+          },
+          "chunks/docx-engine-CSynkAEk.js": {
+            "raw": 76591,
+            "gzip": 20600,
+            "brotli": 18526,
+            "sha256": "26df2433b450848581a98c62cec2dc4ac7869d9d8e4ee4131c0773b17dd4ae16"
+          },
+          "chunks/ebook-B4Xd8IhA.js": {
+            "raw": 17181,
+            "gzip": 6378,
+            "brotli": 5707,
+            "sha256": "fa47db73efe9186d4edc6e9a900bf47e4701a4d96f7c18b75d71f587a1a05fec"
+          },
+          "chunks/index-DzHEW6Nz.js": {
+            "raw": 181480,
+            "gzip": 49379,
+            "brotli": 40212,
+            "sha256": "6a5cb3b53781f30bf00f0ab1844492a16faf4aef11312c3626733f50216dfa5e"
+          },
+          "chunks/iwork-dPiXgw0F.js": {
+            "raw": 1231428,
+            "gzip": 297620,
+            "brotli": 231822,
+            "sha256": "ba1b75a1011d76187616dfaeaa570893b8ce8d767d3dc35952975bec427e26eb"
+          },
+          "chunks/mindmap-C3u9smL7.js": {
+            "raw": 15736,
+            "gzip": 5053,
+            "brotli": 4505,
+            "sha256": "768c1d9e76bc5f820538739d5734221c7d15912486d8c7867e88e93dcc7edd7d"
+          },
+          "chunks/model3d-C5Nd7Ujg.js": {
+            "raw": 112084,
+            "gzip": 32725,
+            "brotli": 28634,
+            "sha256": "b841d7b49f7d7e672103a949983545b9ca8142ae9941d22fe791e9c844b8ccc0"
+          },
+          "chunks/panorama-PpYbJBfn.js": {
+            "raw": 220057,
+            "gzip": 64953,
+            "brotli": 55557,
+            "sha256": "500001a5d5929200b1e0aa725ac91e2a3eae4c0c9c207ce7f16ee1c18657c360"
+          },
+          "chunks/vendor-CxuYsDz_.js": {
+            "raw": 822024,
+            "gzip": 229641,
+            "brotli": 192130,
+            "sha256": "0233c5e20230e38e2609136336ec5c6b871fa34d388c16e461cec920e974131f"
+          },
+          "chunks/xlsx-DxSVdp_R.js": {
+            "raw": 25907,
+            "gzip": 9046,
+            "brotli": 8185,
+            "sha256": "dd611aaa86749445b395f56af7ecfa37a497dfec0ca73b1fd21b40890ccec605"
+          },
+          "chunks/zip-compat-BoIcHr4U.js": {
+            "raw": 42739,
+            "gzip": 13079,
+            "brotli": 11919,
+            "sha256": "e9f70948cdf18991089b1a07b083c97a9ccc564e263d5cce32cb59ddb24378dc"
+          },
+          "filens.js": {
+            "raw": 253,
+            "gzip": 185,
+            "brotli": 164,
+            "sha256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10755,
+            "brotli": 9495,
+            "sha256": "bec2f8f1748c465045350efc7d6f2503272ff1f4cadde8bb35524aabbd61cc10"
+          }
+        }
+      },
+      "filens-field-notes.pptx": {
+        "total": {
+          "raw": 3240281,
+          "gzip": 874867,
+          "brotli": 721694
+        },
+        "files": {
+          "chunks/archive-gmTeFEgR.js": {
+            "raw": 109195,
+            "gzip": 41074,
+            "brotli": 35793,
+            "sha256": "81f0eec3fc94a502954b1ea9dc36c297cb2e6d6ac4ab7536c3a653ccb0c21d32"
+          },
+          "chunks/cad-BmYR6dlE.js": {
+            "raw": 54512,
+            "gzip": 16724,
+            "brotli": 14624,
+            "sha256": "eb70ce8217d7e3cd4aa5499911364db52aede66ce6dbeeb640791704ce4a77fc"
+          },
+          "chunks/core-DiKnQZGc.js": {
+            "raw": 364705,
+            "gzip": 101033,
+            "brotli": 85708,
+            "sha256": "7ca9f026b0e16bafccf6e7410298a4175d08061869fcb6dfb7bcd8c6fc55ed00"
+          },
+          "chunks/diagram-Cc6l7pRH.js": {
+            "raw": 21754,
+            "gzip": 6993,
+            "brotli": 6227,
+            "sha256": "0a210892afc934e5b76662b882b3e0ef9f0202aa9c29f8b363289096254b9ed3"
+          },
+          "chunks/docx-DpkOSPt1.js": {
+            "raw": 8938,
+            "gzip": 3308,
+            "brotli": 2931,
+            "sha256": "499885ab320f24b2338639b8939fdc1dc60801a595f7a18dddeeaf03ff5667dd"
+          },
+          "chunks/ebook-B4Xd8IhA.js": {
+            "raw": 17181,
+            "gzip": 6378,
+            "brotli": 5707,
+            "sha256": "fa47db73efe9186d4edc6e9a900bf47e4701a4d96f7c18b75d71f587a1a05fec"
+          },
+          "chunks/index-DzHEW6Nz.js": {
+            "raw": 181480,
+            "gzip": 49379,
+            "brotli": 40212,
+            "sha256": "6a5cb3b53781f30bf00f0ab1844492a16faf4aef11312c3626733f50216dfa5e"
+          },
+          "chunks/iwork-dPiXgw0F.js": {
+            "raw": 1231428,
+            "gzip": 297620,
+            "brotli": 231822,
+            "sha256": "ba1b75a1011d76187616dfaeaa570893b8ce8d767d3dc35952975bec427e26eb"
+          },
+          "chunks/mindmap-C3u9smL7.js": {
+            "raw": 15736,
+            "gzip": 5053,
+            "brotli": 4505,
+            "sha256": "768c1d9e76bc5f820538739d5734221c7d15912486d8c7867e88e93dcc7edd7d"
+          },
+          "chunks/model3d-C5Nd7Ujg.js": {
+            "raw": 112084,
+            "gzip": 32725,
+            "brotli": 28634,
+            "sha256": "b841d7b49f7d7e672103a949983545b9ca8142ae9941d22fe791e9c844b8ccc0"
+          },
+          "chunks/panorama-PpYbJBfn.js": {
+            "raw": 220057,
+            "gzip": 64953,
+            "brotli": 55557,
+            "sha256": "500001a5d5929200b1e0aa725ac91e2a3eae4c0c9c207ce7f16ee1c18657c360"
+          },
+          "chunks/vendor-CxuYsDz_.js": {
+            "raw": 822024,
+            "gzip": 229641,
+            "brotli": 192130,
+            "sha256": "0233c5e20230e38e2609136336ec5c6b871fa34d388c16e461cec920e974131f"
+          },
+          "chunks/xlsx-DxSVdp_R.js": {
+            "raw": 25907,
+            "gzip": 9046,
+            "brotli": 8185,
+            "sha256": "dd611aaa86749445b395f56af7ecfa37a497dfec0ca73b1fd21b40890ccec605"
+          },
+          "filens.js": {
+            "raw": 253,
+            "gzip": 185,
+            "brotli": 164,
+            "sha256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af"
+          },
+          "style.css": {
+            "raw": 55027,
+            "gzip": 10755,
+            "brotli": 9495,
+            "sha256": "bec2f8f1748c465045350efc7d6f2503272ff1f4cadde8bb35524aabbd61cc10"
+          }
+        }
+      }
+    }
+  }
+}

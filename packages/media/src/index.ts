@@ -1,21 +1,14 @@
 import './style.css';
 
 import {
-  DEFAULT_FORMAT_ROUTES,
   createImagePreviewDriver,
-  type FormatDefinition,
   type PreviewDriver,
   type ConverterClient
 } from '@filens/core';
-import { createPanoramaPreviewDriver, createPanoramaPreviewRoutes, createRawImagePreviewDriver, RAW_IMAGE_FORMAT_ROUTES, type PanoramaProcessor } from '@filens/panorama';
+import { createPanoramaPreviewDriver, createRawImagePreviewDriver, type PanoramaProcessor } from '@filens/panorama';
 import type { BrowserMediaOptions } from './engine';
 export type { BrowserMediaOptions } from './engine';
-import { createCodecPreviewDrivers, HEIF_PREVIEW_ROUTES } from './codec-preview-driver';
-
-const MEDIA_DRIVER_IDS = new Set(['image', 'media']);
-const MEDIA_CORE_ROUTES = DEFAULT_FORMAT_ROUTES.filter((route) =>
-  MEDIA_DRIVER_IDS.has(route.driverId) && !route.extensions.some(extension => ['apk', 'ipa'].includes(extension))
-);
+import { createCodecPreviewDrivers } from './codec-preview-driver';
 
 export interface MediaPreviewDriverOptions {
   panoramaProcessor?: PanoramaProcessor;
@@ -32,9 +25,4 @@ export function createMediaPreviewDrivers(options: MediaPreviewDriverOptions = {
   ];
 }
 
-export function createMediaPreviewRoutes(baseRoutes = MEDIA_CORE_ROUTES, options: { rawPreview?: boolean } = {}): FormatDefinition[] {
-  const routes = [...HEIF_PREVIEW_ROUTES, ...createPanoramaPreviewRoutes(baseRoutes)];
-  return options.rawPreview ? [...RAW_IMAGE_FORMAT_ROUTES, ...routes.map((route) => ({
-    ...route, extensions: route.extensions.filter((extension) => extension !== 'dng')
-  })).filter((route) => route.extensions.length > 0)] : routes;
-}
+export { createMediaPreviewRoutes } from './routes';

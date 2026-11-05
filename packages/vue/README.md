@@ -6,6 +6,12 @@ single JS file or split modules including Vue, see the [standalone builds](../pr
 
 ## All-format entry
 
+`Preview` imports the matching format driver on first use. Lightweight routes
+remain available before any renderer loads. Shared modules are reused for later
+files and archive entries; custom `drivers` continue to use the same lifecycle.
+The category packages expose metadata through their `/routes` entry points.
+
+
 ```vue
 <script setup lang="ts">
 import { Preview } from '@filens/vue';
@@ -19,7 +25,7 @@ import '@filens/vue/style.css';
 
 `src` also accepts a `File`, `Blob` or byte array; provide `name` or `extension`
 when the source has no filename. Legacy Office and RAW previews need a
-`converter` configured with `createWasmConverterClient({ wasm, imageWasm, officeWasm })`
+`converter` configured with `createWasmConverterClient({ wasm, imageWasm, officeWasm, graphicsWasm })`
 from `@filens/converter-client`. See the demo for complete WASM asset wiring.
 
 `officeWasm` points to the optional `converter-office.wasm` asset. The current

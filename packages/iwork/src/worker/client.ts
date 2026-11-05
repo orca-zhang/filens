@@ -1,4 +1,4 @@
-import type { IworkTypeHint, ParsedIworkDocument, ParsedNumbersSheet } from '../types';
+import type { IworkTypeHint, ParsedIworkDocument, ParsedNumbersDocument, ParsedNumbersSheet } from '../types';
 
 interface WorkerResponse {
   id: number;
@@ -54,11 +54,11 @@ export class IworkWorkerClient {
     });
   }
 
-  parseSheet(index: number): Promise<ParsedNumbersSheet> {
+  parseSheet(index: number, document?: ParsedNumbersDocument): Promise<ParsedNumbersSheet> {
     const id = ++this.requestId;
     return new Promise<ParsedNumbersSheet>((resolve, reject) => {
       this.pending.set(id, { resolve: resolve as (value: WorkerResult) => void, reject });
-      this.postRequest(id, { kind: 'sheet', id, index });
+      this.postRequest(id, { kind: 'sheet', id, index, ...(document ? { context: { archive: document.archive, media: document.media } } : {}) });
     });
   }
 

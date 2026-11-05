@@ -61,7 +61,7 @@ GIF 调色板转换会改变图像信息；测试样例在默认阈值 8 下有�
 
 ## 范围、输出与完整性
 
-默认最多扫描 2000 个候选文件、深度 32、返回 100 组。`--max-files` 上限 20000，`--max-depth` 上限 256，`--max-results` 上限 1000。隐藏名称默认排除，`--include-hidden` 可包含普通隐藏名称；`.git`、`node_modules`、`target`、`dist` 子目录始终排除，显式作为扫描根目录时仍可扫描其中其他内容。不跟随符号链接。目录发现复用 macOS FTS 或 Windows/Linux 的 hdrw WASI。
+默认最多扫描 2000 个候选文件、深度 32、返回 100 组。`--max-files` 上限 20000，`--max-depth` 上限 256，`--max-results` 上限 1000。隐藏名称默认排除，`--include-hidden` 可包含普通隐藏名称；`.git`、`node_modules`、`target`、`dist` 子目录始终排除，显式作为扫描根目录时仍可扫描其中其他内容。不跟随符号链接。目录发现使用 macOS FTS、Windows NTFS 批量目录元数据（不支持时回退原生遍历）或 Linux 原生遍历。
 
 支持 text、JSON、Markdown、HTML、YAML、XML、CSV、TSV。JSON 的 `similarity.groups[].files` 列出相对路径、字节数，重复文件附 SHA-256，相似图片附方向校正后的宽高、感知哈希及与参考图的距离。
 

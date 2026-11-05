@@ -21,6 +21,13 @@ const converters = [
     outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
   },
   {
+    name: 'converter-graphics',
+    optimization: '-Oz',
+    cargoArgs: ['--no-default-features', '--features', 'graphics-preview'],
+    crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
+    outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
+  },
+  {
     name: 'converter-office',
     cargoArgs: ['--no-default-features', '--features', 'office-crypto'],
     crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
@@ -29,7 +36,8 @@ const converters = [
   {
     name: 'converter-core',
     outputName: 'converter-core-full',
-    cargoArgs: ['--features', 'office-crypto,postscript'],
+    optimization: '-Oz',
+    cargoArgs: ['--features', 'office-crypto,postscript,graphics-preview'],
     crateDir: path.join(rootDir, 'wasm', 'converter-core-rust'),
     outputDir: path.join(rootDir, 'wasm', 'converter-core', 'dist')
   },

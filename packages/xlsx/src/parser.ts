@@ -1,26 +1,31 @@
-import { XMLParser } from 'fast-xml-parser';
+import type { XMLParser } from 'fast-xml-parser';
 import { openZipArchive, officeFontTraits, fontTraitsFromPanose, type PreviewFontReference, type ZipEntry, type PreviewLoadContext, type PreviewSource } from '@filens/core';
 import type { ParsedCell, ParsedRow, ParsedSheet, ParsedWorkbook } from './types';
 import { readSimpleWorksheet } from './simple-worksheet';
+export { resolveCellValue } from './cell-value';
+import { columnIndexToName, parseCellRef } from './columns';
 
 const MAX_XML_ENTITY_EXPANSIONS = 100_000;
 
-const parser = new XMLParser({
-  ignoreAttributes: false,
-  attributeNamePrefix: '',
-  textNodeName: '#text',
-  parseTagValue: false,
-  parseAttributeValue: false,
-  trimValues: false,
-  processEntities: {
-    enabled: true,
-    maxEntitySize: 10_000,
-    maxExpansionDepth: 10,
-    maxTotalExpansions: MAX_XML_ENTITY_EXPANSIONS,
-    maxExpandedLength: 100_000,
-    maxEntityCount: 100
-  }
-});
+let parserPromise: Promise<XMLParser> | undefined;
+function loadXmlParser(): Promise<XMLParser> {
+  return parserPromise ??= import('fast-xml-parser').then(({ XMLParser }) => new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    textNodeName: '#text',
+    parseTagValue: false,
+    parseAttributeValue: false,
+    trimValues: false,
+    processEntities: {
+      enabled: true,
+      maxEntitySize: 10_000,
+      maxExpansionDepth: 10,
+      maxTotalExpansions: MAX_XML_ENTITY_EXPANSIONS,
+      maxExpandedLength: 100_000,
+      maxEntityCount: 100
+    }
+  }));
+}
 
 interface WorkbookSheetRef {
   name: string;
@@ -48,11 +53,13 @@ export async function loadXlsxWorkbook(source: PreviewSource, context?: PreviewL
   const warnings: string[] = [];
   const workbookXml = await readRequiredText(zip, 'xl/workbook.xml', context?.signal);
   const relsXml = await readRequiredText(zip, 'xl/_rels/workbook.xml.rels', context?.signal);
-  const sharedStrings = await readSharedStrings(zip, context?.signal);
+  const parser = await loadXmlParser();
+  checkAborted(context?.signal);
+  const sharedStrings = await readSharedStrings(zip, parser, context?.signal);
   checkAborted(context?.signal);
   const workbook = parser.parse(workbookXml) as Record<string, unknown>;
-  const relationships = readRelationships(relsXml);
-  const fontStyles = await readFontStyles(zip, relationships, context?.signal);
+  const relationships = readRelationships(relsXml, parser);
+  const fontStyles = await readFontStyles(zip, relationships, parser, context?.signal);
   const sheets = readWorkbookSheets(workbook);
 
   const parsedSheets: ParsedSheet[] = [];
@@ -77,7 +84,7 @@ export async function loadXlsxWorkbook(source: PreviewSource, context?: PreviewL
       name: sheet.name,
       sharedStrings,
       fontStyles: fontStyles.styles
-    }));
+    }, parser));
   }
 
   return {
@@ -271,7 +278,7 @@ async function readRequiredText(zip: Map<string, ZipEntry>, path: string, signal
   return text;
 }
 
-async function readSharedStrings(zip: Map<string, ZipEntry>, signal?: AbortSignal): Promise<string[]> {
+async function readSharedStrings(zip: Map<string, ZipEntry>, parser: XMLParser, signal?: AbortSignal): Promise<string[]> {
   checkAborted(signal);
   const file = zip.get('xl/sharedStrings.xml');
   if (!file) {
@@ -308,7 +315,7 @@ function readTextValue(node: unknown): string {
   return typeof text === 'string' ? text : '';
 }
 
-function readRelationships(xml: string): RelationshipRef[] {
+function readRelationships(xml: string, parser: XMLParser): RelationshipRef[] {
   const document = parser.parse(xml) as Record<string, unknown>;
   return toArray(readPath(document, ['Relationships', 'Relationship']))
     .map((relationship) => ({
@@ -329,7 +336,7 @@ function readWorkbookSheets(workbook: Record<string, unknown>): WorkbookSheetRef
     .filter((sheet) => sheet.relationshipId);
 }
 
-async function readFontStyles(zip: Map<string, ZipEntry>, relationships: RelationshipRef[], signal?: AbortSignal): Promise<{
+async function readFontStyles(zip: Map<string, ZipEntry>, relationships: RelationshipRef[], parser: XMLParser, signal?: AbortSignal): Promise<{
   fonts: PreviewFontReference[]; styles: Array<PreviewFontReference | undefined>;
 }> {
   const stylePath = resolveWorkbookTarget(relationships.find(rel => rel.type?.endsWith('/styles'))?.target ?? 'styles.xml');
@@ -396,14 +403,25 @@ function readWorksheet(
     name: string;
     sharedStrings: string[];
     fontStyles?: ParsedCell['font'][];
-  }
+  },
+  parser: XMLParser
 ): ParsedSheet {
-  const simple = readSimpleWorksheet(xml, options);
+  let columnStyle: ((column: number) => number) | undefined;
+  if (options.fontStyles?.length && /<cols\b/.test(xml) && !xml.includes('<!')) {
+    const dataStart = /<sheetData\b/.exec(xml)?.index;
+    if (dataStart !== undefined && xml.lastIndexOf('<cols') < dataStart) {
+      // Parse only metadata with the existing XML parser, without creating an
+      // intermediate XML object tree for every numeric/shared-string cell.
+      const metadata = parser.parse(xml.slice(0, dataStart) + '</worksheet>');
+      if (readPath(metadata, ['worksheet']) !== undefined) columnStyle = readColumnStyles(metadata);
+    }
+  }
+  const simple = readSimpleWorksheet(xml, columnStyle ? { ...options, columnStyle } : options);
   if (simple) return simple;
   const document = parser.parse(xml) as Record<string, unknown>;
   const rowEntries = toArray(readPath(document, ['worksheet', 'sheetData', 'row']));
   const rows: ParsedRow[] = [];
-  const columns = toArray(readPath(document, ['worksheet', 'cols', 'col']));
+  columnStyle ??= options.fontStyles?.length ? readColumnStyles(document) : undefined;
   let maxColumn = 0;
   let maxRow = 0;
 
@@ -415,8 +433,7 @@ function readWorksheet(
       .map((cellEntry) => {
         const cell = readCell(cellEntry, options.sharedStrings);
         if (!cell) return null;
-        const column = columns.find(column => cell.column >= Number(readPath(column, ['min'])) && cell.column <= Number(readPath(column, ['max'])));
-        const style = readPath(cellEntry, ['s']) ?? rowStyle ?? readPath(column, ['style']) ?? 0;
+        const style = (cellEntry as Record<string, unknown>).s ?? rowStyle ?? columnStyle?.(cell.column) ?? 0;
         const font = options.fontStyles?.[Number(style)];
         if (font) cell.font = font;
         return cell;
@@ -440,16 +457,28 @@ function readWorksheet(
   };
 }
 
+function readColumnStyles(document: unknown): (column: number) => number {
+  const columns = toArray(readPath(document, ['worksheet', 'cols', 'col'])).map(column => ({
+    min: Number(readPath(column, ['min'])), max: Number(readPath(column, ['max'])), style: Number(readPath(column, ['style']) ?? 0)
+  }));
+  const cache: number[] = [];
+  // Cache columns actually read, preserving the first declaration even when
+  // unstyled. Never expand a declared range into individual columns.
+  return column => cache[column] ??= columns.find(range => column >= range.min && column <= range.max)?.style ?? 0;
+}
+
 function readCell(cellEntry: unknown, sharedStrings: string[]): ParsedCell | null {
-  const ref = String(readPath(cellEntry, ['r']) ?? '');
+  if (!cellEntry || typeof cellEntry !== 'object') return null;
+  const entry = cellEntry as Record<string, unknown>;
+  const ref = String(entry.r ?? '');
   if (!ref) {
     return null;
   }
 
   const position = parseCellRef(ref);
-  const valueType = String(readPath(cellEntry, ['t']) ?? '');
-  const rawValue = readCellRawValue(cellEntry);
-  const formula = readCellFormula(cellEntry);
+  const valueType = String(entry.t ?? '');
+  const rawValue = entry.v == null ? null : String(entry.v);
+  const formula = readTextValue(entry.f);
   let value = rawValue ?? '';
 
   if (valueType === 's') {
@@ -458,7 +487,7 @@ function readCell(cellEntry: unknown, sharedStrings: string[]): ParsedCell | nul
     const boolean = rawValue?.trim();
     value = boolean === '1' || boolean === 'true' ? 'TRUE' : 'FALSE';
   } else if (valueType === 'inlineStr') {
-    value = readSharedStringItem(readPath(cellEntry, ['is']));
+    value = readSharedStringItem(entry.is);
   }
 
   return {
@@ -468,262 +497,6 @@ function readCell(cellEntry: unknown, sharedStrings: string[]): ParsedCell | nul
     value,
     ...(formula ? { formula, needsCalculation: rawValue == null } : {})
   };
-}
-
-function readCellRawValue(cellEntry: unknown): string | null {
-  const value = readPath(cellEntry, ['v']);
-  if (value == null) {
-    return null;
-  }
-  return String(value);
-}
-
-function readCellFormula(cellEntry: unknown): string {
-  const formula = readPath(cellEntry, ['f']);
-  if (typeof formula === 'string') {
-    return formula;
-  }
-  const text = readPath(formula, ['#text']);
-  return typeof text === 'string' ? text : '';
-}
-
-export function resolveCellValue(sheet: ParsedSheet, cell: ParsedCell, resolving = new Set<string>()): string {
-  if (!cell.formula || !cell.needsCalculation) {
-    return cell.value;
-  }
-  if (resolving.has(cell.ref)) {
-    return `=${cell.formula}`;
-  }
-
-  resolving.add(cell.ref);
-  try {
-    const result = new FormulaReader(cell.formula, (ref) => readFormulaCellNumber(sheet, ref, resolving)).read();
-    cell.value = String(result);
-  } catch {
-    // ponytail: unsupported Excel functions stay visible as formulas; add a full engine only when preview parity requires it.
-    cell.value = `=${cell.formula}`;
-  } finally {
-    resolving.delete(cell.ref);
-    cell.needsCalculation = false;
-  }
-  return cell.value;
-}
-
-const formulaCellIndexes = new WeakMap<ParsedSheet, Map<string, ParsedCell>>();
-
-function readFormulaCellNumber(sheet: ParsedSheet, ref: string, resolving: Set<string>): number {
-  const position = parseCellRef(ref.replace(/\$/g, ''));
-  let cells = formulaCellIndexes.get(sheet);
-  if (!cells) {
-    cells = new Map();
-    for (const row of sheet.rows) for (const cell of row.cells) cells.set(`${row.index}:${cell.column}`, cell);
-    formulaCellIndexes.set(sheet, cells);
-  }
-  const cell = cells.get(`${position.row}:${position.column}`);
-  if (!cell) {
-    return 0;
-  }
-  const value = resolveCellValue(sheet, cell, resolving).trim();
-  if (value === '') {
-    return 0;
-  }
-  if (value.toUpperCase() === 'TRUE') {
-    return 1;
-  }
-  if (value.toUpperCase() === 'FALSE') {
-    return 0;
-  }
-  const number = Number(value);
-  if (!Number.isFinite(number)) {
-    throw new Error(`Formula reference ${ref} is not numeric.`);
-  }
-  return number;
-}
-
-class FormulaReader {
-  private readonly tokens: string[];
-  private index = 0;
-
-  constructor(formula: string, private readonly readCell: (ref: string) => number) {
-    this.tokens = tokenizeFormula(formula.replace(/^=/, '').trim());
-  }
-
-  read(): number {
-    const value = this.readExpression();
-    if (this.index !== this.tokens.length || Array.isArray(value) || !Number.isFinite(value)) {
-      throw new Error('Unsupported formula.');
-    }
-    return value;
-  }
-
-  private readExpression(): FormulaValue {
-    let value = this.readTerm();
-    while (this.peek() === '+' || this.peek() === '-') {
-      const operator = this.take();
-      const right = this.readTerm();
-      value = operator === '+' ? scalar(value) + scalar(right) : scalar(value) - scalar(right);
-    }
-    return value;
-  }
-
-  private readTerm(): FormulaValue {
-    let value = this.readPower();
-    while (this.peek() === '*' || this.peek() === '/') {
-      const operator = this.take();
-      const right = this.readPower();
-      value = operator === '*' ? scalar(value) * scalar(right) : scalar(value) / scalar(right);
-    }
-    return value;
-  }
-
-  private readPower(): FormulaValue {
-    let value = this.readUnary();
-    if (this.peek() === '^') {
-      this.take();
-      value = scalar(value) ** scalar(this.readPower());
-    }
-    return value;
-  }
-
-  private readUnary(): FormulaValue {
-    if (this.peek() === '+' || this.peek() === '-') {
-      return (this.take() === '-' ? -1 : 1) * scalar(this.readUnary());
-    }
-    return this.readPrimary();
-  }
-
-  private readPrimary(): FormulaValue {
-    const token = this.take();
-    if (token === '(') {
-      const value = this.readExpression();
-      this.expect(')');
-      return value;
-    }
-    if (/^(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?$/i.test(token)) {
-      return Number(token);
-    }
-    if (/^\$?[A-Z]+\$?\d+$/i.test(token)) {
-      if (this.peek() !== ':') {
-        return this.readCell(token);
-      }
-      this.take();
-      return this.readRange(token, this.take());
-    }
-    if (/^[A-Z][A-Z0-9_.]*$/i.test(token)) {
-      if (token.toUpperCase() === 'TRUE') {
-        return 1;
-      }
-      if (token.toUpperCase() === 'FALSE') {
-        return 0;
-      }
-      if (token.toUpperCase() !== 'SUM') {
-        throw new Error('Unsupported function.');
-      }
-      this.expect('(');
-      const values: number[] = [];
-      if (this.peek() !== ')') {
-        do {
-          const value = this.readExpression();
-          values.push(...(Array.isArray(value) ? value : [value]));
-        } while (this.peek() === ',' && Boolean(this.take()));
-      }
-      this.expect(')');
-      return values.reduce((sum, value) => sum + value, 0);
-    }
-    throw new Error('Unsupported formula token.');
-  }
-
-  private readRange(firstRef: string, lastRef: string): number[] {
-    if (!/^\$?[A-Z]+\$?\d+$/i.test(lastRef)) {
-      throw new Error('Invalid range.');
-    }
-    const first = parseCellRef(firstRef.replace(/\$/g, ''));
-    const last = parseCellRef(lastRef.replace(/\$/g, ''));
-    const values: number[] = [];
-    for (let row = Math.min(first.row, last.row); row <= Math.max(first.row, last.row); row += 1) {
-      for (let column = Math.min(first.column, last.column); column <= Math.max(first.column, last.column); column += 1) {
-        values.push(this.readCell(`${columnIndexToName(column)}${row}`));
-      }
-    }
-    return values;
-  }
-
-  private peek(): string {
-    return this.tokens[this.index] ?? '';
-  }
-
-  private take(): string {
-    const token = this.tokens[this.index];
-    if (!token) {
-      throw new Error('Unexpected end of formula.');
-    }
-    this.index += 1;
-    return token;
-  }
-
-  private expect(token: string): void {
-    if (this.take() !== token) {
-      throw new Error(`Expected ${token}.`);
-    }
-  }
-}
-
-type FormulaValue = number | number[];
-
-function scalar(value: FormulaValue): number {
-  if (Array.isArray(value)) {
-    throw new Error('Range cannot be used as a scalar.');
-  }
-  return value;
-}
-
-function tokenizeFormula(formula: string): string[] {
-  const tokens: string[] = [];
-  const pattern = /\s*((?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?|\$?[A-Z]+\$?\d+|[A-Z][A-Z0-9_.]*|[()+\-*/^,:])/iy;
-  let offset = 0;
-  while (offset < formula.length) {
-    pattern.lastIndex = offset;
-    const match = pattern.exec(formula);
-    if (!match) {
-      throw new Error('Unsupported formula token.');
-    }
-    tokens.push(match[1] ?? '');
-    offset = pattern.lastIndex;
-  }
-  return tokens;
-}
-
-function parseCellRef(ref: string): { row: number; column: number } {
-  const match = /^([A-Z]+)(\d+)$/i.exec(ref);
-  if (!match) {
-    return {
-      row: 1,
-      column: 1
-    };
-  }
-  return {
-    column: columnNameToIndex(match[1] ?? 'A'),
-    row: Number(match[2] ?? 1)
-  };
-}
-
-function columnNameToIndex(name: string): number {
-  let index = 0;
-  for (const char of name.toUpperCase()) {
-    index = index * 26 + char.charCodeAt(0) - 64;
-  }
-  return index;
-}
-
-function columnIndexToName(index: number): string {
-  let cursor = index;
-  let name = '';
-  while (cursor > 0) {
-    const remainder = (cursor - 1) % 26;
-    name = String.fromCharCode(65 + remainder) + name;
-    cursor = Math.floor((cursor - 1) / 26);
-  }
-  return name || 'A';
 }
 
 function inferCsvSheetName(name: string | undefined): string {

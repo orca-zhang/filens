@@ -48,6 +48,6 @@ test('cancels a displayed 3D model and stops its detached controls and animation
 
 test('opens binary STL through the demo upload flow',async({page})=>{
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('./?view=preview');
- await page.locator('input[type=file]').setInputFiles({name:'terrain.stl',mimeType:'model/stl',buffer:Buffer.from(createBinaryStlFixture(1000))});
+ await page.locator('.wb-upload input[type=file]').setInputFiles({name:'terrain.stl',mimeType:'model/stl',buffer:Buffer.from(createBinaryStlFixture(1000))});
  await expect(page.locator('canvas.model3dv-canvas')).toBeVisible();await expect(page.locator('.wb-note.is-error')).toHaveCount(0);expect(errors).toEqual([]);
 });

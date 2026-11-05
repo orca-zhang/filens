@@ -1,7 +1,7 @@
 // Rebuild the replaceable, always-external read-only archive engine.
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const vendor = path.join(root, 'packages/archive/vendor/7zip');
 const manifest = JSON.parse(await readFile(path.join(vendor, 'manifest.json'), 'utf8'));
 const version = await run('emcc', ['--version']);
-if (!version.split('\n')[0].includes(` ${manifest.emscripten} `)) throw new Error(`Use Emscripten ${manifest.emscripten}.`);
+if (version.split('\n')[0].match(/\) (\d+\.\d+\.\d+)(?:-git)?(?:\s|$)/)?.[1] !== manifest.emscripten) throw new Error(`Use Emscripten ${manifest.emscripten}.`);
 const work = await mkdtemp(path.join(os.tmpdir(), 'filens-7zip-'));
 try {
   const source = path.join(work, 'source');
@@ -28,8 +28,10 @@ try {
   await run('make', ['-j8', '-f', 'makefile.filens', 'O=_filens', 'EMSCRIPTEN=1', 'ST_MODE=1', 'CC=emcc', 'CXX=em++',
     'LOCAL_FLAGS=-DZ7_ST -DZ7_EXTRACT_ONLY',
     'CFLAGS_BASE=-O3 -c -DNDEBUG -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -fPIC',
-    'FLAGS_FLTO=-flto', 'LFLAGS_NOEXECSTACK=', 'LIB2=', 'AR_OBJS=$(O)/SplitHandler.o',
-    ...['CAB', 'CHM', 'COM', 'ISO', 'NSIS', 'TAR', 'UDF', 'WIM'].map(name => `${name}_OBJS=`),
+    'FLAGS_FLTO=-flto', 'LFLAGS_NOEXECSTACK=', 'LIB2=',
+    'AR_OBJS=$(O)/SplitHandler.o $(O)/Bz2Handler.o $(O)/XzHandler.o $(O)/LzmaHandler.o $(O)/ZstdHandler.o $(O)/ZHandler.o $(O)/ArHandler.o $(O)/CpioHandler.o $(O)/LzhHandler.o $(O)/RpmHandler.o $(O)/HandlerCont.o $(O)/XarHandler.o',
+    ...['CHM', 'COM', 'NSIS', 'TAR'].map(name => `${name}_OBJS=`),
+    'WIM_OBJS=$(O)/WimHandler.o $(O)/WimIn.o $(O)/WimRegister.o',
     'ZIP_OBJS=$(O)/ZipHandler.o $(O)/ZipIn.o $(O)/ZipItem.o $(O)/ZipRegister.o',
     'LDFLAGS_EMCC=-O3 -sEXPORTED_RUNTIME_METHODS=FS,callMain -sALLOW_MEMORY_GROWTH=1 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=SevenZip --post-js post.js --pre-js pre.js'
   ], bundle);
@@ -44,7 +46,10 @@ try {
     }
   } else {
     await mkdir(vendor, { recursive: true });
-    for (const file of ['7zz.js', '7zz.wasm']) await copyFile(path.join(bundle, '_filens', file), path.join(vendor, file));
+    for (const file of ['7zz.js', '7zz.wasm']) {
+      await copyFile(path.join(bundle, '_filens', file), path.join(vendor, file));
+      await chmod(path.join(vendor, file), 0o644);
+    }
     await writeFile(path.join(vendor, 'manifest.json'), `${JSON.stringify({ ...manifest, sha256: hashes }, null, 2)}\n`);
   }
   console.log(`7-Zip ${manifest.version}: -O3 read-only engine ${process.argv.includes('--check') ? 'reproduced exactly' : 'rebuilt'}.`);

@@ -1,21 +1,14 @@
 import './style.css';
 
 import {
-  DEFAULT_FORMAT_ROUTES,
   createHtmlPreviewDriver,
   createTextPreviewDriver,
-  type FormatDefinition,
   type PreviewDriver
 } from '@filens/core';
-import { createEbookPreviewDriver, createEbookPreviewRoutes } from '@filens/books';
-
-const TEXT_DRIVER_IDS = new Set(['text', 'html']);
-const TEXT_CORE_ROUTES = DEFAULT_FORMAT_ROUTES.filter((route) => TEXT_DRIVER_IDS.has(route.driverId));
+import { createEbookPreviewDriver } from '@filens/books';
 
 export function createTextPreviewDrivers(): PreviewDriver[] {
   return [createTextPreviewDriver(), createHtmlPreviewDriver(), createEbookPreviewDriver()];
 }
 
-export function createTextPreviewRoutes(baseRoutes = TEXT_CORE_ROUTES): FormatDefinition[] {
-  return createEbookPreviewRoutes(baseRoutes);
-}
+export { createTextPreviewRoutes } from './routes';

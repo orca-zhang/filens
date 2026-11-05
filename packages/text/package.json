@@ -1,6 +1,6 @@
 {
   "name": "@filens/text",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Text, code, HTML, and ebook preview drivers for @filens.",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,20 +14,25 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"
   },
   "dependencies": {
-    "@filens/books": "^0.1.0"
+    "@filens/books": "^0.1.1"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
     "@filens/core": "file:../core",

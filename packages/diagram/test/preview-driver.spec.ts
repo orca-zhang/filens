@@ -5,6 +5,19 @@ import { createDiagramPreviewDriver, createDiagramPreviewRoutes, decodeCompresse
 import { legacyVdxFixture } from './fixtures/diagrams.mjs';
 
 describe('diagram preview driver', () => {
+  it('keeps shapes inside skipped Visio Group and Foreign containers and their fallback IDs', () => {
+    const xml = '<Page><Shapes><Shape Type="Group"><Cell N="Width" V="99"/><Text>&amp;copy;</Text><Shapes>' +
+      '<Shape ID="child" Type="Shape"><Cell N="Width" V="2"/><Text>Child</Text></Shape>' +
+      '</Shapes></Shape><Shape Type="Foreign"><Shapes><Shape ID="foreign-child" Type="Shape"><Text>Foreign child</Text></Shape></Shapes></Shape>' +
+      '<Shape Type="Shape"><Text>After</Text></Shape></Shapes></Page>';
+    const page = loadVdxDiagram(xml).pages[0]!;
+    expect(page.nodes.map(({ id, label }) => ({ id, label }))).toEqual([
+      { id: 'child', label: 'Child' }, { id: 'foreign-child', label: 'Foreign child' }, { id: 'shape-3', label: 'After' }
+    ]);
+    expect(page.nodes[0].width).toBe(192);
+    expect(page.edges).toEqual([]);
+  });
+
   it('uses default draw.io dimensions when size attributes are absent', () => {
     const nodes = loadDrawioDiagram('<mxGraphModel><root><mxCell id="default" vertex="1"><mxGeometry/></mxCell><mxCell id="zero" vertex="1"><mxGeometry width="0" height="0"/></mxCell><mxCell id="invalid" vertex="1"><mxGeometry width="invalid" height="Infinity"/></mxCell></root></mxGraphModel>').pages[0]!.nodes;
     expect(nodes).toMatchObject([
@@ -228,8 +241,11 @@ describe('diagram preview driver', () => {
     expect(host.querySelector('[data-element-id="edge-1"] polyline')?.getAttribute('stroke')).toBe('#6c8ebf');
     expect(host.querySelector('[data-element-id="edge-1"] polyline')?.getAttribute('marker-end')).toBe('url(#diagramv-arrow-end)');
 
-    host.querySelector<SVGGElement>('[data-element-id="done"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const oldNode = host.querySelector<SVGGElement>('[data-element-id="done"]')!;
+    oldNode.querySelector('ellipse')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(session.getState().selectedElementId).toBe('done');
+    expect(host.querySelectorAll('.is-selected')).toHaveLength(1);
+    expect(oldNode.classList.contains('is-selected')).toBe(true);
 
     for (const index of [NaN, Infinity, 0.5]) {
       session.goToPage?.(index);
@@ -244,12 +260,16 @@ describe('diagram preview driver', () => {
     expect(viewport.scrollLeft).toBe(0);
     expect(session.getState().pageIndex).toBe(1);
     expect(host.querySelector('.diagramv-summary')?.textContent).toContain('Notes');
+    oldNode.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(session.getState().selectedElementId).toBeUndefined();
 
     session.setScale?.(1.25);
     expect(session.getState().scale).toBe(1.25);
     expect(renderedStates).toHaveLength(1);
 
     session.destroy();
+    oldNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(session.getState().selectedElementId).toBeUndefined();
     host.remove();
   });
 

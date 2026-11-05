@@ -1,0 +1,249 @@
+{
+  "recordedAt": "2026-11-04T16:45:09.451Z",
+  "environment": {
+    "dsh": "0.2.1-rc.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "electron": "44.7.0"
+  },
+  "plugin": "dsh-filens@0.1.2",
+  "installationSource": "安装源\n中国大陆镜像源",
+  "components": {
+    "cli": "0.5.5",
+    "preview": "0.3.4",
+    "extensions": 450,
+    "previewSHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d"
+  },
+  "source": "Installed Desktop application, public npm package, actual UI interactions",
+  "editing": "Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions and pointer are annotations. This is not a timing comparison.",
+  "encoding": {
+    "fps": 25,
+    "webp": {
+      "width": 960,
+      "quality": 92,
+      "color": "full color"
+    },
+    "gif": {
+      "width": 960,
+      "colors": 256,
+      "palette": "adaptive per scene",
+      "dither": "sierra2_4a",
+      "optimization": "lossless frame differences, displayed pixels and timing verified"
+    },
+    "highlightFrames": 377,
+    "highlightSeconds": 15.08
+  },
+  "modelCalls": 0,
+  "checks": [
+    "public npm installation via Desktop UI",
+    "default installation source unchanged (China mainland mirror)",
+    "both installed components running",
+    "DOCX sidebar preview",
+    "XLSX preview and worksheet switching",
+    "real document fullscreen",
+    "Page Down navigation through all three slides",
+    "Escape exits fullscreen"
+  ],
+  "documents": [
+    {
+      "name": "Aurora Guide.docx",
+      "source": "apps/demo/public/samples/filens-aurora-guide.docx",
+      "bytes": 601507,
+      "sha256": "3dd79b9a3ad29476dd80d91e79553c52706b2cdfa916771641ec43454f9763a1"
+    },
+    {
+      "name": "Observatory.xlsx",
+      "source": "apps/demo/public/samples/filens-observatory.xlsx",
+      "bytes": 6393,
+      "sha256": "3449d35a12a7097ff224546543a71e67c15166bde20f14bf81e0afaf0560268e"
+    },
+    {
+      "name": "Field Notes.pptx",
+      "source": "apps/demo/public/samples/filens-field-notes.pptx",
+      "bytes": 659484,
+      "sha256": "1d19a97f7eb03bdbc6b32b52307cb4ebff4e7436554dde4155883d2b56aed7a1"
+    }
+  ],
+  "chapters": [
+    {
+      "start": 0,
+      "duration": 2.2,
+      "sourceStart": 0,
+      "zh": "插件 → 添加插件",
+      "en": "Plugins → Add plugin"
+    },
+    {
+      "start": 2.2,
+      "duration": 3.32,
+      "sourceStart": 2.208,
+      "zh": "填写 dsh-filens@0.1.2，点击安装",
+      "en": "Enter dsh-filens@0.1.2 and click Install"
+    },
+    {
+      "start": 5.52,
+      "duration": 2.32,
+      "sourceStart": 8.811,
+      "zh": "安装完成，立即启用",
+      "en": "Installation complete → Enable now"
+    },
+    {
+      "start": 7.84,
+      "duration": 2.2,
+      "sourceStart": 11.127,
+      "zh": "文档工具与预览一起启用",
+      "en": "FiLens Tools and Preview are enabled together"
+    },
+    {
+      "start": 10.04,
+      "duration": 1.6,
+      "sourceStart": 13.501,
+      "zh": "在工作区文件列表中，点击 Office 文件",
+      "en": "Click an Office file in the workspace"
+    },
+    {
+      "start": 11.64,
+      "duration": 2.6,
+      "sourceStart": 15.103,
+      "zh": "Word 文档：直接在侧栏阅读",
+      "en": "Word: read directly in the sidebar"
+    },
+    {
+      "start": 14.24,
+      "duration": 2.92,
+      "sourceStart": 17.706,
+      "zh": "Excel：保留工作表，可直接切换",
+      "en": "Excel: switch worksheets inside the preview"
+    },
+    {
+      "start": 17.16,
+      "duration": 2.6,
+      "sourceStart": 20.609,
+      "zh": "PPT：图片和文字直接呈现",
+      "en": "PowerPoint: open slides directly in DSH"
+    },
+    {
+      "start": 19.76,
+      "duration": 2.72,
+      "sourceStart": 23.212,
+      "zh": "进入全屏，点击画面开始演示",
+      "en": "Enter fullscreen, then click the slide to focus"
+    },
+    {
+      "start": 22.48,
+      "duration": 2.4,
+      "sourceStart": 26.362,
+      "zh": "Page Down：第二页",
+      "en": "Page Down → Slide 2"
+    },
+    {
+      "start": 24.88,
+      "duration": 2.4,
+      "sourceStart": 29.29,
+      "zh": "Page Down：第三页",
+      "en": "Page Down → Slide 3"
+    },
+    {
+      "start": 27.28,
+      "duration": 1.8,
+      "sourceStart": 32.099,
+      "zh": "Esc 退出全屏，回到 DSH",
+      "en": "Esc returns to DSH"
+    }
+  ],
+  "highlightChapters": [
+    {
+      "start": 0,
+      "duration": 1.2,
+      "sourceStart": 0,
+      "zh": "插件 → 添加插件",
+      "en": "Plugins → Add plugin"
+    },
+    {
+      "start": 1.2,
+      "duration": 2.8,
+      "sourceStart": 2.208,
+      "zh": "填写 dsh-filens@0.1.2，点击安装",
+      "en": "Enter dsh-filens@0.1.2 and click Install"
+    },
+    {
+      "start": 4,
+      "duration": 1.44,
+      "sourceStart": 8.811,
+      "zh": "安装完成，立即启用",
+      "en": "Installation complete → Enable now"
+    },
+    {
+      "start": 5.44,
+      "duration": 1.2,
+      "sourceStart": 11.127,
+      "zh": "文档工具与预览一起启用",
+      "en": "FiLens Tools and Preview are enabled together"
+    },
+    {
+      "start": 6.64,
+      "duration": 1.2,
+      "sourceStart": 15.103,
+      "zh": "Word 文档：直接在侧栏阅读",
+      "en": "Word: read directly in the sidebar"
+    },
+    {
+      "start": 7.84,
+      "duration": 1.24,
+      "sourceStart": 17.706,
+      "zh": "Excel：保留工作表，可直接切换",
+      "en": "Excel: switch worksheets inside the preview"
+    },
+    {
+      "start": 9.08,
+      "duration": 1.2,
+      "sourceStart": 20.609,
+      "zh": "PPT：图片和文字直接呈现",
+      "en": "PowerPoint: open slides directly in DSH"
+    },
+    {
+      "start": 10.28,
+      "duration": 1.2,
+      "sourceStart": 23.212,
+      "zh": "进入全屏，点击画面开始演示",
+      "en": "Enter fullscreen, then click the slide to focus"
+    },
+    {
+      "start": 11.48,
+      "duration": 1.2,
+      "sourceStart": 26.362,
+      "zh": "Page Down：第二页",
+      "en": "Page Down → Slide 2"
+    },
+    {
+      "start": 12.68,
+      "duration": 1.2,
+      "sourceStart": 29.29,
+      "zh": "Page Down：第三页",
+      "en": "Page Down → Slide 3"
+    },
+    {
+      "start": 13.88,
+      "duration": 1.2,
+      "sourceStart": 32.099,
+      "zh": "Esc 退出全屏，回到 DSH",
+      "en": "Esc returns to DSH"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+      "bytes": 5803648,
+      "sha256": "e13fd86ccf809c221d14a2dcc9c55b38a78c2e178493decf1d80274a18be6da0"
+    },
+    {
+      "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+      "bytes": 17327040,
+      "sha256": "18f89d815aaf97549218023d08f1b95ed99456c320362567d8d21c204311b09e"
+    },
+    {
+      "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+      "bytes": 3751766,
+      "sha256": "dbf96572efd7afc7010573a8fa716181699906cee830e465ade929c315bea2e9"
+    }
+  ]
+}

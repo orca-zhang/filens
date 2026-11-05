@@ -1,0 +1,503 @@
+{
+  "date": "2026-11-04",
+  "baseline": "Working-tree build after xlsx-compact; contains prior uncommitted work, not Git HEAD. Snapshot: tmp/xlsx-xml-baseline.",
+  "measurement": "Complete XLSX load, including ZIP indexing, decompression and worksheet parsing; excludes input generation, module imports, rendering and model hashing. Two warmups and seven measured alternating runs. Every complete workbook model is hashed outside the timer and compared across engines. Package sizes exclude dependencies; runtime sizes cover only the XLSX entry, using Node gzip level 9 and default Brotli.",
+  "runtime": {
+    "node": "v20.20.2",
+    "zlib": "1.3.1-e00f703",
+    "brotli": "1.1.0"
+  },
+  "changes": [
+    "Reuse five regex objects across cells; reset sticky attribute cursor before every match.",
+    "Use fixed-shape per-element attributes, checking every attribute while retaining only r, s, t and customFormat.",
+    "Allow plain validated sheetData attributes in the fast path and metadata-prefix locator.",
+    "Use a lazy array column-style cache; retain first matching declaration and cell/row precedence.",
+    "Use an XML comment to force the general-parser benchmark and font regression cases."
+  ],
+  "builds": {
+    "baseline": {
+      "npm": {
+        "id": "@filens/xlsx@0.1.0",
+        "name": "@filens/xlsx",
+        "version": "0.1.0",
+        "size": 13115,
+        "unpackedSize": 41974,
+        "shasum": "5e708a1d99116b397bbd17f463dc9659e5c485fb",
+        "integrity": "sha512-3VGPkhfETzz5SCmMnAJp16ZRgw/txms0r/C9maborpxLjViZ3/aaZUbo8y3ndnOjlIHjbHpFmguTSbkj8bA67w==",
+        "filename": "filens-xlsx-0.1.0.tgz",
+        "files": [
+          {
+            "path": "dist/cell-index.d.ts",
+            "size": 783,
+            "mode": 420
+          },
+          {
+            "path": "dist/columns.d.ts",
+            "size": 131,
+            "mode": 420
+          },
+          {
+            "path": "dist/index.css",
+            "size": 1215,
+            "mode": 420
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 286,
+            "mode": 420
+          },
+          {
+            "path": "dist/index.js",
+            "size": 34767,
+            "mode": 420
+          },
+          {
+            "path": "dist/parser.d.ts",
+            "size": 485,
+            "mode": 420
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 1922,
+            "mode": 420
+          },
+          {
+            "path": "dist/simple-worksheet.d.ts",
+            "size": 536,
+            "mode": 420
+          },
+          {
+            "path": "dist/types.d.ts",
+            "size": 580,
+            "mode": 420
+          },
+          {
+            "path": "package.json",
+            "size": 1269,
+            "mode": 420
+          }
+        ],
+        "entryCount": 10,
+        "bundled": []
+      },
+      "tarSha256": "efb1fbda6e51fc993500895a34f4f61290ddcb5cd345a2313a4f2939c46204b2",
+      "entry": {
+        "sha256": "e4a2baee8e9edf40f54237e604fa243b738303d5692096d6f6ad3746b1465dd3",
+        "rawBytes": 34767,
+        "gzip9Bytes": 10456,
+        "brotliBytes": 9324
+      }
+    },
+    "current": {
+      "npm": {
+        "id": "@filens/xlsx@0.1.0",
+        "name": "@filens/xlsx",
+        "version": "0.1.0",
+        "size": 13195,
+        "unpackedSize": 42107,
+        "shasum": "b46d1c0a263bf190f9e0e2409f2974b747326487",
+        "integrity": "sha512-W0Y9zo5KAlu9bE1kmfLkyKYvvZq4RUToOfr9oHhXYYBx56BaXdMKfOXsS5hPixdSjqrLhBH7i2Usv2FlKGxeLA==",
+        "filename": "filens-xlsx-0.1.0.tgz",
+        "files": [
+          {
+            "path": "dist/cell-index.d.ts",
+            "size": 783,
+            "mode": 420
+          },
+          {
+            "path": "dist/columns.d.ts",
+            "size": 131,
+            "mode": 420
+          },
+          {
+            "path": "dist/index.css",
+            "size": 1215,
+            "mode": 420
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 286,
+            "mode": 420
+          },
+          {
+            "path": "dist/index.js",
+            "size": 34900,
+            "mode": 420
+          },
+          {
+            "path": "dist/parser.d.ts",
+            "size": 485,
+            "mode": 420
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 1922,
+            "mode": 420
+          },
+          {
+            "path": "dist/simple-worksheet.d.ts",
+            "size": 536,
+            "mode": 420
+          },
+          {
+            "path": "dist/types.d.ts",
+            "size": 580,
+            "mode": 420
+          },
+          {
+            "path": "package.json",
+            "size": 1269,
+            "mode": 420
+          }
+        ],
+        "entryCount": 10,
+        "bundled": []
+      },
+      "tarSha256": "52c10d005c4028de003f05420cd6a68c6fdd16813f861878bade7c0c1816f2b6",
+      "entry": {
+        "sha256": "969d28363bead704c97a0eb18a86099efe4e7e13f0309c19e97c2dd9bbd11178",
+        "rawBytes": 34900,
+        "gzip9Bytes": 10532,
+        "brotliBytes": 9427
+      }
+    }
+  },
+  "sourceSha256": {
+    "packages/xlsx/src/cell-index.ts": "4ab5a22f0bab22af4456e4d147d48a8e7475f415750a097381c5f7c2598adc23",
+    "packages/xlsx/src/columns.ts": "b712873bd4f12129c6da9a06fd52d79454d41610f393e4dc3eb1569d53ac72d5",
+    "packages/xlsx/src/index.ts": "34c117a47c291cd186fb7a28198c36e4a96baa07494a2811665b1f8f507cf5a4",
+    "packages/xlsx/src/parser.ts": "4f43a9878e926d66c912be735b5ae89ef124610bf7401d02b9a56658771c4a69",
+    "packages/xlsx/src/preview-driver.ts": "8668a58d258e4cf728bd4b6de94bc678c7e64d1953e53dafee5e5ffaaebf430b",
+    "packages/xlsx/src/simple-worksheet.ts": "d8b9fd47321f602f71c4613a98f93b4d489e543b1421a076bd26c1ac029406d5",
+    "packages/xlsx/src/types.ts": "d2e2854cb0cf25c0b888ac070810d97c4d9b211f0109b6938138feb37ddeccec",
+    "packages/xlsx/package.json": "b0043ec0d839ec2c31173022aded193c3ffde524989b0b391665f8104507e2ab",
+    "packages/xlsx/vite.config.ts": "b993ed7acee99186e7c66206881b303c91b2aa6aa353414e3dd8a8b198904a99",
+    "packages/xlsx/test/simple-worksheet.spec.ts": "2d873f7e8858c65c5ed9d621439bb346f6ecdd956cc55b2987af4acdfbb72abe",
+    "packages/xlsx/test/fonts.spec.ts": "e395c180ec5d58febe22dccd685e4181b546eda5256399a50905d64c1ec1363e",
+    "packages/xlsx/test/fixtures/workbook.mjs": "73021e036267758e41b5ce7146e00142092f71046093a3d5de305cf6072d8ff2",
+    "scripts/benchmark-xlsx-columns.mjs": "e2bc95fffb12ba9d818091743b6e4f3969b93d8df66a3abe64467ce65ceb556d",
+    "scripts/benchmark-xlsx-formulas.mjs": "9c1da0e8e5c5353c41b1fa183ace7682ddfd02883fd7499796b90c8e727b9d31",
+    "scripts/verify-xlsx-formula-equivalence.mjs": "a700aff1c18c9ba215e1127c251a9fe06dc995d15dd54fed46511a8c900ebae7",
+    "scripts/verify-xlsx-package.mjs": "b5dc085aa3ecf625e7b40d18e814f631abd9341c12fcc6540ead72ddaae50228"
+  },
+  "baselineSourceSha256": {
+    "packages/xlsx/src/cell-index.ts": "4ab5a22f0bab22af4456e4d147d48a8e7475f415750a097381c5f7c2598adc23",
+    "packages/xlsx/src/columns.ts": "b712873bd4f12129c6da9a06fd52d79454d41610f393e4dc3eb1569d53ac72d5",
+    "packages/xlsx/src/index.ts": "34c117a47c291cd186fb7a28198c36e4a96baa07494a2811665b1f8f507cf5a4",
+    "packages/xlsx/src/parser.ts": "216f35edf484cf8b4ba293894f457ee1c8af66f23e34b7ccf3ee957e908b5bee",
+    "packages/xlsx/src/preview-driver.ts": "8668a58d258e4cf728bd4b6de94bc678c7e64d1953e53dafee5e5ffaaebf430b",
+    "packages/xlsx/src/simple-worksheet.ts": "7ea78a48b2206d3c26f034d1422df508c738c6f50cfeaf059604ffaa7403d96e",
+    "packages/xlsx/src/types.ts": "d2e2854cb0cf25c0b888ac070810d97c4d9b211f0109b6938138feb37ddeccec"
+  },
+  "validation": {
+    "xlsxBuildPassed": true,
+    "declarationBuildPassed": true,
+    "xlsxUnitTestsPassed": 80,
+    "browserTestsPassed": 3,
+    "conversionPolicyChecksPassed": 2122,
+    "equivalence": {
+      "bindings": {
+        "current": "969d28363bead704c97a0eb18a86099efe4e7e13f0309c19e97c2dd9bbd11178",
+        "baseline": "e4a2baee8e9edf40f54237e604fa243b738303d5692096d6f6ad3746b1465dd3"
+      },
+      "comparisons": 1152,
+      "formulaCount": 48,
+      "valueCases": 8,
+      "layouts": [
+        "ordered",
+        "reversed",
+        "duplicates"
+      ],
+      "completeModelsEqual": true,
+      "inputSha256": "2b9eeaaaf76f0c52ea4c0f59bac422c1229dd97f9230b147076d8e8fda8cb673",
+      "outputSha256": "3fb930f1c61e39662fe1b5446c9e9d413d19c4ebf60677ef8fa782c2a52ce43d"
+    },
+    "packedPackage": {
+      "exports": [
+        "ROW_BATCH_SIZE",
+        "XLSX_FORMAT_ROUTES",
+        "XlsxPreviewSession",
+        "appendSheetRows",
+        "createSheetTable",
+        "createXlsxPreviewDriver",
+        "createXlsxPreviewRoutes",
+        "loadCsvWorkbook",
+        "loadXlsxWorkbook",
+        "resolveCellValue"
+      ],
+      "files": [
+        "cell-index.d.ts",
+        "columns.d.ts",
+        "index.css",
+        "index.d.ts",
+        "index.js",
+        "parser.d.ts",
+        "preview-driver.d.ts",
+        "simple-worksheet.d.ts",
+        "types.d.ts"
+      ],
+      "noSourceMaps": true,
+      "declarationImportsResolve": true,
+      "csvModelsEqual": true,
+      "xlsxModelsEqual": true
+    }
+  },
+  "columns": {
+    "node": "v20.20.2",
+    "cpu": "Apple M4 Pro",
+    "rows": 2000,
+    "columns": 64,
+    "warmupIterations": 2,
+    "measuredIterations": 7,
+    "bindings": {
+      "current": "969d28363bead704c97a0eb18a86099efe4e7e13f0309c19e97c2dd9bbd11178",
+      "baseline": "e4a2baee8e9edf40f54237e604fa243b738303d5692096d6f6ad3746b1465dd3",
+      "core": "77f6e3b0dc9d412a5d49d54b2a51778c44c8b18ad7d2ce6360b0f17469a16482"
+    },
+    "cases": {
+      "numeric-without-columns": {
+        "archiveBytes": 516304,
+        "archiveSha256": "2d335133a863a968c08e013012176fe2c7d312e9b1cfdcb05e052a5a820478cc",
+        "modelSha256": "7531d6303b7b1cc3b83ed6589464c1cc09ade779fc720b64a38039b39854540b",
+        "timings": {
+          "current": {
+            "medianMs": 50.27658300000007,
+            "samplesMs": [
+              55.84658400000001,
+              51.91279099999997,
+              52.577833000000055,
+              50.27658300000007,
+              49.13708299999985,
+              50.206083000000035,
+              49.84433299999978
+            ]
+          },
+          "baseline": {
+            "medianMs": 55.82824999999991,
+            "samplesMs": [
+              58.49254099999996,
+              55.82824999999991,
+              64.57058299999994,
+              56.60704200000009,
+              55.45120799999995,
+              55.7571660000001,
+              55.57154199999991
+            ]
+          }
+        }
+      },
+      "numeric-with-columns": {
+        "archiveBytes": 516831,
+        "archiveSha256": "bd860da864d557a4fbe01df32cca3308c2188ae920242f61f68ba1e9177cc7f0",
+        "modelSha256": "f1d292f27c40e653bd9da1fd465a2f34201a025ebe0da7904948947e04daa441",
+        "timings": {
+          "current": {
+            "medianMs": 59.59999999999991,
+            "samplesMs": [
+              57.94637499999999,
+              59.59999999999991,
+              62.3176669999998,
+              60.17387499999995,
+              55.14091699999972,
+              55.63104199999998,
+              60.532916000000114
+            ]
+          },
+          "baseline": {
+            "medianMs": 67.31016700000009,
+            "samplesMs": [
+              61.27183300000024,
+              65.41975000000002,
+              71.11262500000021,
+              69.98245900000029,
+              66.06320800000003,
+              67.31016700000009,
+              72.50508300000001
+            ]
+          }
+        }
+      },
+      "numeric-with-sheetdata-attributes": {
+        "archiveBytes": 516837,
+        "archiveSha256": "4076195504bf46f35c398efdfc5de3a08b81ea3cf3627eeb9845b5cb951f2a10",
+        "modelSha256": "f1d292f27c40e653bd9da1fd465a2f34201a025ebe0da7904948947e04daa441",
+        "timings": {
+          "current": {
+            "medianMs": 56.468541999999616,
+            "samplesMs": [
+              56.17712500000016,
+              57.185875000000124,
+              57.96441700000014,
+              56.720000000000255,
+              56.468541999999616,
+              55.55504199999996,
+              56.25495900000078
+            ]
+          },
+          "baseline": {
+            "medianMs": 235.7061249999997,
+            "samplesMs": [
+              245.3357079999996,
+              235.7061249999997,
+              233.05962499999987,
+              238.21008299999994,
+              234.71545799999967,
+              227.40000000000055,
+              273.1197919999995
+            ]
+          }
+        }
+      },
+      "general-with-columns": {
+        "archiveBytes": 516876,
+        "archiveSha256": "61f6e0a8c34248b767b2ced1c5a362deedfe897e0b6973224493554215fecac5",
+        "modelSha256": "f1d292f27c40e653bd9da1fd465a2f34201a025ebe0da7904948947e04daa441",
+        "timings": {
+          "current": {
+            "medianMs": 231.10924999999952,
+            "samplesMs": [
+              231.07958399999916,
+              234.50304200000028,
+              228.14679199999955,
+              232.84804199999962,
+              252.44787499999984,
+              231.10924999999952,
+              226.6739579999994
+            ]
+          },
+          "baseline": {
+            "medianMs": 232.87766700000066,
+            "samplesMs": [
+              226.91462499999943,
+              262.4869579999995,
+              236.29691599999933,
+              233.04095899999993,
+              232.87766700000066,
+              226.78495900000053,
+              228.0085829999989
+            ]
+          }
+        }
+      }
+    }
+  },
+  "formulaControls": {
+    "node": "v20.20.2",
+    "cpu": "Apple M4 Pro",
+    "warmupIterations": 2,
+    "measuredIterations": 7,
+    "bindings": {
+      "current": "969d28363bead704c97a0eb18a86099efe4e7e13f0309c19e97c2dd9bbd11178",
+      "baseline": "e4a2baee8e9edf40f54237e604fa243b738303d5692096d6f6ad3746b1465dd3"
+    },
+    "cases": {
+      "range-cold-index": {
+        "referencedCells": 8192,
+        "formulaCount": 32,
+        "warmIndex": false,
+        "inputSha256": "f5d2950a31cde51fb71b4f4381f0c6aa711dfa1f0e9635d153cc8935b6984b1d",
+        "outputSha256": "a5d320d140863375158298cee79b255f5922728b1427cd713ec34f475ae017b4",
+        "timings": {
+          "current": {
+            "medianMs": 4.7895420000000115,
+            "samplesMs": [
+              5.1454590000000024,
+              4.892832999999996,
+              4.263042000000013,
+              5.057457999999997,
+              3.7880830000000003,
+              4.7895420000000115,
+              3.743958999999961
+            ]
+          },
+          "baseline": {
+            "medianMs": 4.796125000000018,
+            "samplesMs": [
+              4.937000000000012,
+              4.347542000000004,
+              4.796125000000018,
+              4.025875000000013,
+              4.827791999999988,
+              3.6748750000000143,
+              4.802374999999984
+            ]
+          }
+        }
+      },
+      "range-warm-index": {
+        "referencedCells": 8192,
+        "formulaCount": 32,
+        "warmIndex": true,
+        "inputSha256": "f5d2950a31cde51fb71b4f4381f0c6aa711dfa1f0e9635d153cc8935b6984b1d",
+        "outputSha256": "a5d320d140863375158298cee79b255f5922728b1427cd713ec34f475ae017b4",
+        "timings": {
+          "current": {
+            "medianMs": 5.044249999999977,
+            "samplesMs": [
+              5.509416999999985,
+              5.061249999999973,
+              3.9061249999999745,
+              5.044249999999977,
+              3.8710829999999987,
+              5.482208999999955,
+              4.769416999999976
+            ]
+          },
+          "baseline": {
+            "medianMs": 4.695165999999972,
+            "samplesMs": [
+              4.8552910000000224,
+              4.351249999999993,
+              4.695165999999972,
+              3.8237079999999537,
+              5.004792000000009,
+              3.8439169999999763,
+              5.102250000000026
+            ]
+          }
+        }
+      },
+      "single-cell-control": {
+        "referencedCells": 1,
+        "formulaCount": 8192,
+        "warmIndex": false,
+        "inputSha256": "96e8bd091afe126c4de8c78b7361da7d49487fadc0faa33fd84831e03b07c970",
+        "outputSha256": "e99dadc427ac70357888fb8c48cf6afa0ad47c8b5376bfcccc87cd352fa9495b",
+        "timings": {
+          "current": {
+            "medianMs": 5.137541000000056,
+            "samplesMs": [
+              12.246082999999999,
+              5.509416999999985,
+              5.137541000000056,
+              4.675000000000068,
+              4.399290999999948,
+              6.067166000000043,
+              4.611167000000023
+            ]
+          },
+          "baseline": {
+            "medianMs": 4.97458400000005,
+            "samplesMs": [
+              5.236250000000041,
+              5.555666999999971,
+              4.647707999999966,
+              5.116457999999966,
+              4.97458400000005,
+              4.719083000000069,
+              4.459333000000015
+            ]
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Generated numeric/shared-string worksheets contain 2000 rows by 64 columns; results do not imply a universal XLSX speedup.",
+    "The sheetData-attribute case changes from general XML parsing to the simple fast path. Entities, rich content, formulas and unsupported XML retain fallback.",
+    "The general case now contains a comment to force fallback; use this round's paired numbers rather than comparing historical timings with a different fixture.",
+    "No intentional formula changes. Two formula control medians are slower; all samples are retained.",
+    "Runtime gzip grows by 76 bytes and npm tgz grows by 80 bytes versus this round's baseline.",
+    "No peak-memory or browser-first-paint measurement. These are project-local comparisons, not product rankings."
+  ]
+}

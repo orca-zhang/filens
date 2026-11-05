@@ -1,0 +1,48 @@
+{
+  "sources": {
+    "packages/model3d/src/preview-driver.ts": "4aa7fdca26ebdc2f502c58e0f340499f81e79427d7959ba108eb3c536363220b",
+    "packages/model3d/src/resource-utils.ts": "1a233732572e26d358e21f5203eda58e6198ba2754ca6f2d1b3c04a1dc4271c1",
+    "packages/model3d/src/vrml-loader.ts": "9f0d327c4841dde238b64636e5848e2130ae1aa11335429942d7f299fff7ed76",
+    "scripts/optional-engine-chunks.ts": "5deabf1862671dd793ddf42dfbf4e247381b7ea550a89a58e4ab1c701dc0ec08"
+  },
+  "baselineSource": "332e092f2929de8dac25c3975f5203f06c068c0e1f5eb01b589f72b2aa48522a",
+  "inlineWasm": {
+    "identical": true,
+    "baseline": [
+      {
+        "bytes": 481449,
+        "sha256": "3a847e66839387262e8668f25f0fcaead01a4f900783a7210334a5bb62c931fd"
+      },
+      {
+        "bytes": 2666687,
+        "sha256": "c11b7020986a94f0e83e435e2c6e087c4a567eac2f8dd27ca150cbcef3c021b7"
+      },
+      {
+        "bytes": 334212,
+        "sha256": "e312230593981882f17959fef384ca67dfcd7246b93731cd2f773056c2aa0fff"
+      },
+      {
+        "bytes": 481458,
+        "sha256": "e498d18c1665f4dd5295fac3785c9952c881256d95904a183516e5d7b2712250"
+      }
+    ],
+    "current": [
+      {
+        "bytes": 481449,
+        "sha256": "3a847e66839387262e8668f25f0fcaead01a4f900783a7210334a5bb62c931fd"
+      },
+      {
+        "bytes": 2666687,
+        "sha256": "c11b7020986a94f0e83e435e2c6e087c4a567eac2f8dd27ca150cbcef3c021b7"
+      },
+      {
+        "bytes": 334212,
+        "sha256": "e312230593981882f17959fef384ca67dfcd7246b93731cd2f773056c2aa0fff"
+      },
+      {
+        "bytes": 481458,
+        "sha256": "e498d18c1665f4dd5295fac3785c9952c881256d95904a183516e5d7b2712250"
+      }
+    ]
+  }
+}

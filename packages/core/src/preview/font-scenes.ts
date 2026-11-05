@@ -20,18 +20,32 @@ function visit(slides: readonly Pick<SlideModel, 'items'>[], callback: (node: { 
 
 /** Local samples and face variants for lazy font loading; never put samples in state. */
 export function collectSlideFontLoadingReferences(slides: readonly Pick<SlideModel, 'items'>[]): PreviewFontReference[] {
-  const refs = new Map<string, PreviewFontReference>();
+  const refs: PreviewFontReference[] = [];
+  const families = new Map<string, Map<number, PreviewFontReference>>();
+  const aliases = new Map<string, Map<number, PreviewFontReference>>();
   visit(slides, node => {
     const fontFamily = originalSceneFontFamily(node);
     if (!fontFamily) return;
+    let variants = aliases.get(fontFamily);
+    if (!variants) {
+      const key = fontFamily.toLowerCase();
+      variants = families.get(key);
+      if (!variants) families.set(key, variants = new Map());
+      aliases.set(fontFamily, variants);
+    }
     const weight = node.bold === undefined ? undefined : node.bold ? 700 : 400;
     const fontStyle = node.italic ? 'italic' : 'normal';
-    const key = faceKey(fontFamily, weight, fontStyle);
-    let ref = refs.get(key);
-    if (!ref) refs.set(key, ref = { fontFamily, traits: weight ? { weight } : undefined, fontStyle });
-    ref.text = ((ref.text ?? '') + (node.text ?? node.char ?? '')).slice(0, 4096);
+    const key = (weight === undefined ? 0 : weight === 400 ? 2 : 4) + (node.italic ? 1 : 0);
+    let ref = variants.get(key);
+    if (!ref) {
+      ref = { fontFamily, traits: weight ? { weight } : undefined, fontStyle, text: '' };
+      variants.set(key, ref);
+      refs.push(ref);
+    }
+    const remaining = 4096 - ref.text!.length;
+    if (remaining > 0) ref.text += (node.text ?? node.char ?? '').slice(0, remaining);
   });
-  return [...refs.values()];
+  return refs;
 }
 
 export function applySlideFontMappings(slides: readonly Pick<SlideModel, 'items'>[], refs: readonly PreviewFontReference[]): void {

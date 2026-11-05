@@ -1,0 +1,21 @@
+diff --git a/styles/reading.css b/styles/reading.css
+--- a/styles/reading.css
++++ b/styles/reading.css
+@@ -1,6 +1,7 @@
+ .article {
+-  max-width: 960px;
+-  padding: 24px;
++  max-width: 72ch;
++  padding: clamp(20px, 5vw, 64px);
+   margin-inline: auto;
+-  line-height: 1.4;
++  line-height: 1.75;
++  text-wrap: pretty;
+ }
+@@ -8,3 +9,5 @@
+ .article h1 {
+-  font-size: 32px;
++  font-size: clamp(28px, 4vw, 48px);
++  letter-spacing: -0.02em;
++  line-height: 1.15;
+ }

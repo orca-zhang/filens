@@ -1,4 +1,3 @@
-import { unzipSync } from 'fflate';
 import { openZipArchive } from './zip';
 import { throwIfAborted, type LoadSourceOptions } from './load-source';
 
@@ -25,22 +24,8 @@ export async function loadPptxArchive(bytes: Uint8Array, options: LoadSourceOpti
   throwIfAborted(options.signal);
   // Index once and inflate only parts requested by the parser. Most decks
   // carry unused layouts, thumbnails and other non-preview attachments.
-  const indexed = await openZipArchive(bytes).catch(() => undefined);
+  const indexed = await openZipArchive(bytes, options);
   throwIfAborted(options.signal);
-  if (indexed) {
-    const entries = new Map([...indexed].map(([name, entry]) => [name, new PptxArchiveEntry(entry.bytes, options.signal)]));
-    return { file: name => entries.get(name) ?? null };
-  }
-  // Keep the existing reader for archives with unusual compression methods.
-  // In particular, an unsupported unused attachment must stay compressed.
-  const names: string[] = [];
-  unzipSync(bytes, { filter: file => {
-    names.push(file.name);
-    return false;
-  } });
-  const entries = new Map(names.map(name => [name, new PptxArchiveEntry(
-    async () => unzipSync(bytes, { filter: file => file.name === name })[name],
-    options.signal
-  )]));
+  const entries = new Map([...indexed].map(([name, entry]) => [name, new PptxArchiveEntry(entry.bytes, options.signal)]));
   return { file: name => entries.get(name) ?? null };
 }

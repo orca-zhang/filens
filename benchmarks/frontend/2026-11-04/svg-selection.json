@@ -1,0 +1,170 @@
+{
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "browser": "147.0.7727.15",
+  "nodeCount": 2000,
+  "selections": 500,
+  "warmupIterations": 2,
+  "measuredIterations": 7,
+  "families": {
+    "mindmap": {
+      "current": {
+        "loadMs": 9.099999994039536,
+        "selectionMs": 1.199999988079071,
+        "listeners": 2,
+        "initialHash": "f828d8690cd61d468d9b6b52c03400c2b55bf70fc0d5477a5fa32c6d307451a9",
+        "selectedHash": "1c56620abc8299734a66a583003046f2501e455253ef0e7294fbc95289400ed0",
+        "samples": [
+          {
+            "loadMs": 9.099999994039536,
+            "selectionMs": 1.0999999940395355
+          },
+          {
+            "loadMs": 9,
+            "selectionMs": 1.199999988079071
+          },
+          {
+            "loadMs": 8.800000011920929,
+            "selectionMs": 1.0999999940395355
+          },
+          {
+            "loadMs": 9.400000005960464,
+            "selectionMs": 1
+          },
+          {
+            "loadMs": 8.900000005960464,
+            "selectionMs": 1.199999988079071
+          },
+          {
+            "loadMs": 10.300000011920929,
+            "selectionMs": 1.4000000059604645
+          },
+          {
+            "loadMs": 9.700000017881393,
+            "selectionMs": 1.199999988079071
+          }
+        ]
+      },
+      "baseline": {
+        "loadMs": 9.300000011920929,
+        "selectionMs": 117.19999998807907,
+        "listeners": 4000,
+        "initialHash": "f828d8690cd61d468d9b6b52c03400c2b55bf70fc0d5477a5fa32c6d307451a9",
+        "selectedHash": "1c56620abc8299734a66a583003046f2501e455253ef0e7294fbc95289400ed0",
+        "samples": [
+          {
+            "loadMs": 9,
+            "selectionMs": 117.19999998807907
+          },
+          {
+            "loadMs": 9.300000011920929,
+            "selectionMs": 117.30000001192093
+          },
+          {
+            "loadMs": 9.400000005960464,
+            "selectionMs": 120.80000001192093
+          },
+          {
+            "loadMs": 9.699999988079071,
+            "selectionMs": 120.7999999821186
+          },
+          {
+            "loadMs": 9.400000005960464,
+            "selectionMs": 113.40000000596046
+          },
+          {
+            "loadMs": 9,
+            "selectionMs": 113.40000000596046
+          },
+          {
+            "loadMs": 8.699999988079071,
+            "selectionMs": 116.5
+          }
+        ]
+      }
+    },
+    "diagram": {
+      "current": {
+        "loadMs": 11.900000005960464,
+        "selectionMs": 1.199999988079071,
+        "listeners": 2,
+        "initialHash": "151c567837794a802b31a9d4257f9aa8da33d756f82b2cc1b49e1f4cf1ec5a32",
+        "selectedHash": "0b3fb7540eb690393665218a04ff273cb6ebff78ab4117197fc9615f43ce6982",
+        "samples": [
+          {
+            "loadMs": 11.900000005960464,
+            "selectionMs": 1.2000000178813934
+          },
+          {
+            "loadMs": 11.900000005960464,
+            "selectionMs": 1.199999988079071
+          },
+          {
+            "loadMs": 11.5,
+            "selectionMs": 1.199999988079071
+          },
+          {
+            "loadMs": 11.700000017881393,
+            "selectionMs": 1.100000023841858
+          },
+          {
+            "loadMs": 11.099999994039536,
+            "selectionMs": 1.0999999940395355
+          },
+          {
+            "loadMs": 12.599999994039536,
+            "selectionMs": 1.199999988079071
+          },
+          {
+            "loadMs": 13,
+            "selectionMs": 1.2999999821186066
+          }
+        ]
+      },
+      "baseline": {
+        "loadMs": 11.900000005960464,
+        "selectionMs": 143.5,
+        "listeners": 4000,
+        "initialHash": "151c567837794a802b31a9d4257f9aa8da33d756f82b2cc1b49e1f4cf1ec5a32",
+        "selectedHash": "0b3fb7540eb690393665218a04ff273cb6ebff78ab4117197fc9615f43ce6982",
+        "samples": [
+          {
+            "loadMs": 12.300000011920929,
+            "selectionMs": 143.5
+          },
+          {
+            "loadMs": 11.900000005960464,
+            "selectionMs": 141.5
+          },
+          {
+            "loadMs": 11.400000005960464,
+            "selectionMs": 144.5
+          },
+          {
+            "loadMs": 11.399999976158142,
+            "selectionMs": 142.5
+          },
+          {
+            "loadMs": 11.700000017881393,
+            "selectionMs": 143.5
+          },
+          {
+            "loadMs": 20.30000001192093,
+            "selectionMs": 148.80000001192093
+          },
+          {
+            "loadMs": 12.200000017881393,
+            "selectionMs": 143.69999998807907
+          }
+        ]
+      }
+    }
+  },
+  "bindings": {
+    "current-mindmap": "64175d236da2501210be2623806c7352b6629861270a4fbf7d00c0265484dc1f",
+    "baseline-mindmap": "e3dfacfa12034cf86121db338ca90722658f26650da86b1cdcf4c920240397be",
+    "current-diagram": "0077c768f173466dda5b57ef691f693b1bb378d4ba559083e7e535eedeefe48b",
+    "baseline-diagram": "ea58c65b71a776e5b798016c397ec277054c10ac08e88b52cac268724a5c9413",
+    "core": "2603f5a9528a2123ba1e4fa6859573515c7ba4c830d74960390e810d5e73c72f"
+  }
+}

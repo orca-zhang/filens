@@ -1,5 +1,7 @@
-import { createElement, useEffect, useRef, useState } from 'react';
+import { createElement, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import styles from './client.css';
+import viewerStyles from './viewer.css';
+import { mountViewer } from './viewer.js';
 
 export const name = 'filens-preview';
 export const inject = ['documentPreviews', 'slots'];
@@ -8,12 +10,40 @@ const extensions = __FILENS_EXTENSIONS__;
 const binaryExtensions = __FILENS_BINARY_EXTENSIONS__;
 const runtimePath = __FILENS_RUNTIME_PATH__;
 
-export function viewerUrl(base, parentOrigin, channel) {
-  const url = new URL(`${runtimePath.slice(1)}viewer.html`, base);
-  url.searchParams.set('parent', parentOrigin);
-  url.hash = channel;
-  return url.href;
+export function runtimeUrl(base, file = 'filens.js') {
+  return new URL(`${runtimePath.slice(1)}${file}`, base).href;
 }
+
+const resources = new Map();
+function acquireRuntime(base) {
+  const url = runtimeUrl(base);
+  let entry = resources.get(url);
+  if (!entry) {
+    const sheet = document.createElement('link');
+    sheet.rel = 'stylesheet'; sheet.href = runtimeUrl(base, __FILENS_RUNTIME_STYLES__);
+    sheet.dataset.filensRuntime = '';
+    const styled = new Promise((resolve, reject) => {
+      sheet.onload = resolve;
+      sheet.onerror = () => reject(new Error('The preview stylesheet could not be loaded.'));
+    });
+    document.head.append(sheet);
+    entry = { sheet, refs: 0, ready: Promise.all([import(url), styled]).then(([module]) => module) };
+    resources.set(url, entry);
+  }
+  entry.refs++;
+  return { ready: entry.ready, release() {
+    if (--entry.refs === 0) { entry.sheet.remove(); resources.delete(url); }
+  } };
+}
+
+// Body and header actions share only the current tab's live viewer, never bytes.
+const views = new Map();
+const listeners = new Set();
+function publish(key, value) {
+  if (value) views.set(key, value); else views.delete(key);
+  for (const listener of listeners) listener();
+}
+const subscribe = listener => { listeners.add(listener); return () => listeners.delete(listener); };
 
 function runtimeBase() {
   if (globalThis.location?.protocol === 'http:' || globalThis.location?.protocol === 'https:') return document.baseURI;
@@ -32,7 +62,7 @@ const words = {
     hint: 'You can also choose another viewer from the menu above.',
     timeout: 'The preview is taking too long. Try opening it again.',
     host: 'The preview service is unavailable. Reload DSH after enabling the plugin.',
-    bytes: 'The complete file has not been loaded.', frame: 'The preview could not be loaded.',
+    bytes: 'The complete file has not been loaded.',
   },
   zh: {
     loading: '正在打开预览', slow: '较大的文件可能需要更长时间。',
@@ -40,7 +70,7 @@ const words = {
     hint: '也可以通过上方菜单选择其他预览方式。',
     timeout: '预览用时较长，请重新尝试。',
     host: '预览服务暂不可用，启用插件后请重新加载 DSH。',
-    bytes: '文件尚未完整加载。', frame: '预览界面加载失败。',
+    bytes: '文件尚未完整加载。',
   },
 };
 
@@ -87,66 +117,64 @@ function PreviewIcon({ error }) {
 }
 
 export function FilensBody(props) {
-  const iframe = useRef(null);
+  const host = useRef(null);
+  const activeViewer = useRef(null);
   const [state, setState] = useState({ phase: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [slow, setSlow] = useState(false);
-  const [channel] = useState(() => crypto.randomUUID());
   const theme = useAppearance();
   const themeRef = useRef(theme);
   themeRef.current = theme;
   const text = words[theme.locale.toLowerCase().startsWith('zh') ? 'zh' : 'en'];
   const bytes = props.content?.kind === 'bytes' ? props.content.data : undefined;
   const base = runtimeBase();
-  const src = base ? viewerUrl(base, globalThis.location.origin, channel) : undefined;
+  const { tab } = props.useTabInfo();
+  const key = tab.id;
   useEffect(() => {
-    if (!src || !bytes) return;
-    let mounted = true;
-    let sent = false;
+    if (!base || !bytes) return;
+    let mounted = true, viewer, currentState;
     const requestId = crypto.randomUUID();
-    const targetOrigin = new URL(src).origin;
     const timer = setTimeout(() => { if (mounted) setState({ phase: 'error', code: 'timeout' }); }, 60000);
     const slowTimer = setTimeout(() => { if (mounted) setSlow(true); }, 8000);
-    const receive = event => {
-      if (!mounted || event.source !== iframe.current?.contentWindow || event.origin !== targetOrigin || event.data?.channel !== channel) return;
-      if (event.data.type === 'filens:ready' && !sent) {
-        sent = true;
-        // The transfer owns a copy, leaving DSH’s retained preview bytes intact.
-        const copy = bytes.slice();
-        iframe.current.contentWindow.postMessage({ type: 'filens:open', channel, requestId, bytes: copy, name: filename(props.resourceAddress), appearance: themeRef.current }, targetOrigin, [copy.buffer]);
-      }
-      if (event.data.requestId !== requestId) return;
-      if (['filens:rendered', 'filens:interactive', 'filens:error'].includes(event.data.type)) {
-        clearTimeout(timer);
-        clearTimeout(slowTimer);
-        setState(event.data.type === 'filens:error'
-          ? { phase: 'error', message: String(event.data.message || '') }
-          : { phase: event.data.type === 'filens:interactive' ? 'interactive' : 'ready' });
-      }
+    const finish = next => {
+      if (!mounted) return;
+      clearTimeout(timer); clearTimeout(slowTimer);
+      setState({ ...next, bytes, address: props.resourceAddress, attempt });
     };
-    setState({ phase: 'loading' });
-    setSlow(false);
-    addEventListener('message', receive);
-    iframe.current?.contentWindow?.postMessage({ type: 'filens:hello', channel }, targetOrigin);
-    return () => { mounted = false; clearTimeout(timer); clearTimeout(slowTimer); removeEventListener('message', receive); };
-  }, [src, bytes, props.resourceAddress, channel, attempt]);
-  useEffect(() => {
-    if (src) iframe.current?.contentWindow?.postMessage({ type: 'filens:appearance', channel, appearance: theme }, new URL(src).origin);
-  }, [src, channel, theme, attempt]);
-  const unavailable = !src ? 'host' : !bytes ? 'bytes' : undefined;
-  const phase = unavailable ? 'error' : state.phase;
+    setState({ phase: 'loading', bytes, address: props.resourceAddress, attempt }); setSlow(false);
+    const runtime = acquireRuntime(base);
+    runtime.ready.then(({ createPreview }) => {
+      if (!mounted) return;
+      host.current.dataset.requestId = requestId;
+      viewer = mountViewer(host.current, createPreview, {
+        // Workers may transfer their input; DSH retains ownership of its bytes.
+        bytes: bytes.slice(), name: filename(props.resourceAddress), appearance: themeRef.current,
+      }, {
+        onStateChange: value => { currentState = value; if (mounted && viewer) publish(key, { viewer, state: value }); },
+        onRendered: () => finish({ phase: 'ready' }),
+        onInteractive: () => finish({ phase: 'interactive' }),
+        onError: error => finish({ phase: 'error', message: error.message }),
+      });
+      activeViewer.current = viewer;
+      publish(key, { viewer, state: currentState ?? viewer.getState() });
+    }).catch(error => finish({ phase: 'error', message: error.message }));
+    return () => {
+      mounted = false; clearTimeout(timer); clearTimeout(slowTimer);
+      viewer?.destroy(); activeViewer.current = null;
+      publish(key, undefined); runtime.release();
+    };
+  }, [base, bytes, props.resourceAddress, key, attempt]);
+  useEffect(() => { activeViewer.current?.updateAppearance(theme); }, [theme]);
+  const unavailable = !base ? 'host' : !bytes ? 'bytes' : undefined;
+  const phase = unavailable ? 'error'
+    : state.bytes !== bytes || state.address !== props.resourceAddress || state.attempt !== attempt ? 'loading' : state.phase;
   const variables = Object.fromEntries(Object.entries(theme.colors).map(([key, value]) => [`--filens-${key}`, value]));
   const file = filename(props.resourceAddress);
   return createElement('div', {
     className: 'filens-dsh', 'data-phase': phase, 'aria-busy': phase === 'loading',
     style: { ...variables, fontFamily: theme.font, colorScheme: theme.dark ? 'dark' : 'light' },
   },
-    src && bytes ? createElement('iframe', {
-      // Local password dialogs submit forms; CSP still prevents form navigation.
-      key: attempt, ref: iframe, src, title: 'FiLens preview', sandbox: 'allow-scripts allow-same-origin allow-downloads allow-forms',
-      allowFullScreen: true,
-      onError: () => setState({ phase: 'error', code: 'frame' }),
-    }) : null,
+    createElement('div', { ref: host, className: 'filens-dsh-view' }),
     phase === 'loading' || phase === 'error' ? createElement('div', { className: 'filens-dsh-state', role: phase === 'error' ? 'alert' : 'status', 'aria-live': 'polite' },
       createElement('div', { className: 'filens-dsh-state-content' },
         createElement('div', { className: 'filens-dsh-file-icon' }, createElement(PreviewIcon, { error: phase === 'error' })),
@@ -161,15 +189,37 @@ export function FilensBody(props) {
       )) : null);
 }
 
+
+export function FilensActions(props) {
+  const { tab } = props.useTabInfo();
+  const entry = useSyncExternalStore(subscribe, () => views.get(tab.id));
+  const theme = useAppearance();
+  const zh = theme.locale.toLowerCase().startsWith('zh');
+  const state = entry?.state;
+  if (!state || state.loading || state.error || state.family === 'model3d') return null;
+  const capabilities = state.capabilities ?? {};
+  if (!capabilities.zoom && !capabilities.fullscreen) return null;
+  const button = (action, label, child, onClick) => createElement('button', {
+    type: 'button', className: 'filens-dsh-tool', 'data-action': action, title: label, 'aria-label': label, onClick,
+  }, child);
+  return createElement('div', { className: 'filens-dsh-actions', role: 'group', 'aria-label': zh ? '预览控件' : 'Preview controls' },
+    capabilities.zoom ? button('zoom-out', zh ? '缩小' : 'Zoom out', '−', () => entry.viewer.setScale(Math.max(0.1, state.scale - 0.1))) : null,
+    capabilities.zoom ? createElement('output', { className: 'filens-dsh-zoom' }, `${Math.round((state.scale ?? 1) * 100)}%`) : null,
+    capabilities.zoom ? button('zoom-in', zh ? '放大' : 'Zoom in', '+', () => entry.viewer.setScale(Math.min(5, state.scale + 0.1))) : null,
+    capabilities.fullscreen ? button('fullscreen', zh ? '全屏' : 'Fullscreen', '⛶', () => { void entry.viewer.fullscreen(); }) : null,
+  );
+}
+
 export function apply(ctx) {
   ctx.effect(() => {
     const sheet = document.createElement('style');
-    sheet.textContent = styles;
+    sheet.textContent = styles + viewerStyles;
     document.head.append(sheet);
     return () => sheet.remove();
   });
   ctx.effect(() => ctx.documentPreviews.register({
     id, extensions, binaryExtensions, priority: 'extension', title: () => 'FiLens', loading: 'bytes-complete', wrap: false,
   }));
+  ctx.effect(() => ctx.slots.inject('sidebar.right.tab.document.action', () => ctx.slots.register({ name: 'sidebar.right.tab.document.action', key: id }, FilensActions)));
   ctx.effect(() => ctx.slots.inject('sidebar.right.tab.document', () => ctx.slots.register({ name: 'sidebar.right.tab.document', key: id }, FilensBody)));
 }

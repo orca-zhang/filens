@@ -54,6 +54,7 @@ function serve(file, mode) {
       clearTimeout(timer);
       const response = JSON.parse(line);
       resolve({ url:response.url, async close() {
+        if (child.exitCode !== null || child.signalCode !== null) return;
         const closed = new Promise(resolve => child.once('close', resolve)); child.kill('SIGTERM'); await closed;
       } });
     });

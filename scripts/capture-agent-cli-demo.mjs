@@ -150,9 +150,9 @@ try {
       return { 'aurora.png': canvas.toDataURL('image/png'), 'aurora-small.jpg': small.toDataURL('image/jpeg', .82), 'aurora.webp': canvas.toDataURL('image/webp', .8), 'different.png': other.toDataURL('image/png') };
     });
     for (const [name, url] of Object.entries(photos)) await writeFile(path.join(directory, 'photos', name), Buffer.from(url.split(',')[1], 'base64'));
-    const intents = zh ? ['你能做什么？以 JSON 输出', '读取 "launch-brief.docx"，以 Markdown 输出', '总结 "meeting-notes.txt"，以纯文本输出', '总结 "meeting-notes.txt"，以 JSON 输出', '在 "documents.zip" 中搜索 "预算 风险"，以 JSON 输出', '获取 "invoice.png" 的布局，以 JSON 输出', '获取 "invoice.png" 的布局，以 YAML 输出', '查找 "files" 中的重复文件，以 JSON 输出', '查找 "photos" 中的相似图片，以 JSON 输出'] : ['What can you do? as json', 'read "launch-brief.docx" as markdown', 'summarize "meeting-notes.txt" as text', 'summarize "meeting-notes.txt" as json', 'search "documents.zip" for "budget risk" as json', 'get layout of "invoice.png" as json', 'get layout of "invoice.png" as yaml', 'find duplicate files in "files" as json', 'find similar images in "photos" as json'];
-    const capacity = JSON.parse(cli(intents[0]));
-    for (const operation of ['summarize', 'search', 'similar', 'convert']) assert.ok(capacity.capacity.operations.some(o => o.name === operation), `Rebuild the CLI: missing ${operation}`);
+    const intents = zh ? ['你能做什么？以 JSON 输出', '读取 "launch-brief.docx"，以 Markdown 输出', '总结 "meeting-notes.txt"，聚焦 "预算 风险"，最多200字符，以纯文本输出', '总结 "meeting-notes.txt"，聚焦 "预算 风险"，最多200字符，以 JSON 输出', '在 "documents.zip" 中搜索 "预算 风险"，以 JSON 输出', '获取 "invoice.png" 的布局，以 JSON 输出', '获取 "invoice.png" 的布局，以 YAML 输出', '查找 "files" 中的重复文件，以 JSON 输出', '查找 "photos" 中的相似图片，以 JSON 输出'] : ['What can you do? as json', 'read "launch-brief.docx" as markdown', 'summarize "meeting-notes.txt" focus on "budget risk" at most 400 chars as text', 'summarize "meeting-notes.txt" focus on "budget risk" at most 400 chars as json', 'search "documents.zip" for "budget risk" as json', 'get layout of "invoice.png" as json', 'get layout of "invoice.png" as yaml', 'find duplicate files in "files" as json', 'find similar images in "photos" as json'];
+    const capacity = JSON.parse(cli(['capacity', '--full', '--json']));
+    for (const operation of ['inspect', 'summarize', 'search', 'similar', 'convert']) assert.ok(capacity.capacity.operations.some(o => o.name === operation), `Rebuild the CLI: missing ${operation}`);
     assert.equal(capacity.capacity.preview.available, true, 'Build preview assets with npm run build:preview or pass --preview-assets DIR.');
     const markdown = cli(intents[1]);
     assert.match(markdown, zh ? /# 极光项目发布简报/ : /# Aurora launch brief/);
@@ -196,6 +196,10 @@ try {
     assert.ok(similar.groups[0].files.every(f => f.distanceToReference <= similar.threshold && f.path !== 'different.png'));
     assert.match(document.content.text, /FILENS2026/);
     assert.match(document.content.text, /12345.67/);
+    await copyFile(invoice, path.join(directory, 'invoice.pdf'));
+    const inspection = JSON.parse(cli(['inspect', 'invoice.pdf', '--json']));
+    assert.equal(inspection.inspection.format, 'png');
+    assert.equal(inspection.inspection.extensionMatches, false);
     const layout = document.content.layout;
     const boxes = layout.blocks.filter(b => b.bounds);
     const focusIndex = boxes.findIndex(b => Buffer.from(document.content.text).subarray(b.startByte, b.endByte).toString().includes('12345.67'));
@@ -209,7 +213,12 @@ try {
       image: 'data:image/png;base64,' + (await readFile(invoice)).toString('base64'), boxes, focusIndex,
       summary: summarized.content.summary, search: searched.search, member, duplicates, similar, csv: budgetRows.join('\n'),
       photos: similar.groups[0].files.map(f => ({ ...f, image: photos[f.path] })),
-      capacity: { command: command(0), excerpt: `{\n  "outputFormats": [\n    "text", "json", "markdown", "html",\n    "yaml", "xml", "csv", "tsv"\n  ],\n  "conversionPairs": [\n${capacity.capacity.conversionPairs.filter(pair => ['doc', 'csv', 'dng'].includes(pair.sourceFormat)).map(pair => `    ${JSON.stringify(pair)}`).join(',\n')}\n  ],\n  "preview": ${JSON.stringify({ available: capacity.capacity.preview.available, engine: capacity.capacity.preview.engine })}\n}` },
+      capacity: { command: 'filens capacity --full --json', excerpt: `{\n  "outputFormats": [\n    "text", "json", "markdown", "html",\n    "yaml", "xml", "csv", "tsv"\n  ],\n  "conversionPairs": [\n${capacity.capacity.conversionPairs.filter(pair => ['doc', 'csv', 'dng'].includes(pair.sourceFormat)).map(pair => `    ${JSON.stringify(pair)}`).join(',\n')}\n  ],\n  "preview": ${JSON.stringify({ available: capacity.capacity.preview.available, engine: capacity.capacity.preview.engine })}\n}` },
+      inspection: { command: 'filens inspect invoice.pdf --json', output: JSON.stringify({
+        format: inspection.inspection.format, mime: inspection.inspection.mime,
+        confidence: inspection.inspection.confidence, extension: inspection.inspection.extension,
+        extensionMatches: inspection.inspection.extensionMatches, bytesRead: inspection.inspection.bytesRead,
+      }, null, 2) },
       markdown: { command: command(1), output: markdown },
       pruning: { command: command(2), output: summaryText },
       retrieval: { command: command(4), output: searchExcerpt },

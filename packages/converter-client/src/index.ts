@@ -317,6 +317,22 @@ function inferContentType(name: string | undefined, fallbackFormat?: string): st
   const extensionFromName = inferExtensionFromName(name);
   const extension = normalizeFormat(extensionFromName || fallbackFormat || '');
   switch (extension) {
+    case 'dib': return 'image/x-dib';
+    case 'cur': return 'image/x-cursor';
+    case 'pcx': return 'image/x-pcx';
+    case 'exr': return 'image/x-exr';
+    case 'jxl': return 'image/jxl';
+    case 'qoi': return 'image/qoi';
+    case 'ff': return 'image/x-farbfeld';
+    case 'dwg': return 'image/vnd.dwg';
+    case 'tif':
+    case 'tiff': return 'image/tiff';
+    case 'tga': return 'image/x-tga';
+    case 'pgm': return 'image/x-portable-graymap';
+    case 'pbm': return 'image/x-portable-bitmap';
+    case 'pnm': return 'image/x-portable-anymap';
+    case 'dds': return 'image/vnd-ms.dds';
+    case 'hdr': return 'image/vnd.radiance';
     case 'dng':
     case 'cr2':
     case 'cr3':

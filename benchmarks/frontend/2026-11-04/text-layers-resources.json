@@ -1,0 +1,512 @@
+{
+  "date": "2026-11-04T14:46:49.175Z",
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "method": "Identical minified esbuild bundles with baseline source overrides and shared current dependencies. Two warmups and seven alternating measured runs in Chromium. Complete text-frame/document construction, synchronous CAD layer actions, or resource index construction/lookups only. Input generation, imports, DXF loading, output serialization and validation are outside timers. No builds/tests run concurrently.",
+  "warmups": 2,
+  "iterations": 7,
+  "baselineSha256": "85f32286c1c36b9d7f72f53a64f6e2cfd3374814a56beb70a06c76249417d200",
+  "sourceSha256": {
+    "packages/iwork/src/parser/helpers.ts": "862eea102f29b6c6a8901a103d1741a0b95fae238fd100b3c938e4b9780102eb",
+    "packages/iwork/src/parser/semantic.ts": "dbcdda0d4666dab701c4e2ab96eca3fd3db4a580021ff9705a9dda6892cd5516",
+    "packages/cad/src/preview-driver.ts": "271f83a7b2c6674aeb2904523c475f7ca34b304a0e6a1f0c7ac2a973823c3ff4",
+    "packages/core/src/preview/resource-resolver.ts": "081cd8decdd059ababd50b70909f09a4f34f2b25e778d3bbe559cfd0a21d87f2"
+  },
+  "baselineSourceSha256": {
+    "packages/iwork/src/parser/helpers.ts": "8ee95e7353a64c8cd2983e30775076c13c8a2c495ad3232a50f0113c279f859a",
+    "packages/iwork/src/parser/semantic.ts": "7e9e039af10b45f14ab1a64a0993f17c2ac127b716a0cbc75a6536870d38e14e",
+    "packages/cad/src/preview-driver.ts": "e7b505c095b32e74db594cb5f364ffbfd9ac4373fa9df30bbe6a192033306ca4",
+    "packages/core/src/preview/resource-resolver.ts": "e964f636c9965d8a87002dc180069c0e298738ba59df87814cd188ce762db480"
+  },
+  "bundles": {
+    "baseline": {
+      "bytes": 850238,
+      "gzipBytes": 170902,
+      "sha256": "2054b0dac9d2ffc4a54cef22299dc6445e766c857ad29e4576721935c265cb83"
+    },
+    "current": {
+      "bytes": 850861,
+      "gzipBytes": 171187,
+      "sha256": "195e556eeaebd2cca832572518a0da666113ba8fe8102b8dfe089a594f792b43"
+    }
+  },
+  "dependencies": {
+    "packages/core/dist/index.js": "09316dccebaa696475ff4c91ebccfbf9bbe216475f0d9da5ca2436111619f540",
+    "packages/core/dist/zip.js": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475",
+    "packages/xlsx/dist/index.js": "969d28363bead704c97a0eb18a86099efe4e7e13f0309c19e97c2dd9bbd11178"
+  },
+  "cases": {
+    "iwork-styled-6000-paragraphs": {
+      "name": "iwork-styled-6000-paragraphs",
+      "kind": "text",
+      "count": 6000,
+      "outputSha256": "2ce8facff38e4e627983a53582a74d4d93426f30d53287c359ec8a436459cded",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            303.09999999403954,
+            286.5,
+            281.40000000596046,
+            281.80000001192093,
+            284.7999999821186,
+            286.90000000596046,
+            283.19999998807907
+          ],
+          "medianMs": 284.7999999821186
+        },
+        "current": {
+          "samplesMs": [
+            14.099999994039536,
+            15.199999988079071,
+            16.5,
+            14.200000017881393,
+            14.199999988079071,
+            14.700000017881393,
+            13.5
+          ],
+          "medianMs": 14.200000017881393
+        }
+      }
+    },
+    "iwork-styled-single-paragraph": {
+      "name": "iwork-styled-single-paragraph",
+      "kind": "text",
+      "count": 6000,
+      "single": true,
+      "outputSha256": "f20b011221931c313359a5e3ec05f0bc1a3666a0a03933e6c1034afab4728aaf",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            119.7999999821186,
+            119.59999999403954,
+            126.09999999403954,
+            121.5,
+            123.7999999821186,
+            152.09999999403954,
+            125.7999999821186
+          ],
+          "medianMs": 123.7999999821186
+        },
+        "current": {
+          "samplesMs": [
+            9.400000005960464,
+            8.900000005960464,
+            9.599999994039536,
+            8.200000017881393,
+            8.199999988079071,
+            8.599999994039536,
+            8.599999994039536
+          ],
+          "medianMs": 8.599999994039536
+        }
+      }
+    },
+    "iwork-unstyled-6000-paragraphs": {
+      "name": "iwork-unstyled-6000-paragraphs",
+      "kind": "text",
+      "count": 6000,
+      "unstyled": true,
+      "outputSha256": "1f19ea58bad0d54527cecf956513d2f19c61d8459fe4ddf07d5f341423c719de",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            2.899999976158142,
+            3.9000000059604645,
+            2.600000023841858,
+            2.699999988079071,
+            2.699999988079071,
+            2.7000000178813934,
+            2.7999999821186066
+          ],
+          "medianMs": 2.7000000178813934
+        },
+        "current": {
+          "samplesMs": [
+            2.4000000059604645,
+            2,
+            2.100000023841858,
+            2,
+            2.0999999940395355,
+            1.9000000059604645,
+            2.199999988079071
+          ],
+          "medianMs": 2.0999999940395355
+        }
+      }
+    },
+    "iwork-styled-small": {
+      "name": "iwork-styled-small",
+      "kind": "text",
+      "count": 12,
+      "batch": 100,
+      "outputSha256": "24bed216c12d4390f20e6b34e070efc26b7d641d4a3f9d2827af54a359c05ca4",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            2.4000000059604645,
+            2.4000000059604645,
+            2.300000011920929,
+            2.5,
+            2.199999988079071,
+            2.199999988079071,
+            2.2000000178813934
+          ],
+          "medianMs": 2.300000011920929
+        },
+        "current": {
+          "samplesMs": [
+            2.5,
+            2.4000000059604645,
+            2.2999999821186066,
+            2.300000011920929,
+            2.300000011920929,
+            2.199999988079071,
+            2.300000011920929
+          ],
+          "medianMs": 2.300000011920929
+        }
+      }
+    },
+    "pages-layout-hints": {
+      "name": "pages-layout-hints",
+      "kind": "pages",
+      "count": 6000,
+      "outputSha256": "dce85f25cb848cb57a0498ad1a466ae1eca51feae8e68f568481edad401ad2e3",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            12.800000011920929,
+            14.099999994039536,
+            13,
+            13.5,
+            12.5,
+            11.5,
+            11.5
+          ],
+          "medianMs": 12.800000011920929
+        },
+        "current": {
+          "samplesMs": [
+            6.9000000059604645,
+            7.5999999940395355,
+            7.300000011920929,
+            6.9000000059604645,
+            6.5999999940395355,
+            6.5,
+            6.699999988079071
+          ],
+          "medianMs": 6.9000000059604645
+        }
+      }
+    },
+    "pages-paragraph-lookups": {
+      "name": "pages-paragraph-lookups",
+      "kind": "lookup",
+      "count": 30000,
+      "queries": 6000,
+      "outputSha256": "2686ee2b0ec26ae58ce03efc1ad98432a244743ceb9e15c7cde987b0ab0baa69",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            227.2000000178814,
+            203.90000000596046,
+            143,
+            143.89999997615814,
+            137.40000000596046,
+            138.30000001192093,
+            134.40000000596046
+          ],
+          "medianMs": 143
+        },
+        "current": {
+          "samplesMs": [
+            2.9000000059604645,
+            2.7000000178813934,
+            2.800000011920929,
+            2.699999988079071,
+            2.7999999821186066,
+            2.800000011920929,
+            2.699999988079071
+          ],
+          "medianMs": 2.7999999821186066
+        }
+      }
+    },
+    "cad-layer-actions-16": {
+      "name": "cad-layer-actions-16",
+      "kind": "cad",
+      "count": 16,
+      "actions": 12,
+      "inputSha256": "9e1b1922f33da89421b2e149c1fd429a071fa5b86c352cd36c72e304c601f97b",
+      "outputSha256": "0fdb58a730204d896c1c3bb62d46ddf827495395c2ff5c37b566642ff9cdd68c",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            0.09999999403953552,
+            0.09999999403953552,
+            0.09999999403953552,
+            0,
+            0.09999999403953552,
+            0,
+            0
+          ],
+          "medianMs": 0.09999999403953552
+        },
+        "current": {
+          "samplesMs": [
+            0.09999999403953552,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "medianMs": 0
+        }
+      }
+    },
+    "cad-layer-actions-1024": {
+      "name": "cad-layer-actions-1024",
+      "kind": "cad",
+      "count": 1024,
+      "actions": 12,
+      "inputSha256": "ce682bb970eb8206f0d653898684c2cb18ee88d172aa3f2d72ec6b6a1d3aa91c",
+      "outputSha256": "2e57eab2d822009d537ac5d0188d0fa6f6b075daa5d63315c25a192a36ed6300",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            4.699999988079071,
+            5.0999999940395355,
+            4.9000000059604645,
+            4.700000017881393,
+            4.800000011920929,
+            4.799999982118607,
+            4.799999982118607
+          ],
+          "medianMs": 4.799999982118607
+        },
+        "current": {
+          "samplesMs": [
+            1.399999976158142,
+            1.2000000178813934,
+            1.300000011920929,
+            1.0999999940395355,
+            1.4000000059604645,
+            1.2000000178813934,
+            1.199999988079071
+          ],
+          "medianMs": 1.2000000178813934
+        }
+      }
+    },
+    "cad-layer-actions-4096": {
+      "name": "cad-layer-actions-4096",
+      "kind": "cad",
+      "count": 4096,
+      "actions": 12,
+      "inputSha256": "c19b6e18986bcbd847a55faff36ee5512ce2ef85190b5a1cae6c1a57a29d15a9",
+      "outputSha256": "bc284ac7839f9e7f8e92ac75f957d56abbfde9c7c1e1e1c5d75e4720778021eb",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            62.19999998807907,
+            61.50000002980232,
+            59.599999994039536,
+            59.30000001192093,
+            59.29999998211861,
+            62.5,
+            61.599999994039536
+          ],
+          "medianMs": 61.50000002980232
+        },
+        "current": {
+          "samplesMs": [
+            5.699999988079071,
+            5.600000023841858,
+            5.900000035762787,
+            6,
+            5.5999999940395355,
+            5.39999994635582,
+            5.9000000059604645
+          ],
+          "medianMs": 5.699999988079071
+        }
+      }
+    },
+    "resource-index-30000": {
+      "name": "resource-index-30000",
+      "kind": "index",
+      "count": 30000,
+      "outputSha256": "dd60e5f78a9f7c5e421246eb6419c9d3db093a863d275451315af78650303b64",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            53.599999994039536,
+            50,
+            52,
+            53.400000005960464,
+            51.599999994039536,
+            55.60000002384186,
+            51.400000005960464
+          ],
+          "medianMs": 52
+        },
+        "current": {
+          "samplesMs": [
+            23.5,
+            25.200000017881393,
+            23.700000017881393,
+            23.099999994039536,
+            24,
+            25.099999994039536,
+            24.099999994039536
+          ],
+          "medianMs": 24
+        }
+      }
+    },
+    "resource-index-encoded": {
+      "name": "resource-index-encoded",
+      "kind": "index",
+      "count": 10000,
+      "encoded": true,
+      "outputSha256": "43dbb1985e46c2ede69a87d95a1505d8782d9b805f3574c55eef6e20ffd17a7c",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            17.599999994039536,
+            17.400000005960464,
+            16.599999994039536,
+            16.80000001192093,
+            16.80000001192093,
+            17,
+            16.900000005960464
+          ],
+          "medianMs": 16.900000005960464
+        },
+        "current": {
+          "samplesMs": [
+            12,
+            11.099999994039536,
+            10.900000005960464,
+            10.5,
+            11,
+            10.699999988079071,
+            11.300000011920929
+          ],
+          "medianMs": 11
+        }
+      }
+    },
+    "resource-index-small": {
+      "name": "resource-index-small",
+      "kind": "index",
+      "count": 12,
+      "batch": 100,
+      "outputSha256": "28f15780a0d10a862a1fc8998363efef7022f09012d1e028d74a3f23fe47bba6",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            1.5999999940395355,
+            1.5999999940395355,
+            1.5999999940395355,
+            1.699999988079071,
+            1.5999999940395355,
+            1.5,
+            1.5
+          ],
+          "medianMs": 1.5999999940395355
+        },
+        "current": {
+          "samplesMs": [
+            0.7999999821186066,
+            0.699999988079071,
+            0.800000011920929,
+            0.800000011920929,
+            0.699999988079071,
+            0.699999988079071,
+            0.699999988079071
+          ],
+          "medianMs": 0.699999988079071
+        }
+      }
+    },
+    "resource-lookups-30000": {
+      "name": "resource-lookups-30000",
+      "kind": "resource-read",
+      "count": 30000,
+      "outputSha256": "dd60e5f78a9f7c5e421246eb6419c9d3db093a863d275451315af78650303b64",
+      "timings": {
+        "baseline": {
+          "samplesMs": [
+            26.30000001192093,
+            24.30000001192093,
+            25.099999994039536,
+            23.69999998807907,
+            24.599999994039536,
+            24.80000001192093,
+            25
+          ],
+          "medianMs": 24.80000001192093
+        },
+        "current": {
+          "samplesMs": [
+            16.69999998807907,
+            17.30000001192093,
+            14.300000011920929,
+            15.400000005960464,
+            14.400000005960464,
+            14,
+            14.599999994039536
+          ],
+          "medianMs": 14.599999994039536
+        }
+      }
+    }
+  },
+  "fixtures": {
+    "apps/demo/public/samples/a.pages": {
+      "bytes": 858258,
+      "inputSha256": "4714477138d0a4090fc2ee2ba2ebb6adcd0fb6ce20a28897a6247a8e17d1ddce",
+      "outputSha256": "73146de9a59ec539e604172e7746923dd7a58d8ea5acf8b9ccfd7fd5eff95cc1"
+    },
+    "apps/demo/public/samples/a.numbers": {
+      "bytes": 543034,
+      "inputSha256": "be5e02bd170683345595e928a71979d3b4582ea0ca44214a35c643957a281ab0",
+      "outputSha256": "d93d535f9d1040755334b0e35ed895475d402ce055e149cb0be5439c8e4e9dba"
+    },
+    "apps/demo/public/samples/filens-weekend.key": {
+      "bytes": 1088999,
+      "inputSha256": "0d1fa06a23395434089ea24ce284fce2dfee4c7e1e51138be6038bb2ab41befb",
+      "outputSha256": "e16dd254811a345c3cef22b7c378330598f58249d13b546434b20809d177fae0"
+    },
+    "packages/iwork/vendor/iwork-converter/testdata/a.pages": {
+      "bytes": 762153,
+      "inputSha256": "8481e3071c8ea1cc9543354bcd1ff66f79e6c2c8686096fa3ae60ab96fd49ebf",
+      "outputSha256": "5ebdbaacd17c6ac61b107d94b8c85ad4407aa83e3e0f4c4bf4c105f85ca7276e"
+    },
+    "packages/iwork/vendor/iwork-converter/testdata/a.numbers": {
+      "bytes": 191392,
+      "inputSha256": "43afd5a01cff9283fea5a11716d96f696b5853b75f82a3fe4469f240dfb82947",
+      "outputSha256": "fc46f85a6eff178f0a1114fba1576733e103dc6923844ff3d9ed902beb0c3aed"
+    },
+    "packages/iwork/vendor/iwork-converter/testdata/a.key": {
+      "bytes": 359089,
+      "inputSha256": "929347827a7478c123dd3e3828e9751b5cf2ae977d2edd2a5f0774014fc4fefc",
+      "outputSha256": "148692d2cb953bb9bb2b65979d885cd3bd6bcb687c4579936851219f94016419"
+    }
+  },
+  "errors": [],
+  "browser": "147.0.7727.15",
+  "boundaries": {
+    "outputSha256": "dca01fc644d0f05e8009cff97fb5090fb468ac7c2aa3267436754f574f8ac30b",
+    "cases": 61
+  },
+  "edgeValidation": {
+    "outputSha256": "bdb1f6aa6c93c28a26df933765b7164b60b2ebbb4ca4cee8f5e370d5180325d6",
+    "generatedStyleCases": 256,
+    "resourceRoots": 5,
+    "resourceQueries": 225
+  }
+}

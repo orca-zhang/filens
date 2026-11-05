@@ -12,14 +12,14 @@ const previewRoot = path.join(repository, 'packages/preview');
 const previewPackage = JSON.parse(await readFile(path.join(previewRoot, 'package.json'), 'utf8'));
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
-// Build the same frontend source as the manifest, including local viewer fixes.
+// Sidebar previews need one format at a time. Keep the shared runtime split so
+// opening a PDF does not initialize embedded Office/CAD/3D engines and workers.
 const previewBuild = spawnSync(process.execPath, [path.join(repository, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', path.join(output, 'runtime'), '--emptyOutDir'], {
-  cwd: previewRoot, env: { ...process.env, FILENS_PREVIEW_BUILD: 'all-in-one' }, stdio: 'inherit',
+  cwd: previewRoot, env: { ...process.env, FILENS_PREVIEW_BUILD: 'embedded' }, stdio: 'inherit',
 });
 if (previewBuild.error) throw previewBuild.error;
 if (previewBuild.status !== 0) throw new Error(`Shared preview build exited with ${previewBuild.status}`);
 for (const name of ['tools.js', 'requests.js', 'images.js', 'preview-host.js']) await cp(path.join(root, 'src', name), path.join(output, name));
-for (const name of ['viewer.html', 'viewer.js', 'viewer.css']) await cp(path.join(root, 'src', name), path.join(output, 'runtime', name));
 const files = {};
 async function walk(directory, prefix = '') {
   for (const item of (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name))) {
@@ -32,6 +32,8 @@ async function walk(directory, prefix = '') {
   }
 }
 await walk(path.join(output, 'runtime'));
+const styleFiles = Object.keys(files).filter(name => name.endsWith('.css'));
+if (styleFiles.length !== 1) throw new Error('Embedded preview requires exactly one shared stylesheet.');
 const digest = createHash('sha256').update(JSON.stringify(files)).digest('hex').slice(0, 16);
 const runtime = { basePath: `/_filens/${digest}/`, files };
 await writeFile(path.join(output, 'runtime-manifest.js'), `export const runtime = ${JSON.stringify(runtime, null, 2)};\n`);
@@ -75,6 +77,7 @@ const result = await build({
     __FILENS_EXTENSIONS__: JSON.stringify(extensions),
     __FILENS_BINARY_EXTENSIONS__: JSON.stringify(extensions.filter(extension => !textExtensions.has(extension))),
     __FILENS_RUNTIME_PATH__: JSON.stringify(runtime.basePath),
+    __FILENS_RUNTIME_STYLES__: JSON.stringify(styleFiles[0]),
   },
 });
 await writeFile(path.join(output, 'client.js'), `window.__ModuleLoader__.load({id:"dsh-filens",factory:(require)=>{var module={exports:{}};var exports=module.exports;\n${result.outputFiles[0].text}\nreturn module.exports;}});\n`);

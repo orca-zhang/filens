@@ -180,7 +180,7 @@ describe('archive navigation and embedded previews', () => {
     mocks.open.mockResolvedValue(archive({ 'old.txt': read, 'next.txt': 'new entry', 'docs/readme.txt': 'docs' })); await load(session, 'bundle.zip', controller.signal);
     const result = observe(raw.openEntryPreview('old.txt')); await vi.waitFor(() => expect(read).toHaveBeenCalledOnce());
     try {
-      if (action === 'back') { const back = [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Back to archive')!; expect(back.disabled).toBe(false); back.click(); }
+      if (action === 'back') { const back = host.querySelector<HTMLButtonElement>('button[aria-label="Back to archive"]')!; expect(back.disabled).toBe(false); back.click(); }
       else if (action === 'directory') raw.setRoute('/docs/'); else if (action === 'replace') await load(session);
       else if (action === 'destroy') session.destroy(); else if (action === 'abort') controller.abort(); else await raw.openEntryPreview('next.txt');
       await vi.waitFor(() => expect(result.done).toBe(true), { timeout: 500, interval: 5 });
@@ -282,11 +282,14 @@ describe('archive extraction and fallback resource lifetime', () => {
     const index = await createArchiveResourceIndex(new Uint8Array([1]), context()); expect(index.files[0].contentType).toBe(type); expect((await index.files[0].readAsBlob()).type).toBe(type);
   });
 
-  it.each(['png', 'mp4', 'wav'] as const)('clears and releases a %s fallback when switching entries', async extension => {
+  it.each(['png', 'pdf', 'mp4', 'wav'] as const)('shares a %s preview URL with its download and releases it when switching entries', async extension => {
     const { session, raw, host } = setup(); mocks.open.mockResolvedValueOnce(archive({ ['asset.' + extension]: 'bytes', 'next.txt': 'next' })); await load(session);
-    await raw.openEntryPreview('asset.' + extension); const old = host.querySelector('img, audio, video') as HTMLMediaElement;
-    expect(old).not.toBeNull(); await raw.openEntryPreview('next.txt');
-    expect(URL.revokeObjectURL).toHaveBeenCalledOnce(); expect(old.isConnected).toBe(false); expect(host.querySelector('.archivev-entry-text')?.textContent).toBe('next');
-    if (extension !== 'png') { expect(old.getAttribute('src')).toBeNull(); expect(HTMLMediaElement.prototype.pause).toHaveBeenCalledOnce(); expect(HTMLMediaElement.prototype.load).toHaveBeenCalledOnce(); }
+    await raw.openEntryPreview('asset.' + extension); const old = host.querySelector('img, iframe, audio, video')!;
+    const url = host.querySelector<HTMLAnchorElement>('a[download]')!.href;
+    expect(old.getAttribute('src')).toBe(url); expect(URL.createObjectURL).toHaveBeenCalledOnce();
+    await raw.openEntryPreview('next.txt');
+    expect(URL.revokeObjectURL).toHaveBeenCalledOnce(); expect(URL.revokeObjectURL).toHaveBeenCalledWith(url);
+    expect(old.isConnected).toBe(false); expect(host.querySelector('.archivev-entry-text')?.textContent).toBe('next');
+    if (extension === 'mp4' || extension === 'wav') { expect(old.getAttribute('src')).toBeNull(); expect(HTMLMediaElement.prototype.pause).toHaveBeenCalledOnce(); expect(HTMLMediaElement.prototype.load).toHaveBeenCalledOnce(); }
   });
 });

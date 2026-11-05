@@ -1,78 +1,79 @@
 {
-  "observedAt": "2026-11-03T15:47:30.067Z",
+  "observedAt": "2026-11-05T03:31:30.611Z",
+  "command": "node scripts/test-workspace-npm.mjs",
   "source": "staged tarballs with isolated consumer and fresh npm cache",
   "packages": [
     {
       "name": "@filens/archive",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/cad",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/converter-client",
-      "version": "0.1.0"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/core",
-      "version": "0.1.0"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/design",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/diagram",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/docx",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/books",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/iwork",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/media",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/mindmap",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/model3d",
-      "version": "0.1.0"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/office",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/panorama",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/pdf",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/text",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "@filens/vue",
-      "version": "0.1.0"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/xlsx",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ],
   "passed": true,
@@ -81,6 +82,5 @@
     "Strict public declarations, skipLibCheck false",
     "Production Vite build of public Vue component and text/books dependencies",
     "EPUB and CBZ rendered in Chromium with external requests blocked"
-  ],
-  "command": "node scripts/test-workspace-npm.mjs"
+  ]
 }

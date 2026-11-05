@@ -1,0 +1,932 @@
+{
+  "observedAt": "2026-11-04T17:58:16.983738+00:00",
+  "status": "historical-direct-dom-snapshot-before-format-lazy-loading",
+  "name": "dsh-filens",
+  "version": "0.1.3",
+  "publishedVersionUnchanged": "0.1.2",
+  "package": {
+    "name": "dsh-filens",
+    "version": "0.1.3",
+    "file": "dsh-filens-0.1.3.tgz",
+    "bytes": 6834242,
+    "unpackedBytes": 20492163,
+    "sha256": "1622d7c7c18a9d9b8de095bfc893fbb7bf2a101563f76fd2036eb52bb68971fd",
+    "integrity": "sha512-1ftZVne3lqWNwjaHTV7J3xZZP0AwLbr6bcGNX51EAoqO+xioAN6hbS3c3y5zFeI5G0EuGQrmsNfgEgf4wExQig==",
+    "cliVersion": "0.5.5",
+    "previewVersion": "0.3.4",
+    "previewSHA256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af",
+    "extensions": 450,
+    "privacyChecked": true,
+    "publicationStatus": "unpublished-awaiting-user-confirmation"
+  },
+  "sourceFilesSHA256": {
+    "packages/pdf/src/preview-driver.ts": "eb959cebdd9c0850ab56a40454d00247f82ca8db9799ebe468857ac4a6761d10",
+    "packages/pdf/test/preview-driver.spec.ts": "86f0ffdb689e84b5706a87d8b480d069a6b28395b5646c916c5183f4adecf36d",
+    "packages/vue/src/Preview.vue": "7e43c66230cb7219a5eb56d5fcbe56eee39b068a8c79494debdc5d643fafb782",
+    "packages/preview/src/index.ts": "26ce25cfba5fa004b5fa54c1a16eb037c4b15259225758323289650f3fce6395",
+    "packages/preview/src/public.d.ts": "9f34d75d7a762e0db6c468943e8613c1ff7f1b97aee154167366d6e0fa193882",
+    "packages/preview/vite.config.ts": "0fae9b8152bb8bf6beea02a8db0e0688e68bfea8002fe3f89395c2d31deb010c",
+    "integrations/deepseek-harness/scripts/build.mjs": "8386fa9a11ef589ffa1b3df48a8af009bc554fb316bde72abeb963e06b250721",
+    "integrations/deepseek-harness/src/client.js": "08cb838f4abaaae88941ae36e76b43d12581e7a11e1b896143a9fca3127facd8",
+    "integrations/deepseek-harness/src/client.css": "34bcee41c54afa5a6c8efe3f2556ed05fad4686c501e8aee65c0c2f6db058305",
+    "integrations/deepseek-harness/src/viewer.js": "c92c0391c24695284a9c7ce69aa25ebac3cd8b5e0cb15b05319424e3246013ef",
+    "integrations/deepseek-harness/src/viewer.css": "7c9954460842799336ac9388487e7b116ddd1be5298756548bcdd96a8f8b019d",
+    "integrations/deepseek-harness/src/preview-host.js": "82a37005d95aac9aa47ab1012f7c92b8eab9c4fb27c598b772ae797c031d6fa2",
+    "integrations/deepseek-harness/test/browser.mjs": "4de23706333f3608a9c85021dbe73b289a1668e45cf4fc4ba0455bf99ccde4e8",
+    "integrations/deepseek-harness/test/desktop.mjs": "f4e2a5e545e0ea3535a37606b3cd6d51ad052b98775a75b6dd78fd8c789ec45e",
+    "integrations/deepseek-harness/test/resources.test.mjs": "db86d30851233a1c5ab1cc895fff822dd3f31eec623ea214569e45b9ae4a778b",
+    "scripts/benchmark-dsh-office-preview.mjs": "ce7fd0838c685cc25beab8d2297e4bf16facb1589fcdcd3f8f4b1ec520c90a9a"
+  },
+  "runtime": {
+    "basePath": "/_filens/dbd9ae988d0aa753/",
+    "files": {
+      "archive/7zz.wasm": {
+        "bytes": 1116075,
+        "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc"
+      },
+      "chunks/archive-gmTeFEgR.js": {
+        "bytes": 109195,
+        "sha256": "81f0eec3fc94a502954b1ea9dc36c297cb2e6d6ac4ab7536c3a653ccb0c21d32"
+      },
+      "chunks/browser-video-session-Oj0k9GuD.js": {
+        "bytes": 36000,
+        "sha256": "5818e3d433eef9e6d604b7d91f38eeed3ecfe7d95ebbd13d0136c378216c2cea"
+      },
+      "chunks/cad-BmYR6dlE.js": {
+        "bytes": 54512,
+        "sha256": "eb70ce8217d7e3cd4aa5499911364db52aede66ce6dbeeb640791704ce4a77fc"
+      },
+      "chunks/core-DiKnQZGc.js": {
+        "bytes": 364705,
+        "sha256": "7ca9f026b0e16bafccf6e7410298a4175d08061869fcb6dfb7bcd8c6fc55ed00"
+      },
+      "chunks/diagram-Cc6l7pRH.js": {
+        "bytes": 21754,
+        "sha256": "0a210892afc934e5b76662b882b3e0ef9f0202aa9c29f8b363289096254b9ed3"
+      },
+      "chunks/docx-DpkOSPt1.js": {
+        "bytes": 8938,
+        "sha256": "499885ab320f24b2338639b8939fdc1dc60801a595f7a18dddeeaf03ff5667dd"
+      },
+      "chunks/docx-engine-CSynkAEk.js": {
+        "bytes": 76591,
+        "sha256": "26df2433b450848581a98c62cec2dc4ac7869d9d8e4ee4131c0773b17dd4ae16"
+      },
+      "chunks/ebook-B4Xd8IhA.js": {
+        "bytes": 17181,
+        "sha256": "fa47db73efe9186d4edc6e9a900bf47e4701a4d96f7c18b75d71f587a1a05fec"
+      },
+      "chunks/index-DzHEW6Nz.js": {
+        "bytes": 181480,
+        "sha256": "6a5cb3b53781f30bf00f0ab1844492a16faf4aef11312c3626733f50216dfa5e"
+      },
+      "chunks/index-HpfpPYI8.js": {
+        "bytes": 15372,
+        "sha256": "acc907b7069e6916ca285af5dcd69831e2879d47419bc88271e0d9a1e5510f8d"
+      },
+      "chunks/iwork-dPiXgw0F.js": {
+        "bytes": 1231428,
+        "sha256": "ba1b75a1011d76187616dfaeaa570893b8ce8d767d3dc35952975bec427e26eb"
+      },
+      "chunks/media-runtime-G_A4VKBQ.js": {
+        "bytes": 146483,
+        "sha256": "b2a7965a6937342ccb5007d3b37144df9852bf8635327c62d84873b376ef7f4e"
+      },
+      "chunks/mindmap-C3u9smL7.js": {
+        "bytes": 15736,
+        "sha256": "768c1d9e76bc5f820538739d5734221c7d15912486d8c7867e88e93dcc7edd7d"
+      },
+      "chunks/model-3ds-CgUzbZQq.js": {
+        "bytes": 8434,
+        "sha256": "da0a458ca78b3670ac9c7aaaca438c26823c04821a117582ef0dc174f5150206"
+      },
+      "chunks/model-fbx-qK5e-Z2j.js": {
+        "bytes": 44860,
+        "sha256": "2e0e7228819b3fe4511066f4f191b69ab81a623f4eff6c3df6b906c86edee217"
+      },
+      "chunks/model-gltf-5dpZxf2u.js": {
+        "bytes": 43837,
+        "sha256": "f3520de33d001bbdf944ec8873ca5ef6a757c8af3644e4567714df9fce7e6e97"
+      },
+      "chunks/model-ldraw-Brdr_mf8.js": {
+        "bytes": 24699,
+        "sha256": "e2557dd098f3553115aca0f7c58e9f6cc2f6d3fda3a28f531b411f40d5c4a1c9"
+      },
+      "chunks/model-mtl-B7Mi8jq-.js": {
+        "bytes": 4284,
+        "sha256": "5dbaeeae597d77d79a3f60d65c776c64751d1908294501dfa7a304e6fb741d36"
+      },
+      "chunks/model-obj-CnqF8N6P.js": {
+        "bytes": 8802,
+        "sha256": "63c000d09f2d8d06b9b111604faa877917d75b4be92e9064852bef70caf4e817"
+      },
+      "chunks/model-usdz-CUfUDPRk.js": {
+        "bytes": 8723,
+        "sha256": "00d118e6680f799a19f2fcffd2e9c4e9869214fb825a58ef31dd74cc3eeb4362"
+      },
+      "chunks/model-vrml-BHRVhrVI.js": {
+        "bytes": 183064,
+        "sha256": "a3dfa8b471ce6ed10287df3f1ecff83446009009842d92c035b3955d6c791833"
+      },
+      "chunks/model3d-C5Nd7Ujg.js": {
+        "bytes": 112084,
+        "sha256": "b841d7b49f7d7e672103a949983545b9ca8142ae9941d22fe791e9c844b8ccc0"
+      },
+      "chunks/mp4box.all-Bw_Tlr0T-D0URDfA1.js": {
+        "bytes": 182354,
+        "sha256": "604a189e08459f2af803c3ee9cdf7865bd29570e2a782ee1c9ef1fd1a68e19c4"
+      },
+      "chunks/office-attachments-DEXGmd5F.js": {
+        "bytes": 32234,
+        "sha256": "f9b3720d2d01afe4d0cd110113846cafda026de92322c2d9e73cb82db8ccba9b"
+      },
+      "chunks/panorama-PpYbJBfn.js": {
+        "bytes": 220057,
+        "sha256": "500001a5d5929200b1e0aa725ac91e2a3eae4c0c9c207ce7f16ee1c18657c360"
+      },
+      "chunks/pdf-Dzzffz3p.js": {
+        "bytes": 448320,
+        "sha256": "a1b4b73ebccdcb52e068879ed366080825bd8c199d36f32b1dc0cc4b82bb8b68"
+      },
+      "chunks/vendor-CxuYsDz_.js": {
+        "bytes": 822024,
+        "sha256": "0233c5e20230e38e2609136336ec5c6b871fa34d388c16e461cec920e974131f"
+      },
+      "chunks/xlsx-DxSVdp_R.js": {
+        "bytes": 25907,
+        "sha256": "dd611aaa86749445b395f56af7ecfa37a497dfec0ca73b1fd21b40890ccec605"
+      },
+      "chunks/xml-compat-DBGBhx4N.js": {
+        "bytes": 28072,
+        "sha256": "7b69493cd1b273d8c573208108c6f30a86e5ad18e2353d1e700795786e836042"
+      },
+      "chunks/zip-compat-BoIcHr4U.js": {
+        "bytes": 42739,
+        "sha256": "e9f70948cdf18991089b1a07b083c97a9ccc564e263d5cce32cb59ddb24378dc"
+      },
+      "chunks/zip-encrypted-CH58PL7x.js": {
+        "bytes": 102341,
+        "sha256": "2d346b823f0463b2582277a553f180a8537b873d2c53563702325c2c0c799011"
+      },
+      "converter-core.wasm": {
+        "bytes": 932723,
+        "sha256": "e952e9c379ce4ba8526e81a8f6e702bbb649580575e97bc43ab05123e8265673"
+      },
+      "converter-graphics.wasm": {
+        "bytes": 5007118,
+        "sha256": "a92ac31c5001aa539e14d0dc72b08982a4f1245d2e41c270756dc3cd3369531c"
+      },
+      "converter-image.wasm": {
+        "bytes": 1492779,
+        "sha256": "e0c8f9e33ec1308aa65d67783b2d38878720935c1fe0caa9a994e37d0d73d3b7"
+      },
+      "converter-office.wasm": {
+        "bytes": 379316,
+        "sha256": "51a6aafdb77d5819181c3535f9ec7678e6705fe6a5469b38ac96abfe9abc1446"
+      },
+      "converter-postscript.wasm": {
+        "bytes": 2487498,
+        "sha256": "c154e4aba087d3b7f3d3280911e1c87bfc065568a031107d2cac50a3bfbf200c"
+      },
+      "filens-step.wasm": {
+        "bytes": 947729,
+        "sha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc"
+      },
+      "filens.js": {
+        "bytes": 253,
+        "sha256": "13ad076c2e263418980ac7852f7786bae9b1cfe71277fa1af5b38d53400b37af"
+      },
+      "libheif.wasm": {
+        "bytes": 1457990,
+        "sha256": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5"
+      },
+      "pdf.worker.min.mjs": {
+        "bytes": 1078612,
+        "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5"
+      },
+      "style.css": {
+        "bytes": 55027,
+        "sha256": "bec2f8f1748c465045350efc7d6f2503272ff1f4cadde8bb35524aabbd61cc10"
+      },
+      "THIRD-PARTY-NOTICES.txt": {
+        "bytes": 751210,
+        "sha256": "eeeaeafe7e0156a7d0fcc7aeac41c13647a2aec1fa894907919cf1592621918e"
+      }
+    }
+  },
+  "runtimeMatchesTestedTemporaryProfile": true,
+  "archiveLibFilesMatched": 50,
+  "checks": {
+    "pdfUnitTests": 19,
+    "vueUnitTests": 61,
+    "dshUnitTests": 18,
+    "resourceTests": 2,
+    "dshTestCommand": "Exact public filens-cli@0.5.5 launcher and platform/OCR dependencies, Node 24.22.1",
+    "browser": {
+      "results": [
+        {
+          "name": "hello.txt",
+          "rendered": true,
+          "ms": 31
+        },
+        {
+          "name": "filens-cosmic-atlas.pdf",
+          "rendered": true,
+          "ms": 101
+        },
+        {
+          "name": "filens-aurora-guide.docx",
+          "rendered": true,
+          "ms": 64
+        },
+        {
+          "name": "filens-observatory.xlsx",
+          "rendered": true,
+          "ms": 35
+        },
+        {
+          "name": "filens-field-notes.pptx",
+          "rendered": true,
+          "ms": 27
+        },
+        {
+          "name": "a.pages",
+          "rendered": true,
+          "ms": 148
+        },
+        {
+          "name": "a.numbers",
+          "rendered": true,
+          "ms": 174
+        },
+        {
+          "name": "filens-weekend.key",
+          "rendered": true,
+          "ms": 126
+        },
+        {
+          "name": "rounded-cube.step",
+          "rendered": true,
+          "ms": 244
+        },
+        {
+          "name": "raw/pentax-k-r.dng",
+          "rendered": true,
+          "ms": 91
+        },
+        {
+          "name": "sample-nested-archives.zip",
+          "rendered": true,
+          "ms": 24
+        },
+        {
+          "name": "encrypted.rar",
+          "rendered": true,
+          "ms": 43
+        }
+      ],
+      "interactions": [
+        "loading identifies the file and respects reduced motion",
+        "closing and reopening PDF reuses cached runtime and preserves canvas pixels",
+        "toolbar contains only working zoom and fullscreen; keyboard navigation works",
+        "document fullscreen opens from the keyboard and exits normally",
+        "live DSH language and theme changes preserve the document and current page",
+        "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
+        "double-click restores the complete 3D model after orbit and zoom",
+        "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
+        "3D auto framing keeps the whole model visible in a tall narrow pane",
+        "Word pages fit narrow/resized panes and omit unavailable controls",
+        "resizing the Word pane preserves the reading position",
+        "late events from a previous document are ignored",
+        "localized parser failure exposes details and a working retry action",
+        "encrypted documents expose the password form and render after password entry",
+        "short panes do not inherit a fixed minimum height",
+        "concurrent tabs share runtime assets but keep controls and lifecycle independent"
+      ],
+      "errors": [],
+      "failures": []
+    },
+    "desktop": {
+      "environment": {
+        "version": "0.2.1-rc.5",
+        "node": "24.21.0",
+        "electron": "44.7.0",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "url": "dsh-app://app/",
+      "registrations": [
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/text",
+          "extensions": 0
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/markdown",
+          "extensions": 2
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/html",
+          "extensions": 2
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/image",
+          "extensions": 8
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/pdf",
+          "extensions": 1
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office",
+          "extensions": 4
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/excel",
+          "extensions": 4
+        },
+        {
+          "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code",
+          "extensions": 115
+        },
+        {
+          "id": "dsh-filens",
+          "extensions": 450
+        }
+      ],
+      "results": [
+        {
+          "name": "filens-cosmic-atlas.pdf",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-aurora-guide.docx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-field-notes.pptx",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "filens-weekend.key",
+          "rendered": true,
+          "fillsPane": true
+        },
+        {
+          "name": "rounded-cube.step",
+          "rendered": true,
+          "fillsPane": true,
+          "toolbar": false,
+          "orbitZoomAndReset": true
+        },
+        {
+          "name": "sample-nested-archives.zip",
+          "rendered": true,
+          "fillsPane": true
+        }
+      ],
+      "errors": []
+    },
+    "npmPublishDryRun": "passed; no upload",
+    "published012TarballSHA256": "c8597a62d191fde19c2677495c8f6b47d7a100ce16a8511d5d6f66c776e23320"
+  },
+  "benchmarks": {
+    "pdf": {
+      "file": "assets/dsh-plugin/pdf-preview-direct.json",
+      "sha256": "1ca9f3902ccbd3b4d5ab06cf5e1e23b16df0b88519300bb188b321aeb89b62d6",
+      "rounds": 9,
+      "actualOpens": 108,
+      "results": [
+        {
+          "renderer": "filens",
+          "plugin": "dsh-filens@0.1.3",
+          "name": "Cosmic Atlas.pdf",
+          "firstMs": 261,
+          "cachedMedianMs": 144,
+          "freshProcessSamplesMs": [
+            237,
+            260,
+            264,
+            260,
+            266,
+            261,
+            263,
+            260,
+            261
+          ],
+          "cachedSamplesMs": [
+            181,
+            142,
+            144,
+            165,
+            143,
+            143,
+            168,
+            142,
+            145,
+            166,
+            144,
+            143,
+            181,
+            143,
+            144,
+            166,
+            144,
+            143,
+            165,
+            160,
+            144,
+            165,
+            142,
+            142,
+            167,
+            158,
+            144
+          ]
+        },
+        {
+          "renderer": "previous",
+          "plugin": "dsh-filens@0.1.2",
+          "name": "Cosmic Atlas.pdf",
+          "firstMs": 641,
+          "cachedMedianMs": 410,
+          "freshProcessSamplesMs": [
+            634,
+            638,
+            641,
+            641,
+            641,
+            661,
+            641,
+            663,
+            636
+          ],
+          "cachedSamplesMs": [
+            435,
+            393,
+            411,
+            419,
+            377,
+            412,
+            435,
+            377,
+            410,
+            435,
+            377,
+            410,
+            436,
+            377,
+            410,
+            432,
+            377,
+            428,
+            435,
+            377,
+            410,
+            433,
+            377,
+            411,
+            435,
+            377,
+            410
+          ]
+        },
+        {
+          "renderer": "builtin",
+          "plugin": "DSH built-in PDF",
+          "name": "Cosmic Atlas.pdf",
+          "firstMs": 326,
+          "cachedMedianMs": 110,
+          "freshProcessSamplesMs": [
+            327,
+            325,
+            325,
+            322,
+            329,
+            327,
+            324,
+            327,
+            326
+          ],
+          "cachedSamplesMs": [
+            110,
+            112,
+            111,
+            110,
+            112,
+            110,
+            109,
+            112,
+            111,
+            109,
+            114,
+            108,
+            109,
+            112,
+            112,
+            109,
+            114,
+            108,
+            109,
+            114,
+            108,
+            109,
+            112,
+            110,
+            110,
+            112,
+            110
+          ]
+        }
+      ]
+    },
+    "office": {
+      "file": "assets/dsh-plugin/office-preview-direct.json",
+      "sha256": "9a451056a38be5318df585d4b473df2c468c973c7811eb20539b75d4b1982529",
+      "rounds": 9,
+      "actualOpens": 216,
+      "results": [
+        {
+          "renderer": "filens",
+          "plugin": "dsh-filens@0.1.3",
+          "name": "Field Notes.pptx",
+          "firstMs": 160,
+          "cachedMedianMs": 78,
+          "freshProcessSamplesMs": [
+            166,
+            164,
+            164,
+            158,
+            160,
+            160,
+            164,
+            160,
+            155
+          ],
+          "cachedSamplesMs": [
+            86,
+            77,
+            78,
+            86,
+            78,
+            78,
+            87,
+            78,
+            78,
+            87,
+            78,
+            78,
+            87,
+            78,
+            77,
+            86,
+            78,
+            77,
+            87,
+            78,
+            78,
+            86,
+            78,
+            78,
+            87,
+            77,
+            78
+          ]
+        },
+        {
+          "renderer": "filens",
+          "plugin": "dsh-filens@0.1.3",
+          "name": "Aurora Guide.docx",
+          "firstMs": 111,
+          "cachedMedianMs": 94,
+          "freshProcessSamplesMs": [
+            111,
+            95,
+            111,
+            112,
+            112,
+            112,
+            112,
+            111,
+            111
+          ],
+          "cachedSamplesMs": [
+            77,
+            77,
+            77,
+            94,
+            94,
+            94,
+            94,
+            77,
+            94,
+            78,
+            94,
+            77,
+            94,
+            94,
+            77,
+            77,
+            94,
+            79,
+            94,
+            94,
+            77,
+            94,
+            94,
+            77,
+            95,
+            92,
+            94
+          ]
+        },
+        {
+          "renderer": "previous",
+          "plugin": "dsh-filens@0.1.2",
+          "name": "Field Notes.pptx",
+          "firstMs": 509,
+          "cachedMedianMs": 295,
+          "freshProcessSamplesMs": [
+            513,
+            520,
+            495,
+            509,
+            506,
+            513,
+            505,
+            509,
+            491
+          ],
+          "cachedSamplesMs": [
+            303,
+            262,
+            295,
+            304,
+            259,
+            295,
+            303,
+            261,
+            295,
+            303,
+            261,
+            295,
+            303,
+            261,
+            295,
+            303,
+            261,
+            295,
+            303,
+            260,
+            295,
+            303,
+            261,
+            295,
+            301,
+            245,
+            295
+          ]
+        },
+        {
+          "renderer": "previous",
+          "plugin": "dsh-filens@0.1.2",
+          "name": "Aurora Guide.docx",
+          "firstMs": 278,
+          "cachedMedianMs": 278,
+          "freshProcessSamplesMs": [
+            278,
+            279,
+            279,
+            278,
+            278,
+            279,
+            279,
+            278,
+            277
+          ],
+          "cachedSamplesMs": [
+            278,
+            312,
+            278,
+            278,
+            312,
+            278,
+            280,
+            310,
+            278,
+            278,
+            312,
+            278,
+            278,
+            312,
+            278,
+            278,
+            312,
+            278,
+            278,
+            312,
+            278,
+            278,
+            312,
+            278,
+            261,
+            295,
+            262
+          ]
+        },
+        {
+          "renderer": "builtin",
+          "plugin": "DSH built-in Office-to-PDF",
+          "name": "Field Notes.pptx",
+          "firstMs": 1826,
+          "cachedMedianMs": 111,
+          "freshProcessSamplesMs": [
+            2839,
+            1826,
+            1835,
+            1820,
+            1827,
+            1825,
+            1827,
+            1825,
+            1818
+          ],
+          "cachedSamplesMs": [
+            113,
+            109,
+            110,
+            201,
+            113,
+            110,
+            127,
+            110,
+            111,
+            198,
+            110,
+            110,
+            121,
+            110,
+            110,
+            119,
+            110,
+            111,
+            128,
+            110,
+            111,
+            127,
+            110,
+            110,
+            201,
+            112,
+            110
+          ]
+        },
+        {
+          "renderer": "builtin",
+          "plugin": "DSH built-in Office-to-PDF",
+          "name": "Aurora Guide.docx",
+          "firstMs": 1326,
+          "cachedMedianMs": 111,
+          "freshProcessSamplesMs": [
+            1310,
+            1309,
+            1328,
+            1310,
+            1326,
+            1326,
+            1326,
+            1326,
+            1309
+          ],
+          "cachedSamplesMs": [
+            111,
+            130,
+            109,
+            112,
+            111,
+            111,
+            111,
+            111,
+            111,
+            112,
+            111,
+            111,
+            112,
+            111,
+            111,
+            111,
+            111,
+            110,
+            112,
+            111,
+            111,
+            111,
+            111,
+            111,
+            112,
+            111,
+            111
+          ]
+        }
+      ],
+      "recovery": {
+        "reason": "The final 0.1.2 Office process failed to create a Desktop window; it produced no timing observations. Its two missing file observations were resumed in an isolated fresh Electron profile with the exact same published 0.1.2 package and CLI dependencies. The other 52 observations are unchanged.",
+        "originalCompleteObservations": 52,
+        "resumedObservations": 2,
+        "renderer": "previous",
+        "round": 9,
+        "droppedTimingSamples": 0,
+        "freshElectronProfileForResumedProcess": true,
+        "originalObservationsLogSHA256": "2c79c074b8b839adf7ba1eeddb998e17b6f85c2b974ee14aff2cccfaf9be1ff0"
+      }
+    }
+  },
+  "profiling": {
+    "purpose": "Instrumented diagnosis of initialization and multi-page waiting; these are separate from final nine-round latency measurements.",
+    "samples": [
+      {
+        "build": "public 0.1.2",
+        "opening": 1,
+        "beforePdfOpenMs": 463.3,
+        "firstPaintMs": 547.7,
+        "lastObservedPaintMs": 629.1,
+        "paintedPagesAtObservation": 3,
+        "instrumentedElapsedMs": 694.9
+      },
+      {
+        "build": "public 0.1.2",
+        "opening": 2,
+        "beforePdfOpenMs": 241.9,
+        "firstPaintMs": 317.9,
+        "lastObservedPaintMs": 384,
+        "paintedPagesAtObservation": 3,
+        "instrumentedElapsedMs": 440.8
+      },
+      {
+        "build": "public 0.1.2",
+        "opening": 3,
+        "beforePdfOpenMs": 193,
+        "firstPaintMs": 268.7,
+        "lastObservedPaintMs": 335.4,
+        "paintedPagesAtObservation": 3,
+        "instrumentedElapsedMs": 392.3
+      },
+      {
+        "build": "public 0.1.2",
+        "opening": 4,
+        "beforePdfOpenMs": 230.6,
+        "firstPaintMs": 301.9,
+        "lastObservedPaintMs": 385,
+        "paintedPagesAtObservation": 3,
+        "instrumentedElapsedMs": 441.8
+      },
+      {
+        "build": "intermediate split/iframe candidate",
+        "opening": 1,
+        "beforePdfOpenMs": 89.7,
+        "firstPaintMs": 189.2,
+        "lastObservedPaintMs": 189.2,
+        "paintedPagesAtObservation": 1,
+        "instrumentedElapsedMs": 249.4
+      },
+      {
+        "build": "intermediate split/iframe candidate",
+        "opening": 2,
+        "beforePdfOpenMs": 17.4,
+        "firstPaintMs": 103.8,
+        "lastObservedPaintMs": 103.8,
+        "paintedPagesAtObservation": 1,
+        "instrumentedElapsedMs": 161.0
+      },
+      {
+        "build": "intermediate split/iframe candidate",
+        "opening": 3,
+        "beforePdfOpenMs": 11.9,
+        "firstPaintMs": 83.5,
+        "lastObservedPaintMs": 83.5,
+        "paintedPagesAtObservation": 1,
+        "instrumentedElapsedMs": 141.1
+      },
+      {
+        "build": "intermediate split/iframe candidate",
+        "opening": 4,
+        "beforePdfOpenMs": 12.6,
+        "firstPaintMs": 92.9,
+        "lastObservedPaintMs": 92.9,
+        "paintedPagesAtObservation": 1,
+        "instrumentedElapsedMs": 159.7
+      }
+    ]
+  },
+  "limits": [
+    "One PDF and two Office samples on macOS arm64; performance is not a fidelity guarantee or universal speedup.",
+    "First means first per fresh DSH process, with OS and persistent caches retained; startup is excluded. The final 0.1.2 Office process was recovered in a fresh Electron profile after a window-launch failure, as recorded in its raw report. No timed sample was discarded.",
+    "Only the outer sidebar viewer iframe was removed; format drivers keep any document frames needed for their own content.",
+    "The installation GIF and public 0.1.2 reports remain historical publication evidence.",
+    "Existing complete v0.6.4 archives/npm candidates predate this source change and require rebuilding affected unpublished payloads before full publication."
+  ],
+  "supersededBy": "docs/dsh-format-loading-validation.json",
+  "archivedPackage": "dist/release-v0.6.4/dsh-next/history/dsh-filens-0.1.3-direct-dom.tgz"
+}

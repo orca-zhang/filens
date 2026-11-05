@@ -6,7 +6,7 @@ Browser-native CAD preview driver for the filens multi-format preview runtime.
 
 The package currently parses supported DXF drawings directly in the browser and renders them as SVG. It covers common geometry, text, blocks, dimensions, fills, raster references, drawing bounds, layers, colors, line types, and line weights, with explicit warnings for unsupported or unresolved content.
 
-This direct path does not require a desktop CAD application, native conversion process, or remote conversion server. DWG and other closed or more complex CAD formats are not registered as native routes today.
+This direct path does not require a desktop CAD application, native conversion process, or remote conversion server. DWG input is converted locally to UTF-8 DXF by the optional `converter-graphics.wasm` module, then displayed with this same renderer. Configure `createWasmConverterClient({ wasm, graphicsWasm })`; the demo and bundled browser preview include it automatically. DWG provides a partial 2D preview; complex entities, proxy objects, xrefs and SHX fonts may be simplified or omitted. DGN remains unavailable.
 
 See the root [support matrix](../../docs/support-matrix.md) for detailed coverage and limits.
 
@@ -14,7 +14,7 @@ See the root [support matrix](../../docs/support-matrix.md) for detailed coverag
 
 The CAD conversion work and SVG-first preview direction are derived from [`orcastor/cad2x-converter`](https://github.com/orcastor/cad2x-converter), an LGPL-2.1-licensed, compact DXF/DWG converter derived from LibreCAD. cad2x supports DXF/DWG input and DXF/PDF/PNG/SVG output, including practical handling for fonts, code pages, paper sizing, fitting, and scale.
 
-filens builds on that experience with a separate pure-browser DXF parser and SVG renderer for supported drawings. A host can still add a cad2x-style conversion route when it needs DWG input, print-oriented PDF output, PNG thumbnails, or broader native CAD compatibility.
+filens builds on that experience with a separate pure-browser DXF parser and SVG renderer for supported drawings. The current DWG route uses the pure Rust acadrust reader in the shared frontend WASM core. A host can still add a cad2x-style route for print-oriented PDF output, PNG thumbnails or broader CAD compatibility.
 
 ## Architecture Boundary
 

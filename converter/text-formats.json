@@ -534,6 +534,96 @@
       "kind": "image",
       "textExtraction": true,
       "ocr": true
+    },
+    {
+      "format": "tga",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "dds",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "dib",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "cur",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "pcx",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "jxl",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "qoi",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "ff",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "psd",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "psb",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "ico",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "icns",
+      "kind": "image",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "ai",
+      "kind": "document",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "eps",
+      "kind": "document",
+      "textExtraction": true,
+      "ocr": true
+    },
+    {
+      "format": "ps",
+      "kind": "document",
+      "textExtraction": true,
+      "ocr": true
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-11-05T03:36:11.844Z",
+  "tag": "v0.6.4",
+  "language": "en",
+  "files": {
+    "docs/release-v0.6.4.md": "48f7152e01193f85042aa467284ff629ab02d7d2b32b0d9ef7c353162fcad230",
+    "docs/releases/v0.6.4.md": "48f7152e01193f85042aa467284ff629ab02d7d2b32b0d9ef7c353162fcad230",
+    "CHANGELOG.md": "f82cf152d6406447d67e97ae283a656c935e14865d56efd7efff381dfea9ad0d"
+  },
+  "checks": {
+    "downloadTableFirst": true,
+    "downloadLinks": 45,
+    "localReferenceTargetsChecked": 48,
+    "githubBodyUsesTagAbsoluteRepositoryLinks": true,
+    "performanceInventoryItems": 40,
+    "bugfixInventoryItems": 15,
+    "zimaosBannerPresent": true,
+    "zimaosSeparateVersionsPreserved": true,
+    "inspectSpelling": true,
+    "publicationStatusWordingAbsent": true,
+    "bodyMatchesBothReleaseDocuments": true
+  }
+}

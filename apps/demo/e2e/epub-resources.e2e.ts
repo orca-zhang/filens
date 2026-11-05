@@ -47,7 +47,7 @@ test('renders EPUB imports, local fonts, CSS images and SVG illustrations in bot
 test('shows styled EPUB chapters through the demo upload flow', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('./?view=preview');
-  await page.locator('input[type="file"]').setInputFiles({ name: 'styled.epub', mimeType: 'application/epub+zip', buffer: Buffer.from(await createStyledBookFixture()) });
+  await page.locator('.wb-upload input[type="file"]').setInputFiles({ name: 'styled.epub', mimeType: 'application/epub+zip', buffer: Buffer.from(await createStyledBookFixture()) });
   const frame = page.frameLocator('iframe.ebookv-frame');
   await expect(frame.locator('h1')).toHaveText('First chapter');
   await expect(frame.locator('.imported')).toHaveCSS('color', 'rgb(18, 52, 86)');

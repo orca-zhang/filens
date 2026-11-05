@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import createHeif from 'libheif-js/libheif-wasm/libheif.js';
+import createHeif from '../vendor/libheif/libheif.js';
 import { wasmResponse } from './wasm-response';
 import { withDecodedHeif } from './heif-decoder';
 import { createHeifNormalizer } from './heif-color';
@@ -19,6 +19,11 @@ scope.onmessage = async ({ data }: MessageEvent<{ input: Uint8Array; format: str
 async function decodeHeif(input: Uint8Array, wasmUrl: string, normalize: Awaited<ReturnType<typeof createHeifNormalizer>>): Promise<Uint8Array<ArrayBuffer>> {
   const response = await fetch(wasmUrl);
   if (!response.ok) throw new Error(`Failed to load the HEIF decoder: ${response.status}.`);
-  const heif = await createHeif({ wasmBinary: new Uint8Array(await (await wasmResponse(response)).arrayBuffer()) });
+  const heif = await createHeif({
+    wasmBinary: new Uint8Array(await (await wasmResponse(response)).arrayBuffer()),
+    // Emscripten computes a fallback URL even when wasmBinary is supplied.
+    // A Blob worker cannot resolve relative URLs against import.meta.url.
+    locateFile: () => wasmUrl
+  });
   return withDecodedHeif(heif, input, normalize, normalize.readColorProfile);
 }

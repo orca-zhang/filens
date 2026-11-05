@@ -1,0 +1,1029 @@
+{
+  "repository": "sindresorhus/file-type",
+  "commit": "deb45066a4c6aa7d956011c4b59aad53e426ddac",
+  "selection": "fixture.* regular files <=128 KiB; exclude explicitly malformed filenames; no detector source copied",
+  "files": [
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.3g2",
+      "label": "3g2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.3g2",
+      "sha256": "00dd937c3a0efb608e3a7242d787f96f81ec020c68e181db9c1ff6bc1e521abd",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.3mf",
+      "label": "3mf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.3mf",
+      "sha256": "d45d18cbbc4f189c2951b5c8c400333c0de633c4b88608dc6f5416b8f7677524",
+      "bytes": 1176
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.7z",
+      "label": "7z",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.7z",
+      "sha256": "35a629e4eb8cec0fc192238ef80d91adca7b2e021073eb28d57e9edd00a7f7f7",
+      "bytes": 2166
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ac3",
+      "label": "ac3",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ac3",
+      "sha256": "d256c41d75d3376df80c4feb68af4781379e77fddf01123b10d2cbceb7a64500",
+      "bytes": 138
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ace",
+      "label": "ace",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ace",
+      "sha256": "e5655306ffe8a2007c2e787c196296a0f97e529996711a7a54658d6ce4e7134b",
+      "bytes": 97
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.aif",
+      "label": "aif",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.aif",
+      "sha256": "6f21a650eb10bf4ef85bcf4b2819199d3aeac738ad4bf6ad25181828bc6fc86f",
+      "bytes": 47148
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.alias",
+      "label": "alias",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.alias",
+      "sha256": "35feb4ef7dc87f6393889485d34e7a31c248b30bacd39787cfd831b0df7e1e1e",
+      "bytes": 876
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.amr",
+      "label": "amr",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.amr",
+      "sha256": "465af6b7d8c204641f0450c77f1172f5fb165fa7f9b46c3577e2bc8b87877c1f",
+      "bytes": 1350
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.apng",
+      "label": "apng",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.apng",
+      "sha256": "ce0905f339f44370c0fecc226ef4b422d86f06a3ec4f194e5cfb9d0b50aafb2e",
+      "bytes": 63435
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ar",
+      "label": "ar",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ar",
+      "sha256": "37b410c5081f2fdb3f3767da80ecbadf5caa96dfbb97f71ece3210124686335c",
+      "bytes": 111962
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.arj",
+      "label": "arj",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.arj",
+      "sha256": "b414da0511474e73ccc069f347ee4f881e2961b358161497d5e5fc6dfb8e38c2",
+      "bytes": 124
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.arrow",
+      "label": "arrow",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.arrow",
+      "sha256": "515143056050e0b2a15c7852ba375384166689b06575493e54dcdbc8d8d98f6a",
+      "bytes": 346
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.asar",
+      "label": "asar",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.asar",
+      "sha256": "c6cf5675fdd3769d8f25159cff4e3d352b815cbc381160a9018f25d38fb2b785",
+      "bytes": 79
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.avi",
+      "label": "avi",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.avi",
+      "sha256": "04276f3242c55faca30ca10b7f33b4aee0fa2f1121a2c17dfa28158f6a7908ad",
+      "bytes": 52448
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.avro",
+      "label": "avro",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.avro",
+      "sha256": "49b4653c5798201fc2d0e7ced1f402e20e29f9853e6400eef6529e8c5cfc5170",
+      "bytes": 191
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.bmp",
+      "label": "bmp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.bmp",
+      "sha256": "896b47b0fc4d56066c9ac26230764855a902fa329e9d28364357060f11dc5d27",
+      "bytes": 79856
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.bpg",
+      "label": "bpg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.bpg",
+      "sha256": "6815add3b627aad2cff09db4b9e34916337d5b2dbbabd485440809a3d371d6da",
+      "bytes": 20415
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.bz2",
+      "label": "bz2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.bz2",
+      "sha256": "19f66607e1ddc5bf6f10500adb5a0680dca9e18a0cf489307a5e0df4df131b6c",
+      "bytes": 2506
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.caf",
+      "label": "caf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.caf",
+      "sha256": "790972cc949e4652ce056f021cbd25ef014544aca36efae726684469771bcec2",
+      "bytes": 252
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.chm",
+      "label": "chm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.chm",
+      "sha256": "3a4e4981d5c41161abcbde2f528b726928bd0b586a2314be09477d6599c63506",
+      "bytes": 10176
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.class",
+      "label": "class",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.class",
+      "sha256": "99ac88fdaf95655d442c9ca74afb17c159ce4abd79d896f2bf54f069330d4992",
+      "bytes": 268
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.cr3",
+      "label": "cr3",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.cr3",
+      "sha256": "02aff322a39a6edec710d74ad499877df81d3035740ca29d0afe342fed45bf93",
+      "bytes": 131072
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.cur",
+      "label": "cur",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.cur",
+      "sha256": "644f07f6ba4f3cc8cea43bf3c239c18fa350cfe4b16441025bc7b95b8de9d673",
+      "bytes": 14942
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.deb",
+      "label": "deb",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.deb",
+      "sha256": "152e363a40d93c7ee6bc9401108ab9d00a65fa50705adc9a137f39f6a38b9daf",
+      "bytes": 44990
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.dff",
+      "label": "dff",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.dff",
+      "sha256": "b676751d8dd0cad066e8e5699552a703d628dc3a93bd255ccaeb2aa494e23a27",
+      "bytes": 258
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.dmg",
+      "label": "dmg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.dmg",
+      "sha256": "d93022fe99fbe489fc8c98f03efab3bc26af81e219915246271b368739931a2c",
+      "bytes": 27155
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.doc.cfb",
+      "label": "cfb",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.doc.cfb",
+      "sha256": "45e07cf623e634b96b3e82aeaf7ecc74efd03a05808bf1eb69ceef8a9df7d135",
+      "bytes": 100352
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.docm",
+      "label": "docm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.docm",
+      "sha256": "2f80ae6c5869259b52c2195764291641165dc1f54b21121aacff7491947f0a7b",
+      "bytes": 12224
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.docx",
+      "label": "docx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.docx",
+      "sha256": "542a80f70d0640e0c9a0d35fbbb41179129dd57b693c9c01251f44f1522399f1",
+      "bytes": 22873
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.dotm",
+      "label": "dotm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.dotm",
+      "sha256": "2a45446efbc24445dc38858a44bd938affe8ef63aa2ca78fcc7cc9f6f862e688",
+      "bytes": 12200
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.dotx",
+      "label": "dotx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.dotx",
+      "sha256": "1e8dd9e29fb9dcc8a8713b4a348c3e96181db03316e4f4411238ebfd3f4d1152",
+      "bytes": 12734
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.elf",
+      "label": "elf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.elf",
+      "sha256": "6bee458a93293dd2c423f23fc549f334a4dfc6228aa27161cb986f686950da44",
+      "bytes": 142
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.eot",
+      "label": "eot",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.eot",
+      "sha256": "cbb644d0ee730ea57dd5fbae35ef5ba4a41d57a254a6b1215de5c9ff8a321c2d",
+      "bytes": 60767
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.exe",
+      "label": "exe",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.exe",
+      "sha256": "1af8077958a88a3064a71903841f901179e27fe137774085565619fb199c653a",
+      "bytes": 98816
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.f4a",
+      "label": "f4a",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.f4a",
+      "sha256": "a72e98752624801c31f0160bb0494723391c5ef123ebcdfaf5573b89ea7fcab4",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.f4b",
+      "label": "f4b",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.f4b",
+      "sha256": "9dfb4c4e09d9bba70fc2b0b2aa64553ead79754bc1b985539b2db43c29a2989c",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.f4p",
+      "label": "f4p",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.f4p",
+      "sha256": "1f269a1621b8c17bde209d7ef6adb936b6e723cbf2fecb70633db3d1be1cbfb1",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.f4v",
+      "label": "f4v",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.f4v",
+      "sha256": "d39abf8ea84fbc7bbe0e86322cffe90cbe49ff23e3209ffc0943803d0ac26d94",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.fbx",
+      "label": "fbx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.fbx",
+      "sha256": "8c1529978185d821e83e0734dee462aa2c41533a3ec88aa02fa39da8daaf70c3",
+      "bytes": 17036
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.flac",
+      "label": "flac",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.flac",
+      "sha256": "131e78614ae7d9f1d109a3876c25026805582aedeb4c3995bef6110e0bd868ac",
+      "bytes": 77516
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.flv",
+      "label": "flv",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.flv",
+      "sha256": "0411049632e106114422bf20e1c559c27900f2f0f6769e59467e06027ce575fe",
+      "bytes": 6297
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.gif",
+      "label": "gif",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.gif",
+      "sha256": "7e564a1b350397af0f4af17d5ee2ff992178d13a576484ff1f101540a7980350",
+      "bytes": 21057
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.gz",
+      "label": "gz",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.gz",
+      "sha256": "4f3b68deb07e088a295332df3cc9f21456425ac0c9ba23873bf5f7cc358a915e",
+      "bytes": 87
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ico",
+      "label": "ico",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ico",
+      "sha256": "44ff85a8a5a3c5ddab56a15d5bca9598d373238e975814abca1f44f8e48e6ee0",
+      "bytes": 4286
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ics",
+      "label": "ics",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ics",
+      "sha256": "208d3448f5ae32c6275bdecc026d33649ba0654556c4b21315364f9e209c0dea",
+      "bytes": 248
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.iso",
+      "label": "iso",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.iso",
+      "sha256": "06a66f22f4df50cb10c722b59569a7dc697214cd3ab3b65988cbd46279b47551",
+      "bytes": 69632
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.it",
+      "label": "it",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.it",
+      "sha256": "34ed07f3ea3fb7da68f4733d46b9ea206f9f30484d272720b57264dfe651afd0",
+      "bytes": 391
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.j2c",
+      "label": "j2c",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.j2c",
+      "sha256": "0d68abe0c17febc127b3c3468bdcd0794da5460f1baadef2c94414d723a5d6dc",
+      "bytes": 6410
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jar",
+      "label": "jar",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jar",
+      "sha256": "4bfb22bc017233d9b84e5ae3f516bda2fe85d620debaf6d6b6f36ce9f4cef206",
+      "bytes": 2559
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jmp",
+      "label": "jmp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jmp",
+      "sha256": "b95ede98e6c1892bd177adce6d8a22fe800a67af76ef7c1f699369de79593ce4",
+      "bytes": 745
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jp2",
+      "label": "jp2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jp2",
+      "sha256": "cce6600403e66b5f04fe5f7a13b3c4f23dfbfafedb7c34211e2f6ddca5a75615",
+      "bytes": 2877
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jpg",
+      "label": "jpg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jpg",
+      "sha256": "fe7c7546c00a1aa1943c2623504d282fe40071ff8dee9950b999497b06465d3a",
+      "bytes": 59411
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jpm",
+      "label": "jpm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jpm",
+      "sha256": "67f5b35032220d6ab6b59b45cc4e6b128e821a4fb8d9acf0af7f3b88a1f5897c",
+      "bytes": 64
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jpx",
+      "label": "jpx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jpx",
+      "sha256": "392d0209fca0882c306f34234fad7f38389e423bcf13d3a7f3679406340315bd",
+      "bytes": 64
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jxl",
+      "label": "jxl",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jxl",
+      "sha256": "3899e188fca15f002b91f56446219e9e38e2246d83cdcc8c51892e58470cfa33",
+      "bytes": 285
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.jxr",
+      "label": "jxr",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.jxr",
+      "sha256": "38865d13bebcb82009a86831f245f3a173ccafbde69595a274adacb88f500cba",
+      "bytes": 72036
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.key",
+      "label": "key",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.key",
+      "sha256": "fc1bdd9ba3d8c59d51de429b762b00e0f2a998041ce2864887b06265f0b69eae",
+      "bytes": 99
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ktx",
+      "label": "ktx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ktx",
+      "sha256": "ca320d858402a6a35950d902b1425de260e4bcf963ddb1c0a329a3fa4a390a78",
+      "bytes": 356
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.lnk",
+      "label": "lnk",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.lnk",
+      "sha256": "d3ee78ccbba87bfdb222e978df34231dd5d71183246865cd863400a68eca5e97",
+      "bytes": 1369
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.lz4",
+      "label": "lz4",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.lz4",
+      "sha256": "42b0a16a36034147d0f1bc3332c89d421225bc707744043f9bd6e45a74a00137",
+      "bytes": 834
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.lzh",
+      "label": "lzh",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.lzh",
+      "sha256": "2357664ee4cda81462c8887330f4061f46b407d9a58f361e47ce5fdca3bfe4f4",
+      "bytes": 79507
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.m4a",
+      "label": "m4a",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.m4a",
+      "sha256": "514dd4df27c97089341decd5e1e8c26ce2cc62a3a36303af264dc883d0c77590",
+      "bytes": 19208
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.m4b",
+      "label": "m4b",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.m4b",
+      "sha256": "4130ca126d50b391756cca3daaa4e8048fbc6489762ee3ee0bf6f3055f17ec04",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.m4p",
+      "label": "m4p",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.m4p",
+      "sha256": "df926a322e6e3ef70cfaa46d9d2c4971818d73c5380bac97c7f077941aafd07e",
+      "bytes": 12
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.m4v",
+      "label": "m4v",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.m4v",
+      "sha256": "654ecbef52635b3b66ddb86c35571b95f9fe2e2155f1adf6ead30ab51c7d1a64",
+      "bytes": 58345
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mid",
+      "label": "mid",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mid",
+      "sha256": "a1259360c48adc81f2c5b822f221044595632bd1a76302db1f9d983c44f45a30",
+      "bytes": 248
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mj2",
+      "label": "mj2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mj2",
+      "sha256": "727103d556f5fbb3711d0f0472f45f47b0fe05493823b162d6b03e58a04ae6fa",
+      "bytes": 64
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mkv",
+      "label": "mkv",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mkv",
+      "sha256": "d53cc5e4a1caca28eea5916af105617c843bedc92ec45e97978d8102f211874c",
+      "bytes": 38047
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mov",
+      "label": "mov",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mov",
+      "sha256": "50718586a5a1d758c093f739e0b30f417c39406fce65554ffefbfcaa7faa3c8b",
+      "bytes": 3169
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mp1",
+      "label": "mp1",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mp1",
+      "sha256": "9ad3be8edffd7563cc4b9dd1598ac66d0dbf6905f3e24784e07548c6088d971b",
+      "bytes": 2352
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mp2",
+      "label": "mp2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mp2",
+      "sha256": "fe3fbb1ab199a2b4dd0e069ec270cf860b2d46189c25921244a70636933576c7",
+      "bytes": 16384
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mp3",
+      "label": "mp3",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mp3",
+      "sha256": "8f3e228fd2ade0639eebdb9a39c32eac7902150b7673293acaccf4ddaee6bf6e",
+      "bytes": 8320
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.mpg",
+      "label": "mpg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.mpg",
+      "sha256": "69e86a7189cd2c58e4f978e82af7774526b9139b9c9d5f2e2c6c83104daa767e",
+      "bytes": 37700
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.msi.cfb",
+      "label": "cfb",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.msi.cfb",
+      "sha256": "cd463871d74ec52b0923c30aebc56c777b9f8d0f595d93718048c7553e8c5109",
+      "bytes": 88576
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.nef",
+      "label": "nef",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.nef",
+      "sha256": "706861d1963383396e4cc055b1b406a506b42c0edf8a51a8b54d357542dcde5a",
+      "bytes": 128
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.nes",
+      "label": "nes",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.nes",
+      "sha256": "a91defb25629680b6b329d13f84ac300ba14e00f376e4dadc05ce9af4da2e278",
+      "bytes": 16400
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.numbers",
+      "label": "numbers",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.numbers",
+      "sha256": "50a548bf8c2e5958794fa7a5212e25e549b1f7072597c49dd56405d6a17914ac",
+      "bytes": 102
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.odg",
+      "label": "odg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.odg",
+      "sha256": "71fd28773374d74b3fd939f5330e18e7e7702d731cad0a3ac0c2e316900dbbad",
+      "bytes": 7985
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ods",
+      "label": "ods",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ods",
+      "sha256": "d305638357e33866a05bcdbb01c9be2180eca58f0517e6e4917638f9116345c1",
+      "bytes": 8828
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.odt",
+      "label": "odt",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.odt",
+      "sha256": "9847339a2fda4c89b05df4fc66d55375d88bfe8744d8c482799e54a93844bf7e",
+      "bytes": 6737
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.oga",
+      "label": "oga",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.oga",
+      "sha256": "6d9488726a92da1b84dfdac0394baa13791dee0e9e3a3d891f8b33c723fafd9f",
+      "bytes": 24682
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ogg",
+      "label": "ogg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ogg",
+      "sha256": "48fe36cfe99cc9c574f77f424151b8f1598afe8a8480c2b3c39222bf40bcbd4e",
+      "bytes": 10836
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ogv",
+      "label": "ogv",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ogv",
+      "sha256": "acae2a1f49915d6f98fb5199083b2770802042bfda181f80bcf2f48c5802b456",
+      "bytes": 256
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.opus",
+      "label": "opus",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.opus",
+      "sha256": "26199e247067d2a6533c8ffe9c63ef4938959a2cae03eb4ad8d50db0a95961fb",
+      "bytes": 6270
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.orf",
+      "label": "orf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.orf",
+      "sha256": "6fa249938364fc0a443a14509ffd377d33d20f175f1bc95950aae3367288e00c",
+      "bytes": 128
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.otf",
+      "label": "otf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.otf",
+      "sha256": "bdc5d0b9f397be83e886c74b0141d1954aa4384b359dce49829994c4a2e1f7bf",
+      "bytes": 93888
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.otg",
+      "label": "otg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.otg",
+      "sha256": "0e60690336c9f959f9162ab3684a112c85aa021333cd756bbd88f0bc6c4de105",
+      "bytes": 7999
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.otp",
+      "label": "otp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.otp",
+      "sha256": "773e415d9c5bac54834eedd8638ee463a3514afc628c3c72c851647622773e41",
+      "bytes": 14455
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ots",
+      "label": "ots",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ots",
+      "sha256": "cd79296441d8421a06458236b5f158f1f135990ab988818d0f70c7e8cc4c7019",
+      "bytes": 7256
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ott",
+      "label": "ott",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ott",
+      "sha256": "566909a2d982a5ef6e64a3eb5a71e1cc821aa104fa89063ddc0a25e54cd51f82",
+      "bytes": 8259
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.pages",
+      "label": "pages",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.pages",
+      "sha256": "160287b1e0d8ff3effaafff2230ff7495ce84adc7707ff2d20174b094395a573",
+      "bytes": 105
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.parquet",
+      "label": "parquet",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.parquet",
+      "sha256": "c605f7bc29abaca84cd5eb5dc01f84c8c7b5f71eafd83da25a3ebb372cf23338",
+      "bytes": 688
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.pdf",
+      "label": "pdf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.pdf",
+      "sha256": "60bdd13ea4827b8de375c79dc3ff847f83b55bd73b6461523fdf8f843b5a0d5b",
+      "bytes": 7945
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.pgp",
+      "label": "pgp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.pgp",
+      "sha256": "a32262dca49934d219a6dd6605e3729ce3becf1fb9ba21120cdcb56897f199f5",
+      "bytes": 599
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.png",
+      "label": "png",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.png",
+      "sha256": "0fcb56fdef19dde2af4c135514a33ff6325aad4d0a01fd7893d715dc14ae0d50",
+      "bytes": 54318
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.potm",
+      "label": "potm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.potm",
+      "sha256": "d9e2d85bfa44b8a00b9372fd72480f139b599b0be3cd931d61fdd5d0c97c6af0",
+      "bytes": 33472
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.potx",
+      "label": "potx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.potx",
+      "sha256": "22ec69ea289592f1692c6a3c956aeade9bf5e3ad59c2362bc823f5a01177958b",
+      "bytes": 27805
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ppsm",
+      "label": "ppsm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ppsm",
+      "sha256": "a0f70ccf4017b4ddc26613764ffd94b0d638d735c8d80121e0fa5736806194c9",
+      "bytes": 34004
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ppsx",
+      "label": "ppsx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ppsx",
+      "sha256": "56b9e6b5c71965dc6bb5a5a4601f9c04dd37b3b4a1a78982ee384cc90550b0e6",
+      "bytes": 33979
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.pptm",
+      "label": "pptm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.pptm",
+      "sha256": "9d88790d8ca40e60136437809a7c7033e71d66f59ff3e843cc0956e2adea45e0",
+      "bytes": 33457
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.pptx",
+      "label": "pptx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.pptx",
+      "sha256": "daad647369762d66974948aa06600b45bf029b1020486d1b5455ba4cca5d7502",
+      "bytes": 30226
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ps",
+      "label": "ps",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ps",
+      "sha256": "05805db08a9ef6b2001ce4ddc0b5f3f55a30e13efc57707915c858d7587b8304",
+      "bytes": 436
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ps.mpg",
+      "label": "mpg",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ps.mpg",
+      "sha256": "bc9ff434bbc787d362437e4470d7bd7f9ff2a70ac6a98497eef6fe66c7f09059",
+      "bytes": 86016
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.psd",
+      "label": "psd",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.psd",
+      "sha256": "d333a5048aabd9cb22d2eaed1a93a6cac9b37cecf09782819c4e2b187917775f",
+      "bytes": 103748
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.qcp",
+      "label": "qcp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.qcp",
+      "sha256": "400943799f33bfb2bef652219413839532ff01e0566048dcd99a2fdd851135e4",
+      "bytes": 53192
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.raf",
+      "label": "raf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.raf",
+      "sha256": "9dec5bacba2eabe19b032443e6cc78387097aae75cd682d92731710f4eeeda79",
+      "bytes": 128
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.rar",
+      "label": "rar",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.rar",
+      "sha256": "cea4bf555f18c0551ca430eb1eda6856f74f05482a23d12f02210a4a484643e7",
+      "bytes": 2196
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.rpm",
+      "label": "rpm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.rpm",
+      "sha256": "ea840d341f15c39a8ea3158b6ca7459637111d0b3cb0d5fc44c177d75d5ab36f",
+      "bytes": 5580
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.rtf",
+      "label": "rtf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.rtf",
+      "sha256": "fd91093d7109c92ba34b08da4fa7ac6232986a8f8a4d0bed7035963dbb83549b",
+      "bytes": 340
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.rw2",
+      "label": "rw2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.rw2",
+      "sha256": "8f505020dee080a596629278c222575f28e155c620f8928f26053a6d024bf7f7",
+      "bytes": 128
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.s3m",
+      "label": "s3m",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.s3m",
+      "sha256": "b528b4fb3ec3ba766dd3f12ed60d1559296dcc8b18b378e4361e474a7448a09c",
+      "bytes": 224
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.sav",
+      "label": "sav",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.sav",
+      "sha256": "5a6065f32b1d786a5eb365199949870521a61fb5a17cfa425f452c6fb33ab3be",
+      "bytes": 843
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.shp",
+      "label": "shp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.shp",
+      "sha256": "e8fa05aafd96aaaace63fd8c5f3dc6cb6bcb4c36bf6dbaa8e8ee8994e010d6d0",
+      "bytes": 128
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.spx",
+      "label": "spx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.spx",
+      "sha256": "2e397b12998aa1259b80c8dfa9ed0be3b44df4ab3afc681cd78e1bdad0b66795",
+      "bytes": 2752
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.sqlite",
+      "label": "sqlite",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.sqlite",
+      "sha256": "f1cf1f2cc2920d22eafd5b305208aed126cf49e6d329c5ddd6ece5330ff43234",
+      "bytes": 8192
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.stl",
+      "label": "stl",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.stl",
+      "sha256": "f4cf92af95e696e8f5247a641f20bafda223924a41fadf5265ea82a273db2690",
+      "bytes": 558
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.swf",
+      "label": "swf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.swf",
+      "sha256": "6702a3984bba664e69d0a925249096d8e43d1ac213141ec430b0bd0014d71191",
+      "bytes": 21820
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.tar",
+      "label": "tar",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.tar",
+      "sha256": "991a63985e90c6412e301f6667f3a01fc77338a2f9bf59fbc1d89e17d47116c4",
+      "bytes": 10240
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.tar.Z",
+      "label": "z",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.tar.Z",
+      "sha256": "6726095bc02a183add704e609786141d83a69340a6c31c9119b67084741101d8",
+      "bytes": 242
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.tar.gz",
+      "label": "gz",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.tar.gz",
+      "sha256": "9c7fb1602b62dcea06d210c4a066b2f754df6fc3c74ad8fb4d0d7d0b346a2ad7",
+      "bytes": 2277
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.tar.lz",
+      "label": "lz",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.tar.lz",
+      "sha256": "2fc573c36c66a3d4838e8f6722100b0c5df23ba99450f682f64b1a019ee75906",
+      "bytes": 2191
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.tar.xz",
+      "label": "xz",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.tar.xz",
+      "sha256": "359cb645cea3f6ae8c68ca35e04ff04e6890d370abab40392a36007f8c6392b3",
+      "bytes": 2208
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.tar.zst",
+      "label": "zst",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.tar.zst",
+      "sha256": "f5eb67722782b94bbf33946ef67305c4907be5c20db18e2984d66cb56c40bc65",
+      "bytes": 311
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ttc",
+      "label": "ttc",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ttc",
+      "sha256": "cefd9a7324ba52e87f2d5b5798c0045d7750c67d1b86f6be0a38df8d30086f47",
+      "bytes": 5
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.ttf",
+      "label": "ttf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.ttf",
+      "sha256": "9e540a087924a6e64790149d735cac022640e4fa6bff6bd65f5e9f41529bf0b3",
+      "bytes": 122092
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.unicorn",
+      "label": "unicorn",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.unicorn",
+      "sha256": "e0f2578927bde36be791e72b4e48e5ace1e376474589c87ff454bb567df03d30",
+      "bytes": 21
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.vcf",
+      "label": "vcf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.vcf",
+      "sha256": "8081aaa8cb36f3f84c484a86f61b9dd140724a96c5ff0c10b43632751b78cf1f",
+      "bytes": 630
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.voc",
+      "label": "voc",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.voc",
+      "sha256": "f0bb707fade65aa4f51841dc87c62be5f480c09de82776293d72b2c123f0bcc1",
+      "bytes": 26
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.wasm",
+      "label": "wasm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.wasm",
+      "sha256": "599f7851ce394ce7d52c2805b03429b4b29a415da8237b510d2ceb4bcd42d393",
+      "bytes": 44
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.wav",
+      "label": "wav",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.wav",
+      "sha256": "52f05b170acc108c1e9def95935d1aa339d5d831e1ec49258d0f60f77bfa601b",
+      "bytes": 108092
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.webm",
+      "label": "webm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.webm",
+      "sha256": "49f5dafa284d349f5c6fbf86abce0fc12691f74aecca826c63232c80c25d3747",
+      "bytes": 66398
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.webp",
+      "label": "webp",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.webp",
+      "sha256": "7c724cd0d9dc7edd16ba92d1aa6a70bde43671a71c21ecf1a0896ee111de9299",
+      "bytes": 6048
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.wma.asf",
+      "label": "asf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.wma.asf",
+      "sha256": "6dbc6971e36ab4e8ea2bb72d8d91a53a7d7c4d205eb155ae316b531224fab1af",
+      "bytes": 13418
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.wmv.asf",
+      "label": "asf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.wmv.asf",
+      "sha256": "14227d2c4fffc02fd6d3ab9bdb0aa7179574b9bd6b6de71aedcb1106fb2b5a7e",
+      "bytes": 48939
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.woff",
+      "label": "woff",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.woff",
+      "sha256": "e3870de89716b72cb61a4bba0e17c75783b361cdaba35ea96961c3070bd8ca18",
+      "bytes": 71508
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.woff2",
+      "label": "woff2",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.woff2",
+      "sha256": "aadc3580d2b64ff5a7e6f1425587db4e8b033efcbf8f5c332ca52a5ed580c87c",
+      "bytes": 56780
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xcf",
+      "label": "xcf",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xcf",
+      "sha256": "784a16574f288af7534a11ff7ad2b8e30dcc0dd2935511daa0cec64c7749b21f",
+      "bytes": 79892
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xls.cfb",
+      "label": "cfb",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xls.cfb",
+      "sha256": "771b2e98db13f1f683eaf37dd65364a9297ad32679301947f4bea68c3e625244",
+      "bytes": 8704
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xlsm",
+      "label": "xlsm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xlsm",
+      "sha256": "307db5eedd97d1a931986b76b8484b9ca013f6ebd09354832fc909248a4e9369",
+      "bytes": 8846
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xlsx",
+      "label": "xlsx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xlsx",
+      "sha256": "9a285684b610ba00837c1055cb1808fefc16d4628903f434a2a994d373a91e5c",
+      "bytes": 8746
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xltm",
+      "label": "xltm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xltm",
+      "sha256": "34788950ee8812f4b7c63a2d9f13a2a92a58611b500464dca8fd49e3e5246282",
+      "bytes": 8861
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xltx",
+      "label": "xltx",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xltx",
+      "sha256": "690eb859587d4b54bad27fd77a5a68e58f6dae5cd1b76ea9c757249e100fb17c",
+      "bytes": 8844
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xm",
+      "label": "xm",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xm",
+      "sha256": "e29ab8bbf5c3854dad3cf85cc9b70de0df4b09eafe37f85c7108ca67320df96c",
+      "bytes": 504
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xml",
+      "label": "xml",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xml",
+      "sha256": "1069a9ddcd0309518a4f4f4b4656e3d63e8418c4c6ec9591eb82011b62032c91",
+      "bytes": 53
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.xpi",
+      "label": "xpi",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.xpi",
+      "sha256": "9fa1ae8dac289543e856bd7b021917e143322e10a58272b361fa43d0a9e12749",
+      "bytes": 111893
+    },
+    {
+      "path": "benchmarks/format-detection/corpus/file-type/fixture.zip",
+      "label": "zip",
+      "source": "https://github.com/sindresorhus/file-type/blob/deb45066a4c6aa7d956011c4b59aad53e426ddac/fixture/fixture.zip",
+      "sha256": "83d8eaeee176aa0907d6a466f38642bb4c9991e40452362106f845b7ee3eb280",
+      "bytes": 2224
+    }
+  ]
+}

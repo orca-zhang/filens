@@ -1,0 +1,999 @@
+{
+  "date": "2026-11-04",
+  "scope": "PDF ordered visibility queries and active canvas tracking; shared scene font collection and per-analysis classification reuse; source-map publication controls for 15 more frontend packages. No backend parsing/conversion changes or new dependencies.",
+  "baseline": "Source baseline and saved builds include prior uncommitted work, not Git HEAD. Performance bundles override exactly three implementation files with identical current dependencies. Packaging attribution uses the same-current-dist mapInclusionControl, not the historical build totals.",
+  "sourceSha256": {
+    "packages/pdf/src/preview-driver.ts": "68801fc0516e8f7bb7346debd719fac7d0283874d16376e8e43db91269ff0f3b",
+    "packages/core/src/preview/fonts.ts": "e48f1c1c5d719ef721e18ba55f97eb186b6517402e1465c2a76dfa06926f4560",
+    "packages/core/src/preview/font-scenes.ts": "eac0f01778a577c175474ba38f8ffbcba92744e0f5ad421747807142e34023e0",
+    "packages/cad/package.json": "76e4443f21801933e56a98d03423dc1c8ac2e9040336f6bf002393305a592239",
+    "packages/cad/vite.config.ts": "f1e6ab65d20543e1e90d179397cfc699e326b096afb5ca00251ba1f2788efbc9",
+    "packages/converter-client/package.json": "f104ef17416efb82437d69ac4ce62738e6991e37c44b2325f67b07cd4fead252",
+    "packages/converter-client/vite.config.ts": "f1b95f9c3f39802acd72a212fb48cb6fe2e5e6dd93df6c970dae9d1bc2d78143",
+    "packages/design/package.json": "b1a785625c119325e8a6be81f13e8c0fcee8fdc8960e4e4035d3a7dfa9b62aee",
+    "packages/design/vite.config.ts": "f44aad4c9bd7a5d3c0371a56d6ced57c8ac6469f1a9a668fa53eae3d456fca43",
+    "packages/diagram/package.json": "670e1f82ef37b7752fe53d08c5c02f66767abeb274ce647e4332e6ecd5a3b61a",
+    "packages/diagram/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+    "packages/docx/package.json": "4bdd121df8f5bb41620be07f9937f896ea06bbf3d019cae2397fac8b8d2cad42",
+    "packages/docx/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+    "packages/ebook/package.json": "674e6ef79016dc01c5377ffe34ca9ae501f11b0140bfde64e8d6f2158b21bcf3",
+    "packages/ebook/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+    "packages/iwork/package.json": "e33a0d7af5937e1fc4c3d00b27f359b1ef964315d383273873a939c064ce2843",
+    "packages/iwork/vite.config.ts": "ea2b4bec6a00af8e1483c45821328f1a83bd13af6a4d495a21a593134971706a",
+    "packages/media/package.json": "e49e830c1a96f7f3e07a82e7b9186c99c71b5671d5ec1310e338364a30f64b9a",
+    "packages/media/vite.config.ts": "23ae285b5033aeaf0ffe02f6d3a747f8f46808fcbcd4dbcd20d304fc74c87d28",
+    "packages/mindmap/package.json": "b6422bb9e0e5459256b8744443ac05687e7edce4d435c4879004544336c4218f",
+    "packages/mindmap/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+    "packages/model3d/package.json": "db005cca251f59a427b70a6a596ca9dd23219e181d32b7304b0a14660d3349e3",
+    "packages/model3d/vite.config.ts": "388e2fc9cd0dfc5a0432a513d344c01cc5670f8095333e6eb51fc05106c78667",
+    "packages/office/package.json": "5011e16909a1b27305a6319c25a1447f3dab59d3d3df267c67390ac953cd67b8",
+    "packages/office/vite.config.ts": "13cf252f94935e59a3af3c37e7fb56465c47ad3c90c54bd20b222b3d94379f89",
+    "packages/panorama/package.json": "3231310ad1ab349604b901d3e776be1f946fe0f8c7c8309c500ed0d9a8f33495",
+    "packages/panorama/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+    "packages/pdf/package.json": "6538f73f508be5ed9378750750f295241503a77abafdfa4858844437ca91e0a0",
+    "packages/pdf/vite.config.ts": "c2faf368ba90433d412662ea2324b9f8075f7ccd39803b33eda4e8b121f6c00d",
+    "packages/text/package.json": "5877af9292eb0c67ab767dffd5940fa42a3c76c5f0c5c0b29042cedb4c6d794f",
+    "packages/text/vite.config.ts": "81546942643a62ceb5de342b03584323425f138b0f8c42e190774efe39880793",
+    "packages/vue/package.json": "d3c2c76621683ccf7cd6480ffbab494562a2bd486178bb0cc1a8ad685c10a6cc",
+    "packages/vue/vite.config.ts": "5feb01a05ce3dfaedd830403966540863a1dfbf32b2cb0a5d29c74f45bab4a20",
+    "packages/core/test/fonts.spec.ts": "51d81a23465791670a8f3a5621cfc91575da9f1cb2da7f4975021dac21d0a8ab",
+    "packages/pdf/test/preview-driver.spec.ts": "a24283f704170d7ee637e275bc4c8f05f2a85cb8377a7b6015fb59737fbf5546",
+    "apps/demo/e2e/iwork-lifecycle.e2e.ts": "2888b7c3eab7828c7336d04eba978a64321cbef74986f3c62caefe2d2637927e",
+    "scripts/benchmark-viewport-fonts.mjs": "023a173456da8a615b68732a0172380894d3ed767f3e192b6bd038094f94541f",
+    "scripts/verify-category-package-maps.mjs": "4053ab7a71364b2bfd3ab09aced62c24f6ac6adfa16f253f2e97c17b2235bd47"
+  },
+  "baselineSourceArchiveSha256": "366536d2433bfadcbe58d82ca62a04348e20491d00480c77cfdc3cf00979246c",
+  "baselineSourceSha256": {
+    "packages/pdf/src/preview-driver.ts": "480ad33e62f4f1178d29f580abda302fe7ee5d1ea36bca0dee68a258408503af",
+    "packages/core/src/preview/fonts.ts": "a160c14b52eca35fd57294aca6fff0ab9f274c267d7880304805d98d1d08e380",
+    "packages/core/src/preview/font-scenes.ts": "562e704d03702e24c7def63dbb7dd921680a79c0febb96ed0fb0a225b217a0ca",
+    "packages/cad/package.json": "4970b019edd7767eaf0556c13a3e503928750cc8842a2aa7a3828b98f729697c",
+    "packages/cad/vite.config.ts": "84c581123e51f07b063002d4864d513b6d4f53fc15ae4b8f4ab783528a264984",
+    "packages/converter-client/package.json": "9bf8eb52774193e278757a908d342b9d40740a351b6d31383f97bb9e4d61df0c",
+    "packages/converter-client/vite.config.ts": "96876fb05fbdd307d0aac060e8c81560dbf2cbec2a65286d04d53e96f224eddf",
+    "packages/design/package.json": "f05f1efb8affdb1b0539be3e5d628fac62418f07d4e9efa7337f410bffa9290f",
+    "packages/design/vite.config.ts": "74b36b48de9fe973c5a580dc2acf4b9329dd3c9e3b894412a33af899cf7697d8",
+    "packages/diagram/package.json": "5cd0b5acc7120f438bcbd0519fb810c329f19e7c0cc366720df2637b056b92e5",
+    "packages/diagram/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+    "packages/docx/package.json": "8428bc5542d887ba59bd8e92806b9d8049fa957fb4df9010702e434b71313745",
+    "packages/docx/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+    "packages/ebook/package.json": "d822e371541c2d68b8317d92466075dd50365e584f4f8a94b7d58961bad5beb0",
+    "packages/ebook/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+    "packages/iwork/package.json": "ce2ebdbc9a247a4841701702d5e263b7af5d81f4496940ab1b4466995efaa7bb",
+    "packages/iwork/vite.config.ts": "a0ecb9cae248e17568a00fec6420c2a8f66f10b37dfeda37b12f53a88256dbde",
+    "packages/media/package.json": "63e6ddaf118c6ae1412e0e686c8aafc51416bf63e1d12f6070d21b380eb18b04",
+    "packages/media/vite.config.ts": "40690387998a81476bf73b91e3c80fda212bb050c93848ac428facfcdb49f1f9",
+    "packages/mindmap/package.json": "19c6ab32f04383084597cc0401b88f83982bbc23ac420b5f083f6672fcbbed48",
+    "packages/mindmap/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+    "packages/model3d/package.json": "c60f04997d9132050f899bb4dc6b9b160eac82ef48e6cb036b5d5c74cba88d6f",
+    "packages/model3d/vite.config.ts": "f8eaceae75a8aff18d86c6fa5dde3ed5f610b6ed1190d7201d9bfaa9f8227a79",
+    "packages/office/package.json": "9f72bf5d8a7ce3c3f79a301913e9b9b94f9a834fa04d048cdd9a1be8246ff984",
+    "packages/office/vite.config.ts": "1bb6014b0d8efb8d1a5760ee5a0c81e61fbf2c5b2b0466a4b5b5d0888349f00e",
+    "packages/panorama/package.json": "9e78f5c460d72db2a89cac5e8e86ca3a311e73534c4ebcbf7d4861d8c4da9bc5",
+    "packages/panorama/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+    "packages/pdf/package.json": "0b19376a1bda5b22c19435a9e1df73923b81174c1f58b51ac6a1dc9bd5e02ab1",
+    "packages/pdf/vite.config.ts": "2a534a8ba7729f806cec91c1f853e6aa9a005af0f3f74321b846ac773a61bcc0",
+    "packages/text/package.json": "a3803be1322afcffc7aa79f50eba041fbd98061f2ea9ec7e374ca877fcd64bf3",
+    "packages/text/vite.config.ts": "87046d9de95d589954d317b3528112af7c4eab27897643aeeffa6b874494fbee",
+    "packages/vue/package.json": "d36cc64e5eb6fa405e1ecd3d29575f1cd3ca15d8073c36f5e362b8ce97e10529",
+    "packages/vue/vite.config.ts": "20495b838b9149de5e22c210c5c658fd97fa64c15f0d2d2ca2873d63899c7afc"
+  },
+  "packageLockSha256": "002c7c9cbcb93ce1d5973f401eb0361d791453f7b0c1a941b954c939d878a209",
+  "artifacts": {
+    "core": [
+      {
+        "file": "archive-volumes.js",
+        "bytes": 3026,
+        "sha256": "c2c78c4eaaf76d51cd7bc1ea0ff4e32dc2cba95ceeb50c39c02b262e8825498b"
+      },
+      {
+        "file": "index.css",
+        "bytes": 15821,
+        "sha256": "f6d663a75bd8105f8a4a749ce440bf72caed3869f043526d161d7f61e3bcaa78"
+      },
+      {
+        "file": "index.js",
+        "bytes": 495184,
+        "sha256": "e5a7804a716c6ccacde80adddf0a99dbaae218310b52e879225d91d36ecf476d"
+      },
+      {
+        "file": "zip-BktKyBUV.js",
+        "bytes": 7848,
+        "sha256": "5b696d14c48d8a09289895748acb7b64387a08bb7a7e1b39db87821d309bb3da"
+      },
+      {
+        "file": "zip.js",
+        "bytes": 115,
+        "sha256": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475"
+      }
+    ],
+    "cad": [
+      {
+        "file": "index.css",
+        "bytes": 765,
+        "sha256": "83a1a06b9ba7add04dc279dd749fe4dff5fa078a1bb31e48f7ded72309bb50fd"
+      },
+      {
+        "file": "index.js",
+        "bytes": 75004,
+        "sha256": "1f725fe75f02992a53d612bc49dca79d343f8b42de8df79ed57c2e4b3b8513a2"
+      }
+    ],
+    "converter-client": [
+      {
+        "file": "converter-image.wasm",
+        "bytes": 1492779,
+        "sha256": "e0c8f9e33ec1308aa65d67783b2d38878720935c1fe0caa9a994e37d0d73d3b7"
+      },
+      {
+        "file": "index-Ciyo2NTl.js",
+        "bytes": 65645,
+        "sha256": "8612e1c7dc3c689a8d9c7b34079f44247804c1567c52652d0c4caa0d5c2b1313"
+      },
+      {
+        "file": "index.js",
+        "bytes": 327,
+        "sha256": "30c26c6695358a77d315c9da25b950b9cc85dc361561864497af13f7906302ea"
+      },
+      {
+        "file": "libheif.wasm",
+        "bytes": 1457990,
+        "sha256": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5"
+      },
+      {
+        "file": "media-runtime-uPlNE6W8.js",
+        "bytes": 146913,
+        "sha256": "d15cc66c35e33ca283b03bbc1c839217b452a8abf809445041db20dc684581bc"
+      }
+    ],
+    "design": [
+      {
+        "file": "index.js",
+        "bytes": 591,
+        "sha256": "696a47bdf9c79938b8b1b0a91aee525460fb20d8cc57fbf5075f6fd6d0dd1134"
+      },
+      {
+        "file": "style.css",
+        "bytes": 3287,
+        "sha256": "cd354f8a956351d2dffb0d10391deba5d78041525babf29f2d88f4c019157a16"
+      }
+    ],
+    "diagram": [
+      {
+        "file": "index.css",
+        "bytes": 1214,
+        "sha256": "bf81bc2ff9c89278ce09b64216d5b8ba719f31358319a0f5348687fb7b320919"
+      },
+      {
+        "file": "index.js",
+        "bytes": 27527,
+        "sha256": "4224fb344c4f808c86647f1fc27eede9dbbe9c323db0cb4881b4abe6e0c0e2c0"
+      }
+    ],
+    "docx": [
+      {
+        "file": "index.css",
+        "bytes": 373,
+        "sha256": "e136e1b35036b09e14c9dce8be90292beb7e015afa02c7f09d5c2414ce912562"
+      },
+      {
+        "file": "index.js",
+        "bytes": 12171,
+        "sha256": "50fa2e55d5b46879c0ee7fdc969a9c2739840985f51ee7de3da1844aafc1771c"
+      }
+    ],
+    "ebook": [
+      {
+        "file": "index.css",
+        "bytes": 1080,
+        "sha256": "8fea61de1542e2fb98480252a7f5eb97733bfcc9b4b5d6b3092dc70d5c55261b"
+      },
+      {
+        "file": "index.js",
+        "bytes": 22388,
+        "sha256": "a8d047bf03c8b54e3f1bea6ff7a3018c0f217354fd263788b164445763176c34"
+      }
+    ],
+    "iwork": [
+      {
+        "file": "assets/iwork-worker-DYtBaTa4.js",
+        "bytes": 905482,
+        "sha256": "460be92d52e65ca1c4580a34f10b08d616e1a87de9508bbfc0fe74782e921bf6"
+      },
+      {
+        "file": "index.css",
+        "bytes": 18149,
+        "sha256": "11364c0af67ebf07ce2bf0497292839a47b22deb2388206565529c2658154c2b"
+      },
+      {
+        "file": "index.js",
+        "bytes": 888368,
+        "sha256": "2e0164482bbaec82bab995b98c41bcdec525122eebb799d808d548b079fa2956"
+      }
+    ],
+    "media": [
+      {
+        "file": "browser-video-session-DWpBxT5D.js",
+        "bytes": 4993,
+        "sha256": "1a869c94a8680b8907f05d2db688236ca541a1157e07b995ec5a0b86c6209e4f"
+      },
+      {
+        "file": "engine-DcB9jb_k.js",
+        "bytes": 42742,
+        "sha256": "7db4da0fcfcb64217d634c8e35aa47bb67f40b81f3a0800dd6c8db87c495bb14"
+      },
+      {
+        "file": "engine.js",
+        "bytes": 831,
+        "sha256": "2b3a59804e4423a938bcd87dcf70c5af87505ba9850d32ddbc80839b8179565e"
+      },
+      {
+        "file": "index-BftvYxyv.js",
+        "bytes": 19936,
+        "sha256": "3675e00d290abaa96cdb1bd3ddff16af62e10608b331392723686e9dc8cebade"
+      },
+      {
+        "file": "index.js",
+        "bytes": 7611,
+        "sha256": "f9aab73f274f4e77ea0915e4c9538885f86433c726106dcdf0b016129ca98e1b"
+      },
+      {
+        "file": "mp4box.all-Bw_Tlr0T-Cbnlnx0g.js",
+        "bytes": 230802,
+        "sha256": "0dcebdb17b42e1e053baf9d9b9bf61326abef360dfbabfdf2126e01cd61f1e87"
+      },
+      {
+        "file": "style.css",
+        "bytes": 17164,
+        "sha256": "ad19f1cdfddecb008422ad5788357fcc28880c7cbeeeb742a3ce0560f6717032"
+      }
+    ],
+    "mindmap": [
+      {
+        "file": "index.css",
+        "bytes": 815,
+        "sha256": "ec6da770dd9b451132281b1f8a50e038d6c2655290ffe2395153495288710560"
+      },
+      {
+        "file": "index.js",
+        "bytes": 20116,
+        "sha256": "8b2f3958a03583d0d5b7bc2b5d0748245ec6c3f3d3f2476c3493f1d6a635eb57"
+      }
+    ],
+    "model3d": [
+      {
+        "file": "LDrawLoader-DNyeVv2b.js",
+        "bytes": 35141,
+        "sha256": "603c12f25f6f331fb5dc193f67cc9e384b054709d8d10ddca93b4f1a301aa842"
+      },
+      {
+        "file": "index.css",
+        "bytes": 496,
+        "sha256": "6cf6d520f26937cc97308ceef86510cb5035e588673832483b15923fac58588d"
+      },
+      {
+        "file": "index.js",
+        "bytes": 148118,
+        "sha256": "9b0ce24a3b87358bda64ef26c920089e34e67d88ae85b3ac19b4cc3c5ba2bdc4"
+      },
+      {
+        "file": "rust-step-importer-BRQzvs8z.js",
+        "bytes": 446,
+        "sha256": "19c0c70beaeb13b979012feac142da85d47f5048d244089958afa923c5b77ada"
+      }
+    ],
+    "office": [
+      {
+        "file": "index.js",
+        "bytes": 772,
+        "sha256": "0558f24c9f70684ebc53d4adc1db1eccac94c2c25e91d137bd8ccca2612d8a01"
+      },
+      {
+        "file": "style.css",
+        "bytes": 18886,
+        "sha256": "c1a64a3a4048cce270b1b665a88c36f2ad76a6e19fd32515ca623ba3a2c2dd91"
+      }
+    ],
+    "panorama": [
+      {
+        "file": "index.css",
+        "bytes": 17164,
+        "sha256": "ad19f1cdfddecb008422ad5788357fcc28880c7cbeeeb742a3ce0560f6717032"
+      },
+      {
+        "file": "index.js",
+        "bytes": 252963,
+        "sha256": "9e9b90c8963d5489e84dc6fed98328fcfc770744789f0ea575519256b3584879"
+      }
+    ],
+    "pdf": [
+      {
+        "file": "index.css",
+        "bytes": 366,
+        "sha256": "a16aefeeef4bd2303b3857880b22e37d40fcaa985dd56bf189b5f6a84b74dc82"
+      },
+      {
+        "file": "index.js",
+        "bytes": 16208,
+        "sha256": "23822a60e87bbaac8354c3589c96c489af318afe2ba75068f5da74c84aba42e6"
+      },
+      {
+        "file": "pdf.worker.min-7uX_Ayts.js",
+        "bytes": 90,
+        "sha256": "e45d8251c380d7f41d77cb07511f13c20aeda873fad0bb21337be867dce9a674"
+      },
+      {
+        "file": "pdf.worker.min.mjs",
+        "bytes": 1078612,
+        "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5"
+      }
+    ],
+    "text": [
+      {
+        "file": "index.js",
+        "bytes": 462,
+        "sha256": "b92a958943bae3b45426f43eb3b2753826b9cefd8e8534e6ac04535ab4c8eb13"
+      },
+      {
+        "file": "style.css",
+        "bytes": 16900,
+        "sha256": "1e326e6cbbc8254bdee0f389df8024832d65e6ec13315217be014314f7b6adc2"
+      }
+    ],
+    "vue": [
+      {
+        "file": "index.js",
+        "bytes": 203235,
+        "sha256": "fd6371dc6b7159efe3cb7182eb57fbe20c8d116fa47484b72a4e6d63edf253a0"
+      },
+      {
+        "file": "style.css",
+        "bytes": 55027,
+        "sha256": "1efe98dc9c9390616b6fc2ce6c662bca2a60a6af520394fb11d419b6add520b4"
+      }
+    ]
+  },
+  "measurements": {
+    "date": "2026-11-04T14:25:40.346Z",
+    "node": "v20.20.2",
+    "cpu": "Apple M4 Pro",
+    "method": "Identical esbuild source bundles, shared current dependencies, actual Chromium DOM geometry. Two warmups and seven alternating measured runs. Timers cover visibility queries or complete font collection/diagnostics only. Inputs, imports, DOM creation, scroll/layout preparation, serialization, hashes and validation are outside timers. Separate actual mixed-page PDF pixel/lifecycle validation is untimed.",
+    "warmups": 2,
+    "iterations": 7,
+    "sourceSha256": {
+      "packages/pdf/src/preview-driver.ts": "68801fc0516e8f7bb7346debd719fac7d0283874d16376e8e43db91269ff0f3b",
+      "packages/core/src/preview/fonts.ts": "e48f1c1c5d719ef721e18ba55f97eb186b6517402e1465c2a76dfa06926f4560",
+      "packages/core/src/preview/font-scenes.ts": "eac0f01778a577c175474ba38f8ffbcba92744e0f5ad421747807142e34023e0",
+      "packages/cad/package.json": "76e4443f21801933e56a98d03423dc1c8ac2e9040336f6bf002393305a592239",
+      "packages/cad/vite.config.ts": "f1e6ab65d20543e1e90d179397cfc699e326b096afb5ca00251ba1f2788efbc9",
+      "packages/converter-client/package.json": "f104ef17416efb82437d69ac4ce62738e6991e37c44b2325f67b07cd4fead252",
+      "packages/converter-client/vite.config.ts": "f1b95f9c3f39802acd72a212fb48cb6fe2e5e6dd93df6c970dae9d1bc2d78143",
+      "packages/design/package.json": "b1a785625c119325e8a6be81f13e8c0fcee8fdc8960e4e4035d3a7dfa9b62aee",
+      "packages/design/vite.config.ts": "f44aad4c9bd7a5d3c0371a56d6ced57c8ac6469f1a9a668fa53eae3d456fca43",
+      "packages/diagram/package.json": "670e1f82ef37b7752fe53d08c5c02f66767abeb274ce647e4332e6ecd5a3b61a",
+      "packages/diagram/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+      "packages/docx/package.json": "4bdd121df8f5bb41620be07f9937f896ea06bbf3d019cae2397fac8b8d2cad42",
+      "packages/docx/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+      "packages/ebook/package.json": "674e6ef79016dc01c5377ffe34ca9ae501f11b0140bfde64e8d6f2158b21bcf3",
+      "packages/ebook/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+      "packages/iwork/package.json": "e33a0d7af5937e1fc4c3d00b27f359b1ef964315d383273873a939c064ce2843",
+      "packages/iwork/vite.config.ts": "ea2b4bec6a00af8e1483c45821328f1a83bd13af6a4d495a21a593134971706a",
+      "packages/media/package.json": "e49e830c1a96f7f3e07a82e7b9186c99c71b5671d5ec1310e338364a30f64b9a",
+      "packages/media/vite.config.ts": "23ae285b5033aeaf0ffe02f6d3a747f8f46808fcbcd4dbcd20d304fc74c87d28",
+      "packages/mindmap/package.json": "b6422bb9e0e5459256b8744443ac05687e7edce4d435c4879004544336c4218f",
+      "packages/mindmap/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+      "packages/model3d/package.json": "db005cca251f59a427b70a6a596ca9dd23219e181d32b7304b0a14660d3349e3",
+      "packages/model3d/vite.config.ts": "388e2fc9cd0dfc5a0432a513d344c01cc5670f8095333e6eb51fc05106c78667",
+      "packages/office/package.json": "5011e16909a1b27305a6319c25a1447f3dab59d3d3df267c67390ac953cd67b8",
+      "packages/office/vite.config.ts": "13cf252f94935e59a3af3c37e7fb56465c47ad3c90c54bd20b222b3d94379f89",
+      "packages/panorama/package.json": "3231310ad1ab349604b901d3e776be1f946fe0f8c7c8309c500ed0d9a8f33495",
+      "packages/panorama/vite.config.ts": "99b35c7ad4873e85e89741fe56dc3dbc4938628698e46b49eb536d90c89d37f7",
+      "packages/pdf/package.json": "6538f73f508be5ed9378750750f295241503a77abafdfa4858844437ca91e0a0",
+      "packages/pdf/vite.config.ts": "c2faf368ba90433d412662ea2324b9f8075f7ccd39803b33eda4e8b121f6c00d",
+      "packages/text/package.json": "5877af9292eb0c67ab767dffd5940fa42a3c76c5f0c5c0b29042cedb4c6d794f",
+      "packages/text/vite.config.ts": "81546942643a62ceb5de342b03584323425f138b0f8c42e190774efe39880793",
+      "packages/vue/package.json": "d3c2c76621683ccf7cd6480ffbab494562a2bd486178bb0cc1a8ad685c10a6cc",
+      "packages/vue/vite.config.ts": "5feb01a05ce3dfaedd830403966540863a1dfbf32b2cb0a5d29c74f45bab4a20"
+    },
+    "baselineSourceSha256": {
+      "packages/pdf/src/preview-driver.ts": "480ad33e62f4f1178d29f580abda302fe7ee5d1ea36bca0dee68a258408503af",
+      "packages/core/src/preview/fonts.ts": "a160c14b52eca35fd57294aca6fff0ab9f274c267d7880304805d98d1d08e380",
+      "packages/core/src/preview/font-scenes.ts": "562e704d03702e24c7def63dbb7dd921680a79c0febb96ed0fb0a225b217a0ca",
+      "packages/cad/package.json": "4970b019edd7767eaf0556c13a3e503928750cc8842a2aa7a3828b98f729697c",
+      "packages/cad/vite.config.ts": "84c581123e51f07b063002d4864d513b6d4f53fc15ae4b8f4ab783528a264984",
+      "packages/converter-client/package.json": "9bf8eb52774193e278757a908d342b9d40740a351b6d31383f97bb9e4d61df0c",
+      "packages/converter-client/vite.config.ts": "96876fb05fbdd307d0aac060e8c81560dbf2cbec2a65286d04d53e96f224eddf",
+      "packages/design/package.json": "f05f1efb8affdb1b0539be3e5d628fac62418f07d4e9efa7337f410bffa9290f",
+      "packages/design/vite.config.ts": "74b36b48de9fe973c5a580dc2acf4b9329dd3c9e3b894412a33af899cf7697d8",
+      "packages/diagram/package.json": "5cd0b5acc7120f438bcbd0519fb810c329f19e7c0cc366720df2637b056b92e5",
+      "packages/diagram/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+      "packages/docx/package.json": "8428bc5542d887ba59bd8e92806b9d8049fa957fb4df9010702e434b71313745",
+      "packages/docx/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+      "packages/ebook/package.json": "d822e371541c2d68b8317d92466075dd50365e584f4f8a94b7d58961bad5beb0",
+      "packages/ebook/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+      "packages/iwork/package.json": "ce2ebdbc9a247a4841701702d5e263b7af5d81f4496940ab1b4466995efaa7bb",
+      "packages/iwork/vite.config.ts": "a0ecb9cae248e17568a00fec6420c2a8f66f10b37dfeda37b12f53a88256dbde",
+      "packages/media/package.json": "63e6ddaf118c6ae1412e0e686c8aafc51416bf63e1d12f6070d21b380eb18b04",
+      "packages/media/vite.config.ts": "40690387998a81476bf73b91e3c80fda212bb050c93848ac428facfcdb49f1f9",
+      "packages/mindmap/package.json": "19c6ab32f04383084597cc0401b88f83982bbc23ac420b5f083f6672fcbbed48",
+      "packages/mindmap/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+      "packages/model3d/package.json": "c60f04997d9132050f899bb4dc6b9b160eac82ef48e6cb036b5d5c74cba88d6f",
+      "packages/model3d/vite.config.ts": "f8eaceae75a8aff18d86c6fa5dde3ed5f610b6ed1190d7201d9bfaa9f8227a79",
+      "packages/office/package.json": "9f72bf5d8a7ce3c3f79a301913e9b9b94f9a834fa04d048cdd9a1be8246ff984",
+      "packages/office/vite.config.ts": "1bb6014b0d8efb8d1a5760ee5a0c81e61fbf2c5b2b0466a4b5b5d0888349f00e",
+      "packages/panorama/package.json": "9e78f5c460d72db2a89cac5e8e86ca3a311e73534c4ebcbf7d4861d8c4da9bc5",
+      "packages/panorama/vite.config.ts": "1303c4907f35e5a1dd6be8ffcac2478bc7f1e5daffe92677b39bf098ff35e8c5",
+      "packages/pdf/package.json": "0b19376a1bda5b22c19435a9e1df73923b81174c1f58b51ac6a1dc9bd5e02ab1",
+      "packages/pdf/vite.config.ts": "2a534a8ba7729f806cec91c1f853e6aa9a005af0f3f74321b846ac773a61bcc0",
+      "packages/text/package.json": "a3803be1322afcffc7aa79f50eba041fbd98061f2ea9ec7e374ca877fcd64bf3",
+      "packages/text/vite.config.ts": "87046d9de95d589954d317b3528112af7c4eab27897643aeeffa6b874494fbee",
+      "packages/vue/package.json": "d36cc64e5eb6fa405e1ecd3d29575f1cd3ca15d8073c36f5e362b8ce97e10529",
+      "packages/vue/vite.config.ts": "20495b838b9149de5e22c210c5c658fd97fa64c15f0d2d2ca2873d63899c7afc"
+    },
+    "entrySha256": {
+      "baseline": "fb71a123c5350167d770180d32e0961fae7ca4b032d146b3c1881f334ce43558",
+      "current": "89ff7d9f1de6c03fdf50212df8a728542bdb76db556a680095f9fe4203cbe522"
+    },
+    "cases": {
+      "pdf-visibility-100": {
+        "name": "pdf-visibility-100",
+        "kind": "visibility",
+        "count": 100,
+        "queries": 40,
+        "outputSha256": "3f7932d6b0967c2bc4e636156da82fb5b6acfbb2d408d37f8c9b684b0a711595",
+        "details": {
+          "baseline": {
+            "geometryReads": 4080,
+            "outputBytes": 516
+          },
+          "current": {
+            "geometryReads": 512,
+            "outputBytes": 516
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              1.2000000178813934,
+              0.9999999701976776,
+              1.2000000178813934,
+              1.0999999940395355,
+              1.2000000178813934,
+              1.2000000178813934,
+              1.0999999940395355
+            ],
+            "medianMs": 1.2000000178813934
+          },
+          "current": {
+            "samplesMs": [
+              0.20000001788139343,
+              0.19999998807907104,
+              0.29999998211860657,
+              0.09999999403953552,
+              0.20000001788139343,
+              0.20000001788139343,
+              0.19999998807907104
+            ],
+            "medianMs": 0.20000001788139343
+          }
+        }
+      },
+      "pdf-visibility-2048": {
+        "name": "pdf-visibility-2048",
+        "kind": "visibility",
+        "count": 2048,
+        "queries": 40,
+        "outputSha256": "b86d84206d3c73adf25e45b54eb7177bd7525008e2f9c0b986af5ac0b3c2a16c",
+        "details": {
+          "baseline": {
+            "geometryReads": 82000,
+            "outputBytes": 700
+          },
+          "current": {
+            "geometryReads": 682,
+            "outputBytes": 700
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              22.099999994039536,
+              24.900000005960464,
+              23.400000005960464,
+              21.80000001192093,
+              21.200000017881393,
+              21.69999998807907,
+              22.099999994039536
+            ],
+            "medianMs": 22.099999994039536
+          },
+          "current": {
+            "samplesMs": [
+              0.4000000059604645,
+              0.20000001788139343,
+              0.30000001192092896,
+              0.30000001192092896,
+              0.3999999761581421,
+              0.20000001788139343,
+              0.3999999761581421
+            ],
+            "medianMs": 0.30000001192092896
+          }
+        }
+      },
+      "pdf-visibility-10000": {
+        "name": "pdf-visibility-10000",
+        "kind": "visibility",
+        "count": 10000,
+        "queries": 40,
+        "outputSha256": "4f9202e05af78ca7419658758710b04aaabb3b70d795c301d8c741704b1474ac",
+        "details": {
+          "baseline": {
+            "geometryReads": 400080,
+            "outputBytes": 762
+          },
+          "current": {
+            "geometryReads": 782,
+            "outputBytes": 762
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              108.39999994635582,
+              116.30000001192093,
+              110.90000000596046,
+              106.30000001192093,
+              107.60000002384186,
+              113,
+              103.60000002384186
+            ],
+            "medianMs": 108.39999994635582
+          },
+          "current": {
+            "samplesMs": [
+              0.5,
+              0.09999999403953552,
+              0.3999999761581421,
+              0.29999998211860657,
+              0.4000000059604645,
+              0.29999998211860657,
+              0.30000001192092896
+            ],
+            "medianMs": 0.30000001192092896
+          }
+        }
+      },
+      "scene-font-references": {
+        "name": "scene-font-references",
+        "kind": "references",
+        "count": 30000,
+        "outputSha256": "d333007e26b14cb28d68f3c11bdfd8ebd373f5cb1666f8c5d55d3b433c704184",
+        "details": {
+          "baseline": {
+            "geometryReads": 0,
+            "outputBytes": 222
+          },
+          "current": {
+            "geometryReads": 0,
+            "outputBytes": 222
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              1.9000000059604645,
+              1.5999999940395355,
+              1.5999999940395355,
+              1.5999999940395355,
+              1.5,
+              1.5,
+              1.5
+            ],
+            "medianMs": 1.5999999940395355
+          },
+          "current": {
+            "samplesMs": [
+              0.7999999821186066,
+              0.800000011920929,
+              0.7999999821186066,
+              0.9000000059604645,
+              0.7999999821186066,
+              0.699999988079071,
+              0.5999999940395355
+            ],
+            "medianMs": 0.7999999821186066
+          }
+        }
+      },
+      "scene-font-loading": {
+        "name": "scene-font-loading",
+        "kind": "loading",
+        "count": 30000,
+        "outputSha256": "59548e5fb82a2e0b5a784eacecb7a9f300813481ac489cfba6b866452db2ce76",
+        "details": {
+          "baseline": {
+            "geometryReads": 0,
+            "outputBytes": 285339
+          },
+          "current": {
+            "geometryReads": 0,
+            "outputBytes": 285339
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              22.200000017881393,
+              19.899999976158142,
+              20.200000017881393,
+              20.099999994039536,
+              20,
+              20.69999998807907,
+              20.599999994039536
+            ],
+            "medianMs": 20.200000017881393
+          },
+          "current": {
+            "samplesMs": [
+              1,
+              0.4000000059604645,
+              0.5,
+              0.5,
+              0.5,
+              0.4000000059604645,
+              0.5
+            ],
+            "medianMs": 0.5
+          }
+        }
+      },
+      "font-diagnostics": {
+        "name": "font-diagnostics",
+        "kind": "diagnostics",
+        "count": 10000,
+        "outputSha256": "8a7a4381ff2b72a9b90b2d3f344575d6d41e1402ac35c64f65c756c49e1f5db8",
+        "details": {
+          "baseline": {
+            "geometryReads": 0,
+            "outputBytes": 4925
+          },
+          "current": {
+            "geometryReads": 0,
+            "outputBytes": 4925
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              11.5,
+              12,
+              11.099999994039536,
+              11.5,
+              11.400000005960464,
+              11,
+              11.100000023841858
+            ],
+            "medianMs": 11.400000005960464
+          },
+          "current": {
+            "samplesMs": [
+              3.300000011920929,
+              3.199999988079071,
+              3.5,
+              2.7999999821186066,
+              3,
+              3.100000023841858,
+              3.199999988079071
+            ],
+            "medianMs": 3.199999988079071
+          }
+        }
+      },
+      "scene-font-loading-small": {
+        "name": "scene-font-loading-small",
+        "kind": "loading",
+        "count": 24,
+        "batch": 100,
+        "outputSha256": "1dd43d52aeb690c8d0170d92f95bb66cfd3a8e05756769302bc0ea49ada4022b",
+        "details": {
+          "baseline": {
+            "geometryReads": 0,
+            "outputBytes": 8924
+          },
+          "current": {
+            "geometryReads": 0,
+            "outputBytes": 8924
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              0.19999998807907104,
+              0.19999998807907104,
+              0.20000001788139343,
+              0.19999998807907104,
+              0.30000001192092896,
+              0.20000001788139343,
+              0.29999998211860657
+            ],
+            "medianMs": 0.20000001788139343
+          },
+          "current": {
+            "samplesMs": [
+              0.09999999403953552,
+              0.09999999403953552,
+              0.09999999403953552,
+              0.09999999403953552,
+              0.19999998807907104,
+              0.09999999403953552,
+              0.09999999403953552
+            ],
+            "medianMs": 0.09999999403953552
+          }
+        }
+      },
+      "scene-font-references-unique": {
+        "name": "scene-font-references-unique",
+        "kind": "references",
+        "count": 1000,
+        "unique": true,
+        "batch": 10,
+        "outputSha256": "25ade20e8af6201ec1b6735e592ed60e53d46543f0506c6a0ca8ede55e149cd2",
+        "details": {
+          "baseline": {
+            "geometryReads": 0,
+            "outputBytes": 32893
+          },
+          "current": {
+            "geometryReads": 0,
+            "outputBytes": 32893
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              1.0999999940395355,
+              1.0999999940395355,
+              1,
+              1,
+              1.0999999940395355,
+              1,
+              1
+            ],
+            "medianMs": 1
+          },
+          "current": {
+            "samplesMs": [
+              1.300000011920929,
+              1.199999988079071,
+              1.300000011920929,
+              1.2999999821186066,
+              1.2000000178813934,
+              1.0999999940395355,
+              1.199999988079071
+            ],
+            "medianMs": 1.2000000178813934
+          }
+        }
+      },
+      "font-diagnostics-unique": {
+        "name": "font-diagnostics-unique",
+        "kind": "diagnostics",
+        "count": 200,
+        "unique": true,
+        "batch": 5,
+        "outputSha256": "7294b75d0effc1b48e39bec92e359501b4f6f3d452a38c39679e4f07583db459",
+        "details": {
+          "baseline": {
+            "geometryReads": 0,
+            "outputBytes": 44506
+          },
+          "current": {
+            "geometryReads": 0,
+            "outputBytes": 44506
+          }
+        },
+        "timings": {
+          "baseline": {
+            "samplesMs": [
+              59.099999994039536,
+              60.10000002384186,
+              57.599999994039536,
+              60.099999994039536,
+              58.80000001192093,
+              60.400000005960464,
+              60.599999994039536
+            ],
+            "medianMs": 60.099999994039536
+          },
+          "current": {
+            "samplesMs": [
+              59.70000001788139,
+              60.70000001788139,
+              52.70000001788139,
+              55.70000001788139,
+              51.400000005960464,
+              50.10000002384186,
+              70.19999998807907
+            ],
+            "medianMs": 55.70000001788139
+          }
+        }
+      }
+    },
+    "errors": [],
+    "browser": "147.0.7727.15",
+    "pdfValidation": {
+      "inputSha256": "7ce4ee0373d72228dca939c9c85a6a392b64b4104f6d52a3222b88ff6fdfda2d",
+      "pageCount": 100,
+      "engines": {
+        "baseline": {
+          "hashes": [
+            {
+              "index": 0,
+              "scale": 1,
+              "fit": "contain",
+              "width": 450,
+              "height": 600,
+              "hash": "092afc2d9d82ab7aec6ada43b9b3dd94b8f47f549a840a1e503e2e8dbdc863fa",
+              "pageIndex": 0,
+              "canvases": 2
+            },
+            {
+              "index": 50,
+              "scale": 1,
+              "fit": "contain",
+              "width": 360,
+              "height": 600,
+              "hash": "b1890849c5205f57f99d18dbed3ef7514392b3bb61c4974ffde959b241f81f33",
+              "pageIndex": 50,
+              "canvases": 3
+            },
+            {
+              "index": 51,
+              "scale": 0.5,
+              "fit": "width",
+              "width": 400,
+              "height": 534,
+              "hash": "cdbbcee8e9079b516b1b4c2d7361fe5067059624418c9a064b3f8784f0999ea2",
+              "pageIndex": 51,
+              "canvases": 3
+            },
+            {
+              "index": 99,
+              "scale": 0.8,
+              "fit": "height",
+              "width": 361,
+              "height": 481,
+              "hash": "19492443953bb63bad0932bb72ea098812ab7e721ef7e51472419e4f9c8e061f",
+              "pageIndex": 99,
+              "canvases": 2
+            },
+            {
+              "index": 2,
+              "scale": 1,
+              "fit": "contain",
+              "width": 360,
+              "height": 600,
+              "hash": "5e8d2748f1db38655b693609968cfe79b180af613f9825d2bc24ba08910e97db",
+              "pageIndex": 2,
+              "canvases": 3
+            }
+          ],
+          "removed": true,
+          "buffersReleased": true
+        },
+        "current": {
+          "hashes": [
+            {
+              "index": 0,
+              "scale": 1,
+              "fit": "contain",
+              "width": 450,
+              "height": 600,
+              "hash": "092afc2d9d82ab7aec6ada43b9b3dd94b8f47f549a840a1e503e2e8dbdc863fa",
+              "pageIndex": 0,
+              "canvases": 2
+            },
+            {
+              "index": 50,
+              "scale": 1,
+              "fit": "contain",
+              "width": 360,
+              "height": 600,
+              "hash": "b1890849c5205f57f99d18dbed3ef7514392b3bb61c4974ffde959b241f81f33",
+              "pageIndex": 50,
+              "canvases": 3
+            },
+            {
+              "index": 51,
+              "scale": 0.5,
+              "fit": "width",
+              "width": 400,
+              "height": 534,
+              "hash": "cdbbcee8e9079b516b1b4c2d7361fe5067059624418c9a064b3f8784f0999ea2",
+              "pageIndex": 51,
+              "canvases": 3
+            },
+            {
+              "index": 99,
+              "scale": 0.8,
+              "fit": "height",
+              "width": 361,
+              "height": 481,
+              "hash": "19492443953bb63bad0932bb72ea098812ab7e721ef7e51472419e4f9c8e061f",
+              "pageIndex": 99,
+              "canvases": 2
+            },
+            {
+              "index": 2,
+              "scale": 1,
+              "fit": "contain",
+              "width": 360,
+              "height": 600,
+              "hash": "5e8d2748f1db38655b693609968cfe79b180af613f9825d2bc24ba08910e97db",
+              "pageIndex": 2,
+              "canvases": 3
+            }
+          ],
+          "removed": true,
+          "buffersReleased": true
+        }
+      }
+    }
+  },
+  "packaging": {
+    "report": "category-package-maps.json",
+    "packages": 15,
+    "publicRuntimeExports": 123,
+    "relativeDeclarationReferences": 139,
+    "mapInclusionControl": {
+      "packedBytes": 4800420,
+      "unpackedBytes": 17447578,
+      "maps": 27,
+      "mapBytes": 7467247
+    },
+    "current": {
+      "packedBytes": 3349972,
+      "unpackedBytes": 9980661,
+      "maps": 0,
+      "mapBytes": 0
+    },
+    "packedBytesSaved": 1450448,
+    "percentageSaved": 30.215022852167106,
+    "reportSha256": "dc5a49435d67e37bf15af9e7f4609de70853d1391bea866d0940c10170b97530"
+  },
+  "validation": {
+    "unitTestsByPackage": {
+      "core": 447,
+      "pdf": 17,
+      "iwork": 336,
+      "cad": 65,
+      "docx": 24,
+      "vue": 61,
+      "media": 23
+    },
+    "unitTestsPassed": 973,
+    "unitTestsSkipped": 11,
+    "unitSkipReason": "Existing external PPTX corpus controls unavailable.",
+    "browserTestsPassed": 10,
+    "browserTestsSkipped": 0,
+    "actualPdfPixelNavigationLifecyclePairs": 5,
+    "builtPackagesWithDeclarations": 16,
+    "conversionPolicyChecksPassed": 2122,
+    "categoryBoundariesPassed": true,
+    "coreRuntimeExports": 81,
+    "coreRoutesEqual": true,
+    "packedVueTypeConsumerPassed": true,
+    "browserRerun": "First run had one Vite reload during the Vue test script’s dependency rebuild and one obsolete broad file-input selector. Scoped the iWork selector to .wb-upload and reran all 10 browser tests after builds completed; all passed."
+  },
+  "limitations": [
+    "PDF timing covers 40 visibility selections in a generated DOM of 100/2048/10000 mixed-height slots. It does not include PDF parsing, full scroll-frame work, initial layout, image decoding or rendering. Active-canvas cleanup is covered by lifecycle regressions, not separately timed.",
+    "Sub-millisecond medians are subject to Chromium timer resolution. Zero-valued samples are retained.",
+    "Font reuse inputs deliberately repeat eight families across 30000 runs, six face variants and bounded 4096-code-unit samples. All-unique family collection is slower (1.0 to 1.2 ms per ten calls). Unique diagnostics are dominated by canvas font probes and fluctuate across runs.",
+    "Font caches are scoped to individual synchronous calls; they do not preserve font availability or document samples across calls. No peak-memory measurement.",
+    "npm sizes sum 15 independent actual tarballs and exclude installed dependency trees, full preview/browser startup, and packages already trimmed in prior rounds. Local JS source maps are retained; declaration maps are disabled.",
+    "Historical pre-build sizes also contain older ZIP-worker and Vue archive CSS outputs and are not attributed to this change. Same-current-dist control isolates the package files allowlist change; all non-map payload files match."
+  ]
+}

@@ -1,44 +1,44 @@
 {
-  "date": "2026-11-04",
-  "observedAt": "2026-11-04T05:59:13.627Z",
-  "status": "published-and-validated",
+  "date": "2026-11-05",
+  "observedAt": "2026-11-04T17:07:47.079Z",
+  "status": "published-and-verified",
   "package": {
     "name": "dsh-filens",
-    "version": "0.1.1",
-    "file": "dsh-filens-0.1.1.tgz",
-    "bytes": 4438888,
-    "unpackedBytes": 10459822,
-    "sha256": "9a4ad766523455c15b1fd0e1f528a7c80b2d551e05593bc68115255f6ce219e7",
-    "integrity": "sha512-cobx0TS6CUpmP7QTwTsFsQ+8dYvE/st55tezqkuaUzEsR/vEtqWWu5baY/Lg2u8hyhwcBFzFy8ftQ/NWvCDd/A==",
-    "cliVersion": "0.5.4",
-    "previewVersion": "0.3.3",
-    "previewSHA256": "1d85d4bf83950550b3aa9851817f061dfce15ebca29fec0a39f42c4cc843fd18",
-    "extensions": 402,
+    "version": "0.1.2",
+    "file": "dsh-filens-0.1.2.tgz",
+    "bytes": 12506529,
+    "unpackedBytes": 17198635,
+    "sha256": "c8597a62d191fde19c2677495c8f6b47d7a100ce16a8511d5d6f66c776e23320",
+    "integrity": "sha512-J5lK+ML+sEydpHZ99w3ziuBVnS6cSZLuw1GE6ItOMDU9MmHBKf5vuUSgx5fBXKFpcBGMh96Fe5bHIB4J2pxbXQ==",
+    "cliVersion": "0.5.5",
+    "previewVersion": "0.3.4",
+    "previewSHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d",
+    "extensions": 450,
     "privacyChecked": true
   },
   "dependencies": {
-    "cli": "0.5.4",
-    "preview": "0.3.3"
+    "cli": "0.5.5",
+    "preview": "0.3.4"
   },
   "unitTests": {
     "count": 18,
     "passed": 18,
-    "command": "npm run test:dsh",
-    "node": "24.22.2",
+    "node": "24.22.1",
     "platform": "darwin-arm64",
-    "realCli": true
+    "realCli": true,
+    "command": "FILENS_TEST_COMMAND=[local CLI] node --test integrations/deepseek-harness/test/*.test.mjs"
   },
   "browser": {
     "results": [
       {
         "name": "hello.txt",
         "rendered": true,
-        "ms": 40
+        "ms": 38
       },
       {
         "name": "filens-cosmic-atlas.pdf",
         "rendered": true,
-        "ms": 97
+        "ms": 94
       },
       {
         "name": "filens-aurora-guide.docx",
@@ -48,51 +48,52 @@
       {
         "name": "filens-observatory.xlsx",
         "rendered": true,
-        "ms": 33
+        "ms": 27
       },
       {
         "name": "filens-field-notes.pptx",
         "rendered": true,
-        "ms": 31
+        "ms": 44
       },
       {
         "name": "a.pages",
         "rendered": true,
-        "ms": 147
+        "ms": 154
       },
       {
         "name": "a.numbers",
         "rendered": true,
-        "ms": 198
+        "ms": 195
       },
       {
         "name": "filens-weekend.key",
         "rendered": true,
-        "ms": 115
+        "ms": 138
       },
       {
         "name": "rounded-cube.step",
         "rendered": true,
-        "ms": 267
+        "ms": 278
       },
       {
         "name": "raw/pentax-k-r.dng",
         "rendered": true,
-        "ms": 119
+        "ms": 184
       },
       {
         "name": "sample-nested-archives.zip",
         "rendered": true,
-        "ms": 22
+        "ms": 33
       },
       {
         "name": "encrypted.rar",
         "rendered": true,
-        "ms": 67
+        "ms": 58
       }
     ],
     "interactions": [
       "loading identifies the file and respects reduced motion",
+      "closing and reopening PDF reuses cached runtime and preserves canvas pixels",
       "toolbar contains only working zoom and fullscreen; keyboard navigation works",
       "document fullscreen opens from the keyboard and exits normally",
       "live DSH language and theme changes preserve the document and current page",
@@ -110,30 +111,176 @@
     "errors": [],
     "failures": []
   },
-  "publicProtocol": {
-    "request": "op",
-    "response": "op",
-    "capacityFilter": "forOp",
-    "legacyFieldsRejected": [
-      "operation",
-      "forOperation"
-    ]
-  },
-  "previousRelease": {
-    "version": "0.1.0",
-    "sourceTag": "v0.6.2",
-    "validation": "https://github.com/IceWhaleTech/filens/blob/v0.6.2/docs/dsh-plugin-validation.json",
-    "scope": "Real Desktop/Web profile and model observations remain historical; not repeated for adapter 0.1.1."
-  },
   "limits": [
-    "No new real Desktop or Web profile installation validation for 0.1.1.",
-    "Linux/Windows native execution and remote/container shells were not tested.",
-    "402 extensions are registered; the browser suite exercises 12 formats."
+    "Native execution and Desktop recording were verified on macOS arm64 only. Linux and Windows components were cross-built; public tarball hashes were verified.",
+    "The 3D/360 gallery remains a historical dsh-filens@0.1.1 recording. Earlier profile and account/model-trial observations belong to the versions named in VALIDATION.md.",
+    "First is the median of the first opening of each file in each fresh process; the engine may be warm for DOCX after PPTX. Cached median pools the next three opens per process. OS filesystem and persistent application caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup.",
+    "Two small authored files on one macOS arm64 machine. This measures latency, not fidelity; results are not a guarantee for other files or platforms. The edited walkthrough GIF is not benchmark evidence.",
+    "First is the median of the first opening of each file in each fresh process; PDF is the first document opened in that process. Cached median pools the next three opens per process. OS filesystem and persistent application caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup."
   ],
   "publication": {
-    "registry": "https://registry.npmjs.org/",
-    "observedAt": "2026-11-04T06:11:36.535Z",
-    "registryHttpStatus": 200,
-    "integrity": "sha512-cobx0TS6CUpmP7QTwTsFsQ+8dYvE/st55tezqkuaUzEsR/vEtqWWu5baY/Lg2u8hyhwcBFzFy8ftQ/NWvCDd/A=="
+    "report": "dsh-plugin-publication.json",
+    "cliDependenciesReport": "dsh-cli-dependencies-publication.json",
+    "publicTarballs": "Exact SHA-256 verified for the plugin and all 10 CLI/platform/OCR dependency packages.",
+    "cliEntryTags": {
+      "latest": "0.5.4",
+      "dsh": "0.5.5",
+      "reason": "DSH pins CLI 0.5.5 and embeds its preview runtime. Standalone CLI 0.5.5 preview commands need filens-preview@0.3.4, which is still pending full-release confirmation; stable latest remains 0.5.4 until that runtime is published."
+    }
+  },
+  "registryCli": {
+    "command": "node scripts/test-agent-npm.mjs --registry --cli-only",
+    "platform": "darwin-arm64",
+    "passed": true,
+    "observedAt": "2026-11-04T16:39:37.260Z",
+    "freshNpmCache": true,
+    "preview": false
+  },
+  "desktop": {
+    "recordedAt": "2026-11-04T16:45:09.451Z",
+    "environment": {
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    "plugin": "dsh-filens@0.1.2",
+    "installationSource": "安装源\n中国大陆镜像源",
+    "components": {
+      "cli": "0.5.5",
+      "preview": "0.3.4",
+      "extensions": 450,
+      "previewSHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d"
+    },
+    "modelCalls": 0,
+    "checks": [
+      "public npm installation via Desktop UI",
+      "default installation source unchanged (China mainland mirror)",
+      "both installed components running",
+      "DOCX sidebar preview",
+      "XLSX preview and worksheet switching",
+      "real document fullscreen",
+      "Page Down navigation through all three slides",
+      "Escape exits fullscreen"
+    ],
+    "recordingReport": "assets/dsh-plugin/demo-recording.json",
+    "artifacts": [
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.webp",
+        "bytes": 5803648,
+        "sha256": "e13fd86ccf809c221d14a2dcc9c55b38a78c2e178493decf1d80274a18be6da0"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.gif",
+        "bytes": 17327040,
+        "sha256": "18f89d815aaf97549218023d08f1b95ed99456c320362567d8d21c204311b09e"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
+        "bytes": 3751766,
+        "sha256": "dbf96572efd7afc7010573a8fa716181699906cee830e465ade929c315bea2e9"
+      }
+    ],
+    "installedArtifacts": [
+      {
+        "name": "dsh-filens",
+        "version": "0.1.2",
+        "matchingPackagedFiles": 28,
+        "allFilesMatch": true
+      },
+      {
+        "name": "filens-cli",
+        "version": "0.5.5",
+        "matchingPackagedFiles": 10,
+        "allFilesMatch": true
+      },
+      {
+        "name": "filens-cli-darwin-arm64",
+        "version": "0.5.5",
+        "matchingPackagedFiles": 33,
+        "allFilesMatch": true
+      },
+      {
+        "name": "filens-ocr-darwin-arm64",
+        "version": "0.5.5",
+        "matchingPackagedFiles": 43,
+        "allFilesMatch": true
+      }
+    ]
+  },
+  "performance": {
+    "report": "assets/dsh-plugin/office-preview-benchmark.json",
+    "pdfReport": "assets/dsh-plugin/pdf-preview-benchmark.json",
+    "initialThreeRoundsReport": "assets/dsh-plugin/office-preview-benchmark-3-rounds.json",
+    "historical011Report": "assets/dsh-plugin/office-preview-benchmark-0.1.1.json",
+    "rounds": 9,
+    "actualOpens": 324,
+    "officeOpens": 216,
+    "pdfOpens": 108,
+    "results": [
+      {
+        "renderer": "filens",
+        "plugin": "dsh-filens@0.1.2",
+        "name": "Field Notes.pptx",
+        "firstMs": 540,
+        "cachedMedianMs": 311
+      },
+      {
+        "renderer": "filens",
+        "plugin": "dsh-filens@0.1.2",
+        "name": "Aurora Guide.docx",
+        "firstMs": 294,
+        "cachedMedianMs": 278
+      },
+      {
+        "renderer": "previous",
+        "plugin": "dsh-filens@0.1.1",
+        "name": "Field Notes.pptx",
+        "firstMs": 356,
+        "cachedMedianMs": 228
+      },
+      {
+        "renderer": "previous",
+        "plugin": "dsh-filens@0.1.1",
+        "name": "Aurora Guide.docx",
+        "firstMs": 245,
+        "cachedMedianMs": 245
+      },
+      {
+        "renderer": "builtin",
+        "plugin": "DSH built-in Office-to-PDF",
+        "name": "Field Notes.pptx",
+        "firstMs": 1828,
+        "cachedMedianMs": 112
+      },
+      {
+        "renderer": "builtin",
+        "plugin": "DSH built-in Office-to-PDF",
+        "name": "Aurora Guide.docx",
+        "firstMs": 1812,
+        "cachedMedianMs": 112
+      },
+      {
+        "renderer": "filens",
+        "plugin": "dsh-filens@0.1.2",
+        "name": "Cosmic Atlas.pdf",
+        "firstMs": 684,
+        "cachedMedianMs": 443
+      },
+      {
+        "renderer": "previous",
+        "plugin": "dsh-filens@0.1.1",
+        "name": "Cosmic Atlas.pdf",
+        "firstMs": 1623,
+        "cachedMedianMs": 1408
+      },
+      {
+        "renderer": "builtin",
+        "plugin": "DSH built-in PDF",
+        "name": "Cosmic Atlas.pdf",
+        "firstMs": 328,
+        "cachedMedianMs": 111
+      }
+    ]
   }
 }

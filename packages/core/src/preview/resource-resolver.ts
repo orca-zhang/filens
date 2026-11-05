@@ -26,30 +26,28 @@ export function createFileSetResourceIndex(
   const exact = new Map<string, FileSetResource>();
   const rooted = new Map<string, FileSetResource>();
   const basenameCandidates = new Map<string, FileSetResource | null>();
+  const rootPrefix = root ? `${root}/` : '';
 
   for (const resource of normalizedResources) {
-    const aliases = uniqueValues([
-      normalizeResourcePath(resource.path ?? ''),
-      normalizeResourcePath(resource.name)
-    ]).filter(Boolean);
-    for (const alias of aliases) {
+    const name = normalizeResourcePath(resource.name);
+    const resourcePath = normalizeResourcePath(resource.path ?? '');
+    for (const alias of resourcePath && resourcePath !== name ? [resourcePath, name] : [name]) {
+      if (!alias) continue;
       exact.set(alias, resource);
-      if (root && alias.startsWith(`${root}/`)) {
+      if (rootPrefix && alias.startsWith(rootPrefix)) {
         rooted.set(alias.slice(root.length + 1), resource);
       }
     }
-    const basename = normalizeResourcePath(resource.name).split('/').pop();
+    const basename = name.slice(name.lastIndexOf('/') + 1);
     if (basename) {
       basenameCandidates.set(basename, basenameCandidates.has(basename) ? null : resource);
     }
   }
 
-  const basename = new Map([...basenameCandidates.entries()].filter((entry): entry is [string, FileSetResource] => entry[1] != null));
-
   return {
     resources: normalizedResources,
     resolve: (request) => {
-      const resource = findFileSetResource(request.source ?? request.name ?? '', exact, rooted, basename);
+      const resource = findFileSetResource(request.source ?? request.name ?? '', exact, rooted, basenameCandidates);
       if (!resource) {
         return undefined;
       }
@@ -57,7 +55,7 @@ export function createFileSetResourceIndex(
         source: resource.source
       };
     },
-    read: (name) => findFileSetResource(name, exact, rooted, basename)
+    read: (name) => findFileSetResource(name, exact, rooted, basenameCandidates)
   };
 }
 
@@ -86,13 +84,13 @@ function findFileSetResource(
   name: string,
   exact: Map<string, FileSetResource>,
   rooted: Map<string, FileSetResource>,
-  basename: Map<string, FileSetResource>
+  basename: Map<string, FileSetResource | null>
 ): FileSetResource | undefined {
   const normalized = normalizeResourcePath(name);
   if (!normalized) {
     return undefined;
   }
-  return exact.get(normalized) ?? rooted.get(normalized) ?? basename.get(normalized.split('/').pop() ?? '');
+  return exact.get(normalized) ?? rooted.get(normalized) ?? basename.get(normalized.slice(normalized.lastIndexOf('/') + 1)) ?? undefined;
 }
 
 function normalizeResourcePath(path: string): string {
@@ -118,13 +116,10 @@ function normalizeResourcePath(path: string): string {
 }
 
 function decodeResourcePathPart(part: string): string {
+  if (!part.includes('%')) return part;
   try {
     return decodeURIComponent(part);
   } catch {
     return part;
   }
-}
-
-function uniqueValues(values: string[]): string[] {
-  return [...new Set(values)];
 }

@@ -24,7 +24,10 @@ and responses, with localized commands, interface text and synthetic documents.
 The matching PNG files are static posters. The eleven scenes open with OCR geometry,
 then demonstrate Markdown, model-free excerpts, nested ZIP search and direct member
 reading, full-file duplicates, perceptual image groups, CSV-to-XLSX conversion,
-previewing that converted workbook, orbiting a STEP assembly, and capability discovery.
+previewing that converted workbook, orbiting a STEP assembly, and content inspection of a PNG deliberately named `.pdf`.
+The inspection scene replays `filens inspect invoice.pdf --json`; format/MIME,
+evidence confidence and the extension mismatch come from the shared WASM detector.
+The source build reports 349 input formats; inspection evidence is not full-file validation.
 YAML remains in the capability list and is checked against actual CLI output.
 The image scene uses a deterministic canvas landscape, a resized JPEG and a
 recompressed WebP; its distances come from the real WASM scan.

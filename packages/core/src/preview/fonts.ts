@@ -1,6 +1,6 @@
 import type { SlideModel, TextFrame } from '../types';
 import { normalizeFontFamilyName, normalizeLocalizedFontAlias } from '../utils/fonts';
-import type { PreviewFontCandidate, PreviewFontDiagnostic, PreviewFontReference } from './types';
+import type { PreviewFontCandidate, PreviewFontClassification, PreviewFontDiagnostic, PreviewFontReference } from './types';
 import { classifyPreviewFont, getFontFallbackCandidates, rankPreviewFontCandidates } from './font-matching';
 import { originalSceneFontFamily } from './font-scenes';
 
@@ -10,10 +10,15 @@ const PROBE_TEXT = 'BESbswy1234567890汉字かな한글';
 /** Collect resolved scene references, including inherited runs and table/bullet text. */
 export function collectSlideFontReferences(slides: readonly Pick<SlideModel, 'items'>[]): PreviewFontReference[] {
   const references = new Map<string, PreviewFontReference>();
+  const families = new Map<string, { key: string; reference: PreviewFontReference }>();
   const add = (fontFamily: string | undefined) => {
     if (!fontFamily) return;
-    const normalized = normalizeFontFamilyName(fontFamily);
-    if (normalized) references.set(normalized.toLowerCase(), { fontFamily: normalized });
+    let family = families.get(fontFamily);
+    if (!family) {
+      const normalized = normalizeFontFamilyName(fontFamily);
+      families.set(fontFamily, family = { key: normalized.toLowerCase(), reference: { fontFamily: normalized } });
+    }
+    if (family.key) references.set(family.key, family.reference);
   };
   const collectFrame = (frame: TextFrame | undefined) => {
     for (const paragraph of frame?.paragraphs ?? []) {
@@ -39,6 +44,7 @@ export function analyzePreviewFonts(
   options: { substitute?: boolean; candidates?: readonly PreviewFontCandidate[] } = {}
 ): { fonts: PreviewFontDiagnostic[]; warnings: string[] } {
   const fonts = new Map<string, PreviewFontDiagnostic>();
+  const classifications = new Map<string, Map<PreviewFontReference['traits'], PreviewFontClassification>>();
   const availability = new Map<string, boolean | undefined>();
   let context: CanvasRenderingContext2D | null | undefined;
   const measure = (family: string): number | undefined => {
@@ -85,7 +91,14 @@ export function analyzePreviewFonts(
     let target = resolvedFontFamily ?? fontFamily;
     const unsupported = reference.browserUnsupported || /\.shx$/i.test(fontFile ?? '');
     let found = target && (!unsupported || resolvedFontFamily) ? probe(target) : undefined;
-    const classification = classifyPreviewFont(fontFamily ?? '', reference.traits);
+    const familyKey = fontFamily ?? '';
+    let variants = classifications.get(familyKey);
+    if (!variants) classifications.set(familyKey, variants = new Map());
+    let classification = variants.get(reference.traits);
+    if (!classification) {
+      classification = classifyPreviewFont(familyKey, reference.traits);
+      variants.set(reference.traits, classification);
+    }
     let substitutionReason: string | undefined;
     let matchScore: number | undefined;
     let coverage: PreviewFontDiagnostic['coverage'];
@@ -125,7 +138,7 @@ export function analyzePreviewFonts(
       classification, substitutionReason, matchScore, coverage, embedded: reference.embedded
     };
     const key = JSON.stringify([fontFamily?.toLowerCase(), fontFile?.toLowerCase(), reference.styleName, resolvedFontFamily?.toLowerCase(), source, classification, reference.embedded]);
-    if (!fonts.has(key)) fonts.set(key, diagnostic);
+    if (!fonts.has(key)) fonts.set(key, { ...diagnostic, classification: { ...classification } });
   }
   const diagnostics = [...fonts.values()];
   return { fonts: diagnostics, warnings: getPreviewFontWarnings(diagnostics) };

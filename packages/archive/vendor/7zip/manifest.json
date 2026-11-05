@@ -11,11 +11,26 @@
     "rar",
     "rar5",
     "zip",
-    "split"
+    "split",
+    "bzip2",
+    "xz",
+    "lzma",
+    "lzma86",
+    "zstd",
+    "ar",
+    "cpio",
+    "cab",
+    "iso",
+    "z",
+    "lzh",
+    "rpm",
+    "xar",
+    "wim",
+    "udf"
   ],
   "sha256": {
     "7zz.js": "2e1d433c3ee7284fc941e1fa4408eaa0a70d61cb2d0b64ce07637c96ffbe44f5",
-    "7zz.wasm": "57cbbfa6db900551728338f54fb812a122584cacc2c07ea098b29a86d647e5d1",
-    "7zip-24.09.patch": "6b9b07e838c6edf898dce5e4de9ba4882f82ce0bc2b6a2fb7d9b17a6e681ec9a"
+    "7zz.wasm": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc",
+    "7zip-24.09.patch": "5669c789ec8e471ebaf90b55c7898f9e99efdf8e9cf18ff149e0c113c926ee78"
   }
 }

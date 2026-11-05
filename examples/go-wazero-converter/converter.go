@@ -72,8 +72,10 @@ type WASIBackend struct {
 	OfficeWasmPath string
 	// Defaults to converter-postscript.wasm beside the configured conversion core.
 	PostscriptWasmPath string
-	mu                 sync.Mutex
-	modules            map[string]*cachedWASIModule
+	// Defaults to converter-graphics.wasm beside the configured conversion core.
+	GraphicsWasmPath string
+	mu               sync.Mutex
+	modules          map[string]*cachedWASIModule
 }
 
 func NewWASIBackend() *WASIBackend {
@@ -212,6 +214,21 @@ func (backend *WASIBackend) convertWithFormats(
 		}
 		if _, err := os.Stat(modulePath); err != nil {
 			res.ErrorMessage = "PostScript preview requires converter-postscript.wasm beside the conversion core."
+			return res, nil
+		}
+		res, runErr = backend.run(ctx, modulePath, configFor(workInput, workOutput), workResult)
+		if runErr != nil {
+			return res, runErr
+		}
+	}
+
+	if !res.OK && res.ErrorCode == ErrorCodeEngineUnavailable && res.RequiredModule == "graphics" {
+		modulePath := backend.GraphicsWasmPath
+		if modulePath == "" {
+			modulePath = filepath.Join(filepath.Dir(wasmPath), "converter-graphics.wasm")
+		}
+		if _, err := os.Stat(modulePath); err != nil {
+			res.ErrorMessage = "Graphics preview requires converter-graphics.wasm beside the conversion core."
 			return res, nil
 		}
 		res, runErr = backend.run(ctx, modulePath, configFor(workInput, workOutput), workResult)

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import JSZip from 'jszip';
+import * as core from '@filens/core';
 import { createDiagramPreviewDriver, loadVsdxDiagram } from '../src';
 import { createDrawioFixture, createVisioPage, legacyVdxFixture } from './fixtures/diagrams.mjs';
 
@@ -84,10 +85,10 @@ describe('diagram session lifecycle', () => {
     zip.file('visio/pages/pages.xml', '<Pages xmlns:r="urn:relationships"><Page ID="1"><Rel r:id="r1"/></Page><Page ID="2"><Rel r:id="r2"/></Page></Pages>');
     zip.file('visio/pages/_rels/pages.xml.rels', '<Relationships><Relationship Id="r1" Target="page1.xml"/><Relationship Id="r2" Target="page2.xml"/></Relationships>');
     zip.file('visio/pages/page1.xml', createVisioPage(1)); zip.file('visio/pages/page2.xml', createVisioPage(1));
-    const archive = await JSZip.loadAsync(await zip.generateAsync({ type: 'arraybuffer' }));
+    const archive = await core.openZipArchive(await zip.generateAsync({ type: 'uint8array' }));
     const paths = ['visio/pages/pages.xml', 'visio/pages/_rels/pages.xml.rels', 'visio/pages/page1.xml', 'visio/pages/page2.xml'];
-    const reads = paths.map(path => vi.spyOn(archive.file(path)!, 'async'));
-    const controller = new AbortController(), load = vi.spyOn(JSZip, 'loadAsync');
+    const reads = paths.map(path => vi.spyOn(archive.get(path)!, 'text'));
+    const controller = new AbortController(), load = vi.spyOn(core, 'openZipArchive');
     try {
       controller.abort();
       await expect(loadVsdxDiagram(new ArrayBuffer(0), { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });

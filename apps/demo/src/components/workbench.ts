@@ -4,8 +4,6 @@ export interface WorkbenchFormat {
   extension: string;
   family: string;
   label: string;
-  supported: boolean;
-  sampleOnly: boolean;
 }
 
 export interface WorkbenchFormatFamily {

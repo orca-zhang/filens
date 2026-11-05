@@ -15,6 +15,7 @@ interface SheetRequest {
   kind: 'sheet';
   id: number;
   index: number;
+  context?: SemanticBuildContext;
 }
 
 type WorkerRequest = DocumentRequest | SheetRequest | { kind: 'clear' };
@@ -36,6 +37,7 @@ self.addEventListener('message', async (event: MessageEvent<WorkerRequest>) => {
   }
   try {
     if (request.kind === 'sheet') {
+      if (request.context) context = request.context;
       if (context?.archive.type !== 'numbers') {
         throw new Error('No Numbers document is loaded.');
       }

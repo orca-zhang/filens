@@ -52,6 +52,17 @@ describe('shared ordered and lookup XML views', () => {
     expect(await parseXmlFile(archive, 'missing.xml')).toBeNull();
   });
 
+  it.each([
+    '<a><constructor>c</constructor><toString>t</toString><hasOwnProperty>h</hasOwnProperty></a>',
+    '<a><empty/><text>value</text><mixed>before<b/>after</mixed><empty/></a>',
+    '<a id="attribute"><id>child</id><x/><x/><y flag=""/></a>',
+    '<!DOCTYPE a [<!ENTITY text "value">]><a><x/><x>&text;</x><x flag=""/></a>'
+  ])('preserves lookup properties and leaf values: %s', async source => {
+    const archive = await loadPptxArchive(await new JSZip().file('part.xml', source).generateAsync({ type: 'uint8array' }));
+    expect(await parseXmlFile(archive, 'part.xml')).toEqual(reference.parse(source));
+    expect(await parseXmlFileOrdered(archive, 'part.xml')).toEqual(orderedReference.parse(source));
+  });
+
   it('matches the previous lookup parser for every XML part in representative presentations', async () => {
     for (const fixture of [
       'fixtures-text-theme.pptx', 'fixtures-grouped-media.pptx', 'fixtures-table-style-text.pptx',

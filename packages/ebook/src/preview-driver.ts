@@ -1,10 +1,9 @@
-import JSZip from 'jszip';
 import { createEpubResources, resolveArchivePath } from './epub-resources';
 import { createFrameResourceUrl } from './frame-resource-url';
 import {
-  createDefaultPreviewRoutes,
+  openZipArchive,
   type EbookPreviewState,
-  type FormatDefinition,
+  type ZipEntry,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -38,22 +37,7 @@ interface ManifestItem {
   mediaType: string;
 }
 
-export const EBOOK_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['epub'],
-    family: 'ebook',
-    driverId: 'ebook',
-    targetFormat: 'epub',
-    contentTypes: ['application/epub+zip']
-  },
-  {
-    extensions: ['cbz'],
-    family: 'ebook',
-    driverId: 'ebook',
-    targetFormat: 'cbz',
-    contentTypes: ['application/vnd.comicbook+zip', 'application/x-cbz']
-  }
-];
+export { EBOOK_FORMAT_ROUTES, createEbookPreviewRoutes } from './routes';
 
 export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -321,13 +305,6 @@ export function createEbookPreviewDriver(): PreviewDriver<EbookPreviewState> {
   };
 }
 
-export function createEbookPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...EBOOK_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => extension === 'epub' || extension === 'cbz'))
-  ];
-}
-
 export async function loadEpubBook(
   source: PreviewSource,
   context: PreviewLoadContext = {
@@ -340,7 +317,7 @@ export async function loadEpubBook(
 ): Promise<ParsedEpubBook> {
   const bytes = await sourceToArrayBuffer(source, context);
   checkAborted(context.signal);
-  const zip = await JSZip.loadAsync(bytes);
+  const zip = await openZipArchive(new Uint8Array(bytes), { signal: context.signal });
   checkAborted(context.signal);
   const warnings: string[] = [];
   const container = await readZipText(zip, 'META-INF/container.xml', context.signal);
@@ -417,11 +394,11 @@ export async function loadCbzBook(
 ): Promise<ParsedEpubBook> {
   const bytes = await sourceToArrayBuffer(source, context);
   checkAborted(context.signal);
-  const zip = await JSZip.loadAsync(bytes);
+  const zip = await openZipArchive(new Uint8Array(bytes), { signal: context.signal });
   checkAborted(context.signal);
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-  const entries = Object.values(zip.files)
-    .filter((file) => !file.dir && isComicImage(file.name))
+  const entries = [...zip.values()]
+    .filter((file) => !file.directory && isComicImage(file.name))
     .sort((left, right) => collator.compare(left.name, right.name));
 
   if (!entries.length) {
@@ -429,11 +406,11 @@ export async function loadCbzBook(
   }
 
   const chapters: ParsedEpubChapter[] = [];
-  // Share JSZip's scheduling overhead while bounding in-flight decompression.
+  // Bound in-flight decompression and preserve page order.
   for (let start = 0; start < entries.length; start += 8) {
     checkAborted(context.signal);
     const batch = entries.slice(start, start + 8);
-    const pages = await Promise.all(batch.map(entry => entry.async('arraybuffer')));
+    const pages = await Promise.all(batch.map(entry => entry.bytes()));
     checkAborted(context.signal);
     for (const [offset, entry] of batch.entries()) {
       checkAborted(context.signal);
@@ -485,13 +462,13 @@ async function sourceToArrayBuffer(source: PreviewSource, context: PreviewLoadCo
   return new TextEncoder().encode(String(source)).buffer as ArrayBuffer;
 }
 
-async function readZipText(zip: JSZip, path: string, signal?: AbortSignal): Promise<string | null> {
+async function readZipText(zip: Map<string, ZipEntry>, path: string, signal?: AbortSignal): Promise<string | null> {
   checkAborted(signal);
-  const file = zip.file(path);
+  const file = zip.get(path);
   if (!file) {
     return null;
   }
-  const text = await file.async('text');
+  const text = await file.text();
   checkAborted(signal);
   return text;
 }

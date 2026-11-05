@@ -659,6 +659,31 @@ export function resolveFormatRoute(
     ? routes.find((route) => route.extensions.includes(extension))
     : routes.find((route) => contentType && route.contentTypes?.includes(contentType));
 
+  return resolvedRoute(matchedRoute, extension);
+}
+
+/** Compile a route configuration once for repeated lookups. Later array edits
+ * are intentionally outside this snapshot; resolveFormatRoute remains dynamic. */
+export function createFormatRouteResolver(routes: readonly FormatDefinition[] = DEFAULT_FORMAT_ROUTES) {
+  const extensions = new Map<string, FormatDefinition>();
+  const contentTypes = new Map<string, FormatDefinition>();
+  for (const definition of routes) {
+    const route = { ...definition, extensions: [...definition.extensions] };
+    for (const extension of route.extensions) {
+      if (!extensions.has(extension)) extensions.set(extension, route);
+    }
+    for (const type of route.contentTypes ?? []) {
+      if (!contentTypes.has(type)) contentTypes.set(type, route);
+    }
+  }
+  return (descriptor: Pick<SourceDescriptor, 'extension' | 'name' | 'contentType'>): FormatRoute | null => {
+    const extension = normalizeExtension(descriptor.extension ?? inferExtensionFromName(descriptor.name));
+    const route = extension ? extensions.get(extension) : contentTypes.get(normalizeContentType(descriptor.contentType));
+    return resolvedRoute(route, extension);
+  };
+}
+
+function resolvedRoute(matchedRoute: FormatDefinition | undefined, extension: string): FormatRoute | null {
   if (!matchedRoute) {
     return null;
   }
@@ -678,8 +703,9 @@ export function inferExtensionFromName(name: string | undefined): string | undef
     return undefined;
   }
 
-  const trimmedName = name.split(/[?#]/, 1)[0]?.trim() ?? '';
-  const lastSegment = trimmedName.split(/[\\/]/).pop() ?? '';
+  const suffix = name.search(/[?#]/);
+  const trimmedName = (suffix < 0 ? name : name.slice(0, suffix)).trim();
+  const lastSegment = trimmedName.slice(Math.max(trimmedName.lastIndexOf('/'), trimmedName.lastIndexOf('\\')) + 1);
   const splitArchive = /\.(7z|zip)\.\d{3,}$/i.exec(lastSegment);
   if (splitArchive) return splitArchive[1].toLowerCase();
   if (/\.[r-y]\d{2}$/i.test(lastSegment)) return 'rar';
@@ -765,13 +791,22 @@ function createConversionRoutes(
     // the native reader and only encrypted envelopes invoke the converter.
     if (!sourceFormat || !targetFormat || sourceFormat === targetFormat || routedSources.has(sourceFormat)) return [];
     routedSources.add(sourceFormat);
+    if (targetFormat === 'dxf') {
+      return defineRoute([sourceFormat], 'cad', 'cad', {
+        targetFormat,
+        contentTypes: legacyContentTypesForSource(sourceFormat),
+        conversion: { required: true, reason: 'DWG drawings are converted to UTF-8 DXF in the WASM conversion core for 2D preview' }
+      });
+    }
     if (targetFormat === 'jpg' || targetFormat === 'jpeg' || targetFormat === 'png') {
       return defineRoute([sourceFormat], 'image', 'image', {
         targetFormat,
         contentTypes: legacyContentTypesForSource(sourceFormat),
         conversion: {
           required: true,
-          reason: sourceFormat === 'ppm'
+          reason: ['tif', 'tiff', 'tga', 'pgm', 'pbm', 'pnm', 'dds', 'hdr', 'dib', 'cur', 'pcx', 'exr', 'jxl', 'qoi', 'ff'].includes(sourceFormat)
+            ? 'Raster images are decoded to PNG in the WASM conversion core; TIFF previews display the first image'
+            : sourceFormat === 'ppm'
             ? 'PPM images are decoded to PNG in the WASM conversion core'
             : ['psd', 'psb'].includes(sourceFormat)
             ? 'Photoshop files use their saved merged image (8-bit RGB or grayscale) in the WASM conversion core'
@@ -821,6 +856,30 @@ function openXMLConversionReason(targetFormat: string): string {
 
 function legacyContentTypesForSource(sourceFormat: string): string[] {
   switch (sourceFormat) {
+    case 'dib': return ['image/x-dib'];
+    case 'cur': return ['image/x-cursor'];
+    case 'pcx': return ['image/vnd.zbrush.pcx', 'image/x-pcx'];
+    case 'exr': return ['image/x-exr', 'image/aces'];
+    case 'jxl': return ['image/jxl'];
+    case 'qoi': return ['image/qoi'];
+    case 'ff': return ['image/x-farbfeld'];
+    case 'dwg':
+      return ['image/vnd.dwg', 'application/acad', 'application/x-acad', 'application/dwg'];
+    case 'tif':
+    case 'tiff':
+      return ['image/tiff', 'image/x-tiff'];
+    case 'tga':
+      return ['image/x-tga', 'image/x-targa'];
+    case 'pgm':
+      return ['image/x-portable-graymap'];
+    case 'pbm':
+      return ['image/x-portable-bitmap'];
+    case 'pnm':
+      return ['image/x-portable-anymap'];
+    case 'dds':
+      return ['image/vnd-ms.dds', 'image/x-dds'];
+    case 'hdr':
+      return ['image/vnd.radiance'];
     case 'psd':
       return ['image/vnd.adobe.photoshop', 'image/x-photoshop'];
     case 'psb':

@@ -68,9 +68,12 @@ export class MediaRegistry {
     if (decodedTiffDataUrl) {
       url = decodedTiffDataUrl;
     } else if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
-      const blobSource = new Uint8Array(media.data.byteLength);
-      blobSource.set(media.data);
-      url = URL.createObjectURL(new Blob([blobSource.buffer], { type: media.contentType }));
+      // Blob snapshots the view's bytes; avoid an extra full media copy first.
+      // Shared buffers still need an ordinary ArrayBuffer for the Blob API.
+      const blobSource = media.data.buffer instanceof ArrayBuffer
+        ? new Uint8Array(media.data.buffer, media.data.byteOffset, media.data.byteLength)
+        : new Uint8Array(media.data);
+      url = URL.createObjectURL(new Blob([blobSource], { type: media.contentType }));
     } else {
       url = `data:${media.contentType};base64,${uint8ToBase64(media.data)}`;
     }
@@ -110,6 +113,8 @@ function decodeTiffToDataUrl(bytes: Uint8Array): string | undefined {
 
     for (const ifd of ifds) {
       UTIF.decodeImage(buffer, ifd, ifds);
+      // The slide shows one image; leave later TIFF pages compressed.
+      if (Number(ifd.width) > 0 && Number(ifd.height) > 0 && ifd.data instanceof Uint8Array) break;
     }
 
     const page =
@@ -4077,13 +4082,16 @@ function createMarkerShape(type: LineEndType, color: string, strokeWidth: number
 }
 
 function uint8ToBase64(bytes: Uint8Array): string {
+  const native = (bytes as Uint8Array & { toBase64?(): string }).toBase64;
+  if (native) return native.call(bytes);
+
   if (typeof Buffer !== 'undefined') {
-    return Buffer.from(bytes).toString('base64');
+    return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('base64');
   }
 
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+  const chunks: string[] = [];
+  for (let offset = 0; offset < bytes.length; offset += 32768) {
+    chunks.push(Reflect.apply(String.fromCharCode, null, bytes.subarray(offset, offset + 32768)));
   }
-  return btoa(binary);
+  return btoa(chunks.join(''));
 }

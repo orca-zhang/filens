@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "baselineReportSha256": "43fe10b58528d9feedebb65a66bb3d1bf4d0f318cb523f3e0b3e01617276ff3c",
+  "corpus": {
+    "files": 513,
+    "uniqueContents": 472,
+    "formats": 344,
+    "manifestSha256": "47e78e62cd951041ea21fe7846dd0064e069b4505875d627a7b6e20a76c4a2fe",
+    "labeling": "Existing conversion manifest sourceFormat, otherwise fixture filename; aliases jpeg/jpg, tif/tiff, htm/html, stp/step, mpeg/mpg, bzip2/bz2, zstd/zst normalized. Labels are not an independent content audit.",
+    "limitations": [
+      "Development corpus, not a held-out accuracy test. Includes generated and duplicate samples.",
+      "Original-name extension success is by construction against extension-derived labels, not successful rendering or validation.",
+      "Label disagreements need review; a filename may itself be wrong.",
+      "Container/family matches and generic text abstentions do not count as exact matches.",
+      "Renamed scenarios reuse the same bytes and predictions, not additional independent samples.",
+      "No MIME hints in routing scenarios; recognized incorrect extensions remain authoritative in extension-first policy.",
+      "Specific predictions indicate format evidence, not whole-file validation."
+    ],
+    "developmentReview": [
+      "Initial XML-root rule classified ReadingCard.vue as XML. Added declaration/namespace requirement for generic XML; Vue now abstains. This corpus informed development.",
+      "sample.shtml/sample.xhtml/sample.xht/sample.xhtm contain HTML doctype/root without an XHTML namespace; HTML is a family match, not exact suffix recovery.",
+      "No declared 0-disagreement result should be read as a measured zero false-positive rate on independent data."
+    ]
+  },
+  "productionRoutingChanged": false,
+  "extraProductionBytes": 0,
+  "dependenciesAdded": 0,
+  "environment": {
+    "node": "v20.20.2",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro"
+  },
+  "sources": {
+    "wasm/converter-core-rust/src/format_detection.rs": "76f4a6b952b3029c2e88750a1c60e34a566e08b2ffc9e1fbeecd6f496f4a19d3",
+    "wasm/converter-core-rust/examples/detect_web.rs": "efbfd13363f69b05919fd5f48696c5354cc4e6335901f423e35b9fc6a7d7cb21",
+    "packages/converter-client/src/format-detector.ts": "a6ba079e7aaf30d69b4e1ada71860adacb4d7bec647d9b5726c2d1a7c03b508a",
+    "scripts/optimize-format-detection.mjs": "dbf5651b7cc70a5e3a8a2b3e9be59cd31633a487f784d6e23c3ceb1a68080418",
+    "wasm/converter-core-rust/Cargo.lock": "ae2a9668949b78c90dcbbe2e0bfcceb608e86db6186f268b4b6c5e2f42118785"
+  },
+  "binding": {
+    "file": "format-detector.mjs",
+    "rawBytes": 2135,
+    "gzip9Bytes": 904,
+    "brotli11Bytes": 817,
+    "sha256": "2de0eef2f32688c42b007303272d9f5f28abd8784ce8f074d4b929dbac2e98df"
+  },
+  "variants": {
+    "signatures": {
+      "baselineArtifact": {
+        "file": "converter-detect-signatures.wasm",
+        "sha256": "daedbcef991962216430d0722a8de15cf4622a354309ba9ef760a99b6a39f3fb",
+        "rawBytes": 124904,
+        "gzip9Bytes": 57723,
+        "brotli11Bytes": 48818
+      },
+      "optimizedArtifact": {
+        "file": "converter-detect-web-signatures.wasm",
+        "rawBytes": 73787,
+        "gzip9Bytes": 35270,
+        "brotli11Bytes": 30662,
+        "sha256": "869fe312da835f6b06c04e0edac746926b7beabd580b9faf39aaaed014407f43"
+      },
+      "unchangedOutputs": 513,
+      "nonzeroOffsetChecks": 513,
+      "exactLabelMatches": 124,
+      "containerOrFamily": 117,
+      "unresolved": 272,
+      "disagreements": 0,
+      "gzipReduction": 0.3889783968262218,
+      "browserVerification": {
+        "chromium": "147.0.7727.15",
+        "samples": 13,
+        "outputsIdentical": true
+      },
+      "pairedTiming": {
+        "repeats": 7,
+        "scope": "Node V8; reused browser ABI instance vs original per-call WASI instance; source IO, compilation and deep output comparisons excluded; original host JSON transport and exit-code check included; alternating order per file",
+        "baselineBatchMs": [
+          71.85307999999986,
+          73.36753799999224,
+          69.87015899999506,
+          70.24675800000341,
+          66.24657899999511,
+          70.32879999999932,
+          77.65417500000149
+        ],
+        "optimizedBatchMs": [
+          1.232165999994777,
+          0.8779960000092615,
+          1.2356659999977637,
+          0.8791540000011082,
+          1.2822539999997389,
+          0.8628470000030575,
+          1.2442539999974542
+        ],
+        "baseline": {
+          "medianMs": 0.05833299999994779,
+          "p95Ms": 0.6593750000001819
+        },
+        "optimized": {
+          "medianMs": 0.0020829999998568383,
+          "p95Ms": 0.004249999999956344
+        },
+        "medianBatchRatio": 57.07737431506586
+      },
+      "instanceCreation": {
+        "scope": "seven warm module instantiations; compilation excluded",
+        "medianMs": 0.038000000000010914,
+        "p95Ms": 0.046291000000110216
+      },
+      "maximumObservedMemoryBytes": 1114112,
+      "imports": [
+        {
+          "module": "filens",
+          "name": "read_at",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "fd_write",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "environ_get",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "environ_sizes_get",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "proc_exit",
+          "kind": "function"
+        }
+      ]
+    },
+    "containers": {
+      "baselineArtifact": {
+        "file": "converter-detect-containers.wasm",
+        "sha256": "03d9bb8f5befdea0548e738b0da3a2e13fd75f7d4a3e79cf97440231f5d3756a",
+        "rawBytes": 217939,
+        "gzip9Bytes": 108480,
+        "brotli11Bytes": 91113
+      },
+      "optimizedArtifact": {
+        "file": "converter-detect-web-containers.wasm",
+        "rawBytes": 170113,
+        "gzip9Bytes": 86376,
+        "brotli11Bytes": 74047,
+        "sha256": "03e88cabdd6cb4a76902cc82a1a90e1857a77680c87ec144a31abf8b4ed02a1b"
+      },
+      "unchangedOutputs": 513,
+      "nonzeroOffsetChecks": 513,
+      "exactLabelMatches": 165,
+      "containerOrFamily": 76,
+      "unresolved": 272,
+      "disagreements": 0,
+      "gzipReduction": 0.2037610619469027,
+      "browserVerification": {
+        "chromium": "147.0.7727.15",
+        "samples": 13,
+        "outputsIdentical": true
+      },
+      "pairedTiming": {
+        "repeats": 7,
+        "scope": "Node V8; reused browser ABI instance vs original per-call WASI instance; source IO, compilation and deep output comparisons excluded; original host JSON transport and exit-code check included; alternating order per file",
+        "baselineBatchMs": [
+          78.44125299998996,
+          71.72495099998378,
+          73.36070200000358,
+          72.36936700001752,
+          79.06921400001374,
+          77.52017300003172,
+          72.77388999999312
+        ],
+        "optimizedBatchMs": [
+          2.1297409999988304,
+          1.537837000016225,
+          2.123024999995323,
+          1.5199639999755163,
+          2.061455000035494,
+          1.482581999987815,
+          2.080621999979485
+        ],
+        "baseline": {
+          "medianMs": 0.0626670000001468,
+          "p95Ms": 0.6903330000004644
+        },
+        "optimized": {
+          "medianMs": 0.002125000000887667,
+          "p95Ms": 0.009708999999929802
+        },
+        "medianBatchRatio": 35.58685588515901
+      },
+      "instanceCreation": {
+        "scope": "seven warm module instantiations; compilation excluded",
+        "medianMs": 0.03670799999963492,
+        "p95Ms": 0.039042000000335975
+      },
+      "maximumObservedMemoryBytes": 1245184,
+      "imports": [
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "random_get",
+          "kind": "function"
+        },
+        {
+          "module": "filens",
+          "name": "read_at",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "fd_write",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "environ_get",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "environ_sizes_get",
+          "kind": "function"
+        },
+        {
+          "module": "wasi_snapshot_preview1",
+          "name": "proc_exit",
+          "kind": "function"
+        }
+      ]
+    }
+  }
+}

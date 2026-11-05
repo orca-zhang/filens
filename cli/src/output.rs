@@ -54,16 +54,17 @@ pub fn write(format: &str, response: &Value) -> Result<()> {
                     eprintln!("warning: {}", warning.as_str().unwrap_or(""));
                 }
             }
-            if let Some(capacity) = response.get("capacity") {
+            if let Some(capacity) = response.get("capacity").or_else(|| response.get("inspection")) {
+                let title = if response.get("inspection").is_some() { "inspection" } else { "capabilities" };
                 let data = serde_json::to_string_pretty(response)?;
                 match format {
                     "html" => writeln!(
                         stdout,
-                        "<!doctype html>\n<html><head><meta charset=\"utf-8\"><title>filens capabilities</title></head><body><pre>{}</pre></body></html>",
+                        "<!doctype html>\n<html><head><meta charset=\"utf-8\"><title>filens {title}</title></head><body><pre>{}</pre></body></html>",
                         escape(&data)
                     )?,
                     "markdown" => {
-                        writeln!(stdout, "# filens capabilities\n\n```json\n{data}\n```")?
+                        writeln!(stdout, "# filens {title}\n\n```json\n{data}\n```")?
                     }
                     "csv" | "tsv" => {
                         let sep = if format == "csv" { ',' } else { '\t' };

@@ -2,7 +2,6 @@
 
 import {
   PreviewPasswordError,
-  createDefaultPreviewRoutes,
   bindPreviewTouchGestures,
   classifyPreviewFont,
   PREVIEW_CONTAINER_LIMITS,
@@ -11,7 +10,6 @@ import {
   attachmentFilename,
   unwrapOfficeAttachment,
   type PreviewAttachment,
-  type FormatDefinition,
   type PagedPreviewState,
   type PreviewDriver,
   type PreviewEventMap,
@@ -23,12 +21,14 @@ import {
   type PreviewSource
 } from '@filens/core';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist';
+import { pdfContentKey, pdfPageCache, pdfPageKey } from './page-cache';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
 
 interface PageSlot {
+  index: number;
   element: HTMLDivElement;
   width: number;
   height: number;
@@ -37,15 +37,7 @@ interface PageSlot {
   task?: RenderTask;
 }
 
-export const PDF_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['pdf'],
-    family: 'paged',
-    driverId: 'pdf',
-    targetFormat: 'pdf',
-    contentTypes: ['application/pdf']
-  }
-];
+export { PDF_FORMAT_ROUTES, createPdfPreviewRoutes } from './routes';
 
 export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -59,6 +51,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private document: PDFDocumentProxy | null = null;
   private loadingTask: PDFDocumentLoadingTask | null = null;
   private pages: PageSlot[] = [];
+  private readonly activePages = new Set<PageSlot>();
   private loadGeneration = 0;
   private renderGeneration = 0;
   private rendering: Promise<void> | null = null;
@@ -67,6 +60,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private resizeObserver?: ResizeObserver;
   private removeAbortListener?: () => void;
   private dimensions = '';
+  private contentKey?: string;
   private readonly virtual: boolean;
   private unbindTouch = () => {};
   private readonly containerContext;
@@ -168,6 +162,11 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       ]);
       if (signal?.aborted) throw abortError();
       if (generation !== this.loadGeneration) return;
+      // Hash before PDF.js transfers the owned input buffer to its worker.
+      const contentKey = this.virtual ? await pdfContentKey(input, context.descriptor.password) : undefined;
+      if (signal?.aborted) throw abortError();
+      if (generation !== this.loadGeneration) return;
+      this.contentKey = contentKey;
       pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
       if (typeof location !== 'undefined' && location.protocol === 'file:') {
         // WebKit can silently hang on a module worker importing another blob
@@ -199,12 +198,15 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         element.className = 'pdfv-page-slot';
         element.dataset.pageIndex = String(index);
         fragment.append(element);
-        return { element, width: viewport.width, height: viewport.height, page: index === 0 ? first : undefined };
+        return { index, element, width: viewport.width, height: viewport.height, page: index === 0 ? first : undefined };
       });
       this.root.append(fragment);
       this.root.scrollTop = 0;
       this.layoutPages();
-      await this.renderVisiblePages();
+      // Reveal the first painted page without waiting for the rest of a tall
+      // viewport. Nearby pages continue through the normal rendering queue.
+      // Non-virtual (print/export) previews still finish every page before ready.
+      await this.renderVisiblePages(this.virtual);
       if (generation !== this.loadGeneration) return;
 
       this.state.loading = false;
@@ -320,7 +322,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const offset = anchor ? this.root.scrollTop - anchor.element.offsetTop : 0;
     this.renderGeneration++;
     this.renderAgain = true;
-    for (const slot of this.pages) this.clearCanvas(slot);
+    for (const slot of this.activePages) this.clearCanvas(slot);
     this.layoutPages();
     if (anchor) this.root.scrollTop = anchor.element.offsetTop + offset;
     this.emit('statechange', this.getState());
@@ -350,11 +352,23 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const margin = this.state.loading ? 0 : this.root.clientHeight / 2;
     const indices: number[] = [];
     let active = this.state.pageIndex, largestOverlap = -1;
-    for (const [index, slot] of this.pages.entries()) {
+    // Page slots form a vertical, ordered grid. Locate the first nearby page
+    // using actual layout, including gaps and page sizes learned from PDF.js.
+    let low = 0, high = this.pages.length;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (this.pages[middle]!.element.getBoundingClientRect().bottom <= viewport.top - margin) low = middle + 1;
+      else high = middle;
+    }
+    // Check the preceding and following slots as well, preserving overlap
+    // selection at exact page edges and within inter-page gaps.
+    for (let index = Math.max(0, low - 1); index < this.pages.length; index++) {
+      const slot = this.pages[index]!;
       const rect = slot.element.getBoundingClientRect();
       if (rect.bottom > viewport.top - margin && rect.top < viewport.bottom + margin) indices.push(index);
       const overlap = Math.min(rect.bottom, viewport.bottom) - Math.max(rect.top, viewport.top);
       if (overlap > largestOverlap) { active = index; largestOverlap = overlap; }
+      if (rect.top >= viewport.bottom + margin) break;
     }
     if (active !== this.state.pageIndex) {
       this.state.pageIndex = active;
@@ -363,11 +377,11 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     return indices;
   }
 
-  private async renderVisiblePages(): Promise<void> {
+  private async renderVisiblePages(firstPageOnly = false): Promise<void> {
     this.renderAgain = true;
     if (this.rendering) {
       const needed = new Set(this.visiblePages());
-      for (const [index, slot] of this.pages.entries()) if (slot.task && !needed.has(index)) this.clearCanvas(slot);
+      for (const slot of this.activePages) if (slot.task && !needed.has(slot.index)) this.clearCanvas(slot);
       return this.rendering;
     }
     const generation = this.loadGeneration;
@@ -378,10 +392,11 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         this.renderAgain = false;
         const epoch = this.renderGeneration;
         const needed = new Set(this.visiblePages());
-        for (const [index, slot] of this.pages.entries()) if (!needed.has(index)) this.clearCanvas(slot);
+        for (const slot of this.activePages) if (!needed.has(slot.index)) this.clearCanvas(slot);
         for (const index of needed) {
           if (generation !== this.loadGeneration || epoch !== this.renderGeneration || this.renderAgain) break;
           await this.renderPage(pdf, index, generation, epoch);
+          if (firstPageOnly && this.pages[index]?.canvas?.dataset.rendered === 'true') break;
         }
       } while (this.renderAgain && generation === this.loadGeneration);
     })();
@@ -417,12 +432,20 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     canvas.style.width = `${viewport.width}px`;
     canvas.style.height = `${viewport.height}px`;
     slot.canvas = canvas;
+    this.activePages.add(slot);
     slot.element.append(canvas);
+    const cacheKey = index === 0 ? pdfPageKey(this.contentKey, viewport, canvas) : undefined;
+    if (cacheKey && pdfPageCache.read(cacheKey, canvas)) {
+      canvas.dataset.rendered = 'true';
+      void this.inspectPageFonts(page, index, generation);
+      return;
+    }
     const task = page.render({ canvas, viewport: page.getViewport({ scale: scale * outputScale }), background: '#ffffff' });
     slot.task = task;
     try {
       await task.promise;
       if (slot.canvas === canvas) {
+        if (cacheKey) pdfPageCache.write(cacheKey, canvas);
         canvas.dataset.rendered = 'true';
         void this.inspectPageFonts(page, index, generation);
       }
@@ -433,6 +456,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   }
 
   private clearCanvas(slot: PageSlot): void {
+    this.activePages.delete(slot);
     slot.task?.cancel();
     slot.task = undefined;
     if (slot.canvas) {
@@ -478,7 +502,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     if (this.animationFrame !== null) cancelAnimationFrame(this.animationFrame);
     this.animationFrame = null;
     this.renderGeneration++;
-    for (const slot of this.pages) this.clearCanvas(slot);
+    for (const slot of this.activePages) this.clearCanvas(slot);
     this.pages = [];
     this.inspectedFontPages.clear();
     this.fonts.clear();
@@ -489,6 +513,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const task = this.loadingTask, pdf = this.document;
     this.loadingTask = null;
     this.document = null;
+    this.contentKey = undefined;
     return task ? task.destroy() : pdf?.destroy() ?? Promise.resolve();
   }
 }
@@ -502,13 +527,6 @@ export function createPdfPreviewDriver(): PreviewDriver<PagedPreviewState> {
     supports: (format) => normalizeFormat(format) === 'pdf',
     createSession: (host, options) => new PdfPreviewSession(host, options)
   };
-}
-
-export function createPdfPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...PDF_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.includes('pdf'))
-  ];
 }
 
 function normalizeFormat(format: string): string {

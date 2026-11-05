@@ -29,12 +29,9 @@ import {
   type PreviewerInstance,
   type SourceDescriptor,
   type WorkbookPreviewState
-} from '@filens/core';
-import { createArchivePreviewDriver } from '@filens/archive';
-import { createDesignPreviewDrivers } from '@filens/design';
-import { createMediaPreviewDrivers, type MediaPreviewDriverOptions } from '@filens/media';
-import { createOfficePreviewDrivers } from '@filens/office';
-import { createTextPreviewDrivers } from '@filens/text';
+} from '@filens/core/preview-runtime';
+import type { MediaPreviewDriverOptions } from '@filens/media';
+import { createVueDefaultPreviewDrivers } from './lazy-drivers';
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, useId, watch } from 'vue';
 import { createVueDefaultPreviewRoutes } from './defaults';
 
@@ -533,7 +530,7 @@ async function recreatePreviewer(): Promise<void> {
     return;
   }
 
-  const drivers = props.drivers ?? createVueDefaultPreviewDrivers(props.panoramaProcessor, props.converter, props.mediaConverter, props.browserMedia);
+  const drivers = props.drivers ?? createVueDefaultPreviewDrivers({ panoramaProcessor: props.panoramaProcessor, converter: props.converter, mediaConverter: props.mediaConverter, browserMedia: props.browserMedia });
   const routes = props.routes ?? createVueDefaultPreviewRoutes({ rawPreview: Boolean(props.panoramaProcessor && props.converter) });
   const createNestedPreviewer = (host: HTMLElement, childOptions: PreviewOptions = {}) => createPreviewer(host, {
     containerContext: childOptions.containerContext,
@@ -1149,6 +1146,7 @@ function normalizeSearchText(value: string): string {
 }
 
 defineExpose({
+  fullscreen: toggleFullscreen,
   goToIndex,
   next: nextPage,
   prev: previousPage,
@@ -1227,16 +1225,6 @@ onUnmounted(() => {
   unsubs.forEach((unsubscribe) => unsubscribe());
   previewer.value?.destroy();
 });
-
-function createVueDefaultPreviewDrivers(panoramaProcessor?: MediaPreviewDriverOptions['panoramaProcessor'], converter?: MediaPreviewDriverOptions['converter'], mediaConverter?: MediaPreviewDriverOptions['mediaConverter'], browserMedia?: MediaPreviewDriverOptions['browserMedia']): PreviewDriver[] {
-  return [
-    ...createOfficePreviewDrivers(),
-    ...createDesignPreviewDrivers(),
-    ...createMediaPreviewDrivers({ panoramaProcessor, converter, mediaConverter, browserMedia }),
-    createArchivePreviewDriver(),
-    ...createTextPreviewDrivers()
-  ];
-}
 
 </script>
 

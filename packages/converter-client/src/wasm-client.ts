@@ -32,11 +32,15 @@ const imageConversionPairs = new Set(
 
 export interface WasmConverterClientOptions {
   wasm: WasmModuleSource;
+  /** Optional SIMD128 core; falls back to wasm when unsupported or unavailable. */
+  simdWasm?: WasmModuleSource;
   imageWasm?: WasmModuleSource;
   /** Loaded only when the core requests Office password decryption. */
   officeWasm?: WasmModuleSource;
   /** Loaded on demand for EPS, PS and Illustrator previews. */
   postscriptWasm?: WasmModuleSource;
+  /** Loaded on demand for TIFF, DWG and other non-browser graphics formats. */
+  graphicsWasm?: WasmModuleSource;
   fetch?: typeof fetch;
 }
 
@@ -74,6 +78,9 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
   const runPostscript = options.postscriptWasm
     ? createWasmCoreRunner({ wasm: options.postscriptWasm, fetch: options.fetch })
     : undefined;
+  const runGraphics = options.graphicsWasm
+    ? createWasmCoreRunner({ wasm: options.graphicsWasm, fetch: options.fetch })
+    : undefined;
   const imageModule = options.imageWasm
     ? retryableLoader(() => loadWasmModule(options.imageWasm!, options.fetch))
     : undefined;
@@ -106,7 +113,8 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
         if (preview) return preview;
       }
       const usePostscriptConverter = Boolean(runPostscript && targetFormat === 'pdf' && ['eps', 'ps', 'ai'].includes(sourceFormat));
-      const runConverter = usePostscriptConverter ? runPostscript! : useImageConverter ? runImage! : runCore;
+      const useGraphicsConverter = Boolean(runGraphics && ['dwg', 'tif', 'tiff', 'tga', 'pgm', 'pbm', 'pnm', 'dds', 'hdr', 'dib', 'cur', 'pcx', 'exr', 'jxl', 'qoi', 'ff'].includes(sourceFormat));
+      const runConverter = useGraphicsConverter ? runGraphics! : usePostscriptConverter ? runPostscript! : useImageConverter ? runImage! : runCore;
       const invoke = (runner: typeof runCore, bytes: Uint8Array) => runner({
         args: [
           useImageConverter ? 'converter-image' : 'converter-core',

@@ -10,7 +10,7 @@ export function runArchiveWorker(
 ): Promise<SevenZipResult> {
   signal?.throwIfAborted();
   if (/^(blob|data):/.test(import.meta.url) || globalThis.location?.protocol === 'file:') {
-    throw new Error('RAR, 7z and multi-volume ZIP need separate archive engine files. Use filens preview FILE --mode serve, or deploy the archive assets over HTTP(S).');
+    throw new Error('This format needs separate archive engine files. Use filens preview FILE --mode serve, or deploy the archive assets over HTTP(S).');
   }
   if (1 + (request.volumes?.length ?? 0) > ARCHIVE_VOLUME_LIMITS.maxVolumes ||
       request.bytes.byteLength + (request.volumes ?? []).reduce((sum, file) => sum + file.bytes.byteLength, 0) > ARCHIVE_VOLUME_LIMITS.maxBytes) {

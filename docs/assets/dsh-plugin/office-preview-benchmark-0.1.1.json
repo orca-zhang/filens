@@ -1,0 +1,85 @@
+{
+  "measuredAt": "2026-11-04T07:38:51.497Z",
+  "plugin": "dsh-filens@0.1.1",
+  "environments": [
+    {
+      "renderer": "filens",
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Field Notes.pptx",
+      "bytes": 659484,
+      "sha256": "1d19a97f7eb03bdbc6b32b52307cb4ebff4e7436554dde4155883d2b56aed7a1"
+    },
+    {
+      "name": "Aurora Guide.docx",
+      "bytes": 601507,
+      "sha256": "3dd79b9a3ad29476dd80d91e79553c52706b2cdfa916771641ec43454f9763a1"
+    }
+  ],
+  "method": "One fresh DSH process per renderer. In the same workspace, open PPTX then DOCX, four times each. Close the document tab between opens. Timing starts immediately before sidebar.openResource and ends after the ready content and two animation frames. Builtin uses the actual Office-to-PDF service and PDF canvas. FiLens uses its actual iframe and render-ready event. No model calls.",
+  "cache": "First is the first opening of that file in this process; the engine may be warm for the second format. Cached median uses the next three opens. OS filesystem caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup.",
+  "limits": "Two small authored files on one macOS arm64 machine. This measures latency, not fidelity; results are not a guarantee for other files or platforms. The edited walkthrough GIF is not benchmark evidence.",
+  "results": [
+    {
+      "renderer": "filens",
+      "name": "Field Notes.pptx",
+      "firstMs": 357,
+      "cachedMedianMs": 237,
+      "samplesMs": [
+        357,
+        235,
+        238,
+        237
+      ]
+    },
+    {
+      "renderer": "filens",
+      "name": "Aurora Guide.docx",
+      "firstMs": 263,
+      "cachedMedianMs": 244,
+      "samplesMs": [
+        263,
+        236,
+        246,
+        244
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "name": "Field Notes.pptx",
+      "firstMs": 2330,
+      "cachedMedianMs": 222,
+      "samplesMs": [
+        2330,
+        228,
+        114,
+        222
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "name": "Aurora Guide.docx",
+      "firstMs": 1321,
+      "cachedMedianMs": 123,
+      "samplesMs": [
+        1321,
+        123,
+        204,
+        113
+      ]
+    }
+  ]
+}

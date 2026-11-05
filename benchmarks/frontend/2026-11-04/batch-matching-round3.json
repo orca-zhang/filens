@@ -1,0 +1,473 @@
+{
+  "measuredAt": "2026-11-04T13:25:51.739Z",
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "platform": "darwin-arm64",
+  "rounds": 9,
+  "warmup": 3,
+  "sourceHashes": {
+    "wasm/converter-core-rust/src/text/search.rs": "ccfdaaf4d25a03e3d0470a9a8a3bccaef35d66fdaf7f0e9acf9442725972c7d1",
+    "wasm/converter-core-rust/Cargo.toml": "684b330bea5df704d9de591197383c55d28eaf1650b167b05c4c9f2dd81959bd",
+    "wasm/converter-core-rust/Cargo.lock": "ae2a9668949b78c90dcbbe2e0bfcceb608e86db6186f268b4b6c5e2f42118785",
+    "scripts/benchmark-batch-matching-round3.mjs": "c1a1949daf1ceea513ddf74d02466b798f4573f1f1e7562a223de91ef49adc50",
+    "packages/converter-client/src/wasi-runner.ts": "553b95659ee68023d01c799f6c14cf0e6d7768070f937089844b461a1328473c",
+    "wasm/converter-core-rust/examples/search_matching.rs": "7973f85fe55777bdf9d50ef2a0952f3bfbefac6d7747eb2183a255446310d5a2"
+  },
+  "baselineSourceHashes": {
+    "wasm/converter-core-rust/src/text/search.rs": "f71c6758751154bcdde3d0e9c8b254bbea9f6feada2a6e1a2c8cfe515c9e8e73"
+  },
+  "baselineControl": {
+    "byteIdentical": true,
+    "sha256": "20957c28cbf8d1f5a6ea5a428185769153cb3c1d6f8635973899d345aad0855c"
+  },
+  "sizes": {
+    "before": {
+      "bytes": 8513670,
+      "sha256": "20957c28cbf8d1f5a6ea5a428185769153cb3c1d6f8635973899d345aad0855c",
+      "gzip9": 3181208,
+      "brotli11": 2291397
+    },
+    "after": {
+      "bytes": 8513892,
+      "sha256": "cfd61565e571330b68f0008a438a3b968fbbb4794db0ade8f8cca7f280b5f858",
+      "gzip9": 3182520,
+      "brotli11": 2292987
+    }
+  },
+  "checks": [
+    {
+      "name": "bm25-32-ascii",
+      "inputBytes": 11482,
+      "inputSha256": "e62117c2081c602b6f4a6df0523ecb300e063b57ed9de1556f5b76affcedf476",
+      "resultSha256": "709a3fb32ff86cc7365e2c335ea6b25b1d513bbe27746e58924bbb6bcda48daa",
+      "chunks": 32
+    },
+    {
+      "name": "bm25-1000-ascii",
+      "inputBytes": 379849,
+      "inputSha256": "8ec036cb058c67041c918eca88784e956c1f25ac753068d6952906a76888fc49",
+      "resultSha256": "5a6babec626bf157c5513d444fd02a822eb8c2a1975f6fe856764c07cab12e36",
+      "chunks": 1000
+    },
+    {
+      "name": "bm25-64-long-path-phrase-true",
+      "inputBytes": 2232890,
+      "inputSha256": "985e5770ff4abee5b5fa3251554eaf961c095cbb0395955fad18db434771807f",
+      "resultSha256": "2445e24057c33e0e8581c0f21c2f614b356408170b0b7e9b6d6a882eed9f35c8",
+      "chunks": 4288
+    },
+    {
+      "name": "bm25-64-long-path-phrase-false",
+      "inputBytes": 2232890,
+      "inputSha256": "a0cbc9316343443a5e964849e7b1cba0cb20ff579478f09bccfd5dc5fabb371a",
+      "resultSha256": "39b20121511c68d3fe1290ead9a1ea551ce8acbe646aa1ead903b36c6aeafc10",
+      "chunks": 4288
+    },
+    {
+      "name": "bm25-64-chinese",
+      "inputBytes": 1257912,
+      "inputSha256": "41089247da323c42179b819a4db8273389d9abca4b89ba25ed614d534ab5e830",
+      "resultSha256": "87a5002e2c3c7573190c181a5dbfcc32af18d33a7c21fde04f2ca91fee9c228f",
+      "chunks": 768
+    },
+    {
+      "name": "bm25-16-query-terms",
+      "inputBytes": 1324930,
+      "inputSha256": "5470d6b1044e481272842ccd0fae449bf2689d2d4396ae1feba423257d32ad72",
+      "resultSha256": "91653ee16f4db8edc5a7c978bf1655bb15159d98836db049a7052d9c3e15440c",
+      "chunks": 2560
+    },
+    {
+      "name": "files-10000-ascii",
+      "inputBytes": 1517859,
+      "inputSha256": "5ae9a593ef8a960987124931f7fe098e201e4389e67dfeaf36931fa6bcce18da",
+      "resultSha256": "4e09357f6e705c223af7f5b8868dea30d0bc8bbd8792a7ace3f19de65b77196a",
+      "chunks": 10000
+    },
+    {
+      "name": "exact-10000-control",
+      "inputBytes": 1647850,
+      "inputSha256": "930254c2b2c5466a90966f230f6b296235991264faf4cb435690e6c6d1751d05",
+      "resultSha256": "2c39623b9a7b5acbc6e79363736d49656208899ad7c618704cb273bfd72e0099",
+      "chunks": 10000
+    },
+    {
+      "name": "bm25-cache-budget-overflow",
+      "inputBytes": 3302530,
+      "inputSha256": "b8b159e9e63087edda9b66b827ef03ee3d4b7f8b1ee0f97ee88f6a6f427aefb3",
+      "resultSha256": "88a0a089fbbe0fd5117c7c12c6f8621e58079ff906ab7093925d23fadcb16fd3",
+      "chunks": 6400
+    },
+    {
+      "name": "bm25-no-matches",
+      "inputBytes": 42668,
+      "inputSha256": "79952080f98b38e21c6f334bd03540c3583f5cb0f6ba90d0f03293b3c20623d4",
+      "resultSha256": "c017586aa59ccd84e624632891e36c3b892f34f4d15dc35502e5896e195623f5",
+      "chunks": 84
+    },
+    {
+      "name": "bm25-empty-corpus",
+      "inputBytes": 70,
+      "inputSha256": "249b93b50e4a061f1216c9a03f0c289eb5b4214ff32b62a389d1c664b94bb4c4",
+      "resultSha256": "d39ed31c508bab654f6e79cae47e11d6de9a9c4e5605615860c8f62b87abfa0b",
+      "chunks": 0
+    },
+    {
+      "name": "bm25-numeric-identifiers",
+      "inputBytes": 291,
+      "inputSha256": "5da43fdfddfdf891d4cc12562b350f1424967197b9ce8755c3025c6b7dabba75",
+      "resultSha256": "899da045079f68c336783ad47b83952e5d960c48778397a9fed13837bd71ca5d",
+      "chunks": 2
+    },
+    {
+      "name": "bm25-nfkc-and-original-offsets",
+      "inputBytes": 373,
+      "inputSha256": "8a0a7b75af4c1322a0d80b902800e2c180737262cac93ea763055aaf629b28ec",
+      "resultSha256": "b01d09acc1088ba68a5a677a1667f552ad339ac73678edc3933ab4dd1e16bbcc",
+      "chunks": 2
+    },
+    {
+      "name": "bm25-unicode-case-and-combining",
+      "inputBytes": 303,
+      "inputSha256": "4bfcf661432f109adbf96f17a0474bd78d7cf73efbe3b2ca1677c6cc9310c214",
+      "resultSha256": "74f68485c766a38c2757ef93371d99f330f717c4a20e1c8a1c5ab8fb7b5b0875",
+      "chunks": 2
+    },
+    {
+      "name": "bm25-json-ranking-evidence",
+      "inputBytes": 13634,
+      "inputSha256": "aaa8e4b351ef89c2006c1a39da0ab379025ff22b1a34d73414e80bd3881b65aa",
+      "resultSha256": "a433da2d93362a424024dbc869dc15880287fa6e935bac13341d1008baeb628f",
+      "chunks": 28
+    },
+    {
+      "name": "files-json-ranking-evidence",
+      "inputBytes": 13635,
+      "inputSha256": "ea897ca07bd9d082b6fb35028afa83de7bf67a0470e3922f23a10512a659dd3f",
+      "resultSha256": "804f9a9c9312b74cff340da2e31ab45ee2525d85e89890ea539b3103ca5552aa",
+      "chunks": 4
+    },
+    {
+      "name": "bm25-html-ranking-evidence",
+      "inputBytes": 13634,
+      "inputSha256": "07f9197017b87656ed79582e03781304ae974e66c0fad72dce7942304bc3b172",
+      "resultSha256": "10ec58d5e749cea4b651ef6602113e5a90d03fabbd6c9ed6ecd7ce144cf9528b",
+      "chunks": 28
+    },
+    {
+      "name": "files-html-ranking-evidence",
+      "inputBytes": 13635,
+      "inputSha256": "f993923d351f2d8851a801804e2b1308277a9adbc019cb487eca4d2b4fdcf6b1",
+      "resultSha256": "4fe6a337ed7ded13f1af43d952ae92c649686b6459ebb1054d5aab8af79d4f56",
+      "chunks": 4
+    },
+    {
+      "name": "bm25-markdown-ranking-evidence",
+      "inputBytes": 13638,
+      "inputSha256": "cc6aba5f680b2c66d669bfc1fb352d9da3b05bfb49981b60e5e00963f5877705",
+      "resultSha256": "ae820e03d3f7ff0b4640034ff28ba481b3182411ca13b0526114e0c0eee5a991",
+      "chunks": 28
+    },
+    {
+      "name": "files-markdown-ranking-evidence",
+      "inputBytes": 13639,
+      "inputSha256": "28102a3eccba1e492f84f2f11ee785001a785890eeb5b92d4ac82922528513a6",
+      "resultSha256": "ffeb0cdb50f30813551b5aa6d65330a9dca4900ebf559a502ddb51025a8dfd02",
+      "chunks": 4
+    },
+    {
+      "name": "bm25-csv-ranking-evidence",
+      "inputBytes": 13633,
+      "inputSha256": "71fc8091f1a40bce116d08537515ebce6fe5cd2ca8c5ea6af958935f6c0ed459",
+      "resultSha256": "68f4c340510e3aa0bcbbe6b6c6d40df074b67dc6567bdc0d1bf77535e7121a1f",
+      "chunks": 28
+    },
+    {
+      "name": "files-csv-ranking-evidence",
+      "inputBytes": 13634,
+      "inputSha256": "2d36f692fbfd2b9daa947c161b4a43fd8508610933752df09ff746055812e404",
+      "resultSha256": "6a1c5bd40d9af3490a9f7d2a77039f1de76779b35f15aa0b347ab8010865236e",
+      "chunks": 4
+    },
+    {
+      "name": "bm25-tsv-ranking-evidence",
+      "inputBytes": 13633,
+      "inputSha256": "953267d0623f2becb0e63c5e67719fd37f67c0193a302b87eafdcbf30bbbca60",
+      "resultSha256": "11d70ce1262049d3ba5385fdc4dc1a5d5b5127fc2a5162040f094894ba3aac94",
+      "chunks": 28
+    },
+    {
+      "name": "files-tsv-ranking-evidence",
+      "inputBytes": 13634,
+      "inputSha256": "8fec5091ac8a4aaa7829f5d631df57ff996c7dab99d397aa1352c4a2787e5565",
+      "resultSha256": "28cd1cb672e9b8a0567abaf49e06521107832227b0f52e14b67575be8f242e2e",
+      "chunks": 4
+    },
+    {
+      "name": "invalid-query-\"the\"",
+      "inputBytes": 170,
+      "inputSha256": "f00e38f057597c780682ec472946541e99951d4d8fabf44c0155f1b8dda61bcd",
+      "resultSha256": "9217db49517c98e5c1bdc256f949c43fce80533ea573b1260e483d5bb6451c01",
+      "chunks": null
+    },
+    {
+      "name": "invalid-query-\"   \"",
+      "inputBytes": 170,
+      "inputSha256": "0ea8100b0ebde2f1f2ad287791d14452057a42aabe2a746934e72e0d4be9cf7d",
+      "resultSha256": "5f6d6e84811dc0dc4c4172fb0d5616fab22c88fdd00abf6e60cdbc0001f60f33",
+      "chunks": null
+    }
+  ],
+  "timings": [
+    {
+      "name": "bm25-32-ascii",
+      "beforeMs": 1.5548749999979918,
+      "afterMs": 1.0620410000010452,
+      "speedup": 1.4640442318106943,
+      "samples": {
+        "before": [
+          1.4720409999972617,
+          2.6944170000024315,
+          2.71875,
+          1.4420420000024023,
+          1.559916999998677,
+          1.5548749999979918,
+          3.8622920000016165,
+          1.4145830000015849,
+          1.3633330000011483
+        ],
+        "after": [
+          1.141166000001249,
+          0.9863750000004075,
+          1.0620410000010452,
+          0.9598340000011376,
+          1.140625,
+          1.0862919999999576,
+          1.1625420000018494,
+          0.9448750000010477,
+          1.0093330000017886
+        ]
+      }
+    },
+    {
+      "name": "bm25-1000-ascii",
+      "beforeMs": 29.595124999999825,
+      "afterMs": 14.612417000000278,
+      "speedup": 2.02534084539192,
+      "samples": {
+        "before": [
+          29.7098330000008,
+          29.432749999999942,
+          29.595124999999825,
+          29.92775000000256,
+          29.51695800000016,
+          29.667790999999852,
+          29.55658300000141,
+          30.28374999999869,
+          29.083208000000013
+        ],
+        "after": [
+          14.769207999997889,
+          14.538000000000466,
+          15.368207999999868,
+          15.770790999999008,
+          14.519458000002487,
+          14.503000000000611,
+          14.591458999999304,
+          15.255791999999929,
+          14.612417000000278
+        ]
+      }
+    },
+    {
+      "name": "bm25-64-long-path-phrase-true",
+      "beforeMs": 291.74508299999434,
+      "afterMs": 133.19458300000042,
+      "speedup": 2.190367479133843,
+      "samples": {
+        "before": [
+          289.72087499999907,
+          289.79770799999824,
+          290.7147079999995,
+          294.4388749999998,
+          293.45116699999926,
+          292.5004589999953,
+          290.68770800000493,
+          291.7618750000038,
+          291.74508299999434
+        ],
+        "after": [
+          134.11349999999948,
+          132.0927499999998,
+          132.56633299999885,
+          132.3780829999996,
+          133.90133400000195,
+          133.19458300000042,
+          135.00212500000634,
+          132.1214170000021,
+          134.50833299999795
+        ]
+      }
+    },
+    {
+      "name": "bm25-64-long-path-phrase-false",
+      "beforeMs": 290.0345000000016,
+      "afterMs": 133.05808400000387,
+      "speedup": 2.1797585782160604,
+      "samples": {
+        "before": [
+          290.76895800000057,
+          291.3188749999972,
+          290.35149999999703,
+          289.54129100000137,
+          290.5532919999969,
+          289.9595419999969,
+          290.0345000000016,
+          289.8028750000012,
+          289.87662499999715
+        ],
+        "after": [
+          133.700499999999,
+          134.46629199999734,
+          132.23370799999975,
+          133.45912500000122,
+          132.7062500000029,
+          131.97637499999837,
+          134.11404100000073,
+          132.78149999999732,
+          133.05808400000387
+        ]
+      }
+    },
+    {
+      "name": "bm25-64-chinese",
+      "beforeMs": 173.09233299999323,
+      "afterMs": 171.19787499999802,
+      "speedup": 1.0110658966999166,
+      "samples": {
+        "before": [
+          173.09233299999323,
+          174.29633399999875,
+          172.54983300000458,
+          172.2690419999999,
+          174.16745900000387,
+          171.74841700000252,
+          173.9624580000018,
+          173.71304200000304,
+          172.35925000000134
+        ],
+        "after": [
+          172.6635829999941,
+          197.07616699999926,
+          171.19787499999802,
+          173.23370799999975,
+          169.93858400000317,
+          169.73329200000444,
+          169.93433400000504,
+          170.40008300000045,
+          173.01783299999806
+        ]
+      }
+    },
+    {
+      "name": "bm25-16-query-terms",
+      "beforeMs": 175.1602089999942,
+      "afterMs": 93.30891700000211,
+      "speedup": 1.877207609214779,
+      "samples": {
+        "before": [
+          173.0739160000012,
+          175.33254199999647,
+          172.89733400000114,
+          175.1602089999942,
+          172.78854199999478,
+          178.8482920000024,
+          173.32325000000128,
+          175.59883300000365,
+          177.54437500000495
+        ],
+        "after": [
+          93.30812499999593,
+          93.24704199999542,
+          93.2667500000025,
+          93.30891700000211,
+          92.77654199999961,
+          95.09104099999968,
+          93.71624999999767,
+          95.97012499999983,
+          97.03625000000466
+        ]
+      }
+    },
+    {
+      "name": "files-10000-ascii",
+      "beforeMs": 59.295290999994904,
+      "afterMs": 33.361291000001074,
+      "speedup": 1.777367998138711,
+      "samples": {
+        "before": [
+          60.31091700000252,
+          58.32129200000054,
+          57.86529199999495,
+          61.15475000000151,
+          60.8338750000039,
+          59.295290999994904,
+          57.415084000000206,
+          57.78325000000041,
+          59.54820800000016
+        ],
+        "after": [
+          33.995875000000524,
+          32.77716700000019,
+          33.361291000001074,
+          33.533000000003085,
+          33.221582999998645,
+          33.24250000000029,
+          34.65116699999635,
+          33.743875000000116,
+          32.93208299999969
+        ]
+      }
+    },
+    {
+      "name": "exact-10000-control",
+      "beforeMs": 16.60429199999635,
+      "afterMs": 16.3023749999993,
+      "speedup": 1.0185198168976644,
+      "samples": {
+        "before": [
+          15.389292000007117,
+          17.764709000002767,
+          16.60429199999635,
+          15.983916999997746,
+          16.994791999997688,
+          16.35450000000128,
+          17.102834000004805,
+          16.759500000000116,
+          14.756915999998455
+        ],
+        "after": [
+          16.755624999997963,
+          16.3023749999993,
+          17.37724999999773,
+          17.48612499999581,
+          15.818624999999884,
+          15.586916999993264,
+          15.650000000001455,
+          16.74208400000498,
+          16.242125000004307
+        ]
+      }
+    }
+  ],
+  "build": {
+    "rust": "1.93.0",
+    "target": "wasm32-wasip1",
+    "features": "text-extraction,postscript",
+    "profile": "release",
+    "env": "privateRustBuildEnv",
+    "binaryen": "131.0.0",
+    "optimizer": "-Oz --strip-debug --strip-producers --enable-bulk-memory --enable-nontrapping-float-to-int"
+  },
+  "timingScope": "Full search-text operation in fresh production WASM instance via frontend InMemoryWasiHost in Node. Includes instantiate, in-memory input read/parse, search/ranking/serialization and result write. Excludes compile, host setup, fixture generation, output read, assertions and hashes. No OS file I/O, browser UI, extraction, OCR or CLI startup."
+}

@@ -1,16 +1,13 @@
 import {
   createImagePreviewDriver, createMediaPreviewDriver,
-  type ConverterClient, type FormatDefinition, type PreviewDriver, type PreviewEventMap,
+  type ConverterClient, type PreviewDriver, type PreviewEventMap,
   type PreviewEventName, type PreviewItemState, type PreviewLoadContext,
   type PreviewOptions, type PreviewSession, type PreviewSource, type MediaPreviewState
 } from '@filens/core';
 import type { BrowserMediaOptions } from './engine';
 import { createMediaConverterClient } from '@filens/converter-client';
 
-export const HEIF_PREVIEW_ROUTES: FormatDefinition[] = [{
-  extensions: ['heic', 'heif'], family: 'image', driverId: 'heif-image',
-  contentTypes: ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'], group: 'image'
-}];
+export { HEIF_PREVIEW_ROUTES } from './routes';
 
 export function createCodecPreviewDrivers(converter?: ConverterClient, browserMedia?: boolean | BrowserMediaOptions): PreviewDriver[] {
   return [{

@@ -2,7 +2,9 @@
 
 English | [简体中文](support-matrix.zh-CN.md)
 
-filens provides read-only file previews in modern browsers. The complete preview host currently covers **402 file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
+filens provides read-only file previews in modern browsers. The complete preview host currently covers **450 file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
+
+The demo lists supported formats only, distinguishing built-in samples from formats that require importing a file. A missing sample does not mean the decoder is missing. HEIC/HEIF primary-image decoding is already available through the media driver and local WASM fallback; the demo includes original samples.
 
 | Find | Go to |
 | --- | --- |
@@ -60,6 +62,8 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Format | Extensions | Path | Preview coverage | Limits |
 | --- | --- | --- | --- | --- |
 | Browser images | `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif`, `apng`, `ico`, `svg`, `bmp` | Direct | Zoom, fit width/height, pan, rotation, fullscreen. | Browser decoding determines availability. |
+| TIFF | `tif`, `tiff` | Convert → `png` | First image, common TIFF compression, grayscale/RGB and 16-bit samples; orientation applied. | Requires `graphicsWasm`; 8-bit preview, additional pages and print profiles are omitted. |
+| Other raster images | `tga`, `pgm`, `pbm`, `pnm`, `dds`, `hdr`, `dib`, `cur`, `pcx`, `exr`, `jxl`, `qoi`, `ff` | Convert → `png` | Local WASM decoding to RGBA, including cursor/TGA alpha, indexed/RGB PCX, DXT DDS textures and linear HDR/EXR to sRGB. | 64 MiB input, 32 megapixels; first DDS surface / JXL frame / largest cursor image only; EXR uses the default image and color channels; HDR/EXR dynamic range is reduced to 8-bit. |
 | Apple icons | `icns` | Convert → `png` | Largest embedded PNG icon. | Raw icon planes and JPEG 2000 chunks are not decoded. |
 | Portable pixmaps | `ppm` | Convert → `png` | P3 text and P6 binary; comments, arbitrary maxval, 8/16-bit RGB. | First image in a stream; [decode, runtime, and verification limits](#ppm-conversion). |
 | Camera RAW | `dng`, `cr2`, `cr3`, `nef`, and [more](#camera-raw-conversion) | Convert → `jpg` | Embedded JPEG or lightweight sensor preview. | Full RAW development is unavailable. |
@@ -89,9 +93,15 @@ Long feature tables can be expanded using their disclosure headings. These table
 | Code, markup, configuration | Examples: `js`, `ts`, `py`, `go`, `json`, `xml`, `yaml`, `toml`, `ini`, `md`, `tex` | Direct | Language metadata, line numbers, non-wrapping source text, lightweight highlighting up to 200,000 characters. | Markdown, LaTeX, Mermaid, and similar sources are displayed as source. |
 | HTML / XHTML | `html`, `htm`, `shtml`, `xhtml`, `xht`, `xhtm` | Direct | Sandboxed iframe; URLs, HTML data URLs and inline fragments. | Scripts are disabled by the iframe sandbox. |
 | EPUB | `epub` | Direct | Spine-based XHTML chapters, CSS imports, fonts, background images and SVG image references; local/app-resolved assets. | Advanced ebook navigation and themes are unavailable. |
-| Comic books | `cbz` | Direct | ZIP-based image page sequences. | Additional native comic formats are unavailable. |
-| ZIP-compatible archives | `zip`, `jar`, `war`, `ear`, `apk`, `ipa` | Direct | Listings, directory/nested browsing, entry preview, extraction helpers. | Read-only; no bulk extraction UI. |
+| Comic books | `cbz`; `cbr`, `cb7`, `cbt` | Direct | CBZ provides image page sequences; CBR/CB7/CBT reuse RAR/7z/TAR browsing and individual image previews. | Sequential reading is available for CBZ only. CBR/CB7 require the external archive engine. |
+| ZIP-compatible archives | `zip`, `jar`, `war`, `ear`, `apk`, `ipa`, `xpi`, `crx` | Direct | Listings, directory/nested browsing, entry preview, extraction helpers. | Read-only; no bulk extraction UI. |
+| ZIPX | `zipx` | Direct + WASM | Existing ZIP decoder, including Deflate, Deflate64, BZip2 and LZMA; listings, nested browsing and entry preview. | Requires the external archive engine; proprietary WinZip methods may be unsupported. |
 | TAR / GZIP | `tar`, `tgz`, `tar.gz`, `gz` | Direct | TAR/TGZ listings with PAX / GNU long paths; single-file GZIP extraction. | Read-only. |
+| Compressed streams | `bz2`, `bzip2`, `xz`, `lzma`, `lzma86`, `zst`, `zstd`, `z`; TAR aliases `tbz`, `tbz2`, `txz`, `tlz`, `tzst`, `taz` | Direct + WASM | Single-file extraction; compressed TARs open as directories. CPIO payloads named `.cpio.xz` / `.cpio.zst` also open as directories. Includes BCJ-filtered LZMA86 and concatenated BZip2/XZ/Zstandard streams. | Requires the external archive engine. Output is bounded to 128 MiB, including streams without a declared size. Unix compress has no checksum. |
+| AR / Debian / CPIO | `ar`, `deb`, `cpio` | Direct + WASM | File browsing and entry previews; Debian packages expose nested control/data archives through the same readers. | Read-only; packages are not installed or executed. Archive links are omitted. |
+| LHA / XAR / RPM | `lha`, `lzh`, `xar`, `rpm` | Direct + WASM | LHA/LZH entries, including LH5/LH6; XAR zlib/BZip2 entries; RPM compressed CPIO payloads open through the shared nested reader. | Read-only file browsing; packages are not installed or executed. |
+| Windows images | `wim`, `esd` | Direct + WASM | Browse and preview files in single/multiple images. LZX, XPRESS and solid LZMS decoding. | Requires the external archive engine; split SWM images and applying an image are unavailable. |
+| Cabinet / optical-disc images | `cab`, `iso`, `udf` | Direct + WASM | Cabinet entries, including MSZIP; ISO 9660 / Joliet / UDF directories and files. `.iso` falls back to the UDF reader when needed. | Requires the external archive engine; no mounting or installation. |
 | Additional readable inputs | Examples: `fb2`, `eml`, `msg`, `ics`, `vcf` | Convert → `docx` | Content extraction for preview. | Exact pairs follow the conversion manifest. |
 
 | Extension lists | Source of truth |
@@ -289,7 +299,8 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | Layers and colors | Names, basic ACI colors, true color, transparency, hidden/off/frozen/locked flags, entity invisibility/color overrides, SVG attributes, Vue layer toggles. | Coverage remains partial. |
 | Line styles | `LTYPE` dash patterns, global/entity (`48`) line-type scale, entity/layer `LINEWEIGHT`. | Exact source styling is not guaranteed. |
 | Fonts | TrueType/OpenType-style references map to CSS fallbacks. | Exact SHX glyph rendering is unavailable; SHX references warn and use browser fonts. |
-| Native DWG / DGN | Unavailable. | No native preview route. |
+| DWG | Local WASM conversion to UTF-8 DXF, then the same SVG 2D renderer. | Requires `graphicsWasm`; complex entities, proxy objects, xrefs and SHX fonts may be simplified or omitted. Verified R2000 and R2018 samples. |
+| DGN | Unavailable. | No native preview route. |
 
 </details>
 
@@ -375,7 +386,7 @@ The Vue preview enables calibrated DNG inspection when `converter` and
 | Family | Preview coverage | Limits or integration notes |
 | --- | --- | --- |
 | EPUB / CBZ | EPUB spine-based chapters; relative CSS imports, fonts/backgrounds, inline styles, encoded paths and SVG image references. Repeated resource lookups are cached and import cycles stop. EPUB/CBZ assets use bounded-batch extraction; CBZ keeps natural page order. Replacement/cancellation/destruction clears session resources. | Books are still extracted in full, not on demand. Advanced navigation, themes, and additional native ebook formats are unavailable. Other readable formats may have conversion routes. |
-| Archives | ZIP, RAR 4/5, 7z, TAR and GZIP: read-only browsing, nested archives, entry preview and extraction helpers. ZIP supports ZipCrypto/AES entry passwords; RAR/7z also support encrypted filenames and solid archives. Multi-volume RAR (`.part01.rar`, `.rar`/`.r00`), 7z (`.7z.001`) and ZIP (`.zip.001`, `.z01`/`.zip`) accept shuffled parts; nested archives collect parts from the same directory. | RAR/7z and multi-volume ZIP run in a lazy-loaded frontend 7-Zip WASM worker. Its WASM and worker always remain separate assets, including all-in-one builds; ordinary ZIP and ZIP-based documents share existing compression dependencies. Self-contained CLI HTML requires the HTTP `--mode serve` fallback for these external archive engines; cancellation and a 60-second operation timeout terminate it. A volume set accepts at most 256 parts / 512 MiB compressed bytes; missing first/intermediate parts identify the missing filename and the engine validates completeness. Shared nested limits: 8 levels, 20,000 entries, 128 MiB per entry, 512 MiB expanded bytes. Archive links, encrypted ZIP directory metadata and bulk extraction UI are unavailable. Host previewer factories retain preview options and resolve bundled sidecars relative to the entry directory. |
+| Archives | ZIP/ZIPX, XPI/CRX, RAR 4/5, 7z, TAR/GZIP, BZip2/XZ/LZMA/Zstandard, AR/DEB/CPIO/RPM, LHA/XAR, WIM/ESD and CAB/ISO/UDF (including comic/TAR aliases): read-only browsing, nested archives, entry preview and extraction helpers. ZIP supports ZipCrypto/AES entry passwords; RAR/7z also support encrypted filenames and solid archives. Multi-volume RAR (`.part01.rar`, `.rar`/`.r00`), 7z (`.7z.001`) and ZIP (`.zip.001`, `.z01`/`.zip`) accept shuffled parts; nested archives collect parts from the same directory. | RAR/7z/ZIPX, compressed streams, AR/DEB/CPIO/RPM, LHA/XAR, WIM/ESD, CAB/ISO/UDF and multi-volume ZIP run in a lazy-loaded frontend 7-Zip WASM worker. CRX2/CRX3 preview reads the ZIP payload without verifying signatures. Its WASM and worker always remain separate assets, including all-in-one builds; ordinary ZIP and ZIP-based documents share existing compression dependencies. Self-contained CLI HTML requires the HTTP `--mode serve` fallback for these external archive engines; cancellation and a 60-second operation timeout terminate it. A volume set accepts at most 256 parts / 512 MiB compressed bytes; missing first/intermediate parts identify the missing filename and the engine validates completeness. Shared nested limits: 8 levels, 20,000 entries, 128 MiB per entry, 512 MiB expanded bytes. Archive links, encrypted ZIP directory metadata and bulk extraction UI are unavailable. Host previewer factories retain preview options and resolve bundled sidecars relative to the entry directory. |
 | Document attachments | DOCX/XLSX/PPTX embedded objects and PDF attachments open recursively through the same preview routes, including encrypted archives and documents. OLE Package streams are unwrapped and anonymous RAR/7z payloads are identified. | Return preserves the parent document and restores focus. Child errors remain local; unsupported payloads and corrupt OLE wrappers retain a download. External linked objects are not fetched. Legacy Office exposes only attachments retained by its OpenXML conversion. |
 | Demo ZIP bundles | Primary-file detection with sidecars from the bundle. | Recognized primary files include glTF/GLB/3MF, DXF, mind maps, draw.io/dio, HTML/XHTML, and PNG. Text/code candidates keep the ZIP in archive browsing mode so all entries remain accessible. |
 | Mind maps | XML/ZIP trees, zoom, responsive contain/width/height fitting, SVG node selection, outline/search capability flags; stale file results are discarded, with cancellation and destruction cleanup. | XMind reads `content.json` / `content.xml`; MindManager reads `Document.xml`. Complex editing and full layout fidelity are unavailable. |
@@ -428,12 +439,12 @@ Gaps below apply to shipped preview paths. Hosts can supply custom drivers or co
 
 | Area | Formats or workflow | Current boundary |
 | --- | --- | --- |
-| Native CAD | DWG, DGN, FreeCAD projects, IGES/BREP | No native preview route; STEP/STP and DXF are covered above. |
+| Native CAD | DGN, FreeCAD projects, IGES/BREP | No native preview route; STEP/STP and DXF are covered above. |
 | BIM | Revit, IFC | No native preview route. |
 | ECAD / fabrication | Gerber/Excellon, layered KiCad PCB | No native preview route. |
 | HEIC/HEIF | Native image decoding; local WASM fallback preserves source depth for ICC or fixed PQ/HLG-to-sRGB previews. | Primary still only; no sequence-only files or gain-map reproduction. Fallback: 64 MiB input, 64 MP, 16,384 px per edge, 4 MiB ICC, 30 s decode. |
 | Design editing | PSD/PSB layers, Illustrator editing data | Read-only saved-composite or vector preview; no design editor. [Supported subsets](design-preview.md). |
-| Other Netpbm extensions | `pbm`, `pgm`, `pnm`, `pam`, `pfm` | No default preview/conversion routes for these extensions. PPM support covers P3/P6 RGB only. |
+| Other Netpbm extensions | `pam`, `pfm` | No default preview/conversion routes. PBM/PGM/PNM and PPM are supported as described above. |
 | Office add-ins | Add-ins and embedded application behavior | Outside the default conversion policy. |
 | Unlisted conversion pairs | Any pair absent from the manifests | Outside the default conversion policy; macro stripping applies to listed macro-enabled OpenXML sources. |
 | Editing | Office/iWork/CAD/diagram authoring | No full editor. |

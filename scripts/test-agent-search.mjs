@@ -9,7 +9,7 @@ import { executableName } from './agent-platforms.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const binary = process.env.FILENS_AGENT_BINARY || path.join(root, 'dist/agent-lite', executableName(`${process.platform}-${process.arch}`));
-const directory = path.join(root, 'dist/agent-search' + (process.env.FILENS_WALKER === 'hdrw-wasi' ? '-hdrw' : '') + (process.argv.includes('--ocr') ? '-ocr' : ''));
+const directory = path.join(root, 'dist/agent-search' + (process.env.FILENS_WALKER === 'read-dir' ? '-read-dir' : '') + (process.argv.includes('--ocr') ? '-ocr' : ''));
 const corpus = path.join(directory, 'corpus docs');
 const cache = path.join(directory, 'cache');
 await rm(directory, { recursive: true, force: true });
@@ -29,10 +29,8 @@ const query = (text, extra = [], expected = 0) => json(['search', corpus, '--que
 const cap = json(['capacity', '--full', '--json', '--no-ocr']);
 assert.ok(cap.capacity.operations.some(o => o.name === 'search'));
 assert.equal(cap.capacity.search.semantic, false);
-if (process.platform === 'darwin' && process.env.FILENS_WALKER !== 'hdrw-wasi') {
-  assert.equal(cap.capacity.search.discovery.backend, 'fts');
-  assert.equal(cap.capacity.search.discovery.hdrwEmbedded, false);
-}
+assert.equal(cap.capacity.search.discovery.backend, { darwin: 'fts', win32: 'ntfs' }[process.platform] || 'read-dir');
+assert.equal(cap.capacity.search.discovery.hdrwEmbedded, false);
 const budget = '会议记录\n预算不得超过12345.67元；新增开销必须由负责人审批。\n风险：极小字体可能漏字，请核对原图。\n';
 await writeFile(path.join(corpus, 'budget.txt'), budget);
 await writeFile(path.join(corpus, 'wrong.txt'), '预算12345.76元，编号FILENS2027。');
@@ -61,6 +59,8 @@ await writeFile(path.join(corpus, 'milestone.docx'), zipSync({
   'word/document.xml': strToU8(source),
 }));
 const cold = query('预算');
+assert.ok(['fts', 'ntfs', 'read-dir'].includes(cold.search.scan.backend));
+if (process.env.FILENS_WALKER === 'read-dir') assert.equal(cold.search.scan.backend, 'read-dir');
 assert.equal(cold.search.complete, true);
 assert.equal(cold.search.semantic, false);
 assert.ok(cold.search.results.some(r => r.path.endsWith('budget.txt')));

@@ -1,0 +1,21 @@
+{
+  // Fictional writing workspace: comments and trailing commas are intentional.
+  "folders": [
+    { "name": "手记", "path": "./journal" },
+    { "name": "排版", "path": "./layouts" },
+  ],
+  "settings": {
+    "editor.fontSize": 15,
+    "editor.tabSize": 2,
+    "editor.wordWrap": "on",
+    "files.encoding": "utf8",
+    "files.trimTrailingWhitespace": true,
+    "[markdown]": {
+      "editor.wordWrap": "bounded",
+      "editor.wordWrapColumn": 88,
+    },
+  },
+  "extensions": {
+    "recommendations": ["Vue.volar", "EditorConfig.EditorConfig"],
+  },
+}

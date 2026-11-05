@@ -1,6 +1,6 @@
 {
   "name": "@filens/iwork",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Front-end native iWork parsing and preview core for Keynote, Pages, and Numbers.",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,10 +24,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./dist/index.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    }
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "vendor"
   ],
   "scripts": {
@@ -37,14 +42,14 @@
     "test:unit": "node ../../scripts/generate-iwork-proto.mjs && vitest run"
   },
   "dependencies": {
-    "@filens/core": "^0.1.0",
-    "@filens/xlsx": "^0.1.0",
-    "jszip": "^3.10.1",
+    "@filens/core": "^0.1.2",
+    "@filens/xlsx": "^0.1.1",
     "protobufjs": "^7.4.0",
     "snappyjs": "^0.7.0"
   },
   "devDependencies": {
-    "@filens/core": "file:../core"
+    "@filens/core": "file:../core",
+    "jszip": "^3.10.1"
   },
   "license": "MIT",
   "repository": {

@@ -1,0 +1,238 @@
+{
+  "measuredAt": "2026-11-05T01:32:54.951Z",
+  "plugin": "dsh-filens@0.1.3",
+  "status": "complete",
+  "roundsPerFormat": 9,
+  "timedOpens": 324,
+  "desktopStarts": 54,
+  "failedJobs": 0,
+  "packageValidation": [
+    {
+      "version": "0.1.3",
+      "checkedFiles": 75,
+      "mismatches": [],
+      "packageSHA256": "ce43a7fd7512d10fe0cffd23f6d83c0bb0aec283c5f167df39fb1b9bd102c7b2",
+      "entrySHA256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+    },
+    {
+      "version": "0.1.2",
+      "checkedFiles": 28,
+      "mismatches": [],
+      "packageSHA256": "c8597a62d191fde19c2677495c8f6b47d7a100ce16a8511d5d6f66c776e23320",
+      "entrySHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d"
+    }
+  ],
+  "reports": [
+    {
+      "file": "docs/assets/dsh-plugin/office-preview-retest.json",
+      "sha256": "6e6a84af861e52c113695d3df70a33b6d543ddebc3d52f02b9d225dfc397607a",
+      "timedOpens": 216
+    },
+    {
+      "file": "docs/assets/dsh-plugin/pdf-preview-retest.json",
+      "sha256": "e14b43e4782112aaeeb30585682f0ba125527941967336d8eccb973561c42b35",
+      "timedOpens": 108
+    }
+  ],
+  "statistics": {
+    "bootstrapSamples": 20000,
+    "seed": 20261105,
+    "confidence": 0.95,
+    "unit": "paired rounds; cached metric is the within-process median of three reopens",
+    "estimator": "median paired percentage latency reduction; positive means candidate faster. Ratio of pooled medians is reported separately."
+  },
+  "comparisons": [
+    {
+      "format": "PPTX",
+      "phase": "first",
+      "baseline": "previous",
+      "candidateMedianMs": 135,
+      "baselineMedianMs": 535,
+      "ratioOfMedians": 3.962962962962963,
+      "reductionOfMediansPercent": 74.76635514018693,
+      "pairedMedianReductionPercent": 75.04621072088725,
+      "pairedReduction95PercentInterval": [
+        74.15094339622641,
+        76.32575757575758
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PPTX",
+      "phase": "cached",
+      "baseline": "previous",
+      "candidateMedianMs": 81,
+      "baselineMedianMs": 311,
+      "ratioOfMedians": 3.8395061728395063,
+      "reductionOfMediansPercent": 73.95498392282957,
+      "pairedMedianReductionPercent": 73.95498392282958,
+      "pairedReduction95PercentInterval": [
+        70.09646302250803,
+        74.24749163879598
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PPTX",
+      "phase": "first",
+      "baseline": "builtin",
+      "candidateMedianMs": 135,
+      "baselineMedianMs": 1830,
+      "ratioOfMedians": 13.555555555555555,
+      "reductionOfMediansPercent": 92.62295081967213,
+      "pairedMedianReductionPercent": 92.9000546149645,
+      "pairedReduction95PercentInterval": [
+        92.54624591947768,
+        93.20282762370854
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PPTX",
+      "phase": "cached",
+      "baseline": "builtin",
+      "candidateMedianMs": 81,
+      "baselineMedianMs": 124,
+      "ratioOfMedians": 1.5308641975308641,
+      "reductionOfMediansPercent": 34.67741935483871,
+      "pairedMedianReductionPercent": 34.67741935483871,
+      "pairedReduction95PercentInterval": [
+        25.6,
+        36.29032258064516
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "DOCX",
+      "phase": "first",
+      "baseline": "previous",
+      "candidateMedianMs": 111,
+      "baselineMedianMs": 294,
+      "ratioOfMedians": 2.6486486486486487,
+      "reductionOfMediansPercent": 62.244897959183675,
+      "pairedMedianReductionPercent": 62.244897959183675,
+      "pairedReduction95PercentInterval": [
+        60.07194244604317,
+        62.585034013605444
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "DOCX",
+      "phase": "cached",
+      "baseline": "previous",
+      "candidateMedianMs": 94,
+      "baselineMedianMs": 278,
+      "ratioOfMedians": 2.9574468085106385,
+      "reductionOfMediansPercent": 66.18705035971223,
+      "pairedMedianReductionPercent": 66.18705035971223,
+      "pairedReduction95PercentInterval": [
+        66.18705035971223,
+        66.54676258992805
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "DOCX",
+      "phase": "first",
+      "baseline": "builtin",
+      "candidateMedianMs": 111,
+      "baselineMedianMs": 1827,
+      "ratioOfMedians": 16.45945945945946,
+      "reductionOfMediansPercent": 93.92446633825944,
+      "pairedMedianReductionPercent": 93.97590361445783,
+      "pairedReduction95PercentInterval": [
+        93.91780821917808,
+        93.9792008757526
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "DOCX",
+      "phase": "cached",
+      "baseline": "builtin",
+      "candidateMedianMs": 94,
+      "baselineMedianMs": 112,
+      "ratioOfMedians": 1.1914893617021276,
+      "reductionOfMediansPercent": 16.07142857142857,
+      "pairedMedianReductionPercent": 16.8141592920354,
+      "pairedReduction95PercentInterval": [
+        15.315315315315313,
+        21.666666666666668
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PDF",
+      "phase": "first",
+      "baseline": "previous",
+      "candidateMedianMs": 220,
+      "baselineMedianMs": 682,
+      "ratioOfMedians": 3.1,
+      "reductionOfMediansPercent": 67.74193548387098,
+      "pairedMedianReductionPercent": 68.29971181556196,
+      "pairedReduction95PercentInterval": [
+        66.76470588235294,
+        68.76832844574781
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PDF",
+      "phase": "cached",
+      "baseline": "previous",
+      "candidateMedianMs": 159,
+      "baselineMedianMs": 444,
+      "ratioOfMedians": 2.792452830188679,
+      "reductionOfMediansPercent": 64.1891891891892,
+      "pairedMedianReductionPercent": 64.25339366515837,
+      "pairedReduction95PercentInterval": [
+        63.82022471910113,
+        65.51724137931035
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PDF",
+      "phase": "first",
+      "baseline": "builtin",
+      "candidateMedianMs": 220,
+      "baselineMedianMs": 331,
+      "ratioOfMedians": 1.5045454545454546,
+      "reductionOfMediansPercent": 33.53474320241692,
+      "pairedMedianReductionPercent": 33.95061728395062,
+      "pairedReduction95PercentInterval": [
+        31.212121212121215,
+        35.45454545454545
+      ],
+      "fasterRounds": 9,
+      "rounds": 9
+    },
+    {
+      "format": "PDF",
+      "phase": "cached",
+      "baseline": "builtin",
+      "candidateMedianMs": 159,
+      "baselineMedianMs": 111,
+      "ratioOfMedians": 0.6981132075471698,
+      "reductionOfMediansPercent": -43.24324324324324,
+      "pairedMedianReductionPercent": -43.63636363636363,
+      "pairedReduction95PercentInterval": [
+        -45.45454545454545,
+        -26.190476190476193
+      ],
+      "fasterRounds": 0,
+      "rounds": 9
+    }
+  ]
+}

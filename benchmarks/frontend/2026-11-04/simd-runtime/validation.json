@@ -1,0 +1,273 @@
+{
+  "date": "2026-11-04T15:34:30.377Z",
+  "unitTests": {
+    "client": 227,
+    "simdRust": 26,
+    "scalarRust": 24,
+    "passed": 277,
+    "skipped": 2
+  },
+  "browser": {
+    "package": {
+      "node": "v20.20.2",
+      "entry": {
+        "types": "./dist/format-detector-auto.d.ts",
+        "import": "./dist/format-detector-auto.js"
+      },
+      "cases": {
+        "simd": {
+          "requests": [
+            "converter-detect-simd.wasm"
+          ],
+          "actual": {
+            "implementation": "simd128",
+            "output": {
+              "format": "svg",
+              "container": null,
+              "evidence": "structure",
+              "reason": "xml-root-element",
+              "bytesRead": 41,
+              "fileBytes": 41
+            }
+          },
+          "errors": []
+        },
+        "unsupported": {
+          "requests": [
+            "converter-detect-scalar.wasm"
+          ],
+          "actual": {
+            "implementation": "scalar",
+            "output": {
+              "format": "svg",
+              "container": null,
+              "evidence": "structure",
+              "reason": "xml-root-element",
+              "bytesRead": 41,
+              "fileBytes": 41
+            }
+          },
+          "errors": []
+        },
+        "http-failure": {
+          "requests": [
+            "converter-detect-simd.wasm",
+            "converter-detect-scalar.wasm"
+          ],
+          "actual": {
+            "implementation": "scalar",
+            "output": {
+              "format": "svg",
+              "container": null,
+              "evidence": "structure",
+              "reason": "xml-root-element",
+              "bytesRead": 41,
+              "fileBytes": 41
+            }
+          },
+          "errors": []
+        },
+        "malformed-simd": {
+          "requests": [
+            "converter-detect-simd.wasm",
+            "converter-detect-scalar.wasm"
+          ],
+          "actual": {
+            "implementation": "scalar",
+            "output": {
+              "format": "svg",
+              "container": null,
+              "evidence": "structure",
+              "reason": "xml-root-element",
+              "bytesRead": 41,
+              "fileBytes": 41
+            }
+          },
+          "errors": []
+        },
+        "scalar-http-failure": {
+          "requests": [
+            "converter-detect-scalar.wasm"
+          ],
+          "actual": {
+            "error": "Format detector download failed: HTTP 404"
+          },
+          "errors": []
+        }
+      },
+      "artifacts": {
+        "./dist/format-detector-auto.js": {
+          "bytes": 3200,
+          "sha256": "7ec60dc40e3d355342809747a86789562d42758c61f562216e870cdb1fe54e83"
+        },
+        "./dist/format-detector-auto.d.ts": {
+          "bytes": 997,
+          "sha256": "532852502c7bb2eeec2b04d2b2c2431b87b9c5ba7dc4323bd3b17ff62e83965a"
+        },
+        "dist/converter-detect-scalar.wasm": {
+          "bytes": 224259,
+          "sha256": "0913d2c795e07408dcc532960f3189bf9829bb7556070ac0945448ec9b87f92e"
+        },
+        "dist/converter-detect-simd.wasm": {
+          "bytes": 225355,
+          "sha256": "5c0a564818351a49baa86e61a182e25b2846a07c969878b443e0aefcf546e8d8"
+        }
+      },
+      "browser": "147.0.7727.15"
+    },
+    "sameOutputInputs": 794,
+    "stressInputs": 7,
+    "nodeWasmBoundaryCases": 55862
+  },
+  "runtime": {
+    "method": "Same current sources/dependencies, only the optional detector entry removed. All main conversion JS outputs match current dist hashes.",
+    "mainGraphUnchangedByDetectorEntry": true,
+    "matchedMainFiles": [
+      "index-DEI0Iwll.js",
+      "index.js",
+      "media-runtime-DCysNPdc.js"
+    ],
+    "binding": {
+      "bytes": 3200,
+      "gzip9Bytes": 1297,
+      "sha256": "7ec60dc40e3d355342809747a86789562d42758c61f562216e870cdb1fe54e83"
+    },
+    "scalarValidWithoutSimd": true
+  },
+  "packagedConsumerTypesPassed": true,
+  "mapsExcluded": true,
+  "packageBytes": 1317193,
+  "packageIntegrity": "sha512-J0IjzrNAwrH+dL+wfSK7UXK/ntA76RlR5xRMJKsXzVp5GX/NX1Az8evu43gxwfdvD2YN2fYhtpD2sDLYQNO81A==",
+  "limitations": [
+    "Warm full detector calls; not whole-preview latency or cold start.",
+    "Development/regression corpus, not held-out accuracy.",
+    "Early Unicode has little benefit; generated invalid-after-control input remains slower than scalar.",
+    "No peak-memory measurement."
+  ],
+  "artifacts": {
+    "wasm/converter-core-rust/Cargo.toml": {
+      "bytes": 3766,
+      "sha256": "aa2a48468b658420911b4b30d10d89fc599c90e48cacf4105e1e87a950b8efd7"
+    },
+    "wasm/converter-core-rust/Cargo.lock": {
+      "bytes": 55124,
+      "sha256": "17b2f83c41c67b47f7d7dd23d5597e4ba0b4727b941ec45ad975e9615aa80bd8"
+    },
+    "wasm/converter-core-rust/examples/detect_web.rs": {
+      "bytes": 2628,
+      "sha256": "efbfd13363f69b05919fd5f48696c5354cc4e6335901f423e35b9fc6a7d7cb21"
+    },
+    "wasm/converter-core-rust/src/format_detection.rs": {
+      "bytes": 31353,
+      "sha256": "41fa6447e96fa580bcd6a26c1b8a205d1eda44cdb24bb122dd225b653fb7b100"
+    },
+    "wasm/converter-core-rust/src/format_detection/probes.rs": {
+      "bytes": 35145,
+      "sha256": "03384b514db6809a6c076f76505d87f7dc7a04d9bc04e5cf4cea072c68c7a5c6"
+    },
+    "wasm/converter-core-rust/src/format_detection/signatures.rs": {
+      "bytes": 11718,
+      "sha256": "3b138e4aea5db27e7162c9350f1f7914967d86e09a1f0de431136f7819c2d59f"
+    },
+    "wasm/converter-core-rust/src/format_detection/text_scan.rs": {
+      "bytes": 6953,
+      "sha256": "c7fcf414131cff2a8d241de6619cc6c67f14dfb55e5b6d142c77228dcd6e14df"
+    },
+    "packages/converter-client/src/format-detector.ts": {
+      "bytes": 3268,
+      "sha256": "765286ec4cba6b762633c5e28bb6eb005fc979c8e3c533978c875c273eb68e73"
+    },
+    "packages/converter-client/src/format-detector-auto.ts": {
+      "bytes": 1941,
+      "sha256": "6489d5e4cdf488e8d8df128dceabb25edf8d8688124351b6c795dd0d7d1054cd"
+    },
+    "packages/converter-client/src/format-detector-assets.ts": {
+      "bytes": 283,
+      "sha256": "baaf0b1fb6c8386c31ccce654708c6273c12cf6687789dddcd4cffceb837e3cf"
+    },
+    "packages/converter-client/test/format-detector.spec.ts": {
+      "bytes": 5528,
+      "sha256": "362b832253ca632c8b299e3eb91a68d7c2a93b499cced550e67af3438f0fbbd5"
+    },
+    "packages/converter-client/test/fixtures/detector.mjs": {
+      "bytes": 1459,
+      "sha256": "bee865b7a0d1168d3cca2ce58aa700d03af86e412a7c62373da9025d74068ec0"
+    },
+    "packages/converter-client/package.json": {
+      "bytes": 1389,
+      "sha256": "936b6c2836f93b64537603136d99d928695fb3ffd8a6da7d0093eb7821c4d207"
+    },
+    "packages/converter-client/vite.config.ts": {
+      "bytes": 1247,
+      "sha256": "221b17c60e53f454a761a2b9e02006bdf10779b727cbb00e08e7e7b23ca3e79b"
+    },
+    "packages/converter-client/README.md": {
+      "bytes": 2380,
+      "sha256": "9122a80d092bc504311814c234da9093c553a6aded4be70fefd38973421fae0f"
+    },
+    "scripts/build-format-detector.mjs": {
+      "bytes": 3239,
+      "sha256": "679d0deea149c898e67c14144e3faf73020a14e5316bfa9877c94038fa45b863"
+    },
+    "scripts/benchmark-simd-detector.mjs": {
+      "bytes": 12870,
+      "sha256": "3316792f33706f75b7cf95e05e5278df1a40f576f6747b0fc6391a79c9c8413c"
+    },
+    "scripts/test-format-detector-package.mjs": {
+      "bytes": 4491,
+      "sha256": "2a7786b11842ca965ad4ff24a1e7bdb65f5ba644d98d8a99ca6bba57ecb5f980"
+    },
+    "scripts/media-wasm-plugin.ts": {
+      "bytes": 2118,
+      "sha256": "610ef36868eaf26e38768b8a82727b883b2632a8205b498b8c1a2d935bec035a"
+    },
+    "docs/simd-runtime-performance.zh-CN.md": {
+      "bytes": 7144,
+      "sha256": "030e6f40b910264a936238e61cf7902f4c5f25ad8df781d2bdbdb710ddf79960"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/report.json": {
+      "bytes": 405188,
+      "sha256": "1506ee06ca316da7bd5015d05e77df9c379be4ffa84328ed78bd8e792d6a9347"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/manifest.json": {
+      "bytes": 1318,
+      "sha256": "8e1bcee4c7e4c112ecb78ebd704b76496f471504bc5a2091bbd85942d4df1121"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/package.json": {
+      "bytes": 2819,
+      "sha256": "ab8c42821965ac98b12ec5fe50cb319e92a8bbb47458fce78946b08489f5c2b7"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/binding.mjs": {
+      "bytes": 2150,
+      "sha256": "c5e755f1946b34c1d3cec72adf024a690529df520e996d62f533a8a8a430744e"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/converter-detect-scalar.wasm": {
+      "bytes": 224259,
+      "sha256": "0913d2c795e07408dcc532960f3189bf9829bb7556070ac0945448ec9b87f92e"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/converter-detect-simd.wasm": {
+      "bytes": 225355,
+      "sha256": "5c0a564818351a49baa86e61a182e25b2846a07c969878b443e0aefcf546e8d8"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/baseline/manifest.json": {
+      "bytes": 153,
+      "sha256": "8e665733f5d3a4c235a950da64088683088b41f83d3d96448810d096879bf828"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/baseline/corpus-manifest.json": {
+      "bytes": 214298,
+      "sha256": "2ac1ad103073f92d662e0f75502338bd26b8f71b4e95d38bc2a759a5a3592508"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/baseline/sources.json.gz": {
+      "bytes": 22224,
+      "sha256": "c2ee3eb42740b8edf8361fa461a5b14575b5b4b0ce90a566de9106f48565c094"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/baseline/converter-detect-simd16.wasm": {
+      "bytes": 225033,
+      "sha256": "31cb58da35dfe4228666e85ca508f4e64f973a66b9310c7efd57d8f9f08f5e08"
+    },
+    "benchmarks/frontend/2026-11-04/simd-runtime/baseline/converter-detect-simd64.wasm": {
+      "bytes": 225226,
+      "sha256": "258956972736279800de3ac9e46b0983e3888e671f4945aff99971e1942a4e96"
+    }
+  }
+}

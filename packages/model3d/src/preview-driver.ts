@@ -1,7 +1,8 @@
+import { createKmzIndex, findKmzResource, type KmzResourceIndex } from './kmz-resources';
 import {
-  createDefaultPreviewRoutes,
+  previewContentKey,
+  previewModelCache,
   openZipArchive,
-  type FormatDefinition,
   type Model3dPreviewNode,
   type Model3dPreviewState,
   type PreviewMeasurementInfo,
@@ -60,27 +61,26 @@ import {
 import { AMFLoader } from 'three/examples/jsm/loaders/AMFLoader.js';
 import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GCodeLoader } from 'three/examples/jsm/loaders/GCodeLoader.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { strFromU8, unzipSync } from 'three/examples/jsm/libs/fflate.module.js';
-import { LDrawLoader } from '../vendor/three/LDrawLoader.js';
 import { LWOLoader } from 'three/examples/jsm/loaders/LWOLoader.js';
 import { MD2Loader } from 'three/examples/jsm/loaders/MD2Loader.js';
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import type { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 import { NRRDLoader } from 'three/examples/jsm/loaders/NRRDLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PCDLoader } from 'three/examples/jsm/loaders/PCDLoader.js';
 import { PDBLoader } from 'three/examples/jsm/loaders/PDBLoader.js';
-import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
-import { TDSLoader } from 'three/examples/jsm/loaders/TDSLoader.js';
-import { USDZLoader } from 'three/examples/jsm/loaders/USDZLoader.js';
 import { VTKLoader } from 'three/examples/jsm/loaders/VTKLoader.js';
 import { VOXLoader, VOXMesh } from 'three/examples/jsm/loaders/VOXLoader.js';
-import { VRMLLoader } from 'three/examples/jsm/loaders/VRMLLoader.js';
 import { XYZLoader } from 'three/examples/jsm/loaders/XYZLoader.js';
-import JSZip from 'jszip';
 import type { StepImporter } from './rust-step-importer';
+import {
+  normalizeResourceResolverResult, unpackResourceResolverResult, normalizeResolvedPreviewSource,
+  gltfResourceContentType, objResourceContentType, dirname, joinResourcePath, resolveModelTextureUrl
+} from './resource-utils';
+export { loadVrmlObject, loadVrmlObjectWithWarnings, type LoadVrmlObjectOptions } from './vrml-loader';
+export { load3dsObject, load3dsObjectWithWarnings, type Load3dsObjectOptions } from './3ds-loader';
+export { loadFbxObject, loadFbxObjectWithWarnings, type LoadFbxObjectOptions } from './fbx-loader';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -122,6 +122,8 @@ export interface ModelGeometryLoadResult {
 
 export interface ModelLoadOptions {
   signal?: AbortSignal;
+  /** Opt into a short-lived CPU mesh snapshot; GPU resources remain per preview. */
+  cache?: boolean;
 }
 
 interface Model3dPreviewMetadata {
@@ -221,62 +223,7 @@ const MAX_SECTION_HELPER_CACHE_ENTRIES = 24;
 const SECTION_HELPER_MIN_UPDATE_MS = 33;
 let rustStepImporterPromise: Promise<StepImporter> | null = null;
 
-export const MODEL3D_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['step', 'stp', 'stl', 'obj', 'ply', 'gltf', 'glb', '3mf', 'amf', 'dae', 'fbx', '3ds', 'usdz', 'gcode', 'gco', 'nc', 'wrl', 'vrml', 'pcd', 'xyz', 'vtk', 'vox', 'ldr', 'mpd', 'kmz', 'md2', 'lwo', 'bvh', 'pdb', 'nrrd', 'nhdr'],
-    family: 'model3d',
-    driverId: 'model3d',
-    targetFormat: 'model3d',
-    contentTypes: [
-      'model/stl',
-      'model/step',
-      'application/step',
-      'application/x-step',
-      'model/x.stl-ascii',
-      'model/x.stl-binary',
-      'application/vnd.ms-pki.stl',
-      'model/obj',
-      'model/ply',
-      'application/ply',
-      'model/gltf+json',
-      'model/gltf-binary',
-      'model/3mf',
-      'model/amf',
-      'application/x-amf',
-      'model/vnd.collada+xml',
-      'application/vnd.collada+xml',
-      'model/fbx',
-      'model/3ds',
-      'model/vnd.usdz+zip',
-      'model/usd',
-      'text/x-gcode',
-      'model/vrml',
-      'x-world/x-vrml',
-      'application/vnd.pointcloud',
-      'model/vtk',
-      'application/vnd.vtk',
-      'model/vox',
-      'application/x-magica-voxel',
-      'model/vnd.ldraw',
-      'text/vnd.ldraw',
-      'application/x-ldraw',
-      'application/vnd.google-earth.kmz',
-      'application/vnd.google-earth.kmz+xml',
-      'model/md2',
-      'application/x-md2',
-      'model/lwo',
-      'application/x-lwo',
-      'application/x-lightwave-object',
-      'application/bvh',
-      'application/x-bvh',
-      'chemical/x-pdb',
-      'chemical/pdb',
-      'application/nrrd',
-      'application/x-nrrd',
-      'application/vnd.ms-package.3dmanufacturing-3dmodel+xml'
-    ]
-  }
-];
+export { MODEL3D_FORMAT_ROUTES, createModel3dPreviewRoutes } from './routes';
 
 export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -462,7 +409,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       const buffer = await previewSourceToArrayBuffer(source, signal);
       checkModelLoadAborted(signal);
       if (format === 'step' || format === 'stp') {
-        const object = await loadStepObject(buffer, { signal });
+        const object = await loadStepObject(buffer, { signal, cache: typeof source !== 'string' && context.descriptor.password === undefined });
         this.createObjectScene(object, signal);
         this.state = {
           ...this.state,
@@ -488,20 +435,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
               object: await loadGlbObject(buffer, { signal }),
               warnings: []
             };
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'obj') {
@@ -540,17 +474,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       }
       if (format === 'amf') {
         const object = loadAmfObject(buffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'dae') {
@@ -561,23 +485,11 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           sourceFormat: format,
           signal
         });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'fbx') {
+        const { loadFbxObjectWithWarnings } = await waitForModelLoad(import('./fbx-loader'), signal);
         const result = loadFbxObjectWithWarnings(buffer, {
           resourceBasePath: context.descriptor.name,
           resourcePath: modelResourcePathForSource(source),
@@ -585,23 +497,11 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           sourceFormat: format,
           signal
         });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === '3ds') {
+        const { load3dsObjectWithWarnings } = await waitForModelLoad(import('./3ds-loader'), signal);
         const result = load3dsObjectWithWarnings(buffer, {
           resourceBasePath: context.descriptor.name,
           resourcePath: modelResourcePathForSource(source),
@@ -609,53 +509,21 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           sourceFormat: format,
           signal
         });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'usdz') {
-        const object = await loadUsdzObject(buffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        const object = await loadUsdzObject(buffer, { signal });
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'gcode' || format === 'gco' || format === 'nc') {
         const object = loadGCodeObject(new TextDecoder().decode(buffer));
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'wrl' || format === 'vrml') {
+        const { loadVrmlObjectWithWarnings } = await waitForModelLoad(import('./vrml-loader'), signal);
         const result = loadVrmlObjectWithWarnings(new TextDecoder().decode(buffer), {
           resourceBasePath: context.descriptor.name,
           resourcePath: modelResourcePathForSource(source),
@@ -663,80 +531,27 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           sourceFormat: format,
           signal
         });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'pcd') {
         const object = loadPcdObject(buffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'xyz') {
         const object = loadXyzObject(new TextDecoder().decode(buffer));
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'vtk') {
         const object = loadVtkObject(buffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'vox') {
         const object = loadVoxObject(buffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'ldr' || format === 'mpd') {
@@ -746,53 +561,17 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           sourceFormat: format,
           signal
         });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'kmz') {
         const result = await loadKmzObjectWithWarnings(buffer, { signal });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'md2') {
         const object = loadMd2Object(buffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'lwo') {
@@ -804,50 +583,17 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           sourceFormat: format,
           signal
         });
-        this.createObjectScene(result.object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: result.warnings,
-          metadata: collectObjectPreviewMetadata(result.object, format),
-          camera: this.currentCameraState()
-        };
-        if (this.state.warnings.length) {
-          this.emit('warnings', this.state.warnings);
-        }
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(result.object, format, signal, result.warnings);
         return;
       }
       if (format === 'bvh') {
         const object = loadBvhObject(new TextDecoder().decode(buffer));
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'pdb') {
         const object = loadPdbObject(new TextDecoder().decode(buffer));
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       if (format === 'nrrd' || format === 'nhdr') {
@@ -861,17 +607,7 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
           : buffer;
         checkModelLoadAborted(signal);
         const object = loadNrrdObject(nrrdBuffer);
-        this.createObjectScene(object, signal);
-        this.state = {
-          ...this.state,
-          loading: false,
-          error: null,
-          warnings: [],
-          metadata: collectObjectPreviewMetadata(object, format),
-          camera: this.currentCameraState()
-        };
-        this.emit('rendered', this.state);
-        this.emit('statechange', this.state);
+        this.renderLoadedObject(object, format, signal);
         return;
       }
       const result = format === '3mf'
@@ -1441,6 +1177,23 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
     this.updateSectionPlanes();
     this.updateCamera();
     this.startAnimation();
+  }
+
+  private renderLoadedObject(object: Object3D, format: string, signal: AbortSignal, warnings: string[] = []): void {
+    this.createObjectScene(object, signal);
+    this.state = {
+      ...this.state,
+      loading: false,
+      error: null,
+      warnings,
+      metadata: collectObjectPreviewMetadata(object, format),
+      camera: this.currentCameraState()
+    };
+    if (this.state.warnings.length) {
+      this.emit('warnings', this.state.warnings);
+    }
+    this.emit('rendered', this.state);
+    this.emit('statechange', this.state);
   }
 
   private createObjectScene(object: Object3D, signal: AbortSignal): void {
@@ -2816,13 +2569,6 @@ export function createModel3dPreviewDriver(): PreviewDriver<Model3dPreviewState>
   };
 }
 
-export function createModel3dPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...MODEL3D_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => MODEL3D_DIRECT_FORMATS.has(extension)))
-  ];
-}
-
 export function loadStlGeometry(source: ArrayBuffer): StlGeometry {
   const bytes = new Uint8Array(source);
   if (isBinaryStl(bytes)) {
@@ -2889,6 +2635,8 @@ export async function loadObjObjectWithWarnings(
   options: LoadObjObjectOptions = {}
 ): Promise<ModelObjectLoadResult> {
   checkModelLoadAborted(options.signal);
+  const { OBJLoader } = await waitForModelLoad(import('three/examples/jsm/loaders/OBJLoader.js'), options.signal);
+  checkModelLoadAborted(options.signal);
   const materialLibraries = listObjMaterialLibraries(source);
   if (!materialLibraries.length || !options.resourceResolver) {
     return { object: new OBJLoader().parse(source), warnings: [] };
@@ -2924,6 +2672,8 @@ export async function loadObjObjectWithWarnings(
     checkModelLoadAborted(options.signal);
     const loader = new OBJLoader();
     if (rewrittenMaterials.length) {
+      const { MTLLoader } = await waitForModelLoad(import('three/examples/jsm/loaders/MTLLoader.js'), options.signal);
+      checkModelLoadAborted(options.signal);
       const manager = new LoadingManager();
       const texturesReady = new Promise<void>(resolve => { manager.onLoad = resolve; });
       manager.onError = () => { warnings.push('An OBJ texture failed to load; the preview may be incomplete.'); };
@@ -3011,9 +2761,9 @@ export async function load3mfGeometry(source: ArrayBuffer, options: ModelLoadOpt
 
 export async function load3mfGeometryWithWarnings(source: ArrayBuffer, options: ModelLoadOptions = {}): Promise<ModelGeometryLoadResult> {
   checkModelLoadAborted(options.signal);
-  const archive = await waitForModelLoad(JSZip.loadAsync(source), options.signal);
+  const archive = await waitForModelLoad(openZipArchive(new Uint8Array(source), options), options.signal);
   checkModelLoadAborted(options.signal);
-  const modelFile = archive.file('3D/3dmodel.model') ?? archive.file(/(^|\/)3dmodel\.model$/i)[0];
+  const modelFile = archive.get('3D/3dmodel.model') ?? [...archive.values()].find(entry => !entry.directory && /(^|\/)3dmodel\.model$/i.test(entry.name));
   if (!modelFile) {
     throw new Error('3MF package is missing 3D/3dmodel.model.');
   }
@@ -3022,13 +2772,13 @@ export async function load3mfGeometryWithWarnings(source: ArrayBuffer, options: 
   // `3D/Objects/*.model` part while the root model only contains build items.
   const modelFiles = [
     modelFile,
-    ...Object.values(archive.files).filter((entry) =>
-      !entry.dir && /\.model$/i.test(entry.name) && entry.name !== modelFile.name
+    ...[...archive.values()].filter((entry) =>
+      !entry.directory && /\.model$/i.test(entry.name) && entry.name !== modelFile.name
     )
   ];
   const documents: Document[] = [];
   for (const file of modelFiles) {
-    const xml = await waitForModelLoad(file.async('text'), options.signal);
+    const xml = await waitForModelLoad(file.text(), options.signal);
     checkModelLoadAborted(options.signal);
     const parsed = new DOMParser().parseFromString(xml, 'application/xml');
     const parserError = parsed.getElementsByTagName('parsererror')[0];
@@ -3165,8 +2915,10 @@ export async function loadGlbObject(source: ArrayBuffer, options: ModelLoadOptio
 
 async function parseGltfObject(source: ArrayBuffer | string, resourcePath: string, signal?: AbortSignal): Promise<Object3D> {
   checkModelLoadAborted(signal);
+  const { GLTFLoader } = await waitForModelLoad(import('three/examples/jsm/loaders/GLTFLoader.js'), signal);
+  checkModelLoadAborted(signal);
   const loader = new GLTFLoader();
-  const dispose = (gltf: Awaited<ReturnType<GLTFLoader['parseAsync']>>): void =>
+  const dispose = (gltf: GLTF): void =>
     disposeModelResources(gltf.scenes?.length ? gltf.scenes : [gltf.scene]);
   const gltf = await waitForModelLoad(loader.parseAsync(source, resourcePath), signal, dispose);
   if (signal?.aborted) {
@@ -3200,7 +2952,7 @@ export function loadColladaObjectWithWarnings(
   const warnings: string[] = [];
   const manager = new LoadingManager();
   if (options.resourceResolver) {
-    manager.setURLModifier((url) => resolveColladaTextureUrl(url, options, warnings, objectUrls));
+    manager.setURLModifier((url) => resolveModelTextureUrl(url, options, warnings, objectUrls, 'dae', 'Collada'));
   }
   const object = new ColladaLoader(manager).parse(source, options.resourcePath ?? '').scene;
   if (objectUrls.length) {
@@ -3281,7 +3033,7 @@ export async function loadKmzObjectWithWarnings(
 function parseKmzCollada(
   dae: string,
   modelName: string,
-  index: Map<string, string>,
+  index: KmzResourceIndex,
   read: (name: string) => Uint8Array | undefined,
   warnings: string[],
   signal?: AbortSignal
@@ -3338,49 +3090,13 @@ function hasRenderableObjectContent(object: Object3D): boolean {
   return renderable;
 }
 
-function normalizeKmzPath(value: string): string {
-  const parts: string[] = [];
-  for (const part of value.replace(/\\/g, '/').split('/')) {
-    if (!part || part === '.') continue;
-    if (part === '..') parts.pop();
-    else parts.push(part);
-  }
-  return parts.join('/');
-}
-
-function createKmzIndex(names: string[]): Map<string, string> {
-  return new Map(names.map(name => [normalizeKmzPath(name), name]));
-}
-
-function findKmzResource(index: Map<string, string>, href: string, relativeTo = ''): string | undefined {
-  let path = href.trim().replace(/\\/g, '/').split(/[?#]/, 1)[0] ?? '';
-  if (/^[a-z][a-z\d+.-]*:/i.test(path)) return undefined;
-  try { path = decodeURIComponent(path); } catch { /* Preserve malformed producer escapes. */ }
-  const directory = relativeTo.slice(0, relativeTo.lastIndexOf('/') + 1);
-  const candidates = [...new Set([
-    ...(path.startsWith('/') ? [] : [normalizeKmzPath(directory + path)]), normalizeKmzPath(path)
-  ])];
-  for (const candidate of candidates) {
-    const exact = index.get(candidate);
-    if (exact) return exact;
-  }
-  // Case/suffix fallbacks must be unambiguous; never let an earlier basename shadow an exact path.
-  for (const candidate of candidates) {
-    const matches = [...index].filter(([name]) => name.toLowerCase() === candidate.toLowerCase());
-    if (matches.length === 1) return matches[0]![1];
-  }
-  const suffix = candidates[candidates.length - 1]!.toLowerCase();
-  const matches = [...index].filter(([name]) => name.toLowerCase().endsWith('/' + suffix));
-  return matches.length === 1 ? matches[0]![1] : undefined;
-}
-
-function findKmzKml(index: Map<string, string>): string | undefined {
+function findKmzKml(index: KmzResourceIndex): string | undefined {
   return index.get('doc.kml') ?? [...index.values()].find(name => /^doc\.kml$/i.test(name))
     ?? [...index.values()].find(name => /(^|\/)doc\.kml$/i.test(name))
     ?? [...index.values()].find(name => /\.kml$/i.test(name));
 }
 
-function selectKmzModel(index: Map<string, string>, kmlName: string | undefined, kml: string | undefined, warnings: string[]): string {
+function selectKmzModel(index: KmzResourceIndex, kmlName: string | undefined, kml: string | undefined, warnings: string[]): string {
   const href = kml ? findKmzModelHref(kml) : undefined;
   const selected = href ? findKmzResource(index, href, kmlName) : undefined;
   const fallback = [...index.values()].find(name => /\.dae$/i.test(name));
@@ -3453,7 +3169,7 @@ export function loadLwoObjectWithWarnings(
   const warnings: string[] = [];
   const manager = new LoadingManager();
   if (options.resourceResolver) {
-    manager.setURLModifier((url) => resolveLwoTextureUrl(url, options, warnings, objectUrls));
+    manager.setURLModifier((url) => resolveModelTextureUrl(url, options, warnings, objectUrls, 'lwo', 'LWO'));
   }
   const loader = new LWOLoader(manager);
   const result = loader.parse(
@@ -3478,14 +3194,6 @@ export function loadLwoObjectWithWarnings(
     object: group,
     warnings
   };
-}
-
-export interface LoadVrmlObjectOptions {
-  resourceBasePath?: string;
-  resourcePath?: string;
-  resourceResolver?: PreviewResourceResolver;
-  sourceFormat?: string;
-  signal?: AbortSignal;
 }
 
 export function loadBvhObject(source: string): Object3D {
@@ -3624,95 +3332,42 @@ export async function resolveNhdrBuffer(
   return mergeNhdrHeaderAndData(source, dataBuffer);
 }
 
-export interface LoadFbxObjectOptions {
-  resourceBasePath?: string;
-  resourcePath?: string;
-  resourceResolver?: PreviewResourceResolver;
-  sourceFormat?: string;
-  signal?: AbortSignal;
-}
-
-export interface Load3dsObjectOptions {
-  resourceBasePath?: string;
-  resourcePath?: string;
-  resourceResolver?: PreviewResourceResolver;
-  sourceFormat?: string;
-  signal?: AbortSignal;
-}
-
-export function loadFbxObject(source: ArrayBuffer, resourcePath = ''): Object3D {
-  return loadFbxObjectWithWarnings(source, { resourcePath }).object;
-}
-
-export function loadFbxObjectWithWarnings(
-  source: ArrayBuffer,
-  options: LoadFbxObjectOptions = {}
-): ModelObjectLoadResult {
-  const objectUrls: string[] = [];
-  const warnings: string[] = [];
-  const manager = new LoadingManager();
-  if (options.resourceResolver) {
-    manager.setURLModifier((url) => resolveFbxTextureUrl(url, options, warnings, objectUrls));
-  }
-  const object = new FBXLoader(manager).parse(source, options.resourcePath ?? '');
-  if (objectUrls.length) {
-    object.userData.previewObjectUrls = objectUrls;
-  }
-  return {
-    object,
-    warnings
-  };
-}
-
-export function load3dsObject(source: ArrayBuffer, resourcePath = ''): Object3D {
-  return load3dsObjectWithWarnings(source, { resourcePath }).object;
-}
-
-export function load3dsObjectWithWarnings(
-  source: ArrayBuffer,
-  options: Load3dsObjectOptions = {}
-): ModelObjectLoadResult {
-  const objectUrls: string[] = [];
-  const warnings: string[] = [];
-  const manager = new LoadingManager();
-  if (options.resourceResolver) {
-    manager.setURLModifier((url) => resolve3dsTextureUrl(url, options, warnings, objectUrls));
-  }
-  const object = new TDSLoader(manager).parse(source, options.resourcePath ?? '');
-  if (objectUrls.length) {
-    object.userData.previewObjectUrls = objectUrls;
-  }
-  return {
-    object,
-    warnings
-  };
-}
-
-export async function loadUsdzObject(source: ArrayBuffer): Promise<Object3D> {
+export async function loadUsdzObject(source: ArrayBuffer, options: ModelLoadOptions = {}): Promise<Object3D> {
+  checkModelLoadAborted(options.signal);
+  const { USDZLoader } = await waitForModelLoad(import('three/examples/jsm/loaders/USDZLoader.js'), options.signal);
+  checkModelLoadAborted(options.signal);
   return new USDZLoader().parse(source);
 }
 
 export async function loadStepObject(source: ArrayBuffer, options: ModelLoadOptions = {}): Promise<Object3D> {
   checkModelLoadAborted(options.signal);
-  if (!rustStepImporterPromise) {
-    const attempt = import('./rust-step-importer').then(({ createRustStepImporter }) => createRustStepImporter());
-    rustStepImporterPromise = attempt;
-    void attempt.catch(() => { if (rustStepImporterPromise === attempt) rustStepImporterPromise = null; });
-  }
-  const importer = await waitForModelLoad(rustStepImporterPromise, options.signal);
+  const bytes = new Uint8Array(source).slice();
+  const key = options.cache !== true ? undefined
+    : await waitForModelLoad(previewContentKey(bytes, 'step:mm:v1', options.signal), options.signal);
   checkModelLoadAborted(options.signal);
-  const pending = importer.ReadStepFile(new Uint8Array(source), { linearUnit: 'millimeter' }, options.signal);
-  const result = await waitForModelLoad(Promise.resolve(pending), options.signal);
-  checkModelLoadAborted(options.signal);
-  if (!result.success || !result.root || !result.meshes?.length) {
-    throw new Error('Rust STEP could not read this STEP file.');
+  let result = previewModelCache.get<import('./rust-step-importer').StepImportResult>(key);
+  if (!result) {
+    if (!rustStepImporterPromise) {
+      const attempt = import('./rust-step-importer').then(({ createRustStepImporter }) => createRustStepImporter());
+      rustStepImporterPromise = attempt;
+      void attempt.catch(() => { if (rustStepImporterPromise === attempt) rustStepImporterPromise = null; });
+    }
+    const importer = await waitForModelLoad(rustStepImporterPromise, options.signal);
+    checkModelLoadAborted(options.signal);
+    const pending = importer.ReadStepFile(bytes, { linearUnit: 'millimeter' }, options.signal);
+    result = await waitForModelLoad(Promise.resolve(pending), options.signal);
+    checkModelLoadAborted(options.signal);
+    if (!result.success || !result.root || !result.meshes?.length) {
+      throw new Error('Rust STEP could not read this STEP file.');
+    }
+    previewModelCache.put(key, result);
   }
 
   const object = new Group();
   object.userData.stepEngine = 'rust';
   object.userData.previewWarnings = result.warnings ?? [];
-  for (const meshIndex of result.root.meshes) {
-    const sourceMesh = result.meshes[meshIndex];
+  for (const meshIndex of result.root!.meshes) {
+    const sourceMesh = result.meshes![meshIndex];
     if (!sourceMesh) continue;
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(sourceMesh.attributes.position.array, 3));
@@ -3729,30 +3384,6 @@ export async function loadStepObject(source: ArrayBuffer, options: ModelLoadOpti
 
 export function loadGCodeObject(source: string): Object3D {
   return new GCodeLoader().parse(source);
-}
-
-export function loadVrmlObject(source: string, resourcePath = ''): Object3D {
-  return loadVrmlObjectWithWarnings(source, { resourcePath }).object;
-}
-
-export function loadVrmlObjectWithWarnings(
-  source: string,
-  options: LoadVrmlObjectOptions = {}
-): ModelObjectLoadResult {
-  const objectUrls: string[] = [];
-  const warnings: string[] = [];
-  const manager = new LoadingManager();
-  if (options.resourceResolver) {
-    manager.setURLModifier((url) => resolveVrmlTextureUrl(url, options, warnings, objectUrls));
-  }
-  const object = new VRMLLoader(manager).parse(source, options.resourcePath ?? '');
-  if (objectUrls.length) {
-    object.userData.previewObjectUrls = objectUrls;
-  }
-  return {
-    object,
-    warnings
-  };
 }
 
 export function loadPcdObject(source: ArrayBuffer): Object3D {
@@ -3828,7 +3459,12 @@ export async function loadLDrawObjectWithWarnings(
   try {
     const packed = await prepareLDrawSource(source, options, warnings);
     checkModelLoadAborted(options.signal);
-    const loader = new LDrawLoader() as LDrawLoader & {
+    const [{ LDrawLoader }, { LDrawConditionalLineMaterial }] = await waitForModelLoad(Promise.all([
+      import('../vendor/three/LDrawLoader.js'),
+      import('three/examples/jsm/materials/LDrawConditionalLineMaterial.js')
+    ]), options.signal);
+    checkModelLoadAborted(options.signal);
+    const loader = new LDrawLoader() as InstanceType<typeof LDrawLoader> & {
       parse(text: string, onLoad: (group: Group) => void, onError?: (error: unknown) => void): void;
     };
     loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
@@ -4257,256 +3893,6 @@ function prepareNrrdHeader(source: ArrayBuffer): { buffer: ArrayBuffer; encoding
     return { buffer: buffer.buffer, encoding, endian };
   }
   return { buffer: source };
-}
-
-function resolveLwoTextureUrl(
-  url: string,
-  options: LoadLwoObjectOptions,
-  warnings: string[],
-  objectUrls: string[]
-): string {
-  const resourceResolver = options.resourceResolver;
-  if (!resourceResolver) {
-    return url;
-  }
-  if (options.signal?.aborted) {
-    throw new DOMException('3D preview aborted.', 'AbortError');
-  }
-  const baseDir = dirname(options.resourceBasePath ?? '');
-  const requestedPath = url.replace(/\\/g, '/');
-  const candidates = [
-    joinResourcePath(baseDir, requestedPath),
-    requestedPath,
-    requestedPath.split('/').pop() ?? requestedPath
-  ];
-
-  for (const candidate of candidates) {
-    const resolved = resourceResolver({
-      family: 'model3d',
-      sourceFormat: options.sourceFormat ?? 'lwo',
-      source: candidate,
-      relation: 'texture',
-      name: candidate.split(/[\\/]/).pop() ?? candidate
-    });
-    if (resolved && !(resolved instanceof Promise)) {
-      const normalized = normalizeResourceResolverResult(resolved, objResourceContentType(candidate));
-      warnings.push(...normalized.warnings);
-      if (normalized.source) {
-        const dataUrl = normalizeResolvedPreviewSource(normalized.source, objResourceContentType(candidate));
-        if (!dataUrl) {
-          warnings.push(`LWO texture "${requestedPath}" resolved to an unsupported source type; default loader lookup was used.`);
-          return url;
-        }
-        if (dataUrl.startsWith('blob:')) {
-          objectUrls.push(dataUrl);
-        }
-        return dataUrl;
-      }
-    }
-  }
-
-  warnings.push(`LWO texture "${requestedPath}" could not be resolved; default loader lookup was used.`);
-  return url;
-}
-
-function resolveVrmlTextureUrl(
-  url: string,
-  options: LoadVrmlObjectOptions,
-  warnings: string[],
-  objectUrls: string[]
-): string {
-  const resourceResolver = options.resourceResolver;
-  if (!resourceResolver) {
-    return url;
-  }
-  if (options.signal?.aborted) {
-    throw new DOMException('3D preview aborted.', 'AbortError');
-  }
-  const baseDir = dirname(options.resourceBasePath ?? '');
-  const requestedPath = url.replace(/\\/g, '/');
-  const candidates = [
-    joinResourcePath(baseDir, requestedPath),
-    requestedPath,
-    requestedPath.split('/').pop() ?? requestedPath
-  ];
-
-  for (const candidate of candidates) {
-    const resolved = resourceResolver({
-      family: 'model3d',
-      sourceFormat: options.sourceFormat ?? 'vrml',
-      source: candidate,
-      relation: 'texture',
-      name: candidate.split(/[\\/]/).pop() ?? candidate
-    });
-    if (resolved && !(resolved instanceof Promise)) {
-      const normalized = normalizeResourceResolverResult(resolved, objResourceContentType(candidate));
-      warnings.push(...normalized.warnings);
-      if (normalized.source) {
-        const dataUrl = normalizeResolvedPreviewSource(normalized.source, objResourceContentType(candidate));
-        if (!dataUrl) {
-          warnings.push(`VRML texture "${requestedPath}" resolved to an unsupported source type; default loader lookup was used.`);
-          return url;
-        }
-        if (dataUrl.startsWith('blob:')) {
-          objectUrls.push(dataUrl);
-        }
-        return dataUrl;
-      }
-    }
-  }
-
-  warnings.push(`VRML texture "${requestedPath}" could not be resolved; default loader lookup was used.`);
-  return url;
-}
-
-function resolveColladaTextureUrl(
-  url: string,
-  options: LoadColladaObjectOptions,
-  warnings: string[],
-  objectUrls: string[]
-): string {
-  const resourceResolver = options.resourceResolver;
-  if (!resourceResolver) {
-    return url;
-  }
-  if (options.signal?.aborted) {
-    throw new DOMException('3D preview aborted.', 'AbortError');
-  }
-  const baseDir = dirname(options.resourceBasePath ?? '');
-  const requestedPath = url.replace(/\\/g, '/');
-  const candidates = [
-    joinResourcePath(baseDir, requestedPath),
-    requestedPath,
-    requestedPath.split('/').pop() ?? requestedPath
-  ];
-
-  for (const candidate of candidates) {
-    const resolved = resourceResolver({
-      family: 'model3d',
-      sourceFormat: options.sourceFormat ?? 'dae',
-      source: candidate,
-      relation: 'texture',
-      name: candidate.split(/[\\/]/).pop() ?? candidate
-    });
-    if (resolved && !(resolved instanceof Promise)) {
-      const normalized = normalizeResourceResolverResult(resolved, objResourceContentType(candidate));
-      warnings.push(...normalized.warnings);
-      if (normalized.source) {
-        const dataUrl = normalizeResolvedPreviewSource(normalized.source, objResourceContentType(candidate));
-        if (!dataUrl) {
-          warnings.push(`Collada texture "${requestedPath}" resolved to an unsupported source type; default loader lookup was used.`);
-          return url;
-        }
-        if (dataUrl.startsWith('blob:')) {
-          objectUrls.push(dataUrl);
-        }
-        return dataUrl;
-      }
-    }
-  }
-
-  warnings.push(`Collada texture "${requestedPath}" could not be resolved; default loader lookup was used.`);
-  return url;
-}
-
-function resolveFbxTextureUrl(
-  url: string,
-  options: LoadFbxObjectOptions,
-  warnings: string[],
-  objectUrls: string[]
-): string {
-  const resourceResolver = options.resourceResolver;
-  if (!resourceResolver) {
-    return url;
-  }
-  if (options.signal?.aborted) {
-    throw new DOMException('3D preview aborted.', 'AbortError');
-  }
-  const baseDir = dirname(options.resourceBasePath ?? '');
-  const requestedPath = url.replace(/\\/g, '/');
-  const candidates = [
-    joinResourcePath(baseDir, requestedPath),
-    requestedPath,
-    requestedPath.split('/').pop() ?? requestedPath
-  ];
-
-  for (const candidate of candidates) {
-    const resolved = resourceResolver({
-      family: 'model3d',
-      sourceFormat: options.sourceFormat ?? 'fbx',
-      source: candidate,
-      relation: 'texture',
-      name: candidate.split(/[\\/]/).pop() ?? candidate
-    });
-    if (resolved && !(resolved instanceof Promise)) {
-      const normalized = normalizeResourceResolverResult(resolved, objResourceContentType(candidate));
-      warnings.push(...normalized.warnings);
-      if (normalized.source) {
-        const dataUrl = normalizeResolvedPreviewSource(normalized.source, objResourceContentType(candidate));
-        if (!dataUrl) {
-          warnings.push(`FBX texture "${requestedPath}" resolved to an unsupported source type; default loader lookup was used.`);
-          return url;
-        }
-        if (dataUrl.startsWith('blob:')) {
-          objectUrls.push(dataUrl);
-        }
-        return dataUrl;
-      }
-    }
-  }
-
-  warnings.push(`FBX texture "${requestedPath}" could not be resolved; default loader lookup was used.`);
-  return url;
-}
-
-function resolve3dsTextureUrl(
-  url: string,
-  options: Load3dsObjectOptions,
-  warnings: string[],
-  objectUrls: string[]
-): string {
-  const resourceResolver = options.resourceResolver;
-  if (!resourceResolver) {
-    return url;
-  }
-  if (options.signal?.aborted) {
-    throw new DOMException('3D preview aborted.', 'AbortError');
-  }
-  const baseDir = dirname(options.resourceBasePath ?? '');
-  const requestedPath = url.replace(/\\/g, '/');
-  const candidates = [
-    joinResourcePath(baseDir, requestedPath),
-    requestedPath,
-    requestedPath.split('/').pop() ?? requestedPath
-  ];
-
-  for (const candidate of candidates) {
-    const resolved = resourceResolver({
-      family: 'model3d',
-      sourceFormat: options.sourceFormat ?? '3ds',
-      source: candidate,
-      relation: 'texture',
-      name: candidate.split(/[\\/]/).pop() ?? candidate
-    });
-    if (resolved && !(resolved instanceof Promise)) {
-      const normalized = normalizeResourceResolverResult(resolved, objResourceContentType(candidate));
-      warnings.push(...normalized.warnings);
-      if (normalized.source) {
-        const dataUrl = normalizeResolvedPreviewSource(normalized.source, objResourceContentType(candidate));
-        if (!dataUrl) {
-          warnings.push(`3DS texture "${requestedPath}" resolved to an unsupported source type; default loader lookup was used.`);
-          return url;
-        }
-        if (dataUrl.startsWith('blob:')) {
-          objectUrls.push(dataUrl);
-        }
-        return dataUrl;
-      }
-    }
-  }
-
-  warnings.push(`3DS texture "${requestedPath}" could not be resolved; default loader lookup was used.`);
-  return url;
 }
 
 function normalizeLDrawReference(reference: string): string {
@@ -7256,103 +6642,6 @@ function modelNameForSource(name: string | undefined): string {
   return fileName.replace(/\.[^.]+$/, '') || 'model';
 }
 
-function normalizeResourceResolverResult(
-  result: Awaited<ReturnType<PreviewResourceResolver>>,
-  contentType: string,
-  objectUrls?: string[]
-): { source?: string; warnings: string[] } {
-  const resolved = unpackResourceResolverResult(result);
-  return { source: normalizeResolvedPreviewSource(resolved.source, contentType, objectUrls), warnings: resolved.warnings };
-}
-
-function unpackResourceResolverResult(
-  result: Awaited<ReturnType<PreviewResourceResolver>>
-): { source?: PreviewSource; warnings: string[] } {
-  if (!result) {
-    return { warnings: [] };
-  }
-  const isSource = (value: unknown): value is PreviewSource => typeof value === 'string' || value instanceof Blob
-    || ArrayBuffer.isView(value) || value instanceof ArrayBuffer;
-  if (isSource(result)) return { source: result, warnings: [] };
-  return {
-    source: isSource(result.source) ? result.source : undefined,
-    warnings: result.warnings ?? []
-  };
-}
-
-function normalizeResolvedPreviewSource(source: PreviewSource | undefined, contentType: string, objectUrls?: string[]): string | undefined {
-  if (!source) {
-    return undefined;
-  }
-  if (typeof source === 'string') {
-    return source;
-  }
-  if (source instanceof Blob) {
-    const url = URL.createObjectURL(source);
-    objectUrls?.push(url);
-    return url;
-  }
-  if (ArrayBuffer.isView(source) || source instanceof ArrayBuffer) {
-    const bytes = ArrayBuffer.isView(source)
-      ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength)
-      : new Uint8Array(source);
-    if (!objectUrls) return bytesToDataUrl(bytes, contentType);
-    // Blob snapshots exactly the view, without a JS Base64 string or a second decode.
-    // SharedArrayBuffer-backed views need a regular ArrayBuffer for BlobPart.
-    const part = bytes.buffer instanceof ArrayBuffer
-      ? new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength) : new Uint8Array(bytes);
-    return normalizeResolvedPreviewSource(new Blob([part], { type: contentType }), contentType, objectUrls);
-  }
-  return undefined;
-}
-
 async function previewSourceToText(source: PreviewSource, signal?: AbortSignal): Promise<string> {
   return new TextDecoder().decode(await previewSourceToArrayBuffer(source, signal));
-}
-
-function gltfResourceContentType(uri: string): string {
-  const normalized = uri.split('?')[0]?.toLowerCase() ?? uri.toLowerCase();
-  if (normalized.endsWith('.png')) return 'image/png';
-  if (normalized.endsWith('.jpg') || normalized.endsWith('.jpeg')) return 'image/jpeg';
-  if (normalized.endsWith('.webp')) return 'image/webp';
-  if (normalized.endsWith('.ktx2')) return 'image/ktx2';
-  return 'application/octet-stream';
-}
-
-function objResourceContentType(uri: string): string {
-  const normalized = uri.split('?')[0]?.toLowerCase() ?? uri.toLowerCase();
-  if (normalized.endsWith('.mtl')) return 'text/plain';
-  return gltfResourceContentType(uri);
-}
-
-function dirname(path: string): string {
-  const normalized = path.replace(/\\/g, '/').split(/[?#]/)[0] ?? '';
-  const index = normalized.lastIndexOf('/');
-  return index >= 0 ? normalized.slice(0, index) : '';
-}
-
-function joinResourcePath(base: string, path: string): string {
-  if (!base || /^[a-z]+:\/\//i.test(path) || /^[a-z]:[\\/]/i.test(path) || path.startsWith('/')) {
-    return path.replace(/\\/g, '/');
-  }
-  const parts: string[] = [];
-  for (const part of `${base}/${path}`.replace(/\\/g, '/').split('/')) {
-    if (!part || part === '.') {
-      continue;
-    }
-    if (part === '..') {
-      parts.pop();
-      continue;
-    }
-    parts.push(part);
-  }
-  return parts.join('/');
-}
-
-function bytesToDataUrl(bytes: Uint8Array, contentType: string): string {
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return `data:${contentType};base64,${btoa(binary)}`;
 }

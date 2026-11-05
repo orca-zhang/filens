@@ -2,6 +2,7 @@ mod workspace;
 use crate::workspace::Workspace;
 mod capacity;
 mod convert;
+mod inspect;
 #[path = "../../wasm/converter-core-rust/src/text/native_search.rs"]
 mod native_search;
 mod ocr;
@@ -96,7 +97,7 @@ fn run() -> Result<i32> {
         let archive_member = parts.len() > 1
             && !matches!(
                 options.request.operation.as_str(),
-                "search" | "similar" | "convert"
+                "search" | "similar" | "convert" | "inspect"
             )
             && std::fs::metadata(text_catalog::unescape_archive_path(parts[0]))
                 .is_ok_and(|m| m.is_file())
@@ -139,7 +140,8 @@ fn run() -> Result<i32> {
                 return Ok(finish(&options.request.format, &value, 2));
             }
             value["source"] = json!({"path":std::fs::canonicalize(&options.request.input)?,"kind":if archive {"archive"}else{"directory"}});
-        } else if !metadata.is_file() || metadata.len() > 256 << 20 {
+        } else if !metadata.is_file()
+            || (options.request.operation != "inspect" && metadata.len() > 256 << 20) {
             failure(
                 &mut value,
                 "invalid_input",
@@ -302,7 +304,7 @@ fn execute(
         && std::env::var_os("FILENS_TEXT_WASM").is_none();
     let initialized = if bundled_search {
         runtime::Runtime::native_search(&wasm, work, bundle, provider)
-    } else if o.request.operation == "search" {
+    } else if matches!(o.request.operation.as_str(), "search" | "inspect") {
         runtime::Runtime::for_search(&wasm, work, bundle, provider)
     } else {
         runtime::Runtime::new(&wasm, work, bundle, provider)
@@ -320,6 +322,9 @@ fn execute(
     };
     if o.request.operation == "convert" {
         return convert::execute(o, response, engine, bundle, work, pid);
+    }
+    if o.request.operation == "inspect" {
+        return inspect::execute(o, response, engine);
     }
     if o.request.operation == "search" && o.request.search_mode == "files" {
         // Filename search needs neither document capabilities nor extraction/OCR.

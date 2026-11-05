@@ -1,0 +1,158 @@
+{
+  "measuredAt": "2026-11-04T15:37:09.522Z",
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "platform": "darwin-arm64",
+  "artifacts": {
+    "before": "05a0770924b7bf24e06e69439ee360ea5b17f7701fe86bfeb6bedce8404be0d8",
+    "after": "c0d65b7a34d29288d8e7e79c89dfcca75defab2e43731423da288e152164d6b3"
+  },
+  "sourceHashes": {
+    "cli/Cargo.toml": "c7f2e33177334193645ffad15fd9a6f942a0aad0f8ed2ef26ccff8bd608a299c",
+    "cli/Cargo.lock": "05edf2d3ce589e3882017371072ca109c9df839a7eaea1403f4f35a7b1441e4c",
+    "wasm/converter-core-rust/src/text/search.rs": "4c344c8114da3a922bd7c520d65fd3e83476b07abed1ba0d8a29fe479bcdd78d",
+    "wasm/converter-core-rust/src/text/search_simd.rs": "55470031bbaa28991296eb1c989614cefb6300e56252d82e624632a06444a7c0",
+    "scripts/benchmark-search-simd-native.mjs": "421e181512d898a6a42ac38a00cb49ee2fd4f5be6b20a7deec36cb4f89941bcb"
+  },
+  "warmup": 3,
+  "rounds": 9,
+  "timings": [
+    {
+      "name": "native-32-ascii",
+      "files": 32,
+      "inputSpecSha256": "b346351b82cbe352aef7f45d9958e85993c8ca0c3150d67996c969a981343df5",
+      "resultSha256": "76e09491076a211cdb0569f4fcacff7dec60f931e469de118bdf122120ae55b4",
+      "beforeMs": 7.379957999999988,
+      "afterMs": 7.568667000000005,
+      "speedup": 0.9750670758800701,
+      "samples": {
+        "before": [
+          8.290458999999942,
+          7.459124999999972,
+          6.762875000000008,
+          7.898915999999986,
+          6.9950000000000045,
+          7.379957999999988,
+          7.371500000000083,
+          7.233417000000031,
+          7.861625000000004
+        ],
+        "after": [
+          7.896792000000005,
+          7.568667000000005,
+          7.65766700000006,
+          7.32933300000002,
+          7.722167000000013,
+          7.16170800000009,
+          6.991209000000026,
+          7.685582999999951,
+          6.841708999999923
+        ]
+      }
+    },
+    {
+      "name": "native-1000-ascii",
+      "files": 1000,
+      "inputSpecSha256": "58baa9872a74258d07ff251581aec984b3ab4e763faecd9dae87af0d4d4a313c",
+      "resultSha256": "3118082d5fbf204aa530cf854808ad5a9ce4c07efb194cdc1c714ce1c6b59117",
+      "beforeMs": 30.288833000000068,
+      "afterMs": 29.64266600000019,
+      "speedup": 1.0217985453804956,
+      "samples": {
+        "before": [
+          36.734125000000176,
+          30.84329200000002,
+          30.085124999999834,
+          30.288833000000068,
+          30.79354199999989,
+          30.542791999999963,
+          30.0815419999999,
+          29.912417000000005,
+          29.608999999999924
+        ],
+        "after": [
+          30.246333999999933,
+          29.64266600000019,
+          34.434499999999844,
+          34.34479099999999,
+          30.97266599999989,
+          29.113166000000092,
+          28.952625000000126,
+          29.310624999999845,
+          28.250499999999874
+        ]
+      }
+    },
+    {
+      "name": "native-32-varied-body",
+      "files": 32,
+      "inputSpecSha256": "88b6f124a8d493cef1e8f9b667ae266d9ec07180d32b667fa1ffb7e661843338",
+      "resultSha256": "589d9069ecc1a80c7b7f5b445e718ab71c25d18526d35fa5f38cc6c96b85d56a",
+      "beforeMs": 124.10933399999976,
+      "afterMs": 106.27704199999971,
+      "speedup": 1.167790631583443,
+      "samples": {
+        "before": [
+          121.87958299999991,
+          122.47825000000012,
+          129.29483299999993,
+          124.80262499999981,
+          123.56449999999995,
+          124.55520899999965,
+          124.10933399999976,
+          124.25220899999931,
+          122.5537919999997
+        ],
+        "after": [
+          106.50516700000026,
+          105.80141600000024,
+          106.27704199999971,
+          108.03683300000012,
+          105.72733400000016,
+          106.24320899999975,
+          105.79091599999992,
+          107.86583299999984,
+          106.57029200000034
+        ]
+      }
+    },
+    {
+      "name": "native-64-chinese",
+      "files": 64,
+      "inputSpecSha256": "6f15bedf5cb1906aaf604b33dea1e0e66970ed2f2936f153eea9899f8c506912",
+      "resultSha256": "113bacc432a0b2437d0ab58f5e27ed1f8170576fe8e3cfc8f52830f737ce0737",
+      "beforeMs": 104.57895800000006,
+      "afterMs": 105.40095800000017,
+      "speedup": 0.9922012094045661,
+      "samples": {
+        "before": [
+          105.05133400000068,
+          104.63270900000043,
+          104.57895800000006,
+          104.71966599999996,
+          104.32691699999941,
+          103.14145800000006,
+          104.43299999999999,
+          104.21766599999955,
+          110.52995800000008
+        ],
+        "after": [
+          105.40095800000017,
+          106.09370800000033,
+          104.04799999999977,
+          103.68595900000037,
+          105.62374999999975,
+          106.05845799999952,
+          104.79124999999931,
+          104.82541700000002,
+          106.22641600000043
+        ]
+      }
+    }
+  ],
+  "builds": {
+    "before": "Rust 1.93.0 release --no-default-features",
+    "after": "Rust 1.93.0 release (default search-simd)"
+  },
+  "timingScope": "Complete fresh CLI process, including process startup, real directory traversal and file I/O, shared native plain-text extraction/search, JSON output and parent-process capture. OS caches warmed; no WASM modules loaded, OCR disabled. Only search.scan.discoveryMs ignored in strict full-response hashes."
+}

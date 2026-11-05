@@ -1,24 +1,48 @@
 import { expect, test } from '@playwright/test';
 
-test('selects the initial model family after routes load and distinguishes missing samples from unsupported formats', async ({ page }) => {
+test('keeps the manually selected category when optional format routes finish loading', async ({ page }) => {
+  let release!: () => void;
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/packages/vue/src/index.ts*', async route => {
+    await pending;
+    await route.continue();
+  });
+  await page.goto('./?view=preview&lang=zh', { waitUntil: 'domcontentloaded' });
+  const media = page.getByRole('button', { name: 'Media', exact: true });
+  await media.click();
+  await expect(media).toHaveAttribute('aria-pressed', 'true');
+  release();
+  await expect(page.getByRole('button', { name: 'HEIC', exact: true })).toHaveAttribute('data-support', 'sample');
+  await expect(media).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('lists supported formats after routes load and keeps missing samples importable', async ({ page }) => {
   await page.goto('./?view=preview&format=step&lang=zh');
   await expect(page.getByRole('button', { name: 'Design', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'STEP', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const supported = page.getByRole('button', { name: 'STP', exact: true });
-  const unsupported = page.getByRole('button', { name: 'DWG', exact: true });
-  await expect(supported).toBeDisabled();
+  for (const name of ['DGN', 'FCSTD', 'IGES', 'IGS', 'BREP', 'BRP', 'IFC']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+  }
+  await expect(supported).toBeEnabled();
   await expect(supported).toHaveClass(/is-no-sample/);
-  await expect(supported).toHaveAttribute('title', '已支持，暂无示例；可导入文件预览');
-  await expect(unsupported).toBeDisabled();
-  await expect(unsupported).toHaveClass(/is-unavailable/);
-  await expect(unsupported).toHaveAttribute('title', '暂不支持预览');
-  await expect(page.locator('.wb-format-hint')).toContainText('已支持，暂无示例');
+  await expect(supported).toHaveAttribute('title', '已支持，点击导入文件预览；暂无内置示例');
+  await expect(supported).toHaveAttribute('data-support', 'supported');
+  const chooserEvent = page.waitForEvent('filechooser');
+  await supported.click();
+  const chooser = await chooserEvent;
+  expect(await chooser.element().getAttribute('accept')).toBe('.stp');
+  await chooser.setFiles([]);
+  await expect(page.locator('.wb-subformat:disabled')).toHaveCount(0);
+  await expect(page.locator('.wb-format-hint')).toContainText('已支持，需导入');
+  await expect(page.locator('.wb-support-summary')).toHaveText(`已支持 ${await page.locator('.wb-subformat').count()} 种格式`);
+  await expect(page.locator('.wb-library')).not.toContainText('暂不支持');
   await expect(page.locator('canvas.model3dv-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
   await page.setViewportSize({ width: 320, height: 900 });
-  await expect(supported).toHaveAttribute('title', 'Supported, no sample yet; import a file to preview');
-  await expect(unsupported).toHaveAttribute('title', 'Preview is not supported yet');
-  await expect(page.locator('.wb-format-hint')).toContainText('Supported, no sample');
+  await expect(supported).toHaveAttribute('title', 'Supported; click to import a file. No built-in sample yet');
+  await expect(page.locator('.wb-library')).not.toContainText('Unsupported');
+  await expect(page.locator('.wb-format-hint')).toContainText('Import to preview');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });
 
@@ -37,6 +61,11 @@ test('searches formats across families and recovers from an empty search', async
   await page.getByRole('button', { name: '查看全部格式', exact: true }).click();
   await expect(search).toHaveValue('');
   await expect(page.getByRole('button', { name: 'OBJ', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  for (const extension of ['dgn', 'fcstd', 'iges', 'ifc', 'dmg', 'swm', 'ace']) {
+    await search.fill(`.${extension}`);
+    await expect(page.locator('.wb-subformat')).toHaveCount(0);
+    await expect(page.getByText('没有找到这个格式', { exact: true })).toBeVisible();
+  }
 });
 
 test('imports local files with both the picker and drag and drop', async ({ page }) => {

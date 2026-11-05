@@ -47,7 +47,7 @@ JSON 的 `search.results` 按文件去重排序，每个文件最多返回三个
 
 ## 遍历与范围
 
-macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不跟随目录符号链接，也不修改进程工作目录；不编译或嵌入 hdrw。Windows/Linux 嵌入私有 hdrw 的编译后 WASI 组件，只暴露普通已挂载目录的枚举，当前未开启裸盘/文件系统驱动加速。私有 Go 源码不进入本仓库或发布包。
+macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不跟随目录符号链接，也不修改进程工作目录。Windows 在 NTFS 上通过目录句柄调用 `GetFileInformationByHandleEx(FileFullDirectoryInfo)`，以 64 KiB 缓冲批量获取名称、属性和文件大小，避免逐文件查询元数据；非 NTFS 或 API 不支持时自动回退 Rust `read_dir`。Linux 使用 `read_dir`。所有平台均不嵌入 hdrw、不需要管理员权限、不访问裸盘。Windows 跳过 reparse point（包括 junction 和符号链接），文档解析继续留在共享核心。
 
 默认范围为最多 2000 个支持的文件、深度 32、最多返回 10 个文件；可用 `--max-files`（最大 20000）、`--max-depth`（最大 256）、`--max-results`（最大 100）调整。普通隐藏名称默认排除，可用 `--include-hidden`；`.git`、`node_modules`、`target`、`dist` 始终排除，显式作为搜索根目录时可以读取根下其他内容。当前不解释 `.gitignore`。
 
@@ -61,7 +61,7 @@ macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不
 
 `scan.cache` 保留兼容统计，`enabled:false`、`storage:"none"`、`hits/writes:0`；`scan.integrity` 为 `"assumed"`。`--no-cache` / `cache:false` 仍可使用；`cache:true` 返回请求错误。旧版本已写入的缓存不会被新搜索读取或自动删除。
 
-文件名、常见纯文本/代码文件解码和 BM25/精确排名直接编译共享前端核心的 Rust 源码，这些普通搜索不加载正文 WASM；Windows/Linux 的私有 hdrw 枚举模块仍保留。其他文档格式或 `--layout` 按需使用共享 WASM 解析器，每批最多 256 个文件；多个工作线程共享已加载模块。所有解析与排名算法仍留在 `wasm/converter-core-rust/src/text/`，CLI 只调度调用，不增加格式解析器。显式 `--wasm` / `FILENS_TEXT_WASM` 时按指定模块提取和排名。
+文件名、常见纯文本/代码文件解码和 BM25/精确排名直接编译共享前端核心的 Rust 源码，这些普通搜索不加载正文 WASM；目录发现也不再加载 WASM。其他文档格式或 `--layout` 按需使用共享 WASM 解析器，每批最多 256 个文件；多个工作线程共享已加载模块。所有解析与排名算法仍留在 `wasm/converter-core-rust/src/text/`，CLI 只调度调用，不增加格式解析器。显式 `--wasm` / `FILENS_TEXT_WASM` 时按指定模块提取和排名。
 
 默认对元数据总大小不超过 8 MiB 或少于 32 个文件使用单线程，较大工作量最多四个工作线程；高级调优可用 `FILENS_SEARCH_JOBS=1..8`，少于 32 个文件仍串行。OCR 保留一个通道，OpenMP=2；PDFium 和 RapidOCR 仅在实际回调时初始化。WASI 协议使用请求结束后清理的临时目录，不是可复用的磁盘索引。`scan.execution` 报告实际工作线程数、原生文件数、加载的正文 WASM 模块数和批次数。
 
@@ -71,13 +71,7 @@ macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不
 
 [词项检索质量与边界](agent-cli-search-benchmark.zh-CN.md)对比 FiLens、ripgrep 和 git grep，覆盖文件命中、同义/跨语言边界、无答案误报、原文偏移、100–2000 文件规模、历史缓存更新和原始文档处理成本。多格式支持优先看[本轮功能实测](agent-cli-search-formats.zh-CN.md)；合成语料成绩不能替代真实用户任务或向量产品的对照。
 
-普通源码构建使用随仓库提供的编译后 hdrw 资源，不要求获取私有源码。维护者重编译资源：
-
-```sh
-FILENS_HDRW_SOURCE=/path/to/private/hdrw npm run build:agent:hdrw
-```
-
-适配通过 Go overlay 完成，不修改私有工作树；中间文件留在忽略的 `dist/hdrw-build/`。`cli/assets/hdrw.json` 记录来源提交、工作树变更状态和产物 SHA-256。Windows/Linux 构建嵌入压缩 WASM，macOS 默认完全排除。维护者可在 macOS 上用 `hdrw-wasi` Cargo feature 与 `FILENS_WALKER=hdrw-wasi` 验证相同 WASI 模块；这不代表 Windows/Linux 的原生实机结果。
+目录发现直接编译原生 Rust/系统 API，不再需要私有源码或预编译目录 WASM。`capacity --full --json` 的 `capacity.search.discovery` 报告平台默认后端及 NTFS 能力；`search.scan.backend` / `similarity.scan.backend` 报告实际使用的 `fts`、`ntfs` 或 `read-dir`。NTFS API 不支持时从头回退，不重复累计条目。可设置 `FILENS_WALKER=read-dir` 强制基线遍历，用于正确性和性能比较。Windows 对照基准见[Windows 构建与测试](agent-cli-windows.zh-CN.md)。
 
 ```sh
 npm run test:agent:search

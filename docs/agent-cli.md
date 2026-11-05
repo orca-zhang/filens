@@ -16,6 +16,7 @@ filens capacity --from pptx --to pdf
 filens capacity 'docx>?'
 filens capacity '?>pdf'
 filens capacity --section conversionPairs --format tsv
+filens inspect unknown-file --json
 filens capacity --json
 filens capacity --from pptx --section operations,conversionPairs --json
 filens capacity --fields formats --json
@@ -42,7 +43,7 @@ English · [简体中文](agent-cli.zh-CN.md)
 
 filens reads local documents and supplies text and evidence to a calling agent. Version 0.3.0 provides model-free `summarize` / `prune`: density/TF-IDF, optional lexical BM25 focus and cosine-diversity selection keep original excerpts within a character budget. See [pruning, provenance and examples](agent-cli-pruning.zh-CN.md) (Chinese). Paraphrasing, question answering and semantic reasoning remain with the caller. Chinese/English intents, optional commands and JSON requests use the same shared document core. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with optional source layouts.
 
-Version 0.3.0 provides [directory-wide lexical search](agent-cli-search.zh-CN.md) (Chinese): BM25, literal and filename modes, original evidence, and request-local memory with no persistent cache or source hashes. macOS uses native FTS; Windows/Linux embed compiled private hdrw WASI. Embedding-based semantic retrieval remains unimplemented. See the [evaluation plan](agent-cli-search-evaluation.zh-CN.md), including controlled retrieval, raw-document and Agent comparisons.
+Version 0.3.0 provides [directory-wide lexical search](agent-cli-search.zh-CN.md) (Chinese): BM25, literal and filename modes, original evidence, and request-local memory with no persistent cache or source hashes. macOS uses native FTS; Windows batches NTFS directory metadata with a native fallback; Linux uses native traversal. Embedding-based semantic retrieval remains unimplemented. See the [evaluation plan](agent-cli-search-evaluation.zh-CN.md), including controlled retrieval, raw-document and Agent comparisons.
 
 See [68 observed examples and OCR quality results](agent-cli-examples.zh-CN.md) (Chinese), including unsupported phrases, fallback behavior and recognition errors.
 
@@ -268,7 +269,7 @@ contents and tarballs for personal build paths, signed URLs and credentials.
 See [release privacy checks](release-privacy.md). The fixes ship in 0.5.0; previously
 published npm versions remain immutable.
 
-Source verification includes `npm run test:agent:search`, `npm run test:agent:prune` and `npm run test:agent:similarity`. The similarity checks exercise real CLI/WASM duplicate and image groups, partial results, links, limits and eight output formats; the hdrw walker was also exercised on macOS. See the [verification record](agent-cli-similarity-size.json) for observed checks and platform scope.
+Source verification includes `npm run test:agent:search`, `npm run test:agent:prune` and `npm run test:agent:similarity`. The similarity checks exercise real CLI/WASM duplicate and image groups, partial results, links, limits and eight output formats. Native traversal checks cover scope, limits, links and multiple NTFS batches; Windows execution requires the Windows CI runner. See the [verification record](agent-cli-similarity-size.json) for observed checks and platform scope.
 
 ## Multi-source model downloads
 

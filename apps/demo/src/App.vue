@@ -7,7 +7,11 @@ import LandingPage from './components/LandingPage.vue';
 import DocumentWorkbench from './components/DocumentWorkbench.vue';
 import DesignSamplePicker from './components/DesignSamplePicker.vue';
 import { designSamples } from './design-samples';
+import { graphicsSamples } from './graphics-samples';
+import { archiveSamples } from './archive-samples';
 import ModelSamplePicker from './components/ModelSamplePicker.vue';
+import TextSamplePicker from './components/TextSamplePicker.vue';
+import { textSamples } from './text-samples';
 import { modelSamples } from './model-samples';
 import { createWasmConverterClient } from '@filens/converter-client';
 import { createWasmPanoramaProcessor } from '@filens/panorama';
@@ -74,6 +78,8 @@ interface DemoSource {
   label: string;
   name: string;
   source: PreviewSource;
+  /** Original URL retained when remote bytes are fetched before previewing. */
+  sourceUrl?: string;
   archiveVolumes?: SourceDescriptor['archiveVolumes'];
   /** Optional browser-compatible bytes used when a legacy sample codec is unavailable. */
   previewSource?: PreviewSource;
@@ -99,6 +105,7 @@ const conversionKindBySource = new Map<string, DemoKind>(
 // Keep conversion modules outside the main graph; each module is fetched on its first matching route.
 const brandIconUrl = `${import.meta.env.BASE_URL}brand/filens-icon.svg`;
 const converterCoreWasmUrl = `${import.meta.env.BASE_URL}externals/converter-core.wasm`;
+const converterGraphicsWasmUrl = `${import.meta.env.BASE_URL}externals/converter-graphics.wasm`;
 const converterPostscriptWasmUrl = `${import.meta.env.BASE_URL}externals/converter-postscript.wasm`;
 const converterOfficeWasmUrl = `${import.meta.env.BASE_URL}externals/converter-office.wasm`;
 const converterImageWasmUrl = `${import.meta.env.BASE_URL}externals/converter-image.wasm`;
@@ -618,6 +625,14 @@ const staticSamples: DemoSource[] = [
     contentType: 'image/vnd.dxf',
     mode: 'generated'
   },
+  ...graphicsSamples.map((sample): DemoSource => ({
+    kind: sample.kind,
+    label: sample.label,
+    name: sample.name,
+    source: `/samples/graphics/${sample.name}`,
+    contentType: sample.contentType,
+    mode: 'sample'
+  })),
   ...modelSamples.map((sample): DemoSource => ({
     kind: 'model3d',
     label: `${sample.titleEn} · ${sample.format.toUpperCase()}`,
@@ -939,78 +954,15 @@ const staticSamples: DemoSource[] = [
     mode: 'sample',
     catalogId: 'samsung-tab-s9-motion-photo'
   },
-  {
-    kind: 'text',
-    label: 'Text',
-    name: 'notes.txt',
-    source: createTextFixture(),
-    contentType: 'text/plain',
-    mode: 'generated'
-  },
-  {
-    kind: 'text',
-    label: 'Log',
-    name: 'preview.log',
-    source: new TextEncoder().encode('[info] preview started\n[warn] missing optional font\n[info] preview completed in 42ms\n'),
-    contentType: 'text/plain',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'Code',
-    name: 'preview.ts',
-    source: createCodeFixture(),
-    contentType: 'text/plain',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'Markdown',
-    name: 'README.md',
-    source: new TextEncoder().encode('# filens\n\n- Browser-native preview\n- Multiple text formats\n- No server conversion required\n'),
-    contentType: 'text/markdown',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'JSON',
-    name: 'preview.json',
-    source: new TextEncoder().encode('{\n  "name": "filens",\n  "formats": ["txt", "markdown", "json"]\n}\n'),
-    contentType: 'application/json',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'YAML',
-    name: 'preview.yaml',
-    source: new TextEncoder().encode('name: filens\nformats:\n  - txt\n  - markdown\n  - yaml\n'),
-    contentType: 'application/yaml',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'TOML',
-    name: 'preview.toml',
-    source: new TextEncoder().encode('name = "filens"\nformats = ["txt", "markdown", "toml"]\n'),
-    contentType: 'application/toml',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'XML',
-    name: 'preview.xml',
-    source: new TextEncoder().encode('<?xml version="1.0" encoding="UTF-8"?>\n<previewer><format>xml</format></previewer>\n'),
-    contentType: 'application/xml',
-    mode: 'generated'
-  },
-  {
-    kind: 'code',
-    label: 'Python',
-    name: 'preview.py',
-    source: new TextEncoder().encode('def preview(file_name: str) -> str:\n    return f"Previewing {file_name}"\n'),
-    contentType: 'text/x-python',
-    mode: 'generated'
-  },
+  ...textSamples.map((sample): DemoSource => ({
+    kind: sample.format === 'txt' || sample.format === 'log' ? 'text' : 'code',
+    label: `${sample.titleEn} · ${sample.format.toUpperCase()}`,
+    name: sample.name,
+    source: `/samples/text/${sample.name}`,
+    extension: sample.format,
+    contentType: 'text/plain; charset=utf-8',
+    mode: 'sample'
+  })),
   {
     kind: 'html',
     label: 'HTML',
@@ -1107,6 +1059,9 @@ const staticSamples: DemoSource[] = [
     contentType: 'application/zip',
     catalogId: 'nested-zip'
   },
+  ...archiveSamples.map((sample): DemoSource => ({
+    ...sample, kind: 'zip', source: `/samples/archives/${sample.name}`
+  })),
   {
     kind: 'audio',
     label: 'Audio',
@@ -1284,8 +1239,8 @@ const formatSupportByExtension = computed(() => new Map(supportedFormats.value.m
 const sampleByExtension = new Map(
   staticSamples.map((sample) => [sample.catalogId ?? inferExtensionFromName(sample.name) ?? '', sample])
 );
-for (const format of ['psd', 'psb', 'ai', 'eps', 'ps']) {
-  const cover = staticSamples.find((sample) => sample.catalogId === format);
+for (const format of ['psd', 'psb', 'ai', 'eps', 'ps', 'txt', 'log']) {
+  const cover = staticSamples.find((sample) => (sample.catalogId ?? inferExtensionFromName(sample.name)) === format);
   if (cover) sampleByExtension.set(format, cover);
 }
 const showcaseDocxSample = staticSamples.find((sample) => sample.name === 'filens-aurora-guide.docx');
@@ -1294,25 +1249,6 @@ const showcaseXlsxSample = staticSamples.find((sample) => sample.name === 'filen
 if (showcaseXlsxSample) sampleByExtension.set('xlsx', showcaseXlsxSample);
 const presentationSample = staticSamples.find((sample) => sample.name === 'filens-field-notes.pptx');
 if (presentationSample) sampleByExtension.set('pptx', presentationSample);
-const catalogOnlyFormats: Array<[string, PreviewFamily]> = [
-  ...['dwg', 'dgn'].map((extension) => [extension, 'cad'] as [string, PreviewFamily]),
-  ['fcstd', 'model3d'],
-  ...['iges', 'igs', 'brep', 'brp'].map((extension) => [extension, 'model3d'] as [string, PreviewFamily]),
-  ['ifc', 'model3d'],
-  ['jpeg', 'panorama'],
-  ['mp4', 'panorama'],
-  ...['jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'dib', 'tif', 'tiff', 'ico', 'cur', 'heic', 'heif', 'avif', 'jxl', 'apng', 'tga', 'pcx', 'ppm', 'pgm', 'pbm', 'pnm', 'psd', 'psb', 'ai', 'eps', 'ps', 'dds', 'exr', 'hdr', 'dng', 'cr2', 'cr3', 'nef', 'nrw', 'arw', 'sr2', 'srf', 'orf', 'rw2', 'rwl', 'raf', 'kdc', 'x3f', 'pef', 'srw', 'erf', 'mef', 'mos', 'mrw', '3fr', 'iiq']
-    .map((extension) => [extension, 'image'] as [string, PreviewFamily]),
-  ...['zipx', 'rar', '7z', 'tar', 'gz', 'bz', 'bz2', 'xz', 'z', 'zst', 'tgz', 'tbz', 'tbz2', 'txz', 'lz', 'lzma', 'cab', 'iso', 'ar', 'cpio', 'ace', 'lha', 'lzh', 'zoo', 'xar', 'sit', 'sitx', 'apk', 'jar', 'war', 'ear', 'xpi', 'crx', 'deb', 'rpm', 'dmg', 'img', 'wim', 'swm', 'esd', 'pak', '001', 'cbr', 'cb7', 'cbt']
-    .map((extension) => [extension, 'archive'] as [string, PreviewFamily])
-];
-const catalogFormatLabels = new Map([
-  ['panorama:jpeg', 'JPEG (Osmo 360)'],
-  ['panorama:mp4', 'MP4 (HEVC)'],
-  ['image:ai', 'AI'],
-  ['image:eps', 'EPS'],
-  ['image:ps', 'PS']
-]);
 const livePhotoFormats = [
   ['apple-live-photo', 'Apple · iPhone 15'],
   ['google-motion-photo', 'Google · Pixel 9 Pro XL'],
@@ -1442,36 +1378,20 @@ function getBusinessFormatCategory(extension: string, family: PreviewFamily): { 
 }
 
 const formatCatalog = computed(() => [
-  ...supportedFormats.value.filter((format) => !(format.family === 'image' && ['jpeg', 'svg'].includes(format.extension))).map((format) => ({
+  ...supportedFormats.value.map((format) => ({
     extension: format.extension,
     family: format.family,
-    label: format.extension.toUpperCase(),
-    supported: true,
-    sampleOnly: false
+    label: format.extension.toUpperCase()
   })),
-  ...catalogOnlyFormats
-    .filter(([extension, family]) => !supportedFormats.value.some((format) =>
-      format.extension === extension && (format.family === family || designDraftFormats.has(extension))))
-    .map(([extension, family]) => ({
-      extension,
-      family,
-      label: catalogFormatLabels.get(`${family}:${extension}`) ?? extension.toUpperCase(),
-      supported: false,
-      sampleOnly: false
-    })),
   ...livePhotoFormats.map(([extension, label]) => ({
     extension,
     family: 'image' as PreviewFamily,
-    label,
-    supported: true,
-    sampleOnly: false
+    label
   })),
   ...panoramaSampleFormats.map(([extension, label]) => ({
     extension,
     family: 'panorama' as PreviewFamily,
-    label,
-    supported: true,
-    sampleOnly: false
+    label
   }))
 ]);
 const initialSample = presentationSample ?? staticSamples[0]!;
@@ -1485,25 +1405,80 @@ const previewInput = computed(() => current.value.archiveVolumes
 const selectedFormatFamilyId = ref<BusinessFormatFamilyId>(
   'office'
 );
+let manuallySelectedFormatFamily = false;
 const sourceMode = ref<SourceMode>('sample');
 const remoteUrl = ref(defaultRemoteUrl);
+const initialParams = new URLSearchParams(window.location.search);
+const remoteLoadState = ref<'idle' | 'loading' | 'error'>(initialParams.has('url') ? 'loading' : 'idle');
+const thirdPartySource = computed(() => {
+  const source = current.value.sourceUrl ?? (typeof current.value.source === 'string' ? current.value.source : undefined);
+  if (!source) return null;
+  try {
+    const url = new URL(source, window.location.href);
+    return ['http:', 'https:'].includes(url.protocol) && url.origin !== window.location.origin
+      ? { url: url.href, origin: url.origin }
+      : null;
+  } catch {
+    return null;
+  }
+});
 const renderedState = ref<PreviewItemState | null>(null);
 const lastError = ref<string | null>(null);
-const workbenchSection = ref<'preview' | 'agent'>(new URLSearchParams(window.location.search).get('view') === 'agent' ? 'agent' : 'preview');
-const showWorkbench = ref(['preview', 'agent'].includes(new URLSearchParams(window.location.search).get('view') ?? ''));
+const workbenchSection = ref<'preview' | 'agent'>(initialParams.get('view') === 'agent' ? 'agent' : 'preview');
+const showWorkbench = ref(initialParams.has('url') || ['preview', 'agent'].includes(initialParams.get('view') ?? ''));
 const showPreviewToolbar = ref(false);
 let appliedUrlFormat: string | null = null;
+let appliedRemoteLink: string | null = null;
+let sourceSelection = 0;
+let remoteRequest: AbortController | undefined;
+
+function startSourceSelection(): number {
+  remoteRequest?.abort();
+  remoteRequest = undefined;
+  remoteLoadState.value = 'idle';
+  return ++sourceSelection;
+}
+
+function clearRemoteLink(): void {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('url')) url.searchParams.delete('format');
+  url.searchParams.delete('url');
+  url.searchParams.delete('name');
+  if (showWorkbench.value) url.searchParams.set('view', workbenchSection.value);
+  window.history.replaceState(window.history.state, '', url);
+  appliedRemoteLink = null;
+}
 
 function syncPageFromUrl(): void {
   const params = new URLSearchParams(window.location.search);
   syncLocaleFromUrl();
-  showWorkbench.value = ['preview', 'agent'].includes(params.get('view') ?? '');
+  showWorkbench.value = params.has('url') || ['preview', 'agent'].includes(params.get('view') ?? '');
   workbenchSection.value = params.get('view') === 'agent' ? 'agent' : 'preview';
+  if (!showWorkbench.value) {
+    appliedUrlFormat = null;
+    appliedRemoteLink = null;
+    startSourceSelection();
+    return;
+  }
+  if (workbenchSection.value === 'agent') return;
+  if (params.has('url')) {
+    const remoteLink = JSON.stringify([params.get('url'), params.get('name')]);
+    if (remoteLink !== appliedRemoteLink) {
+      appliedRemoteLink = remoteLink;
+      appliedUrlFormat = null;
+      remoteUrl.value = params.get('url') ?? '';
+      void previewRemote(params.get('name') ?? undefined, false);
+    }
+    return;
+  }
+  const leavingRemote = appliedRemoteLink !== null;
+  appliedRemoteLink = null;
   const format = params.get('format');
-  if (!showWorkbench.value) appliedUrlFormat = null;
-  if (showWorkbench.value && workbenchSection.value === 'preview' && format && format !== appliedUrlFormat) {
+  if (format && format !== appliedUrlFormat) {
     appliedUrlFormat = format;
     selectLandingSample(format);
+  } else if (leavingRemote && !format) {
+    void useSample(initialSample);
   }
 }
 
@@ -1556,6 +1531,8 @@ function returnHome(): void {
   const url = new URL(window.location.href);
   url.searchParams.delete('view');
   url.searchParams.delete('format');
+  url.searchParams.delete('url');
+  url.searchParams.delete('name');
   url.hash = '';
   window.history.pushState({}, '', url);
   syncPageFromUrl();
@@ -1572,7 +1549,8 @@ const converterCore = createWasmConverterClient({
   wasm: converterCoreWasmUrl,
   imageWasm: converterImageWasmUrl,
   officeWasm: converterOfficeWasmUrl,
-  postscriptWasm: converterPostscriptWasmUrl
+  postscriptWasm: converterPostscriptWasmUrl,
+  graphicsWasm: converterGraphicsWasmUrl
 });
 const converter: ConverterClient = {
   async convert(request, context) {
@@ -1593,7 +1571,10 @@ onMounted(() => {
   syncPageFromUrl();
   window.addEventListener('popstate', syncPageFromUrl);
 });
-onUnmounted(() => window.removeEventListener('popstate', syncPageFromUrl));
+onUnmounted(() => {
+  window.removeEventListener('popstate', syncPageFromUrl);
+  remoteRequest?.abort();
+});
 
 function demoKindForConversionTarget(targetFormat: string): DemoKind {
   switch (targetFormat) {
@@ -1688,7 +1669,9 @@ watch(
 
 watch(
   () => [activeFormatExtension.value, current.value.contentType, formatSupportByExtension.value],
-  () => {
+  (value, previous) => {
+    if (previous && value[0] === previous[0] && value[1] === previous[1] && manuallySelectedFormatFamily) return;
+    manuallySelectedFormatFamily = false;
     if (current.value.catalogId) {
       selectedFormatFamilyId.value = getBusinessFormatCategory(current.value.catalogId, 'image').familyId;
       return;
@@ -1701,6 +1684,7 @@ watch(
 );
 
 function selectFormatFamily(id: BusinessFormatFamilyId): void {
+  manuallySelectedFormatFamily = true;
   selectedFormatFamilyId.value = id;
 }
 
@@ -1711,6 +1695,15 @@ function useFormatSample(extension: string): void {
 
 function useDesignSample(name: string): void {
   const sample = staticSamples.find((candidate) => candidate.name === name && candidate.catalogId && designDraftFormats.has(candidate.catalogId));
+  if (sample) void useSample(sample);
+}
+
+const textSampleNames = new Set<string>(textSamples.map(sample => sample.name));
+const showTextSamples = computed(() => sourceMode.value === 'sample' && textSampleNames.has(current.value.name));
+
+function useTextSample(name: string): void {
+  if (showTextSamples.value && current.value.name === name) return;
+  const sample = staticSamples.find(candidate => candidate.name === name && textSampleNames.has(name));
   if (sample) void useSample(sample);
 }
 
@@ -1752,42 +1745,73 @@ const fontResolver: PreviewFontResolver = ({ family, fontFile }) => {
 };
 
 async function useSample(sample: DemoSource): Promise<void> {
+  clearRemoteLink();
+  const selection = startSourceSelection();
   renderedState.value = null;
   lastError.value = null;
   downloadTimeMs.value = null;
   pendingDownloadTimeMs = null;
   const materialized = await materializeSample(sample);
+  if (selection !== sourceSelection) return;
   current.value = materialized;
   // Resolve bundled companion/sidecar paths against the same base as the primary sample.
   uploadResourceResolver.value = materialized.resourceResolver;
   sourceMode.value = current.value.mode ?? 'sample';
 }
 
-async function previewRemote(): Promise<void> {
-  const kind = detectKind(remoteUrl.value) ?? 'pptx';
-  const sourceUrl = remoteUrl.value;
+async function previewRemote(nameOverride?: string, updateUrl = true): Promise<void> {
+  const selection = startSourceSelection();
+  remoteLoadState.value = 'loading';
   downloadTimeMs.value = null;
   pendingDownloadTimeMs = null;
   sourceMode.value = 'url';
   renderedState.value = null;
   lastError.value = null;
   uploadResourceResolver.value = undefined;
+  current.value = {
+    kind: 'text', label: 'FILE', name: nameOverride?.trim() || inferName(remoteUrl.value.trim()),
+    source: new Uint8Array(), mode: 'url'
+  };
 
   try {
-    const name = inferName(sourceUrl);
+    if (!remoteUrl.value.trim()) throw new Error(t('请提供文件地址。', 'Provide a file URL.'));
+    const url = new URL(remoteUrl.value.trim(), window.location.href);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+      throw new Error(t('仅支持不含用户名和密码的 HTTP(S) 文件地址。', 'Use an HTTP(S) file URL without a username or password.'));
+    }
+    const sourceUrl = url.href;
+    remoteUrl.value = sourceUrl;
+    const name = nameOverride?.trim() || inferName(sourceUrl);
+    const kind = detectKind(name) ?? 'text';
+    current.value = { kind, label: kind.toUpperCase(), name, source: sourceUrl, sourceUrl, mode: 'url' };
+    if (updateUrl) {
+      const pageUrl = new URL(window.location.href);
+      pageUrl.searchParams.set('view', 'preview');
+      pageUrl.searchParams.set('url', sourceUrl);
+      pageUrl.searchParams.delete('format');
+      if (nameOverride?.trim()) pageUrl.searchParams.set('name', name);
+      else pageUrl.searchParams.delete('name');
+      if (pageUrl.href !== window.location.href) window.history.pushState({}, '', pageUrl);
+      appliedRemoteLink = JSON.stringify([pageUrl.searchParams.get('url'), pageUrl.searchParams.get('name')]);
+      appliedUrlFormat = null;
+    }
+    const controller = new AbortController();
+    remoteRequest = controller;
     const source = remotePrefetchKinds.has(kind)
-      ? await fetchRemoteSource(sourceUrl, name)
+      ? await fetchRemoteSource(sourceUrl, name, controller.signal)
       : { source: sourceUrl, durationMs: null };
+    if (selection !== sourceSelection) return;
     pendingDownloadTimeMs = source.durationMs;
-    current.value = {
-      kind,
-      label: kind.toUpperCase(),
-      name,
-      source: source.source,
-      mode: 'url'
-    };
+    current.value = { ...current.value, source: source.source };
+    remoteLoadState.value = 'idle';
+    remoteRequest = undefined;
   } catch (error) {
-    lastError.value = error instanceof Error ? error.message : String(error);
+    if (selection !== sourceSelection) return;
+    remoteLoadState.value = 'error';
+    remoteRequest = undefined;
+    lastError.value = error instanceof TypeError
+      ? t('无法加载远程文件，请检查文件地址及来源站点的跨域访问（CORS）设置。', 'Unable to load the remote file. Check its URL and the source site’s cross-origin access (CORS) settings.')
+      : error instanceof Error ? error.message : String(error);
   }
 }
 
@@ -1804,6 +1828,8 @@ async function previewFiles(files: File[]): Promise<void> {
     return;
   }
 
+  clearRemoteLink();
+  const selection = startSourceSelection();
   sourceMode.value = 'upload';
   renderedState.value = null;
   lastError.value = null;
@@ -1814,6 +1840,7 @@ async function previewFiles(files: File[]): Promise<void> {
     const volume = files.find(part => /(?:\.part\d+\.rar|\.(?:7z|zip)\.\d{3,}|\.[r-y]\d{2}|\.z\d{2,})$/i.test(part.name));
     if (volume) {
       const { selectArchiveVolumes } = await import('@filens/archive');
+      if (selection !== sourceSelection) return;
       const set = selectArchiveVolumes(volume.name, files)!;
       current.value = {
         kind: 'zip', label: set.format.toUpperCase(), name: set.primary.name, source: set.primary,
@@ -1825,6 +1852,7 @@ async function previewFiles(files: File[]): Promise<void> {
     }
     if (files.length === 1 && isZipBundleCandidate(file.name)) {
       const bundle = await materializeZipBundleUpload(file);
+      if (selection !== sourceSelection) return;
       if (bundle) {
         current.value = bundle.source;
         uploadResourceResolver.value = bundle.resourceResolver;
@@ -1843,6 +1871,7 @@ async function previewFiles(files: File[]): Promise<void> {
     };
     uploadResourceResolver.value = files.length > 1 ? createFileSetResourceResolver(files) : undefined;
   } catch (error) {
+    if (selection !== sourceSelection) return;
     lastError.value = error instanceof Error ? error.message : String(error);
   }
 }
@@ -1885,9 +1914,9 @@ function performanceNow(): number {
   return typeof performance !== 'undefined' ? performance.now() : Date.now();
 }
 
-async function fetchRemoteSource(url: string, name?: string): Promise<{ source: ArrayBuffer; durationMs: number }> {
+async function fetchRemoteSource(url: string, name?: string, signal?: AbortSignal): Promise<{ source: ArrayBuffer; durationMs: number }> {
   const startedAt = performanceNow();
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
   if (!response.ok) {
     throw new Error(`Failed to load ${name ?? 'remote source'}: ${response.status} ${response.statusText}`.trim());
   }
@@ -2110,7 +2139,7 @@ function detectKind(name: string): DemoKind | null {
   if (/\.(html?|shtml|xhtml)$/.test(normalized)) return 'html';
   if (/\.epub$/.test(normalized)) return 'epub';
   if (/\.cbz$/.test(normalized)) return 'cbz';
-  if (/\.(zip|jar|war|ear|tar|tgz|gz|rar|7z)$/.test(normalized)) return 'zip';
+  if (/\.(zip|zipx|xpi|crx|jar|war|ear|tar|tgz|gz|rar|7z|cbr|cb7|cbt|bz2|bzip2|xz|lzma|lzma86|zst|zstd|tbz|tbz2|txz|tlz|tzst|z|taz|ar|deb|cpio|cab|iso|udf|lha|lzh|rpm|xar|wim|esd)$/.test(normalized)) return 'zip';
   if (/\.(mp3|wav|aac|m4a|flac|ogg|oga|opus)$/.test(normalized)) return 'audio';
   if (/\.(mp4|webm|mov|m4v|ogv|mkv|avi|mpeg|mpg|3gp)$/.test(normalized)) return 'video';
   if (/\.(ts|tsx|js|jsx|vue|css|json|md|py|go|rs)$/.test(normalized)) return 'code';
@@ -2276,46 +2305,6 @@ function createHtmlFixture(): Uint8Array {
     </main>
   </body>
 </html>`);
-}
-
-function createTextFixture(): Uint8Array {
-  return new TextEncoder().encode(`File preview regression notes
-================================
-
-Generic preview can render text files without a converter.
-
-- Unicode: café, 中文, العربية, emoji 😀
-- Numbers: -42, 3.14159, 6.02e23, 50%
-- Date: 2026-08-03T14:30:00+08:00
-- Punctuation: <tag attr="A&B"> 'single' "double" \\ / |
-
-Columns:
-name\tvalue\tactive
-alpha\t42\ttrue
-empty\t\tfalse
-
-This intentionally long line exercises wrapping: alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega.
-`);
-}
-
-function createCodeFixture(): Uint8Array {
-  return new TextEncoder().encode(`import { Preview } from '@filens/vue';
-
-type Format = 'pptx' | 'pdf' | 'docx' | 'xlsx';
-
-export async function previewAll(files: readonly File[]): Promise<Map<Format, number>> {
-  const totals = new Map<Format, number>();
-  for (const file of files) {
-    const format = file.name.split('.').pop()?.toLowerCase() as Format | undefined;
-    if (!format) continue;
-    totals.set(format, (totals.get(format) ?? 0) + file.size);
-  }
-  await Promise.resolve(Preview);
-  return totals;
-}
-
-export const label = ['pptx', 'pdf', 'docx', 'xlsx', '中文'].join(', ');
-`);
 }
 
 function escapeHtml(value: string): string {
@@ -2717,7 +2706,12 @@ async function create3mfFixture(): Promise<Uint8Array> {
 }
 
 function inferName(source: string): string {
-  return source.split(/[?#]/, 1)[0]?.split('/').pop() || 'remote-source';
+  const name = source.split(/[?#]/, 1)[0]?.split('/').pop() || 'remote-source';
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
 }
 
 function createPngDataUrl(): string {
@@ -3434,13 +3428,14 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     :extension="activeFormatExtension"
     :family="familyLabel"
     :source="sourceMode"
+    :third-party-source="thirdPartySource"
     :upload-accept="uploadAccept"
     :families="businessFormatFamilies"
     :selected-family="selectedFormatFamilyId"
     :sample-extensions="sampleExtensions"
     :timings="runtimeTimings"
     :model-summary="model3dSummary"
-    :ready="renderTimeMs !== null || !!current.livePhoto"
+    :ready="remoteLoadState === 'idle' && (renderTimeMs !== null || !!current.livePhoto)"
     :error="lastError"
     :warning-count="warningCount"
     :has-toolbar="!current.livePhoto && familyLabel !== 'model3d'"
@@ -3454,9 +3449,11 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     <template #samples>
       <DesignSamplePicker v-if="designDraftFormats.has(activeFormatExtension)" :active-name="current.name" @select="useDesignSample" />
       <ModelSamplePicker v-if="showModelSamples" :active-name="current.name" @select="useModelSample" />
+      <TextSamplePicker v-if="showTextSamples" :active-name="current.name" @select="useTextSample" />
     </template>
+          <p v-if="remoteLoadState === 'loading'" class="wb-loading" role="status">{{ t('正在加载远程文件…', 'Loading remote file…') }}</p>
           <AppleLivePhotoPreview
-            v-if="current.livePhoto"
+            v-else-if="remoteLoadState === 'idle' && current.livePhoto"
             :photo-src="current.livePhoto.photoSrc"
             :video-src="current.livePhoto.videoSrc"
             :original-photo-src="current.livePhoto.originalPhotoSrc"
@@ -3464,7 +3461,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
             :title="current.label"
           />
           <Preview
-            v-else
+            v-else-if="remoteLoadState === 'idle'"
             :key="current.name"
             :src="previewInput"
             :name="current.name"

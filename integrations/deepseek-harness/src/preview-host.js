@@ -7,7 +7,7 @@ import { runtime } from './runtime-manifest.js';
 export const name = 'filens-preview';
 export const inject = ['webServer'];
 
-const types = { '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.wasm': 'application/wasm', '.txt': 'text/plain; charset=utf-8' };
+const types = { '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.wasm': 'application/wasm', '.txt': 'text/plain; charset=utf-8', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 
 /** Only built, enumerated runtime resources are exposed. This route never accepts document paths. */
 export function runtimeResource(request) {
@@ -21,12 +21,15 @@ export function runtimeResource(request) {
   const headers = {
     'Content-Type': types[file.slice(file.lastIndexOf('.'))] ?? 'application/octet-stream',
     'Content-Length': String(entry.bytes),
-    'Cache-Control': 'no-cache',
+    // The base path hashes every runtime file; changed builds get a new URL.
+    'Cache-Control': 'public, max-age=31536000, immutable',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer',
     'Cross-Origin-Resource-Policy': 'cross-origin',
-    // The published iWork Emscripten glue uses Function(), so its isolated
-    // viewer needs unsafe-eval as well as WASM. External code/network is denied.
+    // Desktop's application origin imports these public, content-hashed assets.
+    'Access-Control-Allow-Origin': '*',
+    // A policy for direct resource navigations. The embedded runtime itself
+    // follows the DSH application policy, including its iWork WASM glue.
     'Content-Security-Policy': "default-src 'none'; script-src 'self' blob: 'unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' data: blob:; frame-src 'self' data: blob:; base-uri 'none'; form-action 'none'",
   };
   if (request.method === 'HEAD') return new Response(null, { headers });

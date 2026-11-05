@@ -2,6 +2,19 @@
 
 Windows 10/11 x64 使用 RapidOCR NCNN，无需 Python 环境；最大边长 960、补边 50、OpenMP 2 线程。CLI 是 Rust，文档解析、转换、布局归一化仍在共享 WASM 核心。Windows ARM64 暂不提供原生构建。
 
+当前源码的目录读取不再使用 hdrw。NTFS 上通过目录句柄和 `GetFileInformationByHandleEx(FileFullDirectoryInfo)`，以 64 KiB 缓冲批量获取文件名、属性和大小，减少逐文件元数据查询；非 NTFS 或 API 不支持时自动回退 `read_dir`。不需要管理员权限，不打开裸盘，跳过 junction、符号链接等 reparse point。此优化作用于搜索和相似文件扫描的目录发现，正文解析仍使用共享核心。
+
+`capacity.search.discovery.backend` 表示默认优先后端 `ntfs`；实际后端见 `search.scan.backend` / `similarity.scan.backend`。`FILENS_WALKER=read-dir` 可强制原生基线。跨平台单元测试覆盖批次结构、中文文件名、范围和限制；Windows CI 另跑多批目录与 junction 检查。当前 macOS 主机的交叉编译不能证明 Windows 实机加速比例，可在 Windows 源码目录运行：
+
+```powershell
+cargo test --locked --manifest-path cli/Cargo.toml walk::
+node scripts/benchmark-agent-walk.mjs
+```
+
+基准创建 10000 个合成文件，用文件名模式隔离目录发现，预热后交替比较默认后端和 `read-dir`，输出各五次进程的目录耗时与总耗时中位数；保留操作系统缓存。用 `FILENS_AGENT_BINARY` 指定待测 CLI 路径，`FILENS_BENCH_FILES` 调整文件数（最多 20000）。
+
+本机 hdrw/原生目录发现对照及 Windows 工程估算见[性能记录](agent-cli-directory-discovery-performance.zh-CN.md)，其中 macOS 测量不代表 Windows NTFS 实机成绩。
+
 0.3.0 提供 Windows npm 包。当前 macOS 主机只能完成交叉编译、PE/DLL 检查和 UPX 校验；Windows 原生运行结果需要补充。npm `0.2.0` 不含 Windows 包。
 
 ## 安装当前版本

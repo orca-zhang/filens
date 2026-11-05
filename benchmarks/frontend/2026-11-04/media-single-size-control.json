@@ -1,0 +1,24 @@
+{
+  "node": "v20.20.2",
+  "wasm": {
+    "wasm/converter-core/dist/converter-core-full.wasm": "e66117ef75b41519c8b40076a9d386b777bae81025cd289ef2a5c9acaf4f2007",
+    "wasm/converter-image/dist/converter-image.wasm": "8b2841ad023d64b4053ddda717e870eb8312dfb8c3a9cdc170801a4b91ba8ba8"
+  },
+  "builds": {
+    "baseline": {
+      "raw": 8937588,
+      "gzip": 3993942,
+      "brotli": 3680334
+    },
+    "current": {
+      "raw": 8937803,
+      "gzip": 3994015,
+      "brotli": 3678483
+    }
+  },
+  "baselineSourceRef": "66e01abbd36834ca20defc576ceb64d79efbd5b0:packages/core/src/render/dom.ts",
+  "sourceSha256": {
+    "baseline": "44f09085cb6eeefc48a1a0df8edc1c187789b5f344a9e7c4b3a6aa8aea6b3753",
+    "current": "70133dc55a9ab74e16b27c91bd1ea6230eac51b22702f7281ce74d83bf96889c"
+  }
+}

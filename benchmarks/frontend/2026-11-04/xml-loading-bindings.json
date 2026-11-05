@@ -1,0 +1,58 @@
+{
+  "identical": true,
+  "baseline": [
+    {
+      "bytes": 481449,
+      "sha256": "3a847e66839387262e8668f25f0fcaead01a4f900783a7210334a5bb62c931fd"
+    },
+    {
+      "bytes": 2191345,
+      "sha256": "88e95771f66b8005d8755091e3a1764546f18a9e1c46bf9d0de88c651891fbfa"
+    },
+    {
+      "bytes": 334212,
+      "sha256": "e312230593981882f17959fef384ca67dfcd7246b93731cd2f773056c2aa0fff"
+    },
+    {
+      "bytes": 481458,
+      "sha256": "e498d18c1665f4dd5295fac3785c9952c881256d95904a183516e5d7b2712250"
+    }
+  ],
+  "current": [
+    {
+      "bytes": 481449,
+      "sha256": "3a847e66839387262e8668f25f0fcaead01a4f900783a7210334a5bb62c931fd"
+    },
+    {
+      "bytes": 2191345,
+      "sha256": "88e95771f66b8005d8755091e3a1764546f18a9e1c46bf9d0de88c651891fbfa"
+    },
+    {
+      "bytes": 334212,
+      "sha256": "e312230593981882f17959fef384ca67dfcd7246b93731cd2f773056c2aa0fff"
+    },
+    {
+      "bytes": 481458,
+      "sha256": "e498d18c1665f4dd5295fac3785c9952c881256d95904a183516e5d7b2712250"
+    }
+  ],
+  "sources": {
+    "baseline": {
+      "packages/core/src/parser/xml.ts": "8c5ce30f931af957e5dce31eea0edcab326174303c5cbe75f753ddf32fd2caa7",
+      "packages/xlsx/src/parser.ts": "21e5bcd3414d5a7c3eadac56a165fa7a2dcce5bc5b7024d92816bd5c4c130dd6",
+      "scripts/optional-engine-chunks.ts": "c6dbe79aec760474d3aa05d6f895a24ee1bb37cfbdae43fa99e3c679269ffede"
+    },
+    "current": {
+      "packages/core/src/parser/xml.ts": "1b7c1a81479cff294cccc945f5f578579cc7ae05b5a94dfb8be95aadac0b8f43",
+      "packages/xlsx/src/parser.ts": "df977a2d5879dd7980754448c3c6fb50b509ad0d9b093a28b0a94ccaaf713611",
+      "scripts/optional-engine-chunks.ts": "27468e51264f25a4ba92a61a7d0cd9be71601a1bdf971cd1b8caca33256711d5",
+      "scripts/xml-parser-plugin.ts": "6fac46e844f7bc81b701f49ed658d50932caf0ff1d237e3f9009f4546a4a6262",
+      "apps/demo/vite.config.ts": "518d36acc71d02229a1271651f8a2836f84beb07bf78e69b26c7ac3132cb3685",
+      "packages/preview/vite.config.ts": "cb284ef06f18ea63a40883c2ef73056042140fcbebc25bfab9d26c3094570898"
+    }
+  },
+  "versions": {
+    "fast-xml-parser": "4.5.6",
+    "strnum": "1.1.2"
+  }
+}

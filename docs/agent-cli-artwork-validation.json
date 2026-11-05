@@ -1,0 +1,93 @@
+{
+  "observedAt": "2026-11-05T03:12:32.355Z",
+  "platform": "darwin-arm64",
+  "cliVersion": "0.5.6",
+  "inputFormats": 349,
+  "addedFormats": [
+    {
+      "format": "tga",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "dds",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "dib",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "cur",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "pcx",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "jxl",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "qoi",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "ff",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "psd",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "psb",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "ico",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "icns",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "ai",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "eps",
+      "read": true,
+      "conversion": true
+    },
+    {
+      "format": "ps",
+      "read": true,
+      "conversion": true
+    }
+  ],
+  "ocrLayout": true,
+  "nestedArchiveSearch": true,
+  "virtualMemberRead": true,
+  "noOCR": true,
+  "malformedInputs": [
+    "pcx",
+    "cur",
+    "psd"
+  ],
+  "passed": true
+}

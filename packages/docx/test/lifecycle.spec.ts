@@ -35,7 +35,8 @@ describe('DOCX asynchronous loading and resource lifetime', () => {
   it('keeps a newer document when the old parser resolves late', async () => {
     const { host, session } = setup(), old = pending<any>(); mocks.parse.mockImplementationOnce(() => old.promise);
     const first = session.load(new Blob(), context(new Blob(), 'old.docx'));
-    await Promise.resolve(); await session.load(new Blob(), context(new Blob(), 'current.docx'));
+    await vi.waitFor(() => expect(mocks.parse).toHaveBeenCalledTimes(1));
+    await session.load(new Blob(), context(new Blob(), 'current.docx'));
     old.resolve({ text: 'Old' }); await first;
     expect(host.querySelectorAll('.docx')).toHaveLength(1); expect(host.textContent).toBe('Current');
     expect(session.getState()).toMatchObject({ title: 'current.docx', loading: false, error: null });
@@ -70,7 +71,8 @@ describe('DOCX asynchronous loading and resource lifetime', () => {
     const { session } = setup(), old = pending<any>(), error = vi.fn(); session.on('error', error);
     mocks.parse.mockImplementationOnce(() => old.promise);
     const first = session.load(new Blob(), context(new Blob(), 'old.docx')).catch(() => {});
-    await Promise.resolve(); await session.load(new Blob(), context(new Blob(), 'current.docx'));
+    await vi.waitFor(() => expect(mocks.parse).toHaveBeenCalledTimes(1));
+    await session.load(new Blob(), context(new Blob(), 'current.docx'));
     old.reject(new Error('Old failure')); await first;
     expect(error).not.toHaveBeenCalled(); expect(session.getState()).toMatchObject({ title: 'current.docx', error: null });
   });

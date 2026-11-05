@@ -1,18 +1,13 @@
 import './style.css';
 
 import {
-  DEFAULT_FORMAT_ROUTES,
   createPptxPreviewDriver,
-  type FormatDefinition,
   type PreviewDriver
 } from '@filens/core';
-import { createDocxPreviewDriver, createDocxPreviewRoutes } from '@filens/docx';
-import { createIworkPreviewDriver, createIworkPreviewRoutes } from '@filens/iwork';
-import { createPdfPreviewDriver, createPdfPreviewRoutes } from '@filens/pdf';
-import { createXlsxPreviewDriver, createXlsxPreviewRoutes } from '@filens/xlsx';
-
-const OFFICE_DRIVER_IDS = new Set(['pptx', 'pdf', 'docx', 'xlsx']);
-const OFFICE_CORE_ROUTES = DEFAULT_FORMAT_ROUTES.filter((route) => OFFICE_DRIVER_IDS.has(route.driverId));
+import { createDocxPreviewDriver } from '@filens/docx';
+import { createIworkPreviewDriver } from '@filens/iwork';
+import { createPdfPreviewDriver } from '@filens/pdf';
+import { createXlsxPreviewDriver } from '@filens/xlsx';
 
 export function createOfficePreviewDrivers(): PreviewDriver[] {
   return [
@@ -24,8 +19,4 @@ export function createOfficePreviewDrivers(): PreviewDriver[] {
   ];
 }
 
-export function createOfficePreviewRoutes(baseRoutes = OFFICE_CORE_ROUTES): FormatDefinition[] {
-  return createIworkPreviewRoutes(
-    createPdfPreviewRoutes(createDocxPreviewRoutes(createXlsxPreviewRoutes(baseRoutes)))
-  );
-}
+export { createOfficePreviewRoutes } from './routes';

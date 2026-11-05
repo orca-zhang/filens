@@ -1,24 +1,24 @@
 {
-  "date": "2026-11-04",
-  "version": "0.1.3",
-  "previewVersion": "0.3.3",
+  "date": "2026-11-05",
+  "version": "0.1.4",
+  "previewVersion": "0.3.4",
   "scope": "Source SDK ZIPs with complete offline split runtime, archive sidecars, platform source, integration guide and notices. Not precompiled AAR/XCFramework artifacts. Excludes build tools and filesystem allocation overhead.",
   "packages": [
     {
       "platform": "ios",
-      "file": "filens-ios-sdk-0.1.3.zip",
-      "bytes": 4540776,
-      "unpackedBytes": 14524863,
-      "runtimeBytes": 14481853,
-      "sha256": "dbdeb62865d69c4f13b803deb9b05b04376a402485ad0ac0c6a938a7ef53d7d3"
+      "file": "filens-ios-sdk-0.1.4.zip",
+      "bytes": 6694819,
+      "unpackedBytes": 20071735,
+      "runtimeBytes": 20028725,
+      "sha256": "fd8b4f3ff6c7c138a7b133b4ec24175381d7b8c1f2b881ffd3b329f906e97c40"
     },
     {
       "platform": "android",
-      "file": "filens-android-sdk-0.1.3.zip",
-      "bytes": 4543228,
-      "unpackedBytes": 14520705,
-      "runtimeBytes": 14481853,
-      "sha256": "78551086a544ce84b49f7c1a3320cf915b71df5239febd3f3de96bf0619fb3b5"
+      "file": "filens-android-sdk-0.1.4.zip",
+      "bytes": 6697678,
+      "unpackedBytes": 20067577,
+      "runtimeBytes": 20028725,
+      "sha256": "e38e16b4af255039d0e014432cda23510fef5b6cf3bc8fa40c12e6a4150fcc00"
     }
   ]
 }

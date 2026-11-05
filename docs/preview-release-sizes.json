@@ -1,113 +1,392 @@
 {
-  "date": "2026-11-04",
-  "tag": "v0.6.3",
-  "previousRelease": "v0.6.2",
+  "date": "2026-11-05",
+  "tag": "v0.6.4",
+  "previousRelease": "v0.6.3",
   "components": {
-    "preview": "0.3.3",
-    "mobileSdk": "0.1.3",
-    "cli": "0.5.4"
+    "preview": "0.3.4",
+    "mobileSdk": "0.1.4",
+    "cli": "0.5.6"
   },
   "scope": "Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.",
   "assets": [
     {
-      "file": "filens-preview-0.3.3-split.zip",
+      "file": "filens-preview-0.3.4-split.zip",
       "kind": "browser-split",
-      "bytes": 4516416,
-      "unpackedBytes": 14479542,
-      "sha256": "4e0fa2b894c2489732844bc4e192867d551461209a4b27a14e51fb545b96a77b"
+      "bytes": 6668077,
+      "unpackedBytes": 20026414,
+      "sha256": "15db5f4f4c63793da55a9b4614a4b98a86e41eb0a2f70e88166aa500b2d606d7"
     },
     {
-      "file": "filens-preview-0.3.3-all-in-one.zip",
+      "file": "filens-preview-0.3.4-all-in-one.zip",
       "kind": "browser-all-in-one",
-      "bytes": 4401308,
-      "unpackedBytes": 10322422,
-      "sha256": "f57e874b1435dee5e6d9c3033e27bfe9a1af9e4e74d9b647196ff7761d65504c"
+      "bytes": 12479237,
+      "unpackedBytes": 17075852,
+      "sha256": "48535402f75f52f753c5d9e7d0a1f6cad94ff0e38dd7a2f19dd8808d1ec72e61"
     },
     {
-      "file": "filens-ios-sdk-0.1.3.zip",
+      "file": "filens-ios-sdk-0.1.4.zip",
       "kind": "source-sdk-ios",
-      "bytes": 4540776,
-      "unpackedBytes": 14524863,
-      "sha256": "dbdeb62865d69c4f13b803deb9b05b04376a402485ad0ac0c6a938a7ef53d7d3"
+      "bytes": 6694819,
+      "unpackedBytes": 20071735,
+      "sha256": "fd8b4f3ff6c7c138a7b133b4ec24175381d7b8c1f2b881ffd3b329f906e97c40"
     },
     {
-      "file": "filens-android-sdk-0.1.3.zip",
+      "file": "filens-android-sdk-0.1.4.zip",
       "kind": "source-sdk-android",
-      "bytes": 4543228,
-      "unpackedBytes": 14520705,
-      "sha256": "78551086a544ce84b49f7c1a3320cf915b71df5239febd3f3de96bf0619fb3b5"
+      "bytes": 6697678,
+      "unpackedBytes": 20067577,
+      "sha256": "e38e16b4af255039d0e014432cda23510fef5b6cf3bc8fa40c12e6a4150fcc00"
     },
     {
-      "file": "filens-0.5.4-macos-arm64-lite.tar.gz",
+      "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
       "kind": "cli-lite",
-      "bytes": 11399720,
-      "unpackedBytes": 19334305,
-      "sha256": "c1ad83ce9330bc0f10cf8b8f2ce2197166aef6cb0bcb56162f1914ea3fcf6525",
+      "bytes": 20004062,
+      "unpackedBytes": 26743177,
+      "sha256": "f32a258e6224115b62f6fcc60cae456c5b46a506b58d303a4dce61855fe0a4f5",
       "platform": "darwin-arm64",
-      "binaryBytes": 2304688
+      "binaryBytes": 2306336
     },
     {
-      "file": "filens-0.5.4-macos-arm64-full.tar.gz",
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
       "kind": "cli-full",
-      "bytes": 26215967,
-      "unpackedBytes": 43664654,
-      "sha256": "df307735d4760369fe833690af650080f28d7eacc1ec32922d01b2478be3cdae",
+      "bytes": 34818439,
+      "unpackedBytes": 51073526,
+      "sha256": "7b712c3acbf08496fb9f08f158d657a10c6e07744c96f73da57baf11db43aea9",
       "platform": "darwin-arm64",
-      "binaryBytes": 2304688
+      "binaryBytes": 2306336
     },
     {
-      "file": "filens-0.5.4-linux-x64-lite.tar.gz",
+      "file": "filens-0.5.6-linux-x64-lite.tar.gz",
       "kind": "cli-lite",
-      "bytes": 12185805,
-      "unpackedBytes": 19054547,
-      "sha256": "6d8d75f8f2f9a7bc613b8ab9f0eac2c92a837dc45ee95b37a2c21050d626d0dc",
+      "bytes": 19838915,
+      "unpackedBytes": 25522259,
+      "sha256": "b855823471ebf727110d05c9e75660237e2e0489391ef4f62a88200a59e85ffd",
       "platform": "linux-x64",
-      "binaryBytes": 2024932
+      "binaryBytes": 1085420
     },
     {
-      "file": "filens-0.5.4-linux-x64-full.tar.gz",
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
       "kind": "cli-full",
-      "bytes": 28910394,
-      "unpackedBytes": 49397932,
-      "sha256": "bf9bb64ca6cc7d432d4c7ace757b48311f4c9886286eeffd44a145011ae58c7d",
+      "bytes": 36567390,
+      "unpackedBytes": 55867920,
+      "sha256": "89ac38e5d159a326041843b91d711382917d048b08190f7e1db1b7128ebf7e55",
       "platform": "linux-x64",
-      "binaryBytes": 2022956
+      "binaryBytes": 1085720
     },
     {
-      "file": "filens-0.5.4-linux-arm64-lite.tar.gz",
+      "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
       "kind": "cli-lite",
-      "bytes": 12069940,
-      "unpackedBytes": 18938729,
-      "sha256": "20b780bb55aac7c859018ec9308a2fd49850d4ca6493c9859e2ec2b8ee95f6bf",
+      "bytes": 19722272,
+      "unpackedBytes": 25406217,
+      "sha256": "7ad751535a9d119976b58fb86b5ae2221ab713517c908edd42bf986c7c909387",
       "platform": "linux-arm64",
-      "binaryBytes": 1909112
+      "binaryBytes": 969376
     },
     {
-      "file": "filens-0.5.4-linux-arm64-full.tar.gz",
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
       "kind": "cli-full",
-      "bytes": 26484129,
-      "unpackedBytes": 43487570,
-      "sha256": "78ae39c409669c7bf0a92ee8f4aa2f40cef1f1074d14aa84c22ba589123d7f4c",
+      "bytes": 34140743,
+      "unpackedBytes": 49958726,
+      "sha256": "5338bdc4025fcc070b23327f71abd2416736771b9c491966ccdac550c1ef95a9",
       "platform": "linux-arm64",
-      "binaryBytes": 1907572
+      "binaryBytes": 971504
     },
     {
-      "file": "filens-0.5.4-windows-x64-lite.zip",
+      "file": "filens-0.5.6-windows-x64-lite.zip",
       "kind": "cli-lite",
-      "bytes": 12120044,
-      "unpackedBytes": 18966017,
-      "sha256": "dacdf3ab25fb2f96f81cc41358838f0995c4f67a0c4a66ad1e875b4b6d6d5fd6",
+      "bytes": 19773833,
+      "unpackedBytes": 25436793,
+      "sha256": "4755da9e1987db869e72a0f8f100fecae1752369b3c7d4a4944d7c24b04490f5",
       "platform": "win32-x64",
-      "binaryBytes": 1936384
+      "binaryBytes": 999936
     },
     {
-      "file": "filens-0.5.4-windows-x64-full.zip",
+      "file": "filens-0.5.6-windows-x64-full.zip",
       "kind": "cli-full",
-      "bytes": 29141827,
-      "unpackedBytes": 49124112,
-      "sha256": "afe53ed2e2dff0df531427d4a6ebe41ef16d663fead69840db32511fa3f9959c",
+      "bytes": 36796476,
+      "unpackedBytes": 55595912,
+      "sha256": "21d8edcbe5a1c9430c5c7f6efad6f08379551ddf22f5e0e248ce51ef18347a81",
       "platform": "win32-x64",
-      "binaryBytes": 1935872
+      "binaryBytes": 1000448
+    },
+    {
+      "file": "filens-cli-darwin-arm64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 7559839,
+      "unpackedBytes": 9667953,
+      "sha256": "f843bf4d87e12ba77c50af615191c053dcbdffe6edb7f82e98cec435a1a25e6e",
+      "name": "filens-cli-darwin-arm64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-ocr-darwin-arm64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 14894689,
+      "unpackedBytes": 24348669,
+      "sha256": "ac996818bffa4eda91a961f503e99e1f099372fdcfc49bf5291709e64c755636",
+      "name": "filens-ocr-darwin-arm64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-cli-linux-x64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 7347710,
+      "unpackedBytes": 8447060,
+      "sha256": "f60e3e52fe27b6c87b58c41d7b078ba87f2632f1bb9add8cf8e8673f10979ce0",
+      "name": "filens-cli-linux-x64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-ocr-linux-x64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 16755854,
+      "unpackedBytes": 30363704,
+      "sha256": "5364fd19c787b531ed2a084cd19dc747ad43c4c03158ddcc4d925610ceba0a91",
+      "name": "filens-ocr-linux-x64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-cli-linux-arm64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 7231678,
+      "unpackedBytes": 8331020,
+      "sha256": "98258da5f562e645914a92cd41c519c04357161b972427c00e6dd1c3662e128d",
+      "name": "filens-cli-linux-arm64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-ocr-linux-arm64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 14454145,
+      "unpackedBytes": 24568728,
+      "sha256": "a1d056f5768bbce853b1fa0db8efcdcf1d64861e57cc7ec931901e57c30c5ae5",
+      "name": "filens-ocr-linux-arm64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "orca.zhang-filens-cli-win32-x64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 7261175,
+      "unpackedBytes": 8361563,
+      "sha256": "85b5a7189f242d25211f0d55940e70a8fddcf458cd0998a8d165009636699cab",
+      "name": "@orca.zhang/filens-cli-win32-x64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "orca.zhang-filens-ocr-win32-x64-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 17022762,
+      "unpackedBytes": 30176933,
+      "sha256": "51d6d1e991ee16fb5fd516c207dca247f4283eab1a958e66398ba3361429b4e3",
+      "name": "@orca.zhang/filens-ocr-win32-x64",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-cli-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 18860,
+      "unpackedBytes": 52546,
+      "sha256": "8dc22dccd90e2a8c797a20f1b816005a9742f3b29439f837742722e4c51de082",
+      "name": "filens-cli",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-cli-lite-0.5.6.tgz",
+      "kind": "npm-package",
+      "bytes": 18840,
+      "unpackedBytes": 52380,
+      "sha256": "532666649ae91e6382f47ea5d8c7ca217ade8a02b9270c6d91814d9882a93730",
+      "name": "filens-cli-lite",
+      "version": "0.5.6"
+    },
+    {
+      "file": "filens-preview-0.3.4.tgz",
+      "kind": "npm-package",
+      "bytes": 19143998,
+      "unpackedBytes": 37121307,
+      "sha256": "562580c3c286c8fff7858bfcfd0af95d16a342cb8233b9b279684552981cbf36",
+      "name": "filens-preview",
+      "version": "0.3.4"
+    },
+    {
+      "file": "filens-archive-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 490240,
+      "unpackedBytes": 1273469,
+      "sha256": "1dc18c4fb921bb8ec39b7a7b4b126e186ebed1ffd9318d4547a9d5677fdedffd",
+      "name": "@filens/archive",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-cad-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 31474,
+      "unpackedBytes": 142773,
+      "sha256": "af5b7f0c4c3a9582f9e2abad5441b97cf082b83e51af2f14b374578fa180dd25",
+      "name": "@filens/cad",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-converter-client-0.1.2.tgz",
+      "kind": "npm-package",
+      "bytes": 1319607,
+      "unpackedBytes": 3937996,
+      "sha256": "4f2e352c38f91f91355d27e123797429c129325a00b3c6b788e517468fbbfcba",
+      "name": "@filens/converter-client",
+      "version": "0.1.2"
+    },
+    {
+      "file": "filens-core-0.1.2.tgz",
+      "kind": "npm-package",
+      "bytes": 147915,
+      "unpackedBytes": 617662,
+      "sha256": "b0fac48993c28530df67a0509cbd3f3b694943e24e03b02c8bbd8e8a60a514a1",
+      "name": "@filens/core",
+      "version": "0.1.2"
+    },
+    {
+      "file": "filens-design-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 2656,
+      "unpackedBytes": 6928,
+      "sha256": "7f0b6bb6ff3988c1bb1fe74772a80a15c5cbe7f0cbdf7b5f775aac7e56b64ed8",
+      "name": "@filens/design",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-diagram-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 10498,
+      "unpackedBytes": 34363,
+      "sha256": "cffbcfc164fa3f847ae09a25fe8c0f63ac8e6fada0adb5a266c53151756d6b74",
+      "name": "@filens/diagram",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-docx-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 6310,
+      "unpackedBytes": 17933,
+      "sha256": "d8e47b27e8c301364909117e341f6a6a6f869f11b53234a387aa7f0cf8a9cc6e",
+      "name": "@filens/docx",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-books-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 9978,
+      "unpackedBytes": 29605,
+      "sha256": "ebc2a2c4f582fb4efc1bb13c4d07a7b527eecaf560c66a5986d366932bf460da",
+      "name": "@filens/books",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-iwork-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 1549397,
+      "unpackedBytes": 3693201,
+      "sha256": "37938f5c3bfcab207139ebd8386d14e28d9ddf1cf0b8c9bfd348d52f4da2add1",
+      "name": "@filens/iwork",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-media-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 114621,
+      "unpackedBytes": 513976,
+      "sha256": "a1ac9af1e7734affd42c7af01afbe06a755304146457b7f605da8b43053fe616",
+      "name": "@filens/media",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-mindmap-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 8185,
+      "unpackedBytes": 26058,
+      "sha256": "993715827e751b91eff927e809d33659a25b94183a14ecfa4528f642cbbe8291",
+      "name": "@filens/mindmap",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-model3d-0.1.2.tgz",
+      "kind": "npm-package",
+      "bytes": 51679,
+      "unpackedBytes": 203980,
+      "sha256": "4fefa606f3df3055d2dba672be7593b6460fefcae1a104a8aab0280d6ca5fabb",
+      "name": "@filens/model3d",
+      "version": "0.1.2"
+    },
+    {
+      "file": "filens-office-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 6766,
+      "unpackedBytes": 22715,
+      "sha256": "fcd7b97330ef038951c2d2814513bc6fe13222fb913f6a948406e826f78b52ac",
+      "name": "@filens/office",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-panorama-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 78146,
+      "unpackedBytes": 298696,
+      "sha256": "09d5f4b04a9b5efce71645359b3c08c159e3a6b46bf8589eeb63cc71e927c75e",
+      "name": "@filens/panorama",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-pdf-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 304975,
+      "unpackedBytes": 1103570,
+      "sha256": "17e27c4c6d26f6a0ce2aa6f4406750ed69fb065f29cca69a334225fc3b8cfca8",
+      "name": "@filens/pdf",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-text-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 6175,
+      "unpackedBytes": 20102,
+      "sha256": "e1f8b1de6933c668cacb3c0ebef22f788f98d30659a8e8a2b3b144257dcc3785",
+      "name": "@filens/text",
+      "version": "0.1.1"
+    },
+    {
+      "file": "filens-vue-0.1.2.tgz",
+      "kind": "npm-package",
+      "bytes": 96207,
+      "unpackedBytes": 472907,
+      "sha256": "9798151ba9820899173a20de1df7b7129d899a6c9ee7a12db4b7c27c6ba38d5d",
+      "name": "@filens/vue",
+      "version": "0.1.2"
+    },
+    {
+      "file": "filens-xlsx-0.1.1.tgz",
+      "kind": "npm-package",
+      "bytes": 14917,
+      "unpackedBytes": 46445,
+      "sha256": "f7bb15fe8adc91f241f316df4a9df0f7a59d3cf84e9cc8604f249da0f72e24e7",
+      "name": "@filens/xlsx",
+      "version": "0.1.1"
+    },
+    {
+      "file": "dsh-filens-0.1.3.tgz",
+      "kind": "npm-package",
+      "bytes": 6846421,
+      "unpackedBytes": 20516935,
+      "sha256": "1341c54436e20d265547290f26719d075023137e642bcf787e0ed65ee9bb73f7",
+      "name": "dsh-filens",
+      "version": "0.1.3"
+    },
+    {
+      "file": "filens-step-0.1.0-rc.1.tgz",
+      "kind": "npm-package",
+      "bytes": 363531,
+      "unpackedBytes": 1282858,
+      "sha256": "9df2319aa2ede9c0b791e50ecb454867042b376d19cf6d9f8f249bf1d035081e",
+      "name": "filens-step",
+      "version": "0.1.0-rc.1"
     }
   ]
 }

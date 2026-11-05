@@ -1,0 +1,1199 @@
+{
+  "observedAt": "2026-11-04T22:53:14.466429+00:00",
+  "status": "packaged-unpublished-awaiting-user-confirmation",
+  "name": "dsh-filens",
+  "version": "0.1.3",
+  "publishedVersionUnchanged": "0.1.2",
+  "package": {
+    "name": "dsh-filens",
+    "version": "0.1.3",
+    "file": "dsh-filens-0.1.3.tgz",
+    "bytes": 6844749,
+    "unpackedBytes": 20504688,
+    "sha256": "ce43a7fd7512d10fe0cffd23f6d83c0bb0aec283c5f167df39fb1b9bd102c7b2",
+    "integrity": "sha512-3KJjeQpRj6sIMeQnzivDt6gEnzylSS1jX83ZwUs3ElrUjCw9WPi6JkyZYty3WdyJg5+BzUfE+RTiV0yLyuSRtQ==",
+    "cliVersion": "0.5.5",
+    "previewVersion": "0.3.4",
+    "previewSHA256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254",
+    "extensions": 450,
+    "privacyChecked": true,
+    "publicationStatus": "unpublished-awaiting-user-confirmation"
+  },
+  "sourceFilesSHA256": {
+    "apps/demo/vite.config.ts": "34dbd3cd09061fef4b5224f0d33af54ab23983677b6aaa20364e56a9d2e6439a",
+    "integrations/deepseek-harness/scripts/build.mjs": "8386fa9a11ef589ffa1b3df48a8af009bc554fb316bde72abeb963e06b250721",
+    "integrations/deepseek-harness/src/client.js": "08cb838f4abaaae88941ae36e76b43d12581e7a11e1b896143a9fca3127facd8",
+    "integrations/deepseek-harness/src/preview-host.js": "82a37005d95aac9aa47ab1012f7c92b8eab9c4fb27c598b772ae797c031d6fa2",
+    "integrations/deepseek-harness/src/viewer.js": "c92c0391c24695284a9c7ce69aa25ebac3cd8b5e0cb15b05319424e3246013ef",
+    "integrations/deepseek-harness/test/browser.mjs": "172760b30834e61b948b9147b31ea4887a34219620819c1566e5b7237d2f0a7d",
+    "integrations/deepseek-harness/test/desktop.mjs": "f4e2a5e545e0ea3535a37606b3cd6d51ad052b98775a75b6dd78fd8c789ec45e",
+    "packages/archive/package.json": "da825fc4047fed6047956d4984494d35dce1080c8d01ed813eee72769dd06b91",
+    "packages/archive/src/preview-driver.ts": "6c213db4790ed8a18f44a73ca7d427055af9f95d1b2f2eafe683499f02b3db39",
+    "packages/archive/src/routes.ts": "2993ba362189736c97ec3e0449836bfb1eaf47a7bd7911d92441fb0251adac80",
+    "packages/archive/vite.config.ts": "4e9f793944ad2539989c165dd81ac361a6b1e0045630abde9e787c307602ca27",
+    "packages/cad/package.json": "b7108f1060aa59a919ebdfa01e754dace6fc9809325165c7cf56e7b3f648ae15",
+    "packages/cad/src/preview-driver.ts": "1ec55c7fe634b188a1b6bc358ebc76f575434d7ac6b4f5f165bf506d6b08f804",
+    "packages/cad/src/routes.ts": "f31bc44792adde073f1162154111c0a6af29a04e3f903f69cef4c251cc122148",
+    "packages/cad/vite.config.ts": "147e9cfcb20a90501ebd9d741ea156a087cee364df734106692af679bdc45cf2",
+    "packages/core/package.json": "7fc147c4b5fc8bf67f0ea76d3aab9612b3ad04719c03e2822d7cd74260b74376",
+    "packages/core/src/preview/default-drivers.ts": "90bc3ba4e591b233dbdac0a842a864b13406d34cc492385af4a397ded3bf54fc",
+    "packages/core/src/preview/index.ts": "3fd89bca040c4b755b259f28947f11bb2bc5d09acf8102feeabdbef5a3cf8cb5",
+    "packages/core/src/preview/lazy-driver.ts": "3dd9e9649a8f5c87d540eb6d81a563dea6e9c323a65884979f6fa1d24dedc720",
+    "packages/core/src/preview/previewer.ts": "fc8fd38defee86472a120697659b2d8792a224fb0508232ef7984382f8306aa3",
+    "packages/core/src/preview/types.ts": "84581174b2e5e187e2b7e7a98b0dbba38fcaba3cc573e33804f0561f513a4219",
+    "packages/core/src/preview-runtime.ts": "0f088b60d90a5239a4c3cfbee6e8f16144c2dcd1a88e330aafdb59f52457d00a",
+    "packages/core/test/lazy-driver.spec.ts": "3394493042069ffa1a699279565fa819fda7df9e3ce6a0f707737c3128819532",
+    "packages/core/vite.config.ts": "900b410220810d097725bc14cec92c13c170e1ec592017ffb2c7b62f46122038",
+    "packages/design/package.json": "07cb03c7a8749bc252909187014eea41145bac92f3b0c65edb930fce2c9d1847",
+    "packages/design/src/routes.ts": "860e1b32fefb762cadb73a026cc61e8c627852def99f7dcef87c8c226169dfd5",
+    "packages/design/vite.config.ts": "eb22f2abfd3dca4672062a806df1b4160285ee851b3e25167e3010fe81150864",
+    "packages/diagram/package.json": "0ddcf572f3571907cbc74f161c3c3d56954cda5e62a60e436dcb370db4fab284",
+    "packages/diagram/src/preview-driver.ts": "47ca537a7dc0b786dbe269c164e75c8f6cb5574bdbb65bf43fbb1c04a6af61a8",
+    "packages/diagram/src/routes.ts": "a0e1c5ef815b50503fb2d5b142fc7184b04fb77da1db65b130ca3b3d4867e481",
+    "packages/diagram/vite.config.ts": "9754f7056af70454d78fbe0cccb64eb6e6e09de69e02aaa782f641522551ccf7",
+    "packages/docx/package.json": "b1beaceccd84fc6bead46b8d23ec2ec7e23ea784f8cded989b3df89f4a1ec871",
+    "packages/docx/src/preview-driver.ts": "f088f0436de8d8082b92044f84b6f05bdac46ca4ee27951a1f65806c7679e4ee",
+    "packages/docx/src/routes.ts": "251e3a1e9ed0de10d19b703bafb79e15dd956ae473ac5ed409b7ce98138561b9",
+    "packages/docx/vite.config.ts": "9754f7056af70454d78fbe0cccb64eb6e6e09de69e02aaa782f641522551ccf7",
+    "packages/ebook/package.json": "f5cfa821f714b92ae49711f48cb297ea86e008d10b5ac660add41d0ba4a9c133",
+    "packages/ebook/src/preview-driver.ts": "973a317ad2fca40e458a0542c0650e5f3f344f9c082aebd1b6016c3dc305645d",
+    "packages/ebook/src/routes.ts": "e79be005eddfae3db79dc1b720664481a1da7e857ddbaeab82173dc82c0d4f17",
+    "packages/ebook/vite.config.ts": "9754f7056af70454d78fbe0cccb64eb6e6e09de69e02aaa782f641522551ccf7",
+    "packages/iwork/package.json": "f96820bd5da26d2fb50beab255d2d5945bfc74028db0f3cf457165cf1d1b47c5",
+    "packages/iwork/src/preview-driver.ts": "86cea88ce6641557f1a7acf1f16a3fc8f32b0fda55424e1aa2589f014c9aeab6",
+    "packages/iwork/src/routes.ts": "2b1c780a2aa7987b7a16d62b88613d86ada3c5169655651bd5ac09c4b5bba7f0",
+    "packages/iwork/src/viewer/create-iwork-viewer.ts": "05b5f2d989055e537e0aa10e4d1e7bdbb2dfa2c984ec75869ec6ed55176e6308",
+    "packages/iwork/vite.config.ts": "8def362eef00cc185aa2ef7d1e2d5fb46a752f973b8d65d836d1f809bed50830",
+    "packages/media/package.json": "70dc79c13a5ffa5b09d8b5f2ef98d8bc16f7def638c900460680f9b52e66cb8d",
+    "packages/media/src/codec-preview-driver.ts": "b332d4fa9293971278cf03da8498254cc135e8c4a412b44ad26dae7a4728dfc4",
+    "packages/media/src/routes.ts": "fd95b3cef55bd1a08853090fd8b6f5aa7c7594f2c23ecbbca0505d538fd405ec",
+    "packages/media/vite.config.ts": "628a7fa8feb6810cbdd727b13a7f614f7fc06b28415c0dc7c56cf32f034dcdc2",
+    "packages/mindmap/package.json": "a7f2e83e2dbaf95bf6dcddf0f282025437967c3f89c095e5ed35db4947e5f9dd",
+    "packages/mindmap/src/preview-driver.ts": "2d2ec516820b386f4b59b0b9a520c9789ba5c3714a7f5e3aa2a899c3f93b11f9",
+    "packages/mindmap/src/routes.ts": "efc9f2ff99480a985e7d77c5cf29251519820379175b058a338f9bc7350257a2",
+    "packages/mindmap/vite.config.ts": "9754f7056af70454d78fbe0cccb64eb6e6e09de69e02aaa782f641522551ccf7",
+    "packages/model3d/package.json": "772e4d78f681dc37bcc89395db428a928c3ddbb2e63469bcee9b32e984da5ebb",
+    "packages/model3d/src/preview-driver.ts": "0900f559747342168427719857270f6d531d8a81bc2957ed2cfd7fbffbaa1bed",
+    "packages/model3d/src/routes.ts": "ae28283b2a6c3de0b4747ea316add4c9b62954cbf6b63c3ce3b03614bbe24d79",
+    "packages/model3d/vite.config.ts": "00b4726aaa55040f67f6e9da9e3bc72c3070e6d610708dfc382e017dc6b12c2c",
+    "packages/office/package.json": "9330a12af6095e282f229fdb7db5b9578a89c37e928a6d27e647c1860be81ed2",
+    "packages/office/src/routes.ts": "272d2cf0dd9f11a92b27fd0e56dbbf5109dfd8918fe122f898c969da06011682",
+    "packages/office/vite.config.ts": "eb22f2abfd3dca4672062a806df1b4160285ee851b3e25167e3010fe81150864",
+    "packages/panorama/package.json": "8b05cdeab1589ba74304e6306df834ae2a491954f5a4dcb3a871769cb0e40f6e",
+    "packages/panorama/src/preview-driver.ts": "379dde61ad398398b33c385165384e6d8d19b949ea956b1585c7591e2f1d86b8",
+    "packages/panorama/src/raw-preview-driver.ts": "5bb9bc0b611c65eb928b873994eb5780d30d0dd50c79075fcf8c8e8713e48525",
+    "packages/panorama/src/routes.ts": "8aef916c976b9e9d1467aae76d6bfb9b6ef6172e4ef0e7d3d2e93d56a9477c59",
+    "packages/panorama/vite.config.ts": "9754f7056af70454d78fbe0cccb64eb6e6e09de69e02aaa782f641522551ccf7",
+    "packages/pdf/package.json": "e9b718e490c3f3fc21cc80c135e6f9b3dfe0e31007cb897a36255a15555100dc",
+    "packages/pdf/src/preview-driver.ts": "ad99206f52e40776223cf9a464c3a33ee67308e9d919ae25e9d095e7970a19ab",
+    "packages/pdf/src/routes.ts": "2a562b787dfa804311e5a8de7e14b3fe0561171c0de7059d462814416e82f2f0",
+    "packages/pdf/vite.config.ts": "888cecfbfa8ade0df2092457621abf5522b2d8ed0419022ff7df5cde58f6e759",
+    "packages/preview/src/index.ts": "26ce25cfba5fa004b5fa54c1a16eb037c4b15259225758323289650f3fce6395",
+    "packages/preview/vite.config.ts": "44a23eb6e8b45827cc7fdc12efe3f7f242085bf915ec6790607c7ff88ccba17a",
+    "packages/text/package.json": "e8225885bdb697737d9e45830e7049b0c59f342bffa77bf9d9707f066540600e",
+    "packages/text/src/routes.ts": "cb2c42d641573db0d9e6e41f46b9a44a2669f97f9682e43dbec73e47994c6702",
+    "packages/text/vite.config.ts": "eb22f2abfd3dca4672062a806df1b4160285ee851b3e25167e3010fe81150864",
+    "packages/vue/package.json": "1303ae3a3b5bfb708b01bcb9872423bc6f8a114d6230a7187ec5e8056d2f6777",
+    "packages/vue/src/Preview.vue": "64805fc34c33fb46cdad1ac31f4f39f8978263bb9e6dc8e4aba4b5c5905d1734",
+    "packages/vue/src/defaults.ts": "8507077554d4390b92efa45e33896b2ca8f83ac4d23b2602179e72314fe6d34b",
+    "packages/vue/src/lazy-drivers.ts": "0edc66c1b4cf2606969422b538bb96da0ab4ae5d2318fa5da1c2396b2fc5b57d",
+    "packages/vue/test/pptx-preview.spec.ts": "eec5b36d43fd5ae2e17c37fcdcc54ec65fb7926cd2210cdfb2cb279a94efb9de",
+    "packages/vue/vite.config.ts": "66d3b6803554b180d5a7bebd42d08229abbd14b5adb0dac5c7a611ea00126996",
+    "packages/xlsx/package.json": "d82e3d71713fe725d168c54ab0b81ca0dadd7eef92f900189b041488596f065f",
+    "packages/xlsx/src/cell-value.ts": "9c599f54944ddc38861c8844b62b1a298b1aa8aad5ea27333fe928193c390b68",
+    "packages/xlsx/src/columns.ts": "0eb930460e9344471f99f0e839b5adc35012f7f6d10b07b1de9783fc1c2add42",
+    "packages/xlsx/src/parser.ts": "66cbe4e6ce1dbf1722928dba0ea9ce34bcb6932d7cab06fce2ba8d8007bb4efe",
+    "packages/xlsx/src/preview-driver.ts": "822de45a2113963bb707a18d416de2d27fc2a7c88f7d2288c950cf09eb90459d",
+    "packages/xlsx/src/routes.ts": "e585562e36fa58af98d9c8360d26b997f09cac829522c68d6c983c8175c584f5",
+    "packages/xlsx/src/table.ts": "71e19755e6aa78ddbaf745309f6ff9d9696fe8465ba871878f67b8f0e44a241e",
+    "packages/xlsx/vite.config.ts": "3677bd7e85a31e0aed37675042471a1593b17e784854036876187c4088b17e91",
+    "scripts/benchmark-dsh-office-preview.mjs": "97e94959f0fa4921fcef9f0e0b60df4ef5ed9c0c705940c4cdc2f07a524411e5",
+    "scripts/capture-dsh-plugin-demo.mjs": "bceb9cd7337b34586c641d82d83f57ec54af38090127a48255288a3f471b25d3",
+    "scripts/report-dsh-format-loading.mjs": "666f77868f685d8bfe0a70d903f89a3972c133a640bc93f82ca1ab9d893ff096"
+  },
+  "runtime": {
+    "basePath": "/_filens/f9ca2b1e7e0027d0/",
+    "files": {
+      "archive/7zz.wasm": {
+        "bytes": 1116075,
+        "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc"
+      },
+      "chunks/archive-driver-DxLC0ZL0.js": {
+        "bytes": 32604,
+        "sha256": "2b91670616513215453685f7a50b1560ed8cebe48a4ce0b015a8cec528534855"
+      },
+      "chunks/browser-video-session-CS6qSDtd.js": {
+        "bytes": 36038,
+        "sha256": "b1efb8b3ca5dbefa309b0d496b05ea67b0e874dfe3757b70df57f16d48674280"
+      },
+      "chunks/cad-driver-DTIHb7WJ.js": {
+        "bytes": 54517,
+        "sha256": "da14b488b838c1a88dd66ea0febcd2218142a56a2db4cf2d4aaae35b8afd896e"
+      },
+      "chunks/client-zHdkD6dQ.js": {
+        "bytes": 73209,
+        "sha256": "ef307f4c9e9c7187bb986e670fe0d36387a75f07d2b2882e0c781732d1ffce91"
+      },
+      "chunks/codec-preview-driver-DtFSj0Rn.js": {
+        "bytes": 5799,
+        "sha256": "3708e3f4c7e118a03bfe7c2b98b74c3a56c67ed869ad1411149ea5d0fdb61e67"
+      },
+      "chunks/compression-CLhefix_.js": {
+        "bytes": 12546,
+        "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+      },
+      "chunks/diagram-driver-sGIhi6qM.js": {
+        "bytes": 21861,
+        "sha256": "5fdaa166b1aab86de6cd2e0c58ace79f0a409bf58cd36f30626b0843f01dc30f"
+      },
+      "chunks/docx-driver-B6QZ2CeD.js": {
+        "bytes": 8989,
+        "sha256": "1a7c8341acc86da0ea1214397a1cec2d839c5cf6e733c6bdfa498ad3efe61861"
+      },
+      "chunks/docx-engine-DhLsMf1L.js": {
+        "bytes": 76591,
+        "sha256": "572db05323e763a697cce0927d14e18d8c2e804635a09a03b24eb24f2b71fc26"
+      },
+      "chunks/dom-BjwBxkAm.js": {
+        "bytes": 157889,
+        "sha256": "bf01fc06cb902aca5fe07bf9da8660d74b9b5e2936118fa52ab57da978da9d2d"
+      },
+      "chunks/ebook-driver-Cm_ULg0Y.js": {
+        "bytes": 17026,
+        "sha256": "b1749fc3c63b6b9c1b056fbf2f6454bacb53b76b75cac4753f8cadd0292dd985"
+      },
+      "chunks/font-loading-BPv1ZV5e.js": {
+        "bytes": 19219,
+        "sha256": "6cda0d6fe419fa03836b37f4e1cf23ea4d4f24551ea81c18a2cddb0eac670925"
+      },
+      "chunks/font-matching-9VMxhVQV.js": {
+        "bytes": 10512,
+        "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9"
+      },
+      "chunks/index-BmW6eggB.js": {
+        "bytes": 275067,
+        "sha256": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73"
+      },
+      "chunks/index-Dqvh6oz7.js": {
+        "bytes": 15372,
+        "sha256": "76abc0b4306489a66fba1d9f5332f28583c572dbcf684d5fc70fee06a76b1a02"
+      },
+      "chunks/iwork-driver-BpDU9eNg.js": {
+        "bytes": 1231332,
+        "sha256": "70f051b4b718b4b42f6f6bd34437865e7f2d0bb306b5e3b860691c39f99021a0"
+      },
+      "chunks/media-runtime-x2l3p47s.js": {
+        "bytes": 146447,
+        "sha256": "4dd9906a11085ef0bf3c2e398848d00e8ac4e2b60a63b3dc755d4ad4126d0a56"
+      },
+      "chunks/mindmap-driver-De_JHKKD.js": {
+        "bytes": 15708,
+        "sha256": "42581ce07e88bfbf9c966c2e9fa39081d4f455d267eb6b0bc47b8948cfa4624a"
+      },
+      "chunks/model-3ds-ppXS_UoN.js": {
+        "bytes": 8439,
+        "sha256": "fbd1d55524debaf176b1f8422f06542698ddd7046719ff25fd5344e61de78754"
+      },
+      "chunks/model-fbx-QxbnYmWL.js": {
+        "bytes": 44882,
+        "sha256": "29e04dbad57d2978fa92cdd71703c3ca902165f31dd63c9d75292985b7e2a29a"
+      },
+      "chunks/model-gltf-EWkfAPO-.js": {
+        "bytes": 43825,
+        "sha256": "b6da0a03ad01401a8011a4e94078dbc4899e57fea58f1f064229fda1e737dccd"
+      },
+      "chunks/model-ldraw-By5-Dq8t.js": {
+        "bytes": 24698,
+        "sha256": "0fc86eb494070d039adf5a1cc82bdc544e1eab5ebe298f7592fab43490e1104a"
+      },
+      "chunks/model-mtl-D8HNzCuR.js": {
+        "bytes": 4278,
+        "sha256": "3a6eb08d85883b148f578e507e3e7de7f7eaf1580892a5c60761946d85d622b1"
+      },
+      "chunks/model-obj-B-XcjXe7.js": {
+        "bytes": 8794,
+        "sha256": "cb139446d8a31e9179613bd2e72c0d074d9f840de3dedd23b2898eb94aaa5dfe"
+      },
+      "chunks/model-usdz-R7kRbAgr.js": {
+        "bytes": 8761,
+        "sha256": "11f82a16aed8b445b4cba011c745f58b0862a371f9cd5db6620b461b3635a0e1"
+      },
+      "chunks/model-vrml-jsY8PaeB.js": {
+        "bytes": 185862,
+        "sha256": "408d373189e733293fdc74c0ff378fda08cd680e0189267d2cb7dfd0cb90f747"
+      },
+      "chunks/model3d-driver-Z96QLn5a.js": {
+        "bytes": 106579,
+        "sha256": "cb00bece2467c5ce0bf1bfda09db49a32fcbb0d3e48a0bb9efea25a01a9ea82c"
+      },
+      "chunks/mp4box.all-Bw_Tlr0T-D0URDfA1.js": {
+        "bytes": 182354,
+        "sha256": "604a189e08459f2af803c3ee9cdf7865bd29570e2a782ee1c9ef1fd1a68e19c4"
+      },
+      "chunks/native-drivers-BEmEi2o2.js": {
+        "bytes": 49468,
+        "sha256": "17395cbb3cce4968e65b837355e16867951973937ba67c2f3b6c2e3e2140237f"
+      },
+      "chunks/office-attachments-CprbjlU9.js": {
+        "bytes": 32456,
+        "sha256": "7a21b1b278f4d1ad0e64f5e8c493fec7421489a40e517e1a3cd3a7926b32a9a8"
+      },
+      "chunks/panorama-driver-CHpWlShD.js": {
+        "bytes": 186878,
+        "sha256": "84d590b1aa5f6efee4b40d07812ead367cb17519ed59e715bdb977e8bdfd150a"
+      },
+      "chunks/pdf-driver-BoOePKKx.js": {
+        "bytes": 12507,
+        "sha256": "9d343ec849b6d4599e3097899f592ee5684a046c47109adfe5bdbcbe2ccdf366"
+      },
+      "chunks/pdf-Dzzffz3p.js": {
+        "bytes": 448320,
+        "sha256": "a1b4b73ebccdcb52e068879ed366080825bd8c199d36f32b1dc0cc4b82bb8b68"
+      },
+      "chunks/pptx-driver-BBqnGep5.js": {
+        "bytes": 96353,
+        "sha256": "c0974357949d70ba00ec6e93e3b81f0c7a740b6e0678fabcdf5424bbee7ecb38"
+      },
+      "chunks/rust-step-importer-vf424BGJ.js": {
+        "bytes": 2775,
+        "sha256": "78fbe5902cb7b13b6782446b0daef6ff2d563804a83c6f50c2b4912bcd89e8fe"
+      },
+      "chunks/svg-selection-IMnE-8rI.js": {
+        "bytes": 928,
+        "sha256": "49914fc16209b773b2108da286859fa6e54cbd3ea5f518390f8c3b1cacfc25dc"
+      },
+      "chunks/table-CBvjyc9e.js": {
+        "bytes": 7943,
+        "sha256": "81e03df0d2f6b49461a662acc22d5ae56d3dbd2258eec1059f18bb19789647de"
+      },
+      "chunks/three-j_n6p391.js": {
+        "bytes": 675754,
+        "sha256": "228353ef9da8fa1af9b4f6e643ee0bbccacc567b889a2421b7193be63900edbf"
+      },
+      "chunks/touch-gestures-CIlEOGpc.js": {
+        "bytes": 2240,
+        "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe"
+      },
+      "chunks/vendor-DMYWoejl.js": {
+        "bytes": 823,
+        "sha256": "a1f8328eb6976868c90b362e7d21c5e17f60c1e760b0752fe50ffc7f34bc71d4"
+      },
+      "chunks/vue-4lD-xgIj.js": {
+        "bytes": 65084,
+        "sha256": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0"
+      },
+      "chunks/xlsx-driver-DBJu0KWi.js": {
+        "bytes": 18356,
+        "sha256": "aaf8ff236302b8e188e35dba28b7f6be8c03b0889d46e76e2eabd49be6d2b7b4"
+      },
+      "chunks/xml-compat-DIhpt_3t.js": {
+        "bytes": 28071,
+        "sha256": "cf9181a98b10899761ba234d5afc661aed1b439f8513a06762c548fbe74ab892"
+      },
+      "chunks/zip-compat-Bqyft7N6.js": {
+        "bytes": 70045,
+        "sha256": "253e93f6cd2e7a036038ba99542a42367568aeebab4e829a779b35ad34379264"
+      },
+      "chunks/zip-encrypted-CH58PL7x.js": {
+        "bytes": 102341,
+        "sha256": "2d346b823f0463b2582277a553f180a8537b873d2c53563702325c2c0c799011"
+      },
+      "converter-core.wasm": {
+        "bytes": 932723,
+        "sha256": "e952e9c379ce4ba8526e81a8f6e702bbb649580575e97bc43ab05123e8265673"
+      },
+      "converter-graphics.wasm": {
+        "bytes": 5007118,
+        "sha256": "a92ac31c5001aa539e14d0dc72b08982a4f1245d2e41c270756dc3cd3369531c"
+      },
+      "converter-image.wasm": {
+        "bytes": 1492779,
+        "sha256": "e0c8f9e33ec1308aa65d67783b2d38878720935c1fe0caa9a994e37d0d73d3b7"
+      },
+      "converter-office.wasm": {
+        "bytes": 379316,
+        "sha256": "51a6aafdb77d5819181c3535f9ec7678e6705fe6a5469b38ac96abfe9abc1446"
+      },
+      "converter-postscript.wasm": {
+        "bytes": 2487498,
+        "sha256": "c154e4aba087d3b7f3d3280911e1c87bfc065568a031107d2cac50a3bfbf200c"
+      },
+      "filens-step.wasm": {
+        "bytes": 947729,
+        "sha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc"
+      },
+      "filens.js": {
+        "bytes": 174,
+        "sha256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+      },
+      "libheif.wasm": {
+        "bytes": 1457990,
+        "sha256": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5"
+      },
+      "pdf.worker.min.mjs": {
+        "bytes": 1078612,
+        "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5"
+      },
+      "style.css": {
+        "bytes": 55027,
+        "sha256": "57de23c0c398d4db3c0d637f34b33d3fd758fb60563431fe44a32a388e5a760f"
+      },
+      "THIRD-PARTY-NOTICES.txt": {
+        "bytes": 751210,
+        "sha256": "eeeaeafe7e0156a7d0fcc7aeac41c13647a2aec1fa894907919cf1592621918e"
+      }
+    }
+  },
+  "packagedLibFilesSHA256": {
+    "client.js": "ff57e71f507d6e38651bc04f35eacab630c485bdc7ca040c0d6cbdb14f69174e",
+    "tools.js": "b373ccd72aaf170a0296f3ab0dade6faaad999cad81b7988c86709929d9993c5",
+    "runtime-manifest.js": "a9c039084ce8c37a9befec7404cac3ffadda830ff33831314ed20e5f67ebc55a",
+    "requests.js": "9ea68e0f1dade926dbe07d2fb7b1eb9a6674bfd24dc2aefdc8de2453f627ade7",
+    "preview-host.js": "82a37005d95aac9aa47ab1012f7c92b8eab9c4fb27c598b772ae797c031d6fa2",
+    "support.json": "5e7c0f016740d119ed00154f633cc0d3f76c38064a33ce9d5bd481c3d8a60796",
+    "images.js": "3313cc8ea0aa88f8c8e859b891fc2555c50bbef930ca761cf3b065b47c119fbf",
+    "runtime/converter-image.wasm": "e0c8f9e33ec1308aa65d67783b2d38878720935c1fe0caa9a994e37d0d73d3b7",
+    "runtime/pdf.worker.min.mjs": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5",
+    "runtime/filens-step.wasm": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc",
+    "runtime/filens.js": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254",
+    "runtime/converter-graphics.wasm": "a92ac31c5001aa539e14d0dc72b08982a4f1245d2e41c270756dc3cd3369531c",
+    "runtime/converter-office.wasm": "51a6aafdb77d5819181c3535f9ec7678e6705fe6a5469b38ac96abfe9abc1446",
+    "runtime/converter-postscript.wasm": "c154e4aba087d3b7f3d3280911e1c87bfc065568a031107d2cac50a3bfbf200c",
+    "runtime/style.css": "57de23c0c398d4db3c0d637f34b33d3fd758fb60563431fe44a32a388e5a760f",
+    "runtime/THIRD-PARTY-NOTICES.txt": "eeeaeafe7e0156a7d0fcc7aeac41c13647a2aec1fa894907919cf1592621918e",
+    "runtime/libheif.wasm": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5",
+    "runtime/converter-core.wasm": "e952e9c379ce4ba8526e81a8f6e702bbb649580575e97bc43ab05123e8265673",
+    "runtime/archive/7zz.wasm": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc",
+    "runtime/chunks/dom-BjwBxkAm.js": "bf01fc06cb902aca5fe07bf9da8660d74b9b5e2936118fa52ab57da978da9d2d",
+    "runtime/chunks/vue-4lD-xgIj.js": "c5e3045fe110bf097dcb3ab18ee9fdb2932e1f733525abf258bb72cf11ab14c0",
+    "runtime/chunks/vendor-DMYWoejl.js": "a1f8328eb6976868c90b362e7d21c5e17f60c1e760b0752fe50ffc7f34bc71d4",
+    "runtime/chunks/model-mtl-D8HNzCuR.js": "3a6eb08d85883b148f578e507e3e7de7f7eaf1580892a5c60761946d85d622b1",
+    "runtime/chunks/model-vrml-jsY8PaeB.js": "408d373189e733293fdc74c0ff378fda08cd680e0189267d2cb7dfd0cb90f747",
+    "runtime/chunks/model-ldraw-By5-Dq8t.js": "0fc86eb494070d039adf5a1cc82bdc544e1eab5ebe298f7592fab43490e1104a",
+    "runtime/chunks/index-BmW6eggB.js": "c5318faa9ca756513e877e0755b6a1360a9762ec9ff6db7b4bdb33eacb949d73",
+    "runtime/chunks/model-gltf-EWkfAPO-.js": "b6da0a03ad01401a8011a4e94078dbc4899e57fea58f1f064229fda1e737dccd",
+    "runtime/chunks/zip-encrypted-CH58PL7x.js": "2d346b823f0463b2582277a553f180a8537b873d2c53563702325c2c0c799011",
+    "runtime/chunks/archive-driver-DxLC0ZL0.js": "2b91670616513215453685f7a50b1560ed8cebe48a4ce0b015a8cec528534855",
+    "runtime/chunks/native-drivers-BEmEi2o2.js": "17395cbb3cce4968e65b837355e16867951973937ba67c2f3b6c2e3e2140237f",
+    "runtime/chunks/mp4box.all-Bw_Tlr0T-D0URDfA1.js": "604a189e08459f2af803c3ee9cdf7865bd29570e2a782ee1c9ef1fd1a68e19c4",
+    "runtime/chunks/three-j_n6p391.js": "228353ef9da8fa1af9b4f6e643ee0bbccacc567b889a2421b7193be63900edbf",
+    "runtime/chunks/pptx-driver-BBqnGep5.js": "c0974357949d70ba00ec6e93e3b81f0c7a740b6e0678fabcdf5424bbee7ecb38",
+    "runtime/chunks/ebook-driver-Cm_ULg0Y.js": "b1749fc3c63b6b9c1b056fbf2f6454bacb53b76b75cac4753f8cadd0292dd985",
+    "runtime/chunks/zip-compat-Bqyft7N6.js": "253e93f6cd2e7a036038ba99542a42367568aeebab4e829a779b35ad34379264",
+    "runtime/chunks/media-runtime-x2l3p47s.js": "4dd9906a11085ef0bf3c2e398848d00e8ac4e2b60a63b3dc755d4ad4126d0a56",
+    "runtime/chunks/mindmap-driver-De_JHKKD.js": "42581ce07e88bfbf9c966c2e9fa39081d4f455d267eb6b0bc47b8948cfa4624a",
+    "runtime/chunks/model-obj-B-XcjXe7.js": "cb139446d8a31e9179613bd2e72c0d074d9f840de3dedd23b2898eb94aaa5dfe",
+    "runtime/chunks/browser-video-session-CS6qSDtd.js": "b1efb8b3ca5dbefa309b0d496b05ea67b0e874dfe3757b70df57f16d48674280",
+    "runtime/chunks/model-usdz-R7kRbAgr.js": "11f82a16aed8b445b4cba011c745f58b0862a371f9cd5db6620b461b3635a0e1",
+    "runtime/chunks/cad-driver-DTIHb7WJ.js": "da14b488b838c1a88dd66ea0febcd2218142a56a2db4cf2d4aaae35b8afd896e",
+    "runtime/chunks/font-matching-9VMxhVQV.js": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9",
+    "runtime/chunks/font-loading-BPv1ZV5e.js": "6cda0d6fe419fa03836b37f4e1cf23ea4d4f24551ea81c18a2cddb0eac670925",
+    "runtime/chunks/docx-engine-DhLsMf1L.js": "572db05323e763a697cce0927d14e18d8c2e804635a09a03b24eb24f2b71fc26",
+    "runtime/chunks/compression-CLhefix_.js": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730",
+    "runtime/chunks/rust-step-importer-vf424BGJ.js": "78fbe5902cb7b13b6782446b0daef6ff2d563804a83c6f50c2b4912bcd89e8fe",
+    "runtime/chunks/pdf-driver-BoOePKKx.js": "9d343ec849b6d4599e3097899f592ee5684a046c47109adfe5bdbcbe2ccdf366",
+    "runtime/chunks/codec-preview-driver-DtFSj0Rn.js": "3708e3f4c7e118a03bfe7c2b98b74c3a56c67ed869ad1411149ea5d0fdb61e67",
+    "runtime/chunks/panorama-driver-CHpWlShD.js": "84d590b1aa5f6efee4b40d07812ead367cb17519ed59e715bdb977e8bdfd150a",
+    "runtime/chunks/svg-selection-IMnE-8rI.js": "49914fc16209b773b2108da286859fa6e54cbd3ea5f518390f8c3b1cacfc25dc",
+    "runtime/chunks/touch-gestures-CIlEOGpc.js": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe",
+    "runtime/chunks/table-CBvjyc9e.js": "81e03df0d2f6b49461a662acc22d5ae56d3dbd2258eec1059f18bb19789647de",
+    "runtime/chunks/model3d-driver-Z96QLn5a.js": "cb00bece2467c5ce0bf1bfda09db49a32fcbb0d3e48a0bb9efea25a01a9ea82c",
+    "runtime/chunks/xlsx-driver-DBJu0KWi.js": "aaf8ff236302b8e188e35dba28b7f6be8c03b0889d46e76e2eabd49be6d2b7b4",
+    "runtime/chunks/diagram-driver-sGIhi6qM.js": "5fdaa166b1aab86de6cd2e0c58ace79f0a409bf58cd36f30626b0843f01dc30f",
+    "runtime/chunks/model-fbx-QxbnYmWL.js": "29e04dbad57d2978fa92cdd71703c3ca902165f31dd63c9d75292985b7e2a29a",
+    "runtime/chunks/office-attachments-CprbjlU9.js": "7a21b1b278f4d1ad0e64f5e8c493fec7421489a40e517e1a3cd3a7926b32a9a8",
+    "runtime/chunks/iwork-driver-BpDU9eNg.js": "70f051b4b718b4b42f6f6bd34437865e7f2d0bb306b5e3b860691c39f99021a0",
+    "runtime/chunks/index-Dqvh6oz7.js": "76abc0b4306489a66fba1d9f5332f28583c572dbcf684d5fc70fee06a76b1a02",
+    "runtime/chunks/model-3ds-ppXS_UoN.js": "fbd1d55524debaf176b1f8422f06542698ddd7046719ff25fd5344e61de78754",
+    "runtime/chunks/xml-compat-DIhpt_3t.js": "cf9181a98b10899761ba234d5afc661aed1b439f8513a06762c548fbe74ab892",
+    "runtime/chunks/docx-driver-B6QZ2CeD.js": "1a7c8341acc86da0ea1214397a1cec2d839c5cf6e733c6bdfa498ad3efe61861",
+    "runtime/chunks/client-zHdkD6dQ.js": "ef307f4c9e9c7187bb986e670fe0d36387a75f07d2b2882e0c781732d1ffce91",
+    "runtime/chunks/pdf-Dzzffz3p.js": "a1b4b73ebccdcb52e068879ed366080825bd8c199d36f32b1dc0cc4b82bb8b68"
+  },
+  "packagedAndDesktopLibMatch": true,
+  "unitTests": {
+    "corePreviewAndLazyDrivers": 36,
+    "vue": 61,
+    "xlsx": 80,
+    "pdf": 19,
+    "dshResources": 2,
+    "total": 198
+  },
+  "standalone": {
+    "realPreviewChecks": 58,
+    "offlineHTMLChecks": 17,
+    "splitAndAllInOneBuildsPassed": true
+  },
+  "browser": {
+    "results": [
+      {
+        "name": "hello.txt",
+        "rendered": true,
+        "ms": 31
+      },
+      {
+        "name": "filens-cosmic-atlas.pdf",
+        "rendered": true,
+        "ms": 85
+      },
+      {
+        "name": "filens-aurora-guide.docx",
+        "rendered": true,
+        "ms": 65
+      },
+      {
+        "name": "filens-observatory.xlsx",
+        "rendered": true,
+        "ms": 33
+      },
+      {
+        "name": "filens-field-notes.pptx",
+        "rendered": true,
+        "ms": 36
+      },
+      {
+        "name": "a.pages",
+        "rendered": true,
+        "ms": 154
+      },
+      {
+        "name": "a.numbers",
+        "rendered": true,
+        "ms": 160
+      },
+      {
+        "name": "filens-weekend.key",
+        "rendered": true,
+        "ms": 108
+      },
+      {
+        "name": "rounded-cube.step",
+        "rendered": true,
+        "ms": 229
+      },
+      {
+        "name": "raw/pentax-k-r.dng",
+        "rendered": true,
+        "ms": 91
+      },
+      {
+        "name": "sample-nested-archives.zip",
+        "rendered": true,
+        "ms": 33
+      },
+      {
+        "name": "encrypted.rar",
+        "rendered": true,
+        "ms": 42
+      }
+    ],
+    "interactions": [
+      "loading identifies the file and respects reduced motion",
+      "closing and reopening PDF reuses cached runtime and preserves canvas pixels",
+      "toolbar contains only working zoom and fullscreen; keyboard navigation works",
+      "document fullscreen opens from the keyboard and exits normally",
+      "live DSH language and theme changes preserve the document and current page",
+      "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
+      "double-click restores the complete 3D model after orbit and zoom",
+      "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
+      "3D auto framing keeps the whole model visible in a tall narrow pane",
+      "Word pages fit narrow/resized panes and omit unavailable controls",
+      "resizing the Word pane preserves the reading position",
+      "late events from a previous document are ignored",
+      "localized parser failure exposes details and a working retry action",
+      "encrypted documents expose the password form and render after password entry",
+      "short panes do not inherit a fixed minimum height",
+      "concurrent tabs share runtime assets but keep controls and lifecycle independent"
+    ],
+    "lazyLoading": [
+      {
+        "name": "hello.txt",
+        "expected": "native-drivers",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/native-drivers-BEmEi2o2.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 459606,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "photo-alpine-lake.jpg",
+        "expected": "native-drivers",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/native-drivers-BEmEi2o2.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 459606,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "filens-cosmic-atlas.pdf",
+        "expected": "pdf-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/font-matching-9VMxhVQV.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/pdf-Dzzffz3p.js",
+          "chunks/pdf-driver-BoOePKKx.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "pdf.worker.min.mjs",
+          "style.css"
+        ],
+        "rawBytes": 1960089,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "filens-aurora-guide.docx",
+        "expected": "docx-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/docx-driver-B6QZ2CeD.js",
+          "chunks/docx-engine-DhLsMf1L.js",
+          "chunks/font-loading-BPv1ZV5e.js",
+          "chunks/font-matching-9VMxhVQV.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/vendor-DMYWoejl.js",
+          "chunks/vue-4lD-xgIj.js",
+          "chunks/zip-compat-Bqyft7N6.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 594077,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "filens-observatory.xlsx",
+        "expected": "xlsx-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/font-loading-BPv1ZV5e.js",
+          "chunks/font-matching-9VMxhVQV.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/table-CBvjyc9e.js",
+          "chunks/vendor-DMYWoejl.js",
+          "chunks/vue-4lD-xgIj.js",
+          "chunks/xlsx-driver-DBJu0KWi.js",
+          "chunks/xml-compat-DIhpt_3t.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 492822,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "filens-field-notes.pptx",
+        "expected": "pptx-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/dom-BjwBxkAm.js",
+          "chunks/font-loading-BPv1ZV5e.js",
+          "chunks/font-matching-9VMxhVQV.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/office-attachments-CprbjlU9.js",
+          "chunks/pptx-driver-BBqnGep5.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vendor-DMYWoejl.js",
+          "chunks/vue-4lD-xgIj.js",
+          "chunks/zip-compat-Bqyft7N6.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 797435,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "filens-weekend.key",
+        "expected": "iwork-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/dom-BjwBxkAm.js",
+          "chunks/font-loading-BPv1ZV5e.js",
+          "chunks/font-matching-9VMxhVQV.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/iwork-driver-BpDU9eNg.js",
+          "chunks/office-attachments-CprbjlU9.js",
+          "chunks/table-CBvjyc9e.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vendor-DMYWoejl.js",
+          "chunks/vue-4lD-xgIj.js",
+          "chunks/zip-compat-Bqyft7N6.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 1940357,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "rounded-cube.step",
+        "expected": "model3d-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/model-3ds-ppXS_UoN.js",
+          "chunks/model-fbx-QxbnYmWL.js",
+          "chunks/model-vrml-jsY8PaeB.js",
+          "chunks/model3d-driver-Z96QLn5a.js",
+          "chunks/rust-step-importer-vf424BGJ.js",
+          "chunks/three-j_n6p391.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens-step.wasm",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 2379918,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "sample-nested-archives.zip",
+        "expected": "archive-driver",
+        "files": [
+          "chunks/archive-driver-DxLC0ZL0.js",
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/vendor-DMYWoejl.js",
+          "chunks/vue-4lD-xgIj.js",
+          "chunks/zip-compat-Bqyft7N6.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 511370,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "filens-cafe.dxf",
+        "expected": "cad-driver",
+        "files": [
+          "chunks/cad-driver-DTIHb7WJ.js",
+          "chunks/compression-CLhefix_.js",
+          "chunks/font-loading-BPv1ZV5e.js",
+          "chunks/font-matching-9VMxhVQV.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 494386,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "pepper-carrot.epub",
+        "expected": "ebook-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/ebook-driver-Cm_ULg0Y.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 424924,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "hello.mm",
+        "expected": "mindmap-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/mindmap-driver-De_JHKKD.js",
+          "chunks/svg-selection-IMnE-8rI.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 426774,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "hello.drawio",
+        "expected": "diagram-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/diagram-driver-sGIhi6qM.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/svg-selection-IMnE-8rI.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 432927,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "sample-video.mp4",
+        "expected": "codec-preview-driver",
+        "files": [
+          "chunks/codec-preview-driver-DtFSj0Rn.js",
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/native-drivers-BEmEi2o2.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 465405,
+        "moduleCacheReused": true
+      },
+      {
+        "name": "raw/pentax-k-r.dng",
+        "expected": "panorama-driver",
+        "files": [
+          "chunks/compression-CLhefix_.js",
+          "chunks/index-BmW6eggB.js",
+          "chunks/native-drivers-BEmEi2o2.js",
+          "chunks/panorama-driver-CHpWlShD.js",
+          "chunks/three-j_n6p391.js",
+          "chunks/touch-gestures-CIlEOGpc.js",
+          "chunks/vue-4lD-xgIj.js",
+          "converter-core.wasm",
+          "converter-image.wasm",
+          "filens.js",
+          "style.css"
+        ],
+        "rawBytes": 3747740,
+        "moduleCacheReused": true
+      }
+    ],
+    "errors": [],
+    "failures": []
+  },
+  "desktop": {
+    "environment": {
+      "version": "0.2.1-rc.5",
+      "node": "24.21.0",
+      "electron": "44.7.0",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "url": "dsh-app://app/",
+    "registrations": [
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/text",
+        "extensions": 0
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/markdown",
+        "extensions": 2
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/html",
+        "extensions": 2
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/image",
+        "extensions": 8
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/pdf",
+        "extensions": 1
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office",
+        "extensions": 4
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/excel",
+        "extensions": 4
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code",
+        "extensions": 115
+      },
+      {
+        "id": "dsh-filens",
+        "extensions": 450
+      }
+    ],
+    "results": [
+      {
+        "name": "filens-cosmic-atlas.pdf",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "filens-aurora-guide.docx",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "filens-field-notes.pptx",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "filens-weekend.key",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "rounded-cube.step",
+        "rendered": true,
+        "fillsPane": true,
+        "toolbar": false,
+        "orbitZoomAndReset": true
+      },
+      {
+        "name": "sample-nested-archives.zip",
+        "rendered": true,
+        "fillsPane": true
+      }
+    ],
+    "errors": []
+  },
+  "loading": {
+    "report": "docs/assets/dsh-plugin/format-loading.json",
+    "sourceSnapshot": "current format-lazy candidate versus earlier unpublished direct-DOM runtime",
+    "initialRawBytes": 352871,
+    "previousInitialRawBytes": 3185254,
+    "reductionPercent": 88.92173120259798
+  },
+  "benchmarks": {
+    "pdf": "docs/assets/dsh-plugin/pdf-preview-lazy.json",
+    "office": "docs/assets/dsh-plugin/office-preview-lazy.json",
+    "rounds": {
+      "pdf": 9,
+      "office": 4
+    },
+    "matchedOpens": 204,
+    "timedOpensRetained": 212,
+    "results": [
+      {
+        "renderer": "filens",
+        "plugin": "dsh-filens@0.1.3",
+        "name": "Cosmic Atlas.pdf",
+        "firstMs": 214,
+        "cachedMedianMs": 159,
+        "freshProcessSamplesMs": [
+          214,
+          210,
+          219,
+          213,
+          216,
+          214,
+          211,
+          210,
+          214
+        ],
+        "cachedSamplesMs": [
+          164,
+          159,
+          153,
+          163,
+          159,
+          144,
+          168,
+          154,
+          144,
+          165,
+          160,
+          153,
+          168,
+          160,
+          153,
+          165,
+          154,
+          144,
+          162,
+          143,
+          145,
+          168,
+          154,
+          144,
+          168,
+          159,
+          153
+        ]
+      },
+      {
+        "renderer": "previous",
+        "plugin": "dsh-filens@0.1.2",
+        "name": "Cosmic Atlas.pdf",
+        "firstMs": 646,
+        "cachedMedianMs": 411,
+        "freshProcessSamplesMs": [
+          644,
+          645,
+          646,
+          663,
+          646,
+          646,
+          660,
+          644,
+          644
+        ],
+        "cachedSamplesMs": [
+          434,
+          377,
+          410,
+          434,
+          377,
+          410,
+          435,
+          377,
+          411,
+          434,
+          378,
+          410,
+          434,
+          394,
+          411,
+          435,
+          376,
+          411,
+          433,
+          376,
+          411,
+          431,
+          377,
+          410,
+          435,
+          377,
+          411
+        ]
+      },
+      {
+        "renderer": "builtin",
+        "plugin": "DSH built-in PDF",
+        "name": "Cosmic Atlas.pdf",
+        "firstMs": 324,
+        "cachedMedianMs": 110,
+        "freshProcessSamplesMs": [
+          323,
+          328,
+          323,
+          357,
+          324,
+          321,
+          318,
+          327,
+          324
+        ],
+        "cachedSamplesMs": [
+          109,
+          112,
+          110,
+          110,
+          112,
+          110,
+          109,
+          112,
+          110,
+          108,
+          112,
+          110,
+          110,
+          112,
+          110,
+          110,
+          112,
+          110,
+          109,
+          112,
+          109,
+          110,
+          112,
+          111,
+          110,
+          112,
+          110
+        ]
+      },
+      {
+        "renderer": "filens",
+        "plugin": "dsh-filens@0.1.3",
+        "name": "Field Notes.pptx",
+        "firstMs": 119.5,
+        "cachedMedianMs": 78.0,
+        "freshProcessSamplesMs": [
+          129,
+          114,
+          125,
+          114
+        ],
+        "cachedSamplesMs": [
+          81,
+          77,
+          77,
+          82,
+          78,
+          77,
+          83,
+          78,
+          77,
+          83,
+          78,
+          78
+        ]
+      },
+      {
+        "renderer": "filens",
+        "plugin": "dsh-filens@0.1.3",
+        "name": "Aurora Guide.docx",
+        "firstMs": 110.0,
+        "cachedMedianMs": 93.5,
+        "freshProcessSamplesMs": [
+          110,
+          112,
+          94,
+          110
+        ],
+        "cachedSamplesMs": [
+          94,
+          94,
+          77,
+          93,
+          95,
+          92,
+          96,
+          91,
+          94,
+          77,
+          77,
+          94
+        ]
+      },
+      {
+        "renderer": "previous",
+        "plugin": "dsh-filens@0.1.2",
+        "name": "Field Notes.pptx",
+        "firstMs": 511.0,
+        "cachedMedianMs": 295.0,
+        "freshProcessSamplesMs": [
+          513,
+          505,
+          510,
+          512
+        ],
+        "cachedSamplesMs": [
+          300,
+          261,
+          295,
+          300,
+          263,
+          293,
+          301,
+          261,
+          295,
+          302,
+          261,
+          295
+        ]
+      },
+      {
+        "renderer": "previous",
+        "plugin": "dsh-filens@0.1.2",
+        "name": "Aurora Guide.docx",
+        "firstMs": 279.0,
+        "cachedMedianMs": 278.0,
+        "freshProcessSamplesMs": [
+          278,
+          279,
+          279,
+          280
+        ],
+        "cachedSamplesMs": [
+          280,
+          309,
+          261,
+          278,
+          311,
+          278,
+          277,
+          314,
+          276,
+          276,
+          312,
+          278
+        ]
+      },
+      {
+        "renderer": "builtin",
+        "plugin": "DSH built-in Office-to-PDF",
+        "name": "Field Notes.pptx",
+        "firstMs": 1825.0,
+        "cachedMedianMs": 110.0,
+        "freshProcessSamplesMs": [
+          2847,
+          1821,
+          1821,
+          1829
+        ],
+        "cachedSamplesMs": [
+          121,
+          110,
+          110,
+          130,
+          110,
+          110,
+          123,
+          110,
+          110,
+          127,
+          110,
+          111
+        ]
+      },
+      {
+        "renderer": "builtin",
+        "plugin": "DSH built-in Office-to-PDF",
+        "name": "Aurora Guide.docx",
+        "firstMs": 1317.5,
+        "cachedMedianMs": 111.0,
+        "freshProcessSamplesMs": [
+          1326,
+          1309,
+          1326,
+          1309
+        ],
+        "cachedSamplesMs": [
+          111,
+          110,
+          111,
+          111,
+          111,
+          111,
+          112,
+          110,
+          111,
+          111,
+          111,
+          111
+        ]
+      }
+    ]
+  },
+  "publication": {
+    "dryRunPassed": true,
+    "registry": "https://registry.npmjs.org/",
+    "registryLatest": "0.1.2",
+    "candidateAbsentFromRegistry": true,
+    "uploaded": false
+  },
+  "limits": [
+    "Raw requested runtime bytes differ from full plugin download size and compressed network transfer. The package still includes all offline format assets.",
+    "One authored PDF and two small Office documents on one macOS arm64 machine do not establish a universal speedup or fidelity guarantee. OS/persistent caches are retained and app startup is excluded.",
+    "Office Desktop launch failed before round 5 built-in timing; recovery attempts also failed before timing. Four complete rounds (96 opens) enter matched summaries and two additional baseline observations (8 opens) remain in the raw report. All included Office samples retain their original profiles/cache state. Fewer Office rounds cannot establish small regressions.",
+    "A preliminary PDF run overlapped functional checks; it was stopped as a whole and its raw samples are retained separately. Final nine-round PDF measurements started after the checks finished.",
+    "The earlier direct-DOM source, package and timings remain historical snapshots. Existing installation GIF/WebP/MP4 still show public 0.1.2.",
+    "Earlier complete-release npm/offline/SDK payloads require rebuilding affected unpublished modules and archives; no public 0.1.2 tarball is replaced."
+  ],
+  "historical": true,
+  "supersededBy": "docs/dsh-pdf-reopen-validation.json",
+  "historicalArchive": "dist/release-v0.6.4/dsh-next/history/dsh-filens-0.1.3-format-loading.tgz"
+}

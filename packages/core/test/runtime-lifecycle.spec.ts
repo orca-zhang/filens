@@ -74,6 +74,9 @@ describe('Password-protected preview loads', () => {
     expect(requestPassword.mock.calls.map(([request]) => [request.reason, request.attempt])).toEqual([['password_required', 1], ['password_invalid', 2]]);
     expect(errors).not.toHaveBeenCalled();
     expect(previewer.getState()).not.toHaveProperty('password');
+    expect(fixture.sessions.at(-1)?.context?.descriptor.password).toBe(' 密码🔐 ');
+    await previewer.preview(input, { name: 'ordinary.txt' });
+    expect(fixture.sessions.at(-1)?.context?.descriptor.password).toBeUndefined();
     previewer.destroy();
   });
 

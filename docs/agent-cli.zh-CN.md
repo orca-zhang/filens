@@ -19,6 +19,7 @@ filens capacity --from pptx --to pdf
 filens capacity 'docx>?'
 filens capacity '?>pdf'
 filens capacity --section conversionPairs --format tsv
+filens inspect unknown-file --json
 filens capacity --json
 filens capacity --from pptx --section operations,conversionPairs --json
 filens capacity --fields formats --json
@@ -279,7 +280,7 @@ filens search ./documents --no-ocr --query '预算' --json
 
 ## 验证
 
-源码版还提供 `npm run test:agent:search`、`npm run test:agent:prune`、`npm run test:agent:similarity`。相似扫描通过实际 CLI/WASM 检查完整文件判重、图片分组、部分结果、链接、限制和八种输出；hdrw 遍历路径也在 macOS 上验证过，不能据此宣称已通过 Windows/Linux 原生执行。具体检查及平台范围见[验证记录](agent-cli-similarity-size.json)。
+源码版还提供 `npm run test:agent:search`、`npm run test:agent:prune`、`npm run test:agent:similarity`。相似扫描通过实际 CLI/WASM 检查完整文件判重、图片分组、部分结果、链接、限制和八种输出。原生遍历测试覆盖范围、限制、链接及 NTFS 多批次读取；Windows 原生执行仍需 Windows CI 验证。具体检查及平台范围见[验证记录](agent-cli-similarity-size.json)。
 
 `npm run test:agent` 覆盖中英文意图、JSON / UTF-8 证据、截断与空文档、Lite 注入 OCR、真实 PNG / 双页扫描 PDF / DOCX 内嵌图片、透明 / EXIF / 倒置预处理、取消和重启，以及下载器的并发、损坏源回退和缓存。`npm run test:agent:npm` 覆盖离线安装 Full / Lite tarball，以及无需 Python 的一键补装 OCR；追加 `-- --registry` 可验证全新缓存的公开 npm 安装、平台组件自动选择和临时调用。0.5.0 已在 macOS arm64 上通过 Full / Lite 离线安装和全新缓存的匿名公开 npm 安装验证，包含真实 OCR、转换、嵌套压缩包搜索与读取、布局、一键补装 OCR 和首次预览自动安装。全部 11 个公开包的实际下载校验和与本地 tarball 一致，许可证字段为 MIT；CLI 组件的 latest 为 0.5.0，filens-preview 为 0.2.0。前端包另通过 48 项直接预览、10 项 Vite 打包后预览，以及隔离环境下两个 TypeScript 导出入口检查，见[发布与验证记录](agent-cli-npm-publish.json)。Linux / Windows 已交叉构建，原生安装与运行仍待实机验证。既有转换 CLI / HTTP 示例继续使用原来的接口。
 

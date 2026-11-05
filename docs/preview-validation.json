@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-01",
+  "date": "2026-11-05",
   "platform": "darwin-arm64",
   "browser": "147.0.7727.15",
   "scope": "Actual CLI loopback server and real shared engines. External network requests blocked. Render readiness and source text checked; no pixel-fidelity claim. Encrypted DOCX/XLSX/PPTX tested with wrong and correct passwords; split Office module loaded only after password submission and reused on retry.",
@@ -52,21 +52,56 @@
       "file": "中文 preview.txt",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 6
     },
     {
       "mode": "split",
       "file": "filens-aurora-guide.docx",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 10
     },
     {
       "mode": "split",
       "file": "filens-cosmic-atlas.pdf",
       "state": "ready",
       "canvases": 2,
-      "runtimeRequests": 15
+      "runtimeRequests": 9
+    },
+    {
+      "mode": "split",
+      "file": "still-form.psd",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 7
+    },
+    {
+      "mode": "split",
+      "file": "after-hours.psb",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 7
+    },
+    {
+      "mode": "split",
+      "file": "forma-identity.ai",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 10
+    },
+    {
+      "mode": "split",
+      "file": "orbit-marks.eps",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 10
+    },
+    {
+      "mode": "split",
+      "file": "studio-editions.ps",
+      "state": "ready",
+      "canvases": 2,
+      "runtimeRequests": 10
     },
     {
       "mode": "split",
@@ -87,28 +122,28 @@
       "file": "filens-observatory.xlsx",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 10
     },
     {
       "mode": "split",
       "file": "rich-spreadsheet.ods",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 11
     },
     {
       "mode": "split",
       "file": "legacy-project-workflow.doc",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 11
     },
     {
       "mode": "split",
       "file": "filens-field-notes.pptx",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 12
     },
     {
       "mode": "split",
@@ -122,98 +157,98 @@
       "file": "pentax-k-r.dng",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 15
+      "runtimeRequests": 10
     },
     {
       "mode": "split",
       "file": "milky-way-360.jpg",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 6
     },
     {
       "mode": "split",
       "file": "sample-nested-archives.zip",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 7
     },
     {
       "mode": "split",
       "file": "cube.stp",
       "state": "ready",
       "canvases": 1,
-      "runtimeRequests": 14
+      "runtimeRequests": 11
     },
     {
       "mode": "split",
       "file": "sample.apk",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 5
     },
     {
       "mode": "split",
       "file": "sample.ipa",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 5
     },
     {
       "mode": "split",
       "file": "sample.exe",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 7
     },
     {
       "mode": "split",
       "file": "sample.dll",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 7
     },
     {
       "mode": "split",
       "file": "sample.mui",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 7
     },
     {
       "mode": "split",
       "file": "sample.mun",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 14
+      "runtimeRequests": 7
     },
     {
       "mode": "split",
       "file": "sample.ico",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 13
+      "runtimeRequests": 6
     },
     {
       "mode": "split",
       "file": "agile.docx",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 15
+      "runtimeRequests": 12
     },
     {
       "mode": "split",
       "file": "agile.xlsx",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 15
+      "runtimeRequests": 12
     },
     {
       "mode": "split",
       "file": "agile.pptx",
       "state": "ready",
       "canvases": 0,
-      "runtimeRequests": 15
+      "runtimeRequests": 14
     },
     {
       "mode": "all-in-one",
@@ -232,6 +267,41 @@
     {
       "mode": "all-in-one",
       "file": "filens-cosmic-atlas.pdf",
+      "state": "ready",
+      "canvases": 2,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "still-form.psd",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "after-hours.psb",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "forma-identity.ai",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "orbit-marks.eps",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "studio-editions.ps",
       "state": "ready",
       "canvases": 2,
       "runtimeRequests": 1

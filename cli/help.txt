@@ -5,6 +5,7 @@ filens — local document reading and conversion for agents
   filens '理解 "meeting notes.docx"，以 JSON 输出'
   filens 'read "report.pages" as json'
   filens '提取 "report.pdf" 的关键内容，关注预算和风险，保留30%，以 JSON 输出'
+  filens inspect unknown-file --json
   filens capacity --op read
   filens capacity --query ocr --section formats
   filens capacity --from pptx --to pdf
@@ -27,7 +28,7 @@ filens — local document reading and conversion for agents
   filens preview report.pdf
   filens preview drawing.step --no-open --json
 
-Optional commands: capacity (capabilities), read, extract, understand, layout,
+Optional commands: capacity (capabilities), inspect, read, extract, understand, layout,
                    excerpt, summarize (prune), search, similar, duplicates, similar-images, convert, preview.
 Preview: FILE [--port 0] [--no-open] [--json] [--assets DIR]. Browser-local UI;
          requires built preview assets (npm run build:preview / FILENS_PREVIEW_DIR).
@@ -72,7 +73,8 @@ Search accepts directories or ZIP/JAR/WAR/EAR/APK, TAR, TGZ/TAR.GZ and GZ files.
 Nested archives expand through the shared core (up to 8 layers), including OCR.
 Results retain outer.zip!/inner.tar!/file paths; read/layout/summarize accept them.
 Archive expansion is request-local, bounded to 256 MiB per batch; failures are explicit.
-macOS uses native FTS; Windows/Linux embed private hdrw WASI. No raw disk access.
+macOS uses FTS; Windows batches NTFS directory metadata, with native fallback.
+Linux uses native directory traversal. No admin privileges or raw disk access.
 Similarity: similar DIR --similarity-mode duplicates|images (default images).
             duplicates DIR and similar-images DIR are aliases.
             --threshold 0..24 (default 8, image pHash distance; lower is stricter),
@@ -87,3 +89,6 @@ Use - to read a natural-language or JSON request from stdin; pipe with no args a
 JSON requests default to JSON responses; text requests default to plain text.
 The full bundle includes RapidOCR (OpenMP threads = 2); the lite bundle adds it on demand.
 Semantic understanding, translation and question answering belong to the calling agent.
+
+Inspect identifies content independently of the extension, with MIME/evidence and
+extension comparison. Reads at most 256 KiB; no OCR or full-file validation.

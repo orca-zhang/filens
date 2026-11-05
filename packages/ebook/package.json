@@ -1,6 +1,6 @@
 {
   "name": "@filens/books",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "EPUB preview driver for the @filens multi-format preview runtime.",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,10 +22,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./dist/index.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",
@@ -33,14 +38,12 @@
     "test": "vitest run",
     "test:unit": "vitest run"
   },
-  "dependencies": {
-    "jszip": "^3.10.1"
-  },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
-    "@filens/core": "file:../core"
+    "@filens/core": "file:../core",
+    "jszip": "^3.10.1"
   },
   "license": "MIT",
   "repository": {

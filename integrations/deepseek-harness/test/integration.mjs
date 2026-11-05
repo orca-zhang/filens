@@ -25,7 +25,7 @@ try {
     assert.equal(ctx.tools.get('filens_read'), undefined);
     assert.ok(!ctx.clientModules.graph().entries.some(entry => entry.id === 'dsh-filens'));
     const { runtime } = await import(pathToFileURL(path.join(root, 'lib/runtime-manifest.js')).href);
-    assert.equal((await fetch(`${ctx.webServer.getOrigin()}${runtime.basePath}viewer.html`)).status, 404);
+    assert.equal((await fetch(`${ctx.webServer.getOrigin()}${runtime.basePath}filens.js`)).status, 404);
     record('fresh boot after package removal has no FiLens tools, client or resource route');
   } else {
   const tools = entries.find(entry => entry.options.id === 'filens-tools');
@@ -44,9 +44,9 @@ try {
   assert.match(html, /__FILENS_DSH_PREVIEW_ORIGIN__/);
   assert.ok(html.includes(origin));
   const runtimeManifest = await import(pathToFileURL(path.join(root, 'lib/runtime-manifest.js')).href);
-  const asset = `${origin}${runtimeManifest.runtime.basePath}viewer.html`;
+  const asset = `${origin}${runtimeManifest.runtime.basePath}filens.js`;
   assert.equal((await fetch(asset)).status, 200);
-  record('real webServer serves the iframe runtime');
+  record('real webServer serves the directly mounted runtime');
   async function call(name, args = {}) {
     const signal = new AbortController().signal;
     if (version === '0.2.1-rc.5') return ctx.tools.execute({ name, arguments: args, callId: crypto.randomUUID(), signal });

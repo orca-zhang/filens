@@ -144,10 +144,12 @@ test('previews a real glTF entry with a parent-relative encoded texture through 
     const mesh = meshes[0], image = mesh.material.map.image, canvas = document.createElement('canvas'); canvas.width = canvas.height = 2;
     const ctx = canvas.getContext('2d')!; ctx.drawImage(image, 0, 0);
     return { state: child.getState(), positions: [...mesh.geometry.attributes.position.array], uv: [...mesh.geometry.attributes.uv.array], pixels: [...ctx.getImageData(0, 0, 2, 2).data],
-      glError: model.renderer.getContext().getError(), errors: state.errors, active: state.active.size };
+      glError: model.renderer.getContext().getError(), errors: state.errors,
+      downloadOnly: state.active.size === 1 && state.active.has(state.host.querySelector('a[download]').href) };
   });
-  expect(result).toMatchObject({ state: { family: 'model3d', error: null, warnings: [], metadata: { triangleCount: 1 } }, positions: model.positions, uv: model.uv, pixels: image.pixels, glError: 0, errors: [], active: 0 });
+  expect(result).toMatchObject({ state: { family: 'model3d', error: null, warnings: [], metadata: { triangleCount: 1 } }, positions: model.positions, uv: model.uv, pixels: image.pixels, glError: 0, errors: [], downloadOnly: true });
   await page.getByRole('button', { name: 'Back to archive', exact: true }).click(); await expect(page.locator('canvas')).toHaveCount(0); await expect(page.locator('.archivev-table')).toContainText('scene.gltf');
+  expect(await page.evaluate(() => (window as any).archiveCheck.active.size)).toBe(0);
   expect(errors).toEqual([]);
 });
 
@@ -182,7 +184,7 @@ test('preserves all ZIP, TAR, TGZ and GZIP file bytes and metadata from the orig
 });
 
 test('opens a TAR upload and browses its text entry through the demo', async ({ page }) => {
-  await page.goto('./?view=preview'); await page.locator('input[type=file]').setInputFiles({ name: 'long-path.tar', mimeType: 'application/x-tar', buffer: await readFile('packages/archive/test/fixtures/pax-long-path.tar') });
+  await page.goto('./?view=preview'); await page.locator('.wb-upload input[type=file]').setInputFiles({ name: 'long-path.tar', mimeType: 'application/x-tar', buffer: await readFile('packages/archive/test/fixtures/pax-long-path.tar') });
   await expect(page.locator('.archivev-table')).toContainText('next.txt'); await page.locator('tr.archivev-row').filter({ hasText: 'next.txt' }).click();
   await expect(page.locator('.pptxv-native-text')).toHaveText('Next entry\n'); await expect(page.locator('.wb-note.is-error')).toHaveCount(0);
 });

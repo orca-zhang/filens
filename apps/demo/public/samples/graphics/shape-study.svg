@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+<rect width="900" height="600" fill="#f3efe5"/><rect width="900" height="18" fill="#dc6b45"/>
+<g font-family="Arial,sans-serif" fill="#203f35"><text x="48" y="72" font-size="18">FILENS / VECTOR STUDIES</text><text x="48" y="140" font-size="48">A language of shapes</text></g>
+<circle cx="180" cy="330" r="110" fill="#203f35"/><path d="M340 440 460 220 580 440Z" fill="#dc6b45"/><rect x="640" y="220" width="210" height="220" rx="32" fill="#e9ba64"/>
+<text x="48" y="550" font-family="Arial,sans-serif" font-size="18" fill="#526252">SVG / TEXT, PATHS &amp; INFINITE SCALE</text></svg>

@@ -1,6 +1,5 @@
 import { DEFAULT_FORMAT_ROUTES, inferExtensionFromName, type FormatDefinition } from './formats';
-import { createDefaultNativePreviewDrivers } from './native-drivers';
-import { createPptxPreviewDriver } from './pptx-driver';
+import { createLazyCorePreviewDrivers } from './lazy-driver';
 import { createPreviewRegistry, type PreviewRegistry } from './registry';
 import { loadSourceBytes } from '../parser/load-source';
 import { PreviewPasswordError, previewPasswordErrorCode } from './password';
@@ -54,7 +53,7 @@ export class Previewer implements PreviewerInstance {
     this.registry =
       options.registry ??
       createPreviewRegistry({
-        drivers: options.drivers ?? createDefaultPreviewDrivers(),
+        drivers: options.drivers ?? createLazyCorePreviewDrivers(),
         routes: options.routes
       });
     this.converter = options.converter;
@@ -110,11 +109,16 @@ export class Previewer implements PreviewerInstance {
             return;
           }
 
+          const driver = resolved.driver.loadDriver
+            ? await waitForPreviewTask(resolved.driver.loadDriver(), controller?.signal)
+            : resolved.driver;
+          if (token !== this.requestToken) return;
+
           const format = resolved.route.targetFormat;
           const session = ['docx', 'xlsx', 'pptx', 'pdf'].includes(format)
             ? createAttachmentPreviewSession(this.host, this.previewOptions, format,
-              documentHost => resolved.driver.createSession(documentHost, this.previewOptions))
-            : resolved.driver.createSession(this.host, this.previewOptions);
+              documentHost => driver.createSession(documentHost, this.previewOptions))
+            : driver.createSession(this.host, this.previewOptions);
           if (token !== this.requestToken) {
             session.destroy();
             return;
@@ -375,7 +379,10 @@ export class Previewer implements PreviewerInstance {
     const convertedDescriptor = normalizeSourceDescriptor(conversion.source, {
       name: descriptor.name,
       extension: conversion.format,
-      contentType: conversion.contentType
+      contentType: conversion.contentType,
+      // Keep password opens recognizable to downstream cache policies, even
+      // when the converter has already decrypted the Office container.
+      ...(descriptor.password !== undefined ? { password: descriptor.password } : {})
     });
     const convertedResolved = this.registry.resolve(convertedDescriptor);
     if (!convertedResolved?.driver) {
@@ -454,10 +461,6 @@ export class Previewer implements PreviewerInstance {
 
 export function createPreviewer(host: HTMLElement, options?: CreatePreviewerOptions): PreviewerInstance {
   return new Previewer(host, options);
-}
-
-export function createDefaultPreviewDrivers(): PreviewDriver[] {
-  return [createPptxPreviewDriver(), ...createDefaultNativePreviewDrivers()];
 }
 
 export function createDefaultPreviewRoutes(extraRoutes: FormatDefinition[] = []): FormatDefinition[] {

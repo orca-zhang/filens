@@ -70,6 +70,35 @@ func TestConvertUsesWASIConverterCore(t *testing.T) {
 	}
 }
 
+func TestOptionalGraphicsModule(t *testing.T) {
+	ctx := context.Background()
+	backend := NewWASIBackend()
+	defer backend.Close(ctx)
+	wasmPath := buildConverterCoreWASM(t)
+	input := filepath.Join(findRepoRoot(t), "examples", "go-wazero-converter", "fixtures", "graphics", "sample.tiff")
+	output := filepath.Join(t.TempDir(), "preview.png")
+	backend.GraphicsWasmPath = filepath.Join(t.TempDir(), "missing-graphics.wasm")
+	res, err := backend.convertWithFormats(ctx, wasmPath, input, output, "tiff", "png", Options{})
+	if err != nil || res.ErrorCode != ErrorCodeEngineUnavailable || res.RequiredModule != "graphics" {
+		t.Fatalf("expected an explicit missing graphics module result: %+v, %v", res, err)
+	}
+	backend.GraphicsWasmPath = ""
+	res, err = backend.convertWithFormats(ctx, wasmPath, input, output, "tiff", "png", Options{})
+	if err != nil || !res.OK || res.ContentType != "image/png" {
+		t.Fatalf("expected conversion through the sibling graphics module: %+v, %v", res, err)
+	}
+	bytes, err := os.ReadFile(output)
+	if err != nil || len(bytes) < 24 || string(bytes[:8]) != "\x89PNG\r\n\x1a\n" {
+		t.Fatalf("expected a PNG output: %v", err)
+	}
+	if binary.BigEndian.Uint32(bytes[16:20]) != 1200 || binary.BigEndian.Uint32(bytes[20:24]) != 800 {
+		t.Fatal("unexpected TIFF first-image dimensions")
+	}
+	if len(backend.modules) != 2 {
+		t.Fatalf("expected core and graphics modules to be cached, got %d", len(backend.modules))
+	}
+}
+
 func TestConvertRejectsUnsupportedPairs(t *testing.T) {
 	wasmPath := filepath.Join(t.TempDir(), "missing-converter-core.wasm")
 

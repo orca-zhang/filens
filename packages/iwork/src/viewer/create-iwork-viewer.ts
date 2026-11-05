@@ -1,12 +1,13 @@
-import { bindPreviewTouchGestures, MediaRegistry, type TableItem } from '@filens/core';
-import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE, type ParsedSheet } from '@filens/xlsx';
+import { bindPreviewTouchGestures, MediaRegistry, previewContentKey, previewModelCache, type TableItem } from '@filens/core';
+import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE, type ParsedSheet } from '@filens/xlsx/table';
 import type {
   IworkFitMode,
   IworkViewerEventMap,
   IworkViewerEventName,
   IworkViewerInstance,
   IworkViewerOptions,
-  IworkViewerState
+  IworkViewerState,
+  ParsedIworkDocument
 } from '../types';
 import { loadSourceBytes } from '../parser/load-source';
 import { IworkWorkerClient } from '../worker/client';
@@ -16,7 +17,9 @@ type EventHandler<T extends IworkViewerEventName> = (payload: IworkViewerEventMa
 
 export function createIworkViewer(container: HTMLElement, options: IworkViewerOptions = {}): IworkViewerInstance {
   const listeners = new Map<IworkViewerEventName, Set<(payload: unknown) => void>>();
-  const worker = new IworkWorkerClient();
+  let worker: IworkWorkerClient | null = null;
+  let workerHasDocument = false;
+  const getWorker = () => worker ??= new IworkWorkerClient();
   const usePagedWidthFitByDefault = options.fit === undefined;
   let mediaRegistry: MediaRegistry | null = null;
   let loadController: AbortController | null = null;
@@ -70,7 +73,8 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     const controller = loadController;
     loadController = null;
     controller?.abort();
-    worker.cancel();
+    worker?.cancel();
+    workerHasDocument = false;
     renderController?.abort();
     renderController = null;
     resizeObserver?.disconnect();
@@ -382,11 +386,12 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     if (sheetLoads.has(index)) {
       return;
     }
-    const task = worker.parseSheet(index)
+    const task = (workerHasDocument ? getWorker().parseSheet(index) : getWorker().parseSheet(index, numbers))
       .then((sheet) => {
         if (state.document !== numbers) {
           return;
         }
+        workerHasDocument = true;
         numbers.sheets[index] = sheet;
         if (state.currentSheet === index) {
           render();
@@ -436,7 +441,18 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     try {
       const bytes = await waitForLoad(loadSourceBytes(source, { signal: controller.signal }), controller.signal);
       if (controller.signal.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
-      const document = await waitForLoad(worker.parse(bytes, options.type, resolveSourceName(source)), controller.signal);
+      // Snapshot keys cover every byte plus parsing hints; URL and password
+      // callers bypass reuse. Only immutable parser data enters the cache.
+      const key = previewOptions.cache !== false && typeof source !== 'string' && bytes[0] === 0x50 && bytes[1] === 0x4b
+        ? await waitForLoad(previewContentKey(bytes, `iwork-v1:${JSON.stringify([options.type, resolveSourceName(source)])}`, controller.signal), controller.signal)
+        : undefined;
+      let document = previewModelCache.get<ParsedIworkDocument>(key);
+      if (!document) {
+        document = await waitForLoad(getWorker().parse(bytes, options.type, resolveSourceName(source)), controller.signal);
+        if (controller.signal.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
+        workerHasDocument = true;
+        previewModelCache.put(key, document);
+      }
       if (controller.signal.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
       state.document = document;
       state.kind = document.kind;
@@ -546,7 +562,8 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       container.removeEventListener('scroll', handleScroll);
       container.ownerDocument.removeEventListener('scroll', handleScroll, true);
       container.ownerDocument.defaultView?.removeEventListener('scroll', handleScroll);
-      worker.destroy();
+      worker?.destroy();
+      worker = null;
       container.classList.remove('iworkv-root', 'is-loading', 'is-error');
       container.removeAttribute('data-status');
       container.innerHTML = '';

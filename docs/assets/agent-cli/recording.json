@@ -1,0 +1,667 @@
+{
+  "observedAt": "2026-11-05T03:30:08.241Z",
+  "locales": {
+    "en": {
+      "createdAt": "2026-11-05T03:26:57.494Z",
+      "locale": "en",
+      "width": 1280,
+      "height": 820,
+      "duration": 60,
+      "fps": 12,
+      "frames": 720,
+      "bytes": 1013975,
+      "sha256": "bd9ed5a93bc069fd2005162cefe375f1f3a35b6fcf17edc6b2b9d254b04e8026",
+      "requests": [
+        {
+          "intent": "capacity --full --json",
+          "ms": 206
+        },
+        {
+          "intent": "read \"launch-brief.docx\" as markdown",
+          "ms": 192
+        },
+        {
+          "intent": "summarize \"meeting-notes.txt\" focus on \"budget risk\" at most 400 chars as text",
+          "ms": 198
+        },
+        {
+          "intent": "summarize \"meeting-notes.txt\" focus on \"budget risk\" at most 400 chars as json",
+          "ms": 199
+        },
+        {
+          "intent": "search \"documents.zip\" for \"budget risk\" as json",
+          "ms": 101
+        },
+        {
+          "intent": "read documents.zip!/attachments.zip!/contract.docx --json",
+          "ms": 255
+        },
+        {
+          "intent": "read \"documents.zip!/attachments.zip!/contract.docx\" as markdown",
+          "ms": 258
+        },
+        {
+          "intent": "convert budget.csv budget.xlsx --json",
+          "ms": 142
+        },
+        {
+          "intent": "read budget.xlsx --json",
+          "ms": 199
+        },
+        {
+          "intent": "preview budget.xlsx --output budget.html --no-open --json",
+          "ms": 10
+        },
+        {
+          "intent": "preview drawing.step --output drawing.html --no-open --json",
+          "ms": 11
+        },
+        {
+          "intent": "get layout of \"invoice.png\" as json",
+          "ms": 421
+        },
+        {
+          "intent": "get layout of \"invoice.png\" as yaml",
+          "ms": 439
+        },
+        {
+          "intent": "find duplicate files in \"files\" as json",
+          "ms": 185
+        },
+        {
+          "intent": "find similar images in \"photos\" as json",
+          "ms": 1693
+        },
+        {
+          "intent": "inspect invoice.pdf --json",
+          "ms": 18
+        }
+      ],
+      "previewMode": "offline-html",
+      "previewCLIExited": true,
+      "previewOffline": true,
+      "previewCaptures": {
+        "workbook": [
+          {
+            "file": "workbook-preview-000.png",
+            "sha256": "e4e7c04f58dde6c695ae6a1ad4a8d4ddbc86e8d65c375659858a187cb4876375"
+          }
+        ],
+        "model": [
+          {
+            "file": "model-preview-000.png",
+            "sha256": "53b5ef5a2a7b60db88da84895ec111c2346d397876699227bd7abd9c36cb1c19"
+          },
+          {
+            "file": "model-preview-001.png",
+            "sha256": "17df184d7e6eee18b963bf86393f2e36355796b738893417ff0c47c15bdce2c8"
+          },
+          {
+            "file": "model-preview-002.png",
+            "sha256": "c83756f4b1789c8f4172b78c62667c41ed8271333a88e679690445c6eb30e70e"
+          },
+          {
+            "file": "model-preview-003.png",
+            "sha256": "ffdb590433b1e49dcb7053b35e63ddd71e1b4b8c05955fc458ff65d4935ab490"
+          },
+          {
+            "file": "model-preview-004.png",
+            "sha256": "993a17daac0e49800dad590c0c61643defed229b5e2ae734c9afc63348ba6bde"
+          },
+          {
+            "file": "model-preview-005.png",
+            "sha256": "28c716b4c3313e385a8be4e72f2f156001d24e4664e002f0ce866c8ed159c2fe"
+          },
+          {
+            "file": "model-preview-006.png",
+            "sha256": "a6b0211af6149e8e526c6d04ee52dcf412141d0805937e09b7a64376c19dc21d"
+          },
+          {
+            "file": "model-preview-007.png",
+            "sha256": "e7c4de982092640ca8783d6eaf33086f314513ba2f71b4140316d857841233ea"
+          },
+          {
+            "file": "model-preview-008.png",
+            "sha256": "58b9e6c9631976537c5d07d30b16dbad8aa70e29ebd4c40984f9529cad5ac6ee"
+          },
+          {
+            "file": "model-preview-009.png",
+            "sha256": "56969d7db6cda5c324255caffb6e2cd9834a3e07dda3cc366f4e89e86c13b117"
+          },
+          {
+            "file": "model-preview-010.png",
+            "sha256": "35755fbec1f396d77e9d787bec0efe2ee92db8426c16941d3a7434856148d2bc"
+          },
+          {
+            "file": "model-preview-011.png",
+            "sha256": "e7e7ba1ed93c43a326f2ac189a5225b73d56d41a255de675a6e0e2ddec80f41e"
+          },
+          {
+            "file": "model-preview-012.png",
+            "sha256": "08664926a3aaba5745c173a5cbefbe335a44c372e618000667d44f12326acde0"
+          },
+          {
+            "file": "model-preview-013.png",
+            "sha256": "aaed0d21fd0489232108f50f8a9b3c54fd389b986a6e7c877c38ac62276946e9"
+          },
+          {
+            "file": "model-preview-014.png",
+            "sha256": "c9174eac9211e12cf931186dece3d3efeb601dbe7ff3f2509d8f32d953c32a9b"
+          },
+          {
+            "file": "model-preview-015.png",
+            "sha256": "578c6d0176123bb587cb14d042311b0bd4cb630d69f358d0a5e0b3246e2af243"
+          },
+          {
+            "file": "model-preview-016.png",
+            "sha256": "8cb691284351d983e4434c650c67f0478211260015b5d4a093f9bfb4fb8bc487"
+          },
+          {
+            "file": "model-preview-017.png",
+            "sha256": "8015cd51dc5b0ea1c5661ebb9b1e2ddae62ecafd896c88ebac7f57dd64b7d1f8"
+          },
+          {
+            "file": "model-preview-018.png",
+            "sha256": "38fd4e2582590759b03af760449aee325739057f32632e3385cb09741dfd7832"
+          },
+          {
+            "file": "model-preview-019.png",
+            "sha256": "9b68319c18462f69500fec7150af86f83a23a73ba08926b18da91c0d56d58a8d"
+          },
+          {
+            "file": "model-preview-020.png",
+            "sha256": "ea7317f9385d1d4d543f483e55a624c26220b842f5390589c2eae4855e4a9a6a"
+          },
+          {
+            "file": "model-preview-021.png",
+            "sha256": "c099352e55de8bbbef5c15b22d73a3406d01173ddcf7118aa389191e3df6b7d5"
+          },
+          {
+            "file": "model-preview-022.png",
+            "sha256": "27d8ee5d62e8d6c1360653a5302e311a71608076bc2ef140af6e98d929712a80"
+          },
+          {
+            "file": "model-preview-023.png",
+            "sha256": "9b8bd3ea8a90bbae6f7a39b89bc8b63b789abe2ea151cb3d8ad7492736dcb555"
+          },
+          {
+            "file": "model-preview-024.png",
+            "sha256": "55fcdafc72c297d9b50e9d04b4c471088b190400beff3cf62e1b62506ec08989"
+          },
+          {
+            "file": "model-preview-025.png",
+            "sha256": "e58ba546620530fd13004b4c00c45e93c000ef64b14f48db4ee87af949cac928"
+          },
+          {
+            "file": "model-preview-026.png",
+            "sha256": "a46be7a2d467ef45f8c96a171dad5646c98f459ed880309966ddf6c64305aaf7"
+          },
+          {
+            "file": "model-preview-027.png",
+            "sha256": "47a1ba50b03c265a6a709596d01e4efcf201486757a0ad4407797ae2b374759b"
+          },
+          {
+            "file": "model-preview-028.png",
+            "sha256": "f12b95714e951f9b0623037491301b97bce39b0e9b2ccccc3515118e511a1688"
+          },
+          {
+            "file": "model-preview-029.png",
+            "sha256": "ed9225c147aa7b58fe97cdcf521d4b1cba247d018e4fa7e38bfc80b143c650b1"
+          },
+          {
+            "file": "model-preview-030.png",
+            "sha256": "39a1051b7510c7c7a3e8ae833bd225cefcf72e0cf05c45a8940b1243847b2d51"
+          },
+          {
+            "file": "model-preview-031.png",
+            "sha256": "e489938a99db5815ffca8641084726330e7c24dc4e77992533144fc0643f2a90"
+          },
+          {
+            "file": "model-preview-032.png",
+            "sha256": "034b570d4cc2877713d9d747c86d11af3c4e641e79105cd98cbe8b0b10b9e030"
+          },
+          {
+            "file": "model-preview-033.png",
+            "sha256": "73ce90e1dc0eb86bfa89635cb1bc89e77fa0eacc945646b8859d5f2ea2155a34"
+          },
+          {
+            "file": "model-preview-034.png",
+            "sha256": "3baa8f6495959b0427dd4e4b58a57ffdd5cbd328b7cf07f1906af1af4ff59b91"
+          },
+          {
+            "file": "model-preview-035.png",
+            "sha256": "f080a3af2334091e6f394df0001c88c5d6ba3948ebee6903fe8492b4cef8d20a"
+          },
+          {
+            "file": "model-preview-036.png",
+            "sha256": "03514e74c289284dae45a2eecf9d44514ff26e868f03016a6557aa1120da4730"
+          },
+          {
+            "file": "model-preview-037.png",
+            "sha256": "4174f81b51698f7db3c4918331eb8988d6fb595540b6cd299ece9e28fde61ed1"
+          },
+          {
+            "file": "model-preview-038.png",
+            "sha256": "5281313efb6e842ea3e00a775561b9df295391ee6306565ad099d03ba5d5f3a5"
+          },
+          {
+            "file": "model-preview-039.png",
+            "sha256": "3f0ffd81202e91434329d793100c4787c7d062ce8deb1afc7292d5f06f136cac"
+          },
+          {
+            "file": "model-preview-040.png",
+            "sha256": "a1736b73eeb4fcda08ef147b3b1dca49bd3ac233a92950803c6d49e2b95a8183"
+          },
+          {
+            "file": "model-preview-041.png",
+            "sha256": "979041aaebe41d64834cf293758489f02c119488ab83d8095e0298330ea82e3a"
+          },
+          {
+            "file": "model-preview-042.png",
+            "sha256": "e46474bd65ae4562dbbc612e91fd9a5fb62791705c5d69c34999def630fc04ee"
+          },
+          {
+            "file": "model-preview-043.png",
+            "sha256": "3ddb31b60242d799631e00e9ca9848c6fc702d4504d1e5ec6387133b9279616a"
+          },
+          {
+            "file": "model-preview-044.png",
+            "sha256": "dfa4a64b9674f2503ac65f6a4b227f3057959ba4004c7a9691cd27e46018fc9f"
+          },
+          {
+            "file": "model-preview-045.png",
+            "sha256": "d392d0dbb842565f221c95641aad6a351c9801550a9db6affb8dc602abd1d8bb"
+          },
+          {
+            "file": "model-preview-046.png",
+            "sha256": "2f36e31996352f7654c8b4c0b8e5d5d981675c6d51016feedefd33fa99cdece8"
+          },
+          {
+            "file": "model-preview-047.png",
+            "sha256": "0e6a307678b07f8cdc75841cd52ad11b36d574c4a4e41d234b4b6c1ed2eea371"
+          },
+          {
+            "file": "model-preview-048.png",
+            "sha256": "79cfd5ad0dc2aa39c78b93c294024a0dbb0c6fbff3758993739d3b21ec242583"
+          },
+          {
+            "file": "model-preview-049.png",
+            "sha256": "0c3de9577d1361fbc2d10e381e504e788e262e502e54b636b603cf82b69ee5f4"
+          },
+          {
+            "file": "model-preview-050.png",
+            "sha256": "8f781613001fc274be31bab14b532ad03916f00d85d3ff7cf6741b2818b58fb4"
+          },
+          {
+            "file": "model-preview-051.png",
+            "sha256": "02a793e78fba55bd6cc7170b5290d377b8b5bfad02b4b647ab3bbee99da14065"
+          },
+          {
+            "file": "model-preview-052.png",
+            "sha256": "6a0c1d85b5427414bf6b1b15acb2e7602bdab0891a5c537b33624174274178ce"
+          },
+          {
+            "file": "model-preview-053.png",
+            "sha256": "b038f4bddb650e298fa43091f54889e2e3772671145fcf25dfa68eceb3649d56"
+          },
+          {
+            "file": "model-preview-054.png",
+            "sha256": "90b434825ddf1a4f136515ad7359abdb54f9da725eab3d4ac3bcb928be088764"
+          },
+          {
+            "file": "model-preview-055.png",
+            "sha256": "a128bfc99475825ebdf274ed6abb0294f98608291f487845dd2f899fa41b8582"
+          },
+          {
+            "file": "model-preview-056.png",
+            "sha256": "3f63d5a68a96a4bfd11588d5ed59f48a1d125df5e6f223431dc3ee5f96bce742"
+          },
+          {
+            "file": "model-preview-057.png",
+            "sha256": "33cf9ba3d59d611c2be5a196dccfa8112dd8ee3f598148ff3917d8c2568b6c61"
+          },
+          {
+            "file": "model-preview-058.png",
+            "sha256": "0ded01010a553a8b9c9d3e0635056c87c2290a35ca41bcb3c51bd21fdd5ce9d5"
+          },
+          {
+            "file": "model-preview-059.png",
+            "sha256": "2747df1fac25b8ce8b089638c505fe7b3b4d4beae60e73fe5e2a24fb65dd1ca6"
+          }
+        ]
+      },
+      "notes": "Actual CLI responses and self-contained HTML previews opened after the CLI exited, with the browser offline; excerpts shown and file paths shortened. Typing, response timing and orbit capture playback edited. Nested ZIP search evidence verified against member text. CSV converted by WASM and the resulting XLSX rendered by the shared viewer. STEP orbit uses actual renderer captures. No embedding or generated reasoning. Image distances are not confidence percentages."
+    },
+    "zh-CN": {
+      "createdAt": "2026-11-05T03:27:56.881Z",
+      "locale": "zh-CN",
+      "width": 1280,
+      "height": 820,
+      "duration": 60,
+      "fps": 12,
+      "frames": 720,
+      "bytes": 944204,
+      "sha256": "6eb9c307ff5423b117251ecec9d4b46128994cd39f2738b405a215640df033a7",
+      "requests": [
+        {
+          "intent": "capacity --full --json",
+          "ms": 205
+        },
+        {
+          "intent": "读取 \"launch-brief.docx\"，以 Markdown 输出",
+          "ms": 190
+        },
+        {
+          "intent": "总结 \"meeting-notes.txt\"，聚焦 \"预算 风险\"，最多200字符，以纯文本输出",
+          "ms": 202
+        },
+        {
+          "intent": "总结 \"meeting-notes.txt\"，聚焦 \"预算 风险\"，最多200字符，以 JSON 输出",
+          "ms": 202
+        },
+        {
+          "intent": "在 \"documents.zip\" 中搜索 \"预算 风险\"，以 JSON 输出",
+          "ms": 98
+        },
+        {
+          "intent": "read documents.zip!/attachments.zip!/contract.docx --json",
+          "ms": 250
+        },
+        {
+          "intent": "读取 \"documents.zip!/attachments.zip!/contract.docx\"，以 Markdown 输出",
+          "ms": 251
+        },
+        {
+          "intent": "convert budget.csv budget.xlsx --json",
+          "ms": 140
+        },
+        {
+          "intent": "read budget.xlsx --json",
+          "ms": 192
+        },
+        {
+          "intent": "preview budget.xlsx --output budget.html --no-open --json",
+          "ms": 13
+        },
+        {
+          "intent": "preview drawing.step --output drawing.html --no-open --json",
+          "ms": 14
+        },
+        {
+          "intent": "获取 \"invoice.png\" 的布局，以 JSON 输出",
+          "ms": 404
+        },
+        {
+          "intent": "获取 \"invoice.png\" 的布局，以 YAML 输出",
+          "ms": 402
+        },
+        {
+          "intent": "查找 \"files\" 中的重复文件，以 JSON 输出",
+          "ms": 181
+        },
+        {
+          "intent": "查找 \"photos\" 中的相似图片，以 JSON 输出",
+          "ms": 1670
+        },
+        {
+          "intent": "inspect invoice.pdf --json",
+          "ms": 17
+        }
+      ],
+      "previewMode": "offline-html",
+      "previewCLIExited": true,
+      "previewOffline": true,
+      "previewCaptures": {
+        "workbook": [
+          {
+            "file": "workbook-preview-000.png",
+            "sha256": "b9457f5c230050de4f812996adbae0c6976159eebcb1179a6981e9637d1902ad"
+          }
+        ],
+        "model": [
+          {
+            "file": "model-preview-000.png",
+            "sha256": "1a1f60d45c99cb41b4a0759f486498a825f04347bbcbb3f263354cfbff4a0814"
+          },
+          {
+            "file": "model-preview-001.png",
+            "sha256": "fb97a863f740f1aecdcf27a46c4bda586646ec9437112c0202c88989a3fe305a"
+          },
+          {
+            "file": "model-preview-002.png",
+            "sha256": "7bbc7cc9db8c55af273080b23691ddf8129646fba6edc95ff108b9cddb0750e1"
+          },
+          {
+            "file": "model-preview-003.png",
+            "sha256": "68c248951a2daf4b3d1f2909f77879ed1b489eb063afa459900419b6a2f4a81f"
+          },
+          {
+            "file": "model-preview-004.png",
+            "sha256": "ea780104fc643b0630b8a281cdd9e64d0c2be123bb62c03462ea550cc63e5232"
+          },
+          {
+            "file": "model-preview-005.png",
+            "sha256": "86c90a95a211965537ae5d1d56b7498eee7f5d048f332f4bc172b220d29033b5"
+          },
+          {
+            "file": "model-preview-006.png",
+            "sha256": "55e8e5d8f003ab00153520cb1e2829427f18930e0c01dab7a918adbf4eacd993"
+          },
+          {
+            "file": "model-preview-007.png",
+            "sha256": "15ce513892f3d8abb05fc7c35ef18d5e890932642d6d868d557695797b8c5d8a"
+          },
+          {
+            "file": "model-preview-008.png",
+            "sha256": "58b9e6c9631976537c5d07d30b16dbad8aa70e29ebd4c40984f9529cad5ac6ee"
+          },
+          {
+            "file": "model-preview-009.png",
+            "sha256": "56969d7db6cda5c324255caffb6e2cd9834a3e07dda3cc366f4e89e86c13b117"
+          },
+          {
+            "file": "model-preview-010.png",
+            "sha256": "35755fbec1f396d77e9d787bec0efe2ee92db8426c16941d3a7434856148d2bc"
+          },
+          {
+            "file": "model-preview-011.png",
+            "sha256": "e7e7ba1ed93c43a326f2ac189a5225b73d56d41a255de675a6e0e2ddec80f41e"
+          },
+          {
+            "file": "model-preview-012.png",
+            "sha256": "08664926a3aaba5745c173a5cbefbe335a44c372e618000667d44f12326acde0"
+          },
+          {
+            "file": "model-preview-013.png",
+            "sha256": "aaed0d21fd0489232108f50f8a9b3c54fd389b986a6e7c877c38ac62276946e9"
+          },
+          {
+            "file": "model-preview-014.png",
+            "sha256": "c9174eac9211e12cf931186dece3d3efeb601dbe7ff3f2509d8f32d953c32a9b"
+          },
+          {
+            "file": "model-preview-015.png",
+            "sha256": "578c6d0176123bb587cb14d042311b0bd4cb630d69f358d0a5e0b3246e2af243"
+          },
+          {
+            "file": "model-preview-016.png",
+            "sha256": "8cb691284351d983e4434c650c67f0478211260015b5d4a093f9bfb4fb8bc487"
+          },
+          {
+            "file": "model-preview-017.png",
+            "sha256": "8015cd51dc5b0ea1c5661ebb9b1e2ddae62ecafd896c88ebac7f57dd64b7d1f8"
+          },
+          {
+            "file": "model-preview-018.png",
+            "sha256": "38fd4e2582590759b03af760449aee325739057f32632e3385cb09741dfd7832"
+          },
+          {
+            "file": "model-preview-019.png",
+            "sha256": "9b68319c18462f69500fec7150af86f83a23a73ba08926b18da91c0d56d58a8d"
+          },
+          {
+            "file": "model-preview-020.png",
+            "sha256": "9e6a28122e32a30833638acc3472d32dcdc0aefd177830b9413c02c46f4a060c"
+          },
+          {
+            "file": "model-preview-021.png",
+            "sha256": "70404258ec4ab8c65dac42da6f00832d10f02cd502c2cdbf25deed132d9f6cec"
+          },
+          {
+            "file": "model-preview-022.png",
+            "sha256": "65c786b43546e19a96bfa39883d38549c91f425160eeca71201e62a6a9632c78"
+          },
+          {
+            "file": "model-preview-023.png",
+            "sha256": "acd5fad27c78535d2b7c2837f266cabb826444a8c1a4f389dd4667b6b8549c76"
+          },
+          {
+            "file": "model-preview-024.png",
+            "sha256": "83888946a33873671bfae62b6d2227e3eb4b4b210ad39e856d0fdfc5c8394a40"
+          },
+          {
+            "file": "model-preview-025.png",
+            "sha256": "569a1e6ae7e33bb8b19b9dce65b85286d9a5e46cad6995fb5ea9b1f912736824"
+          },
+          {
+            "file": "model-preview-026.png",
+            "sha256": "b8cc63c560cda0b380df9b96bff2fd9618ab901d766c5be380e15974ff263abc"
+          },
+          {
+            "file": "model-preview-027.png",
+            "sha256": "84cd064b4554d6c072a3200933ae46782d5c6d1c3caf56a59e2fb856ba372b00"
+          },
+          {
+            "file": "model-preview-028.png",
+            "sha256": "d9fd5894d2fa2dcfbd71458f38fcaf2e84dc08450b217c9e8b0a23ba17715169"
+          },
+          {
+            "file": "model-preview-029.png",
+            "sha256": "44f51985af45d9c2dd1d0dc659fd5171d31e24bc060ea45b1dc1d8032fadf660"
+          },
+          {
+            "file": "model-preview-030.png",
+            "sha256": "9a7ad6c3e1e7b546103bd6470d06ea3d37ef7de2f46baafa8c3fb86b1173c654"
+          },
+          {
+            "file": "model-preview-031.png",
+            "sha256": "bf9b3ff53602366b83cb79635a6e5e0737a1e595e6ee0994f357e7e94eb4ecda"
+          },
+          {
+            "file": "model-preview-032.png",
+            "sha256": "7f930b33b615ce4f3c4abacb9a9efbc946f92b69c6e46731b138c8588b47b366"
+          },
+          {
+            "file": "model-preview-033.png",
+            "sha256": "c860568f7326c2f4c50397586a2b19bbf60753ecaa0a0f6dd0284c052a083488"
+          },
+          {
+            "file": "model-preview-034.png",
+            "sha256": "04c0966f5611e7c515b48e54c0719f62035ad0db85ef55c91045efd363624178"
+          },
+          {
+            "file": "model-preview-035.png",
+            "sha256": "e9c8d8bfb504cfa02e3db0c6d1313e9ad32b9516561efca9d45ec2d65cdf858f"
+          },
+          {
+            "file": "model-preview-036.png",
+            "sha256": "b8357950c359147493a3ea2345e95cf75b1c95670eeedb52209b54324e32abfc"
+          },
+          {
+            "file": "model-preview-037.png",
+            "sha256": "7256a431203f46e6decf7d72c4511f42646d0d60348767506f7d154d424061b6"
+          },
+          {
+            "file": "model-preview-038.png",
+            "sha256": "8ff9ffcfb452fe7ceae1e63811b95b293d9b5f35094cf802811d2ac6126cc257"
+          },
+          {
+            "file": "model-preview-039.png",
+            "sha256": "cecda1b0231fdcadb9b178dc5e511cb37c6b88a13db2aed946105a32c7e45780"
+          },
+          {
+            "file": "model-preview-040.png",
+            "sha256": "e6b0dd8656c4a03ecd744c4964895971cb733e420c71129a931ff4574d03377c"
+          },
+          {
+            "file": "model-preview-041.png",
+            "sha256": "22e797fe862983982d15cafc7bf33bce3e3da281afa2a0338cade8bd38ccd584"
+          },
+          {
+            "file": "model-preview-042.png",
+            "sha256": "dd4d0d1fdbf7aa07420aaf51fb1df53ea370b66a485c85d60f3e1f2925805683"
+          },
+          {
+            "file": "model-preview-043.png",
+            "sha256": "f6d37a32e6c9c27bfb33bc7a85573bbee8990c047679ac062ff0529af7970227"
+          },
+          {
+            "file": "model-preview-044.png",
+            "sha256": "5af7abe57a5a9af7eb69c21ccaac37e38ea3909abfc028aaf9adc572c63493b7"
+          },
+          {
+            "file": "model-preview-045.png",
+            "sha256": "f4b1abd45e1f32b168493459559f4a5952bdd1452359368e5004d14c3af29d45"
+          },
+          {
+            "file": "model-preview-046.png",
+            "sha256": "fcc70ba21007a5490266164f4cd1598affd94a3e87a2073cfc94cd456fac4edd"
+          },
+          {
+            "file": "model-preview-047.png",
+            "sha256": "58b6b215fad641681dfd52cfd6c7b6e351d9e0dad704d98c72c9d7c654dc3603"
+          },
+          {
+            "file": "model-preview-048.png",
+            "sha256": "ea3cd0c550786d172e81cf50f320ca94f7cddd41ece1c313c7bec19babf8c94e"
+          },
+          {
+            "file": "model-preview-049.png",
+            "sha256": "d0f6b099f5532195da8be4999ee247f44ced868ed5d3f2befc5c4174e1c66bb9"
+          },
+          {
+            "file": "model-preview-050.png",
+            "sha256": "3d52c2ffc2b3e620c0039c4bd05aa8f13c693a5c76a84b4d17478c56cf973a01"
+          },
+          {
+            "file": "model-preview-051.png",
+            "sha256": "f168179e7de83128ce5d36aac32737aac64ab90bf1714102a8d6fc0580713508"
+          },
+          {
+            "file": "model-preview-052.png",
+            "sha256": "6c9dc60926c301f99ee2b7109d76ab5eda4665890d1534a9df9530d530d2d1c6"
+          },
+          {
+            "file": "model-preview-053.png",
+            "sha256": "744b685a0030ef3820b3ea77921d40129aec465838184187a64b1eb12b7ba267"
+          },
+          {
+            "file": "model-preview-054.png",
+            "sha256": "ae9979bbfdb550a1288162728a4ba1251e83369fd2b83bd8bbef06c3f5458ca6"
+          },
+          {
+            "file": "model-preview-055.png",
+            "sha256": "a162ad8d477d14ed897e6ecb4435b13fc3e270f33d843ddf0c00d32588601961"
+          },
+          {
+            "file": "model-preview-056.png",
+            "sha256": "a115d6ec8af80b7842d9e072c3b58e2602837e027497eda932cfc74c0ad16d04"
+          },
+          {
+            "file": "model-preview-057.png",
+            "sha256": "17abf1971ac3de802193d978c44c84bc72fe6ce97ca292033bbb1ebe42505c28"
+          },
+          {
+            "file": "model-preview-058.png",
+            "sha256": "290d17cc5562760a73995639bf39376089e1d14de5047f278eb6c84b6ee0e997"
+          },
+          {
+            "file": "model-preview-059.png",
+            "sha256": "c50377a177d0f42914bd0d262106f901390593fcc43d492fa06935db529364ed"
+          }
+        ]
+      },
+      "notes": "Actual CLI responses and self-contained HTML previews opened after the CLI exited, with the browser offline; excerpts shown and file paths shortened. Typing, response timing and orbit capture playback edited. Nested ZIP search evidence verified against member text. CSV converted by WASM and the resulting XLSX rendered by the shared viewer. STEP orbit uses actual renderer captures. No embedding or generated reasoning. Image distances are not confidence percentages."
+    }
+  }
+}

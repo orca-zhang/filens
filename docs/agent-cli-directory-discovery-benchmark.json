@@ -1,0 +1,596 @@
+{
+  "date": "2026-11-04",
+  "platform": "darwin-arm64",
+  "method": "Same synthetic corpus, five fresh processes per mode after one warmup; alternating mode order, warm OS caches. Legacy binary predates this change; compare discoveryMs to isolate walkers, not processMs. Explicit current text WASM used for all modes. No Windows execution or physical cold-cache claims.",
+  "summary": [
+    {
+      "count": 10,
+      "mode": "legacy-hdrw",
+      "medianDiscoveryMs": 80,
+      "medianProcessMs": 415.1
+    },
+    {
+      "count": 10,
+      "mode": "legacy-fts",
+      "medianDiscoveryMs": 0,
+      "medianProcessMs": 332.22
+    },
+    {
+      "count": 10,
+      "mode": "current-fts",
+      "medianDiscoveryMs": 0,
+      "medianProcessMs": 51.2
+    },
+    {
+      "count": 10,
+      "mode": "current-read-dir",
+      "medianDiscoveryMs": 0,
+      "medianProcessMs": 51.54
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-hdrw",
+      "medianDiscoveryMs": 190,
+      "medianProcessMs": 903.04
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-fts",
+      "medianDiscoveryMs": 1,
+      "medianProcessMs": 714.35
+    },
+    {
+      "count": 1000,
+      "mode": "current-fts",
+      "medianDiscoveryMs": 1,
+      "medianProcessMs": 434.25
+    },
+    {
+      "count": 1000,
+      "mode": "current-read-dir",
+      "medianDiscoveryMs": 2,
+      "medianProcessMs": 431.71
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-hdrw",
+      "medianDiscoveryMs": 1238,
+      "medianProcessMs": 5422.06
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-fts",
+      "medianDiscoveryMs": 17,
+      "medianProcessMs": 4214.48
+    },
+    {
+      "count": 10000,
+      "mode": "current-fts",
+      "medianDiscoveryMs": 17,
+      "medianProcessMs": 3891.3
+    },
+    {
+      "count": 10000,
+      "mode": "current-read-dir",
+      "medianDiscoveryMs": 24,
+      "medianProcessMs": 3896.51
+    }
+  ],
+  "observations": [
+    {
+      "count": 10,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 0,
+      "processMs": 51.14,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 51.2,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 328.49,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 83,
+      "processMs": 415.18,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 80,
+      "processMs": 415.1,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 334.09,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 52.25,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 0,
+      "processMs": 64.34,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 0,
+      "processMs": 52.22,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 52.3,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 333.35,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 80,
+      "processMs": 416.02,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 78,
+      "processMs": 414.78,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 328.94,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 50.95,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 0,
+      "processMs": 51.54,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 0,
+      "processMs": 51.02,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 50.79,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 0,
+      "processMs": 332.22,
+      "visited": 11
+    },
+    {
+      "count": 10,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 78,
+      "processMs": 409.06,
+      "visited": 11
+    },
+    {
+      "count": 1000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 2,
+      "processMs": 432.97,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 437.39,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 736.53,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 190,
+      "processMs": 903.04,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 189,
+      "processMs": 903.59,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 723.42,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 434.25,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 2,
+      "processMs": 429.33,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 2,
+      "processMs": 427.65,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 426.14,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 714.35,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 187,
+      "processMs": 901.78,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 190,
+      "processMs": 901.61,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 712.7,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 437.91,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 2,
+      "processMs": 431.71,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 2,
+      "processMs": 436.15,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 427.23,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 1,
+      "processMs": 712.29,
+      "visited": 1001
+    },
+    {
+      "count": 1000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 193,
+      "processMs": 905.35,
+      "visited": 1001
+    },
+    {
+      "count": 10000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 23,
+      "processMs": 3896.51,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 17,
+      "processMs": 3891.3,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 16,
+      "processMs": 4214.48,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 1326,
+      "processMs": 5508.04,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 1227,
+      "processMs": 5405.15,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 17,
+      "processMs": 4227.49,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 17,
+      "processMs": 3950.72,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 24,
+      "processMs": 3923.39,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 24,
+      "processMs": 3932.93,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 17,
+      "processMs": 3937.72,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 18,
+      "processMs": 4227.1,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 1299,
+      "processMs": 5494.91,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 1236,
+      "processMs": 5422.06,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 17,
+      "processMs": 4167,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 17,
+      "processMs": 3854.2,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 24,
+      "processMs": 3854.13,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-read-dir",
+      "backend": "read-dir",
+      "discoveryMs": 23,
+      "processMs": 3864.06,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "current-fts",
+      "backend": "fts",
+      "discoveryMs": 16,
+      "processMs": 3869.33,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-fts",
+      "backend": "fts",
+      "discoveryMs": 16,
+      "processMs": 4175.37,
+      "visited": 10010
+    },
+    {
+      "count": 10000,
+      "mode": "legacy-hdrw",
+      "backend": "hdrw-wasi",
+      "discoveryMs": 1238,
+      "processMs": 5387.07,
+      "visited": 10010
+    }
+  ],
+  "hardware": {
+    "cpu": "Apple M4 Pro",
+    "cores": 12,
+    "ramGiB": 24
+  },
+  "verification": {
+    "cliUnitTests": 53,
+    "walkerUnitTests": 9,
+    "searchRequestsPerBackend": 44,
+    "similarityRequestsPerBackend": 27,
+    "executedBackends": [
+      "fts",
+      "read-dir"
+    ],
+    "crossCheckTargets": [
+      "x86_64-pc-windows-gnu",
+      "x86_64-unknown-linux-gnu"
+    ],
+    "windowsX64ExecutableCrossBuilt": true,
+    "windowsNativeExecuted": false
+  },
+  "windowsEstimate": {
+    "measured": false,
+    "assumptions": "Local SSD, warm OS caches, roughly ten thousand ordinary files across a modest number of directories; antivirus, network shares and cold/HDD storage may differ substantially.",
+    "files": 10000,
+    "discoveryMsRange": [
+      30,
+      200
+    ],
+    "relativeToHdrwSpeedupRange": [
+      5,
+      20
+    ],
+    "note": "Engineering estimate from same-host WASI/native comparison and batched API design, not a measured NTFS result. Extra benefit over native read_dir remains unmeasured."
+  }
+}

@@ -1,0 +1,19 @@
+Filens HEIF decoder
+
+libheif 1.23.5, commit 413e2a87e6a70b3eccc3a3adc5801179dd2d9e00
+https://github.com/strukturag/libheif/tree/413e2a87e6a70b3eccc3a3adc5801179dd2d9e00
+Copyright (c) struktur AG and the libheif contributors.
+LGPL-3.0-or-later; see COPYING.libheif.
+
+libde265 1.0.18
+https://github.com/strukturag/libde265/tree/v1.0.18
+Copyright (c) struktur AG and the libde265 contributors.
+LGPL-3.0-or-later; see COPYING.libde265.
+
+Compiled with Emscripten 3.1.61. No upstream source modifications.
+Rebuild instructions and exact source archive hashes: README.md and
+scripts/build-heif-decoder.mjs in the Filens source repository.
+The JS glue and WebAssembly binary are a matched pair; replace both together.
+
+This replaces libheif-js 1.23.5's bundled libde265 1.0.15, which corrupts the
+Cr plane in some 10-bit 4:4:4 HEVC still images. Original alpha is preserved.

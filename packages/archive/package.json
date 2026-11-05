@@ -1,7 +1,7 @@
 {
   "name": "@filens/archive",
-  "version": "0.1.0",
-  "description": "Read-only ZIP, RAR, 7z, TAR, and GZIP preview and extraction for the @filens runtime.",
+  "version": "0.1.1",
+  "description": "Read-only archive preview: ZIP/ZIPX, RAR/7z, TAR, compressed streams, AR/DEB/CPIO/RPM, LHA/XAR, CAB/ISO/UDF and WIM/ESD for the @filens runtime.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -26,10 +26,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./dist/index.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    }
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "THIRD-PARTY-NOTICES.txt"
   ],
   "scripts": {
@@ -39,15 +44,15 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
-    "fflate": "^0.8.2",
-    "jszip": "^3.10.1"
+    "fflate": "^0.8.2"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
     "7z-wasm": "^1.2.0",
-    "@filens/core": "file:../core"
+    "@filens/core": "file:../core",
+    "jszip": "^3.10.1"
   },
   "license": "MIT",
   "repository": {

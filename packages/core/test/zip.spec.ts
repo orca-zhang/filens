@@ -53,6 +53,17 @@ describe('Shared ZIP reader', () => {
     await expect(archive.get('value.txt')?.text()).resolves.toBe('value');
   });
 
+  it.each([
+    ['a//b.txt', 'a//b.txt'], ['a/.../b.txt', 'a/.../b.txt'],
+    ['a/..hidden/b.txt', 'a/..hidden/b.txt'], ['./a/../b.txt', 'b.txt'],
+    ['../b.txt', 'b.txt'], ['/a/../b.txt', '/b.txt'], ['a/./', 'a/'], ['a/../', '/']
+  ])('preserves ZIP path normalization for %s', async (name, expected) => {
+    const zip = new JSZip().file(name, 'value', { createFolders: false });
+    const archive = await openZipArchive(await zip.generateAsync({ type: 'uint8array' }));
+    expect([...archive.keys()]).toEqual([expected]);
+    await expect(archive.get(expected)?.text()).resolves.toBe('value');
+  });
+
   it.each([3, 5])('rejects a forged uncompressed size of %i bytes', async size => {
     const zip = new JSZip();
     zip.file('test.txt', 'abcd');
@@ -70,5 +81,41 @@ describe('Shared ZIP reader', () => {
     const bytes = await zip.generateAsync({ type: 'uint8array' });
     await expect(openZipArchive(bytes.subarray(0, bytes.length - 1))).rejects.toThrow();
     await expect(openZipArchive(new Uint8Array())).rejects.toThrow();
+  });
+
+  it.each(['plain.txt', '目录/hello.txt'])('observes cancellation before indexing and on cached reads of %s', async name => {
+    const zip = new JSZip();
+    zip.file(name, 'hello');
+    const bytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const controller = new AbortController();
+    const entries = await openZipArchive(bytes, { signal: controller.signal });
+    const entry = entries.get(name)!;
+    await expect(entry.text()).resolves.toBe('hello');
+    controller.abort();
+    await expect(entry.text()).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(openZipArchive(bytes, { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
+    // Per-read cancellation must also work on an archive without a default signal.
+    const independent = (await openZipArchive(bytes)).get(name)!;
+    await expect(independent.bytes(undefined, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(independent.text()).resolves.toBe('hello');
+  });
+
+  it.each(['plain.txt', '目录/hello.txt'])('enforces size limits without inflating %s', async name => {
+    const zip = new JSZip();
+    zip.file(name, 'hello');
+    const entries = await openZipArchive(await zip.generateAsync({ type: 'uint8array' }), { maxEntryBytes: 4 });
+    await expect(entries.get(name)!.bytes()).rejects.toThrow('size limit');
+    await expect(entries.get(name)!.bytes()).rejects.toThrow('size limit');
+  });
+
+  it.each([300_000, 600_000])('rejects large entries with a forged size of %i bytes', async size => {
+    const zip = new JSZip();
+    zip.file('large.bin', new Uint8Array(400_000));
+    const bytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const view = new DataView(bytes.buffer);
+    const directory = view.getUint32(bytes.length - 6, true);
+    view.setUint32(directory + 24, size, true);
+    const entry = (await openZipArchive(bytes)).get('large.bin')!;
+    await expect(entry.bytes()).rejects.toThrow('Invalid ZIP entry size');
   });
 });

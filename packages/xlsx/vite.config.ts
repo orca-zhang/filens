@@ -6,12 +6,13 @@ export default defineConfig({
   base: './',
   build: {
     lib: {
-      entry: './src/index.ts',
+      entry: { index: './src/index.ts', routes: './src/routes.ts', table: './src/table.ts' },
       formats: ['es'],
-      fileName: () => 'index.js'
+      fileName: (_format, name) => `${name}.js`
     },
     cssCodeSplit: false,
-    sourcemap: true,
+    // Keep local debugging maps without shipping their source in npm packages.
+    sourcemap: 'hidden',
     rollupOptions: {
       external: packageExternals(import.meta.url)
     }
@@ -25,6 +26,7 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       outDir: 'dist',
       entryRoot: 'src',
+      compilerOptions: { declarationMap: false },
       insertTypesEntry: true
     })
   ]

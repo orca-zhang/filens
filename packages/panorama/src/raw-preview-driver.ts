@@ -1,7 +1,6 @@
 import {
   createImagePreviewDriver,
   type ConverterClient,
-  type FormatDefinition,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -16,10 +15,7 @@ import { createImageStitchCalibration } from './static-renderer';
 import type { PanoramaProcessor } from './wasm-processor';
 import { checkPanoramaLoad, waitForPanoramaLoad } from './load-task';
 
-export const RAW_IMAGE_FORMAT_ROUTES: FormatDefinition[] = [{
-  extensions: ['dng'], family: 'image', driverId: 'raw-image', targetFormat: 'jpg',
-  contentTypes: ['image/dng', 'image/x-adobe-dng']
-}];
+export { RAW_IMAGE_FORMAT_ROUTES } from './routes';
 
 export interface RawImagePreviewDriverOptions {
   processor?: PanoramaProcessor;

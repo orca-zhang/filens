@@ -1,6 +1,6 @@
 {
   "name": "@filens/vue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Vue 3 wrapper for the @filens/core PPTX preview library.",
   "type": "module",
   "main": "./dist/index.js",
@@ -25,7 +25,8 @@
     "./style.css": "./dist/style.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build",
@@ -34,14 +35,23 @@
     "test:unit": "npm run build --workspace @filens/core && npm run build --workspace @filens/converter-client && npm run build --workspace @filens/xlsx && npm run build --workspace @filens/archive && npm run build --workspace @filens/cad && npm run build --workspace @filens/books && npm run build --workspace @filens/pdf && npm run build --workspace @filens/docx && npm run build --workspace @filens/model3d && npm run build --workspace @filens/mindmap && npm run build --workspace @filens/diagram && npm run build --workspace @filens/panorama && npm run build --workspace @filens/iwork && npm run build --workspace @filens/design && npm run build --workspace @filens/media && npm run build --workspace @filens/office && npm run build --workspace @filens/text && node ../../scripts/generate-fixtures.mjs && vitest run"
   },
   "peerDependencies": {
-    "@filens/archive": "^0.1.0",
-    "@filens/core": "^0.1.1",
-    "@filens/design": "^0.1.0",
-    "@filens/iwork": "^0.1.0",
-    "@filens/media": "^0.1.0",
-    "@filens/office": "^0.1.0",
-    "@filens/text": "^0.1.0",
-    "vue": "^3.5.0"
+    "@filens/archive": "^0.1.1",
+    "@filens/core": "^0.1.2",
+    "@filens/design": "^0.1.1",
+    "@filens/iwork": "^0.1.1",
+    "@filens/media": "^0.1.1",
+    "@filens/office": "^0.1.1",
+    "@filens/text": "^0.1.1",
+    "vue": "^3.5.0",
+    "@filens/pdf": "^0.1.1",
+    "@filens/docx": "^0.1.1",
+    "@filens/xlsx": "^0.1.1",
+    "@filens/cad": "^0.1.1",
+    "@filens/diagram": "^0.1.1",
+    "@filens/mindmap": "^0.1.1",
+    "@filens/model3d": "^0.1.2",
+    "@filens/panorama": "^0.1.1",
+    "@filens/books": "^0.1.1"
   },
   "devDependencies": {
     "@filens/archive": "file:../archive",
@@ -50,7 +60,16 @@
     "@filens/iwork": "file:../iwork",
     "@filens/media": "file:../media",
     "@filens/office": "file:../office",
-    "@filens/text": "file:../text"
+    "@filens/text": "file:../text",
+    "@filens/pdf": "file:../pdf",
+    "@filens/docx": "file:../docx",
+    "@filens/xlsx": "file:../xlsx",
+    "@filens/cad": "file:../cad",
+    "@filens/diagram": "file:../diagram",
+    "@filens/mindmap": "file:../mindmap",
+    "@filens/model3d": "file:../model3d",
+    "@filens/panorama": "file:../panorama",
+    "@filens/books": "file:../ebook"
   },
   "license": "MIT",
   "repository": {

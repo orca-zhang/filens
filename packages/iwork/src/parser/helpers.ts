@@ -1109,9 +1109,20 @@ function computeParagraphStarts(text: string): number[] {
   return starts;
 }
 
-function normalizeStyleEntries(styleTableLike: unknown, leadingRef?: unknown): Array<{ index: number; refId?: number }> {
+interface StyleEntry {
+  index: number;
+  refId?: number;
+  inheritedRefId?: number;
+}
+
+interface StyleEntries {
+  entries: StyleEntry[];
+  ordered: boolean;
+}
+
+function normalizeStyleEntries(styleTableLike: unknown, leadingRef?: unknown): StyleEntries {
   const table = asObject(styleTableLike);
-  const entries = asArray<AnyObject>(readField(table, ['entries'])).map((entry) => ({
+  const entries: StyleEntry[] = asArray<AnyObject>(readField(table, ['entries'])).map((entry) => ({
     index: Number(readField<number>(entry, ['characterIndex', 'character_index']) ?? 0),
     refId: getRefId(readField(entry, ['object']))
   }));
@@ -1123,47 +1134,75 @@ function normalizeStyleEntries(styleTableLike: unknown, leadingRef?: unknown): A
     });
   }
 
-  return entries.sort((left, right) => left.index - right.index);
+  entries.sort((left, right) => left.index - right.index);
+  let inheritedRefId: number | undefined;
+  let ordered = true;
+  for (const entry of entries) {
+    if (entry.refId != null) inheritedRefId = entry.refId;
+    entry.inheritedRefId = inheritedRefId;
+    if (Number.isNaN(entry.index)) ordered = false;
+  }
+  return { entries, ordered };
+}
+
+function findStyleEntryEnd(table: StyleEntries, offset: number): number {
+  const { entries } = table;
+  // A malformed NaN index can prevent sorting. Preserve the original prefix scan.
+  if (!table.ordered || entries.length < 8) {
+    for (let index = 0; index < entries.length; index += 1) {
+      if (entries[index].index > offset) return index;
+    }
+    return entries.length;
+  }
+  let low = 0;
+  let high = entries.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (entries[middle].index > offset) high = middle;
+    else low = middle + 1;
+  }
+  return low;
 }
 
 function resolveActiveStyleRef(
-  entries: Array<{ index: number; refId?: number }>,
+  table: StyleEntries,
   offset: number,
   preservePreviousOnEmpty = false
 ): number | undefined {
-  let active: number | undefined;
-  for (const entry of entries) {
-    if (entry.index > offset) {
-      break;
-    }
-    if (preservePreviousOnEmpty && entry.refId == null) {
-      continue;
-    }
-    active = entry.refId;
-  }
-  return active;
+  if (!table.entries.length) return undefined;
+  const entry = table.entries[findStyleEntryEnd(table, offset) - 1];
+  return preservePreviousOnEmpty ? entry?.inheritedRefId : entry?.refId;
 }
 
 function buildRunsForParagraph(
   archive: IworkArchiveIndex,
   paragraphText: string,
   paragraphStart: number,
-  entries: Array<{ index: number; refId?: number }>,
+  entries: StyleEntries,
   baseCharProps: AnyObject | undefined,
   attachmentTextMap: Map<number, string[]>
 ): TextRun[] {
   if (!paragraphText.length) {
     return [{ text: '' }];
   }
+  if (!entries.entries.length) {
+    const text = expandAttachmentText(paragraphText, paragraphStart, attachmentTextMap);
+    return text.length ? [buildTextRun(text, baseCharProps)] : [];
+  }
 
-  const boundaries = new Set<number>([paragraphStart, paragraphStart + paragraphText.length]);
-  for (const entry of entries) {
-    if (entry.index > paragraphStart && entry.index < paragraphStart + paragraphText.length) {
-      boundaries.add(entry.index);
+  const paragraphEnd = paragraphStart + paragraphText.length;
+  const boundaries = [paragraphStart];
+  const first = entries.ordered ? findStyleEntryEnd(entries, paragraphStart) : 0;
+  for (let index = first; index < entries.entries.length; index += 1) {
+    const entry = entries.entries[index];
+    if (entries.ordered && entry.index >= paragraphEnd) break;
+    if (entry.index > paragraphStart && entry.index < paragraphEnd && entry.index !== boundaries[boundaries.length - 1]) {
+      boundaries.push(entry.index);
     }
   }
 
-  const sorted = Array.from(boundaries).sort((left, right) => left - right);
+  boundaries.push(paragraphEnd);
+  const sorted = entries.ordered ? boundaries : [...new Set(boundaries)].sort((left, right) => left - right);
   const runs: TextRun[] = [];
   for (let index = 0; index < sorted.length - 1; index += 1) {
     const start = sorted[index];
@@ -1217,7 +1256,7 @@ function normalizeOutlineLevel(value: number | undefined): number {
 
 function resolveParagraphListStyleRef(
   paraProps: AnyObject | undefined,
-  listStyleEntries: Array<{ index: number; refId?: number }>,
+  listStyleEntries: StyleEntries,
   offset: number
 ): unknown {
   if (readField<boolean>(paraProps, ['listStyleNull', 'list_style_null'])) {
@@ -1298,8 +1337,8 @@ function countImplicitListStyleParagraphs(
   archive: IworkArchiveIndex,
   text: string,
   paragraphStarts: number[],
-  paraStyleEntries: Array<{ index: number; refId?: number }>,
-  listStyleEntries: Array<{ index: number; refId?: number }>
+  paraStyleEntries: StyleEntries,
+  listStyleEntries: StyleEntries
 ): Map<number, number> {
   const counts = new Map<number, number>();
   if (archive.type !== 'pages') {

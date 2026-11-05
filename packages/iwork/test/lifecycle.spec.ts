@@ -1,10 +1,13 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { webcrypto } from 'node:crypto';
+import { previewModelCache } from '@filens/core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createIworkViewer } from '../src/viewer/create-iwork-viewer';
 import { IworkPreviewSession } from '../src/preview-driver';
 import type { ParsedIworkDocument, ParsedNumbersDocument, ParsedNumbersSheet, ParsedPagesDocument } from '../src/types';
 
-const mocks = vi.hoisted(() => ({ parse: vi.fn(), parseSheet: vi.fn(), cancel: vi.fn(), destroy: vi.fn() }));
+const mocks = vi.hoisted(() => ({ create: vi.fn(), parse: vi.fn(), parseSheet: vi.fn(), cancel: vi.fn(), destroy: vi.fn() }));
 vi.mock('../src/worker/client', () => ({ IworkWorkerClient: class {
+  constructor() { mocks.create(); }
   parse = mocks.parse; parseSheet = mocks.parseSheet; cancel = mocks.cancel; destroy = mocks.destroy;
 } }));
 
@@ -29,7 +32,41 @@ const bytes = new Uint8Array([1, 2, 3]);
 const host = () => document.body.appendChild(document.createElement('div'));
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
 
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); Object.values(mocks).forEach(mock => mock.mockReset()); document.body.replaceChildren(); });
+afterEach(() => { previewModelCache.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); Object.values(mocks).forEach(mock => mock.mockReset()); document.body.replaceChildren(); });
+
+describe('iWork parsed model reuse', () => {
+  beforeEach(() => { vi.stubGlobal('crypto', webcrypto); previewModelCache.clear(); });
+  const zip = () => new Uint8Array([0x50, 0x4b, 3, 4, 1]);
+  it('opens a cached document without a worker and isolates mutable document and media state', async () => {
+    const doc = pages(); doc.media.photo = { id: 'photo', path: 'photo.png', contentType: 'image/png', data: new Uint8Array([1, 2]) };
+    mocks.parse.mockResolvedValue(doc);
+    const first = createIworkViewer(host()); await first.preview(zip());
+    (first.getState().document as ParsedPagesDocument).pages[0].canvas.title = 'Tab 1'; doc.media.photo.data.fill(9);
+    first.destroy(); const second = createIworkViewer(host()); await second.preview(zip());
+    expect(mocks.create).toHaveBeenCalledOnce(); expect(mocks.parse).toHaveBeenCalledOnce();
+    const cached = second.getState().document as ParsedPagesDocument;
+    expect(cached.pages[0].canvas.title).toBe('Current'); expect([...cached.media.photo.data]).toEqual([1, 2]);
+    second.destroy();
+  });
+  it('restores the Numbers archive on the first lazy sheet after a cache hit', async () => {
+    mocks.parse.mockResolvedValue(numbers()); const first = createIworkViewer(host()); await first.preview(zip()); first.destroy();
+    const second = createIworkViewer(host()); await second.preview(zip());
+    expect(mocks.create).toHaveBeenCalledOnce(); expect(mocks.parse).toHaveBeenCalledOnce();
+    const doc = second.getState().document as ParsedNumbersDocument;
+    mocks.parseSheet.mockResolvedValue({ ...numbers().sheets[1], loaded: true }); second.goToSheet(1);
+    await vi.waitFor(() => expect(second.getState().document?.kind === 'numbers' && second.getState().document.sheets[1].loaded).toBe(true));
+    expect(mocks.create).toHaveBeenCalledTimes(2); expect(mocks.parseSheet).toHaveBeenCalledWith(1, doc);
+    second.destroy();
+  });
+  it('keys all bytes and parsing hints, bypasses opt-out, and rejects an aborted hit', async () => {
+    mocks.parse.mockResolvedValue(pages()); const viewer = createIworkViewer(host());
+    await viewer.preview(zip()); const changed = zip(); changed[4] = 2; await viewer.preview(changed);
+    await viewer.preview(zip(), { cache: false }); expect(mocks.parse).toHaveBeenCalledTimes(3);
+    const controller = new AbortController(); controller.abort();
+    await expect(viewer.preview(zip(), { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
+    viewer.destroy();
+  });
+});
 
 describe('iWork load ownership', () => {
   for (const failure of [false, true]) {

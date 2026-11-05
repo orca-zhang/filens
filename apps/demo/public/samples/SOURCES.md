@@ -85,6 +85,26 @@ no third-party meshes, textures, brands or licensed characters. Details,
 generation commands and format features are in [models/SOURCES.md](models/SOURCES.md).
 Their thumbnails and the homepage model card are captures of the real previewer.
 
+## Original archive specimens
+
+The archive catalog includes 38 project-authored specimens: extension packages,
+ZIPX and comic containers, compressed streams/TARs, AR/DEB/CPIO, Microsoft Cabinet
+and ISO 9660/Joliet/UDF images, LHA/LZH, RPM/XAR and WIM/ESD images. The field-notes
+collection adds original seasonal SVG artwork and a JSON palette. All packaged text and artwork is MIT-licensed original
+Filens material. Real container/codec details, regeneration commands and preview
+limits are documented in [archives/README.md](archives/README.md).
+
+## Original text files
+
+Text offers 42 project-authored original files across 40 format identifiers:
+notes, Markdown/reStructuredText/AsciiDoc/LaTeX documents, eighteen code examples,
+fifteen configuration files and two logs. They replace the previous nine short
+inline fixtures and add thirty-three examples. All are MIT-licensed fictional
+studies, loaded as original UTF-8 files through the native text previewer.
+The catalog includes Chinese and multilingual content, Makefile tabs and a CRLF
+log with a multiline diagnostic trace. Full inventory and encoding details:
+[text/SOURCES.md](text/SOURCES.md).
+
 ## Native design files
 
 Design files offers twelve project-authored original files: six PSD, two PSB, two

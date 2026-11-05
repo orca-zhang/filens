@@ -1450,7 +1450,22 @@ describe('CAD preview driver', () => {
     expect(container.querySelector('svg.cadv-canvas line[data-layer="WALLS"]')?.getAttribute('display')).toBe('none');
     expect(hidden?.getAttribute('display')).toBe('none');
 
+    session.setActiveLayers?.(['WALLS', 'unknown', 'LABELS', 'WALLS']);
+    expect(session.getState().activeLayerIds).toEqual(['WALLS', 'LABELS']);
+    session.toggleLayer?.('unknown');
+    expect(session.getState().activeLayerIds).toEqual(['WALLS', 'LABELS']);
+
+    await session.load(new TextEncoder().encode(createVisibilityFlagsDxfFixture()), {
+      descriptor: { source: new Uint8Array(), name: 'replacement.dxf', extension: 'dxf' }
+    });
+    session.setActiveLayers?.(['WALLS', 'LOCKED', 'FROZEN', 'HIDDEN']);
+    expect(session.getState().activeLayerIds).toEqual(['LOCKED', 'FROZEN']);
+    session.toggleLayer?.('WALLS', true);
+    expect(session.getState().activeLayerIds).toEqual(['LOCKED', 'FROZEN']);
+
     session.destroy();
+    session.setActiveLayers?.(['LOCKED']);
+    expect(session.getState().activeLayerIds).toEqual([]);
     container.remove();
   });
 

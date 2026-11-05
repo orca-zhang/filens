@@ -1,0 +1,114 @@
+{
+  "checks": [
+    {
+      "name": "LoadFbxObjectOptions",
+      "unchangedExceptSharedResolver": true
+    },
+    {
+      "name": "loadFbxObject",
+      "unchangedExceptSharedResolver": true
+    },
+    {
+      "name": "loadFbxObjectWithWarnings",
+      "unchangedExceptSharedResolver": true
+    },
+    {
+      "name": "Load3dsObjectOptions",
+      "unchangedExceptSharedResolver": true
+    },
+    {
+      "name": "load3dsObject",
+      "unchangedExceptSharedResolver": true
+    },
+    {
+      "name": "load3dsObjectWithWarnings",
+      "unchangedExceptSharedResolver": true
+    },
+    {
+      "name": "resolveLwoTextureUrl",
+      "sharedBodyMatches": true
+    },
+    {
+      "name": "resolveColladaTextureUrl",
+      "sharedBodyMatches": true
+    },
+    {
+      "name": "resolveFbxTextureUrl",
+      "sharedBodyMatches": true
+    },
+    {
+      "name": "resolve3dsTextureUrl",
+      "sharedBodyMatches": true
+    },
+    {
+      "name": "resolveVrmlTextureUrl",
+      "sharedBodyMatches": true
+    },
+    {
+      "name": "Model3dPreviewSession.load",
+      "sharedCompletionBlocks": 19,
+      "unchangedExceptLazyImportsAndSharedCompletion": true
+    }
+  ],
+  "inlineWasmUnchanged": true,
+  "inlineWasm": [
+    {
+      "bytes": 481449,
+      "sha256": "3a847e66839387262e8668f25f0fcaead01a4f900783a7210334a5bb62c931fd"
+    },
+    {
+      "bytes": 2666687,
+      "sha256": "c11b7020986a94f0e83e435e2c6e087c4a567eac2f8dd27ca150cbcef3c021b7"
+    },
+    {
+      "bytes": 334212,
+      "sha256": "e312230593981882f17959fef384ca67dfcd7246b93731cd2f773056c2aa0fff"
+    },
+    {
+      "bytes": 481458,
+      "sha256": "e498d18c1665f4dd5295fac3785c9952c881256d95904a183516e5d7b2712250"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/model3d/src/preview-driver.ts",
+      "sha256": "f6f2c3e819e1b2542e99625df23ddf360234c4cb396977aac433072aa3ac2f93"
+    },
+    {
+      "file": "packages/model3d/src/resource-utils.ts",
+      "sha256": "442f0979cb87b62cccbd8252ee3312d37ba19a2e353fd58f334bf8a64413922c"
+    },
+    {
+      "file": "packages/model3d/src/fbx-loader.ts",
+      "sha256": "065dc3da7ee065adb89d6b531c0f4921137f18b798f36271fd217e36f8871cc2"
+    },
+    {
+      "file": "packages/model3d/src/3ds-loader.ts",
+      "sha256": "470b1507c8f1f14c38cbde5757ee619689add611463d06a0e3406c6adb012053"
+    },
+    {
+      "file": "packages/model3d/src/vrml-loader.ts",
+      "sha256": "da107bca7546805c07d09c60c433255c41b86b064697f967a0661c3acf0013b7"
+    },
+    {
+      "file": "packages/model3d/test/texture-resources.spec.ts",
+      "sha256": "b6b22d2b87479803d02b75b874f2ca7606415b9390942b4fc8084d52ade07b5b"
+    },
+    {
+      "file": "packages/model3d/test/fixtures/legacy-models.mjs",
+      "sha256": "3efc5ccf33ed3e57e8a6c10c5c41805b462ade9026adce534284e1ca512d82b9"
+    },
+    {
+      "file": "scripts/optional-engine-chunks.ts",
+      "sha256": "40b3084731310f9a5136f57bb57678e51d86cd0d9729c1c800c539b831e0ae78"
+    },
+    {
+      "file": "scripts/report-preview-startup.mjs",
+      "sha256": "cf36155c329802d99f783cbdf933059bd8e9578b82af2f64f41df0623f66336b"
+    },
+    {
+      "file": "scripts/test-model-loader-loading.mjs",
+      "sha256": "304a1871115d31ab691b52aab1d3903d1673df3be021f282e3cc995eca287ed6"
+    }
+  ]
+}

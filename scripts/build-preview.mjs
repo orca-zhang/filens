@@ -39,6 +39,13 @@ for (const mode of ['split', 'all-in-one']) {
   }
   const sum = group => Object.fromEntries(['raw', 'gzip', 'brotli'].map(key => [key, group.reduce((n, f) => n + f[key], 0)]));
   measurements[mode] = { files, main: sum(mainRuntime), archive: sum(archiveAssets), total: sum(runtime) };
+  if (mode === 'all-in-one') {
+    const packing = JSON.parse(await readFile(path.join(dist, 'asset-packing.json'), 'utf8'));
+    measurements[mode].delivery = { raw: measurements[mode].main.raw,
+      gzip: packing.delivery.gzip.bytes, brotli: packing.delivery.brotli.bytes,
+      gzipEncoder: packing.delivery.gzip.encoder, brotliEncoder: packing.delivery.brotli.encoder,
+      gzipFile: 'filens.js.gz', brotliFile: 'filens.js.br', limit: packing.delivery.limit };
+  }
   await writeFile(path.join(dist, 'index.html'), `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>filens preview</title>
 <style>html,body,#preview{height:100%;margin:0}body{font-family:system-ui}#picker{position:fixed;z-index:100;top:12px;right:16px;background:white;padding:8px;border:1px solid #ddd;border-radius:6px}#picker input{max-width:220px}</style>
 <label id="picker">Open file(s) <input type="file" id="file" multiple><span id="source-error" role="alert" hidden></span></label><div id="preview"></div>
@@ -72,6 +79,9 @@ await mkdir(path.join(root, 'dist/preview'), { recursive: true });
 await cp(path.join(directory, 'dist/split'), path.join(root, 'dist/preview'), { recursive: true });
 // Keep archive assets external even beside the HTML-compatible main runtime.
 await cp(path.join(directory, 'dist/all-in-one/filens.js'), path.join(root, 'dist/preview/filens-all-in-one.js'));
+await cp(path.join(directory, 'dist/all-in-one/filens.js.gz'), path.join(root, 'dist/preview/filens-all-in-one.js.gz'));
+await cp(path.join(directory, 'dist/all-in-one/filens.js.br'), path.join(root, 'dist/preview/filens-all-in-one.js.br'));
+await cp(path.join(directory, 'dist/all-in-one/asset-packing.json'), path.join(root, 'dist/preview/asset-packing.json'));
 await cp(path.join(directory, 'dist/all-in-one/assets'), path.join(root, 'dist/preview/assets'), { recursive: true });
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));
 await cp(path.join(root, 'LICENSE'), path.join(directory, 'LICENSE'));

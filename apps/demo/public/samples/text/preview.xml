@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<field-journal xmlns="urn:shoreline:journal" version="1">
+  <title>青岚步道 · 秋日观察</title>
+  <date>2026-10-18</date>
+  <location fictional="true">
+    <name>第一观景台</name>
+    <elevation unit="m">420</elevation>
+  </location>
+  <weather>
+    <temperature unit="celsius">17.5</temperature>
+    <conditions>薄雾转晴</conditions>
+  </weather>
+  <observations>
+    <observation id="QL-001" category="plant">
+      <description>苔藓在背阴的岩石表面形成连续纹理。</description>
+      <tags><tag>湿润</tag><tag>林下</tag></tags>
+    </observation>
+    <observation id="QL-002" category="sound">
+      <description>鸟鸣与溪流声交替出现，持续约 15 秒。</description>
+      <media file="morning-river.wav" />
+    </observation>
+  </observations>
+  <notes><![CDATA[
+    观察 < 采集：带走记录，留下现场。
+    Keep the habitat as you found it.
+  ]]></notes>
+</field-journal>

@@ -153,3 +153,43 @@ index 35846e0..84ee373 100644
    #endif // _AIX
    #endif // _WIN32
  }
+diff --git a/CPP/7zip/Archive/Bz2Handler.cpp b/CPP/7zip/Archive/Bz2Handler.cpp
+--- a/CPP/7zip/Archive/Bz2Handler.cpp
++++ b/CPP/7zip/Archive/Bz2Handler.cpp
+@@ -23,1 +23,4 @@
++#ifdef Z7_EXTRACT_ONLY
++Z7_CLASS_IMP_CHandler_IInArchive_1(IArchiveOpenSeq)
++#else
+ Z7_CLASS_IMP_CHandler_IInArchive_3(
+@@ -27,2 +30,3 @@
+ )
++#endif
+   CMyComPtr<IInStream> _stream;
+@@ -46,2 +50,4 @@
++#ifndef Z7_EXTRACT_ONLY
+   CSingleMethodProps _props;
++#endif
+ };
+@@ -332,1 +338,2 @@
++#ifndef Z7_EXTRACT_ONLY
+ static HRESULT UpdateArchive(
+@@ -468,1 +475,3 @@
++#endif // Z7_EXTRACT_ONLY
++
+ static const Byte k_Signature[] = { 'B', 'Z', 'h' };
+diff --git a/CPP/7zip/Archive/Wim/WimHandler.h b/CPP/7zip/Archive/Wim/WimHandler.h
+--- a/CPP/7zip/Archive/Wim/WimHandler.h
++++ b/CPP/7zip/Archive/Wim/WimHandler.h
+@@ -17,2 +17,6 @@
+-Z7_CLASS_IMP_CHandler_IInArchive_5(
++#ifdef Z7_EXTRACT_ONLY
++Z7_CLASS_IMP_CHandler_IInArchive_4(
++#else
++Z7_CLASS_IMP_CHandler_IInArchive_5(
++#endif
+     IArchiveGetRawProps
+@@ -22,2 +26,4 @@
++#ifndef Z7_EXTRACT_ONLY
+   , IOutArchive
++#endif
+ )

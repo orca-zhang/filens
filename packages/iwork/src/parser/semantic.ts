@@ -3880,13 +3880,14 @@ function buildParagraphRanges(text: string): Array<{ start: number; end: number;
 }
 
 function findParagraphIndexForCharacter(paragraphRanges: Array<{ start: number; end: number; text: string }>, characterIndex: number): number {
-  for (let index = 0; index < paragraphRanges.length; index += 1) {
-    const paragraph = paragraphRanges[index];
-    if (characterIndex < paragraph.end || index === paragraphRanges.length - 1) {
-      return index;
-    }
+  let low = 0;
+  let high = paragraphRanges.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (characterIndex < paragraphRanges[middle].end) high = middle;
+    else low = middle + 1;
   }
-  return Math.max(paragraphRanges.length - 1, 0);
+  return Math.max(0, Math.min(low, paragraphRanges.length - 1));
 }
 
 function findParagraphEndIndexForCharacter(
@@ -3896,15 +3897,16 @@ function findParagraphEndIndexForCharacter(
   if (characterIndex <= 0) {
     return 0;
   }
-  for (let index = 0; index < paragraphRanges.length; index += 1) {
-    if (characterIndex <= paragraphRanges[index].start) {
-      return index;
-    }
-    if (characterIndex < paragraphRanges[index].end) {
-      return index + 1;
-    }
+  let low = 0;
+  let high = paragraphRanges.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    const paragraph = paragraphRanges[middle];
+    if (characterIndex <= paragraph.start || characterIndex < paragraph.end) high = middle;
+    else low = middle + 1;
   }
-  return paragraphRanges.length;
+  if (low === paragraphRanges.length) return low;
+  return characterIndex <= paragraphRanges[low].start ? low : low + 1;
 }
 
 function stripObjectMarker(text: string): string {

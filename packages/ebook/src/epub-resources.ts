@@ -1,13 +1,6 @@
-import type JSZip from 'jszip';
-import type { PreviewResourceResolver, PreviewSource } from '@filens/core';
+import type { PreviewResourceResolver, PreviewSource, ZipEntry } from '@filens/core';
 import { rewriteCssResources } from './css-resources';
-import { createFrameResourceUrl, needsInlineFrameResources } from './frame-resource-url';
-
-interface Asset {
-  path: string;
-  mediaType: string;
-  bytes: ArrayBuffer;
-}
+import { bytesToDataUrl, createFrameResourceUrl, needsInlineFrameResources } from './frame-resource-url';
 
 export function resolveArchivePath(base: string, href: string): string {
   const path = href.split(/[?#]/, 1)[0]!;
@@ -22,7 +15,7 @@ export function resolveArchivePath(base: string, href: string): string {
 }
 
 export async function createEpubResources(
-  zip: JSZip,
+  zip: Map<string, ZipEntry>,
   manifest: Iterable<{ href: string; mediaType: string }>,
   packageDir: string,
   createUrl: (blob: Blob) => string,
@@ -30,29 +23,12 @@ export async function createEpubResources(
   resourceResolver: PreviewResourceResolver | undefined,
   warnings: string[]
 ) {
-  const assets = new Map<string, Asset>(), urls = new Map<string, string>();
+  const urls = new Map<string, string>(), mediaTypes = new Map<string, string>();
   const resolved = new Map<string, string | undefined>(), htmlPaths = new Set<string>();
-  const entries = [];
   for (const item of manifest) {
     const path = resolveArchivePath(packageDir, item.href);
     if (/^(?:application\/xhtml\+xml|text\/html)$/.test(item.mediaType)) { htmlPaths.add(path); continue; }
-    const file = zip.file(path);
-    if (file) entries.push({ path, mediaType: item.mediaType, file });
-  }
-  // Keep decompression bounded and allocate URLs in manifest order.
-  for (let start = 0; start < entries.length; start += 8) {
-    checkAborted(signal);
-    const batch = entries.slice(start, start + 8);
-    const contents = await Promise.all(batch.map(entry => entry.file.async('arraybuffer')));
-    checkAborted(signal);
-    for (const [offset, entry] of batch.entries()) {
-      const asset = { path: entry.path, mediaType: entry.mediaType, bytes: contents[offset]! };
-      assets.set(asset.path, asset);
-      if (asset.mediaType !== 'text/css') {
-        checkAborted(signal);
-        urls.set(asset.path, createFrameResourceUrl(asset.bytes, asset.mediaType, createUrl));
-      }
-    }
+    mediaTypes.set(path, item.mediaType);
   }
 
   async function materialize(path: string, stylesheet: boolean, ancestors: Set<string>): Promise<string | undefined> {
@@ -66,18 +42,13 @@ export async function createEpubResources(
     if (htmlPaths.has(path) || /\.(?:xhtml|html?)$/i.test(path)) return undefined;
     const key = `${stylesheet ? 'stylesheet' : 'resource'}:${path}`;
     if (resolved.has(key)) return resolved.get(key);
-    let asset = assets.get(path);
-    if (!asset) {
-      const file = zip.file(path);
-      if (file) {
-        const bytes = await file.async('arraybuffer'); checkAborted(signal);
-        asset = { path, bytes, mediaType: contentType(path) };
-        assets.set(path, asset);
-      }
-    }
-    let source: PreviewSource | undefined = asset?.bytes;
-    let type = asset?.mediaType || contentType(path);
-    if (!asset && resourceResolver) {
+    // Inflate only resources a chapter or stylesheet references. Keep URLs,
+    // rather than another copy of every expanded asset in the manifest.
+    const file = zip.get(path);
+    let source: PreviewSource | undefined = file ? await file.bytes() : undefined;
+    checkAborted(signal);
+    let type = mediaTypes.get(path) || contentType(path);
+    if (!file && resourceResolver) {
       const result = await resourceResolver({ family: 'ebook', sourceFormat: 'epub', source: path,
         relation: stylesheet ? 'stylesheet' : 'resource', name: path.split('/').pop() ?? path });
       checkAborted(signal);
@@ -99,21 +70,19 @@ export async function createEpubResources(
         url = createFrameResourceUrl(css, 'text/css;charset=utf-8', createUrl);
       } else if (source instanceof Blob && !needsInlineFrameResources()) {
         url = createUrl(source.type ? source : new Blob([source], { type }));
-      } else if (asset || source instanceof Blob) {
+      } else if (file || source instanceof Blob) {
         const bytes = source instanceof Blob ? await source.arrayBuffer() : source instanceof ArrayBuffer
           ? source : new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
         checkAborted(signal);
         url = createFrameResourceUrl(bytes, type, createUrl);
       } else {
         const bytes = source instanceof ArrayBuffer ? new Uint8Array(source) : new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
-        let binary = '';
-        for (const byte of bytes) binary += String.fromCharCode(byte);
-        url = `data:${type};base64,${btoa(binary)}`;
+        url = bytesToDataUrl(bytes, type);
       }
     }
     checkAborted(signal);
     resolved.set(key, url);
-    if (asset && url) urls.set(path, url);
+    if (file && url) urls.set(path, url);
     return url;
   }
 

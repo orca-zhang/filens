@@ -668,9 +668,7 @@ describe('Preview', () => {
       }
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(wrapper.emitted('rendered')).toBeTruthy();
+    await vi.waitFor(() => expect(wrapper.emitted('rendered')).toBeTruthy());
     expect(wrapper.text()).toContain('1 / 3');
     expect(wrapper.find('.pptxv-slide').exists()).toBe(true);
 

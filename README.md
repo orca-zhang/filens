@@ -15,15 +15,15 @@
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
-| Supported formats (by extension) | **334**. | **402**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite components: 8.27–8.64 MiB · Full components: 31.70–37.34 MiB**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
+| Approximate size | **Lite components: 8.00–9.27 MiB · Full components: 31.43–37.06 MiB**, including OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **1.82–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.3 main runtimes: **3.20 MB Brotli** summed across split files, or **3.66 MB Brotli / 3.97 MB gzip / 8.91 MB raw** for the all-in-one JS. Optional archive WASM and worker add **0.28 MB Brotli / 0.35 MB gzip / 0.88 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.92–2.20 MiB**. Lite and Full sizes include the launcher, native executable and document WASM; Full also includes OCR runtime and models. Sizes vary by platform and exclude Node.js, caches and preview assets. Release offline bundles also include the preview runtime; see [complete archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). Frontend chunk figures describe compressed build artifacts. Preview 0.3.4 main runtimes: **4.73 MB Brotli** summed across split files, or **3.85 MB Brotli / 3.99 MB gzip / 7.26 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
-**Supports 334 file formats (counted by extension).** Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Check `filens capacity --json` for your installation's capabilities; extraction fidelity varies by format. Paraphrasing, translation and question answering belong to the calling Agent.
+**Supports 349 file formats (counted by extension).** Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Check `filens capacity --json` for your installation's capabilities; extraction fidelity varies by format. Paraphrasing, translation and question answering belong to the calling Agent.
 
 ### Installation and use
 
@@ -39,12 +39,15 @@ filens 'search "./documents" for "budget risk" as json'
 filens summarize report.pdf --query 'budget risk' --json
 filens convert report.doc report.docx
 
+filens inspect unknown-file --json
 filens capacity --json
 ```
 
+`filens inspect FILE --json` identifies the actual format from bounded content reads, reports MIME/evidence and extension mismatches, and keeps ambiguous inputs explicit. It uses no OCR and does not validate the entire file.
+
 ### Offline browser previews
 
-**CLI 0.5.4:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. Release bundles already include preview 0.3.3. Other installation methods can prepare preview assets in advance with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. Release bundles include preview 0.3.4. Other installation methods can prepare preview assets in advance with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -65,7 +68,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.20 MiB · Lite 8.64 MiB · Full 31.87 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.4 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.20 MiB · Lite 9.27 MiB · Full 32.49 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.6 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -82,11 +85,35 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ## Pure frontend previews
 
-**Preview 402 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
+**Preview 450 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
 
 ### DeepSeek Harness
 
-[CLI tools and sidebar preview plugin](integrations/deepseek-harness/README.md), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. In Desktop, open **Plugins → Add plugin**, enter `dsh-filens` (or `dsh-filens@0.1.1` to pin the version), and click **Install**. [CLI installation and configuration](integrations/deepseek-harness/README.md#install-and-build).
+[CLI tools and native sidebar previews](integrations/deepseek-harness/README.md) for **450 file formats** (counted by extension, including local WASM conversion), installed together and enabled independently. Tested with DSH Desktop 0.2.1-rc.5 and Web 0.2.2-alpha.3. In Desktop, open **Plugins → Add plugin**, enter `dsh-filens` (or `dsh-filens@0.1.3` to pin the version), click **Install**, then **Enable now**. [Installation and configuration](integrations/deepseek-harness/README.md#install-and-build).
+
+<!-- dsh-package-metrics:start -->
+**dsh-filens 0.1.3: 6.53 MiB download / 19.57 MiB unpacked**, including preview 0.3.4. CLI 0.5.6 / OCR, DSH shared dependencies and package-manager caches are separate. [Package measurements](docs/dsh-plugin-publication.json).
+<!-- dsh-package-metrics:end -->
+
+![Install dsh-filens in DSH Desktop, preview Word and Excel, then present three PPT slides fullscreen with Page Down](docs/assets/dsh-plugin/install-and-preview.webp)
+
+Preview Office files directly in the sidebar, switch worksheets, and present PPT slides fullscreen: click the fullscreen slide to focus, use **Page Down / Page Up**, then **Esc** to return to DSH. DOCX/PPTX render locally without an Office-to-PDF step.
+
+| Sample · first / cached median (ms) | FiLens 0.1.1 | FiLens 0.1.2 | DSH built in |
+| --- | ---: | ---: | ---: |
+| PPTX | 356 / 228 | 540 / 311 | 1,828 / 112 |
+| DOCX | 245 / 245 | 294 / 278 | 1,812 / 112 |
+| PDF | 1,623 / 1,408 | 684 / 443 | 328 / 111 |
+
+Nine rounds on the same macOS machine. PDF uses the native built-in PDF path; DOCX/PPTX use built-in Office-to-PDF. First means first per process, with system/persistent caches retained. [Ranges, raw samples and method](docs/assets/dsh-plugin/README.md) · [MP4](docs/assets/dsh-plugin/install-and-preview.mp4) · [GIF](docs/assets/dsh-plugin/install-and-preview.gif).
+
+**DSH 0.1.3:** mount directly into the sidebar, use DSH's existing header controls and load the matching format driver on first use. Initial JS falls from **3.04 MiB to 345 KiB (about 89%)**; TXT first-open runtime requests fall from **3.09 MiB to 449 KiB**. Format modules, shared code and WASM are reused after first use. [Loading sizes and method](docs/assets/dsh-plugin/format-loading.json). The table retains the public 0.1.2 measurements; the installation demo uses 0.1.3. At the PDF pixel-cache stage, the nine-round run measured **190 / 77 ms** first / reopened, versus **208 / 159 ms** before pixel reuse and **329 / 110 ms** built in. Reopens take about **52% less time**. [Raw timings, ranges and implementation](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md) · [Nine-round Word/PPT retest](docs/assets/dsh-plugin/performance-retest.zh-CN.md). Plugin download: **6.53 MiB**, unpacked: **19.57 MiB**, excluding CLI/OCR and shared dependencies.
+
+Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB accounting budget / 30-second idle lifetime. Across nine rounds and 432 complete sidebar opens, reopened large XLSX falls **94→77 ms**, Pages **177→77 ms**, Numbers **176→93 ms**, Keynote **177→94 ms** and STEP **226→109 ms**. Small XLSX stays **68 ms**; Numbers first open rises **193→227 ms** because snapshots have a cost. [Timings, ranges and validation](docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
+
+![FiLens in DSH: orbit a space robot and planetary gearbox, look around a Milky Way panorama, and play NASA's 360-degree black-hole video](docs/assets/dsh-plugin/3d-and-panorama.webp)
+
+Drag to orbit **GLB / 3MF models**, zoom into details, look around **360° photos**, and change your view while **360° video plays**. The panorama samples use `.pano` / `.360v` filenames to select spherical viewing. [Full gallery MP4 and sample credits](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [GIF](docs/assets/dsh-plugin/3d-and-panorama.gif).
 
 ### Browser integration: single file or split modules
 
@@ -246,6 +273,9 @@ On ZimaOS, `filens preview report.pdf --output report-preview.html --json` expor
 If the module is not found, run `sudo zpkg update` to refresh the store index, then retry. See the [ZimaOS packaging guide](packaging/zimaos/README.md) for building, publishing and updating the package.
 
 ## Performance and documentation
+
+HEIF decoder source versions, rebuild steps, and Apple-edited 10-bit color regression:
+[HEIF decoder build](packages/converter-client/vendor/libheif/README.md).
 
 <details>
 <summary>Show SOTA benchmark results</summary>

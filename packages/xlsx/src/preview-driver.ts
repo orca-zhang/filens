@@ -1,13 +1,10 @@
 import {
-  createDefaultPreviewRoutes,
   analyzePreviewFonts,
-  buildPreviewFontStack,
   classifyPreviewFont,
   analyzeLoadedPreviewFonts,
   bindPreviewFontLoading,
   type PreviewFontReference,
   type PreviewFontRefresh,
-  type FormatDefinition,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -17,30 +14,16 @@ import {
   type PreviewSource,
   type WorkbookPreviewState
 } from '@filens/core';
-import { loadXlsxWorkbook, resolveCellValue } from './parser';
-import type { ParsedCell, ParsedRow, ParsedSheet, ParsedWorkbook } from './types';
+import { loadPreviewWorkbook } from './workbook-cache';
+import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE } from './table';
+export { appendSheetRows, createSheetTable, ROW_BATCH_SIZE } from './table';
+import type { ParsedSheet, ParsedWorkbook } from './types';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
 
-export const ROW_BATCH_SIZE = 100;
-
-export const XLSX_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['xlsx'],
-    family: 'workbook',
-    driverId: 'xlsx',
-    targetFormat: 'xlsx'
-  },
-  {
-    extensions: ['csv'],
-    family: 'workbook',
-    driverId: 'xlsx',
-    targetFormat: 'csv',
-    contentTypes: ['text/csv', 'application/csv']
-  }
-];
+export { XLSX_FORMAT_ROUTES, createXlsxPreviewRoutes } from './routes';
 
 export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -121,7 +104,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
 
     try {
       if (signal?.aborted) abort();
-      const workbook = await loadXlsxWorkbook(source, { ...context, signal: controller.signal });
+      const workbook = await loadPreviewWorkbook(source, { ...context, signal: controller.signal });
       if (generation !== this.loadGeneration) return;
       if (controller.signal.aborted) throw new DOMException('Workbook preview aborted.', 'AbortError');
       this.workbook = workbook;
@@ -319,87 +302,6 @@ export function createXlsxPreviewDriver(): PreviewDriver<WorkbookPreviewState> {
   };
 }
 
-export function createXlsxPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...XLSX_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => extension === 'xlsx' || (extension === 'csv' && !route.conversion?.required)))
-  ];
-}
-
-export function createSheetTable(sheet: ParsedSheet, rowCount = Math.max(sheet.rowCount, 1)): HTMLTableElement {
-  const table = document.createElement('table');
-  table.className = 'xlsxv-table';
-
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  const corner = document.createElement('th');
-  corner.className = 'xlsxv-corner';
-  headerRow.appendChild(corner);
-  for (let column = 1; column <= Math.max(sheet.columnCount, 1); column += 1) {
-    const header = document.createElement('th');
-    header.className = 'xlsxv-col-header';
-    header.textContent = columnIndexToName(column);
-    headerRow.appendChild(header);
-  }
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  appendSheetRows(tbody, sheet, 1, rowCount);
-  table.appendChild(tbody);
-  return table;
-}
-
-export function appendSheetRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow: number, lastRow: number): void {
-  if (firstRow > lastRow) return;
-  const fontStacks = new Map<ParsedCell['font'], string>();
-  // Index only this batch. Preserve unordered/duplicate rows and caller edits
-  // without allocating a complete-sheet map on every scroll.
-  const rowMap = new Map<number, ParsedRow>();
-  for (const row of sheet.rows) {
-    if (row.index >= firstRow && row.index <= lastRow) rowMap.set(row.index, row);
-  }
-  const fragment = document.createDocumentFragment();
-  for (let rowIndex = firstRow; rowIndex <= lastRow; rowIndex += 1) {
-    const row = rowMap.get(rowIndex);
-    const tr = document.createElement('tr');
-    const rowHeader = document.createElement('th');
-    rowHeader.className = 'xlsxv-row-header';
-    rowHeader.textContent = String(rowIndex);
-    tr.appendChild(rowHeader);
-    const cells = new Map(row?.cells.map((cell) => [cell.column, cell]) ?? []);
-    for (let column = 1; column <= Math.max(sheet.columnCount, 1); column += 1) {
-      const td = document.createElement('td');
-      td.className = 'xlsxv-cell';
-      const cell = cells.get(column);
-      td.textContent = cell ? resolveCellValue(sheet, cell) : '';
-      if (cell?.font?.fontFamily) {
-        let stack = fontStacks.get(cell.font);
-        if (!stack) {
-          stack = buildPreviewFontStack(cell.font.fontFamily, cell.font.traits, cell.font.resolvedFontFamily ? [cell.font.resolvedFontFamily] : []);
-          fontStacks.set(cell.font, stack);
-        }
-        td.style.fontFamily = stack;
-        if (cell.font.traits?.weight) td.style.fontWeight = String(cell.font.traits.weight);
-      }
-      tr.appendChild(td);
-    }
-    fragment.appendChild(tr);
-  }
-  tbody.appendChild(fragment);
-}
-
 function normalizeFormat(format: string): string {
   return format.trim().replace(/^\./, '').toLowerCase();
-}
-
-function columnIndexToName(index: number): string {
-  let cursor = index;
-  let name = '';
-  while (cursor > 0) {
-    const remainder = (cursor - 1) % 26;
-    name = String.fromCharCode(65 + remainder) + name;
-    cursor = Math.floor((cursor - 1) / 26);
-  }
-  return name || 'A';
 }

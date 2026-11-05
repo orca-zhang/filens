@@ -1,0 +1,313 @@
+{
+  "browser": "147.0.7727.15",
+  "cases": [
+    {
+      "name": "current",
+      "variant": "split",
+      "format": "vrml",
+      "deferredForTextAndStl": true,
+      "cancelledDuringImport": true,
+      "engineChunks": [
+        "/chunks/model-vrml-CCM8EO0I.js"
+      ],
+      "rendered": {
+        "0:wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "1:vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "current",
+      "variant": "split",
+      "format": "fbx",
+      "deferredForTextAndStl": true,
+      "cancelledDuringImport": true,
+      "engineChunks": [
+        "/chunks/model-fbx-AEpebmjz.js"
+      ],
+      "rendered": {
+        "0:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        },
+        "1:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "current",
+      "variant": "split",
+      "format": "3ds",
+      "deferredForTextAndStl": true,
+      "cancelledDuringImport": true,
+      "engineChunks": [
+        "/chunks/model-3ds-CsRfIN0h.js"
+      ],
+      "rendered": {
+        "0:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        },
+        "1:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "current",
+      "variant": "all-in-one",
+      "format": "vrml",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "1:vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "current",
+      "variant": "all-in-one",
+      "format": "fbx",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        },
+        "1:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "current",
+      "variant": "all-in-one",
+      "format": "3ds",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        },
+        "1:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "split",
+      "format": "vrml",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [
+        "/chunks/model-vrml-OSoZjzu3.js"
+      ],
+      "rendered": {
+        "0:wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "1:vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "split",
+      "format": "fbx",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        },
+        "1:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "split",
+      "format": "3ds",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        },
+        "1:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "all-in-one",
+      "format": "vrml",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "1:vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "all-in-one",
+      "format": "fbx",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        },
+        "1:fbx": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 626,
+          "rgbaSha256": "e5972e248e48943ca7a6e8489c1b1fc53f7e37ec0e0cd8ae935c274088bf7b1c"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "all-in-one",
+      "format": "3ds",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "engineChunks": [],
+      "rendered": {
+        "0:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        },
+        "1:3ds": {
+          "triangleCount": 4,
+          "width": 800,
+          "height": 562,
+          "colors": 3123,
+          "rgbaSha256": "29fbe9f44ad9071b8d32caf1d679d4e62a3f820fbe6058bf7a673d04c3461f02"
+        }
+      },
+      "errors": []
+    }
+  ]
+}

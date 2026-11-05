@@ -1,0 +1,353 @@
+{
+  "results": [
+    {
+      "name": "hello.txt",
+      "rendered": true,
+      "ms": 27
+    },
+    {
+      "name": "filens-cosmic-atlas.pdf",
+      "rendered": true,
+      "ms": 33
+    },
+    {
+      "name": "filens-aurora-guide.docx",
+      "rendered": true,
+      "ms": 50
+    },
+    {
+      "name": "filens-observatory.xlsx",
+      "rendered": true,
+      "ms": 33
+    },
+    {
+      "name": "filens-field-notes.pptx",
+      "rendered": true,
+      "ms": 34
+    },
+    {
+      "name": "a.pages",
+      "rendered": true,
+      "ms": 137
+    },
+    {
+      "name": "a.numbers",
+      "rendered": true,
+      "ms": 51
+    },
+    {
+      "name": "filens-weekend.key",
+      "rendered": true,
+      "ms": 114
+    },
+    {
+      "name": "rounded-cube.step",
+      "rendered": true,
+      "ms": 225
+    },
+    {
+      "name": "raw/pentax-k-r.dng",
+      "rendered": true,
+      "ms": 73
+    },
+    {
+      "name": "sample-nested-archives.zip",
+      "rendered": true,
+      "ms": 33
+    },
+    {
+      "name": "encrypted.rar",
+      "rendered": true,
+      "ms": 43
+    }
+  ],
+  "interactions": [
+    "loading identifies the file and respects reduced motion",
+    "closing and reopening PDF releases each worker, reuses exact first-page pixels and skips repeated page decoding",
+    "cached Numbers restores its archive for lazy sheets, preserves sheet content and releases workers",
+    "toolbar contains only working zoom and fullscreen; keyboard navigation works",
+    "document fullscreen opens from the keyboard and exits normally",
+    "live DSH language and theme changes preserve the document and current page",
+    "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
+    "double-click restores the complete 3D model after orbit and zoom",
+    "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
+    "3D auto framing keeps the whole model visible in a tall narrow pane",
+    "Word pages fit narrow/resized panes and omit unavailable controls",
+    "resizing the Word pane preserves the reading position",
+    "late events from a previous document are ignored",
+    "localized parser failure exposes details and a working retry action",
+    "encrypted documents expose the password form and render after password entry",
+    "short panes do not inherit a fixed minimum height",
+    "concurrent tabs share runtime assets but keep controls and lifecycle independent"
+  ],
+  "lazyLoading": [
+    {
+      "name": "hello.txt",
+      "expected": "native-drivers",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/native-drivers-DvUcjRAE.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 459654,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "photo-alpine-lake.jpg",
+      "expected": "native-drivers",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/native-drivers-DvUcjRAE.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 459654,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "filens-cosmic-atlas.pdf",
+      "expected": "pdf-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/font-matching-9VMxhVQV.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/pdf-Dzzffz3p.js",
+        "chunks/pdf-driver-DfLRfmC6.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "pdf.worker.min.mjs",
+        "style.css"
+      ],
+      "rawBytes": 1962151,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "filens-aurora-guide.docx",
+      "expected": "docx-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/docx-driver-JYLhuVfi.js",
+        "chunks/docx-engine-DhLsMf1L.js",
+        "chunks/font-loading-BPv1ZV5e.js",
+        "chunks/font-matching-9VMxhVQV.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/vendor-DMYWoejl.js",
+        "chunks/vue-4lD-xgIj.js",
+        "chunks/zip-compat-Bqyft7N6.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 594125,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "filens-observatory.xlsx",
+      "expected": "xlsx-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/font-loading-BPv1ZV5e.js",
+        "chunks/font-matching-9VMxhVQV.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/model-cache-DTm-qAoU.js",
+        "chunks/table-CBvjyc9e.js",
+        "chunks/vendor-DMYWoejl.js",
+        "chunks/vue-4lD-xgIj.js",
+        "chunks/xlsx-driver-DOipUg3w.js",
+        "chunks/xml-compat-DIhpt_3t.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 497388,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "filens-field-notes.pptx",
+      "expected": "pptx-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/dom-BjwBxkAm.js",
+        "chunks/font-loading-BPv1ZV5e.js",
+        "chunks/font-matching-9VMxhVQV.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/office-attachments-CprbjlU9.js",
+        "chunks/pptx-driver-D_buqXy0.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vendor-DMYWoejl.js",
+        "chunks/vue-4lD-xgIj.js",
+        "chunks/zip-compat-Bqyft7N6.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 797483,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "filens-weekend.key",
+      "expected": "iwork-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/dom-BjwBxkAm.js",
+        "chunks/font-loading-BPv1ZV5e.js",
+        "chunks/font-matching-9VMxhVQV.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/iwork-driver-VAh-SwBv.js",
+        "chunks/model-cache-DTm-qAoU.js",
+        "chunks/office-attachments-CprbjlU9.js",
+        "chunks/table-CBvjyc9e.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vendor-DMYWoejl.js",
+        "chunks/vue-4lD-xgIj.js",
+        "chunks/zip-compat-Bqyft7N6.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 1944346,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "rounded-cube.step",
+      "expected": "model3d-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/model-3ds-ppXS_UoN.js",
+        "chunks/model-cache-DTm-qAoU.js",
+        "chunks/model-fbx-QxbnYmWL.js",
+        "chunks/model-vrml-jsY8PaeB.js",
+        "chunks/model3d-driver-Awdb5rlD.js",
+        "chunks/rust-step-importer-N_q2C97M.js",
+        "chunks/three-j_n6p391.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens-step.wasm",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 2383593,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "sample-nested-archives.zip",
+      "expected": "archive-driver",
+      "files": [
+        "chunks/archive-driver-BQFiV7yQ.js",
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/vendor-DMYWoejl.js",
+        "chunks/vue-4lD-xgIj.js",
+        "chunks/zip-compat-Bqyft7N6.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 511418,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "filens-cafe.dxf",
+      "expected": "cad-driver",
+      "files": [
+        "chunks/cad-driver-CKEqGAqe.js",
+        "chunks/compression-CLhefix_.js",
+        "chunks/font-loading-BPv1ZV5e.js",
+        "chunks/font-matching-9VMxhVQV.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 494434,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "pepper-carrot.epub",
+      "expected": "ebook-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/ebook-driver-HK4sTJob.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 424972,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "hello.mm",
+      "expected": "mindmap-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/mindmap-driver-C6WWktuk.js",
+        "chunks/svg-selection-IMnE-8rI.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 426822,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "hello.drawio",
+      "expected": "diagram-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/diagram-driver-BmXzYGaM.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/svg-selection-IMnE-8rI.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 432975,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "sample-video.mp4",
+      "expected": "codec-preview-driver",
+      "files": [
+        "chunks/codec-preview-driver-DDhVw97k.js",
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/native-drivers-DvUcjRAE.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 465453,
+      "moduleCacheReused": true
+    },
+    {
+      "name": "raw/pentax-k-r.dng",
+      "expected": "panorama-driver",
+      "files": [
+        "chunks/compression-CLhefix_.js",
+        "chunks/index-BtICX-8o.js",
+        "chunks/native-drivers-DvUcjRAE.js",
+        "chunks/panorama-driver-UaRiOTuC.js",
+        "chunks/three-j_n6p391.js",
+        "chunks/touch-gestures-CIlEOGpc.js",
+        "chunks/vue-4lD-xgIj.js",
+        "converter-core.wasm",
+        "converter-image.wasm",
+        "filens.js",
+        "style.css"
+      ],
+      "rawBytes": 3747788,
+      "moduleCacheReused": true
+    }
+  ],
+  "errors": [],
+  "failures": []
+}

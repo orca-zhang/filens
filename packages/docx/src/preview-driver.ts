@@ -1,11 +1,8 @@
-import { parseAsync, renderDocument } from 'docx-preview';
 import {
-  createDefaultPreviewRoutes,
   bindPreviewFontLoading,
   type PreviewFontReference,
   type PreviewFontRefresh,
   type FlowPreviewState,
-  type FormatDefinition,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -20,14 +17,7 @@ type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
 
-export const DOCX_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['docx'],
-    family: 'flow',
-    driverId: 'docx',
-    targetFormat: 'docx'
-  }
-];
+export { DOCX_FORMAT_ROUTES, createDocxPreviewRoutes } from './routes';
 
 export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -112,6 +102,11 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
       if (context.signal?.aborted) controller.abort();
       checkAborted(signal);
       const data = await sourceToData(source, { ...context, signal });
+      if (signal.aborted) {
+        if (context.signal?.aborted) checkAborted(signal);
+        return;
+      }
+      const { parseAsync, renderDocument } = await import('docx-preview');
       if (signal.aborted) {
         if (context.signal?.aborted) checkAborted(signal);
         return;
@@ -242,13 +237,6 @@ export function createDocxPreviewDriver(): PreviewDriver<FlowPreviewState> {
     supports: (format) => normalizeFormat(format) === 'docx',
     createSession: (host, options) => new DocxPreviewSession(host, options)
   };
-}
-
-export function createDocxPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...DOCX_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.includes('docx'))
-  ];
 }
 
 async function sourceToData(source: PreviewSource, context: PreviewLoadContext): Promise<Blob | ArrayBuffer> {

@@ -1,5 +1,4 @@
 import {
-  createDefaultPreviewRoutes,
   bindPreviewTouchGestures,
   analyzePreviewFonts,
   getPreviewFontWarnings,
@@ -7,7 +6,6 @@ import {
   analyzeLoadedPreviewFonts,
   type PreviewFontRefresh,
   type CadPreviewState,
-  type FormatDefinition,
   type PreviewFontResolver,
   type PreviewFontReference,
   type PreviewDriver,
@@ -419,15 +417,7 @@ interface CadInsertTransform {
   rotation: number;
 }
 
-export const CAD_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['dxf'],
-    family: 'cad',
-    driverId: 'cad',
-    targetFormat: 'dxf',
-    contentTypes: ['image/vnd.dxf', 'application/dxf', 'application/x-dxf']
-  }
-];
+export { CAD_FORMAT_ROUTES, createCadPreviewRoutes } from './routes';
 
 const DEFAULT_CAD_COLOR = '#223245';
 
@@ -448,6 +438,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
   private loadController: AbortController | null = null;
   private resourceUrls = new Set<string>();
   private readonly layerElements = new Map<string, SVGElement[]>();
+  private knownLayers = new Set<string>();
   private appliedLayers = new Set<string>();
   private readonly fontLoading: ReturnType<typeof bindPreviewFontLoading>;
   private fontReferences: PreviewFontReference[] = [];
@@ -587,6 +578,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
     this.canvas = null;
     this.drawing = null;
     this.layerElements.clear();
+    this.knownLayers.clear();
     this.appliedLayers.clear();
     this.panX = 0;
     this.panY = 0;
@@ -653,8 +645,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
   }
 
   setActiveLayers(layerIds: string[]): void {
-    const knownLayers = this.drawing?.layers ?? [];
-    const active = new Set(layerIds.filter((layerId) => knownLayers.includes(layerId)));
+    const active = new Set(layerIds.filter((layerId) => this.knownLayers.has(layerId)));
     this.state = {
       ...this.state,
       activeLayerIds: [...active]
@@ -664,8 +655,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
   }
 
   toggleLayer(layerId: string, active?: boolean): void {
-    const knownLayers = this.drawing?.layers ?? [];
-    if (!knownLayers.includes(layerId)) {
+    if (!this.knownLayers.has(layerId)) {
       return;
     }
     const activeLayers = new Set(this.state.activeLayerIds ?? []);
@@ -691,6 +681,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
 
   private render(drawing: CadDrawing): void {
     this.drawing = drawing;
+    this.knownLayers = new Set(drawing.layers);
     const stage = document.createElement('div');
     stage.className = 'cadv-stage';
     this.layerElements.clear();
@@ -744,13 +735,6 @@ export function createCadPreviewDriver(): PreviewDriver<CadPreviewState> {
     supports: (format) => normalizeFormat(format) === 'dxf',
     createSession: (host, options) => new CadPreviewSession(host, options)
   };
-}
-
-export function createCadPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...CAD_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => extension === 'dxf'))
-  ];
 }
 
 export function loadDxfDrawing(source: string): CadDrawing {

@@ -1,6 +1,6 @@
 {
   "name": "@filens/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Front-end PPTX parsing and preview core for modern ESM applications.",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,10 +30,15 @@
     "./zip": {
       "types": "./dist/zip.d.ts",
       "import": "./dist/zip.js"
+    },
+    "./preview-runtime": {
+      "types": "./dist/preview-runtime.d.ts",
+      "import": "./dist/preview-runtime.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",

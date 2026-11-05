@@ -18,7 +18,7 @@ const work=await mkdtemp(path.join(os.tmpdir(),'filens-win-test-'));
 const observations=[];
 const ocrSamples=[];
 const env={...process.env};
-for(const name of ['FILENS_PROFILE','FILENS_TEXT_WASM','FILENS_IMAGE_WASM','FILENS_PDFIUM_WASM','FILENS_OCR_LIBRARY','FILENS_OCR_MODEL_DIR'])delete env[name];
+for(const name of ['FILENS_PROFILE','FILENS_TEXT_WASM','FILENS_IMAGE_WASM','FILENS_PDFIUM_WASM','FILENS_OCR_LIBRARY','FILENS_OCR_MODEL_DIR','FILENS_WALKER'])delete env[name];
 let capacity;
 const invoke=(args,{expected=0,input='',exe=binary,environment=env}={})=>{
   const result=spawnSync(exe,args,{cwd:work,env:environment,input,encoding:'utf8',timeout:120000,maxBuffer:20<<20});
@@ -45,6 +45,23 @@ try{
   const text=path.join(work,'季度 报告.txt');await writeFile(text,'中文证据\nBudget 42\n');
   await check('Chinese intent, spaces and UTF-8',()=>assert.match(json([`读取 "${text}"，以 JSON 输出`]).content.text,/中文证据/));
   await check('JSON stdin',()=>assert.equal(json([],{input:JSON.stringify({op:'understand',input:text})}).op,'understand'));
+  await check('native directory batching and read-dir parity',async()=>{
+    const discovery=json(['capacity','--section','search','--json','--no-ocr']).capacity.search.discovery;
+    assert.equal(discovery.backend,'ntfs');
+    assert.equal(discovery.hdrwEmbedded,false);
+    const corpus=path.join(work,'批量目录');await mkdir(corpus);
+    for(let i=0;i<512;i++)await writeFile(path.join(corpus,`BATCH2026 ${String(i).padStart(4,'0')} ${'a'.repeat(100)}.txt`),String(i));
+    const args=['search',corpus,'--query','BATCH2026','--search-mode','files','--json','--no-ocr'];
+    const native=json(args).search;
+    const baseline=json(args,{environment:{...env,FILENS_WALKER:'read-dir'}}).search;
+    assert.ok(['ntfs','read-dir'].includes(native.scan.backend));
+    assert.equal(baseline.scan.backend,'read-dir');
+    assert.equal(native.scan.discoveredFiles,512);
+    assert.equal(native.matchedFiles,512);
+    assert.equal(native.complete,true);
+    assert.deepEqual(native.results,baseline.results);
+    assert.equal(native.scan.visited,baseline.scan.visited);
+  });
   await check('eight output formats',()=>{
     for(const format of ['text','json','markdown','html','yaml','xml','csv','tsv'])assert.ok(invoke([text,'--format',format]).includes('Budget'));
   });

@@ -1,7 +1,7 @@
 import { Gunzip } from 'fflate';
 import { ARCHIVE_VOLUME_LIMITS, isArchiveVolumeName, selectArchiveVolumes } from './volumes';
+import type { SevenZipRequest } from './sevenzip/runtime';
 import {
-  createDefaultPreviewRoutes,
   openZipArchive,
   createPreviewContainerContext,
   descendPreviewContainer,
@@ -10,7 +10,6 @@ import {
   readWithPreviewPassword,
   previewPasswordErrorCode,
   type ArchivePreviewState,
-  type FormatDefinition,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -24,6 +23,20 @@ import {
 } from '@filens/core';
 
 type ArchiveVolumeBytes = { name: string; bytes: Uint8Array };
+
+const COMPRESSED_STREAM_FORMATS = new Map<string, SevenZipRequest['format']>([
+  ['bz2', 'bzip2'], ['bzip2', 'bzip2'], ['tbz', 'bzip2'], ['tbz2', 'bzip2'], ['xz', 'xz'], ['txz', 'xz'],
+  ['lzma', 'lzma'], ['lzma86', 'lzma86'], ['tlz', 'lzma'], ['zst', 'zstd'], ['zstd', 'zstd'],
+  ['tzst', 'zstd'], ['z', 'z'], ['taz', 'z']
+]);
+const WASM_CONTAINER_FORMATS = new Map<string, SevenZipRequest['format']>([
+  ['ar', 'ar'], ['deb', 'ar'], ['cpio', 'cpio'], ['cab', 'cab'], ['iso', 'iso'],
+  ['udf', 'udf'], ['lha', 'lzh'], ['lzh', 'lzh'], ['rpm', 'rpm'], ['xar', 'xar'], ['wim', 'wim'], ['esd', 'wim']
+]);
+const DEBIAN_TEXT_MEMBERS = new Set([
+  'control', 'debian-binary', 'conffiles', 'md5sums', 'shlibs', 'symbols', 'triggers',
+  'preinst', 'postinst', 'prerm', 'postrm'
+]);
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -80,45 +93,7 @@ type ArchiveFrame = {
   directories?: Map<string, ArchiveEntryRecord[]>;
 };
 
-export const ARCHIVE_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['rar'], family: 'archive', driverId: 'archive', targetFormat: 'rar',
-    contentTypes: ['application/vnd.rar', 'application/x-rar-compressed']
-  },
-  {
-    extensions: ['7z'], family: 'archive', driverId: 'archive', targetFormat: '7z',
-    contentTypes: ['application/x-7z-compressed']
-  },
-  {
-    extensions: ['zip', 'jar', 'war', 'ear'],
-    family: 'archive',
-    driverId: 'archive',
-    targetFormat: 'zip',
-    contentTypes: ['application/zip', 'application/x-zip-compressed', 'application/java-archive']
-  },
-  {
-    extensions: ['apk'], family: 'archive', driverId: 'archive', targetFormat: 'zip',
-    contentTypes: ['application/vnd.android.package-archive']
-  },
-  {
-    extensions: ['ipa'], family: 'archive', driverId: 'archive', targetFormat: 'zip',
-    contentTypes: ['application/x-ios-app']
-  },
-  {
-    extensions: ['tar'],
-    family: 'archive',
-    driverId: 'archive',
-    targetFormat: 'tar',
-    contentTypes: ['application/x-tar']
-  },
-  {
-    extensions: ['tgz', 'gz'],
-    family: 'archive',
-    driverId: 'archive',
-    targetFormat: 'gz',
-    contentTypes: ['application/gzip', 'application/x-gzip']
-  }
-];
+export { ARCHIVE_FORMAT_ROUTES, createArchivePreviewRoutes, createArchiveCategoryPreviewRoutes } from './routes';
 
 export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -139,6 +114,9 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
   private loadController: AbortController | null = null;
   private entryController: AbortController | null = null;
   private renderVersion = 0;
+  private searchQuery = '';
+  private sortOrder: 'name' | 'size' | 'modified' = 'name';
+  private listingPosition: { name: string; scrollTop: number } | null = null;
   private state: ArchivePreviewState = {
     loading: false,
     error: null,
@@ -234,6 +212,9 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     controller?.abort();
     this.closeEntryPreview(false);
     this.archiveStack = [];
+    this.searchQuery = '';
+    this.sortOrder = 'name';
+    this.listingPosition = null;
     this.renderVersion++;
     this.root.replaceChildren();
   }
@@ -256,12 +237,15 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
   private render(): void {
     const version = ++this.renderVersion;
     const isCurrent = () => version === this.renderVersion && Boolean(this.loadController && !this.loadController.signal.aborted);
+    const t = (message: string) => this.options.translate?.(message) ?? message;
     const summary = document.createElement('div');
     summary.className = 'archivev-summary';
-    summary.appendChild(this.createBreadcrumbs(isCurrent));
+    summary.append(createArchiveIcon('archive'), this.createBreadcrumbs(isCurrent));
     const itemCount = document.createElement('span');
     itemCount.className = 'archivev-item-count';
-    itemCount.textContent = `${this.state.entries.length} item${this.state.entries.length === 1 ? '' : 's'}`;
+    itemCount.setAttribute('role', 'status');
+    itemCount.textContent = this.activeEntry ? formatBytes(this.activeEntry.source.byteLength)
+      : `${this.state.entries.length} ${t(this.state.entries.length === 1 ? 'item' : 'items')}`;
     summary.appendChild(itemCount);
 
     const toolbar = document.createElement('div');
@@ -269,35 +253,43 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
 
     const upButton = document.createElement('button');
     upButton.type = 'button';
-    upButton.className = 'archivev-button';
-    upButton.textContent = 'Up';
+    upButton.className = 'archivev-button archivev-icon-button';
+    upButton.title = t('Up');
+    upButton.setAttribute('aria-label', upButton.title);
+    upButton.append(createArchiveIcon('up'));
     upButton.disabled = !canNavigateUp(this.state.route);
     upButton.addEventListener('click', () => { if (isCurrent()) this.navigateUp(); });
 
     const rootButton = document.createElement('button');
     rootButton.type = 'button';
     rootButton.className = 'archivev-button';
-    rootButton.textContent = 'Root';
+    rootButton.append(createArchiveIcon('home'), t('Root'));
     rootButton.disabled = this.state.route === '/';
     rootButton.addEventListener('click', () => { if (isCurrent()) this.setRoute('/'); });
 
     const closeNestedButton = document.createElement('button');
     closeNestedButton.type = 'button';
-    closeNestedButton.className = 'archivev-button';
-    closeNestedButton.textContent = this.entryController ? 'Back to archive' : 'Back';
+    closeNestedButton.className = 'archivev-button archivev-icon-button';
+    closeNestedButton.title = this.entryController ? t('Back to archive') : 'Back';
+    closeNestedButton.setAttribute('aria-label', closeNestedButton.title);
+    closeNestedButton.append(createArchiveIcon('back'));
     closeNestedButton.disabled = !this.entryController && this.archiveStack.length <= 1;
     closeNestedButton.addEventListener('click', () => {
       if (isCurrent()) this.entryController ? this.closeEntryPreview() : this.popArchive();
     });
 
-    toolbar.append(closeNestedButton, upButton, rootButton);
+    const navigation = document.createElement('div');
+    navigation.className = 'archivev-navigation';
+    if (this.entryController || this.archiveStack.length > 1) navigation.append(closeNestedButton);
+    if (!this.activeEntry) navigation.append(upButton, rootButton);
+    toolbar.append(navigation);
     if (this.activeEntry && typeof URL.createObjectURL === 'function') {
       this.entryObjectUrl ??= URL.createObjectURL(new Blob([copyBytesToArrayBuffer(this.activeEntry.source)], {
         type: this.activeEntry.contentType ?? 'application/octet-stream'
       }));
       const download = document.createElement('a');
-      download.className = 'archivev-button';
-      download.textContent = this.options.translate?.('Download attachment') ?? 'Download attachment';
+      download.className = 'archivev-button archivev-download';
+      download.append(createArchiveIcon('download'), t('Download attachment'));
       download.href = this.entryObjectUrl;
       download.download = this.activeEntry.name.split('/').pop() ?? 'attachment.bin';
       toolbar.append(download);
@@ -305,52 +297,185 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
 
     if (this.activeEntry && this.entryPreviewHost) {
       this.root.replaceChildren(summary, toolbar, this.entryPreviewHost);
+      closeNestedButton.focus({ preventScroll: true });
       return;
     }
 
+    const tools = document.createElement('div');
+    tools.className = 'archivev-tools';
+    const search = document.createElement('div');
+    search.className = 'archivev-search';
+    const input = document.createElement('input');
+    input.type = 'search';
+    input.placeholder = t('Search files');
+    input.setAttribute('aria-label', t('Search this folder'));
+    input.value = this.searchQuery;
+    const clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'archivev-clear-search';
+    clear.setAttribute('aria-label', t('Clear search'));
+    clear.append(createArchiveIcon('close'));
+    clear.hidden = !this.searchQuery;
+    search.append(createArchiveIcon('search'), input, clear);
+
+    const sort = document.createElement('select');
+    sort.className = 'archivev-sort';
+    sort.setAttribute('aria-label', t('Sort files'));
+    for (const [value, label] of [['name', 'Name: A–Z'], ['size', 'Size: largest first'], ['modified', 'Modified: newest first']]) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = t(label);
+      sort.append(option);
+    }
+    sort.value = this.sortOrder;
+    tools.append(search, sort);
+    toolbar.append(tools);
+
+    const listing = document.createElement('div');
+    listing.className = 'archivev-listing';
+    listing.setAttribute('aria-label', t('Archive contents'));
     const table = document.createElement('table');
     table.className = 'archivev-table';
-    table.appendChild(createTableHead());
+    table.setAttribute('aria-label', t('Archive contents'));
+    table.appendChild(createTableHead(t));
     const body = document.createElement('tbody');
-    for (const entry of this.state.entries) {
-      const row = document.createElement('tr');
-      row.className = 'archivev-row';
-      row.tabIndex = 0;
-      row.dataset.type = entry.type;
-
-      const name = document.createElement('td');
-      name.className = 'archivev-name';
-      name.textContent = entry.name;
-      name.dataset.type = entry.type;
-      row.appendChild(name);
-
-      const type = document.createElement('td');
-      type.className = 'archivev-type';
-      type.textContent = entry.type;
-      row.appendChild(type);
-
-      const size = document.createElement('td');
-      size.className = 'archivev-size';
-      size.textContent = entry.type === 'directory' ? '' : formatBytes(entry.size ?? 0);
-      row.appendChild(size);
-
-      const modified = document.createElement('td');
-      modified.className = 'archivev-modified';
-      modified.textContent = entry.modified ? new Date(entry.modified).toLocaleString() : '';
-      row.appendChild(modified);
-
-      row.addEventListener('click', () => { if (isCurrent()) this.activateEntry(entry); });
-      row.addEventListener('keydown', (event) => {
-        if (isCurrent() && (event.key === 'Enter' || event.key === ' ')) {
-          event.preventDefault();
-          this.activateEntry(entry);
-        }
-      });
-
-      body.appendChild(row);
-    }
+    const empty = document.createElement('div');
+    empty.className = 'archivev-empty';
+    const emptyTitle = document.createElement('strong');
+    const emptyHint = document.createElement('p');
+    empty.append(createArchiveIcon('folder'), emptyTitle, emptyHint);
     table.appendChild(body);
-    this.root.replaceChildren(summary, toolbar, table);
+    listing.append(table, empty);
+
+    let listingVersion = 0;
+    let sortedEntries = this.state.entries;
+    let sortedOrder = 'name';
+    const updateListing = () => {
+      const version = ++listingVersion;
+      const isCurrentListing = () => isCurrent() && version === listingVersion;
+      const query = this.searchQuery.trim().toLocaleLowerCase();
+      // Each route already has a canonical name order. Sort only when the
+      // selected order changes; filtering that order preserves stable ties.
+      if (sortedOrder !== this.sortOrder) {
+        sortedOrder = this.sortOrder;
+        sortedEntries = sortedOrder === 'name' ? this.state.entries : [...this.state.entries].sort((left, right) => {
+          if (left.type !== right.type) return compareArchiveEntries(left, right);
+          const difference = sortedOrder === 'size' ? (right.size ?? 0) - (left.size ?? 0)
+            : (right.modified ?? 0) - (left.modified ?? 0);
+          return difference || compareArchiveEntries(left, right);
+        });
+      }
+      const entries = query ? sortedEntries.filter(entry => entry.name.toLocaleLowerCase().includes(query)) : sortedEntries;
+      itemCount.textContent = query
+        ? `${entries.length} / ${this.state.entries.length} ${t('items')}`
+        : `${entries.length} ${t(entries.length === 1 ? 'item' : 'items')}`;
+      clear.hidden = !this.searchQuery;
+      body.replaceChildren();
+      empty.hidden = entries.length > 0;
+      table.hidden = entries.length === 0;
+      emptyTitle.textContent = t(query ? 'No matching files' : 'This folder is empty');
+      emptyHint.textContent = t(query ? 'Try another name or clear the search.' : 'Use the path above to return to another folder.');
+      const fragment = document.createDocumentFragment();
+      for (const entry of entries) {
+        const row = document.createElement('tr');
+        row.className = 'archivev-row';
+        row.tabIndex = 0;
+        row.dataset.type = entry.type;
+
+        const name = document.createElement('td');
+        name.className = 'archivev-name';
+        name.dataset.type = entry.type;
+        const content = document.createElement('div');
+        content.className = 'archivev-name-content';
+        const kind = archiveEntryKind(entry);
+        const icon = document.createElement('span');
+        icon.className = 'archivev-file-icon';
+        icon.dataset.kind = kind;
+        icon.append(createArchiveIcon(kind));
+        const filename = document.createElement('span');
+        filename.className = 'archivev-filename';
+        filename.textContent = entry.name;
+        filename.title = entry.name;
+        content.append(icon, filename);
+        if (entry.type === 'directory' || kind === 'archive') {
+          const openIcon = createArchiveIcon('forward');
+          openIcon.classList.add('archivev-open-icon');
+          content.append(openIcon);
+        }
+        name.append(content);
+        row.appendChild(name);
+
+        const type = document.createElement('td');
+        type.className = 'archivev-type';
+        const extension = extensionFromName(entry.name);
+        type.textContent = entry.type === 'directory' ? t('Folder') : extension ? `${extension.toUpperCase()} ${t('file')}` : t('File');
+        type.title = type.textContent;
+        row.appendChild(type);
+
+        const size = document.createElement('td');
+        size.className = 'archivev-size';
+        size.textContent = entry.type === 'directory' ? '—' : entry.size === undefined ? '—' : formatBytes(entry.size);
+        row.appendChild(size);
+
+        const modified = document.createElement('td');
+        modified.className = 'archivev-modified';
+        modified.textContent = entry.modified ? new Date(entry.modified).toLocaleString() : '—';
+        modified.title = modified.textContent;
+        row.appendChild(modified);
+
+        row.addEventListener('click', () => { if (isCurrentListing()) this.activateEntry(entry); });
+        row.addEventListener('keydown', (event) => {
+          if (isCurrentListing() && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            this.activateEntry(entry);
+          } else if (isCurrentListing() && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+            event.preventDefault();
+            const target = event.key === 'Home' ? body.firstElementChild : event.key === 'End' ? body.lastElementChild
+              : (event.key === 'ArrowDown' ? row.nextElementSibling : row.previousElementSibling) ?? row;
+            (target as HTMLElement | null)?.focus();
+          }
+        });
+
+        fragment.appendChild(row);
+      }
+      body.appendChild(fragment);
+    };
+    const updateSearch = () => {
+      if (!isCurrent()) return;
+      this.searchQuery = input.value;
+      updateListing();
+      listing.scrollTop = 0;
+    };
+    input.addEventListener('input', updateSearch);
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && isCurrent()) {
+        event.preventDefault();
+        input.value = '';
+        updateSearch();
+      } else if (event.key === 'ArrowDown' && isCurrent()) {
+        event.preventDefault();
+        body.rows[0]?.focus();
+      }
+    });
+    clear.addEventListener('click', () => {
+      if (!isCurrent()) return;
+      input.value = '';
+      updateSearch();
+      input.focus();
+    });
+    sort.addEventListener('change', () => {
+      if (!isCurrent()) return;
+      this.sortOrder = sort.value as typeof this.sortOrder;
+      updateListing();
+      listing.scrollTop = 0;
+    });
+    updateListing();
+    this.root.replaceChildren(summary, toolbar, listing);
+    if (this.listingPosition) {
+      const row = Array.from(body.rows).find(row => row.querySelector('.archivev-filename')?.textContent === this.listingPosition?.name);
+      row?.focus({ preventScroll: true });
+      listing.scrollTop = this.listingPosition.scrollTop;
+    }
   }
 
   private createBreadcrumbs(isCurrentRender: () => boolean): HTMLElement {
@@ -369,6 +494,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       button.textContent = frame.label;
       const isCurrentArchive = index === this.archiveStack.length - 1;
       button.disabled = isCurrentArchive && route === '/' && !hasCurrentEntry;
+      button.title = frame.label;
+      if (button.disabled) button.setAttribute('aria-current', 'page');
       button.addEventListener('click', () => {
         if (!isCurrentRender()) return;
         if (isCurrentArchive) {
@@ -391,6 +518,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       button.className = 'archivev-breadcrumb';
       button.textContent = part;
       button.disabled = nextRoute === route && !hasCurrentEntry;
+      button.title = part;
+      if (button.disabled) button.setAttribute('aria-current', 'page');
       const targetRoute = nextRoute;
       button.addEventListener('click', () => { if (isCurrentRender()) this.setRoute(targetRoute); });
       breadcrumbs.appendChild(button);
@@ -400,6 +529,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       const current = document.createElement('span');
       current.className = 'archivev-breadcrumb-current';
       current.textContent = this.activeEntry.name.split('/').pop() ?? this.activeEntry.name;
+      current.title = current.textContent;
+      current.setAttribute('aria-current', 'page');
       breadcrumbs.appendChild(current);
     }
     return breadcrumbs;
@@ -410,6 +541,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       this.setRoute(joinArchiveRoute(this.state.route, entry.name));
       return;
     }
+
+    this.listingPosition = { name: entry.name, scrollTop: this.root.querySelector('.archivev-listing')?.scrollTop ?? 0 };
 
     if (isSupportedArchiveFile(entry.name)) {
       void this.openNestedArchive(entry.name);
@@ -565,6 +698,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     }
 
     const normalized = normalizeArchiveRoute(route);
+    this.searchQuery = '';
+    this.listingPosition = null;
     current.listings ??= new Map();
     let entries = current.listings.get(normalized);
     if (!entries) {
@@ -622,7 +757,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     const extension = extensionFromName(name);
     const type = contentType ?? '';
     if (type.startsWith('image/')) {
-      this.entryObjectUrl = URL.createObjectURL(new Blob([copyBytesToArrayBuffer(source)], { type }));
+      this.entryObjectUrl ??= URL.createObjectURL(new Blob([copyBytesToArrayBuffer(source)], { type }));
       const image = document.createElement('img');
       image.className = 'archivev-entry-image';
       image.alt = name;
@@ -631,7 +766,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       return;
     }
     if (type === 'application/pdf' || extension === 'pdf') {
-      this.entryObjectUrl = URL.createObjectURL(new Blob([copyBytesToArrayBuffer(source)], { type: 'application/pdf' }));
+      this.entryObjectUrl ??= URL.createObjectURL(new Blob([copyBytesToArrayBuffer(source)], { type: 'application/pdf' }));
       const frame = document.createElement('iframe');
       frame.className = 'archivev-entry-frame';
       frame.title = name;
@@ -640,7 +775,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       return;
     }
     if (type.startsWith('audio/') || type.startsWith('video/')) {
-      this.entryObjectUrl = URL.createObjectURL(new Blob([copyBytesToArrayBuffer(source)], { type }));
+      this.entryObjectUrl ??= URL.createObjectURL(new Blob([copyBytesToArrayBuffer(source)], { type }));
       const media = document.createElement(type.startsWith('audio/') ? 'audio' : 'video');
       media.className = 'archivev-entry-media';
       media.controls = true;
@@ -739,18 +874,6 @@ export function createArchivePreviewDriver(): PreviewDriver<ArchivePreviewState>
   };
 }
 
-export function createArchivePreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  const archiveFormats = new Set(ARCHIVE_FORMAT_ROUTES.flatMap((route) => route.extensions));
-  return [
-    ...ARCHIVE_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => archiveFormats.has(extension)))
-  ];
-}
-
-export function createArchiveCategoryPreviewRoutes(baseRoutes: FormatDefinition[] = []): FormatDefinition[] {
-  return createArchivePreviewRoutes(baseRoutes);
-}
-
 export async function createArchiveResourceIndex(
   source: PreviewSource,
   context: PreviewLoadContext,
@@ -838,15 +961,40 @@ async function readArchive(
     })) };
   };
   const volumeSet = selectArchiveVolumes(label, [{ name: label, bytes }, ...volumes]);
-  if (format === 'rar' || format === '7z' || volumeSet) {
+  const streamFormat = COMPRESSED_STREAM_FORMATS.get(format);
+  if (streamFormat) {
+    const { runArchiveWorker } = await import('./sevenzip/client');
+    const expanded = await readPreviewContainerEntry(async () => {
+      const result = await runArchiveWorker({ bytes, format: streamFormat, stream: true }, signal);
+      return result.bytes!;
+    }, undefined, containerContext, signal);
+    checkArchiveLoadAborted(signal);
+    const name = label.replace(/\.(tbz2?|txz|tlz|tzst|taz)$/i, '.tar').replace(/\.(bz2|bzip2|xz|lzma|lzma86|zst|zstd|z)$/i, '') || 'file';
+    if (['tbz', 'tbz2', 'txz', 'tlz', 'tzst', 'taz'].includes(format) || /\.tar$/i.test(name) || looksLikeTar(expanded)) {
+      if (expanded.byteLength < 512) throw new Error('Truncated TAR archive in compressed stream.');
+      return frame(readTarEntries(expanded));
+    }
+    if (/\.cpio$/i.test(name)) return readArchive(expanded, 'cpio', label, signal, options, containerContext);
+    return frame([{ name, type: 'file', size: expanded.byteLength, read: async () => expanded.slice() }]);
+  }
+  const containerFormat = WASM_CONTAINER_FORMATS.get(format);
+  if (format === 'rar' || format === '7z' || format === 'zipx' || containerFormat || volumeSet) {
     const { runArchiveWorker } = await import('./sevenzip/client');
     const primary = volumeSet?.primary ?? { name: label, bytes };
-    const archiveFormat = volumeSet?.format ?? format as 'rar' | '7z';
+    const archiveFormat: SevenZipRequest['format'] = volumeSet?.format ?? containerFormat ?? (format === 'zipx' ? 'zip' : format as 'rar' | '7z');
     const input = { bytes: primary.bytes, format: archiveFormat,
       ...(volumeSet ? { name: primary.name, volumes: volumeSet.files.slice(1) } : {}) };
     let archivePassword = password;
     const result = await readWithPreviewPassword(async value => {
-      const listing = await runArchiveWorker({ ...input, password: value }, signal);
+      let listing;
+      try { listing = await runArchiveWorker({ ...input, password: value }, signal); }
+      catch (error) {
+        if (format !== 'iso' || input.format !== 'iso' || signal?.aborted || previewPasswordErrorCode(error)) throw error;
+        // Disc images named .iso can contain a UDF-only filesystem. Keep the
+        // selected reader for entry extraction after the successful fallback.
+        listing = await runArchiveWorker({ ...input, format: 'udf', password: value }, signal);
+        input.format = 'udf';
+      }
       archivePassword = value;
       return listing;
     }, options, label, signal, password);
@@ -1140,7 +1288,8 @@ function detectArchiveFormat(name: string, format?: string): string {
   if (split) return split[1];
   if (/\.[r-y]\d{2}$/.test(normalizedName)) return 'rar';
   if (/\.z\d{2,}$/.test(normalizedName)) return 'zip';
-  return normalizeFormat(format || normalizedName.split('.').pop());
+  const extension = normalizeFormat(format || normalizedName.split('.').pop());
+  return ({ cbr: 'rar', cb7: '7z', cbt: 'tar' } as Record<string, string>)[extension] ?? extension;
 }
 
 function isSupportedArchiveFile(name: string): boolean {
@@ -1173,11 +1322,12 @@ async function readArchiveInput(source: PreviewSource, context: PreviewLoadConte
 }
 
 function isSupportedArchiveFormat(format: string): boolean {
-  return isZipFormat(format) || ['tar', 'tgz', 'gz', 'rar', '7z'].includes(format);
+  return isZipFormat(format) || COMPRESSED_STREAM_FORMATS.has(format) || WASM_CONTAINER_FORMATS.has(format) ||
+    ['tar', 'tgz', 'gz', 'rar', '7z', 'zipx', 'cbr', 'cb7', 'cbt'].includes(format);
 }
 
 function isZipFormat(format: string): boolean {
-  return ['zip', 'jar', 'war', 'ear', 'apk', 'ipa'].includes(format);
+  return ['zip', 'jar', 'war', 'ear', 'apk', 'ipa', 'xpi', 'crx'].includes(format);
 }
 
 async function sourceToArrayBuffer(source: PreviewSource, context: PreviewLoadContext): Promise<ArrayBuffer> {
@@ -1242,16 +1392,65 @@ function waitForArchiveLoad<T>(pending: Promise<T>, signal?: AbortSignal, discar
   });
 }
 
-function createTableHead(): HTMLTableSectionElement {
+function createTableHead(t: (message: string) => string): HTMLTableSectionElement {
   const head = document.createElement('thead');
   const row = document.createElement('tr');
-  for (const label of ['Name', 'Type', 'Size', 'Modified']) {
+  for (const [label, className] of [['Name', 'name'], ['Type', 'type'], ['Size', 'size'], ['Modified', 'modified']]) {
     const header = document.createElement('th');
-    header.textContent = label;
+    header.className = `archivev-column-${className}`;
+    header.scope = 'col';
+    header.textContent = t(label);
     row.appendChild(header);
   }
   head.appendChild(row);
   return head;
+}
+
+const ARCHIVE_ICON_PATHS = {
+  folder: ['M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10H3Z'],
+  archive: ['M5 3h10l4 4v14H5Z', 'M14 3v5h5M10 3v3m0 3v2m0 3v3m0 2v2'],
+  file: ['M5 3h9l5 5v13H5Z', 'M14 3v6h5'],
+  document: ['M5 3h9l5 5v13H5Z', 'M14 3v6h5M9 13h6m-6 4h6'],
+  image: ['M4 4h16v16H4Z', 'm4 16 5-5 4 4 3-3 4 4M9 8h.01'],
+  code: ['m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 16'],
+  media: ['M5 3h14v18H5Z', 'm10 9 5 3-5 3Z'],
+  up: ['m6 11 6-6 6 6M12 5v14'],
+  home: ['m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8'],
+  back: ['m10 5-7 7 7 7M3 12h18'],
+  forward: ['m9 5 7 7-7 7'],
+  download: ['M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5'],
+  search: ['M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-2 5 6 6'],
+  close: ['m6 6 12 12M18 6 6 18']
+} as const;
+
+function createArchiveIcon(kind: keyof typeof ARCHIVE_ICON_PATHS): SVGSVGElement {
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.classList.add('archivev-icon');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('fill', 'none');
+  icon.setAttribute('stroke', 'currentColor');
+  icon.setAttribute('stroke-width', '1.7');
+  icon.setAttribute('stroke-linecap', 'round');
+  icon.setAttribute('stroke-linejoin', 'round');
+  icon.setAttribute('aria-hidden', 'true');
+  icon.setAttribute('focusable', 'false');
+  for (const data of ARCHIVE_ICON_PATHS[kind]) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', data);
+    icon.append(path);
+  }
+  return icon;
+}
+
+function archiveEntryKind(entry: ArchivePreviewState['entries'][number]): 'folder' | 'archive' | 'image' | 'code' | 'document' | 'media' | 'file' {
+  if (entry.type === 'directory') return 'folder';
+  if (isSupportedArchiveFile(entry.name)) return 'archive';
+  const extension = extensionFromName(entry.name);
+  if (/^(png|jpe?g|gif|webp|svg|avif|bmp|tiff?|heic|heif|ico|psd|tga|exr|jxl|qoi)$/.test(extension)) return 'image';
+  if (/^(json|xml|ya?ml|toml|ini|csv|js|jsx|ts|tsx|html?|css|py|go|rs|sh|sql)$/.test(extension)) return 'code';
+  if (/^(txt|md|markdown|pdf|docx?|odt|rtf|pptx?|xlsx?|ods|odp|epub)$/.test(extension)) return 'document';
+  if (/^(mp[34]|m4[av]|wav|flac|ogg|opus|aac|webm|mov|mkv|avi)$/.test(extension)) return 'media';
+  return 'file';
 }
 
 function createBreadcrumbSeparator(): HTMLSpanElement {
@@ -1389,7 +1588,9 @@ function decodeUriPart(part: string): string {
 function resolveZipContentType(name: string, contentTypes: Record<string, string> | undefined, alreadyNormalized = false): string | undefined {
   const normalized = alreadyNormalized ? name : normalizeZipEntryName(name);
   const extension = normalizeFormat(normalized.split('?')[0]?.split('.').pop());
-  return contentTypes?.[normalized] ?? contentTypes?.[extension] ?? defaultContentTypeForExtension(extension);
+  const basename = normalized.split('/').pop()?.toLowerCase() ?? '';
+  return contentTypes?.[normalized] ?? contentTypes?.[extension] ?? defaultContentTypeForExtension(extension) ??
+    (DEBIAN_TEXT_MEMBERS.has(basename) ? 'text/plain' : undefined);
 }
 
 function defaultContentTypeForExtension(extension: string): string | undefined {

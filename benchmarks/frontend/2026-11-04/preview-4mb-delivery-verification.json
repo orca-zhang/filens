@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-11-04T13:01:25.043Z",
+  "mainSha256": "1c079e21c2bc104b8865fabaa21e8cc4d873214c08b4a40c012a47819fc7c2ea",
+  "delivery": {
+    "gzip": {
+      "bytes": 3983554,
+      "sha256": "495afb99b9745ebc95adc199c8fb280acfda9824dd881494f4de74790302e6f9"
+    },
+    "brotli": {
+      "bytes": 3845830,
+      "sha256": "0450130573f60efc552c27dbbeea45e010cd5e544a92b980e350268ddb809f64"
+    }
+  },
+  "limit": 4000000,
+  "exactDecompression": true,
+  "copiedDistributionMatches": true,
+  "decoderNoticesIncluded": true,
+  "previewChecks": 29,
+  "htmlChecks": 51,
+  "scope": "All-in-one main JS compressed delivery files only. Optional external archive engine and worker excluded."
+}

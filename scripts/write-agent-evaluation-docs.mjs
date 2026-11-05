@@ -64,7 +64,7 @@ const markdown=`# Agent CLI 实测案例与自然语言边界
 
 当前自然语言入口支持**读取全文、准备理解证据、发现能力、选择八种输出格式、提取关键内容、搜索本地目录**。总结通过密度/TF-IDF、可选 BM25 主题匹配和余弦多样性选择，保留原文及出处，无需语言模型。改写总结、翻译和问答仍由上层 Agent 完成。生产调用请使用 capacity 给出的 JSON Schema，并自行验证响应。
 
-源码版的 search 支持 BM25、区分大小写的精确文本、文件名搜索和可校验的原文片段；支持中英文意图及八种输出格式。它使用全文，正文缓存按源内容哈希更新，尚未提供 embedding 语义检索。macOS 使用原生 FTS，不嵌入 hdrw；Windows/Linux 仅嵌入私有 hdrw 的编译后 WASI。用法见[搜索指南](agent-cli-search.zh-CN.md)，独立的[当前功能检查](agent-cli-search-evaluation.json)不属于本页历史 ${report.cases.length} 条观测，也不能证明优于 rg 或 zvec-grep。
+源码版的 search 支持 BM25、区分大小写的精确文本、文件名搜索和可校验的原文片段；支持中英文意图及八种输出格式。它使用全文，正文缓存按源内容哈希更新，尚未提供 embedding 语义检索。macOS 使用原生 FTS；Windows 使用 NTFS 批量目录元数据，不支持时回退原生遍历；Linux 使用原生遍历。用法见[搜索指南](agent-cli-search.zh-CN.md)，独立的[当前功能检查](agent-cli-search-evaluation.json)不属于本页历史 ${report.cases.length} 条观测，也不能证明优于 rg 或 zvec-grep。
 
 ## 当前总结能力：中文、英文与 JSON 均可用
 

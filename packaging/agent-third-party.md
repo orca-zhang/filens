@@ -60,9 +60,9 @@ FiLens first-party code is licensed under MIT; see the package's LICENSE file.
 Bundled dependencies and the Photos application code retain their original
 licenses. This notice does not relicense those components.
 
-## Private directory discovery component
+## Native directory discovery
 
-Windows and Linux CLI binaries embed compiled hdrw WASI, a proprietary component used through the FiLens directory adapter. hdrw source is not included or licensed as part of FiLens. macOS release binaries use native system FTS and do not embed this component. Maintainer provenance and artifact hashes are recorded in `cli/assets/hdrw.json`; the adapter exposes mounted-directory enumeration, without raw device access.
-
-The embedded WASI module also includes Go standard library/runtime components;
-their license is included in the package license directory as Go.txt.
+Directory discovery uses macOS system FTS, Windows NTFS batched directory
+metadata with a native fallback, and Rust standard-library traversal on Linux.
+No proprietary directory discovery module is embedded. These paths require
+neither administrator privileges nor raw device access.

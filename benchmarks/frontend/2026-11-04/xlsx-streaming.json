@@ -1,0 +1,271 @@
+{
+  "node": "v20.20.2",
+  "cpu": "Apple M4 Pro",
+  "platform": "darwin-arm64",
+  "warmupIterations": 2,
+  "measuredIterations": 7,
+  "bindings": {
+    "current": "25aa20f5c502715f39b67f9b274bdfab456bf3758f3ee028e140527e236327c8",
+    "baseline": "a182c6bd71ee29ee77cc52c7cbc8e264adc7cefde1d5a1ea09cfe3b6e9623d00"
+  },
+  "cases": {
+    "sparse-rectangle-cold": {
+      "occupiedSourceCells": 256,
+      "rangeCoordinates": 1048576,
+      "formulaCount": 8,
+      "warmIndex": false,
+      "inputSha256": "5559a3f95954df3c219928539beb016448a228a22c38f79fa2412efaff84bbe8",
+      "outputSha256": "c33a38ef01f3e9a792021dc15460eb295166e0ea32c985baff2864304144fdb2",
+      "timings": {
+        "current": {
+          "medianMs": 0.19687500000000568,
+          "samplesMs": [
+            0.41158299999999315,
+            0.32170899999999847,
+            0.27266600000000096,
+            0.17387499999999534,
+            0.17333299999999952,
+            0.19687500000000568,
+            0.1820420000000098
+          ]
+        },
+        "baseline": {
+          "medianMs": 0.28520800000001145,
+          "samplesMs": [
+            0.338791999999998,
+            0.3183750000000032,
+            0.2547919999999948,
+            0.2516250000000042,
+            0.8004580000000061,
+            0.28520800000001145,
+            0.2464170000000081
+          ]
+        }
+      }
+    },
+    "sparse-rectangle-warm": {
+      "occupiedSourceCells": 256,
+      "rangeCoordinates": 1048576,
+      "formulaCount": 8,
+      "warmIndex": true,
+      "inputSha256": "cb81e41584b849f0711a3ccfefa119626a200d6841221641ed4d3ed249f6f4a1",
+      "outputSha256": "716dcc29e1600e5d8e8eb0a40bcc07a4e2e1c6a70e5e4f0ccd2bebb56a1f8774",
+      "timings": {
+        "current": {
+          "medianMs": 0.05920800000001236,
+          "samplesMs": [
+            0.07866699999999582,
+            0.05920800000001236,
+            0.05750000000000455,
+            0.2709169999999972,
+            0.18483399999999506,
+            0.05633400000000677,
+            0.04816700000000651
+          ]
+        },
+        "baseline": {
+          "medianMs": 0.15383299999999167,
+          "samplesMs": [
+            0.16004199999999003,
+            0.15383299999999167,
+            0.15441699999999514,
+            0.1513750000000016,
+            8.754084000000006,
+            0.13008300000001327,
+            0.1450839999999971
+          ]
+        }
+      }
+    },
+    "dense-wide-cold": {
+      "occupiedSourceCells": 65536,
+      "rangeCoordinates": 65536,
+      "formulaCount": 8,
+      "warmIndex": false,
+      "inputSha256": "b790213abe96c3e4bd9f246b9ae180503c93e8ed5f4a6516342aa8d9eb757f00",
+      "outputSha256": "71423f4fb9f2c97e08fa32b12ff0eb92be6f8d8028f33586fef8fb558688772b",
+      "timings": {
+        "current": {
+          "medianMs": 15.99204199999997,
+          "samplesMs": [
+            15.85616600000003,
+            16.15325000000007,
+            32.96350000000007,
+            24.343624999999975,
+            15.99204199999997,
+            11.987166000000116,
+            10.58462499999996
+          ]
+        },
+        "baseline": {
+          "medianMs": 29.85620899999992,
+          "samplesMs": [
+            30.125833,
+            30.08224999999993,
+            30.169624999999996,
+            29.85620899999992,
+            25.02658400000007,
+            19.79187500000012,
+            20.945375000000013
+          ]
+        }
+      }
+    },
+    "dense-tall-cold": {
+      "occupiedSourceCells": 8192,
+      "rangeCoordinates": 8192,
+      "formulaCount": 32,
+      "warmIndex": false,
+      "inputSha256": "ddbab1708b6cb684927ae52968a95ea5b1768d9ce42aba0a50f21cf6aa2ab117",
+      "outputSha256": "3e7f48876179450ecca046ab3ec962acfb622dfc24ae19ee0b77aa039e484d37",
+      "timings": {
+        "current": {
+          "medianMs": 5.851875000000064,
+          "samplesMs": [
+            5.871249999999918,
+            5.79945900000007,
+            5.923708000000033,
+            5.2277919999999085,
+            5.851875000000064,
+            5.016374999999925,
+            7.179209000000128
+          ]
+        },
+        "baseline": {
+          "medianMs": 15.332834000000048,
+          "samplesMs": [
+            15.461916999999858,
+            14.073041999999987,
+            15.603832999999895,
+            15.086334000000079,
+            15.486708000000135,
+            15.332834000000048,
+            14.302832999999964
+          ]
+        }
+      }
+    },
+    "dense-tall-warm": {
+      "occupiedSourceCells": 8192,
+      "rangeCoordinates": 8192,
+      "formulaCount": 32,
+      "warmIndex": true,
+      "inputSha256": "a5705102011acf8aed9ae624e56886a33298b1a83d29fe00a160563c98ccd0fa",
+      "outputSha256": "a3029c400eb5ca4627897504ba3c5e78627884292d3696621d0c4f1495ab5f11",
+      "timings": {
+        "current": {
+          "medianMs": 4.989958000000115,
+          "samplesMs": [
+            5.50908400000003,
+            3.992541000000074,
+            5.590541999999914,
+            4.791249999999991,
+            4.989958000000115,
+            5.14391599999999,
+            4.056249999999864
+          ]
+        },
+        "baseline": {
+          "medianMs": 14.453792000000021,
+          "samplesMs": [
+            22.673749999999927,
+            13.94291700000008,
+            14.453792000000021,
+            13.827332999999953,
+            14.653166000000056,
+            13.957333000000062,
+            15.2377919999999
+          ]
+        }
+      }
+    },
+    "tiny-range-control": {
+      "occupiedSourceCells": 4,
+      "rangeCoordinates": 4,
+      "formulaCount": 1,
+      "warmIndex": false,
+      "inputSha256": "f549ec89be57b39e53f6cd7e8529d9119cfcb8dde60ceeef55d1b4515b56a773",
+      "outputSha256": "92250e04c9a5409d7b0581fe66c120b5955a5266f1fae143a8a22f346ea9fc19",
+      "timings": {
+        "current": {
+          "medianMs": 0.0038750000001073204,
+          "samplesMs": [
+            0.005249999999932697,
+            0.0042089999999461725,
+            0.0038750000001073204,
+            0.004167000000052212,
+            0.003666999999950349,
+            0.0037500000000818545,
+            0.0035830000001624285
+          ]
+        },
+        "baseline": {
+          "medianMs": 0.0032919999998739513,
+          "samplesMs": [
+            0.003957999999784079,
+            0.0034160000000156288,
+            0.003249999999979991,
+            0.0032919999998739513,
+            0.003209000000197193,
+            0.0029580000000350992,
+            0.0038750000001073204
+          ]
+        }
+      }
+    }
+  },
+  "timingScope": "Formula evaluation and lazy index construction (except warm cases); excludes model cloning, imports, verification and hashing. Same-project synthetic comparison; not full preview or peak memory.",
+  "date": "2026-11-04",
+  "baseline": "Working-tree XLSX build after the first ordered-index/bitmap optimization; the baseline artifact matches the prior xlsx-cell-index.json current binding.",
+  "sourceSha256": {
+    "packages/xlsx/src/parser.ts": "f258657bbc3e49fb471bfd98728852803bf1f1f6bb1f2ada27003f509cc4ff2a",
+    "packages/xlsx/src/cell-index.ts": "590f8e5c0ed8341e6685234a4446b377298ca8f3fad7f150b9a88bcd866e3867",
+    "packages/xlsx/test/formula.spec.ts": "e9d0452f09dfdeeaa53f062009bd422d87e8397430e5cde29e6fd4154905e8bd",
+    "scripts/verify-xlsx-formula-equivalence.mjs": "39d8bb73ad964ccf377e320309fb353a13b88ca499b629ded2174cf5313c2abd",
+    "scripts/benchmark-xlsx-cell-index.mjs": "c66c8ac0a0e252318f491be1268b3766a5130abd926a4e1990fe74137b2db844",
+    "scripts/benchmark-xlsx-formulas.mjs": "9c1da0e8e5c5353c41b1fa183ace7682ddfd02883fd7499796b90c8e727b9d31"
+  },
+  "baselineSourceSha256": {
+    "parser.ts": "615d74d5d19e96ad4f17d3cc7b2ae5d9bd210572246108aea4a265f5dc6f2ba1",
+    "cell-index.ts": "7d7ef412bf6e61c83ad320cbea9a6abcb4f02f06f60b0654466e6ddca59b82d6"
+  },
+  "equivalence": {
+    "bindings": {
+      "current": "25aa20f5c502715f39b67f9b274bdfab456bf3758f3ee028e140527e236327c8",
+      "baseline": "a182c6bd71ee29ee77cc52c7cbc8e264adc7cefde1d5a1ea09cfe3b6e9623d00"
+    },
+    "comparisons": 744,
+    "formulaCount": 31,
+    "valueCases": 8,
+    "layouts": [
+      "ordered",
+      "reversed",
+      "duplicates"
+    ],
+    "completeModelsEqual": true,
+    "inputSha256": "0a65c0fa1749d693fb05099c19a50dcea64bfbd926d812b3a9b4c1337052ff06",
+    "outputSha256": "ad513c05c9e671f7f8a2077707e2763ee06f2c1162cc8c7017d6d85c4aee8780"
+  },
+  "entrySize": {
+    "baseline": {
+      "rawBytes": 34140,
+      "gzip9Bytes": 10147
+    },
+    "current": {
+      "rawBytes": 35178,
+      "gzip9Bytes": 10496
+    }
+  },
+  "validation": {
+    "xlsxUnitTestsPassed": 62,
+    "browserTestsPassed": 3,
+    "conversionPolicyChecksPassed": 2122,
+    "completeModelsEqualAcrossMeasuredPairs": true,
+    "differentialFormulaModelsEqual": 744
+  },
+  "limitations": [
+    "Generated formula models, not full-workbook parsing or browser-first-paint timings.",
+    "No peak-memory measurement.",
+    "Wide-sheet timings vary; all seven measured samples are retained. Microsecond controls are not a speedup claim."
+  ]
+}

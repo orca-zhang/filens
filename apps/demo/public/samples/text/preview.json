@@ -1,0 +1,28 @@
+{
+  "exhibition": {
+    "id": "shoreline-2026",
+    "title": "纸上的天气",
+    "subtitle": "Weather on Paper",
+    "venue": "岸线工作室",
+    "dates": { "opens": "2026-10-24", "closes": "2026-11-22" }
+  },
+  "works": [
+    {
+      "id": "work-01",
+      "title": "晨雾",
+      "medium": ["paper", "watercolor"],
+      "dimensionsCm": { "width": 42, "height": 59.4 },
+      "onDisplay": true
+    },
+    {
+      "id": "work-02",
+      "title": "河流的回声",
+      "medium": ["field recording"],
+      "durationSeconds": 184,
+      "onDisplay": false,
+      "notes": null
+    }
+  ],
+  "accessibility": { "stepFree": true, "languages": ["zh-CN", "en"] },
+  "fictional": true
+}

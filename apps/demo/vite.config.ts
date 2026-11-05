@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 import path from 'node:path';
@@ -6,9 +6,31 @@ import vue from '@vitejs/plugin-vue';
 import { stepWasmAsset } from '../../scripts/step-wasm-plugin';
 import { agentSkillAsset } from './agent-assets';
 import { sharedCompression } from '../../scripts/shared-compression';
+import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
+import { optionalEngineChunk } from '../../scripts/optional-engine-chunks';
 
 const compressibleAssets = /\.(?:css|html|js|json|mjs|wasm)$/;
+
+function previewLinkNavigation(): Plugin {
+  return {
+    name: 'filens-preview-link-navigation',
+    configureServer(server) {
+      server.middlewares.use((request, _response, next) => {
+        if (request.method === 'GET' && request.headers.accept?.includes('text/html')) {
+          const url = new URL(request.url ?? '/', 'http://localhost');
+          const base = server.config.base;
+          if (url.searchParams.has('url') && [base, `${base}index.html`].includes(url.pathname)) {
+            // Vite 5 interprets ?url= as an asset request before its HTML fallback.
+            // Only rewrite entry-page navigations; the browser keeps the full query.
+            request.url = `${base}index.html`;
+          }
+        }
+        next();
+      });
+    }
+  };
+}
 
 function precompressAssets() {
   let outputDir: string | undefined;
@@ -52,6 +74,7 @@ const converterOfficeWasmOutput = 'externals/converter-office.wasm';
 const converterImageWasmSource = path.resolve(__dirname, '../../wasm/converter-image/dist/converter-image.wasm');
 const converterImageWasmOutput = 'externals/converter-image.wasm';
 const externalConverterAssets = [
+  { source: path.resolve(__dirname, '../../wasm/converter-core/dist/converter-graphics.wasm'), output: 'externals/converter-graphics.wasm' },
   { source: path.resolve(__dirname, '../../wasm/converter-core/dist/converter-postscript.wasm'), output: 'externals/converter-postscript.wasm' },
   { source: converterCoreWasmSource, output: converterCoreWasmOutput },
   { source: converterOfficeWasmSource, output: converterOfficeWasmOutput },
@@ -187,6 +210,8 @@ async function writeBuildInfo(outputDir: string): Promise<void> {
 
 function manualChunkForModule(id: string): string | undefined {
   const normalized = id.replaceAll(path.sep, '/');
+  const optional = optionalEngineChunk(normalized);
+  if (optional) return optional;
   if (normalized === '\0filens:step-wasm-url' || normalized.includes('/packages/step/') || normalized.endsWith('/packages/model3d/src/rust-step-importer.ts')) return 'step-runtime';
   if (normalized.includes('/node_modules/pdfjs-dist/')) return 'pdf-runtime';
   if (normalized.includes('/node_modules/')) return 'vendor';
@@ -268,7 +293,7 @@ const externalSampleProxy = {
 export default defineConfig({
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
   base: process.env.VITE_BASE_PATH || '/modules/filens/',
-  plugins: [archiveEngineAssets(), sharedCompression(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
+  plugins: [previewLinkNavigation(), archiveEngineAssets(), sharedCompression(), xmlParserOnly(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
   // Discover lazy worker dependencies at startup so first use does not reload an uploaded file.
   optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js'] },
   server: { proxy: externalSampleProxy },
@@ -276,6 +301,24 @@ export default defineConfig({
   resolve: {
     preserveSymlinks: true,
     alias: {
+      '@filens/xlsx/table': path.resolve(__dirname, '../../packages/xlsx/src/table.ts'),
+      '@filens/core/preview-runtime': path.resolve(__dirname, '../../packages/core/src/preview-runtime.ts'),
+      '@filens/media/codecs': path.resolve(__dirname, '../../packages/media/src/codec-preview-driver.ts'),
+      '@filens/archive/routes': path.resolve(__dirname, '../../packages/archive/src/routes.ts'),
+      '@filens/cad/routes': path.resolve(__dirname, '../../packages/cad/src/routes.ts'),
+      '@filens/diagram/routes': path.resolve(__dirname, '../../packages/diagram/src/routes.ts'),
+      '@filens/design/routes': path.resolve(__dirname, '../../packages/design/src/routes.ts'),
+      '@filens/docx/routes': path.resolve(__dirname, '../../packages/docx/src/routes.ts'),
+      '@filens/books/routes': path.resolve(__dirname, '../../packages/ebook/src/routes.ts'),
+      '@filens/iwork/routes': path.resolve(__dirname, '../../packages/iwork/src/routes.ts'),
+      '@filens/model3d/routes': path.resolve(__dirname, '../../packages/model3d/src/routes.ts'),
+      '@filens/media/routes': path.resolve(__dirname, '../../packages/media/src/routes.ts'),
+      '@filens/mindmap/routes': path.resolve(__dirname, '../../packages/mindmap/src/routes.ts'),
+      '@filens/panorama/routes': path.resolve(__dirname, '../../packages/panorama/src/routes.ts'),
+      '@filens/office/routes': path.resolve(__dirname, '../../packages/office/src/routes.ts'),
+      '@filens/pdf/routes': path.resolve(__dirname, '../../packages/pdf/src/routes.ts'),
+      '@filens/text/routes': path.resolve(__dirname, '../../packages/text/src/routes.ts'),
+      '@filens/xlsx/routes': path.resolve(__dirname, '../../packages/xlsx/src/routes.ts'),
       'filens-step': path.resolve(__dirname, '../../packages/step/src/index.ts'),
       '@filens/archive/style.css': path.resolve(__dirname, '../../packages/archive/src/styles/index.css'),
       '@filens/archive': path.resolve(__dirname, '../../packages/archive/src/index.ts'),

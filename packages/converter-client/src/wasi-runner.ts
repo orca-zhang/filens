@@ -1,6 +1,7 @@
 // Shared, format-independent browser WASI host. Each call owns its files and instance.
 import { retryableLoader, throwIfAborted, waitForConversion } from './source';
 import { wasmResponse } from './wasm-response';
+import { supportsWasmSimd } from './wasm-simd';
 
 export type WasmModuleSource =
   | BufferSource
@@ -11,7 +12,15 @@ export type WasmModuleSource =
   | Promise<BufferSource | WebAssembly.Module | Response | string | URL>
   | (() => BufferSource | WebAssembly.Module | Response | string | URL | Promise<BufferSource | WebAssembly.Module | Response | string | URL>);
 
-export interface WasmCoreRunnerOptions { wasm: WasmModuleSource; imageWasm?: WasmModuleSource; fetch?: typeof fetch; }
+export interface WasmCoreRunnerOptions {
+  wasm: WasmModuleSource;
+  /** Optional SIMD128 variant. Unsupported engines or load/compile failures use wasm. */
+  simdWasm?: WasmModuleSource;
+  /** Additional capability imports. The runner supplies and owns WASI imports. */
+  imports?: WebAssembly.Imports;
+  imageWasm?: WasmModuleSource;
+  fetch?: typeof fetch;
+}
 
 export interface WasmCoreInvocation {
   args: string[];
@@ -29,7 +38,17 @@ export interface WasmCoreInvocationResult {
 }
 
 export function createWasmCoreRunner(options: WasmCoreRunnerOptions) {
-  const loadModule = retryableLoader(() => loadWasmModule(options.wasm, options.fetch));
+  const loadModule = retryableLoader(async () => {
+    if (options.simdWasm && supportsWasmSimd()) {
+      try {
+        return await loadWasmModule(options.simdWasm, options.fetch);
+      } catch {
+        // Only optional module loading/compilation falls back. Execution errors
+        // still propagate, so a converter operation is never repeated here.
+      }
+    }
+    return loadWasmModule(options.wasm, options.fetch);
+  });
 
   return async (invocation: WasmCoreInvocation): Promise<WasmCoreInvocationResult> => {
     const signal = invocation.signal;
@@ -42,6 +61,7 @@ export function createWasmCoreRunner(options: WasmCoreRunnerOptions) {
     const module = await waitForConversion(loadModule(), signal);
     throwIfAborted(signal);
     const instance = await waitForConversion(WebAssembly.instantiate(module, {
+      ...options.imports,
       wasi_snapshot_preview1: wasi.imports
     }), signal);
     throwIfAborted(signal);
@@ -123,6 +143,7 @@ const ERRNO_INVAL = 28;
 const ERRNO_ISDIR = 31;
 const ERRNO_NOENT = 44;
 const ERRNO_NOTDIR = 54;
+const ERRNO_NOSYS = 52;
 const ERRNO_NOTEMPTY = 55;
 
 const FILETYPE_CHARACTER_DEVICE = 2;
@@ -151,6 +172,9 @@ export class InMemoryWasiHost {
     fd_prestat_dir_name: (fd: number, pathPtr: number, pathLen: number) => this.fdPrestatDirName(fd, pathPtr, pathLen),
     fd_prestat_get: (fd: number, prestatPtr: number) => this.fdPrestatGet(fd, prestatPtr),
     fd_read: (fd: number, iovs: number, iovsLen: number, nread: number) => this.fdRead(fd, iovs, iovsLen, nread),
+    // Text-core modules import directory enumeration even for search-text,
+    // which receives a complete corpus and never enumerates host directories.
+    fd_readdir: () => ERRNO_NOSYS,
     fd_seek: (fd: number, offset: bigint, whence: number, newOffset: number) => this.fdSeek(fd, offset, whence, newOffset),
     fd_tell: (fd: number, offset: number) => this.fdTell(fd, offset),
     fd_write: (fd: number, iovs: number, iovsLen: number, nwritten: number) => this.fdWrite(fd, iovs, iovsLen, nwritten),

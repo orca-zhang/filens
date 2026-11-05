@@ -15,7 +15,7 @@ export async function rewriteCssResources(
     if (css.startsWith('/*', index)) { index = commentEnd(css, index); continue; }
     if (css[index] === '"' || css[index] === "'") { index = stringEnd(css, index); continue; }
     let start = index, stylesheet = false;
-    if (/^@import(?![\w-])/i.test(css.slice(index, index + 9))) {
+    if (css[index] === '@' && /^@import(?![\w-])/i.test(css.slice(index, index + 9))) {
       stylesheet = true;
       start = skipSpace(css, index + 7);
       if (css[start] === '"' || css[start] === "'") {
@@ -24,7 +24,8 @@ export async function rewriteCssResources(
         index = end; continue;
       }
     }
-    if ((start === 0 || !/[\w\\-]/.test(css[start - 1]!)) && /^url\(/i.test(css.slice(start, start + 4))) {
+    if ((css[start] === 'u' || css[start] === 'U') &&
+        (start === 0 || !/[\w\\-]/.test(css[start - 1]!)) && /^url\(/i.test(css.slice(start, start + 4))) {
       const valueStart = skipSpace(css, start + 4);
       let end = valueStart, value: string;
       if (css[valueStart] === '"' || css[valueStart] === "'") {

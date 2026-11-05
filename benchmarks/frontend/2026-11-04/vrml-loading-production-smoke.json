@@ -1,0 +1,168 @@
+{
+  "browser": "147.0.7727.15",
+  "cases": [
+    {
+      "name": "current",
+      "variant": "split",
+      "deferredForTextAndStl": true,
+      "cancelledDuringImport": true,
+      "vrmlChunks": [
+        "/chunks/model-vrml-30LniCpp.js"
+      ],
+      "rendered": {
+        "wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "current",
+      "variant": "all-in-one",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "vrmlChunks": [],
+      "rendered": {
+        "wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "split",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "vrmlChunks": [],
+      "rendered": {
+        "wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    },
+    {
+      "name": "baseline",
+      "variant": "all-in-one",
+      "deferredForTextAndStl": false,
+      "cancelledDuringImport": false,
+      "vrmlChunks": [],
+      "rendered": {
+        "wrl": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        },
+        "vrml": {
+          "triangleCount": 13,
+          "width": 800,
+          "height": 562,
+          "colors": 946,
+          "rgbaSha256": "358f74411433bc60454a516240dd4d6c9fb04d00c4481dd6ae5e89552fb6c27f"
+        }
+      },
+      "errors": []
+    }
+  ],
+  "xmlRegression": {
+    "browser": "147.0.7727.15",
+    "cases": [
+      {
+        "variant": "split",
+        "first": "xlsx",
+        "deferredFor": [
+          "text",
+          "CSV",
+          "ordinary PPTX"
+        ],
+        "fallback": true,
+        "xlsx": true,
+        "cancelledDuringImport": true,
+        "xmlChunks": [
+          "/chunks/xml-compat-Ctrx-gN_.js"
+        ],
+        "errors": []
+      },
+      {
+        "variant": "split",
+        "first": "fallback",
+        "deferredFor": [
+          "text",
+          "CSV",
+          "ordinary PPTX"
+        ],
+        "fallback": true,
+        "xlsx": true,
+        "cancelledDuringImport": true,
+        "xmlChunks": [
+          "/chunks/xml-compat-Ctrx-gN_.js"
+        ],
+        "errors": []
+      },
+      {
+        "variant": "all-in-one",
+        "first": "xlsx",
+        "deferredFor": [
+          "text",
+          "CSV",
+          "ordinary PPTX"
+        ],
+        "fallback": true,
+        "xlsx": true,
+        "cancelledDuringImport": false,
+        "xmlChunks": [],
+        "errors": []
+      },
+      {
+        "variant": "all-in-one",
+        "first": "fallback",
+        "deferredFor": [
+          "text",
+          "CSV",
+          "ordinary PPTX"
+        ],
+        "fallback": true,
+        "xlsx": true,
+        "cancelledDuringImport": false,
+        "xmlChunks": [],
+        "errors": []
+      }
+    ]
+  }
+}

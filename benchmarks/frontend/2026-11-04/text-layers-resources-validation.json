@@ -1,0 +1,128 @@
+{
+  "date": "2026-11-04T14:52:03.603Z",
+  "unitSuites": [
+    {
+      "workspace": "@filens/core",
+      "command": "vitest run --maxWorkers=4 --minWorkers=1",
+      "passed": 448,
+      "skipped": 11
+    },
+    {
+      "workspace": "@filens/iwork",
+      "command": "vitest run --maxWorkers=4 --minWorkers=1",
+      "passed": 340,
+      "skipped": 0
+    },
+    {
+      "workspace": "@filens/cad",
+      "command": "vitest run --maxWorkers=4 --minWorkers=1",
+      "passed": 65,
+      "skipped": 0
+    },
+    {
+      "workspace": "@filens/books",
+      "command": "vitest run --maxWorkers=4 --minWorkers=1",
+      "passed": 37,
+      "skipped": 0
+    },
+    {
+      "workspace": "@filens/model3d",
+      "command": "vitest run test/resource-loading.spec.ts test/obj-resources.spec.ts test/texture-resources.spec.ts test/load-cancellation.spec.ts --maxWorkers=4 --minWorkers=1",
+      "passed": 105,
+      "skipped": 0
+    }
+  ],
+  "browser": {
+    "files": [
+      "cad-resources.e2e.ts",
+      "iwork-lifecycle.e2e.ts",
+      "obj-resources.e2e.ts",
+      "epub-resources.e2e.ts"
+    ],
+    "passed": 21,
+    "note": "First run: 20 passed; EPUB upload failed because its file-input selector matched two controls. Scoped CAD/EPUB upload selectors to .wb-upload; EPUB rerun: 2 passed. No product assertion failures."
+  },
+  "builds": [
+    "@filens/core",
+    "@filens/cad",
+    "@filens/iwork"
+  ],
+  "behavioralComparison": {
+    "paragraphBoundaryPairs": 61,
+    "generatedStyleCases": 256,
+    "resourceQueries": 225,
+    "realIworkModels": 6,
+    "timedOutputPairs": 117
+  },
+  "caveats": [
+    "11 existing external control tests skipped",
+    "No peak-memory measurements",
+    "Stage timings are not end-to-end preview or frame timings"
+  ],
+  "artifacts": {
+    "benchmarks/frontend/2026-11-04/text-layers-resources-source-baseline.json.gz": {
+      "bytes": 69110,
+      "sha256": "88116df13984373be70b3b31e8e061948217b0a5e59ad40a651e8268256a7adb"
+    },
+    "benchmarks/frontend/2026-11-04/text-layers-resources.json": {
+      "bytes": 15799,
+      "sha256": "5c592fd66d88d71bf5a2cc6c5f8f50195471e36f46efa45eda0e45fcdf4eccc1"
+    },
+    "benchmarks/frontend/2026-11-04/text-layers-resources-size.json": {
+      "bytes": 6327,
+      "sha256": "3fefa0c449010f0c50821bcfcae3e58f0b7ff9ce896aaf0f135a539d8465eccd"
+    },
+    "scripts/benchmark-text-layers-resources.mjs": {
+      "bytes": 17529,
+      "sha256": "e3dc26d3c8d4fa222a64068072dd8326c796e70b6be7e0e4bf91233679ef0e84"
+    },
+    "scripts/verify-text-layers-size.mjs": {
+      "bytes": 3980,
+      "sha256": "815c17ba07560012909ac10830dbfefbfc5f160ee4ca07a6084469d8a738a31a"
+    },
+    "packages/iwork/src/parser/helpers.ts": {
+      "bytes": 68961,
+      "sha256": "862eea102f29b6c6a8901a103d1741a0b95fae238fd100b3c938e4b9780102eb"
+    },
+    "packages/iwork/src/parser/semantic.ts": {
+      "bytes": 149643,
+      "sha256": "dbcdda0d4666dab701c4e2ab96eca3fd3db4a580021ff9705a9dda6892cd5516"
+    },
+    "packages/cad/src/preview-driver.ts": {
+      "bytes": 130294,
+      "sha256": "271f83a7b2c6674aeb2904523c475f7ca34b304a0e6a1f0c7ac2a973823c3ff4"
+    },
+    "packages/core/src/preview/resource-resolver.ts": {
+      "bytes": 3874,
+      "sha256": "081cd8decdd059ababd50b70909f09a4f34f2b25e778d3bbe559cfd0a21d87f2"
+    },
+    "packages/iwork/test/helpers-textframe.spec.ts": {
+      "bytes": 25191,
+      "sha256": "6c9208b8a23fd26ddedcb2361ea97cda5a4aee71f7c5b4308f4ccbeedec2c04c"
+    },
+    "packages/iwork/test/pages-text-index.spec.ts": {
+      "bytes": 2159,
+      "sha256": "1f47e54fd90c547f1fe5388c6face446dfefc38e7c64b13dffc451dbcd25778a"
+    },
+    "packages/core/test/preview.spec.ts": {
+      "bytes": 70793,
+      "sha256": "6add65ddff59cd150d2b8afc7017f919c09531c3c775f4d50cccbd7aa3c8043c"
+    },
+    "packages/cad/test/preview-driver.spec.ts": {
+      "bytes": 59695,
+      "sha256": "1f5117886e96d38ee3f192c0a9249789fab45f4fff64d3aaf5d4153ac68a81e3"
+    },
+    "apps/demo/e2e/cad-resources.e2e.ts": {
+      "bytes": 6987,
+      "sha256": "39823d7812e21af115fb51338904381904542afe6f87105614f4905ee54e33a4"
+    },
+    "apps/demo/e2e/epub-resources.e2e.ts": {
+      "bytes": 4186,
+      "sha256": "a6ee549d9537b329db2deae5b0f22c1b64a62aadeb4fc75a8855b448c3a78d96"
+    },
+    "docs/text-layers-resources-performance.zh-CN.md": {
+      "bytes": 7222,
+      "sha256": "df9737aca9652fc973a440bdda24b0224372fa52499d372501b447d9ccc820f1"
+    }
+  }
+}

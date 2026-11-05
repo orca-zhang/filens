@@ -12,6 +12,7 @@ mod catalog;
 mod inspect;
 mod layout;
 mod ocr_image;
+mod ocr_scores;
 mod odf_sheet;
 mod pdf_unicode;
 mod provenance;
@@ -21,6 +22,23 @@ mod search;
 mod search_wire;
 mod similarity;
 mod stopwords;
+
+pub(super) fn inspect_file(request: &Request, started: Instant) {
+    let detected = File::open(&request.input).and_then(|mut file| {
+        if !file.metadata()?.is_file() {
+            return Err(std::io::Error::other("inspection requires a regular file"));
+        }
+        crate::format_detection::inspect(&mut file, &request.source)
+    });
+    let wire = match detected {
+        Ok(value) => ResultContract { ok: true, payload: Some(value), ..Default::default() },
+        Err(error) => ResultContract { error_code: "io_error".into(), error_message: error.to_string(), ..Default::default() },
+    };
+    if let Err(error) = write_result(&request.result, wire, started.elapsed().as_millis()) {
+        eprintln!("{error}");
+        process::exit(1);
+    }
+}
 
 pub(super) fn similarity(request: &Request, started: Instant) {
     similarity::execute(request, started);
@@ -342,14 +360,8 @@ fn emit_ocr(result: &Value) {
     let mut accepted = Vec::new();
     let mut kept = Vec::new();
     let mut dropped = 0;
-    for (i, line) in lines.iter().enumerate() {
-        let confidence = raw
-            .lines()
-            .find(|v| v.starts_with(&format!("TextBox[{i}]")))
-            .and_then(|v| v.split_once("score("))
-            .and_then(|(_, v)| v.split_once(')'))
-            .and_then(|(v, _)| v.parse::<f64>().ok())
-            .filter(|v| v.is_finite() && (0.0..=1.0).contains(v));
+    let scores = ocr_scores::confidences(raw, lines.len());
+    for (line, confidence) in lines.iter().zip(scores) {
         if line.trim().is_empty() {
             kept.push(String::new());
             continue;
@@ -739,6 +751,8 @@ fn extract(request: &Request) -> Result<(), ConvertError> {
             let bytes = raster::png(input, source)?;
             image(&bytes, "png")
         }
+        "tga" | "dds" | "dib" | "cur" | "pcx" | "jxl" | "qoi" | "ff"
+        | "psd" | "psb" | "ai" | "eps" | "ps" | "ico" | "icns" => artwork(input, source),
         _ if is_word_binary_source(source) => convert_word_binary(input, ""),
         _ if is_ppt_binary_source(source) => convert_ppt_binary(input, ""),
         _ if is_biff_source(source) => convert_biff(input, ""),
@@ -792,6 +806,34 @@ fn extract(request: &Request) -> Result<(), ConvertError> {
             }
         }
     }
+}
+
+// Reuse the same bounded decoders as browser previews. The native shell only
+// invokes this WASM core; artwork parsing and OCR policy stay here.
+fn artwork(input: &str, source: &str) -> Result<(), ConvertError> {
+    let target = if matches!(source, "ai" | "eps" | "ps") { "pdf" } else { "png" };
+    let output = STATE.with(|s| s.borrow().as_ref().unwrap().work.join(format!("artwork.{target}")));
+    let output_path = output.to_str().unwrap();
+    let converted = if design::supports(source) {
+        design::convert(input, output_path, source)
+    } else if source == "ico" {
+        icons::convert(input, output_path, source)
+    } else if source == "icns" {
+        convert_icns_preview(input, output_path, "png")
+    } else {
+        graphics::convert(input, output_path, source)
+    };
+    let result = converted.and_then(|()| {
+        if target == "pdf" {
+            pdf(output_path)
+        } else {
+            provenance::page(1, "image");
+            let bytes = fs::read(&output).map_err(|e| io_error(e.to_string()))?;
+            image(&bytes, "png")
+        }
+    });
+    let _ = fs::remove_file(output);
+    result
 }
 
 fn archive(input: &str) -> Result<ZipArchive<File>, ConvertError> {

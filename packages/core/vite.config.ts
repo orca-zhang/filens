@@ -5,12 +5,12 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
   build: {
     lib: {
-      entry: { index: './src/index.ts', zip: './src/zip.ts', 'archive-volumes': './src/archive-volumes.ts' },
+      entry: { index: './src/index.ts', 'preview-runtime': './src/preview-runtime.ts', zip: './src/zip.ts', 'archive-volumes': './src/archive-volumes.ts' },
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}.js`
     },
     cssCodeSplit: false,
-    sourcemap: true,
+    sourcemap: 'hidden',
     rollupOptions: { external: packageExternals(import.meta.url) }
   },
   test: {
@@ -23,6 +23,7 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       outDir: 'dist',
       entryRoot: 'src',
+      compilerOptions: { declarationMap: false },
       insertTypesEntry: true
     })
   ]

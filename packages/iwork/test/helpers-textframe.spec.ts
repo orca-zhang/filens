@@ -42,6 +42,52 @@ function buildStorage(text: string, attachmentIds: number[]) {
 }
 
 describe('buildTextFrameFromStorage', () => {
+  it('indexes unsorted style changes while preserving duplicate offsets and empty resets', () => {
+    const archive = createArchive([
+      createRecord(1, 'TSWP.CharacterStyleArchive', { charProperties: { bold: true } }),
+      createRecord(2, 'TSWP.CharacterStyleArchive', { charProperties: { italic: true } }),
+      createRecord(3, 'TSWP.ParagraphStyleArchive', { charProperties: { fontSize: 12 }, paraProperties: { alignment: 2 } })
+    ]);
+    const frame = buildTextFrameFromStorage(archive, {
+      text: ['abcd\nEFGH\nijkl'],
+      tableParaStyle: { entries: [
+        { characterIndex: 10 }, { characterIndex: 0, object: { identifier: 3 } }, { characterIndex: 5 }
+      ] },
+      tableCharStyle: { entries: [
+        { characterIndex: 6, object: { identifier: 1 } },
+        { characterIndex: 0, object: { identifier: 1 } },
+        { characterIndex: 2, object: { identifier: 2 } },
+        { characterIndex: 2 },
+        { characterIndex: 5, object: { identifier: 2 } },
+        { characterIndex: 10 }
+      ] }
+    });
+    expect(frame?.paragraphs.map(paragraph => ({ align: paragraph.align, runs: paragraph.runs }))).toMatchObject([
+      { align: 'center', runs: [{ text: 'ab', bold: true, fontSize: 12 }, { text: 'cd', bold: false, italic: false }] },
+      { align: 'center', runs: [{ text: 'E', italic: true, bold: false }, { text: 'FGH', bold: true, italic: false }] },
+      { align: 'center', runs: [{ text: 'ijkl', bold: false, italic: false, fontSize: 12 }] }
+    ]);
+  });
+
+  it('preserves prefix lookup behavior for malformed style offsets', () => {
+    const archive = createArchive([
+      createRecord(1, 'TSWP.CharacterStyleArchive', { charProperties: { bold: true } }),
+      createRecord(2, 'TSWP.CharacterStyleArchive', { charProperties: { italic: true } })
+    ]);
+    const frame = buildTextFrameFromStorage(archive, {
+      text: ['abc\nxyz'],
+      tableCharStyle: { entries: [
+        { characterIndex: 0, object: { identifier: 1 } },
+        { characterIndex: NaN, object: { identifier: 2 } },
+        { characterIndex: 10, object: { identifier: 1 } }
+      ] }
+    });
+    expect(frame?.paragraphs.map(paragraph => paragraph.runs)).toMatchObject([
+      [{ text: 'abc', bold: false, italic: true }],
+      [{ text: 'xyz', bold: false, italic: true }]
+    ]);
+  });
+
   it('renders smart field attachments as visible text', () => {
     const text = 'Link: \uFFFC\nMerge: \uFFFC\nBookmark: \uFFFC\nTOC: \uFFFC';
     const archive = createArchive([

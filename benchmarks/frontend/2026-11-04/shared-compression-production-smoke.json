@@ -1,0 +1,35 @@
+[
+  {
+    "variant": "split",
+    "encryption": [
+      "ZipCrypto",
+      "AES"
+    ],
+    "ole": true,
+    "tiff": [
+      "valid",
+      "corrupt-unused-page"
+    ],
+    "fullPixelHashes": true,
+    "lazyChunks": [
+      "/chunks/zip-encrypted-CH58PL7x.js",
+      "/chunks/office-attachments-D-vVRfMW.js"
+    ],
+    "errors": []
+  },
+  {
+    "variant": "all-in-one",
+    "encryption": [
+      "ZipCrypto",
+      "AES"
+    ],
+    "ole": true,
+    "tiff": [
+      "valid",
+      "corrupt-unused-page"
+    ],
+    "fullPixelHashes": true,
+    "lazyChunks": [],
+    "errors": []
+  }
+]

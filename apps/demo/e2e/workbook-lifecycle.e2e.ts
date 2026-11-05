@@ -1,6 +1,30 @@
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { createWorkbookFixture } from '../../../packages/xlsx/test/fixtures/workbook.mjs';
+import { createColumnStyledWorkbookFixture, createWorkbookFixture } from '../../../packages/xlsx/test/fixtures/workbook.mjs';
+
+test('preserves column, row and explicit cell fonts while appending styled numeric rows', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto('./?view=preview');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'column-styles.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await createColumnStyledWorkbookFixture()) });
+  const rows = page.locator('.xlsxv-table tbody tr'), grid = page.locator('.xlsxv-grid');
+  await expect(rows).toHaveCount(100);
+  const check = async (index: number) => {
+    const cells = rows.nth(index).locator('td');
+    await expect(cells.nth(1)).toHaveText('Names & notes');
+    await expect(cells.nth(0)).toHaveCSS('font-family', /Arial/);
+    await expect(cells.nth(1)).toHaveCSS('font-family', index === 10 ? /Times New Roman/ : /Courier New/);
+    await expect(cells.nth(2)).toHaveCSS('font-family', /Times New Roman/);
+    await expect(cells.nth(7)).toHaveCSS('font-family', /Arial/);
+  };
+  await check(0); await check(10);
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; });
+  await expect(rows).toHaveCount(200);
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; });
+  await expect(rows).toHaveCount(240);
+  await check(239);
+  await expect(rows.last().locator('td').nth(2)).toHaveText('1922');
+  expect(errors).toEqual([]);
+});
 
 test('keeps workbook values/formulas while appending rows and resets scrolling on sheet changes', async ({ page }) => {
   const errors: string[] = [];

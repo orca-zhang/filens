@@ -1,6 +1,6 @@
 import type { ConversionResult } from '@filens/core';
 import MediaWorker from './media-worker?worker&inline';
-import heifWasmUrl from 'libheif-js/libheif-wasm/libheif.wasm?url';
+import heifWasmUrl from '../vendor/libheif/libheif.wasm?url';
 import imageWasmUrl from '../../../wasm/converter-image/dist/converter-image.wasm?url';
 import { throwIfAborted } from './source';
 

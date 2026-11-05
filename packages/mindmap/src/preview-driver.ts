@@ -1,7 +1,7 @@
 import {
-  createDefaultPreviewRoutes,
+  openZipArchive,
   bindPreviewTouchGestures,
-  type FormatDefinition,
+  bindPreviewSvgSelection,
   type MindmapPreviewState,
   type PreviewDriver,
   type PreviewEventMap,
@@ -12,7 +12,6 @@ import {
   type PreviewSession,
   type PreviewSource
 } from '@filens/core';
-import JSZip from 'jszip';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -39,22 +38,7 @@ interface PositionedMindmapNode extends MindmapNode {
   children: PositionedMindmapNode[];
 }
 
-export const MINDMAP_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['mm', 'opml', 'xmind', 'mmap'],
-    family: 'mindmap',
-    driverId: 'mindmap',
-    targetFormat: 'mindmap',
-    contentTypes: [
-      'text/x-opml',
-      'application/x-freemind',
-      'application/x-xmind',
-      'application/vnd.xmind.workbook',
-      'application/x-mindmanager',
-      'application/vnd.mindjet.mindmanager'
-    ]
-  }
-];
+export { MINDMAP_FORMAT_ROUTES, createMindmapPreviewRoutes } from './routes';
 
 const MINDMAP_DIRECT_FORMATS = new Set(['mm', 'opml', 'xmind', 'mmap']);
 
@@ -84,6 +68,7 @@ export class MindmapPreviewSession implements PreviewSession<MindmapPreviewState
   private loadController?: AbortController;
   private removeAbortListener?: () => void;
   private selectedNodeId: string | undefined;
+  private selection?: ReturnType<typeof bindPreviewSvgSelection>;
   private state: MindmapPreviewState;
 
   constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
@@ -257,6 +242,8 @@ export class MindmapPreviewSession implements PreviewSession<MindmapPreviewState
   }
 
   private render(): void {
+    this.selection?.destroy();
+    this.selection = undefined;
     if (!this.document) {
       this.root.replaceChildren();
       return;
@@ -276,7 +263,11 @@ export class MindmapPreviewSession implements PreviewSession<MindmapPreviewState
     svg.setAttribute('role', 'img');
     svg.setAttribute('aria-label', this.document.title ?? 'Mind map preview');
     svg.appendChild(renderLinks(positioned));
-    svg.appendChild(renderNodes(positioned, this.selectedNodeId, (id) => this.selectNode(id)));
+    svg.appendChild(renderNodes(positioned));
+    this.selection = bindPreviewSvgSelection(svg, {
+      selector: '.mindmapv-node', idAttribute: 'data-node-id', onSelect: id => this.selectNode(id)
+    });
+    this.selection.select(this.selectedNodeId);
     shell.appendChild(svg);
 
     const summary = document.createElement('div');
@@ -290,20 +281,9 @@ export class MindmapPreviewSession implements PreviewSession<MindmapPreviewState
   }
 
   selectNode(id?: string): void {
-    if (!id) {
-      this.selectedNodeId = undefined;
-      this.state.selectedNodeId = undefined;
-      this.root.querySelectorAll('.mindmapv-node').forEach((node) => {
-        node.classList.remove('is-selected');
-      });
-      this.emit('statechange', this.state);
-      return;
-    }
-    this.selectedNodeId = id;
-    this.state.selectedNodeId = id;
-    this.root.querySelectorAll('.mindmapv-node').forEach((node) => {
-      node.classList.toggle('is-selected', node.getAttribute('data-node-id') === id);
-    });
+    this.selectedNodeId = id || undefined;
+    this.state.selectedNodeId = this.selectedNodeId;
+    this.selection?.select(this.selectedNodeId);
     this.emit('statechange', this.state);
   }
 
@@ -330,6 +310,8 @@ export class MindmapPreviewSession implements PreviewSession<MindmapPreviewState
   }
 
   private releaseDocument(): void {
+    this.selection?.destroy();
+    this.selection = undefined;
     this.resizeObserver?.disconnect();
     this.canvasSize = undefined;
     this.document = null;
@@ -354,13 +336,6 @@ export function createMindmapPreviewDriver(): PreviewDriver<MindmapPreviewState>
   };
 }
 
-export function createMindmapPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...MINDMAP_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => MINDMAP_DIRECT_FORMATS.has(extension)))
-  ];
-}
-
 export function loadMindmapDocument(source: string, format?: string): MindmapDocument {
   const document = new DOMParser().parseFromString(source, 'application/xml');
   if (document.getElementsByTagName('parsererror')[0]) {
@@ -379,18 +354,18 @@ export function loadMindmapDocument(source: string, format?: string): MindmapDoc
 
 export async function loadXmindDocument(source: ArrayBuffer, options: { signal?: AbortSignal } = {}): Promise<MindmapDocument> {
   checkAborted(options.signal);
-  const archive = await JSZip.loadAsync(source);
+  const archive = await openZipArchive(new Uint8Array(source), options);
   checkAborted(options.signal);
-  const contentJson = archive.file('content.json');
+  const contentJson = archive.get('content.json');
   if (contentJson) {
-    const text = await contentJson.async('text');
+    const text = await contentJson.text();
     checkAborted(options.signal);
     return parseXmindJsonDocument(text);
   }
 
-  const contentXml = archive.file('content.xml');
+  const contentXml = archive.get('content.xml');
   if (contentXml) {
-    const text = await contentXml.async('text');
+    const text = await contentXml.text();
     checkAborted(options.signal);
     return parseXmindXmlDocument(text);
   }
@@ -400,16 +375,16 @@ export async function loadXmindDocument(source: ArrayBuffer, options: { signal?:
 
 export async function loadMindmanagerDocument(source: ArrayBuffer, options: { signal?: AbortSignal } = {}): Promise<MindmapDocument> {
   checkAborted(options.signal);
-  const archive = await JSZip.loadAsync(source);
+  const archive = await openZipArchive(new Uint8Array(source), options);
   checkAborted(options.signal);
   const documentFile =
-    archive.file('Document.xml') ??
-    archive.file('document.xml') ??
-    archive.file(/(^|\/)document\.xml$/i)[0];
+    archive.get('Document.xml') ??
+    archive.get('document.xml') ??
+    [...archive.values()].find(entry => !entry.directory && /(^|\/)document\.xml$/i.test(entry.name));
   if (!documentFile) {
     throw new Error('MindManager package is missing Document.xml.');
   }
-  const text = await documentFile.async('text');
+  const text = await documentFile.text();
   checkAborted(options.signal);
   return parseMindmanagerXmlDocument(text);
 }
@@ -420,14 +395,15 @@ function parseMindmanagerXmlDocument(source: string): MindmapDocument {
     throw new Error('MindManager Document.xml is invalid.');
   }
 
-  const topics = Array.from(document.getElementsByTagName('*')).filter((element) => localName(element) === 'topic');
-  if (!topics.length) {
+  let rootTopic: Element | undefined;
+  for (const element of document.getElementsByTagName('*')) {
+    if (localName(element) === 'topic') { rootTopic = element; break; }
+  }
+  if (!rootTopic) {
     throw new Error('MindManager Document.xml does not contain topic nodes.');
   }
 
-  const rootTopic =
-    topics.find((topic) => !hasAncestorTopic(topic)) ??
-    topics[0];
+  // The first topic in document order cannot have a preceding topic ancestor.
   const root = parseMindmanagerTopic(rootTopic, 'mmap-root');
 
   return {
@@ -435,17 +411,6 @@ function parseMindmanagerXmlDocument(source: string): MindmapDocument {
     root,
     nodeCount: countNodes(root)
   };
-}
-
-function hasAncestorTopic(element: Element): boolean {
-  let current: Element | null = element.parentElement;
-  while (current) {
-    if (localName(current) === 'topic') {
-      return true;
-    }
-    current = current.parentElement;
-  }
-  return false;
 }
 
 function parseMindmanagerTopic(element: Element, fallbackId: string): MindmapNode {
@@ -467,25 +432,17 @@ function parseMindmanagerTopic(element: Element, fallbackId: string): MindmapNod
 
 function findDirectChildTopics(topic: Element): Element[] {
   const direct: Element[] = [];
-
-  const visit = (node: Element): void => {
-    for (const child of Array.from(node.children)) {
-      if (localName(child) === 'topic') {
-        direct.push(child);
-        continue;
-      }
-      if (containsTopicDescendants(child)) {
-        visit(child);
-      }
-    }
-  };
-
-  visit(topic);
+  let node = topic.firstElementChild;
+  // Walk wrappers once in document order, stopping at each child topic. Its
+  // descendants belong to that topic and are visited by its own parse call.
+  while (node) {
+    if (localName(node) === 'topic') direct.push(node);
+    else if (node.firstElementChild) { node = node.firstElementChild; continue; }
+    while (node !== topic && !node.nextElementSibling) node = node.parentElement!;
+    if (node === topic) break;
+    node = node.nextElementSibling;
+  }
   return direct;
-}
-
-function containsTopicDescendants(node: Element): boolean {
-  return Array.from(node.getElementsByTagName('*')).some((child) => localName(child) === 'topic');
 }
 
 function getAttributeCaseInsensitive(element: Element, name: string): string | undefined {
@@ -718,26 +675,16 @@ function renderLinks(root: PositionedMindmapNode): SVGGElement {
   return group;
 }
 
-function renderNodes(root: PositionedMindmapNode, selectedNodeId: string | undefined, onSelect: (id: string) => void): SVGGElement {
+function renderNodes(root: PositionedMindmapNode): SVGGElement {
   const group = document.createElementNS(SVG_NS, 'g');
   group.classList.add('mindmapv-nodes');
   walkPositioned(root, (node) => {
     const item = document.createElementNS(SVG_NS, 'g');
     item.classList.add('mindmapv-node');
-    if (node.id === selectedNodeId) {
-      item.classList.add('is-selected');
-    }
     item.setAttribute('data-node-id', node.id);
     item.setAttribute('tabindex', '0');
     item.setAttribute('role', 'button');
     item.setAttribute('aria-label', node.text);
-    item.addEventListener('click', () => onSelect(node.id));
-    item.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        onSelect(node.id);
-      }
-    });
 
     const rect = document.createElementNS(SVG_NS, 'rect');
     rect.setAttribute('x', String(node.x));

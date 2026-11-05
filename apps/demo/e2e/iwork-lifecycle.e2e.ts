@@ -85,7 +85,7 @@ test('keeps the active document when an obsolete Blob completes after replacemen
 test('uploads all native iWork formats through the demo', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await page.goto('./?view=preview');
   for (const sample of ['a.numbers', 'a.pages', 'filens-weekend.key']) {
-    await page.locator('input[type=file]').setInputFiles(resolve('apps/demo/public/samples/' + sample));
+    await page.locator('.wb-upload input[type=file]').setInputFiles(resolve('apps/demo/public/samples/' + sample));
     await expect(page.locator('.wb-preview-title strong')).toHaveText(sample);
     await expect(page.locator(sample.endsWith('numbers') ? '.xlsxv-sheet-tabs' : '.iworkv-page-shell').first()).toBeVisible();
     await expect(page.locator('.wb-note.is-error')).toHaveCount(0);

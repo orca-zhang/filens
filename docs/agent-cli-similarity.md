@@ -63,7 +63,7 @@ This is useful for variants of the same image. Heavy cropping, rotation, mirrori
 
 ## Scope, output and completeness
 
-Defaults are 2000 candidate files, depth 32 and 100 returned groups. Hidden names are excluded unless `--include-hidden` is set. `.git`, `node_modules`, `target` and `dist` subdirectories remain excluded; explicitly choosing one as the scan root still allows scanning its other contents. Symbolic links are not followed. Directory discovery uses macOS native FTS or the embedded hdrw WASI walker on Windows/Linux.
+Defaults are 2000 candidate files, depth 32 and 100 returned groups. Hidden names are excluded unless `--include-hidden` is set. `.git`, `node_modules`, `target` and `dist` subdirectories remain excluded; explicitly choosing one as the scan root still allows scanning its other contents. Symbolic links are not followed. Directory discovery uses macOS native FTS, Windows NTFS batched directory metadata with a native fallback, or Linux native traversal.
 
 Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV. Group members contain paths relative to `source.path`, byte sizes, and either full SHA-256 hashes for duplicates or orientation-corrected dimensions, perceptual hashes and distances for images.
 
@@ -88,6 +88,6 @@ npm run build:agent:lite
 npm run test:agent:similarity
 ```
 
-Real CLI/WASM checks cover full-file duplicates, matching prefixes with different contents, resizing/recompression, flat colors, transparency, JPEG/EXIF, links, limits, corrupt images, Chinese/English intents, JSON requests and eight output formats. Core tests exercise image codecs and reference-based grouping. This covers the two core scan modes rather than Czkawka's complete cleanup, video or audio feature set. The hdrw path was exercised on macOS; that does not establish native Windows/Linux execution results.
+Real CLI/WASM checks cover full-file duplicates, matching prefixes with different contents, resizing/recompression, flat colors, transparency, JPEG/EXIF, links, limits, corrupt images, Chinese/English intents, JSON requests and eight output formats. Core tests exercise image codecs and reference-based grouping. This covers the two core scan modes rather than Czkawka's complete cleanup, video or audio feature set. Native traversal tests cover scope, limits, links and multiple NTFS batches. Windows execution requires the Windows CI runner; macOS checks and cross-compilation do not establish Windows runtime performance.
 
 In the 2026-10-30 macOS arm64 local build comparison, the native executable grew by 50272 bytes and gzip WASM resources by 234173 bytes, totaling about **278 KiB**. The baseline is the existing build recorded at the start of the implementation. This measures the executable plus compressed WASM resources, excludes OCR, license text and npm packaging, and is not an npm download-tarball delta. See the [size and verification record](agent-cli-similarity-size.json); the full local record is `dist/agent-similarity/size-comparison.json`.

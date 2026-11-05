@@ -1,0 +1,105 @@
+{
+  "status": "aborted-preliminary-run-excluded-from-final-benchmark",
+  "reason": "Standalone functional preview checks were still running. Stopped this setup run and restarted all nine rounds after the checks finished; no timing-based sample selection.",
+  "observations": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 201,
+      "cachedMedianMs": 160,
+      "samplesMs": [
+        201,
+        179,
+        157,
+        160
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 1,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 642,
+      "cachedMedianMs": 427,
+      "samplesMs": [
+        642,
+        435,
+        378,
+        427
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 1,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 326,
+      "cachedMedianMs": 111,
+      "samplesMs": [
+        326,
+        111,
+        108,
+        113
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 2,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 670,
+      "cachedMedianMs": 434,
+      "samplesMs": [
+        670,
+        434,
+        393,
+        445
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 2,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 320,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        320,
+        110,
+        111,
+        110
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 212,
+      "cachedMedianMs": 160,
+      "samplesMs": [
+        212,
+        164,
+        154,
+        160
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 3,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 334,
+      "cachedMedianMs": 111,
+      "samplesMs": [
+        334,
+        112,
+        110,
+        111
+      ]
+    }
+  ],
+  "opens": 28
+}

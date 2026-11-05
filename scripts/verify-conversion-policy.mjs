@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const expectedConversions = [
+  ...['dib', 'cur', 'pcx', 'exr', 'jxl', 'qoi', 'ff'].map(source => [source, 'png']),
+  ['dwg', 'dxf'],
+  ...['tif', 'tiff', 'tga', 'pgm', 'pbm', 'pnm', 'dds', 'hdr'].map(source => [source, 'png']),
   ['psd', 'png'],
   ['psb', 'png'],
   ['ai', 'pdf'],
@@ -316,7 +319,7 @@ const forbiddenDefaultSources = [
 const expectedConversionSources = new Set(expectedConversions.map(([sourceFormat]) => sourceFormat));
 const forbiddenManifestSources = forbiddenDefaultSources.filter((sourceFormat) => !expectedConversionSources.has(sourceFormat));
 
-const allowedTargets = new Set(['pptx', 'docx', 'xlsx', 'jpg', 'png', 'pdf']);
+const allowedTargets = new Set(['dxf', 'pptx', 'docx', 'xlsx', 'jpg', 'png', 'pdf']);
 const rawSources = new Set(['dng', 'cr2', 'cr3', 'nef', 'nrw', 'arw', 'sr2', 'srf', 'orf', 'rw2', 'rwl', 'raf', 'kdc', 'x3f', 'pef', 'srw', 'erf', 'mef', 'mos', 'mrw', '3fr', 'iiq']);
 const failures = [];
 let checkCount = 0;

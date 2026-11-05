@@ -1,0 +1,63 @@
+{
+  "measuredAt": "2026-11-04T15:35:02.559Z",
+  "node": "v20.20.2",
+  "checks": [
+    {
+      "mode": "bm25",
+      "query": "budget approval",
+      "resultSha256": "36d190b102b4fb17edce076d43a823c782642cc3f5a966dbe296011aaf851388"
+    },
+    {
+      "mode": "files",
+      "query": "budget approval",
+      "resultSha256": "d1661859e06441e00f3b618524443a881de80571c008fc5288f127fa54608977"
+    },
+    {
+      "mode": "exact",
+      "query": "Budget approval",
+      "resultSha256": "971b2902a9202ab05fa8f5aaf83b8adb8ed7ba42e7a29b454a019b047af135cd"
+    },
+    {
+      "mode": "bm25",
+      "query": "q",
+      "resultSha256": "01106f6e9341543cc41269de525f929f26430335e6cf5ae464df7c3443059bf7"
+    },
+    {
+      "mode": "bm25",
+      "query": "123.45",
+      "resultSha256": "eafbea67013cac4b0c3495c781424880c522f3f3ecb37f5d391e4c10fb64762d"
+    },
+    {
+      "mode": "bm25",
+      "query": "预算 审批",
+      "resultSha256": "57ccc18243bf7f74950f3db4b20f6e56a4092e2e9c22d1135ffb0e6df0df6cdb"
+    }
+  ],
+  "simdLoads": 1,
+  "scalarFallbacks": 0,
+  "instructionAudit": {
+    "scalar": {
+      "sha256": "0ff443b8afa5d26b8b3a4a20a6d04315970d40b7f188c59aea5f3d3a8820d000",
+      "simdInstructions": {}
+    },
+    "simd": {
+      "sha256": "dabbeb136fbf9698653346c72594d57fc6ea5daa2662bc14c98700827f908a76",
+      "simdInstructions": {
+        "v128.store": 12821,
+        "v128.const": 1690,
+        "v128.load": 10624,
+        "i8x16.bitmask": 3,
+        "v128.or": 3,
+        "v128.and": 5,
+        "i8x16.lt_u": 5,
+        "i8x16.add": 5,
+        "i8x16.ne": 1
+      }
+    }
+  },
+  "sourceHashes": {
+    "packages/converter-client/src/wasi-runner.ts": "338f4791afef8998760c3445734e825a1c7858368f019c7f61fc6160ede5c372",
+    "packages/converter-client/src/wasm-simd.ts": "fcebc33c5bf3d1b09d9b2c56e5ee339fda34794edd10534d65abeb2ac20fa572",
+    "scripts/test-search-simd.mjs": "57c4d54c8d582e422bb644f022c3a3ef0218b99a650cd8e949e55cbbfcb16477"
+  }
+}

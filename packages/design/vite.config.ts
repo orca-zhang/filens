@@ -1,24 +1,19 @@
+import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [dts({ insertTypesEntry: true })],
+  plugins: [dts({ compilerOptions: { declarationMap: false }, insertTypesEntry: true })],
   build: {
     cssCodeSplit: false,
     lib: {
-      entry: './src/index.ts',
+      entry: { index: './src/index.ts', routes: './src/routes.ts' },
       formats: ['es'],
-      fileName: () => 'index.js'
+      fileName: (_format, name) => `${name}.js`
     },
-    sourcemap: true,
+    sourcemap: 'hidden',
     rollupOptions: {
-      external: [
-        '@filens/cad',
-        '@filens/core',
-        '@filens/diagram',
-        '@filens/mindmap',
-        '@filens/model3d'
-      ]
+      external: packageExternals(import.meta.url)
     }
   }
 });

@@ -1,8 +1,9 @@
 import {
-  createDefaultPreviewRoutes,
+  openZipArchive,
   bindPreviewTouchGestures,
+  bindPreviewSvgSelection,
   type DiagramPreviewState,
-  type FormatDefinition,
+  type ZipEntry,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -13,7 +14,6 @@ import {
   type PreviewSource
 } from '@filens/core';
 import { inflateSync, strFromU8, unzlibSync } from 'fflate';
-import JSZip from 'jszip';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -50,15 +50,7 @@ export interface DiagramDocument {
   pages: DiagramPage[];
 }
 
-export const DIAGRAM_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['drawio', 'dio', 'vdx', 'vsdx'],
-    family: 'diagram',
-    driverId: 'diagram',
-    targetFormat: 'diagram',
-    contentTypes: ['application/vnd.jgraph.mxfile', 'application/vnd.visio']
-  }
-];
+export { DIAGRAM_FORMAT_ROUTES, createDiagramPreviewRoutes } from './routes';
 
 const DIAGRAM_DIRECT_FORMATS = new Set(['drawio', 'dio', 'vdx', 'vsdx']);
 const VISIO_UNIT_SCALE = 96;
@@ -92,6 +84,7 @@ export class DiagramPreviewSession implements PreviewSession<DiagramPreviewState
   private removeAbortListener?: () => void;
   private pageIndex = 0;
   private selectedElementId: string | undefined;
+  private selection?: ReturnType<typeof bindPreviewSvgSelection>;
   private state: DiagramPreviewState;
 
   constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
@@ -297,6 +290,8 @@ export class DiagramPreviewSession implements PreviewSession<DiagramPreviewState
   }
 
   private render(): void {
+    this.selection?.destroy();
+    this.selection = undefined;
     const page = this.document?.pages[this.pageIndex];
     if (!page) {
       this.root.replaceChildren();
@@ -320,7 +315,10 @@ export class DiagramPreviewSession implements PreviewSession<DiagramPreviewState
     svg.setAttribute('role', 'img');
     svg.setAttribute('aria-label', page.name);
     svg.appendChild(createSvgDefinitions());
-    svg.append(renderEdges(page, (id) => this.selectElement(id)), renderNodes(page, (id) => this.selectElement(id)));
+    svg.append(renderEdges(page), renderNodes(page));
+    this.selection = bindPreviewSvgSelection(svg, {
+      selector: '.diagramv-node, .diagramv-edge', idAttribute: 'data-element-id', onSelect: id => this.selectElement(id)
+    });
     wrapper.appendChild(svg);
     this.resizeObserver?.disconnect();
     this.root.replaceChildren(summary, wrapper);
@@ -335,9 +333,7 @@ export class DiagramPreviewSession implements PreviewSession<DiagramPreviewState
   private selectElement(id: string, emit = true): void {
     this.selectedElementId = id;
     this.state.selectedElementId = id;
-    this.root.querySelectorAll('.diagramv-node, .diagramv-edge').forEach((element) => {
-      element.classList.toggle('is-selected', element.getAttribute('data-element-id') === id);
-    });
+    this.selection?.select(id);
     if (emit) {
       this.emit('statechange', this.state);
     }
@@ -366,6 +362,8 @@ export class DiagramPreviewSession implements PreviewSession<DiagramPreviewState
   }
 
   private releaseDocument(): void {
+    this.selection?.destroy();
+    this.selection = undefined;
     this.resizeObserver?.disconnect();
     this.canvasSize = undefined;
     this.document = null;
@@ -393,13 +391,6 @@ export function createDiagramPreviewDriver(): PreviewDriver<DiagramPreviewState>
   };
 }
 
-export function createDiagramPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  return [
-    ...DIAGRAM_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => DIAGRAM_DIRECT_FORMATS.has(extension)))
-  ];
-}
-
 export function loadDrawioDiagram(source: string): DiagramDocument {
   const document = new DOMParser().parseFromString(source, 'application/xml');
   if (document.getElementsByTagName('parsererror')[0]) {
@@ -422,7 +413,7 @@ export function loadDrawioDiagram(source: string): DiagramDocument {
 
 export async function loadVsdxDiagram(source: ArrayBuffer, options: { signal?: AbortSignal } = {}): Promise<DiagramDocument> {
   checkAborted(options.signal);
-  const archive = await JSZip.loadAsync(source);
+  const archive = await openZipArchive(new Uint8Array(source), options);
   checkAborted(options.signal);
   const pageEntries = await readVsdxPageEntries(archive, options.signal);
   checkAborted(options.signal);
@@ -434,7 +425,7 @@ export async function loadVsdxDiagram(source: ArrayBuffer, options: { signal?: A
   const context: DiagramParseContext = {};
   for (let index = 0; index < pageEntries.length; index += 1) {
     const entry = pageEntries[index]!;
-    const xml = await entry.file.async('text');
+    const xml = await entry.file.text();
     checkAborted(options.signal);
     const page = parseVisioPage(xml, index, context, entry.metadata);
     if (page.nodes.length || page.edges.length) {
@@ -451,22 +442,22 @@ export async function loadVsdxDiagram(source: ArrayBuffer, options: { signal?: A
 }
 
 interface VsdxPageEntry {
-  file: JSZip.JSZipObject;
+  file: ZipEntry;
   metadata?: {
     id?: string;
     name?: string;
   };
 }
 
-async function readVsdxPageEntries(archive: JSZip, signal?: AbortSignal): Promise<VsdxPageEntry[]> {
-  const fallbackFiles = archive.file(/^visio\/pages\/page\d+\.xml$/i)
+async function readVsdxPageEntries(archive: Map<string, ZipEntry>, signal?: AbortSignal): Promise<VsdxPageEntry[]> {
+  const fallbackFiles = [...archive.values()].filter(entry => !entry.directory && /^visio\/pages\/page\d+\.xml$/i.test(entry.name))
     .sort((left, right) => left.name.localeCompare(right.name, undefined, { numeric: true }));
-  const manifest = archive.file('visio/pages/pages.xml');
+  const manifest = archive.get('visio/pages/pages.xml');
   if (!manifest) {
     return fallbackFiles.map((file) => ({ file }));
   }
 
-  const xml = await manifest.async('text');
+  const xml = await manifest.text();
   checkAborted(signal);
   const document = new DOMParser().parseFromString(xml, 'application/xml');
   if (document.getElementsByTagName('parsererror')[0]) {
@@ -482,7 +473,7 @@ async function readVsdxPageEntries(archive: JSZip, signal?: AbortSignal): Promis
         .find((child) => localName(child) === 'rel')
         ?.getAttribute('r:id');
       const target = relationshipId ? relationships.get(relationshipId) : undefined;
-      const file = target ? archive.file(resolveVsdxPageTarget(target)) : fallbackFiles[index];
+      const file = target ? archive.get(resolveVsdxPageTarget(target)) : fallbackFiles[index];
       if (!file) {
         return undefined;
       }
@@ -499,13 +490,13 @@ async function readVsdxPageEntries(archive: JSZip, signal?: AbortSignal): Promis
   return entries.length ? entries : fallbackFiles.map((file) => ({ file }));
 }
 
-async function readVsdxPageRelationships(archive: JSZip, signal?: AbortSignal): Promise<Map<string, string>> {
+async function readVsdxPageRelationships(archive: Map<string, ZipEntry>, signal?: AbortSignal): Promise<Map<string, string>> {
   const relationships = new Map<string, string>();
-  const relsFile = archive.file('visio/pages/_rels/pages.xml.rels');
+  const relsFile = archive.get('visio/pages/_rels/pages.xml.rels');
   if (!relsFile) {
     return relationships;
   }
-  const xml = await relsFile.async('text');
+  const xml = await relsFile.text();
   checkAborted(signal);
   const document = new DOMParser().parseFromString(xml, 'application/xml');
   if (document.getElementsByTagName('parsererror')[0]) {
@@ -579,6 +570,9 @@ function parseVisioPageElement(root: Element, index: number, context: DiagramPar
   for (const shape of shapeElements) {
     const id = shape.getAttribute('ID') ?? `shape-${nodes.length + edges.length + 1}`;
     const kind = shape.getAttribute('Type') ?? '';
+    // Group descendants are already in shapeElements. These containers never
+    // produce an item, so do not rescan their entire subtree for cells/text.
+    if (kind === 'Foreign' || kind === 'Group') continue;
     const cells = readVisioCells(shape, !!context.legacy);
     const beginX = visioCellNumber(cells, 'BeginX');
     const endX = visioCellNumber(cells, 'EndX');
@@ -589,9 +583,6 @@ function parseVisioPageElement(root: Element, index: number, context: DiagramPar
       if (node.width > 0 && node.height > 0) {
         nodes.push(node);
       }
-      continue;
-    }
-    if (kind === 'Foreign' || kind === 'Group') {
       continue;
     }
     const edge = parseVisioEdge(cells, id, label, pageHeight, connection);
@@ -809,7 +800,7 @@ export function decodeCompressedDrawioPayload(payload: string): string {
   return decodeURIComponent(inflated);
 }
 
-function renderNodes(page: DiagramPage, onSelect: (id: string) => void): SVGGElement {
+function renderNodes(page: DiagramPage): SVGGElement {
   const group = document.createElementNS(SVG_NS, 'g');
   group.classList.add('diagramv-nodes');
   for (const node of page.nodes) {
@@ -819,13 +810,6 @@ function renderNodes(page: DiagramPage, onSelect: (id: string) => void): SVGGEle
     item.setAttribute('tabindex', '0');
     item.setAttribute('role', 'button');
     item.setAttribute('aria-label', node.label || node.id);
-    item.addEventListener('click', () => onSelect(node.id));
-    item.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        onSelect(node.id);
-      }
-    });
 
     const style = parseDrawioStyle(node.style);
     const shape = createNodeShape(node, style);
@@ -863,7 +847,7 @@ function createSvgDefinitions(): SVGDefsElement {
   return defs;
 }
 
-function renderEdges(page: DiagramPage, onSelect: (id: string) => void): SVGGElement {
+function renderEdges(page: DiagramPage): SVGGElement {
   const group = document.createElementNS(SVG_NS, 'g');
   group.classList.add('diagramv-edges');
   const nodeMap = new Map(page.nodes.map((node) => [node.id, node]));
@@ -874,13 +858,6 @@ function renderEdges(page: DiagramPage, onSelect: (id: string) => void): SVGGEle
     item.setAttribute('tabindex', '0');
     item.setAttribute('role', 'button');
     item.setAttribute('aria-label', edge.label || edge.id);
-    item.addEventListener('click', () => onSelect(edge.id));
-    item.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        onSelect(edge.id);
-      }
-    });
 
     const points = resolveEdgePath(edge, nodeMap);
     const style = parseDrawioStyle(edge.style);

@@ -1,0 +1,840 @@
+{
+  "measuredAt": "2026-11-05T01:32:54.951Z",
+  "startedAt": "2026-11-05T01:27:31.744Z",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "cores": 12,
+    "memoryBytes": 25769803776,
+    "osRelease": "25.6.0",
+    "node": "24.22.1"
+  },
+  "plugin": "dsh-filens@0.1.3",
+  "status": "complete",
+  "rounds": 9,
+  "timedOpens": 108,
+  "runtimeBuilds": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "entrySHA256": "4714d0881407d652dd7706930943d0963c1ea609161d607910d54153950ec254"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "entrySHA256": "712ea099617a2b310a1e449f0b345123433cfa1187409a00ac42e954dd9a320d"
+    }
+  ],
+  "environments": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 1,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 1,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 2,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 2,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 3,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 3,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 4,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 4,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 5,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 5,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 6,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 6,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 7,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 7,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 8,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 8,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 9,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 9,
+      "dsh": "0.2.1-rc.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.7.0"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Cosmic Atlas.pdf",
+      "bytes": 689455,
+      "sha256": "7f085e7cfcb77645a9e296cd527150037868f7e1ead61fddf6d1a316b9576a69"
+    }
+  ],
+  "method": "A fresh DSH process per renderer in each round, rotating renderer order between rounds. In the same workspace, open the PDF, four times each, closing the document tab between opens. Timing starts immediately before sidebar.openResource and ends after ready content and two animation frames. Builtin uses its native PDF preview and visible PDF canvas, with no Office conversion; Plugin timings wait for their actual ready content (a direct DOM viewer or an iframe in older packages). No model calls.",
+  "cache": "First is the median of the first opening of each file in each fresh process; PDF is the first document opened in that process. Cached median pools the next three opens per process. OS filesystem and persistent application caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup.",
+  "limits": "One authored PDF on one macOS arm64 machine. This measures latency, not fidelity; results are not a guarantee for other files or platforms. The edited walkthrough GIF is not benchmark evidence.",
+  "runner": {
+    "script": "scripts/benchmark-dsh-office-preview.mjs",
+    "scriptSHA256": "97e94959f0fa4921fcef9f0e0b60df4ef5ed9c0c705940c4cdc2f07a524411e5",
+    "launchHelperSHA256": "bceb9cd7337b34586c641d82d83f57ec54af38090127a48255288a3f471b25d3",
+    "execution": "Independent one-renderer/one-round invocations, externally ordered filens/previous/builtin, rotating each round. A new Desktop process each invocation. 150-second watchdog per invocation; no retries or samples removed.",
+    "failures": []
+  },
+  "candidatePackage": {
+    "file": "dist/release-v0.6.4/dsh-next/history/dsh-filens-0.1.3-format-loading.tgz",
+    "sha256": "ce43a7fd7512d10fe0cffd23f6d83c0bb0aec283c5f167df39fb1b9bd102c7b2"
+  },
+  "results": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 220,
+      "cachedMedianMs": 159,
+      "freshProcessRangeMs": [
+        213,
+        227
+      ],
+      "cachedRangeMs": [
+        147,
+        180
+      ],
+      "freshProcessSamplesMs": [
+        214,
+        220,
+        226,
+        226,
+        223,
+        213,
+        215,
+        214,
+        227
+      ],
+      "cachedSamplesMs": [
+        163,
+        159,
+        152,
+        162,
+        160,
+        150,
+        179,
+        160,
+        148,
+        174,
+        159,
+        148,
+        178,
+        161,
+        148,
+        180,
+        158,
+        150,
+        179,
+        158,
+        150,
+        176,
+        159,
+        149,
+        180,
+        157,
+        147
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 682,
+      "cachedMedianMs": 444,
+      "freshProcessRangeMs": [
+        678,
+        696
+      ],
+      "cachedRangeMs": [
+        393,
+        482
+      ],
+      "freshProcessSamplesMs": [
+        678,
+        694,
+        694,
+        680,
+        696,
+        682,
+        680,
+        692,
+        680
+      ],
+      "cachedSamplesMs": [
+        465,
+        409,
+        444,
+        464,
+        409,
+        474,
+        464,
+        393,
+        441,
+        482,
+        394,
+        440,
+        465,
+        393,
+        445,
+        464,
+        409,
+        442,
+        481,
+        409,
+        442,
+        464,
+        409,
+        460,
+        464,
+        426,
+        460
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 331,
+      "cachedMedianMs": 111,
+      "freshProcessRangeMs": [
+        324,
+        339
+      ],
+      "cachedRangeMs": [
+        109,
+        127
+      ],
+      "freshProcessSamplesMs": [
+        324,
+        331,
+        328,
+        339,
+        339,
+        330,
+        331,
+        338,
+        330
+      ],
+      "cachedSamplesMs": [
+        126,
+        126,
+        126,
+        109,
+        110,
+        111,
+        109,
+        110,
+        111,
+        109,
+        110,
+        110,
+        127,
+        126,
+        126,
+        109,
+        110,
+        111,
+        109,
+        110,
+        111,
+        126,
+        126,
+        127,
+        126,
+        127,
+        126
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 1,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 214,
+      "cachedMedianMs": 159,
+      "samplesMs": [
+        214,
+        163,
+        159,
+        152
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 1,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 678,
+      "cachedMedianMs": 444,
+      "samplesMs": [
+        678,
+        465,
+        409,
+        444
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 1,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 324,
+      "cachedMedianMs": 126,
+      "samplesMs": [
+        324,
+        126,
+        126,
+        126
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 2,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 694,
+      "cachedMedianMs": 464,
+      "samplesMs": [
+        694,
+        464,
+        409,
+        474
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 2,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 331,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        331,
+        109,
+        110,
+        111
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 2,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 220,
+      "cachedMedianMs": 160,
+      "samplesMs": [
+        220,
+        162,
+        160,
+        150
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 3,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 328,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        328,
+        109,
+        110,
+        111
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 3,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 226,
+      "cachedMedianMs": 160,
+      "samplesMs": [
+        226,
+        179,
+        160,
+        148
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 3,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 694,
+      "cachedMedianMs": 441,
+      "samplesMs": [
+        694,
+        464,
+        393,
+        441
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 4,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 226,
+      "cachedMedianMs": 159,
+      "samplesMs": [
+        226,
+        174,
+        159,
+        148
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 4,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 680,
+      "cachedMedianMs": 440,
+      "samplesMs": [
+        680,
+        482,
+        394,
+        440
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 4,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 339,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        339,
+        109,
+        110,
+        110
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 5,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 696,
+      "cachedMedianMs": 445,
+      "samplesMs": [
+        696,
+        465,
+        393,
+        445
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 5,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 339,
+      "cachedMedianMs": 126,
+      "samplesMs": [
+        339,
+        127,
+        126,
+        126
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 5,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 223,
+      "cachedMedianMs": 161,
+      "samplesMs": [
+        223,
+        178,
+        161,
+        148
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 6,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 330,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        330,
+        109,
+        110,
+        111
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 6,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 213,
+      "cachedMedianMs": 158,
+      "samplesMs": [
+        213,
+        180,
+        158,
+        150
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 6,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 682,
+      "cachedMedianMs": 442,
+      "samplesMs": [
+        682,
+        464,
+        409,
+        442
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 7,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 215,
+      "cachedMedianMs": 158,
+      "samplesMs": [
+        215,
+        179,
+        158,
+        150
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 7,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 680,
+      "cachedMedianMs": 442,
+      "samplesMs": [
+        680,
+        481,
+        409,
+        442
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 7,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 331,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        331,
+        109,
+        110,
+        111
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 8,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 692,
+      "cachedMedianMs": 460,
+      "samplesMs": [
+        692,
+        464,
+        409,
+        460
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 8,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 338,
+      "cachedMedianMs": 126,
+      "samplesMs": [
+        338,
+        126,
+        126,
+        127
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 8,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 214,
+      "cachedMedianMs": 159,
+      "samplesMs": [
+        214,
+        176,
+        159,
+        149
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in PDF",
+      "round": 9,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 330,
+      "cachedMedianMs": 126,
+      "samplesMs": [
+        330,
+        126,
+        127,
+        126
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.3",
+      "round": 9,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 227,
+      "cachedMedianMs": 157,
+      "samplesMs": [
+        227,
+        180,
+        157,
+        147
+      ]
+    },
+    {
+      "renderer": "previous",
+      "plugin": "dsh-filens@0.1.2",
+      "round": 9,
+      "name": "Cosmic Atlas.pdf",
+      "firstMs": 680,
+      "cachedMedianMs": 460,
+      "samplesMs": [
+        680,
+        464,
+        426,
+        460
+      ]
+    }
+  ]
+}

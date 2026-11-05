@@ -50,7 +50,7 @@ filens read '资料.zip!/images.tar.gz!/invoice.png' --layout --format yaml
 
 ## 范围、临时文件和部分结果
 
-目录发现继续使用 macOS FTS 或 Windows/Linux 的 hdrw WASI。所有 ZIP/TAR/GZIP 解析和嵌套策略均在共享前端核心，CLI 只负责调度和结果映射。Office 等复合文档继续按自身格式读取，不能把 DOCX 内部的 XML 当成普通 ZIP 成员返回。
+目录发现使用 macOS FTS、Windows NTFS 批量目录元数据（不支持时回退原生遍历）或 Linux 原生遍历。所有 ZIP/TAR/GZIP 解析和嵌套策略均在共享前端核心，CLI 只负责调度和结果映射。Office 等复合文档继续按自身格式读取，不能把 DOCX 内部的 XML 当成普通 ZIP 成员返回。
 
 搜索不建立持久索引或解压目录，不新增来源哈希。需要正文或继续展开的成员写入请求临时目录中生成的平坦文件名，用完立即移除；嵌套时只保留尚在使用的父容器。请求结束后清理剩余协议文件。解包过程不使用条目路径创建文件夹，不跟随符号链接或硬链接；绝对路径、`..` 路径和重复成员名等问题会记录错误。
 

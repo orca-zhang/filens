@@ -18,6 +18,9 @@ mod panorama;
 mod ppm;
 mod icons;
 mod design;
+mod graphics;
+#[cfg(feature = "format-detection")]
+mod format_detection;
 #[cfg(feature = "postscript")]
 mod postscript;
 mod office;
@@ -390,6 +393,11 @@ fn converter_main() {
     };
 
     #[cfg(feature = "text-extraction")]
+    if request.operation == "inspect-file" && parse_error.is_none() {
+        text::inspect_file(&request, started);
+        return;
+    }
+    #[cfg(feature = "text-extraction")]
     if request.operation == "text-capabilities" && parse_error.is_none() {
         text::capabilities(&request, started);
         return;
@@ -542,6 +550,12 @@ fn converter_main() {
                 OPENXML_WARNING,
                 normalize_package(&request.input, &request.output, &request.target),
             )
+        } else if graphics::supports(&request.source) {
+            (
+                "graphics-preview",
+                graphics::warning(&request.source),
+                graphics::convert(&request.input, &request.output, &request.source),
+            )
         } else if design::supports(&request.source) {
             (
                 "design-preview",
@@ -681,6 +695,8 @@ fn parse_request(request: &mut Request) -> Result<(), String> {
     }
     let required: &[(&String, &str)] = if matches!(request.operation.as_str(), "text-capabilities" | "conversion-capabilities") {
         &[(&request.result, "missing --result")]
+    } else if request.operation == "inspect-file" {
+        &[(&request.input, "missing --input"), (&request.result, "missing --result")]
     } else if request.operation == "inspect-panorama" {
         &[
             (&request.source, "missing --source"),
@@ -760,6 +776,9 @@ fn validate_input(request: &Request, input_size: u64) -> Result<(), ConvertError
     }
     if (request.source == "ppm" || design::supports(&request.source)) && input_size > MAX_RAW_BYTES {
         return Err(io_error("PPM input is too large for conversion".into()));
+    }
+    if graphics::supports(&request.source) && input_size > MAX_LEGACY_BINARY_BYTES {
+        return Err(parse_error("Graphics input exceeds the 64 MiB limit".into()));
     }
     let pairs: Vec<ConversionPair> =
         serde_json::from_str(CONVERSIONS).map_err(|error| ConvertError {
@@ -883,6 +902,8 @@ fn failure(
             Some("office")
         } else if code == "engine_unavailable" && backend == Some("design-preview") {
             Some("postscript")
+        } else if code == "engine_unavailable" && backend == Some("graphics-preview") {
+            Some("graphics")
         } else {
             None
         },
@@ -11249,6 +11270,17 @@ fn rewrite_xml(
 }
 
 fn validate_output(path: &str, target: &str) -> Result<(), ConvertError> {
+    if target == "dxf" {
+        let bytes = fs::read(path).map_err(|e| conversion_error(format!("read DXF: {e}")))?;
+        if ![b"  0\nSECTION".as_slice(), b"0\nSECTION", b"  0\r\nSECTION", b"0\r\nSECTION"]
+            .iter().any(|prefix| bytes.starts_with(prefix)) {
+            return Err(conversion_error("Invalid ASCII DXF output".into()));
+        }
+        if !bytes.ends_with(b"EOF\n") && !bytes.ends_with(b"EOF\r\n") {
+            return Err(conversion_error("Incomplete DXF output".into()));
+        }
+        return Ok(());
+    }
     if target == "pdf" {
         let bytes = fs::read(path).map_err(|e| conversion_error(format!("read PDF: {e}")))?;
         return design::validate_pdf(&bytes);
@@ -11469,6 +11501,7 @@ fn content_type(target: &str) -> &'static str {
         "pdf" => "application/pdf",
         "jpg" | "jpeg" => "image/jpeg",
         "png" => "image/png",
+        "dxf" => "image/vnd.dxf",
         "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",

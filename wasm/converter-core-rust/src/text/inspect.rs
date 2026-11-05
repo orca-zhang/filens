@@ -97,9 +97,11 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
         _ => return Ok(()),
     };
     let mut z = archive(&request.input)?;
+    let family_prefix = format!("{family}/");
+    let media_prefix = format!("{family}/media/");
     let mut media: Vec<_> = names(&z)
         .into_iter()
-        .filter(|v| v.starts_with(&format!("{family}/media/")) && !v.ends_with('/'))
+        .filter(|v| v.starts_with(&media_prefix) && !v.ends_with('/'))
         .collect();
     media.sort();
     let mut refs: HashMap<String, Vec<Value>> = HashMap::new();
@@ -108,22 +110,28 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
     } else {
         vec![]
     };
+    // A repeated relationship to the same part still uses its first position.
+    let mut slide_positions = HashMap::with_capacity(slides.len());
+    for (i, part) in slides.iter().enumerate() {
+        slide_positions.entry(part.as_str()).or_insert(i + 1);
+    }
     let parts: Vec<_> = names(&z)
         .into_iter()
         .filter(|v| {
-            v.starts_with(&format!("{family}/")) && v.ends_with(".xml") && !v.contains("/_rels/")
+            v.starts_with(&family_prefix) && v.ends_with(".xml") && !v.contains("/_rels/")
         })
         .collect();
     for part in parts {
         let rels = relationships(&mut z, &part)?;
         if !rels
             .values()
-            .any(|v| v.starts_with(&format!("{family}/media/")))
+            .any(|v| v.starts_with(&media_prefix))
         {
             continue;
         }
         let bytes = xml_entry(&mut z, &part)?;
         let mut reader = Reader::from_reader(bytes.as_slice());
+        let slide = slide_positions.get(part.as_str()).copied();
         let mut shape = None;
         loop {
             match reader.read_event() {
@@ -137,8 +145,7 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
                             .or_else(|| attribute(&v, b"id"))
                             .and_then(|id| rels.get(&id).map(|v| (id, v)))
                         {
-                            if target.starts_with(&format!("{family}/media/")) {
-                                let slide = slides.iter().position(|v| v == &part).map(|i| i + 1);
+                            if target.starts_with(&media_prefix) {
                                 refs.entry(target.clone()).or_default().push(json!({"sourcePart":part,"slide":slide,"shape":shape,"relationship":id}));
                             }
                         }
@@ -171,8 +178,9 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
     let selected_slides = if family == "ppt" {
         provenance::selected(request.options_json["slides"].as_str().unwrap_or(""), slides.len() as u64)?
     } else { vec![] };
-    // Return in presentation order even when media filenames sort differently.
-    media.sort_by_key(|name| (refs.get(name).into_iter().flatten().filter_map(|r|r["slide"].as_u64()).min().unwrap_or(u64::MAX), name.clone()));
+    // Cache each reference scan once. Stable sorting preserves the lexical
+    // order established above for media on the same slide or without a slide.
+    media.sort_by_cached_key(|name| refs.get(name).into_iter().flatten().filter_map(|r|r["slide"].as_u64()).min().unwrap_or(u64::MAX));
     let mut total = 0u64;
     for name in media {
         let size = z
@@ -213,7 +221,7 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
             provenance::warn(&warning);
         }
         let selected = if wanted.is_empty() {
-            used.iter().any(|r| family != "ppt" || r["slide"].as_u64().is_some_and(|n|selected_slides.contains(&n)))
+            used.iter().any(|r| family != "ppt" || r["slide"].as_u64().is_some_and(|n|selected_slides.binary_search(&n).is_ok()))
         } else { wanted.contains(&name.as_str()) };
         if request.options_json["images"] == true && selected {
             available += 1;

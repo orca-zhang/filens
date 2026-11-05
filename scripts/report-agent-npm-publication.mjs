@@ -45,7 +45,7 @@ for(const pkg of release.packages){
 }
 const report={observedAt:new Date().toISOString(),registry,version:release.version,tag:'latest',license:'MIT',
   packages,status:'published-and-verified',validatedAt:validation.tests.registry.observedAt,
-  licenseScope:'FiLens first-party code and npm package metadata are MIT; bundled components retain their own licenses, including proprietary hdrw on Windows/Linux.',
+  licenseScope:'FiLens first-party code and npm package metadata are MIT; bundled components retain their own licenses. Directory discovery uses native OS APIs without a proprietary embedded component.',
   sizeReport:'agent-cli-npm-release.json',sizeLimits:release.sizeLimits,entryPackages:['filens-cli','filens-cli-lite','filens-preview'],
   installation:{full:`npm install -g filens-cli@${release.version}`,lite:`npm install -g filens-cli-lite@${release.version}`,
     preview:`npm install filens-preview@${previewValidation.version}`},

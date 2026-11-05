@@ -10,6 +10,7 @@ export { MediaRegistry, renderSlideToElement } from './render/dom';
 export type { MediaResolver, RenderSlideOptions } from './render/dom';
 export * from './preview';
 export { bindPreviewTouchGestures, type PreviewTouchGestureOptions } from './preview/touch-gestures';
+export { bindPreviewSvgSelection } from './preview/svg-selection';
 export { createVideoPlaybackControls, type VideoPlaybackActions, type VideoPlaybackState } from './preview/video-controls';
 export { createVideoPreviewPlayer } from './preview/video-player';
 export type {

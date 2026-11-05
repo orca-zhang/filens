@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { basename, resolve } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
+import JSZip from 'jszip';
 import { bundledPackage, cleanupPackageFixtures } from './package-fixtures';
 
 test.afterAll(cleanupPackageFixtures);
@@ -51,6 +52,66 @@ async function prepare(page: Page) {
     (window as any).cancelCheck = state;
   });
 }
+
+for (const format of ['glb', 'usdz'] as const) test(`loads the ${format} engine on demand and shares its download after cancelling a caller`, async ({ page }) => {
+  const loader = format === 'glb' ? 'GLTF' : 'USDZ';
+  const bytes = format === 'glb' ? createGlbFixture() : await new JSZip().file('scene.usda', `#usda 1.0
+def Xform "Triangle"
+{
+    def Mesh "Mesh"
+    {
+        int[] faceVertexCounts = [3]
+        int[] faceVertexIndices = [0, 1, 2]
+        point3f[] points = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+    }
+}
+`).generateAsync({ type: 'uint8array' });
+  const errors: string[] = [], engines: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', request => {
+    if (/\/cancel-model\/(?:GLTF|OBJ|MTL|USDZ|LDraw)Loader-[^/]+\.js$/.test(new URL(request.url()).pathname)) engines.push(request.url());
+  });
+  await prepare(page);
+  expect(engines).toEqual([]);
+  let release!: () => void, requested = 0;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route(`**/cancel-model/${loader}Loader-*.js`, async route => { requested++; await held; await route.fallback(); });
+  try {
+    await page.evaluate(({ bytes, format }) => {
+      const state = (window as any).cancelCheck, source = new Uint8Array(bytes); state.controller = new AbortController();
+      state.pending = state.session.load(source, { descriptor: { source, name: `old.${format}`, extension: format }, signal: state.controller.signal })
+        .then(() => { state.done = true; }, (error: Error) => { state.done = true; state.error = error.name; });
+    }, { bytes: [...bytes], format });
+    await expect.poll(() => requested).toBe(1);
+    await page.evaluate(({ bytes, format }) => {
+      const state = (window as any).cancelCheck;
+      state.controller.abort();
+      state.load = format === 'glb' ? state.lib.loadGlbObject : state.lib.loadUsdzObject;
+      state.live = state.load(new Uint8Array(bytes).buffer);
+    }, { bytes: [...bytes], format });
+    await expect.poll(() => page.evaluate(() => (window as any).cancelCheck.done)).toBe(true);
+    expect(await page.evaluate(() => {
+      const state = (window as any).cancelCheck;
+      return { error: state.error, loading: state.session.getState().loading, rendered: state.rendered, errors: state.errors };
+    })).toEqual({ error: 'AbortError', loading: false, rendered: 0, errors: [] });
+  } finally { release(); }
+  const triangles = await page.evaluate(async bytes => {
+    const state = (window as any).cancelCheck, objects = [await state.live, await state.load(new Uint8Array(bytes).buffer)];
+    const counts = objects.map(object => {
+      let count = 0;
+      object.traverse((node: any) => {
+        if (!node.isMesh) return;
+        count += (node.geometry.index?.count ?? node.geometry.getAttribute('position').count) / 3;
+        node.geometry.dispose();
+        for (const material of Array.isArray(node.material) ? node.material : [node.material]) material.dispose();
+      });
+      return count;
+    });
+    state.session.destroy();
+    return counts;
+  }, [...bytes]);
+  expect(triangles).toEqual([1, 1]); expect(requested).toBe(1); expect(engines).toHaveLength(1); expect(errors).toEqual([]);
+});
 
 for (const kind of ['blob', 'body'] as const) for (const action of ['replace', 'destroy', 'abort'] as const) {
   test(`settles held 3D ${kind} bytes before ${action} releases them`, async ({ page }) => {

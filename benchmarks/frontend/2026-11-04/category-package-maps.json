@@ -1,0 +1,3092 @@
+{
+  "date": "2026-11-04T14:31:22.360Z",
+  "node": "v20.20.2",
+  "baselineKind": "saved-historical-dist",
+  "method": "Actual npm pack --ignore-scripts tarballs. The mapInclusionControl uses exactly the same rebuilt current dist, README/license/vendor files and metadata, except the files allowlist includes maps. Compare this control with current to attribute packaging savings. Saved pre-change dist is retained as historical baseline only: it contains earlier ZIP-worker and Vue archive CSS differences. No publishing. Public export targets and declaration references resolve in extracted tarballs; browser runtime exports and format routes compared with saved baseline builds.",
+  "packages": {
+    "cad": {
+      "baseline": {
+        "packedBytes": 74623,
+        "unpackedBytes": 327077,
+        "maps": 3,
+        "mapBytes": 238743,
+        "name": "@filens/cad",
+        "filename": "filens-cad-0.1.0.tgz",
+        "tarballSha256": "2fec247052d1a5ed6366762828c7d388a716119c431c135a9044cd18e262bfb8",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 2110
+          },
+          {
+            "path": "dist/index.css",
+            "size": 765
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 445
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 444
+          },
+          {
+            "path": "dist/index.js",
+            "size": 75038
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 228315
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 8820
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 9984
+          },
+          {
+            "path": "package.json",
+            "size": 1156
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 22464,
+        "unpackedBytes": 88243,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/cad",
+        "filename": "filens-cad-0.1.0.tgz",
+        "tarballSha256": "a7509935c577f5e1f13bdefa6c554be87eee92d39153c17cdbbbbafdd8a812aa",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 2110
+          },
+          {
+            "path": "dist/index.css",
+            "size": 765
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 410
+          },
+          {
+            "path": "dist/index.js",
+            "size": 75004
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 8776
+          },
+          {
+            "path": "package.json",
+            "size": 1178
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 73082,
+        "unpackedBytes": 316536,
+        "maps": 1,
+        "mapBytes": 228315,
+        "tarballSha256": "024e118e25ec3532f6ee08df03ee918a0477a49f7d9490192be2a84a666c8f8b"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 1,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "CAD_FORMAT_ROUTES",
+          "CadPreviewSession",
+          "createCadPreviewDriver",
+          "createCadPreviewRoutes",
+          "loadDxfDrawing"
+        ],
+        "routesEqual": true
+      }
+    },
+    "converter-client": {
+      "baseline": {
+        "packedBytes": 1237228,
+        "unpackedBytes": 4068806,
+        "maps": 14,
+        "mapBytes": 590867,
+        "name": "@filens/converter-client",
+        "filename": "filens-converter-client-0.1.1.tgz",
+        "tarballSha256": "d3f7abb9da76e04c06a6c72040d6e5bdbe31fea44c7b4a19bfb3ae3243563c7b",
+        "files": [
+          {
+            "path": "dist/assets/media-worker-CQhKOB7a.js.map",
+            "size": 451462
+          },
+          {
+            "path": "dist/converter-image.wasm",
+            "size": 1492779
+          },
+          {
+            "path": "dist/converter-postscript-NOTICES.txt",
+            "size": 171937
+          },
+          {
+            "path": "dist/heif-color.d.ts",
+            "size": 397
+          },
+          {
+            "path": "dist/heif-color.d.ts.map",
+            "size": 313
+          },
+          {
+            "path": "dist/heif-decoder.d.ts",
+            "size": 2958
+          },
+          {
+            "path": "dist/heif-decoder.d.ts.map",
+            "size": 2662
+          },
+          {
+            "path": "dist/index-BoaeqbMo.js",
+            "size": 65688
+          },
+          {
+            "path": "dist/index-BoaeqbMo.js.map",
+            "size": 125975
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 1545
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 1494
+          },
+          {
+            "path": "dist/index.js",
+            "size": 361
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 90
+          },
+          {
+            "path": "dist/libheif.wasm",
+            "size": 1457990
+          },
+          {
+            "path": "dist/media-client.d.ts",
+            "size": 238
+          },
+          {
+            "path": "dist/media-client.d.ts.map",
+            "size": 212
+          },
+          {
+            "path": "dist/media-runtime-BYBZRVK5.js",
+            "size": 147032
+          },
+          {
+            "path": "dist/media-runtime-BYBZRVK5.js.map",
+            "size": 3481
+          },
+          {
+            "path": "dist/media-runtime.d.ts",
+            "size": 214
+          },
+          {
+            "path": "dist/media-runtime.d.ts.map",
+            "size": 283
+          },
+          {
+            "path": "dist/media-worker.d.ts",
+            "size": 53
+          },
+          {
+            "path": "dist/media-worker.d.ts.map",
+            "size": 118
+          },
+          {
+            "path": "dist/source.d.ts",
+            "size": 790
+          },
+          {
+            "path": "dist/source.d.ts.map",
+            "size": 827
+          },
+          {
+            "path": "dist/THIRD-PARTY-NOTICES.txt",
+            "size": 130571
+          },
+          {
+            "path": "dist/wasi-runner.d.ts",
+            "size": 2572
+          },
+          {
+            "path": "dist/wasi-runner.d.ts.map",
+            "size": 2554
+          },
+          {
+            "path": "dist/wasm-client.d.ts",
+            "size": 1427
+          },
+          {
+            "path": "dist/wasm-client.d.ts.map",
+            "size": 1196
+          },
+          {
+            "path": "dist/wasm-response.d.ts",
+            "size": 280
+          },
+          {
+            "path": "dist/wasm-response.d.ts.map",
+            "size": 200
+          },
+          {
+            "path": "package.json",
+            "size": 1107
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 1096361,
+        "unpackedBytes": 3477891,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/converter-client",
+        "filename": "filens-converter-client-0.1.1.tgz",
+        "tarballSha256": "b36d2e9c50987e53ce8dcc11c5733506d911e5cb993f508d5a81694ff45d0360",
+        "files": [
+          {
+            "path": "dist/converter-image.wasm",
+            "size": 1492779
+          },
+          {
+            "path": "dist/converter-postscript-NOTICES.txt",
+            "size": 171937
+          },
+          {
+            "path": "dist/format-detector.d.ts",
+            "size": 531
+          },
+          {
+            "path": "dist/heif-color.d.ts",
+            "size": 357
+          },
+          {
+            "path": "dist/heif-decoder.d.ts",
+            "size": 2916
+          },
+          {
+            "path": "dist/index-Ciyo2NTl.js",
+            "size": 65645
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 1510
+          },
+          {
+            "path": "dist/index.js",
+            "size": 327
+          },
+          {
+            "path": "dist/libheif.wasm",
+            "size": 1457990
+          },
+          {
+            "path": "dist/media-client.d.ts",
+            "size": 196
+          },
+          {
+            "path": "dist/media-runtime-uPlNE6W8.js",
+            "size": 146913
+          },
+          {
+            "path": "dist/media-runtime.d.ts",
+            "size": 171
+          },
+          {
+            "path": "dist/media-worker.d.ts",
+            "size": 11
+          },
+          {
+            "path": "dist/source.d.ts",
+            "size": 754
+          },
+          {
+            "path": "dist/THIRD-PARTY-NOTICES.txt",
+            "size": 130571
+          },
+          {
+            "path": "dist/wasi-runner.d.ts",
+            "size": 2531
+          },
+          {
+            "path": "dist/wasm-client.d.ts",
+            "size": 1386
+          },
+          {
+            "path": "dist/wasm-response.d.ts",
+            "size": 237
+          },
+          {
+            "path": "package.json",
+            "size": 1129
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 1235401,
+        "unpackedBytes": 4058877,
+        "maps": 4,
+        "mapBytes": 581008,
+        "tarballSha256": "869f2daa5af6a14d08668a566b3e70548c968275e9a72e524e5265311a780d18"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 6,
+        "unchangedAssets": [
+          "dist/converter-image.wasm",
+          "dist/converter-postscript-NOTICES.txt",
+          "dist/libheif.wasm",
+          "dist/THIRD-PARTY-NOTICES.txt"
+        ],
+        "runtimeExports": [
+          "HttpConversionError",
+          "WasmConversionError",
+          "createHttpConverterClient",
+          "createMediaConverterClient",
+          "createMockConverterClient",
+          "createWasmConverterClient",
+          "createWasmCoreRunner"
+        ],
+        "routesEqual": true
+      }
+    },
+    "design": {
+      "baseline": {
+        "packedBytes": 2353,
+        "unpackedBytes": 7246,
+        "maps": 2,
+        "mapBytes": 1827,
+        "name": "@filens/design",
+        "filename": "filens-design-0.1.0.tgz",
+        "tarballSha256": "fdd726820a29b091fae7e1794c98da696c6ce4c3002b132568c645c76d1063df",
+        "files": [
+          {
+            "path": "dist/index.d.ts",
+            "size": 274
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 291
+          },
+          {
+            "path": "dist/index.js",
+            "size": 625
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 1536
+          },
+          {
+            "path": "dist/style.css",
+            "size": 3287
+          },
+          {
+            "path": "package.json",
+            "size": 1233
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 1818,
+        "unpackedBytes": 5372,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/design",
+        "filename": "filens-design-0.1.0.tgz",
+        "tarballSha256": "b7ac8ac2afeed608a82b91d7ea4657f759e6a9a1c2513d044dea278c196447e5",
+        "files": [
+          {
+            "path": "dist/index.d.ts",
+            "size": 239
+          },
+          {
+            "path": "dist/index.js",
+            "size": 591
+          },
+          {
+            "path": "dist/style.css",
+            "size": 3287
+          },
+          {
+            "path": "package.json",
+            "size": 1255
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 2174,
+        "unpackedBytes": 6886,
+        "maps": 1,
+        "mapBytes": 1536,
+        "tarballSha256": "14478f7c0182465010cc4a492d0f8704d41379f12b1a2aadeebde7aea607728b"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 0,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "createDesignPreviewDrivers",
+          "createDesignPreviewRoutes"
+        ],
+        "routesEqual": true
+      }
+    },
+    "diagram": {
+      "baseline": {
+        "packedBytes": 29421,
+        "unpackedBytes": 108422,
+        "maps": 3,
+        "mapBytes": 75544,
+        "name": "@filens/diagram",
+        "filename": "filens-diagram-0.1.0.tgz",
+        "tarballSha256": "16b524996c25742a251cd7eac169c4095a535989edec28db0edc968a8cd316e8",
+        "files": [
+          {
+            "path": "dist/index.css",
+            "size": 1214
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 313
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 304
+          },
+          {
+            "path": "dist/index.js",
+            "size": 27561
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 72640
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2528
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 2600
+          },
+          {
+            "path": "package.json",
+            "size": 1262
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 9627,
+        "unpackedBytes": 32787,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/diagram",
+        "filename": "filens-diagram-0.1.0.tgz",
+        "tarballSha256": "fa067e94597cf3b9c5289b4d36bcbb85b897795bf9a8089faed1d5e8ea407ae4",
+        "files": [
+          {
+            "path": "dist/index.css",
+            "size": 1214
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 278
+          },
+          {
+            "path": "dist/index.js",
+            "size": 27527
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2484
+          },
+          {
+            "path": "package.json",
+            "size": 1284
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 28238,
+        "unpackedBytes": 105405,
+        "maps": 1,
+        "mapBytes": 72640,
+        "tarballSha256": "1fb650ba0a0ace7c393f6991b96d823387a516e99f694eacc8b0201efa2b7fe2"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 1,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "DIAGRAM_FORMAT_ROUTES",
+          "DiagramPreviewSession",
+          "createDiagramPreviewDriver",
+          "createDiagramPreviewRoutes",
+          "decodeCompressedDrawioPayload",
+          "loadDrawioDiagram",
+          "loadVdxDiagram",
+          "loadVsdxDiagram"
+        ],
+        "routesEqual": true
+      }
+    },
+    "docx": {
+      "baseline": {
+        "packedBytes": 14718,
+        "unpackedBytes": 49460,
+        "maps": 4,
+        "mapBytes": 32951,
+        "name": "@filens/docx",
+        "filename": "filens-docx-0.1.0.tgz",
+        "tarballSha256": "70e9110fc69e4ea4a2ad172aef20caa3872a4c1d52cfc68c4b34fddfdd5f6803",
+        "files": [
+          {
+            "path": "dist/fonts.d.ts",
+            "size": 1251
+          },
+          {
+            "path": "dist/fonts.d.ts.map",
+            "size": 996
+          },
+          {
+            "path": "dist/index.css",
+            "size": 373
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 160
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 210
+          },
+          {
+            "path": "dist/index.js",
+            "size": 12205
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 30486
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 1320
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 1259
+          },
+          {
+            "path": "package.json",
+            "size": 1200
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 5475,
+        "unpackedBytes": 16383,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/docx",
+        "filename": "filens-docx-0.1.0.tgz",
+        "tarballSha256": "484ba04c06e2af0336ee49be015face0171414a0d7f74d917ce4785284f835af",
+        "files": [
+          {
+            "path": "dist/fonts.d.ts",
+            "size": 1216
+          },
+          {
+            "path": "dist/index.css",
+            "size": 373
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 125
+          },
+          {
+            "path": "dist/index.js",
+            "size": 12171
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 1276
+          },
+          {
+            "path": "package.json",
+            "size": 1222
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 13795,
+        "unpackedBytes": 46847,
+        "maps": 1,
+        "mapBytes": 30486,
+        "tarballSha256": "b351d0e27fd801aa914465b82ed479385bd39d96811ae708cbe7dec042876934"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 1,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "DOCX_FORMAT_ROUTES",
+          "DocxPreviewSession",
+          "createDocxPreviewDriver",
+          "createDocxPreviewRoutes"
+        ],
+        "routesEqual": true
+      }
+    },
+    "ebook": {
+      "baseline": {
+        "packedBytes": 27030,
+        "unpackedBytes": 90263,
+        "maps": 6,
+        "mapBytes": 61982,
+        "name": "@filens/books",
+        "filename": "filens-books-0.1.0.tgz",
+        "tarballSha256": "5cc4023f66fa1eff6c6197e094fc63a829d824ed19481f946f4b16fab118cfc5",
+        "files": [
+          {
+            "path": "dist/css-resources.d.ts",
+            "size": 196
+          },
+          {
+            "path": "dist/css-resources.d.ts.map",
+            "size": 282
+          },
+          {
+            "path": "dist/epub-resources.d.ts",
+            "size": 717
+          },
+          {
+            "path": "dist/epub-resources.d.ts.map",
+            "size": 679
+          },
+          {
+            "path": "dist/frame-resource-url.d.ts",
+            "size": 339
+          },
+          {
+            "path": "dist/frame-resource-url.d.ts.map",
+            "size": 379
+          },
+          {
+            "path": "dist/index.css",
+            "size": 1080
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 265
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 285
+          },
+          {
+            "path": "dist/index.js",
+            "size": 22422
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 58309
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2089
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 2048
+          },
+          {
+            "path": "package.json",
+            "size": 1173
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 9128,
+        "unpackedBytes": 28055,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/books",
+        "filename": "filens-books-0.1.0.tgz",
+        "tarballSha256": "8f41d44172263755ef69c1b6d89c866686534bb7cc2e18f89a95e2993735ba95",
+        "files": [
+          {
+            "path": "dist/css-resources.d.ts",
+            "size": 153
+          },
+          {
+            "path": "dist/epub-resources.d.ts",
+            "size": 673
+          },
+          {
+            "path": "dist/frame-resource-url.d.ts",
+            "size": 291
+          },
+          {
+            "path": "dist/index.css",
+            "size": 1080
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 230
+          },
+          {
+            "path": "dist/index.js",
+            "size": 22388
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2045
+          },
+          {
+            "path": "package.json",
+            "size": 1195
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 25234,
+        "unpackedBytes": 86342,
+        "maps": 1,
+        "mapBytes": 58309,
+        "tarballSha256": "ed1414c475e57e902d59ae34007f2fa93b5c302c7fd02d72686fab74a76199a1"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 2,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "EBOOK_FORMAT_ROUTES",
+          "EpubPreviewSession",
+          "createEbookPreviewDriver",
+          "createEbookPreviewRoutes",
+          "loadCbzBook",
+          "loadEpubBook"
+        ],
+        "routesEqual": true
+      }
+    },
+    "iwork": {
+      "baseline": {
+        "packedBytes": 2293262,
+        "unpackedBytes": 8148648,
+        "maps": 19,
+        "mapBytes": 4459313,
+        "name": "@filens/iwork",
+        "filename": "filens-iwork-0.1.0.tgz",
+        "tarballSha256": "7afe90c295511046619c13668ce78e592cd9887f0c21f44a0e6695feaee3b237",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 2947
+          },
+          {
+            "path": "dist/assets/iwork-worker-p6mBv4Vc.js",
+            "size": 904756
+          },
+          {
+            "path": "dist/assets/iwork-worker-p6mBv4Vc.js.map",
+            "size": 2538454
+          },
+          {
+            "path": "dist/generated/iwork-proto.d.ts",
+            "size": 156
+          },
+          {
+            "path": "dist/generated/iwork-proto.d.ts.map",
+            "size": 239
+          },
+          {
+            "path": "dist/generated/type-maps.d.ts",
+            "size": 280
+          },
+          {
+            "path": "dist/generated/type-maps.d.ts.map",
+            "size": 378
+          },
+          {
+            "path": "dist/index.css",
+            "size": 18149
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 360
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 364
+          },
+          {
+            "path": "dist/index.js",
+            "size": 888402
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 1905812
+          },
+          {
+            "path": "dist/parser/archive.d.ts",
+            "size": 844
+          },
+          {
+            "path": "dist/parser/archive.d.ts.map",
+            "size": 787
+          },
+          {
+            "path": "dist/parser/detect.d.ts",
+            "size": 313
+          },
+          {
+            "path": "dist/parser/detect.d.ts.map",
+            "size": 339
+          },
+          {
+            "path": "dist/parser/helpers.d.ts",
+            "size": 2955
+          },
+          {
+            "path": "dist/parser/helpers.d.ts.map",
+            "size": 2604
+          },
+          {
+            "path": "dist/parser/load-iwork.d.ts",
+            "size": 216
+          },
+          {
+            "path": "dist/parser/load-iwork.d.ts.map",
+            "size": 275
+          },
+          {
+            "path": "dist/parser/load-source.d.ts",
+            "size": 258
+          },
+          {
+            "path": "dist/parser/load-source.d.ts.map",
+            "size": 321
+          },
+          {
+            "path": "dist/parser/protobuf.d.ts",
+            "size": 349
+          },
+          {
+            "path": "dist/parser/protobuf.d.ts.map",
+            "size": 408
+          },
+          {
+            "path": "dist/parser/semantic.d.ts",
+            "size": 593
+          },
+          {
+            "path": "dist/parser/semantic.d.ts.map",
+            "size": 560
+          },
+          {
+            "path": "dist/parser/table.d.ts",
+            "size": 326
+          },
+          {
+            "path": "dist/parser/table.d.ts.map",
+            "size": 404
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 1678
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 1568
+          },
+          {
+            "path": "dist/types.d.ts",
+            "size": 4996
+          },
+          {
+            "path": "dist/types.d.ts.map",
+            "size": 5257
+          },
+          {
+            "path": "dist/viewer/create-iwork-viewer.d.ts",
+            "size": 235
+          },
+          {
+            "path": "dist/viewer/create-iwork-viewer.d.ts.map",
+            "size": 284
+          },
+          {
+            "path": "dist/viewer/render.d.ts",
+            "size": 497
+          },
+          {
+            "path": "dist/viewer/render.d.ts.map",
+            "size": 462
+          },
+          {
+            "path": "dist/worker/client.d.ts",
+            "size": 623
+          },
+          {
+            "path": "dist/worker/client.d.ts.map",
+            "size": 669
+          },
+          {
+            "path": "dist/worker/iwork-worker.d.ts",
+            "size": 53
+          },
+          {
+            "path": "dist/worker/iwork-worker.d.ts.map",
+            "size": 128
+          },
+          {
+            "path": "package.json",
+            "size": 1501
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Common.json",
+            "size": 13787
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Keynote.json",
+            "size": 2069
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Numbers.json",
+            "size": 1417
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Pages.json",
+            "size": 1527
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/README.md",
+            "size": 517
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNArchives.proto",
+            "size": 30745
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNArchives.sos.proto",
+            "size": 11223
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNCommandArchives.proto",
+            "size": 24090
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNCommandArchives.sos.proto",
+            "size": 762
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNArchives.proto",
+            "size": 7066
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNArchives.sos.proto",
+            "size": 262
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNCommandArchives.proto",
+            "size": 9329
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNCommandArchives.sos.proto",
+            "size": 531
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TPArchives.proto",
+            "size": 16952
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TPCommandArchives.proto",
+            "size": 9977
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TPCommandArchives.sos.proto",
+            "size": 651
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSAArchives.proto",
+            "size": 1099
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSACommandArchives.sos.proto",
+            "size": 353
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCEArchives.proto",
+            "size": 36049
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCH3DArchives.proto",
+            "size": 5342
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.Common.proto",
+            "size": 3770
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.GEN.proto",
+            "size": 36058
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.proto",
+            "size": 8190
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.sos.proto",
+            "size": 47922
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHCommandArchives.proto",
+            "size": 14268
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHPreUFFArchives.proto",
+            "size": 23627
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCKArchives.proto",
+            "size": 636
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSDArchives.proto",
+            "size": 20404
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSDArchives.sos.proto",
+            "size": 3122
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSDCommandArchives.proto",
+            "size": 15484
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSKArchives.proto",
+            "size": 14856
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSPArchiveMessages.proto",
+            "size": 7739
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSPDatabaseMessages.proto",
+            "size": 649
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSPMessages.proto",
+            "size": 5883
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSSArchives.proto",
+            "size": 5310
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSSArchives.sos.proto",
+            "size": 997
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTArchives.proto",
+            "size": 48937
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTArchives.sos.proto",
+            "size": 9319
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTCommandArchives.proto",
+            "size": 34088
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTStylePropertyArchiving.proto",
+            "size": 7663
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSWPArchives.proto",
+            "size": 30770
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSWPArchives.sos.proto",
+            "size": 18427
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSWPCommandArchives.proto",
+            "size": 14347
+          },
+          {
+            "path": "vendor/iwork-converter/testdata/a.key",
+            "size": 359089
+          },
+          {
+            "path": "vendor/iwork-converter/testdata/a.numbers",
+            "size": 191392
+          },
+          {
+            "path": "vendor/iwork-converter/testdata/a.pages",
+            "size": 762153
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 1547369,
+        "unpackedBytes": 3689390,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/iwork",
+        "filename": "filens-iwork-0.1.0.tgz",
+        "tarballSha256": "14cde178beadda450091ef0fa6eb584a0813981eb2b69cc7ec4b9be8870d7e32",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 2947
+          },
+          {
+            "path": "dist/assets/iwork-worker-DYtBaTa4.js",
+            "size": 905482
+          },
+          {
+            "path": "dist/generated/iwork-proto.d.ts",
+            "size": 115
+          },
+          {
+            "path": "dist/generated/type-maps.d.ts",
+            "size": 241
+          },
+          {
+            "path": "dist/index.css",
+            "size": 18149
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 325
+          },
+          {
+            "path": "dist/index.js",
+            "size": 888368
+          },
+          {
+            "path": "dist/parser/archive.d.ts",
+            "size": 807
+          },
+          {
+            "path": "dist/parser/detect.d.ts",
+            "size": 277
+          },
+          {
+            "path": "dist/parser/helpers.d.ts",
+            "size": 2918
+          },
+          {
+            "path": "dist/parser/load-iwork.d.ts",
+            "size": 176
+          },
+          {
+            "path": "dist/parser/load-source.d.ts",
+            "size": 217
+          },
+          {
+            "path": "dist/parser/protobuf.d.ts",
+            "size": 311
+          },
+          {
+            "path": "dist/parser/semantic.d.ts",
+            "size": 555
+          },
+          {
+            "path": "dist/parser/table.d.ts",
+            "size": 291
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 1634
+          },
+          {
+            "path": "dist/types.d.ts",
+            "size": 4961
+          },
+          {
+            "path": "dist/viewer/create-iwork-viewer.d.ts",
+            "size": 186
+          },
+          {
+            "path": "dist/viewer/render.d.ts",
+            "size": 461
+          },
+          {
+            "path": "dist/worker/client.d.ts",
+            "size": 587
+          },
+          {
+            "path": "dist/worker/iwork-worker.d.ts",
+            "size": 11
+          },
+          {
+            "path": "package.json",
+            "size": 1523
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Common.json",
+            "size": 13787
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Keynote.json",
+            "size": 2069
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Numbers.json",
+            "size": 1417
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/Pages.json",
+            "size": 1527
+          },
+          {
+            "path": "vendor/iwork-converter/codegen/README.md",
+            "size": 517
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNArchives.proto",
+            "size": 30745
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNArchives.sos.proto",
+            "size": 11223
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNCommandArchives.proto",
+            "size": 24090
+          },
+          {
+            "path": "vendor/iwork-converter/proto/KNCommandArchives.sos.proto",
+            "size": 762
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNArchives.proto",
+            "size": 7066
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNArchives.sos.proto",
+            "size": 262
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNCommandArchives.proto",
+            "size": 9329
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TNCommandArchives.sos.proto",
+            "size": 531
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TPArchives.proto",
+            "size": 16952
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TPCommandArchives.proto",
+            "size": 9977
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TPCommandArchives.sos.proto",
+            "size": 651
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSAArchives.proto",
+            "size": 1099
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSACommandArchives.sos.proto",
+            "size": 353
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCEArchives.proto",
+            "size": 36049
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCH3DArchives.proto",
+            "size": 5342
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.Common.proto",
+            "size": 3770
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.GEN.proto",
+            "size": 36058
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.proto",
+            "size": 8190
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHArchives.sos.proto",
+            "size": 47922
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHCommandArchives.proto",
+            "size": 14268
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCHPreUFFArchives.proto",
+            "size": 23627
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSCKArchives.proto",
+            "size": 636
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSDArchives.proto",
+            "size": 20404
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSDArchives.sos.proto",
+            "size": 3122
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSDCommandArchives.proto",
+            "size": 15484
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSKArchives.proto",
+            "size": 14856
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSPArchiveMessages.proto",
+            "size": 7739
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSPDatabaseMessages.proto",
+            "size": 649
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSPMessages.proto",
+            "size": 5883
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSSArchives.proto",
+            "size": 5310
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSSArchives.sos.proto",
+            "size": 997
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTArchives.proto",
+            "size": 48937
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTArchives.sos.proto",
+            "size": 9319
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTCommandArchives.proto",
+            "size": 34088
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSTStylePropertyArchiving.proto",
+            "size": 7663
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSWPArchives.proto",
+            "size": 30770
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSWPArchives.sos.proto",
+            "size": 18427
+          },
+          {
+            "path": "vendor/iwork-converter/proto/TSWPCommandArchives.proto",
+            "size": 14347
+          },
+          {
+            "path": "vendor/iwork-converter/testdata/a.key",
+            "size": 359089
+          },
+          {
+            "path": "vendor/iwork-converter/testdata/a.numbers",
+            "size": 191392
+          },
+          {
+            "path": "vendor/iwork-converter/testdata/a.pages",
+            "size": 762153
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 2289320,
+        "unpackedBytes": 8134420,
+        "maps": 2,
+        "mapBytes": 4445052,
+        "tarballSha256": "f8e76ad52cd014a435b4d3b1abb6859c0568f22590c2b50a54aa4cf0cfa92fdf"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 16,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "IWORK_FORMAT_ROUTES",
+          "IworkPreviewSession",
+          "createIworkPreviewDriver",
+          "createIworkPreviewRoutes",
+          "createIworkViewer",
+          "detectIworkType",
+          "loadIwork"
+        ],
+        "routesEqual": true
+      }
+    },
+    "media": {
+      "baseline": {
+        "packedBytes": 242044,
+        "unpackedBytes": 1116561,
+        "maps": 11,
+        "mapBytes": 603979,
+        "name": "@filens/media",
+        "filename": "filens-media-0.1.0.tgz",
+        "tarballSha256": "06ceab7a7b3b5dc7a7c42b8ff77aa6044c3c4c6ba573fdbc8d8a4be9e15a2318",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 6023
+          },
+          {
+            "path": "dist/browser-source.d.ts",
+            "size": 593
+          },
+          {
+            "path": "dist/browser-source.d.ts.map",
+            "size": 434
+          },
+          {
+            "path": "dist/browser-video-session-DWpBxT5D.js",
+            "size": 5052
+          },
+          {
+            "path": "dist/browser-video-session-DWpBxT5D.js.map",
+            "size": 9784
+          },
+          {
+            "path": "dist/browser-video-session.d.ts",
+            "size": 1021
+          },
+          {
+            "path": "dist/browser-video-session.d.ts.map",
+            "size": 980
+          },
+          {
+            "path": "dist/codec-preview-driver.d.ts",
+            "size": 384
+          },
+          {
+            "path": "dist/codec-preview-driver.d.ts.map",
+            "size": 407
+          },
+          {
+            "path": "dist/engine-DcB9jb_k.js",
+            "size": 42786
+          },
+          {
+            "path": "dist/engine-DcB9jb_k.js.map",
+            "size": 85475
+          },
+          {
+            "path": "dist/engine-snapshot/core.d.ts",
+            "size": 30
+          },
+          {
+            "path": "dist/engine-snapshot/index.d.ts",
+            "size": 31
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/datachannel.d.ts",
+            "size": 1248
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/photos-http.d.ts",
+            "size": 753
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/range-source.d.ts",
+            "size": 993
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/webrtc.d.ts",
+            "size": 2626
+          },
+          {
+            "path": "dist/engine-snapshot/types/bounded-video-transcoder.d.ts",
+            "size": 2962
+          },
+          {
+            "path": "dist/engine-snapshot/types/capability-detector.d.ts",
+            "size": 631
+          },
+          {
+            "path": "dist/engine-snapshot/types/codec-negotiator.d.ts",
+            "size": 273
+          },
+          {
+            "path": "dist/engine-snapshot/types/core.d.ts",
+            "size": 468
+          },
+          {
+            "path": "dist/engine-snapshot/types/format-inspector.d.ts",
+            "size": 672
+          },
+          {
+            "path": "dist/engine-snapshot/types/hardware-acceleration-probe.d.ts",
+            "size": 1884
+          },
+          {
+            "path": "dist/engine-snapshot/types/index.d.ts",
+            "size": 569
+          },
+          {
+            "path": "dist/engine-snapshot/types/media-engine.d.ts",
+            "size": 1277
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4-metadata.d.ts",
+            "size": 352
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4-playback.d.ts",
+            "size": 1553
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4-sample-stream.d.ts",
+            "size": 1939
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4box-types/all-JrUeGBJv.d.mts",
+            "size": 143648
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4box-types/mp4box.all.d.mts",
+            "size": 3416
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4box-types/mp4box.simple.d.mts",
+            "size": 3983
+          },
+          {
+            "path": "dist/engine-snapshot/types/runtime-performance-monitor.d.ts",
+            "size": 2478
+          },
+          {
+            "path": "dist/engine-snapshot/types/transcoding-policy.d.ts",
+            "size": 889
+          },
+          {
+            "path": "dist/engine-snapshot/types/types.d.ts",
+            "size": 2966
+          },
+          {
+            "path": "dist/engine.d.ts",
+            "size": 992
+          },
+          {
+            "path": "dist/engine.d.ts.map",
+            "size": 657
+          },
+          {
+            "path": "dist/engine.js",
+            "size": 866
+          },
+          {
+            "path": "dist/engine.js.map",
+            "size": 91
+          },
+          {
+            "path": "dist/index-BftvYxyv.js",
+            "size": 19979
+          },
+          {
+            "path": "dist/index-BftvYxyv.js.map",
+            "size": 38070
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 823
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 699
+          },
+          {
+            "path": "dist/index.js",
+            "size": 7645
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 18514
+          },
+          {
+            "path": "dist/MP4Box-LICENSE.txt",
+            "size": 1534
+          },
+          {
+            "path": "dist/mp4box.all-Bw_Tlr0T-Cbnlnx0g.js",
+            "size": 230859
+          },
+          {
+            "path": "dist/mp4box.all-Bw_Tlr0T-Cbnlnx0g.js.map",
+            "size": 448868
+          },
+          {
+            "path": "dist/style.css",
+            "size": 17164
+          },
+          {
+            "path": "package.json",
+            "size": 1220
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 113650,
+        "unpackedBytes": 512029,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/media",
+        "filename": "filens-media-0.1.0.tgz",
+        "tarballSha256": "4c8188f849e02b5d40dd30cc16a651a28f062c80ad843886cae6ee5810f7549c",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 6023
+          },
+          {
+            "path": "dist/browser-source.d.ts",
+            "size": 549
+          },
+          {
+            "path": "dist/browser-video-session-DWpBxT5D.js",
+            "size": 4993
+          },
+          {
+            "path": "dist/browser-video-session.d.ts",
+            "size": 970
+          },
+          {
+            "path": "dist/codec-preview-driver.d.ts",
+            "size": 334
+          },
+          {
+            "path": "dist/engine-DcB9jb_k.js",
+            "size": 42742
+          },
+          {
+            "path": "dist/engine-snapshot/core.d.ts",
+            "size": 30
+          },
+          {
+            "path": "dist/engine-snapshot/index.d.ts",
+            "size": 31
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/datachannel.d.ts",
+            "size": 1248
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/photos-http.d.ts",
+            "size": 753
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/range-source.d.ts",
+            "size": 993
+          },
+          {
+            "path": "dist/engine-snapshot/types/adapters/webrtc.d.ts",
+            "size": 2626
+          },
+          {
+            "path": "dist/engine-snapshot/types/bounded-video-transcoder.d.ts",
+            "size": 2962
+          },
+          {
+            "path": "dist/engine-snapshot/types/capability-detector.d.ts",
+            "size": 631
+          },
+          {
+            "path": "dist/engine-snapshot/types/codec-negotiator.d.ts",
+            "size": 273
+          },
+          {
+            "path": "dist/engine-snapshot/types/core.d.ts",
+            "size": 468
+          },
+          {
+            "path": "dist/engine-snapshot/types/format-inspector.d.ts",
+            "size": 672
+          },
+          {
+            "path": "dist/engine-snapshot/types/hardware-acceleration-probe.d.ts",
+            "size": 1884
+          },
+          {
+            "path": "dist/engine-snapshot/types/index.d.ts",
+            "size": 569
+          },
+          {
+            "path": "dist/engine-snapshot/types/media-engine.d.ts",
+            "size": 1277
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4-metadata.d.ts",
+            "size": 352
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4-playback.d.ts",
+            "size": 1553
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4-sample-stream.d.ts",
+            "size": 1939
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4box-types/all-JrUeGBJv.d.mts",
+            "size": 143605
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4box-types/mp4box.all.d.mts",
+            "size": 3416
+          },
+          {
+            "path": "dist/engine-snapshot/types/mp4box-types/mp4box.simple.d.mts",
+            "size": 3939
+          },
+          {
+            "path": "dist/engine-snapshot/types/runtime-performance-monitor.d.ts",
+            "size": 2478
+          },
+          {
+            "path": "dist/engine-snapshot/types/transcoding-policy.d.ts",
+            "size": 889
+          },
+          {
+            "path": "dist/engine-snapshot/types/types.d.ts",
+            "size": 2966
+          },
+          {
+            "path": "dist/engine.d.ts",
+            "size": 956
+          },
+          {
+            "path": "dist/engine.js",
+            "size": 831
+          },
+          {
+            "path": "dist/index-BftvYxyv.js",
+            "size": 19936
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 788
+          },
+          {
+            "path": "dist/index.js",
+            "size": 7611
+          },
+          {
+            "path": "dist/MP4Box-LICENSE.txt",
+            "size": 1534
+          },
+          {
+            "path": "dist/mp4box.all-Bw_Tlr0T-Cbnlnx0g.js",
+            "size": 230802
+          },
+          {
+            "path": "dist/style.css",
+            "size": 17164
+          },
+          {
+            "path": "package.json",
+            "size": 1242
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 240848,
+        "unpackedBytes": 1112809,
+        "maps": 6,
+        "mapBytes": 600802,
+        "tarballSha256": "9f863c901ed278ece38c8e7e8a2e1e91310dfe5b5d715b894482bd54d47093a9"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 76,
+        "unchangedAssets": [
+          "dist/MP4Box-LICENSE.txt"
+        ],
+        "runtimeExports": [
+          "createMediaPreviewDrivers",
+          "createMediaPreviewRoutes"
+        ],
+        "routesEqual": true
+      }
+    },
+    "mindmap": {
+      "baseline": {
+        "packedBytes": 21477,
+        "unpackedBytes": 80047,
+        "maps": 3,
+        "mapBytes": 55474,
+        "name": "@filens/mindmap",
+        "filename": "filens-mindmap-0.1.0.tgz",
+        "tarballSha256": "df9c9014778d5736be5b24839a35d1e53f2e99ef1cb0fefa038f5716e17bd2f0",
+        "files": [
+          {
+            "path": "dist/index.css",
+            "size": 815
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 277
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 281
+          },
+          {
+            "path": "dist/index.js",
+            "size": 20150
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 53090
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2117
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 2103
+          },
+          {
+            "path": "package.json",
+            "size": 1214
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 7339,
+        "unpackedBytes": 24482,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/mindmap",
+        "filename": "filens-mindmap-0.1.0.tgz",
+        "tarballSha256": "f1981482fdf681daaf696588b41432c6d1e8943c7b21f23048987116a1e48075",
+        "files": [
+          {
+            "path": "dist/index.css",
+            "size": 815
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 242
+          },
+          {
+            "path": "dist/index.js",
+            "size": 20116
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2073
+          },
+          {
+            "path": "package.json",
+            "size": 1236
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 20536,
+        "unpackedBytes": 77550,
+        "maps": 1,
+        "mapBytes": 53090,
+        "tarballSha256": "1b85d75c910e68380a06a7b6aed0820cc4437bf9fd3b6ef903dd40ffbc2cc753"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 1,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "MINDMAP_FORMAT_ROUTES",
+          "MindmapPreviewSession",
+          "createMindmapPreviewDriver",
+          "createMindmapPreviewRoutes",
+          "loadMindmanagerDocument",
+          "loadMindmapDocument",
+          "loadXmindDocument"
+        ],
+        "routesEqual": true
+      }
+    },
+    "model3d": {
+      "baseline": {
+        "packedBytes": 179576,
+        "unpackedBytes": 746883,
+        "maps": 11,
+        "mapBytes": 544439,
+        "name": "@filens/model3d",
+        "filename": "filens-model3d-0.1.1.tgz",
+        "tarballSha256": "b37f0dea1dd1a094aedfe80ab856e1e535fe6840fe0db9ecc4759f875e0d781f",
+        "files": [
+          {
+            "path": "dist/3ds-loader.d.ts",
+            "size": 609
+          },
+          {
+            "path": "dist/3ds-loader.d.ts.map",
+            "size": 597
+          },
+          {
+            "path": "dist/fbx-loader.d.ts",
+            "size": 609
+          },
+          {
+            "path": "dist/fbx-loader.d.ts.map",
+            "size": 597
+          },
+          {
+            "path": "dist/index.css",
+            "size": 496
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 1081
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 746
+          },
+          {
+            "path": "dist/index.js",
+            "size": 148152
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 425547
+          },
+          {
+            "path": "dist/kmz-resources.d.ts",
+            "size": 453
+          },
+          {
+            "path": "dist/kmz-resources.d.ts.map",
+            "size": 505
+          },
+          {
+            "path": "dist/LDrawLoader-DNyeVv2b.js",
+            "size": 35190
+          },
+          {
+            "path": "dist/LDrawLoader-DNyeVv2b.js.map",
+            "size": 102641
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 11356
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 9633
+          },
+          {
+            "path": "dist/resource-utils.d.ts",
+            "size": 1290
+          },
+          {
+            "path": "dist/resource-utils.d.ts.map",
+            "size": 1220
+          },
+          {
+            "path": "dist/rust-step-importer-BRQzvs8z.js",
+            "size": 502
+          },
+          {
+            "path": "dist/rust-step-importer-BRQzvs8z.js.map",
+            "size": 1585
+          },
+          {
+            "path": "dist/rust-step-importer.d.ts",
+            "size": 738
+          },
+          {
+            "path": "dist/rust-step-importer.d.ts.map",
+            "size": 770
+          },
+          {
+            "path": "dist/vrml-loader.d.ts",
+            "size": 604
+          },
+          {
+            "path": "dist/vrml-loader.d.ts.map",
+            "size": 598
+          },
+          {
+            "path": "package.json",
+            "size": 1364
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 50452,
+        "unpackedBytes": 201992,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/model3d",
+        "filename": "filens-model3d-0.1.1.tgz",
+        "tarballSha256": "263701a81e1da51cff410c21f4df1177157a5cce0a3813f18a0ee3f435824e91",
+        "files": [
+          {
+            "path": "dist/3ds-loader.d.ts",
+            "size": 569
+          },
+          {
+            "path": "dist/fbx-loader.d.ts",
+            "size": 569
+          },
+          {
+            "path": "dist/index.css",
+            "size": 496
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 1046
+          },
+          {
+            "path": "dist/index.js",
+            "size": 148118
+          },
+          {
+            "path": "dist/kmz-resources.d.ts",
+            "size": 410
+          },
+          {
+            "path": "dist/LDrawLoader-DNyeVv2b.js",
+            "size": 35141
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 11312
+          },
+          {
+            "path": "dist/resource-utils.d.ts",
+            "size": 1246
+          },
+          {
+            "path": "dist/rust-step-importer-BRQzvs8z.js",
+            "size": 446
+          },
+          {
+            "path": "dist/rust-step-importer.d.ts",
+            "size": 690
+          },
+          {
+            "path": "dist/vrml-loader.d.ts",
+            "size": 563
+          },
+          {
+            "path": "package.json",
+            "size": 1386
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 176200,
+        "unpackedBytes": 731743,
+        "maps": 3,
+        "mapBytes": 529773,
+        "tarballSha256": "23d83b5334db29f33d040cd6c9e7443097183aa2188a87795207208cc01d1f12"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 7,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "MODEL3D_FORMAT_ROUTES",
+          "Model3dPreviewSession",
+          "createModel3dPreviewDriver",
+          "createModel3dPreviewRoutes",
+          "listExternalGltfResources",
+          "listObjMaterialLibraries",
+          "load3dsObject",
+          "load3dsObjectWithWarnings",
+          "load3mfGeometry",
+          "load3mfGeometryWithWarnings",
+          "loadAmfObject",
+          "loadBvhObject",
+          "loadColladaObject",
+          "loadColladaObjectWithWarnings",
+          "loadFbxObject",
+          "loadFbxObjectWithWarnings",
+          "loadGCodeObject",
+          "loadGlbObject",
+          "loadGltfObject",
+          "loadGltfObjectWithWarnings",
+          "loadKmzObject",
+          "loadKmzObjectWithWarnings",
+          "loadLDrawObject",
+          "loadLDrawObjectWithWarnings",
+          "loadLwoObject",
+          "loadLwoObjectWithWarnings",
+          "loadMd2Object",
+          "loadNrrdObject",
+          "loadObjGeometry",
+          "loadObjObject",
+          "loadObjObjectWithWarnings",
+          "loadPcdObject",
+          "loadPdbObject",
+          "loadPlyGeometry",
+          "loadStepObject",
+          "loadStlGeometry",
+          "loadUsdzObject",
+          "loadVoxObject",
+          "loadVrmlObject",
+          "loadVrmlObjectWithWarnings",
+          "loadVtkObject",
+          "loadXyzObject",
+          "resolveNhdrBuffer"
+        ],
+        "routesEqual": true
+      }
+    },
+    "office": {
+      "baseline": {
+        "packedBytes": 6634,
+        "unpackedBytes": 23442,
+        "maps": 2,
+        "mapBytes": 2275,
+        "name": "@filens/office",
+        "filename": "filens-office-0.1.0.tgz",
+        "tarballSha256": "b8eeb57c9bb7fd4f32d088ba48830b0ddc1aee393b19243899bef19e644f9ad6",
+        "files": [
+          {
+            "path": "dist/index.d.ts",
+            "size": 274
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 288
+          },
+          {
+            "path": "dist/index.js",
+            "size": 806
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 1987
+          },
+          {
+            "path": "dist/style.css",
+            "size": 18886
+          },
+          {
+            "path": "package.json",
+            "size": 1201
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 5895,
+        "unpackedBytes": 21120,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/office",
+        "filename": "filens-office-0.1.0.tgz",
+        "tarballSha256": "45af6f472c110d67405df7aad0cfba4a0022b088ec6d30f19566c516322b112e",
+        "files": [
+          {
+            "path": "dist/index.d.ts",
+            "size": 239
+          },
+          {
+            "path": "dist/index.js",
+            "size": 772
+          },
+          {
+            "path": "dist/style.css",
+            "size": 18886
+          },
+          {
+            "path": "package.json",
+            "size": 1223
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 6458,
+        "unpackedBytes": 23085,
+        "maps": 1,
+        "mapBytes": 1987,
+        "tarballSha256": "45f3d39088335263f3fb7c3c9bbe00c619ef6b3c138d4db0cd687cb6acdd11d0"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 0,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "createOfficePreviewDrivers",
+          "createOfficePreviewRoutes"
+        ],
+        "routesEqual": true
+      }
+    },
+    "panorama": {
+      "baseline": {
+        "packedBytes": 240654,
+        "unpackedBytes": 960806,
+        "maps": 10,
+        "mapBytes": 663375,
+        "name": "@filens/panorama",
+        "filename": "filens-panorama-0.1.0.tgz",
+        "tarballSha256": "2b41038ace66a1dbc10920e7a0bbaec5ccf04756bd0798fd5397ce40926dd4e7",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 4180
+          },
+          {
+            "path": "dist/calibrated-renderer.d.ts",
+            "size": 7074
+          },
+          {
+            "path": "dist/calibrated-renderer.d.ts.map",
+            "size": 6357
+          },
+          {
+            "path": "dist/index.css",
+            "size": 17164
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 715
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 533
+          },
+          {
+            "path": "dist/index.js",
+            "size": 252997
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 643126
+          },
+          {
+            "path": "dist/load-task.d.ts",
+            "size": 575
+          },
+          {
+            "path": "dist/load-task.d.ts.map",
+            "size": 492
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 4678
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 4300
+          },
+          {
+            "path": "dist/raw-preview-driver.d.ts",
+            "size": 556
+          },
+          {
+            "path": "dist/raw-preview-driver.d.ts.map",
+            "size": 462
+          },
+          {
+            "path": "dist/realtime-renderer.d.ts",
+            "size": 616
+          },
+          {
+            "path": "dist/realtime-renderer.d.ts.map",
+            "size": 477
+          },
+          {
+            "path": "dist/realtime/stitch-types.d.ts",
+            "size": 1819
+          },
+          {
+            "path": "dist/realtime/stitch-types.d.ts.map",
+            "size": 2040
+          },
+          {
+            "path": "dist/static-renderer.d.ts",
+            "size": 586
+          },
+          {
+            "path": "dist/static-renderer.d.ts.map",
+            "size": 439
+          },
+          {
+            "path": "dist/wasm-processor.d.ts",
+            "size": 5157
+          },
+          {
+            "path": "dist/wasm-processor.d.ts.map",
+            "size": 5149
+          },
+          {
+            "path": "package.json",
+            "size": 1314
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 77162,
+        "unpackedBytes": 297026,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/panorama",
+        "filename": "filens-panorama-0.1.0.tgz",
+        "tarballSha256": "8adac40ccdc52437f5aee5a38b5e01994b2f03568c98b4ed0e919035f105a0d3",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 4180
+          },
+          {
+            "path": "dist/calibrated-renderer.d.ts",
+            "size": 7025
+          },
+          {
+            "path": "dist/index.css",
+            "size": 17164
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 680
+          },
+          {
+            "path": "dist/index.js",
+            "size": 252963
+          },
+          {
+            "path": "dist/load-task.d.ts",
+            "size": 536
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 4634
+          },
+          {
+            "path": "dist/raw-preview-driver.d.ts",
+            "size": 508
+          },
+          {
+            "path": "dist/realtime-renderer.d.ts",
+            "size": 569
+          },
+          {
+            "path": "dist/realtime/stitch-types.d.ts",
+            "size": 1777
+          },
+          {
+            "path": "dist/static-renderer.d.ts",
+            "size": 541
+          },
+          {
+            "path": "dist/wasm-processor.d.ts",
+            "size": 5113
+          },
+          {
+            "path": "package.json",
+            "size": 1336
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 235904,
+        "unpackedBytes": 940130,
+        "maps": 1,
+        "mapBytes": 643126,
+        "tarballSha256": "516ad1b4e0c6a19188b90bf3d6e346616cb459a05121ea0eb939aa0662215581"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 18,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "PANORAMA_FORMAT_ROUTES",
+          "PanoramaPreviewSession",
+          "PanoramaProcessorError",
+          "RAW_IMAGE_FORMAT_ROUTES",
+          "bindPanoramaLensTracks",
+          "createImageStitchCalibration",
+          "createPanoramaPreviewDriver",
+          "createPanoramaPreviewRoutes",
+          "createRawImagePreviewDriver",
+          "createRealtimePanoramaRenderer",
+          "createRealtimeStitchCalibration",
+          "createStaticPanoramaRenderer",
+          "createWasmPanoramaProcessor",
+          "mergeCompanionLenses",
+          "panoramaDecoderConfig",
+          "panoramaEncodedVideoChunk"
+        ],
+        "routesEqual": true
+      }
+    },
+    "pdf": {
+      "baseline": {
+        "packedBytes": 314192,
+        "unpackedBytes": 1136855,
+        "maps": 4,
+        "mapBytes": 38462,
+        "name": "@filens/pdf",
+        "filename": "filens-pdf-0.1.0.tgz",
+        "tarballSha256": "acb5e5467988e2e468d9e750737e6fc174a88835448c1f86c8e39fbb3f78d6ff",
+        "files": [
+          {
+            "path": "dist/index.css",
+            "size": 366
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 156
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 210
+          },
+          {
+            "path": "dist/index.js",
+            "size": 15874
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 35935
+          },
+          {
+            "path": "dist/pdf.worker.min-7uX_Ayts.js",
+            "size": 142
+          },
+          {
+            "path": "dist/pdf.worker.min-7uX_Ayts.js.map",
+            "size": 313
+          },
+          {
+            "path": "dist/pdf.worker.min.mjs",
+            "size": 1078612
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2059
+          },
+          {
+            "path": "dist/preview-driver.d.ts.map",
+            "size": 2004
+          },
+          {
+            "path": "package.json",
+            "size": 1184
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 303329,
+        "unpackedBytes": 1098652,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/pdf",
+        "filename": "filens-pdf-0.1.0.tgz",
+        "tarballSha256": "b2ed29045d4847cf7188d2501d0879527953cb6057745ff690cdd131180c5d42",
+        "files": [
+          {
+            "path": "dist/index.css",
+            "size": 366
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 121
+          },
+          {
+            "path": "dist/index.js",
+            "size": 16208
+          },
+          {
+            "path": "dist/pdf.worker.min-7uX_Ayts.js",
+            "size": 90
+          },
+          {
+            "path": "dist/pdf.worker.min.mjs",
+            "size": 1078612
+          },
+          {
+            "path": "dist/preview-driver.d.ts",
+            "size": 2049
+          },
+          {
+            "path": "package.json",
+            "size": 1206
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 313866,
+        "unpackedBytes": 1136054,
+        "maps": 2,
+        "mapBytes": 37424,
+        "tarballSha256": "587ea4804ac7b6373bd60f28e150d295edbd29c51d75c489fd2872a9571e3cbe"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 1,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "PDF_FORMAT_ROUTES",
+          "PdfPreviewSession",
+          "createPdfPreviewDriver",
+          "createPdfPreviewRoutes"
+        ],
+        "routesEqual": true
+      }
+    },
+    "text": {
+      "baseline": {
+        "packedBytes": 5932,
+        "unpackedBytes": 20295,
+        "maps": 2,
+        "mapBytes": 1622,
+        "name": "@filens/text",
+        "filename": "filens-text-0.1.0.tgz",
+        "tarballSha256": "456af7bbd98815b9a60d914d93f0054d3546aef2b0a4539323250a9287028e07",
+        "files": [
+          {
+            "path": "dist/index.d.ts",
+            "size": 270
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 288
+          },
+          {
+            "path": "dist/index.js",
+            "size": 496
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 1334
+          },
+          {
+            "path": "dist/style.css",
+            "size": 16900
+          },
+          {
+            "path": "package.json",
+            "size": 1007
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 5311,
+        "unpackedBytes": 18626,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/text",
+        "filename": "filens-text-0.1.0.tgz",
+        "tarballSha256": "223c512f8c877f9fe6584f57203a088d4464dfcd41fc96f063610bebcf74a7ac",
+        "files": [
+          {
+            "path": "dist/index.d.ts",
+            "size": 235
+          },
+          {
+            "path": "dist/index.js",
+            "size": 462
+          },
+          {
+            "path": "dist/style.css",
+            "size": 16900
+          },
+          {
+            "path": "package.json",
+            "size": 1029
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 5759,
+        "unpackedBytes": 19938,
+        "maps": 1,
+        "mapBytes": 1334,
+        "tarballSha256": "045ff95b4950f26c49042def226f4997a102633d3f34bd2c329b5451954585f5"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 0,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "createTextPreviewDrivers",
+          "createTextPreviewRoutes"
+        ],
+        "routesEqual": true
+      }
+    },
+    "vue": {
+      "baseline": {
+        "packedBytes": 134306,
+        "unpackedBytes": 653510,
+        "maps": 8,
+        "mapBytes": 190097,
+        "name": "@filens/vue",
+        "filename": "filens-vue-0.1.1.tgz",
+        "tarballSha256": "3f18d5e0df5926a1c0ad005433f4a89f212a9b4c7e287a1ae4ad5cd4e2c2d9b5",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 6699
+          },
+          {
+            "path": "dist/components/SlideThumbnail.vue.d.ts",
+            "size": 649
+          },
+          {
+            "path": "dist/components/SlideThumbnail.vue.d.ts.map",
+            "size": 386
+          },
+          {
+            "path": "dist/defaults.d.ts",
+            "size": 203
+          },
+          {
+            "path": "dist/defaults.d.ts.map",
+            "size": 250
+          },
+          {
+            "path": "dist/i18n.d.ts",
+            "size": 86562
+          },
+          {
+            "path": "dist/i18n.d.ts.map",
+            "size": 3594
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 487
+          },
+          {
+            "path": "dist/index.d.ts.map",
+            "size": 451
+          },
+          {
+            "path": "dist/index.js",
+            "size": 203269
+          },
+          {
+            "path": "dist/index.js.map",
+            "size": 182365
+          },
+          {
+            "path": "dist/IworkPreview.vue.d.ts",
+            "size": 1675
+          },
+          {
+            "path": "dist/IworkPreview.vue.d.ts.map",
+            "size": 696
+          },
+          {
+            "path": "dist/locales/ca_ES.json.d.ts",
+            "size": 3684
+          },
+          {
+            "path": "dist/locales/cs_CZ.json.d.ts",
+            "size": 3544
+          },
+          {
+            "path": "dist/locales/da_DK.json.d.ts",
+            "size": 3497
+          },
+          {
+            "path": "dist/locales/de_DE.json.d.ts",
+            "size": 3618
+          },
+          {
+            "path": "dist/locales/el_GR.json.d.ts",
+            "size": 4783
+          },
+          {
+            "path": "dist/locales/en_GB.json.d.ts",
+            "size": 3269
+          },
+          {
+            "path": "dist/locales/en_US.json.d.ts",
+            "size": 3269
+          },
+          {
+            "path": "dist/locales/es_ES.json.d.ts",
+            "size": 3669
+          },
+          {
+            "path": "dist/locales/fr_FR.json.d.ts",
+            "size": 3676
+          },
+          {
+            "path": "dist/locales/ga_IE.json.d.ts",
+            "size": 3700
+          },
+          {
+            "path": "dist/locales/hr_HR.json.d.ts",
+            "size": 3519
+          },
+          {
+            "path": "dist/locales/hu_HU.json.d.ts",
+            "size": 3708
+          },
+          {
+            "path": "dist/locales/it_IT.json.d.ts",
+            "size": 3612
+          },
+          {
+            "path": "dist/locales/ja_JP.json.d.ts",
+            "size": 3998
+          },
+          {
+            "path": "dist/locales/ko_KR.json.d.ts",
+            "size": 3626
+          },
+          {
+            "path": "dist/locales/ml_IN.json.d.ts",
+            "size": 5889
+          },
+          {
+            "path": "dist/locales/nb_NO.json.d.ts",
+            "size": 3481
+          },
+          {
+            "path": "dist/locales/nl_NL.json.d.ts",
+            "size": 3545
+          },
+          {
+            "path": "dist/locales/pl_PL.json.d.ts",
+            "size": 3585
+          },
+          {
+            "path": "dist/locales/pt_BR.json.d.ts",
+            "size": 3577
+          },
+          {
+            "path": "dist/locales/pt_PT.json.d.ts",
+            "size": 3623
+          },
+          {
+            "path": "dist/locales/ro_RO.json.d.ts",
+            "size": 3657
+          },
+          {
+            "path": "dist/locales/ru_RU.json.d.ts",
+            "size": 4599
+          },
+          {
+            "path": "dist/locales/sk_SK.json.d.ts",
+            "size": 3588
+          },
+          {
+            "path": "dist/locales/sv_SE.json.d.ts",
+            "size": 3465
+          },
+          {
+            "path": "dist/locales/tr_TR.json.d.ts",
+            "size": 3527
+          },
+          {
+            "path": "dist/locales/zh_CN.json.d.ts",
+            "size": 3303
+          },
+          {
+            "path": "dist/locales/zh_TW.json.d.ts",
+            "size": 3309
+          },
+          {
+            "path": "dist/PptxPreview.vue.d.ts",
+            "size": 1536
+          },
+          {
+            "path": "dist/PptxPreview.vue.d.ts.map",
+            "size": 645
+          },
+          {
+            "path": "dist/Preview.vue.d.ts",
+            "size": 6196
+          },
+          {
+            "path": "dist/Preview.vue.d.ts.map",
+            "size": 1710
+          },
+          {
+            "path": "dist/style.css",
+            "size": 49504
+          },
+          {
+            "path": "package.json",
+            "size": 2313
+          }
+        ]
+      },
+      "current": {
+        "packedBytes": 94592,
+        "unpackedBytes": 468613,
+        "maps": 0,
+        "mapBytes": 0,
+        "name": "@filens/vue",
+        "filename": "filens-vue-0.1.1.tgz",
+        "tarballSha256": "165747c3d7f43f1018a51b2ca88fb2c7b736430ef81b41c27cf6770634090183",
+        "files": [
+          {
+            "path": "README.md",
+            "size": 6699
+          },
+          {
+            "path": "dist/components/SlideThumbnail.vue.d.ts",
+            "size": 601
+          },
+          {
+            "path": "dist/defaults.d.ts",
+            "size": 165
+          },
+          {
+            "path": "dist/i18n.d.ts",
+            "size": 86528
+          },
+          {
+            "path": "dist/index.d.ts",
+            "size": 452
+          },
+          {
+            "path": "dist/index.js",
+            "size": 203235
+          },
+          {
+            "path": "dist/IworkPreview.vue.d.ts",
+            "size": 1629
+          },
+          {
+            "path": "dist/locales/ca_ES.json.d.ts",
+            "size": 3684
+          },
+          {
+            "path": "dist/locales/cs_CZ.json.d.ts",
+            "size": 3544
+          },
+          {
+            "path": "dist/locales/da_DK.json.d.ts",
+            "size": 3497
+          },
+          {
+            "path": "dist/locales/de_DE.json.d.ts",
+            "size": 3618
+          },
+          {
+            "path": "dist/locales/el_GR.json.d.ts",
+            "size": 4783
+          },
+          {
+            "path": "dist/locales/en_GB.json.d.ts",
+            "size": 3269
+          },
+          {
+            "path": "dist/locales/en_US.json.d.ts",
+            "size": 3269
+          },
+          {
+            "path": "dist/locales/es_ES.json.d.ts",
+            "size": 3669
+          },
+          {
+            "path": "dist/locales/fr_FR.json.d.ts",
+            "size": 3676
+          },
+          {
+            "path": "dist/locales/ga_IE.json.d.ts",
+            "size": 3700
+          },
+          {
+            "path": "dist/locales/hr_HR.json.d.ts",
+            "size": 3519
+          },
+          {
+            "path": "dist/locales/hu_HU.json.d.ts",
+            "size": 3708
+          },
+          {
+            "path": "dist/locales/it_IT.json.d.ts",
+            "size": 3612
+          },
+          {
+            "path": "dist/locales/ja_JP.json.d.ts",
+            "size": 3998
+          },
+          {
+            "path": "dist/locales/ko_KR.json.d.ts",
+            "size": 3626
+          },
+          {
+            "path": "dist/locales/ml_IN.json.d.ts",
+            "size": 5889
+          },
+          {
+            "path": "dist/locales/nb_NO.json.d.ts",
+            "size": 3481
+          },
+          {
+            "path": "dist/locales/nl_NL.json.d.ts",
+            "size": 3545
+          },
+          {
+            "path": "dist/locales/pl_PL.json.d.ts",
+            "size": 3585
+          },
+          {
+            "path": "dist/locales/pt_BR.json.d.ts",
+            "size": 3577
+          },
+          {
+            "path": "dist/locales/pt_PT.json.d.ts",
+            "size": 3623
+          },
+          {
+            "path": "dist/locales/ro_RO.json.d.ts",
+            "size": 3657
+          },
+          {
+            "path": "dist/locales/ru_RU.json.d.ts",
+            "size": 4599
+          },
+          {
+            "path": "dist/locales/sk_SK.json.d.ts",
+            "size": 3588
+          },
+          {
+            "path": "dist/locales/sv_SE.json.d.ts",
+            "size": 3465
+          },
+          {
+            "path": "dist/locales/tr_TR.json.d.ts",
+            "size": 3527
+          },
+          {
+            "path": "dist/locales/zh_CN.json.d.ts",
+            "size": 3303
+          },
+          {
+            "path": "dist/locales/zh_TW.json.d.ts",
+            "size": 3309
+          },
+          {
+            "path": "dist/PptxPreview.vue.d.ts",
+            "size": 1491
+          },
+          {
+            "path": "dist/Preview.vue.d.ts",
+            "size": 6131
+          },
+          {
+            "path": "dist/style.css",
+            "size": 55027
+          },
+          {
+            "path": "package.json",
+            "size": 2335
+          }
+        ]
+      },
+      "mapInclusionControl": {
+        "packedBytes": 133605,
+        "unpackedBytes": 650956,
+        "maps": 1,
+        "mapBytes": 182365,
+        "tarballSha256": "cec9becd7e69953930ae42822d365a9ce41045ead39a97290b52d3184d6c9f49"
+      },
+      "validation": {
+        "publicPathsResolve": true,
+        "noSourceMaps": true,
+        "noDanglingMapUrls": true,
+        "declarationReferences": 9,
+        "unchangedAssets": [],
+        "runtimeExports": [
+          "IworkPreview",
+          "PptxPreview",
+          "Preview",
+          "createVueDefaultPreviewRoutes",
+          "default",
+          "previewLocales",
+          "resolvePreviewLocale",
+          "translatePreview"
+        ],
+        "routesEqual": true
+      }
+    }
+  },
+  "totals": {
+    "baseline": {
+      "packedBytes": 4823450,
+      "unpackedBytes": 17538321,
+      "maps": 102,
+      "mapBytes": 7560950
+    },
+    "current": {
+      "packedBytes": 3349972,
+      "unpackedBytes": 9980661,
+      "maps": 0,
+      "mapBytes": 0
+    },
+    "mapInclusionControl": {
+      "packedBytes": 4800420,
+      "unpackedBytes": 17447578,
+      "maps": 27,
+      "mapBytes": 7467247
+    }
+  },
+  "errors": [],
+  "browser": "147.0.7727.15",
+  "verificationScriptSha256": "4053ab7a71364b2bfd3ab09aced62c24f6ac6adfa16f253f2e97c17b2235bd47"
+}

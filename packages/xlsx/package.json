@@ -1,6 +1,6 @@
 {
   "name": "@filens/xlsx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "XLSX preview driver for the @filens multi-format preview runtime.",
   "type": "module",
   "main": "./dist/index.js",
@@ -23,10 +23,19 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./dist/index.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    },
+    "./table": {
+      "types": "./dist/table.d.ts",
+      "import": "./dist/table.js"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",
@@ -35,14 +44,14 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.5.3",
-    "jszip": "^3.10.1"
+    "fast-xml-parser": "^4.5.3"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
-    "@filens/core": "file:../core"
+    "@filens/core": "file:../core",
+    "jszip": "^3.10.1"
   },
   "license": "MIT",
   "repository": {

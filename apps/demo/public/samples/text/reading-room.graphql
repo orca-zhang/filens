@@ -1,0 +1,22 @@
+# Fictional reading-room schema and example query.
+type Book {
+  id: ID!
+  title: String!
+  author: String!
+  tags: [String!]!
+  availableCopies: Int!
+}
+
+type Query {
+  books(query: String, tag: String, first: Int = 12): [Book!]!
+  book(id: ID!): Book
+}
+
+query WeekendReading {
+  books(query: "河", tag: "随笔", first: 6) {
+    id
+    title
+    author
+    availableCopies
+  }
+}

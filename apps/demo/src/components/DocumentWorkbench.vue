@@ -16,6 +16,7 @@ const props = defineProps<{
   extension: string;
   family: string;
   source: string;
+  thirdPartySource: { url: string; origin: string } | null;
   uploadAccept: string;
   families: WorkbenchFormatFamily[];
   selectedFamily: WorkbenchFamilyId;
@@ -45,6 +46,7 @@ const detailsOpen = ref(false);
 const linkDialog = ref<HTMLDialogElement>();
 const linkButton = ref<HTMLButtonElement>();
 const linkInput = ref<HTMLInputElement>();
+const formatInput = ref<HTMLInputElement>();
 const dragDepth = ref(0);
 const panelId = useId();
 const detailId = useId();
@@ -92,6 +94,13 @@ function selectSample(extension: string): void {
   emit('sample', extension);
   if (window.matchMedia('(max-width: 760px)').matches) libraryOpen.value = false;
 }
+function importSupportedFormat(extension: string): void {
+  // The file picker still permits companion resources; the chosen format is a hint.
+  if (formatInput.value) {
+    formatInput.value.accept = `.${extension}`;
+    formatInput.value.click();
+  }
+}
 function selectSection(section: 'preview' | 'agent'): void {
   emit('section', section);
   if (window.matchMedia('(max-width: 760px)').matches) libraryOpen.value = false;
@@ -121,7 +130,8 @@ function openRemote(): void {
         <span>{{ t('探微', 'filens') }}<span class="wb-brand-caption">{{ t('文件里的世界', 'The world inside files') }}</span></span>
         <WorkbenchIcon name="arrow" />
       </button>
-      <FormatBrowser v-show="section === 'preview'" :families="families" :selected-family="selectedFamily" :active-extension="extension" :sample-extensions="sampleExtensions" @family="emit('family', $event)" @sample="selectSample" />
+      <FormatBrowser v-show="section === 'preview'" :families="families" :selected-family="selectedFamily" :active-extension="extension" :sample-extensions="sampleExtensions" @family="emit('family', $event)" @sample="selectSample" @import="importSupportedFormat" />
+      <input ref="formatInput" type="file" multiple hidden :aria-label="t('导入所选格式文件', 'Import selected format')" @change="upload" />
       <section v-if="section === 'agent'" class="wb-agent-sidebar" :aria-label="t('Agent 工具箱', 'Agent toolbox')">
         <p class="wb-eyebrow">LOCAL FILE TOOLS</p><h2>{{ t('Agent 工具箱', 'Agent toolbox') }}</h2><p>{{ t('给 Agent 一双看见文件的眼睛。', 'Give your Agent a way to see inside files.') }}</p>
         <div><WorkbenchIcon name="file" /><span>{{ t('文档读取与证据', 'Document reading and evidence') }}</span></div><div><WorkbenchIcon name="search" /><span>{{ t('跨格式目录搜索', 'Search across file formats') }}</span></div><div><WorkbenchIcon name="scan" /><span>{{ t('本地 OCR 与布局', 'Local OCR and layout') }}</span></div><div><WorkbenchIcon name="sliders" /><span>{{ t('关键原文提取', 'Extract key passages') }}</span></div><div><WorkbenchIcon name="copy" /><span>{{ t('重复文件与相似图片', 'Duplicates and similar images') }}</span></div><div><WorkbenchIcon name="arrow" /><span>{{ t('多格式文件转换', 'Convert file formats') }}</span></div>
@@ -156,6 +166,10 @@ function openRemote(): void {
               <button type="button" class="wb-icon-button" :class="{ 'is-active': detailsOpen }" :aria-label="t('文件详情', 'File details')" :aria-expanded="detailsOpen" :aria-controls="detailId" @click="detailsOpen = !detailsOpen"><WorkbenchIcon name="info" /></button>
             </div>
           </header>
+          <div v-if="thirdPartySource" class="wb-source-notice" role="note" :aria-label="t('第三方资源来源', 'Third-party resource source')">
+            <WorkbenchIcon name="link" />
+            <div><strong>{{ t('资源来自第三方站点', 'This resource comes from a third-party site') }}</strong><p>{{ t('来源：', 'Source: ') }}<a :href="thirdPartySource.url" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ thirdPartySource.origin }}</a><span>{{ t('。文件内容由来源站点提供。', '. File content is provided by the source site.') }}</span></p></div>
+          </div>
           <p v-if="error" class="wb-note is-error" role="alert">{{ error }}</p>
           <div id="wb-preview-content" class="wb-preview-stage"><slot /></div>
           <footer class="wb-preview-footer">
@@ -180,7 +194,7 @@ function openRemote(): void {
     <dialog ref="linkDialog" class="wb-link-dialog" aria-labelledby="wb-link-heading" @click="event => { if (event.target === linkDialog) closeLink(); }" @cancel.prevent="closeLink">
       <form class="wb-remote" @submit.prevent="openRemote">
         <header><div class="wb-dialog-icon"><WorkbenchIcon name="link" /></div><button class="wb-icon-button" type="button" :aria-label="t('关闭链接窗口', 'Close link dialog')" @click="closeLink"><WorkbenchIcon name="close" /></button></header>
-        <h2 id="wb-link-heading">{{ t('打开一个文件链接', 'Open a file link') }}</h2><p>{{ t('粘贴可直接访问的文件地址，即可开始预览。', 'Paste a direct file URL to start the preview.') }}</p>
+        <h2 id="wb-link-heading">{{ t('打开一个文件链接', 'Open a file link') }}</h2><p>{{ t('粘贴可直接访问的 HTTP(S) 文件地址。第三方文件会标明来源，来源站点需允许跨域访问。', 'Paste a direct HTTP(S) file URL. Third-party files are labeled with their source, which must allow cross-origin access.') }}</p>
         <label for="wb-remote-url">{{ t('文件 URL', 'File URL') }}</label><input id="wb-remote-url" ref="linkInput" v-model="remoteUrl" type="url" class="wb-remote-input" placeholder="https://example.com/document.pdf" required />
         <button type="submit" class="wb-button wb-remote-button">{{ t('打开预览', 'Open preview') }} <WorkbenchIcon name="chevron" /></button>
       </form>

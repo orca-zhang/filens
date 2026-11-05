@@ -1,6 +1,6 @@
 {
   "name": "@filens/model3d",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Browser-native 3D model preview driver for the @filens multi-format preview runtime.",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,10 +24,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./dist/index.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",
@@ -37,16 +42,16 @@
   },
   "dependencies": {
     "filens-step": "0.1.0-rc.1",
-    "jszip": "^3.10.1",
     "three": "^0.176.0",
     "@types/three": "^0.176.0"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
     "@filens/core": "file:../core",
-    "occt-import-js": "0.0.23"
+    "occt-import-js": "0.0.23",
+    "jszip": "^3.10.1"
   },
   "license": "MIT",
   "repository": {

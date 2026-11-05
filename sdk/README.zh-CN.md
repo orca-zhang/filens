@@ -6,7 +6,7 @@
 前端运行时与 WASM，不上传文件，也不在 Swift / Java 内实现格式解析或转换。
 这是预览组件；目前不提供原生读取、OCR、搜索或独立转换结果 API。
 
-SDK 版本 **0.1.3**，共享预览运行时 **0.3.3**。Release 中的 SDK ZIP 已携带离线资源，
+SDK 版本 **0.1.4**，共享预览运行时 **0.3.4**。Release 中的 SDK ZIP 已携带离线资源，
 解压后可直接接入对应的 `sdk/ios` 或 `sdk/android` 模块。源码构建和打包方式见下文。
 [下载包与解压体积](../docs/mobile-sdk-sizes.json) · [运行时与 npm 包体积](../docs/preview-sizes.md)。
 

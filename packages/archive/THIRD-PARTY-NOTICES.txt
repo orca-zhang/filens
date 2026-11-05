@@ -1,7 +1,9 @@
 7-Zip 24.09 — Filens read-only browser build
 
-Modified: extraction-only CLI; retain RAR, RAR5, 7z, ZIP and Split handlers,
-all their decoders and crypto; remove unused filesystem adapters and writers.
+Modified: extraction-only CLI; retain RAR, RAR5, 7z, ZIP, Split, BZip2, XZ,
+LZMA/LZMA86, Zstandard, Unix compress, AR, CPIO, CAB, ISO/UDF, LHA/LZH,
+RPM, XAR and WIM/ESD handlers, their decoders and crypto;
+remove unused filesystem adapters and writers.
 Built with Emscripten 4.0.10, -O3 and link-time optimization.
 
 Exact corresponding upstream source:

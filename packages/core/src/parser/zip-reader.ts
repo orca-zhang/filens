@@ -1,5 +1,4 @@
 import { inflateSync } from 'fflate';
-import JSZip from 'jszip';
 import { PreviewPasswordError } from '../preview/password';
 
 export interface ZipEntry {
@@ -23,14 +22,19 @@ export interface ZipArchiveOptions {
 /** ZIP reader for document containers. Retains ZIP64/Unicode compatibility,
  * and reports password_required without importing an encryption engine. */
 export async function openUnencryptedZipArchive(bytes: Uint8Array, options: ZipArchiveOptions = {}): Promise<Map<string, ZipEntry>> {
-  const indexed = indexZip(bytes, options.maxEntryBytes);
+  options.signal?.throwIfAborted();
+  const indexed = indexZip(bytes, options);
   if (indexed) return indexed;
-  let zip: JSZip;
+  // ZIP64 and legacy Unicode metadata need the compatibility reader only.
+  const { default: JSZip } = await import('jszip');
+  options.signal?.throwIfAborted();
+  let zip: Awaited<ReturnType<typeof JSZip.loadAsync>>;
   try { zip = await JSZip.loadAsync(bytes); }
   catch (error) {
     if (error instanceof Error && /encrypted/i.test(error.message)) throw new PreviewPasswordError('password_required');
     throw error;
   }
+  options.signal?.throwIfAborted();
   const cache = { remaining: 8 * 1024 * 1024 };
   return new Map(Object.values(zip.files).map(file => {
     const metadata = file as typeof file & { _data?: { uncompressedSize?: number } };
@@ -39,7 +43,7 @@ export async function openUnencryptedZipArchive(bytes: Uint8Array, options: ZipA
         throw new Error('Archive entry exceeds the preview size limit.');
       }
       return file.async('uint8array');
-    }, metadata._data?.uncompressedSize, cache);
+    }, metadata._data?.uncompressedSize, cache, options.signal);
     return [file.name, {
       name: file.name, directory: file.dir, size: metadata._data?.uncompressedSize,
       modified: file.date?.getTime(), bytes: read, text: async () => decoder.decode(await read())
@@ -47,7 +51,8 @@ export async function openUnencryptedZipArchive(bytes: Uint8Array, options: ZipA
   }));
 }
 
-function indexZip(bytes: Uint8Array, maxEntryBytes = 128 * 1024 * 1024): Map<string, ZipEntry> | undefined {
+function indexZip(bytes: Uint8Array, options: ZipArchiveOptions): Map<string, ZipEntry> | undefined {
+  const maxEntryBytes = options.maxEntryBytes ?? 128 * 1024 * 1024;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const length = bytes.length;
   let end = length - 22;
@@ -82,8 +87,7 @@ function indexZip(bytes: Uint8Array, maxEntryBytes = 128 * 1024 * 1024): Map<str
     const next = offset + 46 + nameLength + extraLength + commentLength;
     if (next > end) return undefined;
     if (flags & 1) throw new PreviewPasswordError('password_required');
-    if ((method !== 0 && method !== 8) ||
-        compressedSize === 0xffffffff || originalSize === 0xffffffff || localOffset === 0xffffffff ||
+    if (compressedSize === 0xffffffff || originalSize === 0xffffffff || localOffset === 0xffffffff ||
         view.getUint16(offset + 34, true)) return undefined;
     const rawName = bytes.subarray(offset + 46, offset + 46 + nameLength);
     if (!(flags & 0x800) && rawName.some(value => value >= 128)) return undefined;
@@ -96,13 +100,18 @@ function indexZip(bytes: Uint8Array, maxEntryBytes = 128 * 1024 * 1024): Map<str
       extra += 4 + extraSize;
       if (extra > offset + 46 + nameLength + extraLength) return undefined;
     }
-    const parts: string[] = [];
     const decodedName = decoder.decode(rawName);
-    for (const part of decodedName.split('/')) {
-      if (part === '..') parts.pop();
-      else if (part !== '.') parts.push(part);
+    let name = decodedName;
+    // Most document paths have no dot components. Preserve the original
+    // spelling (including empty segments) without allocating a parts array.
+    if (/(^|\/)\.\.?(\/|$)/.test(name)) {
+      const parts: string[] = [];
+      for (const part of name.split('/')) {
+        if (part === '..') parts.pop();
+        else if (part !== '.') parts.push(part);
+      }
+      name = parts.join('/');
     }
-    let name = parts.join('/');
     const directory = decodedName.endsWith('/') || Boolean(view.getUint32(offset + 38, true) & 0x10);
     if (directory && !name.endsWith('/')) name += '/';
     if (localOffset + 30 > directoryStart || view.getUint32(localOffset, true) !== 0x04034b50) return undefined;
@@ -114,10 +123,13 @@ function indexZip(bytes: Uint8Array, maxEntryBytes = 128 * 1024 * 1024): Map<str
     const modified = Date.UTC((date >> 9) + 1980, ((date >> 5) & 15) - 1, date & 31, time >> 11, (time >> 5) & 63, (time & 31) * 2);
     const read = entryReader(async () => {
       if (originalSize > maxEntryBytes) throw new Error('Archive entry exceeds the preview size limit.');
+      // An unused attachment with another method must not force a second ZIP
+      // index or prevent supported document parts from being read.
+      if (method !== 0 && method !== 8) throw new Error(`Unsupported ZIP compression method: ${method}.`);
       const data = method === 0 ? compressed : await inflateEntry(compressed, originalSize);
       if (data.length !== originalSize) throw new Error(`Invalid ZIP entry size: ${name}.`);
       return data;
-    }, originalSize, cache);
+    }, originalSize, cache, options.signal);
     entries.set(name, { name, directory, size: originalSize, modified, bytes: read, text: async () => decoder.decode(await read()) });
     offset = next;
   }
@@ -125,18 +137,23 @@ function indexZip(bytes: Uint8Array, maxEntryBytes = 128 * 1024 * 1024): Map<str
 }
 
 
-function entryReader(read: () => Promise<Uint8Array>, size: number | undefined, cache: { remaining: number }): () => Promise<Uint8Array> {
+function entryReader(read: () => Promise<Uint8Array>, size: number | undefined, cache: { remaining: number }, signal?: AbortSignal): ZipEntry['bytes'] {
   let loaded: Promise<Uint8Array> | undefined;
-  return () => {
-    if (loaded) return loaded;
-    const result = Promise.resolve().then(read);
+  return async (_password, readSignal = signal) => {
+    readSignal?.throwIfAborted();
+    const result = loaded ?? Promise.resolve().then(() => {
+      readSignal?.throwIfAborted();
+      return read();
+    });
     // Keep repeat reads fast without retaining the entire expanded archive.
-    if (size !== undefined && size <= cache.remaining) {
+    if (!loaded && size !== undefined && size <= cache.remaining) {
       cache.remaining -= size;
       loaded = result;
       void result.catch(() => { if (loaded === result) { loaded = undefined; cache.remaining += size; } });
     }
-    return result;
+    const data = await result;
+    readSignal?.throwIfAborted();
+    return data;
   };
 }
 
@@ -149,20 +166,18 @@ async function inflateEntry(compressed: Uint8Array, size: number): Promise<Uint8
     if (stream) {
       const input = new Response(compressed as Uint8Array<ArrayBuffer>).body!;
       const reader = input.pipeThrough(stream).getReader();
-      const chunks: Uint8Array[] = [];
+      const data = new Uint8Array(size);
       let length = 0;
       try {
         for (;;) {
           const { value, done } = await reader.read();
           if (done) break;
+          if (length + value.byteLength > size) throw new Error('Invalid ZIP entry size.');
+          data.set(value, length);
           length += value.byteLength;
-          if (length > size) throw new Error('Invalid ZIP entry size.');
-          chunks.push(value);
         }
       } finally { await reader.cancel().catch(() => {}); }
-      const data = new Uint8Array(length);
-      let offset = 0;
-      for (const chunk of chunks) { data.set(chunk, offset); offset += chunk.byteLength; }
+      if (length !== size) throw new Error('Invalid ZIP entry size.');
       return data;
     }
   }

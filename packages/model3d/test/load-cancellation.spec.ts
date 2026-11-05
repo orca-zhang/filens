@@ -1,4 +1,6 @@
 import { Blob as NativeBlob } from 'node:buffer';
+import { webcrypto } from 'node:crypto';
+import { previewModelCache } from '@filens/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshStandardMaterial, Texture } from 'three';
 import type { PreviewLoadContext, PreviewSource } from '@filens/core';
@@ -11,7 +13,7 @@ vi.mock('three', async () => ({ ...await vi.importActual<typeof import('three')>
 } }));
 vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({ GLTFLoader: class { parseAsync = mocks.parse; } }));
 vi.mock('../src/rust-step-importer', () => ({ createRustStepImporter: mocks.factory }));
-vi.mock('jszip', () => ({ default: { loadAsync: mocks.zip } }));
+vi.mock('@filens/core', async () => ({ ...await vi.importActual<typeof import('@filens/core')>('@filens/core'), openZipArchive: mocks.zip }));
 
 const deferred = <T>() => {
   let resolve!: (value: T) => void, reject!: (error: Error) => void;
@@ -41,11 +43,12 @@ const stepResult = () => ({ success: true, root: { meshes: [0] }, meshes: [{
 }] });
 const modelXml = '<model><resources><object id="1"><mesh><vertices><vertex x="0" y="0" z="0"/><vertex x="1" y="0" z="0"/><vertex x="0" y="1" z="0"/></vertices><triangles><triangle v1="0" v2="1" v3="2"/></triangles></mesh></object></resources><build><item objectid="1"/></build></model>';
 function archiveFixture() {
-  const entry = { name: '3D/3dmodel.model', dir: false, async: vi.fn(async () => modelXml) };
-  return { archive: { file: () => entry, files: { [entry.name]: entry } }, entry };
+  const entry = { name: '3D/3dmodel.model', directory: false, text: vi.fn(async () => modelXml) };
+  return { archive: new Map([[entry.name, entry]]), entry };
 }
 
 beforeEach(async () => {
+  previewModelCache.clear();
   vi.resetModules(); mocks.renderers.length = 0;
   mocks.parse.mockReset().mockResolvedValue({ scene: new Group() });
   mocks.read.mockReset().mockReturnValue(stepResult());
@@ -57,7 +60,32 @@ beforeEach(async () => {
   vi.stubGlobal('URL', class extends URL { static revokeObjectURL = vi.fn(); });
   lib = await import('../src');
 });
-afterEach(() => { sessions.splice(0).forEach(session => session.destroy()); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
+afterEach(() => { previewModelCache.clear(); sessions.splice(0).forEach(session => session.destroy()); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
+
+describe('STEP CPU mesh reuse', () => {
+  it('skips conversion on reopen and gives each tab independent geometry and materials', async () => {
+    vi.stubGlobal('crypto', webcrypto);
+    const source = new Uint8Array([1, 2, 3]), before = source.slice();
+    const first = await lib.loadStepObject(source.buffer, { cache: true }), second = await lib.loadStepObject(source.buffer, { cache: true });
+    expect(mocks.read).toHaveBeenCalledOnce(); expect(source).toEqual(before);
+    const a = first.children[0] as Mesh, b = second.children[0] as Mesh;
+    expect(a.geometry).not.toBe(b.geometry); expect(a.material).not.toBe(b.material);
+    expect(a.geometry.attributes.position.array).not.toBe(b.geometry.attributes.position.array);
+    a.geometry.attributes.position.setX(0, 99); a.geometry.dispose(); (a.material as MeshStandardMaterial).dispose();
+    expect(b.geometry.attributes.position.getX(0)).toBe(0);
+    await lib.loadStepObject(new Uint8Array([1, 2, 4]).buffer, { cache: true }); expect(mocks.read).toHaveBeenCalledTimes(2);
+  });
+  it('does not cache failed, cancelled or explicitly excluded conversions', async () => {
+    vi.stubGlobal('crypto', webcrypto); const source = new ArrayBuffer(3);
+    mocks.read.mockReturnValueOnce({ success: false }); await expect(lib.loadStepObject(source, { cache: true })).rejects.toThrow('could not read');
+    expect(previewModelCache.size).toBe(0);
+    await lib.loadStepObject(source, { cache: false }); expect(previewModelCache.size).toBe(0);
+    const held = deferred<any>(), controller = new AbortController(); mocks.read.mockReturnValueOnce(held.promise);
+    const task = lib.loadStepObject(source, { cache: true, signal: controller.signal }); await vi.waitFor(() => expect(mocks.read).toHaveBeenCalledTimes(3));
+    const rejected = expect(task).rejects.toMatchObject({ name: 'AbortError' }); controller.abort(); await rejected;
+    held.resolve(stepResult()); await flush(); expect(previewModelCache.size).toBe(0);
+  });
+});
 
 describe('top-level 3D input cancellation', () => {
   for (const kind of ['blob', 'fetch', 'body'] as const) {
@@ -154,6 +182,7 @@ describe('GLB parser cancellation', () => {
   it('observes a parser rejection after the cancelled load has already settled', async () => {
     const held = deferred<any>(), controller = new AbortController(); mocks.parse.mockReturnValueOnce(held.promise);
     const result = observe(lib.loadGlbObject(new ArrayBuffer(1), { signal: controller.signal }));
+    await vi.waitFor(() => expect(mocks.parse).toHaveBeenCalledOnce());
     try { controller.abort(); await vi.waitFor(() => expect(result.done).toBe(true), { timeout: 500, interval: 5 }); }
     finally { held.reject(new Error('late parser failure')); await flush(); }
     expect(result.error?.name).toBe('AbortError');
@@ -202,9 +231,9 @@ describe('3MF archive cancellation', () => {
   for (const stage of ['index', 'entry'] as const) {
     it.each(['replace', 'destroy', 'abort'] as const)(`settles a pending 3MF ${stage} before %s and skips late XML`, async action => {
       const { session, errors } = setup(), held = deferred<any>(), controller = new AbortController(), { archive, entry } = archiveFixture();
-      if (stage === 'index') mocks.zip.mockReturnValueOnce(held.promise); else { entry.async.mockReturnValueOnce(held.promise); mocks.zip.mockResolvedValueOnce(archive); }
+      if (stage === 'index') mocks.zip.mockReturnValueOnce(held.promise); else { entry.text.mockReturnValueOnce(held.promise); mocks.zip.mockResolvedValueOnce(archive); }
       const source = new ArrayBuffer(1), result = observe(session.load(source, context(source, 'old.3mf', controller.signal)));
-      await vi.waitFor(() => expect(stage === 'index' ? mocks.zip : entry.async).toHaveBeenCalledOnce());
+      await vi.waitFor(() => expect(stage === 'index' ? mocks.zip : entry.text).toHaveBeenCalledOnce());
       const parseXml = vi.spyOn(DOMParser.prototype, 'parseFromString');
       try {
         if (action === 'replace') await current(session); else if (action === 'destroy') session.destroy(); else controller.abort();
@@ -212,14 +241,14 @@ describe('3MF archive cancellation', () => {
         expect(result.error?.name).toBe(action === 'abort' ? 'AbortError' : undefined);
       } finally { held.resolve(stage === 'index' ? archive : modelXml); await flush(); }
       expect(parseXml).not.toHaveBeenCalled(); expect(errors).not.toHaveBeenCalled();
-      if (stage === 'index') expect(entry.async).not.toHaveBeenCalled();
+      if (stage === 'index') expect(entry.text).not.toHaveBeenCalled();
     });
 
     it(`observes a late 3MF ${stage} rejection after cancellation`, async () => {
       const held = deferred<any>(), controller = new AbortController(), { archive, entry } = archiveFixture();
-      if (stage === 'index') mocks.zip.mockReturnValueOnce(held.promise); else { entry.async.mockReturnValueOnce(held.promise); mocks.zip.mockResolvedValueOnce(archive); }
+      if (stage === 'index') mocks.zip.mockReturnValueOnce(held.promise); else { entry.text.mockReturnValueOnce(held.promise); mocks.zip.mockResolvedValueOnce(archive); }
       const result = observe(lib.load3mfGeometry(new ArrayBuffer(1), { signal: controller.signal }));
-      await vi.waitFor(() => expect(stage === 'index' ? mocks.zip : entry.async).toHaveBeenCalledOnce());
+      await vi.waitFor(() => expect(stage === 'index' ? mocks.zip : entry.text).toHaveBeenCalledOnce());
       try { controller.abort(); await vi.waitFor(() => expect(result.done).toBe(true), { timeout: 500, interval: 5 }); }
       finally { held.reject(new Error('late archive failure')); await flush(); }
       expect(result.error?.name).toBe('AbortError');

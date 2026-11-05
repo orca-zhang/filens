@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import * as core from '@filens/core';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { loadEpubBook } from '../src';
@@ -10,6 +11,53 @@ beforeAll(() => vi.stubGlobal('Blob', NodeBlob));
 afterAll(() => vi.unstubAllGlobals());
 
 describe('EPUB resource paths', () => {
+  it('recognizes URL/import tokens only at valid boundaries and keeps resolver order', async () => {
+    const css = '.a{background:noturl(fake);x:my-url(fake);y:URL(real.svg)}' +
+      '@IMPORT-foo "fake.css";@ImPoRt/**/url(real.css) screen;' +
+      '.b{content:"@import url(fake)";z:uRL(last.svg)}';
+    const requested: Array<[string, boolean]> = [];
+    const result = await rewriteCssResources(css, async (value, stylesheet) => {
+      requested.push([value, stylesheet]); return `blob:${requested.length}`;
+    });
+    expect(requested).toEqual([['real.svg', false], ['real.css', true], ['last.svg', false]]);
+    expect(result).toContain('noturl(fake)');
+    expect(result).toContain('@IMPORT-foo "fake.css"');
+    expect(result).toContain('@ImPoRt/**/url("blob:2") screen;');
+    expect(result).toContain('content:"@import url(fake)"');
+  });
+
+  it('reads only referenced assets once and preserves their declared media types', async () => {
+    const zip = await JSZip.loadAsync(await createBookFixture(2, 1));
+    const manifest = zip.file('OPS/package.opf')!;
+    zip.file(manifest.name, (await manifest.async('text')).replace('</manifest>',
+      '<item id="picture" href="picture.asset" media-type="image/svg+xml"/>' +
+      '<item id="unused" href="unused.bin" media-type="image/png"/>' +
+      '<item id="unused-css" href="unused.css" media-type="text/css"/></manifest>'));
+    zip.file('OPS/picture.asset', '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    zip.file('OPS/unused.bin', new Uint8Array(1024));
+    zip.file('OPS/unused.css', '@import "missing.css";');
+    for (let index = 1; index <= 2; index++) {
+      const chapter = zip.file(`OPS/chapter-${index}.xhtml`)!;
+      zip.file(chapter.name, (await chapter.async('text')).replace('</body>', '<img src="picture.asset"/><img src="picture.asset"/></body>'));
+    }
+    const bytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const entries = await core.openZipArchive(bytes);
+    const used = vi.spyOn(entries.get('OPS/picture.asset')!, 'bytes');
+    const unused = ['OPS/unused.bin', 'OPS/unused.css'].map(path =>
+      vi.spyOn(entries.get(path)!, 'bytes').mockRejectedValue(new Error('Unused asset must stay compressed')));
+    const open = vi.spyOn(core, 'openZipArchive').mockResolvedValueOnce(entries);
+    const createUrl = vi.fn(() => 'blob:picture');
+    try {
+      const book = await loadEpubBook(bytes, undefined, createUrl);
+      expect(book.chapters).toHaveLength(2);
+      for (const chapter of book.chapters) expect(chapter.html.match(/src="blob:picture"/g)).toHaveLength(2);
+      expect(createUrl).toHaveBeenCalledTimes(1);
+      expect(createUrl).toHaveBeenCalledWith(expect.objectContaining({ type: 'image/svg+xml' }));
+      expect(used).toHaveBeenCalledTimes(1);
+      for (const read of unused) expect(read).not.toHaveBeenCalled();
+    } finally { open.mockRestore(); used.mockRestore(); unused.forEach(read => read.mockRestore()); }
+  });
+
   it('rewrites nested CSS, inline styles, encoded paths and SVG references', async () => {
     const blobs: Blob[] = [];
     const book = await loadEpubBook(await createStyledBookFixture(), undefined, blob => {
@@ -89,7 +137,7 @@ describe('EPUB resource paths', () => {
     await expect(loadEpubBook(source, { descriptor: { source }, signal: controller.signal }, createUrl, () => {
       allocatedAtAbort = createUrl.mock.calls.length; controller.abort(); return new Blob(['.late{}'], { type: 'text/css' });
     })).rejects.toMatchObject({ name: 'AbortError' });
-    expect(allocatedAtAbort).toBeGreaterThan(0); expect(createUrl).toHaveBeenCalledTimes(allocatedAtAbort);
+    expect(allocatedAtAbort).toBe(0); expect(createUrl).not.toHaveBeenCalled();
   });
 });
 

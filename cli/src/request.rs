@@ -284,6 +284,12 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
                 );
                 o.request.query = query.clone();
             }
+        } else if positional.first().is_some_and(|s| s == "inspect") {
+            o.request.operation = "inspect".into();
+            ensure!(positional.len() <= 2, "inspect accepts one local file");
+            if let Some(input) = positional.get(1) {
+                set_input(&mut o.request, input)?;
+            }
         } else if positional
             .first()
             .is_some_and(|s| ["similar", "duplicates", "similar-images"].contains(&s.as_str()))
@@ -524,6 +530,19 @@ fn resolve(r: &mut Request) -> Result<()> {
             && r.options.is_null(),
         "conversion options require the convert operation"
     );
+    if r.operation == "inspect" {
+        ensure!(!r.input.is_empty() && !r.input.contains("://"), "inspect requires one local file path");
+        ensure!(r.intent.is_empty() && !r.layout && r.query.is_empty()
+            && r.summary_chars.is_none() && r.summary_ratio.is_none()
+            && r.ocr != "always" && r.ocr_min_confidence.is_none()
+            && r.slides.is_empty() && r.pages.is_empty() && r.media.is_none()
+            && !r.images && r.max_images.is_none() && r.image_names.is_empty()
+            && r.max_bytes == 0, "inspect accepts a file and output format, not extraction or OCR options");
+        if r.format.is_empty() { r.format = "text".into(); }
+        r.format = normalize(&r.format);
+        ensure!(FORMATS.contains(&r.format.as_str()), "unsupported output format");
+        return Ok(());
+    }
     let intent = r.intent.trim().to_owned();
     let lower = intent.to_lowercase();
     let quoted = re(r#"["'“‘]([^"'”’]+)["'”’]"#);

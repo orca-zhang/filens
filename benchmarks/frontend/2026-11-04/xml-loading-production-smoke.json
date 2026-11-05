@@ -1,0 +1,65 @@
+{
+  "browser": "147.0.7727.15",
+  "cases": [
+    {
+      "variant": "split",
+      "first": "xlsx",
+      "deferredFor": [
+        "text",
+        "CSV",
+        "ordinary PPTX"
+      ],
+      "fallback": true,
+      "xlsx": true,
+      "cancelledDuringImport": true,
+      "xmlChunks": [
+        "/chunks/xml-compat-BPMJ8JQX.js"
+      ],
+      "errors": []
+    },
+    {
+      "variant": "split",
+      "first": "fallback",
+      "deferredFor": [
+        "text",
+        "CSV",
+        "ordinary PPTX"
+      ],
+      "fallback": true,
+      "xlsx": true,
+      "cancelledDuringImport": true,
+      "xmlChunks": [
+        "/chunks/xml-compat-BPMJ8JQX.js"
+      ],
+      "errors": []
+    },
+    {
+      "variant": "all-in-one",
+      "first": "xlsx",
+      "deferredFor": [
+        "text",
+        "CSV",
+        "ordinary PPTX"
+      ],
+      "fallback": true,
+      "xlsx": true,
+      "cancelledDuringImport": false,
+      "xmlChunks": [],
+      "errors": []
+    },
+    {
+      "variant": "all-in-one",
+      "first": "fallback",
+      "deferredFor": [
+        "text",
+        "CSV",
+        "ordinary PPTX"
+      ],
+      "fallback": true,
+      "xlsx": true,
+      "cancelledDuringImport": false,
+      "xmlChunks": [],
+      "errors": []
+    }
+  ]
+}

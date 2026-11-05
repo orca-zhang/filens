@@ -1,0 +1,29 @@
+# Fictional local photo archive settings.
+title = "沿河散步 / Riverside walks"
+version = 1
+
+[collection]
+root = "./photos"
+timezone = "Asia/Shanghai"
+languages = ["zh-CN", "en"]
+keep_originals = true
+
+[thumbnails]
+width = 640
+height = 480
+format = "webp"
+quality = 82
+
+[metadata]
+include = ["title", "taken_at", "location", "tags"]
+missing_date = "leave_blank"
+
+[[albums]]
+name = "晨雾"
+tags = ["river", "morning"]
+cover = "riverside-001.jpg"
+
+[[albums]]
+name = "旧街"
+tags = ["city", "architecture"]
+cover = "old-street-014.jpg"

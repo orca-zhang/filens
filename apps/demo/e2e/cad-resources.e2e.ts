@@ -83,7 +83,7 @@ test('drops an unresolved raster after cancellation without leaking a URL', asyn
 test('opens DXF and PNG sidecars through the demo upload flow', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   const png = Buffer.from(await createPngFixture(32)); await page.goto('./?view=preview');
-  await page.locator('input[type=file]').setInputFiles([
+  await page.locator('.wb-upload input[type=file]').setInputFiles([
     { name: 'rasters.dxf', mimeType: 'application/dxf', buffer: Buffer.from(createRasterDxfFixture(2)) },
     { name: 'image-0.png', mimeType: 'image/png', buffer: png },
     { name: 'image-1.png', mimeType: 'image/png', buffer: png }

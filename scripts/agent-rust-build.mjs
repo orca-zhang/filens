@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
 import { gzipSync, constants } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,11 +41,19 @@ export async function buildAgentBinary(destination, { lite = false, platform = `
   }
   if (lite) args.push('--features','lite');
   // Outline repeated AArch64 instructions to retain the native executable budget.
-  if (outline) args.push('--', '-C', 'llvm-args=-enable-machine-outliner=always');
+  if (outline) args.push('--', '-C', 'llvm-args=-enable-machine-outliner=always', '-C', 'llvm-args=-machine-outliner-reruns=2');
   const env = { ...privateRustBuildEnv(root), MACOSX_DEPLOYMENT_TARGET:'12.0' };
   await run('cargo',args,{env});
   await mkdir(path.dirname(destination),{recursive:true});
-  await copyFile(path.join(root,'cli/target',...(zig?[target]:[]),'release',executableName(platform)),destination);
+  // Replace the inode so macOS does not reuse a cached signature for an older
+  // executable, and running processes retain a complete copy of their binary.
+  const staged = `${destination}.${randomUUID()}.tmp`;
+  try {
+    await copyFile(path.join(root,'cli/target',...(zig?[target]:[]),'release',executableName(platform)),staged);
+    await rename(staged, destination);
+  } finally {
+    await rm(staged, { force: true });
+  }
   return compressAgentBinary(destination,{platform,enabled:upx});
 }
 

@@ -16,6 +16,7 @@ examples/go-wazero-converter/tmp/
 examples/go-wazero-converter/batch-report.json
 *.log
 !examples/go-wazero-converter/fixtures/**/*.log
+!apps/demo/public/samples/text/*.log
 *.insv
 *.osv
 *.lrf

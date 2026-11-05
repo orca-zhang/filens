@@ -1,6 +1,6 @@
 [package]
 name = "filens-cli"
-version = "0.5.4"
+version = "0.5.6"
 license = "MIT"
 edition = "2024"
 publish = false
@@ -10,9 +10,9 @@ name = "filens"
 path = "src/main.rs"
 
 [features]
+default = ["search-simd"]
+search-simd = []
 lite = []
-# Maintainer-only way to exercise the Windows/Linux WASI walker on macOS.
-hdrw-wasi = []
 
 [dependencies]
 anyhow = "1.0"
@@ -32,6 +32,9 @@ tempfile = "3.23"
 wasmi = { version = "=0.46.0", default-features = false, features = ["std"] }
 wasmi_wasi = "=0.46.0"
 wiggle = { version = "=31.0.0", default-features = false }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }
 
 [build-dependencies]
 cc = "1.2"

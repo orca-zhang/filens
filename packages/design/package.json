@@ -1,6 +1,6 @@
 {
   "name": "@filens/design",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CAD, diagram, mind-map, and 3D preview drivers for @filens.",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,23 +14,28 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"
   },
   "dependencies": {
-    "@filens/cad": "^0.1.0",
-    "@filens/diagram": "^0.1.0",
-    "@filens/mindmap": "^0.1.0",
-    "@filens/model3d": "^0.1.0"
+    "@filens/cad": "^0.1.1",
+    "@filens/diagram": "^0.1.1",
+    "@filens/mindmap": "^0.1.1",
+    "@filens/model3d": "^0.1.2"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.0"
+    "@filens/core": "^0.1.2"
   },
   "devDependencies": {
     "@filens/cad": "file:../cad",

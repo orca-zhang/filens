@@ -9,10 +9,13 @@ import { checkAgentReleaseLimits } from './agent-release-limits.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const modules=process.argv.includes('--modules');
 const dsh=process.argv.includes('--dsh');
+const cliOnly=process.argv.includes('--cli-only');
 if(modules&&dsh)throw new Error('Choose --modules or --dsh');
+if(cliOnly&&(modules||dsh))throw new Error('--cli-only applies to CLI packages');
 const directory=path.join(root,dsh?'dist/dsh-npm':modules?'dist/workspace-npm':'dist/npm');
 const metadata=JSON.parse(await readFile(path.join(directory,'release.json'),'utf8'));
 const release=dsh?{version:metadata.version,packages:[metadata]}:metadata;
+if(cliOnly)release.packages=release.packages.filter(pkg=>pkg.name!=='filens-preview');
 if(!modules&&!dsh&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
 const integrities=new Map();
 for(const pkg of release.packages){
@@ -27,8 +30,10 @@ if(!Number.isSafeInteger(verifyAttempts)||verifyAttempts<1||verifyAttempts>360)t
 if(!modules&&!dsh)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
 const versionOf=pkg=>pkg.version??release.version;
 const keyOf=pkg=>`${pkg.name}@${versionOf(pkg)}`;
-const tagOf=pkg=>versionOf(pkg).includes('-')?'next':'latest';
 const entryNames=['filens-cli','filens-cli-lite'];
+// A DSH dependency upload must not promote the standalone CLI before its
+// separately published preview runtime is ready.
+const tagOf=pkg=>versionOf(pkg).includes('-')?'next':cliOnly&&entryNames.includes(pkg.name)?'dsh':'latest';
 const existing=new Set();
 const releaseKey=release.version??'workspace';
 const receiptFile=path.join(directory,`publication-state-${releaseKey}.json`);
@@ -100,6 +105,16 @@ if(!dry){
  const results=await Promise.allSettled(entries.map(verifyPublic));
  const errors=results.filter(r=>r.status==='rejected');
  if(errors.length)throw new AggregateError(errors.map(r=>r.reason),'Entry packages are not publicly available; rerun to resume verification');
+ // Reconcile tags after verification, including when the exact version was
+ // already uploaded as a DSH dependency in an earlier partial publication.
+ for(const pkg of entries){
+  const response=await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg.name)}?filens-tag-check=${Date.now()}`,{signal:AbortSignal.timeout(20000)});
+  if(!response.ok)throw new Error(`Registry tags ${pkg.name}: HTTP ${response.status}`);
+  const published=await response.json();
+  if(published['dist-tags']?.[tagOf(pkg)]!==versionOf(pkg)){
+   await run(['dist-tag','add',keyOf(pkg),tagOf(pkg),'--registry=https://registry.npmjs.org/']);
+  }
+ }
 }
 async function publish(pkg){
  if(existing.has(pkg.name)){console.log(`Verified existing ${pkg.name}@${versionOf(pkg)}`);return;}

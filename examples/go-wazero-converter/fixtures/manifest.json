@@ -4,6 +4,102 @@
   },
   "jobs": [
     {
+      "inputPath": "./fixtures/graphics/sample.dib",
+      "outputPath": "./tmp/sample.dib.png",
+      "sourceFormat": "dib",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.cur",
+      "outputPath": "./tmp/sample.cur.png",
+      "sourceFormat": "cur",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.pcx",
+      "outputPath": "./tmp/sample.pcx.png",
+      "sourceFormat": "pcx",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.exr",
+      "outputPath": "./tmp/sample.exr.png",
+      "sourceFormat": "exr",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.jxl",
+      "outputPath": "./tmp/sample.jxl.png",
+      "sourceFormat": "jxl",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.qoi",
+      "outputPath": "./tmp/sample.qoi.png",
+      "sourceFormat": "qoi",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.ff",
+      "outputPath": "./tmp/sample.ff.png",
+      "sourceFormat": "ff",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.dwg",
+      "outputPath": "./tmp/sample.dwg.dxf",
+      "sourceFormat": "dwg",
+      "targetFormat": "dxf"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.tif",
+      "outputPath": "./tmp/sample.tif.png",
+      "sourceFormat": "tif",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.tiff",
+      "outputPath": "./tmp/sample.tiff.png",
+      "sourceFormat": "tiff",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.tga",
+      "outputPath": "./tmp/sample.tga.png",
+      "sourceFormat": "tga",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.pgm",
+      "outputPath": "./tmp/sample.pgm.png",
+      "sourceFormat": "pgm",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.pbm",
+      "outputPath": "./tmp/sample.pbm.png",
+      "sourceFormat": "pbm",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.pnm",
+      "outputPath": "./tmp/sample.pnm.png",
+      "sourceFormat": "pnm",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.dds",
+      "outputPath": "./tmp/sample.dds.png",
+      "sourceFormat": "dds",
+      "targetFormat": "png"
+    },
+    {
+      "inputPath": "./fixtures/graphics/sample.hdr",
+      "outputPath": "./tmp/sample.hdr.png",
+      "sourceFormat": "hdr",
+      "targetFormat": "png"
+    },
+    {
       "inputPath": "./fixtures/design/sample.psd",
       "outputPath": "./tmp/sample.psd.png",
       "sourceFormat": "psd",

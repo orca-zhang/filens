@@ -38,6 +38,10 @@ export interface BrowserPreviewOptions {
 }
 export interface BrowserPreview {
   update(options: Partial<BrowserPreviewOptions>): void;
+  /** Inspect the current viewer when using an application-owned toolbar. */
+  getState(): { family: string; loading: boolean; scale?: number; [key: string]: unknown } | undefined;
+  setScale(scale: number): void;
+  fullscreen(): Promise<void> | undefined;
   destroy(): void;
 }
 export declare function createPreview(element: Element | string, options: BrowserPreviewOptions): BrowserPreview;

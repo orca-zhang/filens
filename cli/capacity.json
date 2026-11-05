@@ -2,6 +2,16 @@
   "description": "Read, search and convert local documents using the shared frontend WASM engines; select original key excerpts without a language model. Semantic reasoning belongs to the caller.",
   "operations": [
     {
+      "name": "inspect",
+      "description": "Identify file format from bounded content reads using the shared WASM detector, without extraction or OCR. Report MIME, evidence confidence and extension mismatch; unknown/ambiguous inputs remain explicit.",
+      "parameters": {
+        "required": [
+          "input"
+        ],
+        "optional": []
+      }
+    },
+    {
       "name": "read",
       "description": "Extract document text in reading order, preserving completion, truncation and OCR failures.",
       "parameters": {
@@ -271,7 +281,8 @@
           "similar-images",
           "excerpt",
           "duplicates",
-          "similar-images"
+          "similar-images",
+          "inspect"
         ]
       },
       "format": {
@@ -351,7 +362,7 @@
         "minimum": 1,
         "maximum": 1000,
         "default": 10,
-        "description": "Search: 1–100 files, default 10. Similar: 1–1000 groups, default 100."
+        "description": "Search: 1\u2013100 files, default 10. Similar: 1\u20131000 groups, default 100."
       },
       "maxFiles": {
         "type": "integer",
@@ -471,18 +482,18 @@
     "3": "incomplete or truncated document content"
   },
   "examples": [
-    "filens '你能做什么？以 JSON 输出'",
-    "filens '读取 \"report.pdf\"，以纯文本输出'",
-    "filens '理解 \"meeting notes.docx\"，以 JSON 输出'",
+    "filens '\u4f60\u80fd\u505a\u4ec0\u4e48\uff1f\u4ee5 JSON \u8f93\u51fa'",
+    "filens '\u8bfb\u53d6 \"report.pdf\"\uff0c\u4ee5\u7eaf\u6587\u672c\u8f93\u51fa'",
+    "filens '\u7406\u89e3 \"meeting notes.docx\"\uff0c\u4ee5 JSON \u8f93\u51fa'",
     "filens 'read \"report.pages\" as json'",
-    "filens '提取 \"report.pdf\" 的关键内容，关注预算和风险，保留30%，以 JSON 输出'",
+    "filens '\u63d0\u53d6 \"report.pdf\" \u7684\u5173\u952e\u5185\u5bb9\uff0c\u5173\u6ce8\u9884\u7b97\u548c\u98ce\u9669\uff0c\u4fdd\u755930%\uff0c\u4ee5 JSON \u8f93\u51fa'",
     "filens summarize report.pdf --query \"budget risk\" --json",
     "echo '{\"op\":\"understand\",\"input\":\"report.pdf\"}' | filens",
     "filens convert report.doc --output report.docx --json",
     "filens convert data.csv result.xlsx",
     "filens convert photo.dng --to jpg",
     "filens search ./documents --query \"budget risk\" --json",
-    "filens '在 \"./documents\" 中搜索 \"预算 风险\"，以 JSON 输出'",
+    "filens '\u5728 \"./documents\" \u4e2d\u641c\u7d22 \"\u9884\u7b97 \u98ce\u9669\"\uff0c\u4ee5 JSON \u8f93\u51fa'",
     "filens duplicates ./files --json",
     "filens similar-images ./photos --threshold 8 --json"
   ],
@@ -615,5 +626,12 @@
     },
     "grouping": "Each image group has a reference; every member is within threshold of that reference. Groups are disjoint and not a complete enumeration of all matching pairs.",
     "policy": "Reports only. Image similarity is approximate; EXIF orientation is applied, transparent pixels are composited on white, and animations use the first frame. Full SHA-256 establishes file duplicates; equal perceptual hashes do not. Hard-link aliases are skipped on Unix. Inspect complete, truncated, scan and processing errors. No similarity cache yet."
+  },
+  "inspection": {
+    "input": "local regular file; filename does not determine detection",
+    "readBudgetBytes": 262144,
+    "confidence": "evidence categories, not calibrated probabilities",
+    "validation": "not a full-file integrity check",
+    "inputBytes": "not restricted by the extraction input limit"
   }
 }

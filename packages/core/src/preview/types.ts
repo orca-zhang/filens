@@ -611,6 +611,8 @@ export interface PreviewDriver<TState extends PreviewItemState = PreviewItemStat
   id: string;
   family: PreviewFamily;
   supports(format: string): boolean;
+  /** Resolve an optional format module before creating a session. */
+  loadDriver?(): Promise<PreviewDriver<TState>>;
   createSession(host: HTMLElement, options?: PreviewOptions): PreviewSession<TState>;
 }
 

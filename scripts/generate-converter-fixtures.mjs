@@ -268,6 +268,14 @@ const OPENXML_PACKAGE_FIXTURES = [
   }
 ];
 
+const GRAPHICS_FIXTURES = [
+  ['dwg', 'filens-cafe-2000.dwg'], ['tif', 'tonal-ramp-16bit.tif'], ['tiff', 'field-notes.tiff'],
+  ['tga', 'texture-study.tga'], ['pgm', 'portable-gray.pgm'], ['pbm', 'portable-ink.pbm'],
+  ['pnm', 'portable-color.pnm'], ['dds', 'surface-atlas.dds'], ['hdr', 'studio-light.hdr'],
+  ['dib', 'color-archive.dib'], ['cur', 'studio-pointer.cur'], ['pcx', 'color-archive.pcx'],
+  ['exr', 'linear-light.exr'], ['jxl', 'color-archive.jxl'], ['qoi', 'color-archive.qoi'], ['ff', 'color-archive.ff']
+];
+
 const fixtureEntries = await buildFixtureEntries();
 if (checkOnly) {
   await checkFixtures(fixtureEntries);
@@ -302,6 +310,9 @@ async function buildFixtureEntries() {
   ]) {
     entries.set(relativePath, bytes);
   }
+  for (const [format, name] of GRAPHICS_FIXTURES) {
+    entries.set(`graphics/sample.${format}`, await readFile(path.join(rootDir, 'apps/demo/public/samples/graphics', name)));
+  }
   for (const fixture of ODF_PACKAGE_FIXTURES) {
     entries.set(fixture.relativePath, buildODFPackageFixture(fixture.mimetype, fixture.content));
   }
@@ -335,6 +346,7 @@ async function buildBatchManifest() {
 }
 
 function fixturePathForSource(sourceFormat) {
+  if (GRAPHICS_FIXTURES.some(([format]) => format === sourceFormat)) return `graphics/sample.${sourceFormat}`;
   if (['psd', 'psb', 'ai', 'eps', 'ps'].includes(sourceFormat)) return `design/sample.${sourceFormat}`;
   if (['apk', 'ipa', 'ico', 'exe', 'dll', 'mui', 'mun'].includes(sourceFormat)) return `icons/sample.${sourceFormat}`;
   if (DOC_TEXT_SOURCE_FORMAT_SET.has(sourceFormat)) {

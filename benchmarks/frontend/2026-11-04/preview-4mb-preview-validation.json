@@ -1,0 +1,254 @@
+{
+  "date": "2026-11-04",
+  "platform": "darwin-arm64",
+  "browser": "147.0.7727.15",
+  "scope": "Actual CLI loopback server and real shared engines. External network requests blocked. Render readiness and source text checked; no pixel-fidelity claim. Encrypted DOCX/XLSX/PPTX tested with wrong and correct passwords; split Office module loaded only after password submission and reused on retry.",
+  "localeChecks": [
+    "ca_ES",
+    "cs_CZ",
+    "da_DK",
+    "de_DE",
+    "el_GR",
+    "en_GB",
+    "en_US",
+    "es_ES",
+    "fr_FR",
+    "ga_IE",
+    "hr_HR",
+    "hu_HU",
+    "it_IT",
+    "ja_JP",
+    "ko_KR",
+    "ml_IN",
+    "nb_NO",
+    "nl_NL",
+    "pl_PL",
+    "pt_BR",
+    "pt_PT",
+    "ro_RO",
+    "ru_RU",
+    "sk_SK",
+    "sv_SE",
+    "tr_TR",
+    "zh_CN",
+    "zh_TW"
+  ],
+  "localeChecksScope": "all-in-one: switch all 28 toolbar languages without reloading the source, then verify an instance message override.",
+  "httpChecks": [
+    "GET",
+    "HEAD",
+    "byte ranges",
+    "invalid ranges",
+    "unscoped paths",
+    "directory traversal",
+    "Host",
+    "Origin",
+    "Sec-Fetch-Site",
+    "unsupported method"
+  ],
+  "observations": [
+    {
+      "mode": "all-in-one",
+      "file": "中文 preview.txt",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "filens-aurora-guide.docx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "filens-cosmic-atlas.pdf",
+      "state": "ready",
+      "canvases": 2,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "still-form.psd",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "after-hours.psb",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "forma-identity.ai",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "orbit-marks.eps",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "studio-editions.ps",
+      "state": "ready",
+      "canvases": 2,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "a.pages",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "filens-weekend.key",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "filens-observatory.xlsx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "rich-spreadsheet.ods",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "legacy-project-workflow.doc",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "filens-field-notes.pptx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "a.numbers",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "pentax-k-r.dng",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "milky-way-360.jpg",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample-nested-archives.zip",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "cube.stp",
+      "state": "ready",
+      "canvases": 1,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.apk",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.ipa",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.exe",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.dll",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.mui",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.mun",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "sample.ico",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "agile.docx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "agile.xlsx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    },
+    {
+      "mode": "all-in-one",
+      "file": "agile.pptx",
+      "state": "ready",
+      "canvases": 0,
+      "runtimeRequests": 1
+    }
+  ]
+}

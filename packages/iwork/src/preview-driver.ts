@@ -1,5 +1,4 @@
 import {
-  createDefaultPreviewRoutes,
   analyzePreviewFonts,
   collectSlideFontReferences,
   collectSlideFontLoadingReferences,
@@ -7,7 +6,6 @@ import {
   analyzeLoadedPreviewFonts,
   bindPreviewFontLoading,
   type PreviewFontRefresh,
-  type FormatDefinition,
   type PagedPreviewState,
   type PreviewDriver,
   type PreviewEventMap,
@@ -31,26 +29,7 @@ type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
 
-export const IWORK_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['key'],
-    family: 'paged',
-    driverId: 'iwork',
-    targetFormat: 'key'
-  },
-  {
-    extensions: ['pages'],
-    family: 'paged',
-    driverId: 'iwork',
-    targetFormat: 'pages'
-  },
-  {
-    extensions: ['numbers'],
-    family: 'workbook',
-    driverId: 'iwork',
-    targetFormat: 'numbers'
-  }
-];
+export { IWORK_FORMAT_ROUTES, createIworkPreviewRoutes } from './routes';
 
 export class IworkPreviewSession implements PreviewSession<IworkPreviewState> {
   private readonly viewer: IworkViewerInstance;
@@ -120,7 +99,7 @@ export class IworkPreviewSession implements PreviewSession<IworkPreviewState> {
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
     this.fontLoading.reset(context.signal, context.route?.targetFormat ?? context.descriptor.extension ?? 'key');
     this.fontUpdate = null;
-    await this.viewer.preview(source, { signal: context.signal });
+    await this.viewer.preview(source, { signal: context.signal, cache: context.descriptor.password === undefined });
   }
 
   destroy(): void {
@@ -248,14 +227,6 @@ export function createIworkPreviewDriver(): PreviewDriver<IworkPreviewState> {
     supports: (format) => normalizeIworkType(format) != null,
     createSession: (host, options) => new IworkPreviewSession(host, options)
   };
-}
-
-export function createIworkPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  const iworkExtensions = new Set(IWORK_FORMAT_ROUTES.flatMap((route) => route.extensions));
-  return [
-    ...IWORK_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => iworkExtensions.has(extension)))
-  ];
 }
 
 function toIworkPreviewState(state: IworkViewerState): IworkPreviewState {

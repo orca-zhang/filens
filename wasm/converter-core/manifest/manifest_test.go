@@ -25,8 +25,9 @@ func TestDefaultTargetsUseFirstManifestPair(t *testing.T) {
 
 func TestSupportedConversionsReturnsACopy(t *testing.T) {
 	conversions := SupportedConversions()
-	conversions[0] = ConversionPair{SourceFormat: "dwg", TargetFormat: "pdf"}
-	if SupportedConversions()[0].SourceFormat == "dwg" {
+	original := conversions[0]
+	conversions[0] = ConversionPair{SourceFormat: "mutated", TargetFormat: "pdf"}
+	if SupportedConversions()[0] != original {
 		t.Fatal("SupportedConversions must not expose mutable manifest storage")
 	}
 }

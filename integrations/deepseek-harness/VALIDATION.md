@@ -1,12 +1,96 @@
 # DSH integration validation
 
-## 0.1.1 release checks
+Final 0.1.3 checks use CLI **0.5.6** and preview **0.3.4**: 18 tool/resource tests, 15 isolated format-loading paths and 12 complete browser previews. The release also verifies all 18 npm modules, 51 offline HTML cases across Chromium/Firefox/WebKit, and packaged content inspection. The terminal demonstrations include actual `inspect` output.
 
-The 0.1.1 adapter registers **402 extensions** and uses CLI **0.5.4** with preview **0.3.3**. Its public CLI transport uses `op` and `forOp`; `operation` and `forOperation` are rejected. Document selection, per-call OCR policy, native-text completion, Office media inventory and image attachments are covered by the current tool checks.
+## 0.1.3 model-reopen candidate
 
-On macOS arm64 with Node **24.22.2**, all **18 tool/request/image tests** and the compiled browser harness passed. Chromium rendered **12 formats** and passed the current model inspector, file switching, source ownership, message validation, password, theme/language, resize and cleanup checks. Shared workspace tests cover the real CLI/WASM separately.
+XLSX and iWork parser models and STEP CPU meshes share a four-entry, 64 MiB
+accounting budget with a 30-second idle lifetime. Each tab gets an independent
+model; DOM, URLs, workers and GPU resources are released with the tab. Cached
+Numbers documents restore worker archive context only for later lazy sheets.
+Full-byte content digests reject changed files. Password opens bypass reuse,
+including Office files already decrypted by the shared converter.
 
-These checks use the current compiled adapter and shared runtime. The real Desktop and Web profile observations below belong to **0.1.0**; they were not repeated for 0.1.1. They do not establish a new physical Desktop or model-conversation result. Exact package hashes and current results are in [the current validation report](../../docs/dsh-plugin-validation.json).
+Checks: **31 related core tests**, **83 XLSX**, **344 iWork**, **345 model3d**,
+**28 PDF**, **61 Vue**, **2 DSH resource tests**, **15 isolated browser format
+categories**, and **12 complete browser formats**. Real browser tests verify
+Keynote skips document parsing, Numbers preserves lazy-sheet content on reopen,
+and all closed iWork workers are released. Six Desktop formats, layout, zoom and
+3D interactions pass. Native macOS fullscreen exit hung in automation; this run
+explicitly skipped that Desktop check, while browser fullscreen passed.
+
+Nine paired rounds / 18 fresh Desktop processes / 432 opens compare this runtime
+with the preceding PDF-cache candidate. Large XLSX reopens fall **94 → 77 ms**,
+Pages **177 → 77**, Numbers **176 → 93**, Keynote **177 → 94**, STEP **226 → 109**.
+Small XLSX stays **68 ms**; Numbers first open rises **193 → 227 ms**. These are
+complete sidebar timings, including hashing, cloning, layout and GPU upload.
+[Current package and checks](../../docs/dsh-model-reopen-validation.json) ·
+[Raw results, ranges and limits](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
+Earlier records below describe their own historical source/package snapshots.
+
+## 0.1.3 PDF reopen candidate
+
+The shared frontend PDF driver keeps up to four recently painted first-page
+canvases (16 MiB total, 30 idle seconds). Full-byte SHA-256, exact CSS viewport
+and backing resolution identify each entry. Password opens, URL sources and
+non-virtual print/export paths bypass it. Every open still loads and validates
+its own PDF document; closing destroys its document/worker and live canvases.
+Only independent pixel copies remain briefly. Page hide clears them immediately.
+DSH removes the loading cover as soon as the real PDF canvas is complete.
+
+Current checks: **28 PDF tests**, **61 Vue tests**, **15 isolated browser format
+categories** and **12 browser integration formats**. Reopening releases the worker,
+skips first-page operator decoding and preserves the canvas pixel SHA-256 exactly.
+Tests also cover changed bytes under the same filename, failed PDF validation,
+password bypass, scale/resolution keys, LRU/byte bounds, expiry, cancellation,
+printing and independent tab controls. Desktop checks and paired performance
+results are recorded in the [current report](../../docs/dsh-pdf-reopen-validation.json)
+and [measurement notes](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+Earlier measurements below retain their original source snapshots and limits.
+
+## Earlier 0.1.3 format-loading snapshot
+
+The shared runtime mounts directly into DSH's sidebar DOM, with zoom/fullscreen in
+its existing header. Lightweight routes register 450 extensions; dynamic imports
+load only the matching renderer, reusing shared modules. The PDF driver reports
+ready after the first painted page and preserves complete non-virtual rendering.
+
+Snapshot checks: **36 core/lazy-driver tests**, **61 Vue tests**, **80 XLSX tests**,
+**19 PDF tests**, **2 DSH resource tests**, **15 isolated-browser format categories**
+with reopen/cache checks, **12 full browser-harness formats**, **6 actual Desktop
+formats**, plus **58 standalone previews** and **17 offline HTML checks**. Coverage
+includes canceled imports, conversion targets, retry, header controls, passwords,
+source ownership, file switching, concurrent tabs, PDF pixels and stylesheet cleanup.
+The existing 18 DSH tool/attachment checks belong to the unchanged CLI transport.
+
+That snapshot's Desktop comparison includes **9 PDF rounds** and **4 complete Office
+rounds**, with 204 matched opens plus 8 retained baseline-only opens. PDF
+first / cached medians are **214 / 159 ms**, versus **646 / 411 ms** for public 0.1.2
+and **324 / 110 ms** built in. Initial JS requests shrink from **3.04 MiB to 345 KiB**;
+TXT opening requests shrink from **3.09 MiB to 449 KiB**, excluding document bytes.
+[Raw timings and limits](../../docs/assets/dsh-plugin/README.md#load-formats-on-demand)
+· [Snapshot validation](../../docs/dsh-format-loading-validation.json).
+
+The earlier direct-DOM benchmark/report is retained as a historical source snapshot.
+The installation recording uses 0.1.3; the performance tables retain their original implementation stages.
+
+## 0.1.2 release checks
+
+The 0.1.2 adapter registers **450 extensions** and uses CLI **0.5.5** with preview **0.3.4**. Publication and exact package integrity are recorded in the repository publication report. Its public CLI transport uses `op` and `forOp`; `operation` and `forOperation` are rejected. Document selection, per-call OCR policy, native-text completion, Office media inventory and image attachments are covered by the current tool checks.
+
+On macOS arm64 with Node **24.22.1**, all **18 tool/request/image tests** and the compiled browser harness passed. Chromium rendered **12 formats** and passed the current model inspector, file switching, source ownership, message validation, password, theme/language, resize and cleanup checks. Shared workspace tests cover the real CLI/WASM separately.
+
+These checks use the current compiled adapter and shared runtime. The profile observations in the previous-release section below belong to **0.1.0**. Exact package hashes and current results are in [the current validation report](../../docs/dsh-plugin-validation.json).
+
+### Desktop 0.1.2 recording and Office timing
+
+On **2026-11-05**, public npm **dsh-filens@0.1.2** was installed through the actual **Desktop 0.2.1-rc.5** plugin UI in an isolated macOS arm64 home, using the **default China mainland mirror**, then enabled with **Enable now**. The installed CLI is **0.5.5**, preview **0.3.4**, with **450 extensions**; the preview runtime SHA-256 matches the published package. Both Tools and Preview ran. The recording covers DOCX, XLSX worksheet switching, PPTX fullscreen, Page Down through three slides and Esc back to DSH. No account or model call was used. See the [25 fps WebP/GIF, full MP4 and evidence](../../docs/assets/dsh-plugin/README.md).
+
+The 9-round benchmark compares installed **0.1.1**, installed **0.1.2** and DSH's actual built-in Office-to-PDF/PDF-canvas path, rotating renderer order and starting a fresh process per renderer/round. The **216 actual opens** give PPTX / DOCX first-open medians of **540 / 294 ms** for 0.1.2, **356 / 245 ms** for 0.1.1 and **1,828 / 1,812 ms** built in. Cached medians and every sample are in the [raw report](../../docs/assets/dsh-plugin/office-preview-benchmark.json). First means first in a process, with OS/persistent caches retained; it is not a cold-disk or fidelity comparison. Encoding ran separately.
+
+The separate **9-round PDF benchmark** covers **108 additional opens**, with PDF first in each fresh process. First / cached medians are **684 / 443 ms** for 0.1.2, **1,623 / 1,408 ms** for 0.1.1 and **328 / 111 ms** built in. The built-in path directly previews PDF. [Raw PDF timing and ranges](../../docs/assets/dsh-plugin/pdf-preview-benchmark.json). Office and PDF total **324 opens**.
+
+The companion GLB/3MF/360° gallery remains the historical **2026-11-04 0.1.1** recording. It is labeled separately in the [recording notes and attribution](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery).
 
 ## Previous release: 0.1.0
 

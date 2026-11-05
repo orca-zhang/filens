@@ -1,52 +1,13 @@
-//! Directory discovery: native FTS on macOS, embedded private hdrw WASI elsewhere.
+//! OS directory/metadata plumbing. Document parsing stays in the shared core.
 use anyhow::{Result, ensure};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-#[cfg(target_os = "macos")]
-use std::collections::HashSet;
-#[cfg(any(not(target_os = "macos"), feature = "hdrw-wasi"))]
-use std::io::Read;
-use std::path::Path;
+use std::{collections::HashSet, ffi::OsString, io, path::Path};
 
-#[cfg(any(not(target_os = "macos"), feature = "hdrw-wasi"))]
-const HDRW: &[u8] = include_bytes!("../assets/hdrw.wasm.gz");
-
-#[cfg(all(test, any(not(target_os = "macos"), feature = "hdrw-wasi")))]
-mod stdio_tests {
-    use super::*;
-    use std::io::Write;
-
-    #[test]
-    fn stdout_limit_is_sticky_and_never_keeps_a_partial_write() {
-        let mut out = BoundedOutput {
-            bytes: Vec::new(),
-            limit: 4,
-            exceeded: false,
-        };
-        out.write_all(b"123").unwrap();
-        assert!(out.write_all(b"45").is_err());
-        assert_eq!(out.bytes, b"123");
-        assert!(out.write_all(b"4").is_err());
-        assert!(out.exceeded);
-    }
-    #[test]
-    fn embedded_hdrw_reads_stdin_and_emits_one_json_result_without_work_files() {
-        let root = tempfile::tempdir().unwrap();
-        std::fs::write(root.path().join("中文.txt"), "evidence").unwrap();
-        std::fs::write(root.path().join("ignored.bin"), "other").unwrap();
-        let scan = wasm(root.path(), &json!({"maxFiles":10,"maxEntries":100,"maxDepth":8,"extensions":["txt"],"exclude":[],"includeHidden":false})).unwrap();
-        assert_eq!(scan.backend, "hdrw-wasi");
-        assert_eq!(scan.error_count, 0);
-        assert_eq!(scan.entries.len(), 1);
-        assert_eq!(scan.entries[0].path, "中文.txt");
-        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 2);
-        let invalid: Scan =
-            serde_json::from_slice(&run_hdrw(root.path(), b"not JSON".to_vec()).unwrap()).unwrap();
-        assert_eq!(invalid.error_count, 1);
-        assert!(invalid.entries.is_empty());
-        assert!(run_hdrw(root.path(), vec![b'x'; (1 << 20) + 1]).is_err());
-    }
-}
+#[cfg(any(windows, test))]
+mod ntfs;
+#[cfg(windows)]
+mod windows;
 
 #[derive(Deserialize, Serialize)]
 pub struct Entry {
@@ -77,123 +38,439 @@ impl Scan {
         }
     }
 }
+fn default_backend() -> &'static str {
+    if cfg!(target_os = "macos") {
+        "fts"
+    } else if cfg!(windows) {
+        "ntfs"
+    } else {
+        "read-dir"
+    }
+}
 pub fn capacity() -> Value {
-    json!({"backend": if cfg!(target_os="macos") { "fts" } else { "hdrw-wasi" },
-        "hdrwEmbedded": cfg!(any(not(target_os="macos"), feature="hdrw-wasi")),
-        "rawDevices":false,"followSymlinks":false})
+    json!({"backend":default_backend(),"hdrwEmbedded":false,
+        "rawDevices":false,"followSymlinks":false,
+        "ntfs":{"available":cfg!(windows),"requiresAdmin":false,
+            "directoryBufferBytes":65536,"fallback":"read-dir"}})
 }
 pub fn scan(root: &Path, config: &Value) -> Result<Scan> {
-    let backend = std::env::var("FILENS_WALKER").unwrap_or_else(|_| {
-        if cfg!(target_os = "macos") {
-            "fts"
-        } else {
-            "hdrw-wasi"
-        }
-        .into()
-    });
-    let mut result = if backend == "hdrw-wasi" {
-        wasm(root, config)?
-    } else {
-        ensure!(backend == "fts", "unknown directory walker");
+    let backend = std::env::var("FILENS_WALKER").unwrap_or_else(|_| default_backend().into());
+    scan_with_backend(root, config, &backend)
+}
+fn scan_with_backend(root: &Path, config: &Value, backend: &str) -> Result<Scan> {
+    // Bound recursion even for direct callers, independently of request validation.
+    let options: WalkOptions = serde_json::from_value(config.clone())?;
+    ensure!(
+        (1..=256).contains(&options.max_depth),
+        "invalid directory scan depth"
+    );
+    let mut result = match backend {
+        "read-dir" => portable(root, options)?,
         #[cfg(target_os = "macos")]
-        {
-            native(root, config)?
-        }
-        #[cfg(not(target_os = "macos"))]
-        {
-            anyhow::bail!("FTS walker is only available on macOS")
-        }
+        "fts" => native(root, config)?,
+        #[cfg(windows)]
+        "ntfs" => windows::scan(root, options)?,
+        _ => anyhow::bail!("directory walker {backend:?} is unavailable on this platform"),
     };
     result.entries.sort_by(|a, b| a.path.cmp(&b.path));
     Ok(result)
 }
-#[cfg(not(any(not(target_os = "macos"), feature = "hdrw-wasi")))]
-fn wasm(_root: &Path, _config: &Value) -> Result<Scan> {
-    anyhow::bail!("This macOS build uses native FTS and does not embed hdrw")
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WalkOptions {
+    max_files: usize,
+    max_entries: usize,
+    max_depth: usize,
+    include_hidden: bool,
+    extensions: HashSet<String>,
+    exclude: HashSet<String>,
 }
-#[cfg(any(not(target_os = "macos"), feature = "hdrw-wasi"))]
-fn wasm(root: &Path, config: &Value) -> Result<Scan> {
-    Ok(serde_json::from_slice(&run_hdrw(
-        root,
-        serde_json::to_vec(config)?,
-    )?)?)
+#[derive(Clone, Copy, PartialEq)]
+enum Kind {
+    Directory,
+    File,
+    Other,
 }
-#[cfg(any(not(target_os = "macos"), feature = "hdrw-wasi"))]
-#[derive(Debug)]
-struct BoundedOutput {
-    bytes: Vec<u8>,
-    limit: usize,
-    exceeded: bool,
+struct NativeEntry {
+    name: OsString,
+    kind: Kind,
+    bytes: u64,
 }
-#[cfg(any(not(target_os = "macos"), feature = "hdrw-wasi"))]
-impl std::io::Write for BoundedOutput {
-    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
-        if self.exceeded || bytes.len() > self.limit.saturating_sub(self.bytes.len()) {
-            self.exceeded = true;
-            return Err(std::io::Error::other("hdrw stdout exceeds limit"));
+struct Walker {
+    options: WalkOptions,
+    result: Scan,
+}
+impl Walker {
+    fn new(options: WalkOptions, backend: &str) -> Self {
+        Self {
+            options,
+            result: Scan {
+                backend: backend.into(),
+                ..Default::default()
+            },
         }
-        self.bytes
-            .try_reserve_exact(bytes.len())
-            .map_err(|_| std::io::Error::other("allocate hdrw stdout"))?;
-        self.bytes.extend_from_slice(bytes);
-        Ok(bytes.len())
     }
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
+    // Same callback actions as the FTS adapter: continue, prune, stop.
+    fn visit(&mut self, relative: &Path, entry: &NativeEntry) -> i32 {
+        self.result.visited += 1;
+        if self.result.visited > self.options.max_entries {
+            self.result.truncated = true;
+            return 2;
+        }
+        let Some(name) = entry.name.to_str() else {
+            self.result
+                .issue("<non-UTF-8>".into(), "Filename is not valid Unicode".into());
+            return 1;
+        };
+        if relative.components().count() > self.options.max_depth
+            || (!self.options.include_hidden && name.starts_with('.'))
+            || self.options.exclude.contains(name)
+        {
+            self.result.skipped += 1;
+            return 1;
+        }
+        if entry.kind != Kind::File {
+            return 0;
+        }
+        let ext = Path::new(name)
+            .extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_lowercase();
+        if !self.options.extensions.contains("*") && !self.options.extensions.contains(&ext) {
+            self.result.skipped += 1;
+            return 0;
+        }
+        if self.result.entries.len() >= self.options.max_files {
+            self.result.truncated = true;
+            return 2;
+        }
+        self.result.entries.push(Entry {
+            path: relative_name(relative),
+            bytes: entry.bytes,
+        });
+        0
+    }
+    fn issue(&mut self, path: &Path, error: io::Error) {
+        self.result.issue(relative_name(path), error.to_string());
     }
 }
-#[cfg(any(not(target_os = "macos"), feature = "hdrw-wasi"))]
-fn run_hdrw(root: &Path, request: Vec<u8>) -> Result<Vec<u8>> {
-    use wasmi::{Engine, Linker, Module, Store};
-    use wasmi_wasi::wasi_common::pipe::{ReadPipe, WritePipe};
-    use wasmi_wasi::{Dir, WasiCtx, WasiCtxBuilder, ambient_authority};
-    struct State {
-        wasi: WasiCtx,
-        limits: wasmi::StoreLimits,
+fn relative_name(path: &Path) -> String {
+    if path.as_os_str().is_empty() {
+        return ".".into();
     }
-    ensure!(request.len() <= 1 << 20, "hdrw stdin exceeds 1 MiB");
-    let mut bytes = vec![];
-    flate2::read::GzDecoder::new(HDRW)
-        .take((32 << 20) + 1)
-        .read_to_end(&mut bytes)?;
-    ensure!(bytes.len() <= 32 << 20, "hdrw module exceeds limit");
-    let engine = Engine::default();
-    let module = Module::new(&engine, &bytes[..])?;
-    let stdout = WritePipe::new(BoundedOutput {
-        bytes: Vec::new(),
-        limit: 16 << 20,
-        exceeded: false,
-    });
-    let wasi = WasiCtxBuilder::new()
-        .arg("hdrw-wasi")?
-        .stdin(Box::new(ReadPipe::from(request)))
-        .stdout(Box::new(stdout.clone()))
-        .inherit_stderr()
-        .preopened_dir(Dir::open_ambient_dir(root, ambient_authority())?, "/scan")?
-        .build();
-    let mut store = Store::new(
-        &engine,
-        State {
-            wasi,
-            limits: crate::runtime::limits(),
-        },
-    );
-    store.limiter(|state| &mut state.limits);
-    let mut linker = Linker::<State>::new(&engine);
-    wasmi_wasi::add_to_linker(&mut linker, |state| &mut state.wasi)?;
-    let instance = linker.instantiate(&mut store, &module)?.start(&mut store)?;
-    let result = instance
-        .get_typed_func::<(), ()>(&store, "_start")?
-        .call(&mut store, ());
-    drop(store);
-    let output = stdout
-        .try_into_inner()
-        .map_err(|_| anyhow::anyhow!("hdrw stdout pipe still in use"))?;
-    ensure!(!output.exceeded, "hdrw stdout exceeds 16 MiB");
-    if let Err(error) = result {
-        ensure!(error.i32_exit_status() == Some(0), "hdrw WASI: {error}");
+    let name = path.to_string_lossy().into_owned();
+    #[cfg(windows)]
+    let name = name.replace('\\', "/");
+    name
+}
+// Streaming DFS bounds open readers by depth and stops immediately at scan limits.
+// An unsupported native API propagates to the Windows adapter, which restarts
+// the entire scan with read_dir so entries/counters are never duplicated.
+fn descend<I: Iterator<Item = io::Result<NativeEntry>>>(
+    root: &Path,
+    relative: &Path,
+    walker: &mut Walker,
+    open: &impl Fn(&Path) -> io::Result<I>,
+) -> io::Result<bool> {
+    let directory = match open(&root.join(relative)) {
+        Ok(directory) => directory,
+        Err(error) if error.kind() == io::ErrorKind::Unsupported => return Err(error),
+        Err(error) => {
+            walker.issue(relative, error);
+            return Ok(false);
+        }
+    };
+    for entry in directory {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(error) if error.kind() == io::ErrorKind::Unsupported => return Err(error),
+            Err(error) => {
+                walker.issue(relative, error);
+                continue;
+            }
+        };
+        let child = relative.join(&entry.name);
+        match walker.visit(&child, &entry) {
+            2 => return Ok(true),
+            0 if entry.kind == Kind::Directory => {
+                if descend(root, &child, walker, open)? {
+                    return Ok(true);
+                }
+            }
+            _ => {}
+        }
     }
-    Ok(output.bytes)
+    Ok(false)
+}
+#[cfg(any(windows, test))]
+fn native_or_portable<I: Iterator<Item = io::Result<NativeEntry>>>(
+    root: &Path,
+    options: WalkOptions,
+    backend: &str,
+    open: &impl Fn(&Path) -> io::Result<I>,
+) -> io::Result<Scan> {
+    let mut walker = Walker::new(options, backend);
+    match descend(root, Path::new(""), &mut walker, open) {
+        Ok(_) => Ok(walker.result),
+        Err(error) if error.kind() == io::ErrorKind::Unsupported => portable(root, walker.options),
+        Err(error) => Err(error),
+    }
+}
+fn portable(root: &Path, options: WalkOptions) -> io::Result<Scan> {
+    let mut walker = Walker::new(options, "read-dir");
+    descend(root, Path::new(""), &mut walker, &|path| {
+        Ok(std::fs::read_dir(path)?.map(|entry| {
+            let entry = entry?;
+            // Windows DirEntry metadata is cached by the OS enumeration.
+            let metadata = entry.metadata()?;
+            #[cfg(windows)]
+            let reparse = {
+                use std::os::windows::fs::MetadataExt;
+                metadata.file_attributes()
+                    & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT
+                    != 0
+            };
+            #[cfg(not(windows))]
+            let reparse = metadata.is_symlink();
+            let kind = if reparse {
+                Kind::Other
+            } else if metadata.is_dir() {
+                Kind::Directory
+            } else if metadata.is_file() {
+                Kind::File
+            } else {
+                Kind::Other
+            };
+            Ok(NativeEntry {
+                name: entry.file_name(),
+                kind,
+                bytes: metadata.len(),
+            })
+        }))
+    })?;
+    Ok(walker.result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn config() -> Value {
+        json!({"maxFiles":2000,"maxEntries":20000,"maxDepth":8,
+            "extensions":["txt"],"exclude":[".git","node_modules","target","dist"],"includeHidden":false})
+    }
+    fn backends() -> Vec<&'static str> {
+        let mut backends = vec!["read-dir"];
+        if default_backend() != "read-dir" {
+            backends.push(default_backend());
+        }
+        backends
+    }
+    fn paths(scan: &Scan) -> Vec<&str> {
+        scan.entries.iter().map(|e| e.path.as_str()).collect()
+    }
+    #[test]
+    fn native_walkers_preserve_scope_unicode_sizes_and_current_files() {
+        let root = tempfile::tempdir().unwrap();
+        for name in [
+            "nested",
+            ".hidden",
+            "node_modules",
+            "dist",
+            "target",
+            ".git",
+        ] {
+            std::fs::create_dir(root.path().join(name)).unwrap();
+            std::fs::write(root.path().join(name).join("child.txt"), b"child").unwrap();
+        }
+        for name in ["中文 🦀.TXT", ".secret.txt", "ignored.bin"] {
+            std::fs::write(root.path().join(name), b"evidence").unwrap();
+        }
+        for backend in backends() {
+            let mut options = config();
+            let result = scan_with_backend(root.path(), &options, backend).unwrap();
+            assert_eq!(result.error_count, 0);
+            assert!(!result.truncated);
+            assert_eq!(paths(&result), ["nested/child.txt", "中文 🦀.TXT"]);
+            assert_eq!(result.entries[1].bytes, 8);
+            options["includeHidden"] = json!(true);
+            let result = scan_with_backend(root.path(), &options, backend).unwrap();
+            assert_eq!(
+                paths(&result),
+                [
+                    ".hidden/child.txt",
+                    ".secret.txt",
+                    "nested/child.txt",
+                    "中文 🦀.TXT"
+                ]
+            );
+            options["maxDepth"] = json!(1);
+            assert_eq!(
+                paths(&scan_with_backend(root.path(), &options, backend).unwrap()),
+                [".secret.txt", "中文 🦀.TXT"]
+            );
+            options["extensions"] = json!(["*"]);
+            assert!(
+                paths(&scan_with_backend(root.path(), &options, backend).unwrap())
+                    .contains(&"ignored.bin")
+            );
+        }
+        std::fs::remove_file(root.path().join("中文 🦀.TXT")).unwrap();
+        std::fs::write(root.path().join("new.txt"), b"new").unwrap();
+        for backend in backends() {
+            assert_eq!(
+                paths(&scan_with_backend(root.path(), &config(), backend).unwrap()),
+                ["nested/child.txt", "new.txt"]
+            );
+        }
+    }
+    #[test]
+    fn file_and_entry_limits_are_reported_without_false_truncation() {
+        let root = tempfile::tempdir().unwrap();
+        for name in ["a.txt", "b.txt", "c.txt"] {
+            std::fs::write(root.path().join(name), b"x").unwrap();
+        }
+        for backend in backends() {
+            let mut options = config();
+            options["maxFiles"] = json!(3);
+            assert!(
+                !scan_with_backend(root.path(), &options, backend)
+                    .unwrap()
+                    .truncated
+            );
+            options["maxFiles"] = json!(2);
+            let result = scan_with_backend(root.path(), &options, backend).unwrap();
+            assert!(result.truncated);
+            assert_eq!(result.entries.len(), 2);
+            options["maxFiles"] = json!(10);
+            options["maxEntries"] = json!(1);
+            let result = scan_with_backend(root.path(), &options, backend).unwrap();
+            assert!(result.truncated);
+            assert_eq!(result.visited, 2);
+            assert_eq!(result.entries.len(), 1);
+        }
+    }
+    #[test]
+    fn many_entries_match_portable_scan_across_native_batches() {
+        let root = tempfile::tempdir().unwrap();
+        for i in 0..512 {
+            std::fs::write(
+                root.path()
+                    .join(format!("{i:04}-{}.txt", "中文".repeat(40))),
+                format!("{i}"),
+            )
+            .unwrap();
+        }
+        let expected = scan_with_backend(root.path(), &config(), "read-dir").unwrap();
+        for backend in backends() {
+            let result = scan_with_backend(root.path(), &config(), backend).unwrap();
+            assert_eq!(result.error_count, 0);
+            assert_eq!(result.entries.len(), 512);
+            assert_eq!(paths(&result), paths(&expected));
+            assert_eq!(
+                result.entries.iter().map(|e| e.bytes).collect::<Vec<_>>(),
+                expected.entries.iter().map(|e| e.bytes).collect::<Vec<_>>()
+            );
+            assert_eq!(result.visited, expected.visited);
+        }
+    }
+    #[test]
+    fn unsupported_native_api_restarts_without_duplicate_entries_or_counters() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("a.txt"), b"a").unwrap();
+        std::fs::write(root.path().join("b.txt"), b"b").unwrap();
+        let mut result = native_or_portable(
+            root.path(),
+            serde_json::from_value(config()).unwrap(),
+            "test-native",
+            &|_| {
+                Ok(vec![
+                    Ok(NativeEntry {
+                        name: "a.txt".into(),
+                        kind: Kind::File,
+                        bytes: 99,
+                    }),
+                    Err(io::Error::other("discard this native error too")),
+                    Err(io::Error::from(io::ErrorKind::Unsupported)),
+                ]
+                .into_iter())
+            },
+        )
+        .unwrap();
+        result.entries.sort_by(|a, b| a.path.cmp(&b.path));
+        assert_eq!(result.backend, "read-dir");
+        assert_eq!(result.visited, 2);
+        assert_eq!(result.error_count, 0);
+        assert!(result.errors.is_empty());
+        assert_eq!(paths(&result), ["a.txt", "b.txt"]);
+        assert!(result.entries.iter().all(|e| e.bytes == 1));
+    }
+    #[test]
+    fn missing_directory_is_a_partial_error_and_issue_storage_is_bounded() {
+        let root = tempfile::tempdir().unwrap();
+        for backend in backends() {
+            let result =
+                scan_with_backend(&root.path().join("missing"), &config(), backend).unwrap();
+            assert_eq!(result.error_count, 1);
+            assert!(result.entries.is_empty());
+        }
+        let mut result = Scan::default();
+        for _ in 0..100 {
+            result.issue(".".into(), "error".into());
+        }
+        assert_eq!(result.error_count, 100);
+        assert_eq!(result.errors.len(), 64);
+        assert_eq!(capacity()["hdrwEmbedded"], false);
+        assert!(scan_with_backend(root.path(), &config(), "unknown").is_err());
+    }
+    #[cfg(unix)]
+    #[test]
+    fn symlinks_and_cycles_are_not_followed() {
+        use std::os::unix::fs::symlink;
+        let root = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        std::fs::write(outside.path().join("outside.txt"), "outside").unwrap();
+        std::fs::write(root.path().join("inside.txt"), "inside").unwrap();
+        symlink(outside.path(), root.path().join("escape")).unwrap();
+        symlink(
+            outside.path().join("outside.txt"),
+            root.path().join("link.txt"),
+        )
+        .unwrap();
+        symlink(root.path(), root.path().join("cycle")).unwrap();
+        for backend in backends() {
+            let result = scan_with_backend(root.path(), &config(), backend).unwrap();
+            assert_eq!(result.error_count, 0);
+            assert_eq!(paths(&result), ["inside.txt"]);
+        }
+    }
+    #[cfg(windows)]
+    #[test]
+    fn junctions_are_not_followed_without_developer_mode() {
+        let root = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        std::fs::write(outside.path().join("outside.txt"), "outside").unwrap();
+        let result = std::process::Command::new("cmd")
+            .args(["/C", "mklink", "/J"])
+            .arg(root.path().join("escape"))
+            .arg(outside.path())
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        for backend in backends() {
+            let result = scan_with_backend(root.path(), &config(), backend).unwrap();
+            assert_eq!(result.error_count, 0);
+            assert!(result.entries.is_empty());
+        }
+        // Remove only the junction before TempDir cleanup.
+        std::fs::remove_dir(root.path().join("escape")).unwrap();
+    }
 }
 
 #[cfg(target_os = "macos")]

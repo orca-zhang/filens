@@ -9,12 +9,12 @@ export default defineConfig({
   worker: { rollupOptions: { output: { inlineDynamicImports: true } } },
   build: {
     lib: {
-      entry: './src/index.ts',
+      entry: { index: './src/index.ts', routes: './src/routes.ts' },
       formats: ['es'],
-      fileName: () => 'index.js'
+      fileName: (_format, name) => `${name}.js`
     },
     cssCodeSplit: false,
-    sourcemap: true,
+    sourcemap: 'hidden',
     rollupOptions: {
       external: packageExternals(import.meta.url)
     }
@@ -28,6 +28,7 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       outDir: 'dist',
       entryRoot: 'src',
+      compilerOptions: { declarationMap: false },
       insertTypesEntry: true
     })
   ]

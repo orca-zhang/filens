@@ -1,8 +1,6 @@
 import {
-  createDefaultPreviewRoutes,
   createVideoPlaybackControls,
   bindPreviewTouchGestures,
-  type FormatDefinition,
   type PreviewDriver,
   type PreviewEventMap,
   type PreviewEventName,
@@ -40,22 +38,7 @@ const EQUIRECTANGULAR_WARNING = 'Panorama is not close to a 2:1 equirectangular 
 const VENDOR_RAW_FORMATS = new Set(['insp', 'insv', 'osv']);
 const VENDOR_RAW_VIDEO_FORMATS = new Set(['insv', 'osv']);
 
-export const PANORAMA_FORMAT_ROUTES: FormatDefinition[] = [
-  {
-    extensions: ['pano', 'panorama', '360', 'insp'],
-    family: 'panorama',
-    driverId: 'panorama',
-    targetFormat: 'pano',
-    contentTypes: ['image/panorama', 'image/x-panorama', 'image/x-insta360', 'application/vnd.filens.panorama+image']
-  },
-  {
-    extensions: ['360v', 'vr360', 'insv', 'osv'],
-    family: 'panorama-video',
-    driverId: 'panorama',
-    targetFormat: '360v',
-    contentTypes: ['video/panorama', 'video/x-panorama', 'video/x-insta360', 'video/x-osmo360', 'application/vnd.filens.panorama+video']
-  }
-];
+export { PANORAMA_FORMAT_ROUTES, createPanoramaPreviewRoutes } from './routes';
 
 export type PanoramaPreviewState = PreviewItemState & {
   family: 'panorama' | 'panorama-video';
@@ -928,11 +911,6 @@ export function createPanoramaPreviewDriver(options: { processor?: PanoramaProce
     supports: (format) => ['pano', 'panorama', '360', 'insp', '360v', 'vr360', 'insv', 'osv'].includes(normalizeFormat(format)),
     createSession: (host, previewOptions) => new PanoramaPreviewSession(host, previewOptions, options.processor)
   };
-}
-
-export function createPanoramaPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
-  const extensions = new Set(PANORAMA_FORMAT_ROUTES.flatMap((route) => route.extensions));
-  return [...PANORAMA_FORMAT_ROUTES, ...baseRoutes.filter((route) => !route.extensions.some((extension) => extensions.has(extension)))];
 }
 
 export function orderInstaPair(source: PreviewSource, companion: PreviewSource | undefined, name?: string): { source: PreviewSource; companion?: PreviewSource; primaryName?: string } {

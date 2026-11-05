@@ -1,0 +1,182 @@
+{
+  "date": "2026-11-04T14:51:01.276Z",
+  "node": "v20.20.2",
+  "baselineSha256": "85f32286c1c36b9d7f72f53a64f6e2cfd3374814a56beb70a06c76249417d200",
+  "method": "Identical package Vite configurations and current dependencies, baseline source overrides in both main and worker builds. Declarations/maps excluded. All runtime JS/CSS counted; gzip sizes summed per artifact. Current output hashes must match actual package dist.",
+  "packages": {
+    "core": {
+      "baseline": {
+        "bytes": 521994,
+        "gzipBytes": 122689,
+        "files": [
+          {
+            "file": "archive-volumes.js",
+            "bytes": 3026,
+            "gzipBytes": 1106,
+            "sha256": "c2c78c4eaaf76d51cd7bc1ea0ff4e32dc2cba95ceeb50c39c02b262e8825498b"
+          },
+          {
+            "file": "index.js",
+            "bytes": 495184,
+            "gzipBytes": 114392,
+            "sha256": "e5a7804a716c6ccacde80adddf0a99dbaae218310b52e879225d91d36ecf476d"
+          },
+          {
+            "file": "style.css",
+            "bytes": 15821,
+            "gzipBytes": 4244,
+            "sha256": "f6d663a75bd8105f8a4a749ce440bf72caed3869f043526d161d7f61e3bcaa78"
+          },
+          {
+            "file": "zip-BktKyBUV.js",
+            "bytes": 7848,
+            "gzipBytes": 2832,
+            "sha256": "5b696d14c48d8a09289895748acb7b64387a08bb7a7e1b39db87821d309bb3da"
+          },
+          {
+            "file": "zip.js",
+            "bytes": 115,
+            "gzipBytes": 115,
+            "sha256": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475"
+          }
+        ]
+      },
+      "current": {
+        "bytes": 521950,
+        "gzipBytes": 122696,
+        "files": [
+          {
+            "file": "archive-volumes.js",
+            "bytes": 3026,
+            "gzipBytes": 1106,
+            "sha256": "c2c78c4eaaf76d51cd7bc1ea0ff4e32dc2cba95ceeb50c39c02b262e8825498b"
+          },
+          {
+            "file": "index.js",
+            "bytes": 495140,
+            "gzipBytes": 114399,
+            "sha256": "09316dccebaa696475ff4c91ebccfbf9bbe216475f0d9da5ca2436111619f540"
+          },
+          {
+            "file": "style.css",
+            "bytes": 15821,
+            "gzipBytes": 4244,
+            "sha256": "f6d663a75bd8105f8a4a749ce440bf72caed3869f043526d161d7f61e3bcaa78"
+          },
+          {
+            "file": "zip-BktKyBUV.js",
+            "bytes": 7848,
+            "gzipBytes": 2832,
+            "sha256": "5b696d14c48d8a09289895748acb7b64387a08bb7a7e1b39db87821d309bb3da"
+          },
+          {
+            "file": "zip.js",
+            "bytes": 115,
+            "gzipBytes": 115,
+            "sha256": "6efc59d5146a5b01d12977b3d70ab11e9b8e17647197dc42abea868c3e809475"
+          }
+        ]
+      }
+    },
+    "cad": {
+      "baseline": {
+        "bytes": 75769,
+        "gzipBytes": 19327,
+        "files": [
+          {
+            "file": "index.js",
+            "bytes": 75004,
+            "gzipBytes": 18921,
+            "sha256": "1f725fe75f02992a53d612bc49dca79d343f8b42de8df79ed57c2e4b3b8513a2"
+          },
+          {
+            "file": "style.css",
+            "bytes": 765,
+            "gzipBytes": 406,
+            "sha256": "83a1a06b9ba7add04dc279dd749fe4dff5fa078a1bb31e48f7ded72309bb50fd"
+          }
+        ]
+      },
+      "current": {
+        "bytes": 75771,
+        "gzipBytes": 19326,
+        "files": [
+          {
+            "file": "index.js",
+            "bytes": 75006,
+            "gzipBytes": 18920,
+            "sha256": "2b772f66b588fe71c74fda5eaec92c6e01568d4a5751beb75ae6d7d35d8a6e95"
+          },
+          {
+            "file": "style.css",
+            "bytes": 765,
+            "gzipBytes": 406,
+            "sha256": "83a1a06b9ba7add04dc279dd749fe4dff5fa078a1bb31e48f7ded72309bb50fd"
+          }
+        ]
+      }
+    },
+    "iwork": {
+      "baseline": {
+        "bytes": 1811999,
+        "gzipBytes": 343482,
+        "files": [
+          {
+            "file": "assets/iwork-worker-DYtBaTa4.js",
+            "bytes": 905482,
+            "gzipBytes": 188778,
+            "sha256": "460be92d52e65ca1c4580a34f10b08d616e1a87de9508bbfc0fe74782e921bf6"
+          },
+          {
+            "file": "index.js",
+            "bytes": 888368,
+            "gzipBytes": 149957,
+            "sha256": "2e0164482bbaec82bab995b98c41bcdec525122eebb799d808d548b079fa2956"
+          },
+          {
+            "file": "style.css",
+            "bytes": 18149,
+            "gzipBytes": 4747,
+            "sha256": "11364c0af67ebf07ce2bf0497292839a47b22deb2388206565529c2658154c2b"
+          }
+        ]
+      },
+      "current": {
+        "bytes": 1813495,
+        "gzipBytes": 344056,
+        "files": [
+          {
+            "file": "assets/iwork-worker-D23mKu5G.js",
+            "bytes": 906118,
+            "gzipBytes": 189052,
+            "sha256": "4fc1aace836e5ad2e16793f78cf3d70972a1b40015ca9a8c526f0b13c3b53ed9"
+          },
+          {
+            "file": "index.js",
+            "bytes": 889228,
+            "gzipBytes": 150257,
+            "sha256": "2cf20c9dc46ca43b68df94c98bc8602d2bb7dd1ec93d394b3d8c62b976cf444b"
+          },
+          {
+            "file": "style.css",
+            "bytes": 18149,
+            "gzipBytes": 4747,
+            "sha256": "11364c0af67ebf07ce2bf0497292839a47b22deb2388206565529c2658154c2b"
+          }
+        ]
+      }
+    }
+  },
+  "sourceSha256": {
+    "packages/iwork/src/parser/helpers.ts": "862eea102f29b6c6a8901a103d1741a0b95fae238fd100b3c938e4b9780102eb",
+    "packages/iwork/src/parser/semantic.ts": "dbcdda0d4666dab701c4e2ab96eca3fd3db4a580021ff9705a9dda6892cd5516",
+    "packages/cad/src/preview-driver.ts": "271f83a7b2c6674aeb2904523c475f7ca34b304a0e6a1f0c7ac2a973823c3ff4",
+    "packages/core/src/preview/resource-resolver.ts": "081cd8decdd059ababd50b70909f09a4f34f2b25e778d3bbe559cfd0a21d87f2"
+  },
+  "baselineSourceSha256": {
+    "packages/iwork/src/parser/helpers.ts": "8ee95e7353a64c8cd2983e30775076c13c8a2c495ad3232a50f0113c279f859a",
+    "packages/iwork/src/parser/semantic.ts": "7e9e039af10b45f14ab1a64a0993f17c2ac127b716a0cbc75a6536870d38e14e",
+    "packages/cad/src/preview-driver.ts": "e7b505c095b32e74db594cb5f364ffbfd9ac4373fa9df30bbe6a192033306ca4",
+    "packages/core/src/preview/resource-resolver.ts": "e964f636c9965d8a87002dc180069c0e298738ba59df87814cd188ce762db480"
+  }
+}

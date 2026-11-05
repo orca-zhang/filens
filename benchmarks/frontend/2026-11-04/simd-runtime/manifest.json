@@ -1,0 +1,29 @@
+{
+  "defaultVariant": "simd",
+  "fallbackVariant": "scalar",
+  "sourceSha256": {
+    "Cargo.toml": "aa2a48468b658420911b4b30d10d89fc599c90e48cacf4105e1e87a950b8efd7",
+    "Cargo.lock": "17b2f83c41c67b47f7d7dd23d5597e4ba0b4727b941ec45ad975e9615aa80bd8",
+    "examples/detect_web.rs": "efbfd13363f69b05919fd5f48696c5354cc4e6335901f423e35b9fc6a7d7cb21",
+    "src/format_detection.rs": "41fa6447e96fa580bcd6a26c1b8a205d1eda44cdb24bb122dd225b653fb7b100",
+    "src/format_detection/probes.rs": "03384b514db6809a6c076f76505d87f7dc7a04d9bc04e5cf4cea072c68c7a5c6",
+    "src/format_detection/signatures.rs": "3b138e4aea5db27e7162c9350f1f7914967d86e09a1f0de431136f7819c2d59f",
+    "src/format_detection/text_scan.rs": "c7fcf414131cff2a8d241de6619cc6c67f14dfb55e5b6d142c77228dcd6e14df"
+  },
+  "variants": {
+    "scalar": {
+      "file": "converter-detect-scalar.wasm",
+      "features": "format-detection-expanded",
+      "bytes": 224259,
+      "gzip9Bytes": 109909,
+      "sha256": "0913d2c795e07408dcc532960f3189bf9829bb7556070ac0945448ec9b87f92e"
+    },
+    "simd": {
+      "file": "converter-detect-simd.wasm",
+      "features": "format-detection-expanded,format-detection-simd",
+      "bytes": 225355,
+      "gzip9Bytes": 110112,
+      "sha256": "5c0a564818351a49baa86e61a182e25b2846a07c969878b443e0aefcf546e8d8"
+    }
+  }
+}

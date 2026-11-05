@@ -11,11 +11,14 @@ export interface SevenZipEntry {
 
 export interface SevenZipRequest {
   bytes: Uint8Array;
-  format: 'rar' | '7z' | 'zip';
+  format: 'rar' | '7z' | 'zip' | 'bzip2' | 'xz' | 'lzma' | 'lzma86' | 'zstd' | 'z' |
+    'ar' | 'cpio' | 'cab' | 'iso' | 'udf' | 'lzh' | 'rpm' | 'xar' | 'wim';
   name?: string;
   volumes?: readonly { name: string; bytes: Uint8Array }[];
   password?: string;
   entry?: SevenZipEntry;
+  /** Decode a single compressed stream with no advertised unpacked size. */
+  stream?: boolean;
   maxEntries: number;
   maxEntryBytes: number;
   wasmUrl?: string;
@@ -40,10 +43,12 @@ export async function runSevenZip(request: SevenZipRequest, factory: SevenZipMod
     if (!file.name || /[/\\\u0000-\u001f\u007f]/.test(file.name) || file.name === '.' || file.name === '..' || names.has(file.name)) throw new Error('Invalid or duplicate archive volume filename.');
     names.add(file.name);
   }
-  const extracting = request.entry !== undefined;
+  if (request.stream && !['bzip2', 'xz', 'lzma', 'lzma86', 'zstd', 'z'].includes(request.format)) throw new Error('Unsupported compressed stream format.');
+  if (request.stream && request.entry) throw new Error('A compressed stream cannot select an archive entry.');
+  const extracting = request.stream || request.entry !== undefined;
   if (request.entry?.encrypted && request.password === undefined) throw new SevenZipError('Archive entry requires a password.', 'password_required');
   if (request.entry && (request.entry.size > request.maxEntryBytes || request.entry.size < 0)) throw new Error('Attachment exceeds the preview size limit.');
-  const limit = extracting ? request.entry!.size : 16 * 1024 * 1024;
+  const limit = request.stream ? request.maxEntryBytes : extracting ? request.entry!.size : 16 * 1024 * 1024;
   const chunks: Uint8Array[] = [];
   let chunk = new Uint8Array(65536), used = 0, total = 0, stderr = '', requestedInput = false;
   let outputError: Error | undefined;
@@ -75,7 +80,7 @@ export async function runSevenZip(request: SevenZipRequest, factory: SevenZipMod
     : request.format === 'rar' && request.bytes[6] === 1 ? 'rar5' : request.format;
   const args = [extracting ? 'x' : 'l', `/archive/${name}`, `-t${archiveType}`, '-bd', '-bsp0', '-sccUTF-8',
     ...(request.password === undefined ? [] : [`-p${request.password}`]),
-    ...(extracting ? ['-so', '-bso0', '-bse2', '-spd', '-r-', `-i!${request.entry!.path}`] : ['-slt', '-ba'])];
+    ...(extracting ? ['-so', '-bso0', '-bse2', '-spd', '-r-', ...(request.entry ? [`-i!${request.entry.path}`] : [])] : ['-slt', '-ba'])];
   let status: number | undefined;
   let failure: unknown;
   try { status = engine.callMain(args) as unknown as number; }
@@ -98,7 +103,7 @@ export async function runSevenZip(request: SevenZipRequest, factory: SevenZipMod
   let offset = 0;
   for (const part of chunks) { output.set(part, offset); offset += part.length; }
   if (extracting) {
-    if (total !== request.entry!.size) throw new Error('Archive entry size does not match its metadata.');
+    if (request.entry && total !== request.entry.size) throw new Error('Archive entry size does not match its metadata.');
     return { bytes: output };
   }
   return { entries: parseSevenZipListing(new TextDecoder().decode(output), request.maxEntries) };
