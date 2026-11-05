@@ -108,6 +108,7 @@ const PANORAMA_FORMATS = new Set(['pano', 'panorama', '360', 'insv', 'insp', 'os
 const ARCHIVE_FORMATS = new Set(['zip', 'zipx', 'rar', '7z', 'tar', 'gz', 'bz', 'bz2', 'xz', 'z', 'zst', 'tgz', 'tbz', 'tbz2', 'txz', 'lz', 'lzma', 'cab', 'iso', 'ar', 'cpio', 'ace', 'lha', 'lzh', 'zoo', 'xar', 'sit', 'sitx', 'apk', 'ipa', 'jar', 'war', 'ear', 'xpi', 'crx', 'deb', 'rpm', 'dmg', 'img', 'wim', 'swm', 'esd', 'pak', '001', 'cbz', 'cbr', 'cb7', 'cbt']);
 
 export const DIRECT_FORMAT_ROUTES: FormatDefinition[] = [
+  defineRoute(['cad-json'], 'cad', 'cad', { contentTypes: ['application/vnd.filens.cad+json'] }),
   defineRoute(['pptx'], 'paged', 'pptx'),
   defineRoute(['pdf'], 'paged', 'pdf', {
     contentTypes: ['application/pdf']
@@ -791,11 +792,13 @@ function createConversionRoutes(
     // the native reader and only encrypted envelopes invoke the converter.
     if (!sourceFormat || !targetFormat || sourceFormat === targetFormat || routedSources.has(sourceFormat)) return [];
     routedSources.add(sourceFormat);
-    if (targetFormat === 'dxf') {
+    if (targetFormat === 'dxf' || targetFormat === 'cad-json') {
       return defineRoute([sourceFormat], 'cad', 'cad', {
         targetFormat,
         contentTypes: legacyContentTypesForSource(sourceFormat),
-        conversion: { required: true, reason: 'DWG drawings are converted to UTF-8 DXF in the WASM conversion core for 2D preview' }
+        conversion: { required: true, reason: targetFormat === 'cad-json'
+          ? 'DWG drawings are read directly into a drawing model in the WASM core for 2D preview'
+          : 'DWG drawings are converted to UTF-8 DXF in the WASM conversion core for 2D preview' }
       });
     }
     if (targetFormat === 'jpg' || targetFormat === 'jpeg' || targetFormat === 'png') {

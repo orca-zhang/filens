@@ -17,6 +17,7 @@ import {
   type PreviewSession,
   type PreviewSource
 } from '@filens/core';
+import type { CadModel, ModelEntity, ModelStyle, ModelGeometry, ModelHatchEdge, ModelPoint } from './cad-model';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -499,13 +500,13 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
       if (context.signal?.aborted) controller.abort();
       checkCadAborted(signal);
       const format = normalizeFormat(context.route?.sourceFormat ?? context.descriptor.extension);
-      if (format !== 'dxf') {
+      if (format !== 'dxf' && format !== 'cad-json') {
         throw new Error(`CAD preview currently supports browser-native DXF files, got ${format || 'unknown'}.`);
       }
 
       const text = await sourceToText(source, { ...context, signal });
       checkCadAborted(signal);
-      const parsedDrawing = loadDxfDrawing(text);
+      const parsedDrawing = format === 'cad-json' ? loadCadDrawing(text) : loadDxfDrawing(text);
       const resourceResolvedDrawing = await applyCadResourceResolver(
         parsedDrawing,
         this.options.resourceResolver,
@@ -732,9 +733,180 @@ export function createCadPreviewDriver(): PreviewDriver<CadPreviewState> {
   return {
     id: 'cad',
     family: 'cad',
-    supports: (format) => normalizeFormat(format) === 'dxf',
+    supports: (format) => ['dxf', 'cad-json'].includes(normalizeFormat(format)),
     createSession: (host, options) => new CadPreviewSession(host, options)
   };
+}
+
+/** Load the native DWG drawing model emitted by converter-graphics.wasm. */
+export function loadCadDrawing(source: string): CadDrawing {
+  const model = JSON.parse(source) as CadModel;
+  if (model.schema_version !== 1 || model.source?.format !== 'dwg'
+    || !Array.isArray(model.models) || !Array.isArray(model.blocks) || !Array.isArray(model.layers)) {
+    throw new Error('Invalid CAD drawing model.');
+  }
+  const warnings: string[] = [];
+  const styles = new Map<string, CadTextStyle>(model.text_styles.map(style => [normalizeTextStyleName(style.name), {
+    name: style.name, fontFile: style.font ?? undefined,
+    fontFamily: style.font && !isShxFont(style.font) ? fontFileToFamily(style.font) : undefined
+  }]));
+  const blocks = new Map(model.blocks.map(block => [block.name, block]));
+  // Bound expansion as well as binary decoding: small files can contain huge INSERT arrays.
+  let remaining = 500_000;
+  const expand = (list: ModelEntity[], stack: string[] = []): CadEntity[] => {
+    if (stack.length > 32) throw new Error('CAD block nesting exceeds the 32 level preview limit.');
+    const output: CadEntity[] = [];
+    for (const entity of list) {
+      if (--remaining < 0) throw new Error('CAD drawing exceeds the 500,000 entity preview limit.');
+      const geometry = entity.kind;
+      const style = modelEntityStyle(entity);
+      if (geometry.type === 'insert' || (geometry.type === 'dimension' && geometry.block)) {
+        const name = geometry.block!;
+        const block = blocks.get(name);
+        if (!block || stack.includes(name)) {
+          warnings.push(`DWG block "${name}" is missing or cyclic; skipped.`);
+          continue;
+        }
+        const blockEntities = expand(block.entities, [...stack, name]);
+        if (geometry.type === 'dimension') {
+          for (const child of blockEntities) output.push(inheritInsertEntityMetadata(child, style));
+        } else {
+          const count = geometry.rows * geometry.columns;
+          if (!Number.isSafeInteger(count) || count < 1 || count > remaining
+            || count * blockEntities.length > remaining) throw new Error('CAD INSERT array exceeds the preview limit.');
+          remaining -= count * blockEntities.length;
+          const insert: CadInsertEntity = { ...style, blockName: name, point: geometry.position,
+            scaleX: geometry.scale.x, scaleY: geometry.scale.y, rotation: degrees(geometry.rotation),
+            columns: geometry.columns, rows: geometry.rows, columnSpacing: geometry.column_spacing, rowSpacing: geometry.row_spacing };
+          for (let row = 0; row < insert.rows; row++) for (let column = 0; column < insert.columns; column++) {
+            const transform = { blockBasePoint: block.base_point, insertionPoint: mInsertPoint(insert, column, row),
+              scaleX: insert.scaleX, scaleY: insert.scaleY, rotation: insert.rotation };
+            for (const child of blockEntities) output.push(inheritInsertEntityMetadata(transformCadEntity(child, transform), insert));
+          }
+        }
+      } else if (geometry.type === 'group') {
+        for (const child of expand(geometry.children, stack)) output.push(inheritInsertEntityMetadata(child, style));
+      } else {
+        for (const child of modelGeometryEntities(entity, styles, warnings)) output.push({ ...style, ...child });
+      }
+      for (const attribute of entity.attributes) {
+        if (attribute.invisible || !attribute.position || !attribute.display) continue;
+        if (--remaining < 0) throw new Error('CAD attributes exceed the preview limit.');
+        const display = attribute.display;
+        output.push({ ...style, ...modelText({ type: 'text', position: attribute.position,
+          value: attribute.value, height: display.height, rotation: display.rotation,
+          width_factor: 1, oblique: 0, style: display.style, halign: display.halign, valign: display.valign,
+          normal: { x: 0, y: 0, z: 1 } }, styles), layer: attribute.layer ?? style.layer });
+      }
+    }
+    return output;
+  };
+  const space = model.models.find(space => space.kind === 'model') ?? model.models[0];
+  const entities = expand(space?.entities ?? []);
+  const lineTypeMap = new Map<string, CadLineType>(model.linetypes.map(line => [normalizeLineTypeName(line.name)!, {
+    name: line.name, description: line.description ?? undefined, pattern: line.pattern
+  }]));
+  const layers = model.layers.map(layer => {
+    const style = modelEntityStyle(layer);
+    return { name: layer.name, colorIndex: style.colorIndex, trueColor: style.trueColor,
+      color: style.trueColor ?? aciToHex(style.colorIndex), lineType: style.lineType, lineWeight: style.lineWeight,
+      lineTypePattern: resolveLineTypePattern(style.lineType, lineTypeMap),
+      visible: layer.visible && !layer.frozen, frozen: layer.frozen, locked: layer.locked };
+  });
+  const layerMap = new Map(layers.map(layer => [normalizeLayerName(layer.name), layer]));
+  const resolvedEntities = resolveEntityStyles(entities, layerMap, lineTypeMap);
+  return { entities: resolvedEntities, bounds: computeBounds(resolvedEntities),
+    header: { units: { name: model.units.unit } },
+    layers: uniqueSorted([...layers.map(layer => layer.name), ...entities.map(entity => entity.layer).filter((name): name is string => !!name)]),
+    layerStyles: layers, lineTypes: [...lineTypeMap.values()], textStyles: [...styles.values()],
+    warnings: uniqueWarnings([...warnings, ...model.warnings.filter(warning => !/ (?:RAY|XLINE) entities mapped to Unknown$/.test(warning.message)).map(warning => warning.message),
+      ...collectDrawingWarnings(resolvedEntities, styles)]) };
+}
+
+function modelEntityStyle(entity: ModelStyle): CadEntityMetadataSource {
+  const color = entity.color;
+  return { layer: entity.layer ?? undefined,
+    colorIndex: color.type === 'aci' ? color.index : color.type === 'by_block' ? 0 : undefined,
+    trueColor: color.type === 'rgb' ? parseTrueColor((color.r! << 16) | (color.g! << 8) | color.b!) : undefined,
+    entityVisible: entity.visible, lineType: normalizeLineType(entity.linetype ?? undefined),
+    lineWeight: entity.lineweight.type === 'millimeters' ? normalizeLineWeight(entity.lineweight.value! * 100) : undefined,
+    lineTypeScale: typeof entity.props['dwg.linetype_scale'] === 'number' ? entity.props['dwg.linetype_scale'] : undefined };
+}
+
+function degrees(radians: number): number { return radians * 180 / Math.PI; }
+
+function modelText(geometry: Extract<ModelGeometry, { type: 'text' | 'm_text' }>, styles: Map<string, CadTextStyle>): CadTextEntity {
+  const style = geometry.style ? styles.get(normalizeTextStyleName(geometry.style)) : undefined;
+  const horizontal = geometry.type === 'text' ? geometry.halign : geometry.attachment.split('_')[1];
+  const vertical = geometry.type === 'text' ? geometry.valign : geometry.attachment.split('_')[0];
+  return { type: 'text', point: geometry.position,
+    value: geometry.type === 'm_text' ? geometry.plain : normalizeDxfText(geometry.value),
+    height: geometry.height, rotation: degrees(geometry.rotation),
+    widthFactor: geometry.type === 'text' ? geometry.width_factor : 1,
+    obliqueAngle: geometry.type === 'text' ? degrees(geometry.oblique) : 0,
+    horizontalAlign: horizontal === 'right' ? 'right' : horizontal === 'center' ? 'center' : 'left',
+    verticalAlign: vertical === 'top' ? 'top' : vertical === 'middle' ? 'middle' : vertical === 'bottom' ? 'bottom' : 'baseline',
+    styleName: geometry.style ?? undefined, fontFile: style?.fontFile, fontFamily: style?.fontFamily };
+}
+
+function modelGeometryEntities(entity: ModelEntity, styles: Map<string, CadTextStyle>, warnings: string[]): CadEntity[] {
+  const g = entity.kind;
+  switch (g.type) {
+    case 'point': return [{ type: 'point', point: g.position }];
+    case 'line': return [{ type: 'line', start: g.start, end: g.end }];
+    case 'circle': return [{ type: 'circle', center: g.center, radius: g.radius }];
+    case 'arc': return [{ type: 'arc', center: g.center, radius: g.radius,
+      startAngle: g.normal.z < 0 ? 180 - degrees(g.end_angle) : degrees(g.start_angle),
+      endAngle: g.normal.z < 0 ? 180 - degrees(g.start_angle) : degrees(g.end_angle) }];
+    case 'ellipse': return [{ type: 'ellipse', center: g.center, majorAxis: g.major_axis, ratio: g.ratio,
+      startParameter: g.normal.z < 0 ? -g.end_param : g.start_param,
+      endParameter: g.normal.z < 0 ? -g.start_param : g.end_param }];
+    case 'polyline': return [{ type: 'polyline', points: g.vertices.map(vertex => vertex.position), closed: g.closed,
+      bulges: g.vertices.map(vertex => vertex.bulge * (g.normal.z < 0 ? -1 : 1)),
+      strokeWidth: resolvePolylineStrokeWidth(undefined, g.vertices.map(vertex => resolvePolylineVertexWidth(vertex.start_width, vertex.end_width))) }];
+    case 'spline': return [{ type: 'spline', points: g.fit_points.length >= 2 ? g.fit_points : g.control_points, degree: g.degree, closed: g.closed }];
+    case 'text': case 'm_text': return [modelText(g, styles)];
+    case 'face': return [{ type: 'face', points: g.points }];
+    case 'leader': return [{ type: 'polyline', points: g.vertices, closed: false }];
+    case 'hatch': return [{ type: 'hatch', solid: g.solid, patternName: g.pattern ?? undefined,
+      loops: g.loops.map(loop => dedupeConsecutivePoints(loop.edges.flatMap(modelHatchEdgePoints))).filter(loop => loop.length >= 3) }];
+    case 'mesh': return g.faces.map(face => ({ type: 'face', points: face.map(index => g.vertices[index]).filter((point): point is ModelPoint => !!point) }));
+    case 'image': {
+      const [width, height] = g.size_px ?? [1, 1];
+      return [{ type: 'image', point: g.position, source: g.path ?? undefined, width, height,
+        uVector: { x: g.u_vector.x / width, y: g.u_vector.y / width }, vVector: { x: g.v_vector.x / height, y: g.v_vector.y / height } }];
+    }
+    case 'dimension': {
+      const [start, end] = g.points.slice(-2);
+      if (!start || !end) return [];
+      return [{ type: 'dimension', start, end, textPoint: g.text_position ?? midpoint(start, end),
+        text: g.text && g.text !== '<>' ? normalizeDxfText(g.text) : formatDimensionMeasurement(g.measurement ?? distance(start, end)),
+        height: Math.max(distance(start, end) * 0.08, 1) }];
+    }
+    case 'unknown': {
+      // cadkit decodes RAY/XLINE coordinates into props even though its model has no ray kind.
+      const point = entity.props['dwg.point'], direction = entity.props['dwg.direction'];
+      if (['dwg.RAY', 'dwg.XLINE'].includes(g.type_name) && Array.isArray(point) && Array.isArray(direction)
+        && point.slice(0, 2).every(Number.isFinite) && direction.slice(0, 2).every(Number.isFinite)) {
+        return [{ type: 'construction-line', point: { x: point[0], y: point[1] },
+          direction: { x: direction[0], y: direction[1] }, ray: g.type_name === 'dwg.RAY' }];
+      }
+      warnings.push(`DWG ${g.type_name.replace(/^dwg\./, '')} is not supported in the 2D preview; skipped.`);
+      return [];
+    }
+    default: return [];
+  }
+}
+
+function modelHatchEdgePoints(edge: ModelHatchEdge): CadPoint[] {
+  switch (edge.type) {
+    case 'line': return [edge.start, edge.end];
+    case 'arc': return sampleCircleArcPoints(edge.center, edge.radius, degrees(edge.start_angle), degrees(edge.end_angle), edge.ccw);
+    case 'ellipse': return sampleHatchEllipseArcPoints(edge.center, edge.major_axis, edge.ratio, degrees(edge.start_param), degrees(edge.end_param), edge.ccw);
+    case 'spline': return sampleSplinePoints(edge.control_points, false, edge.degree);
+    case 'polyline': return samplePolylinePoints({ type: 'polyline', points: edge.vertices.map(vertex => vertex.position),
+      bulges: edge.vertices.map(vertex => vertex.bulge), closed: edge.closed });
+  }
 }
 
 export function loadDxfDrawing(source: string): CadDrawing {

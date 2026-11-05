@@ -554,7 +554,7 @@ fn converter_main() {
             (
                 "graphics-preview",
                 graphics::warning(&request.source),
-                graphics::convert(&request.input, &request.output, &request.source),
+                graphics::convert(&request.input, &request.output, &request.source, &request.target),
             )
         } else if design::supports(&request.source) {
             (
@@ -11270,6 +11270,16 @@ fn rewrite_xml(
 }
 
 fn validate_output(path: &str, target: &str) -> Result<(), ConvertError> {
+    if target == "cad-json" {
+        let file = File::open(path).map_err(|e| conversion_error(format!("read CAD model: {e}")))?;
+        let model: serde_json::Value = serde_json::from_reader(file)
+            .map_err(|e| conversion_error(format!("Invalid CAD model: {e}")))?;
+        if model["schema_version"] != 1 || model["source"]["format"] != "dwg"
+            || !model["models"].is_array() || !model["layers"].is_array() {
+            return Err(conversion_error("Invalid CAD drawing model".into()));
+        }
+        return Ok(());
+    }
     if target == "dxf" {
         let bytes = fs::read(path).map_err(|e| conversion_error(format!("read DXF: {e}")))?;
         if ![b"  0\nSECTION".as_slice(), b"0\nSECTION", b"  0\r\nSECTION", b"0\r\nSECTION"]
@@ -11502,6 +11512,7 @@ fn content_type(target: &str) -> &'static str {
         "jpg" | "jpeg" => "image/jpeg",
         "png" => "image/png",
         "dxf" => "image/vnd.dxf",
+        "cad-json" => "application/vnd.filens.cad+json",
         "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",

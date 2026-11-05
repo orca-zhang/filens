@@ -11,6 +11,13 @@ are grouped under Tools. Audio/video playback and progress stay below the
 player. The percentage uses a compact four-character width. Controls follow fullscreen and return to
 the address bar on exit. [Checks and exact package bytes](../../docs/dsh-compact-controls-validation.json).
 
+The 3D / panorama gallery was re-recorded with the published 0.1.6 package in
+the installed Desktop app. All 76 installed files match the release tarball.
+The recording verifies that video playback controls stay out of the address
+bar and the timeline remains visible at the bottom of the player, then drags
+that timeline, starts playback and looks around the spherical video.
+GIF, WebP and MP4 share this capture. [Recording evidence and hashes](../../docs/assets/dsh-plugin/3d-and-panorama-recording.json).
+
 ## 0.1.5 address-bar controls and preview description — 2026-11-05
 
 Plugin 0.1.5 (CLI 0.5.6 / shared-source preview 0.3.4) places the shared

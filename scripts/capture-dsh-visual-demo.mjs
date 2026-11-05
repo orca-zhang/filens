@@ -1,5 +1,5 @@
 // Real DSH Desktop interactions using the plugin in an isolated capture profile.
-// node scripts/capture-dsh-visual-demo.mjs [--home /isolated/profile] [--encode-only]
+// node scripts/capture-dsh-visual-demo.mjs [--home /isolated/profile] [--capture-only | --encode-only]
 import assert from 'node:assert/strict';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -37,6 +37,7 @@ async function capture() {
   const began = Date.now(), segments = [], checks = [];
   const viewer = () => page;
   const header = () => page.locator('.filens-dsh-actions').last();
+  const playback = () => page.locator('.filens-dsh-view .pptxv-video-controls');
   const scene = async (zh, en, action, duration = 2600) => {
     const start = Date.now();
     await action();
@@ -56,7 +57,8 @@ async function capture() {
     await page.waitForFunction(() => ['ready', 'error'].includes(document.querySelector('.filens-dsh')?.dataset.phase), null, { timeout: 65000 });
     assert.equal(await page.locator('.filens-dsh').getAttribute('data-phase'), 'ready');
     await viewer().waitForFunction(family => document.querySelector('.filens-dsh-view')?.dataset.family === family, family);
-    assert.equal(await page.locator('.filens-dsh-view [data-preview-controls], .filens-dsh-view .pptxv-toolbar, .filens-dsh-view .pptxv-model-tools-toggle').count(), 0);
+    assert.equal(await page.locator('.filens-dsh-view .pptxv-toolbar, .filens-dsh-view .pptxv-model-tools-toggle').count(), 0);
+    assert.equal(await header().locator('.pptxv-video-controls').count(), 0);
     assert.ok(await header().locator('button').count() > 0);
     assert.equal(await header().locator('[data-action^=fit-]:visible').count(), 0);
   };
@@ -78,7 +80,7 @@ async function capture() {
     await prepareWorkspace(page, directory);
     await scene('3D：打开太空机器人 GLB', '3D: open a space robot GLB', () => open('Orbital Bot.glb', 'model3d'), 2300);
     await scene('展开预览，直接拖拽旋转', 'Expand the preview and drag to orbit', async () => {
-      await click(page.getByRole('button', { name: '全屏', exact: true }));
+      await click(page.locator('[data-sidebar-right-mode="fullscreen"]'));
       await drag('.model3dv-canvas', 180, 30);
     }, 3600);
     await scene('滚轮缩放，查看模型细节', 'Scroll to zoom into the model', async () => {
@@ -117,21 +119,28 @@ async function capture() {
     checks.push('panorama header zoom controls');
     checks.push('spherical photo render and look-around');
     await page.screenshot({ path: path.join(work, 'panorama-photo.png') });
-    await scene('360° 视频：拖动进度条，进入黑洞之旅', '360° video: scrub to NASA’s black-hole journey', async () => {
-      await open('NASA Black Hole.360v', 'panorama-video');
-      const timeline = header().getByRole('slider', { name: 'Panorama video position', exact: true });
+    await scene('360° 视频：打开 NASA 黑洞全景', '360° video: open NASA’s black-hole panorama', () => open('NASA Black Hole.360v', 'panorama-video'), 2300);
+    await scene('底部进度条：拖动进入黑洞之旅', '360° video: scrub the bottom timeline', async () => {
+      const timeline = playback().getByRole('slider', { name: 'Panorama video position', exact: true });
       const bounds = await timeline.boundingBox();
-      await timeline.click({ position: { x: bounds.width * 0.37, y: bounds.height / 2 } });
+      const canvas = await page.locator('.panoramav-canvas').boundingBox();
+      assert.ok(bounds && canvas && bounds.y >= canvas.y + canvas.height * 0.75, 'The timeline must remain at the bottom of the player.');
+      assert.ok(bounds.y + bounds.height <= recording.viewport.height, 'The bottom timeline must be visible in the recording.');
+      await page.mouse.move(bounds.x + 2, bounds.y + bounds.height / 2, { steps: 10 });
+      await page.mouse.down();
+      await page.mouse.move(bounds.x + bounds.width * 0.37, bounds.y + bounds.height / 2, { steps: 24 });
+      await page.mouse.up();
       await viewer().waitForFunction(() => document.querySelector('video')?.currentTime > 24);
-    }, 3000);
+    }, 2600);
+    checks.push('panorama video timeline and playback controls visible at the bottom of the player, absent from the address bar');
     await scene('播放全景视频，同时拖拽改变视角', 'Play the 360° video and look around while it runs', async () => {
-      await header().locator('.pptxv-video-rate').selectOption('1.5');
-      await click(header().getByRole('button', { name: 'Play panorama video', exact: true }));
+      await playback().locator('.pptxv-video-rate').selectOption('1.5');
+      await click(playback().getByRole('button', { name: 'Play panorama video', exact: true }));
       await viewer().waitForFunction(() => { const video = document.querySelector('video'); return video && !video.paused && video.currentTime > 26; });
       await drag('.panoramav-canvas', 220, -30);
       assert.ok(await viewer().locator('video').evaluate(video => !video.paused && video.currentTime > 27));
     }, 4400);
-    checks.push('panorama video timeline seeking', 'panorama video playback and look-around', 'all format controls in address-bar action slot');
+    checks.push('panorama video timeline seeking', 'panorama video playback and look-around', 'zoom and model inspector in address-bar action slot');
     await page.screenshot({ path: path.join(work, 'panorama-video.png') });
   } catch (error) {
     await page.screenshot({ path: path.join(work, 'error.png') }).catch(() => {});
@@ -140,10 +149,14 @@ async function capture() {
     await recording.stop();
     await app.close();
     const offset = (began - recording.startedAt) / 1000;
-    const previewSHA256 = createHash('sha256').update(await readFile(path.join(home, 'profiles/desktop/node_modules/dsh-filens/lib/runtime/filens.js'))).digest('hex');
-    await writeFile(recordingFile, JSON.stringify({ capturedAt: new Date().toISOString(), installationSource: 'isolated local source build', components: { cli: installed.dependencies['filens-cli'], previewSHA256 }, home, directory, raw: recording.raw, viewport: recording.viewport, offset, synchronization: 'first screencast frame delivery', environment, plugin: installed.version, documents, segments, checks }, null, 2) + '\n');
+    const pluginDirectory = path.join(home, 'profiles/desktop/node_modules/dsh-filens');
+    const hashes = {};
+    for (const [name, file] of [['previewSHA256', 'lib/runtime/filens.js'], ['clientSHA256', 'lib/client.js'], ['runtimeManifestSHA256', 'lib/runtime-manifest.js']]) {
+      hashes[name] = createHash('sha256').update(await readFile(path.join(pluginDirectory, file))).digest('hex');
+    }
+    await writeFile(recordingFile, JSON.stringify({ capturedAt: new Date().toISOString(), installationSource: 'isolated published package', components: { cli: installed.dependencies['filens-cli'], ...hashes }, home, directory, raw: recording.raw, viewport: recording.viewport, offset, synchronization: 'first screencast frame delivery', environment, plugin: installed.version, documents, segments, checks }, null, 2) + '\n');
   }
 }
 
 if (!process.argv.includes('--encode-only')) await capture();
-await encodeRecording(recordingFile, '3d-and-panorama', 'panorama video playback and look-around');
+if (!process.argv.includes('--capture-only')) await encodeRecording(recordingFile, '3d-and-panorama', 'panorama video playback and look-around');

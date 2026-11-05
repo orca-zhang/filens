@@ -53,7 +53,7 @@ format-detection-expanded = ["format-detection-containers", "dep:snap"]
 format-detection-compound = ["format-detection-expanded", "dep:cfb"]
 office-crypto = ["msoffice-crypto/legacy-binary"]
 postscript = ["dep:efterscript-remelt", "dep:efterscript-vm"]
-graphics-preview = ["dep:acadrust", "dep:raster-codec", "dep:pcx", "dep:jxl-oxide", "raster-codec/tiff", "raster-codec/tga", "raster-codec/pnm", "raster-codec/dds", "raster-codec/hdr", "raster-codec/exr", "raster-codec/ico", "raster-codec/qoi", "raster-codec/ff"]
+graphics-preview = ["dep:cadkit-dwg", "dep:cadkit-dxf", "dep:cadkit-core", "dep:raster-codec", "dep:pcx", "dep:jxl-oxide", "raster-codec/tiff", "raster-codec/tga", "raster-codec/pnm", "raster-codec/dds", "raster-codec/hdr", "raster-codec/exr", "raster-codec/ico", "raster-codec/qoi", "raster-codec/ff"]
 text-extraction = ["format-detection-expanded", "graphics-preview", "dep:calamine", "dep:iwork", "dep:djvu-rs", "dep:sha2", "dep:acadrust", "dep:cadkit-core", "dep:raster-codec", "raster-codec/pnm", "raster-codec/hdr", "raster-codec/exr", "raster-codec/png", "raster-codec/jpeg", "raster-codec/webp", "raster-codec/gif", "raster-codec/bmp", "raster-codec/tiff", "dep:matfile", "dep:fitsrs", "dep:lopdf", "dep:ttf-parser", "dep:unicode-normalization", "dep:tar"]
 
 [dependencies]
@@ -73,7 +73,9 @@ calamine = { version = "=0.37.0", optional = true }
 iwork = { version = "=0.4.0", optional = true }
 djvu-rs = { version = "=0.43.0", optional = true }
 acadrust = { version = "=0.6.8", default-features = false, optional = true }
-cadkit-core = { version = "=0.5.1", optional = true }
+cadkit-core = { version = "=0.5.2", optional = true }
+cadkit-dwg = { version = "=0.5.2", optional = true }
+cadkit-dxf = { version = "=0.5.2", optional = true }
 sha2 = { version = "0.10", optional = true }
 raster-codec = { package = "image", version = "=0.25.10", default-features = false, optional = true }
 pcx = { version = "=0.2.5", optional = true }

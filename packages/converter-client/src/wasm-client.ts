@@ -1,5 +1,5 @@
 import { createWasmCoreRunner, InMemoryWasiHost, loadWasmModule, type WasmModuleSource } from './wasi-runner';
-export { createWasmCoreRunner } from './wasi-runner';
+export { createWasmCoreRunner, loadWasmModule } from './wasi-runner';
 export type { WasmModuleSource, WasmCoreRunnerOptions, WasmCoreInvocation, WasmCoreInvocationResult } from './wasi-runner';
 import type {
   ConversionRequest,

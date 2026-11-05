@@ -13,7 +13,8 @@ import ModelSamplePicker from './components/ModelSamplePicker.vue';
 import TextSamplePicker from './components/TextSamplePicker.vue';
 import { textSamples } from './text-samples';
 import { modelSamples } from './model-samples';
-import { createWasmConverterClient } from '@filens/converter-client';
+import { measurePreviewTimings, type TimeRange } from './preview-timings';
+import { createWasmConverterClient, loadWasmModule } from '@filens/converter-client';
 import { createWasmPanoramaProcessor } from '@filens/panorama';
 import type { ZipArchiveResource } from '@filens/archive';
 import conversionManifest from '../../../wasm/converter-core/manifest/conversions.json';
@@ -24,6 +25,7 @@ import {
   listPreviewFormats,
   previewPasswordErrorCode,
   type PreviewFamily,
+  type PreviewDriver,
   type PreviewFontResolver,
   type ConverterClient,
   type PreviewFitMode,
@@ -80,6 +82,8 @@ interface DemoSource {
   source: PreviewSource;
   /** Original URL retained when remote bytes are fetched before previewing. */
   sourceUrl?: string;
+  startedAt?: number;
+  download?: TimeRange;
   archiveVolumes?: SourceDescriptor['archiveVolumes'];
   /** Optional browser-compatible bytes used when a legacy sample codec is unavailable. */
   previewSource?: PreviewSource;
@@ -1190,7 +1194,23 @@ const staticSamples: DemoSource[] = [
 
 const defaultRemoteUrl = 'https://filens-six.vercel.app/samples/filens-field-notes.pptx';
 const remotePrefetchKinds = new Set<DemoKind>(['pptx', 'key', 'pages', 'numbers', 'pdf', 'docx', 'xlsx', 'csv', 'ppt']);
-const Preview = defineAsyncComponent(() => import('@filens/vue').then(({ Preview: preview }) => preview));
+let sdkLoadRanges: Array<TimeRange & { selection?: number }> = [];
+let resourceTimings: PerformanceResourceTiming[] = [];
+const resourceObserver = typeof PerformanceObserver === 'undefined' ? undefined : new PerformanceObserver(list => {
+  resourceTimings.push(...list.getEntries() as PerformanceResourceTiming[]);
+});
+resourceObserver?.observe({ entryTypes: ['resource'] });
+async function measureSdkLoad<T>(load: () => Promise<T>, shared = false): Promise<T> {
+  const range = { start: performanceNow(), end: Infinity, selection: shared ? undefined : sourceSelection };
+  sdkLoadRanges.push(range);
+  try {
+    return await load();
+  } finally {
+    range.end = performanceNow();
+  }
+}
+const loadPreviewSdk = () => measureSdkLoad(() => import('@filens/vue'), true);
+const Preview = defineAsyncComponent(() => loadPreviewSdk().then(({ Preview: preview }) => preview));
 interface DemoBuildInfo {
   distBytes: number;
   runtimeBytes: number;
@@ -1229,6 +1249,7 @@ void fetch(`${import.meta.env.BASE_URL}build-info.json`, { cache: 'no-store' })
   .then((info) => { buildInfo.value = info; })
   .catch(() => undefined);
 const demoRoutes = shallowRef(DEFAULT_FORMAT_ROUTES);
+const demoDrivers = shallowRef<PreviewDriver[]>();
 // Numeric volume suffixes and arbitrary sidecar names cannot be enumerated in
 // an accept filter. Keep every part selectable; routes validate the primary.
 const uploadAccept = '';
@@ -1436,6 +1457,11 @@ function startSourceSelection(): number {
   remoteRequest?.abort();
   remoteRequest = undefined;
   remoteLoadState.value = 'idle';
+  previewStartedAt.value = null;
+  renderTimeMs.value = null;
+  downloadTimeMs.value = null;
+  sdkTimeMs.value = null;
+  conversionTimeMs.value = null;
   return ++sourceSelection;
 }
 
@@ -1539,18 +1565,20 @@ function returnHome(): void {
   window.scrollTo(0, 0);
 }
 const uploadResourceResolver = shallowRef<PreviewResourceResolver | undefined>(undefined);
-const renderStartedAt = shallowRef<number | null>(null);
+const previewStartedAt = shallowRef<number | null>(null);
 const renderTimeMs = shallowRef<number | null>(null);
 const downloadTimeMs = shallowRef<number | null>(null);
+const sdkTimeMs = shallowRef<number | null>(null);
 const conversionTimeMs = shallowRef<number | null>(null);
-let pendingDownloadTimeMs: number | null = null;
+let conversionRanges: TimeRange[] = [];
 let measurementGeneration = 0;
+const measuredWasm = (url: string) => () => measureSdkLoad(() => loadWasmModule(url));
 const converterCore = createWasmConverterClient({
-  wasm: converterCoreWasmUrl,
-  imageWasm: converterImageWasmUrl,
-  officeWasm: converterOfficeWasmUrl,
-  postscriptWasm: converterPostscriptWasmUrl,
-  graphicsWasm: converterGraphicsWasmUrl
+  wasm: measuredWasm(converterCoreWasmUrl),
+  imageWasm: measuredWasm(converterImageWasmUrl),
+  officeWasm: measuredWasm(converterOfficeWasmUrl),
+  postscriptWasm: measuredWasm(converterPostscriptWasmUrl),
+  graphicsWasm: measuredWasm(converterGraphicsWasmUrl)
 });
 const converter: ConverterClient = {
   async convert(request, context) {
@@ -1559,13 +1587,13 @@ const converter: ConverterClient = {
     try {
       return await converterCore.convert(request, context);
     } finally {
-      if (measurementGeneration === generation) {
-        conversionTimeMs.value = performanceNow() - startedAt;
+      if (measurementGeneration === generation && previewStartedAt.value !== null) {
+        conversionRanges.push({ start: startedAt, end: performanceNow() });
       }
     }
   }
 };
-const panoramaProcessor = createWasmPanoramaProcessor({ wasm: converterCoreWasmUrl, imageWasm: converterImageWasmUrl });
+const panoramaProcessor = createWasmPanoramaProcessor({ wasm: measuredWasm(converterCoreWasmUrl), imageWasm: measuredWasm(converterImageWasmUrl) });
 
 onMounted(() => {
   syncPageFromUrl();
@@ -1574,6 +1602,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('popstate', syncPageFromUrl);
   remoteRequest?.abort();
+  resourceObserver?.disconnect();
 });
 
 function demoKindForConversionTarget(targetFormat: string): DemoKind {
@@ -1595,8 +1624,12 @@ function demoKindForConversionTarget(targetFormat: string): DemoKind {
 }
 watch(() => showWorkbench.value && workbenchSection.value === 'preview', (enabled) => {
   if (!enabled) return;
-  void import('@filens/vue').then(({ createVueDefaultPreviewRoutes }) => {
+  void loadPreviewSdk().then(({ createVueDefaultPreviewRoutes, createVueDefaultPreviewDrivers }) => {
     demoRoutes.value = createVueDefaultPreviewRoutes();
+    demoDrivers.value = createVueDefaultPreviewDrivers({ converter, panoramaProcessor }).map(driver => ({
+      ...driver,
+      ...(driver.loadDriver ? { loadDriver: () => measureSdkLoad(() => driver.loadDriver!()) } : {})
+    }));
   });
 }, { immediate: true });
 
@@ -1610,6 +1643,7 @@ const renderTimeLabel = computed(() => formatDuration(renderTimeMs.value));
 const downloadTimeLabel = computed(() => formatDuration(downloadTimeMs.value));
 const conversionTimeLabel = computed(() => formatDuration(conversionTimeMs.value));
 const runtimeTimings = computed(() => [
+  sdkTimeMs.value === null ? null : { label: t('SDK 加载', 'SDK Loading'), value: formatDuration(sdkTimeMs.value) },
   downloadTimeMs.value === null ? null : { label: t('下载', 'Download'), value: downloadTimeLabel.value },
   conversionTimeMs.value === null ? null : { label: t('转换', 'Conversion'), value: conversionTimeLabel.value },
   renderTimeMs.value === null ? null : { label: t('渲染', 'Rendering'), value: renderTimeLabel.value }
@@ -1658,10 +1692,15 @@ watch(
   () => [current.value.name, current.value.contentType, current.value.source],
   () => {
     measurementGeneration += 1;
-    renderStartedAt.value = performanceNow();
+    const startedAt = current.value.startedAt ?? performanceNow();
+    previewStartedAt.value = startedAt;
+    sdkLoadRanges = sdkLoadRanges.filter(range => range.end > startedAt
+      && (range.selection === undefined || range.selection === sourceSelection));
+    resourceTimings = resourceTimings.filter(resource => resource.startTime >= startedAt);
+    conversionRanges = [];
     renderTimeMs.value = null;
-    downloadTimeMs.value = pendingDownloadTimeMs;
-    pendingDownloadTimeMs = null;
+    downloadTimeMs.value = current.value.download ? current.value.download.end - current.value.download.start : null;
+    sdkTimeMs.value = null;
     conversionTimeMs.value = null;
   },
   { immediate: true }
@@ -1749,9 +1788,7 @@ async function useSample(sample: DemoSource): Promise<void> {
   const selection = startSourceSelection();
   renderedState.value = null;
   lastError.value = null;
-  downloadTimeMs.value = null;
-  pendingDownloadTimeMs = null;
-  const materialized = await materializeSample(sample);
+  const materialized = await materializeSample({ ...sample, startedAt: performanceNow() });
   if (selection !== sourceSelection) return;
   current.value = materialized;
   // Resolve bundled companion/sidecar paths against the same base as the primary sample.
@@ -1761,16 +1798,15 @@ async function useSample(sample: DemoSource): Promise<void> {
 
 async function previewRemote(nameOverride?: string, updateUrl = true): Promise<void> {
   const selection = startSourceSelection();
+  const startedAt = performanceNow();
   remoteLoadState.value = 'loading';
-  downloadTimeMs.value = null;
-  pendingDownloadTimeMs = null;
   sourceMode.value = 'url';
   renderedState.value = null;
   lastError.value = null;
   uploadResourceResolver.value = undefined;
   current.value = {
     kind: 'text', label: 'FILE', name: nameOverride?.trim() || inferName(remoteUrl.value.trim()),
-    source: new Uint8Array(), mode: 'url'
+    source: new Uint8Array(), mode: 'url', startedAt
   };
 
   try {
@@ -1783,7 +1819,7 @@ async function previewRemote(nameOverride?: string, updateUrl = true): Promise<v
     remoteUrl.value = sourceUrl;
     const name = nameOverride?.trim() || inferName(sourceUrl);
     const kind = detectKind(name) ?? 'text';
-    current.value = { kind, label: kind.toUpperCase(), name, source: sourceUrl, sourceUrl, mode: 'url' };
+    current.value = { kind, label: kind.toUpperCase(), name, source: sourceUrl, sourceUrl, mode: 'url', startedAt };
     if (updateUrl) {
       const pageUrl = new URL(window.location.href);
       pageUrl.searchParams.set('view', 'preview');
@@ -1799,10 +1835,9 @@ async function previewRemote(nameOverride?: string, updateUrl = true): Promise<v
     remoteRequest = controller;
     const source = remotePrefetchKinds.has(kind)
       ? await fetchRemoteSource(sourceUrl, name, controller.signal)
-      : { source: sourceUrl, durationMs: null };
+      : { source: sourceUrl, download: undefined };
     if (selection !== sourceSelection) return;
-    pendingDownloadTimeMs = source.durationMs;
-    current.value = { ...current.value, source: source.source };
+    current.value = { ...current.value, source: source.source, download: source.download };
     remoteLoadState.value = 'idle';
     remoteRequest = undefined;
   } catch (error) {
@@ -1830,21 +1865,20 @@ async function previewFiles(files: File[]): Promise<void> {
 
   clearRemoteLink();
   const selection = startSourceSelection();
+  const startedAt = performanceNow();
   sourceMode.value = 'upload';
   renderedState.value = null;
   lastError.value = null;
-  downloadTimeMs.value = null;
-  pendingDownloadTimeMs = null;
 
   try {
     const volume = files.find(part => /(?:\.part\d+\.rar|\.(?:7z|zip)\.\d{3,}|\.[r-y]\d{2}|\.z\d{2,})$/i.test(part.name));
     if (volume) {
-      const { selectArchiveVolumes } = await import('@filens/archive');
+      const { selectArchiveVolumes } = await measureSdkLoad(() => import('@filens/archive'));
       if (selection !== sourceSelection) return;
       const set = selectArchiveVolumes(volume.name, files)!;
       current.value = {
         kind: 'zip', label: set.format.toUpperCase(), name: set.primary.name, source: set.primary,
-        extension: set.format, mode: 'upload',
+        extension: set.format, mode: 'upload', startedAt,
         archiveVolumes: set.files.slice(1).map(part => ({ name: part.name, source: part }))
       };
       uploadResourceResolver.value = undefined;
@@ -1854,7 +1888,7 @@ async function previewFiles(files: File[]): Promise<void> {
       const bundle = await materializeZipBundleUpload(file);
       if (selection !== sourceSelection) return;
       if (bundle) {
-        current.value = bundle.source;
+        current.value = { ...bundle.source, startedAt };
         uploadResourceResolver.value = bundle.resourceResolver;
         return;
       }
@@ -1867,7 +1901,8 @@ async function previewFiles(files: File[]): Promise<void> {
       name: file.name,
       source: file,
       contentType: file.type || undefined,
-      mode: 'upload'
+      mode: 'upload',
+      startedAt
     };
     uploadResourceResolver.value = files.length > 1 ? createFileSetResourceResolver(files) : undefined;
   } catch (error) {
@@ -1878,14 +1913,24 @@ async function previewFiles(files: File[]): Promise<void> {
 
 function onRendered(state: PreviewItemState): void {
   renderedState.value = state;
-  if (renderStartedAt.value !== null) {
-    const totalTimeMs = performanceNow() - renderStartedAt.value;
-    const measuredDownloadTimeMs = measureRemoteDownloadTime(current.value.source, renderStartedAt.value);
-    if (measuredDownloadTimeMs !== null) {
-      downloadTimeMs.value = measuredDownloadTimeMs;
-    }
-    renderTimeMs.value = Math.max(0, totalTimeMs - (downloadTimeMs.value ?? 0));
-    renderStartedAt.value = null;
+  if (previewStartedAt.value !== null) {
+    const source = current.value.source;
+    const timings = measurePreviewTimings({
+      start: previewStartedAt.value,
+      end: performanceNow(),
+      sourceUrl: typeof source === 'string' && isRemoteSource(source) ? new URL(source, document.baseURI).href : undefined,
+      prefetchedDownload: current.value.download,
+      resources: resourceObserver
+        ? [...resourceTimings, ...resourceObserver.takeRecords() as PerformanceResourceTiming[]]
+        : performance.getEntriesByType('resource') as PerformanceResourceTiming[],
+      sdkLoads: sdkLoadRanges,
+      conversions: conversionRanges
+    });
+    downloadTimeMs.value = timings.downloadMs;
+    sdkTimeMs.value = timings.sdkMs;
+    conversionTimeMs.value = timings.conversionMs;
+    renderTimeMs.value = timings.renderMs;
+    previewStartedAt.value = null;
   }
   lastError.value = null;
 }
@@ -1914,7 +1959,7 @@ function performanceNow(): number {
   return typeof performance !== 'undefined' ? performance.now() : Date.now();
 }
 
-async function fetchRemoteSource(url: string, name?: string, signal?: AbortSignal): Promise<{ source: ArrayBuffer; durationMs: number }> {
+async function fetchRemoteSource(url: string, name?: string, signal?: AbortSignal): Promise<{ source: ArrayBuffer; download: TimeRange }> {
   const startedAt = performanceNow();
   const response = await fetch(url, { signal });
   if (!response.ok) {
@@ -1923,37 +1968,8 @@ async function fetchRemoteSource(url: string, name?: string, signal?: AbortSigna
   const source = await response.arrayBuffer();
   return {
     source,
-    durationMs: performanceNow() - startedAt
+    download: { start: startedAt, end: performanceNow() }
   };
-}
-
-function measureRemoteDownloadTime(source: PreviewSource, startedAt: number): number | null {
-  if (typeof source !== 'string' || !isRemoteSource(source) || typeof performance === 'undefined') {
-    return null;
-  }
-  const getEntriesByName = performance.getEntriesByName?.bind(performance);
-  if (!getEntriesByName) {
-    return null;
-  }
-
-  const names = new Set([source]);
-  if (typeof document !== 'undefined') {
-    try {
-      names.add(new URL(source, document.baseURI).href);
-    } catch {
-      // Keep the original resource name when URL normalization is unavailable.
-    }
-  }
-
-  const entries = [...names].flatMap((name) => getEntriesByName(name, 'resource'));
-  const entry = entries
-    .filter((candidate): candidate is PerformanceResourceTiming => (
-      candidate.entryType === 'resource'
-      && candidate.startTime >= startedAt - 1
-      && candidate.duration > 0
-    ))
-    .sort((left, right) => right.startTime - left.startTime)[0];
-  return entry ? entry.duration : null;
 }
 
 function isRemoteSource(source: string): boolean {
@@ -2013,10 +2029,10 @@ async function materializeSample(sample: DemoSource): Promise<DemoSource> {
   }
   if (conversionKindBySource.has(extension) && typeof sample.source === 'string') {
     const downloaded = await fetchRemoteSource(sample.source, sample.name);
-    pendingDownloadTimeMs = downloaded.durationMs;
     return {
       ...sample,
-      source: downloaded.source
+      source: downloaded.source,
+      download: downloaded.download
     };
   }
   if (sample.kind === 'pdf' && sample.mode === 'generated') {
@@ -3468,6 +3484,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
             :extension="current.extension"
             :content-type="current.contentType"
             :converter="converter"
+            :drivers="demoDrivers"
             :panorama-processor="panoramaProcessor"
             :font-loading="true"
             :font-resolver="fontResolver"

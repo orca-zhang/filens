@@ -1,18 +1,20 @@
 {
-  "recordedAt": "2026-11-05T05:54:51.343Z",
+  "recordedAt": "2026-11-05T08:35:13.131Z",
   "environment": {
     "dsh": "0.2.1-rc.5",
     "platform": "darwin",
     "arch": "arm64",
     "electron": "44.7.0"
   },
-  "plugin": "dsh-filens@0.1.3",
-  "installationSource": "isolated local source build",
+  "plugin": "dsh-filens@0.1.6",
+  "installationSource": "isolated published package",
   "components": {
     "cli": "0.5.6",
-    "previewSHA256": "6c169ea7fc3803576b7ded0d0a5505bddc966326d854448010ff126f742eab1d"
+    "previewSHA256": "727a8fbe06a40b0c3da759f48b5db4f66343e2415e31e16423bd62894285786e",
+    "clientSHA256": "48c5e3d5db40e252c8e9caccc6f00246c44c37d34a73b29fd5398c901dd4f932",
+    "runtimeManifestSHA256": "42019a5e54eb2f122fa0b0df570dd9566fc54f7a035d2d2b6d82e465832a01fd"
   },
-  "source": "Installed Desktop application, isolated local source build, actual UI interactions",
+  "source": "Installed Desktop application, public npm package, actual UI interactions",
   "editing": "Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions and pointer are annotations. This is not a timing comparison.",
   "encoding": {
     "fps": 25,
@@ -28,8 +30,8 @@
       "dither": "sierra2_4a",
       "optimization": "lossless frame differences, displayed pixels and timing verified"
     },
-    "highlightFrames": 276,
-    "highlightSeconds": 11.04
+    "highlightFrames": 341,
+    "highlightSeconds": 13.64
   },
   "modelCalls": 0,
   "checks": [
@@ -38,9 +40,10 @@
     "3MF render and orbit",
     "panorama header zoom controls",
     "spherical photo render and look-around",
+    "panorama video timeline and playback controls visible at the bottom of the player, absent from the address bar",
     "panorama video timeline seeking",
     "panorama video playback and look-around",
-    "all format controls in address-bar action slot"
+    "zoom and model inspector in address-bar action slot"
   ],
   "documents": [
     {
@@ -71,78 +74,85 @@
   "chapters": [
     {
       "start": 0,
-      "duration": 2.28,
-      "sourceStart": 0.137,
+      "duration": 2.32,
+      "sourceStart": 0.144,
       "zh": "3D：打开太空机器人 GLB",
       "en": "3D: open a space robot GLB"
     },
     {
-      "start": 2.28,
+      "start": 2.32,
       "duration": 3.6,
-      "sourceStart": 2.438,
+      "sourceStart": 2.446,
       "zh": "展开预览，直接拖拽旋转",
       "en": "Expand the preview and drag to orbit"
     },
     {
-      "start": 5.88,
+      "start": 5.92,
       "duration": 1.8,
-      "sourceStart": 6.039,
+      "sourceStart": 6.046,
       "zh": "滚轮缩放，查看模型细节",
       "en": "Scroll to zoom into the model"
     },
     {
-      "start": 7.68,
+      "start": 7.72,
       "duration": 3.6,
-      "sourceStart": 7.84,
+      "sourceStart": 7.848,
       "zh": "地址栏模型工具：切换视图与剖切",
       "en": "Header model tools: view and section"
     },
     {
-      "start": 11.28,
+      "start": 11.32,
       "duration": 2.32,
-      "sourceStart": 11.574,
+      "sourceStart": 11.567,
       "zh": "3MF：多部件行星齿轮箱",
       "en": "3MF: inspect a multi-part planetary gearbox"
     },
     {
-      "start": 13.6,
+      "start": 13.64,
       "duration": 3.32,
-      "sourceStart": 13.875,
+      "sourceStart": 13.869,
       "zh": "旋转模型，观察内部齿轮结构",
       "en": "Orbit the assembly to inspect its gears"
     },
     {
-      "start": 16.92,
-      "duration": 2.32,
-      "sourceStart": 17.296,
+      "start": 16.96,
+      "duration": 2.28,
+      "sourceStart": 17.28,
       "zh": "360° 全景照片：置身银河之下",
       "en": "360° photo: stand beneath the Milky Way"
     },
     {
       "start": 19.24,
       "duration": 3.6,
-      "sourceStart": 19.597,
+      "sourceStart": 19.579,
       "zh": "拖拽环视，探索完整球面",
       "en": "Drag to look around the spherical panorama"
     },
     {
       "start": 22.84,
       "duration": 1.8,
-      "sourceStart": 23.198,
+      "sourceStart": 23.181,
       "zh": "地址栏缩放：查看全景照片细节",
       "en": "Header zoom for the spherical photo"
     },
     {
       "start": 24.64,
-      "duration": 3,
-      "sourceStart": 25.75,
-      "zh": "360° 视频：拖动进度条，进入黑洞之旅",
-      "en": "360° video: scrub to NASA’s black-hole journey"
+      "duration": 2.32,
+      "sourceStart": 25.676,
+      "zh": "360° 视频：打开 NASA 黑洞全景",
+      "en": "360° video: open NASA’s black-hole panorama"
     },
     {
-      "start": 27.64,
+      "start": 26.96,
+      "duration": 2.6,
+      "sourceStart": 27.977,
+      "zh": "底部进度条：拖动进入黑洞之旅",
+      "en": "360° video: scrub the bottom timeline"
+    },
+    {
+      "start": 29.56,
       "duration": 4.4,
-      "sourceStart": 28.752,
+      "sourceStart": 30.578,
       "zh": "播放全景视频，同时拖拽改变视角",
       "en": "Play the 360° video and look around while it runs"
     }
@@ -150,77 +160,76 @@
   "highlightChapters": [
     {
       "start": 0,
-      "duration": 1.52,
-      "sourceStart": 2.938,
+      "duration": 1.48,
+      "sourceStart": 2.946,
       "zh": "3D：拖拽旋转",
       "en": "3D: drag to orbit"
     },
     {
-      "start": 1.52,
+      "start": 1.48,
       "duration": 0.6,
-      "sourceStart": 6.039,
+      "sourceStart": 6.046,
       "zh": "3D：滚轮缩放",
       "en": "3D: scroll to zoom"
     },
     {
-      "start": 2.12,
-      "duration": 3.28,
-      "sourceStart": 8.14,
+      "start": 2.08,
+      "duration": 3.32,
+      "sourceStart": 8.148,
       "zh": "地址栏模型工具：视图与剖切",
       "en": "Header tools: view and section"
     },
     {
       "start": 5.4,
       "duration": 1.2,
-      "sourceStart": 14.075,
+      "sourceStart": 14.068999999999999,
       "zh": "3MF：查看齿轮结构",
       "en": "3MF: inspect the gears"
     },
     {
       "start": 6.6,
       "duration": 1.32,
-      "sourceStart": 19.797,
+      "sourceStart": 19.779,
       "zh": "360° 照片：拖拽环视",
       "en": "360° photo: look around"
     },
     {
       "start": 7.92,
       "duration": 1.52,
-      "sourceStart": 23.198,
+      "sourceStart": 23.181,
       "zh": "地址栏全景缩放",
       "en": "Panorama zoom beside the address bar"
     },
     {
       "start": 9.44,
-      "duration": 1.6,
-      "sourceStart": 29.352,
-      "zh": "360° 视频：边播放边环视",
-      "en": "360° video: play and look around"
+      "duration": 1.8,
+      "sourceStart": 27.977,
+      "zh": "底部进度条：拖动定位",
+      "en": "Bottom timeline: scrub to seek"
+    },
+    {
+      "start": 11.24,
+      "duration": 2.4,
+      "sourceStart": 31.178,
+      "zh": "底部控件播放，全景拖拽环视",
+      "en": "Bottom playback controls and 360° look-around"
     }
   ],
   "artifacts": [
     {
       "path": "docs/assets/dsh-plugin/3d-and-panorama.webp",
-      "bytes": 6555378,
-      "sha256": "6a1236d34e087a62432da663aba5acaf630e9ab9f6f0cda1b006bf7aa4c2b11c"
+      "bytes": 7880206,
+      "sha256": "c7e3aa768176baa7d5253a533dcd2f1ddb94077b28a6e0b1740830f09f1759cd"
     },
     {
       "path": "docs/assets/dsh-plugin/3d-and-panorama.gif",
-      "bytes": 17831071,
-      "sha256": "1cf6499f657e2b19094379d5aeff417cf3b15bb97971c502bda770ec3fd6a014"
+      "bytes": 21921703,
+      "sha256": "7396ba9e53829523b7b26a28766045ed43dde372ff33cf6ea50b9cf711ddc138"
     },
     {
       "path": "docs/assets/dsh-plugin/3d-and-panorama.mp4",
-      "bytes": 5383923,
-      "sha256": "fc9f9175019011a2d180104ef59bc2d4d95e29c9dc67538d317283c29e467d78"
+      "bytes": 5415250,
+      "sha256": "ddbe1b0e6d2273f98a16a488ce2616b82f2253a222752070e1453ea85c7ce894"
     }
-  ],
-  "releaseVerification": {
-    "plugin": "dsh-filens@0.1.5",
-    "previewSHA256": "6c169ea7fc3803576b7ded0d0a5505bddc966326d854448010ff126f742eab1d",
-    "clientSHA256": "accc993059493987f61d8b5fb6deb5afc9a2d22d7a75536e6ae31576eab35f2c",
-    "runtimeAndClientMatch": true,
-    "receipt": "docs/dsh-header-controls-validation.json",
-    "verifiedAt": "2026-11-05T06:23:11.059Z"
-  }
+  ]
 }

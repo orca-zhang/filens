@@ -92,10 +92,14 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 在「插件 → 添加插件」中填写 [`dsh-filens@0.1.6`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.6：下载 6.53 MiB / 解包 19.59 MiB**；CLI/OCR 依赖与 DSH 缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
+**DSH 0.1.6：下载 6.53 MiB / 解包 19.59 MiB** ；CLI/OCR 依赖与 DSH 缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
 <!-- dsh-package-metrics:end -->
 
 ![在 DSH 桌面安装 FiLens、预览 Office 文件并全屏演示 PPT](docs/assets/dsh-plugin/install-and-preview.webp)
+
+在同一侧栏中旋转、缩放 3D 模型，环视 360° 照片并播放全景视频。[全彩动画 WebP](docs/assets/dsh-plugin/3d-and-panorama.webp) · [完整 MP4](docs/assets/dsh-plugin/3d-and-panorama.mp4)。
+
+![在 DSH 中旋转 GLB 和 3MF 模型、环视银河全景照片并播放 360° 视频](docs/assets/dsh-plugin/3d-and-panorama.gif)
 
 ### 浏览器集成：单文件与按需分包
 

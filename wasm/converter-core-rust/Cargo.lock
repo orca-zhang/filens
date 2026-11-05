@@ -224,13 +224,33 @@ checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
 
 [[package]]
 name = "cadkit-core"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b8b4c9e9625df4de13aea02cbe465b9df95ed1123f9baa555fa50a69859143d"
+checksum = "c3291e338fd653012d09a16c166e166ce8925778d669f74d344186b69d9d70f8"
 dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "cadkit-dwg"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83ca715caad7ba6c5f928928e56065997637f443d0c4fb666841b2a2c5608b19"
+dependencies = [
+ "cadkit-core",
+ "encoding_rs",
+]
+
+[[package]]
+name = "cadkit-dxf"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efc54861c509fe8252f97589d748a2208ccbb280878e8523eb8165980a808a50"
+dependencies = [
+ "cadkit-core",
+ "encoding_rs",
 ]
 
 [[package]]
@@ -338,6 +358,8 @@ version = "0.1.0"
 dependencies = [
  "acadrust",
  "cadkit-core",
+ "cadkit-dwg",
+ "cadkit-dxf",
  "calamine",
  "cfb",
  "djvu-rs",

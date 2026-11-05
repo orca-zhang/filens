@@ -6,6 +6,7 @@
   { "sourceFormat": "jxl", "targetFormat": "png" },
   { "sourceFormat": "qoi", "targetFormat": "png" },
   { "sourceFormat": "ff", "targetFormat": "png" },
+  { "sourceFormat": "dwg", "targetFormat": "cad-json" },
   { "sourceFormat": "dwg", "targetFormat": "dxf" },
   { "sourceFormat": "tif", "targetFormat": "png" },
   { "sourceFormat": "tiff", "targetFormat": "png" },

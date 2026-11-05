@@ -97,6 +97,10 @@ Install [`dsh-filens@0.1.6`](https://www.npmjs.com/package/dsh-filens) in **Plug
 
 ![Install FiLens in DSH Desktop, preview Office files and present PPT slides fullscreen](docs/assets/dsh-plugin/install-and-preview.webp)
 
+Rotate and zoom 3D models, look around 360° photos and play panoramic video in the same sidebar. [Full-color animated WebP](docs/assets/dsh-plugin/3d-and-panorama.webp) · [Full MP4](docs/assets/dsh-plugin/3d-and-panorama.mp4).
+
+![FiLens in DSH: orbit GLB and 3MF models, explore a Milky Way panorama and play a 360° video](docs/assets/dsh-plugin/3d-and-panorama.gif)
+
 ### Browser integration: single file or split modules
 
 Download a browser preview ZIP from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.

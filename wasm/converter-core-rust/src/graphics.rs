@@ -8,7 +8,7 @@ pub fn supports(source: &str) -> bool {
 
 pub fn warning(source: &str) -> &'static str {
     match source {
-        "dwg" => "DWG is converted to UTF-8 DXF for 2D preview; unsupported CAD entities, proxy objects, external references and SHX fonts may be simplified or omitted.",
+        "dwg" => "DWG is read locally for partial 2D preview; unsupported CAD entities, proxy objects, external references and SHX fonts may be simplified or omitted.",
         "tif" | "tiff" => "TIFF preview displays the first image; additional pages, geospatial metadata, print profiles and high-bit-depth data are not preserved in the 8-bit PNG preview.",
         "hdr" => "HDR preview is converted to an 8-bit sRGB PNG; the full floating-point dynamic range is not preserved.",
         "dds" => "DDS preview displays the first surface; mipmaps, array layers and additional cube faces are not preserved.",
@@ -20,7 +20,7 @@ pub fn warning(source: &str) -> &'static str {
 }
 
 #[cfg(not(feature = "graphics-preview"))]
-pub fn convert(_input: &str, _output: &str, _source: &str) -> Result<(), ConvertError> {
+pub fn convert(_input: &str, _output: &str, _source: &str, _target: &str) -> Result<(), ConvertError> {
     Err(ConvertError {
         code: "engine_unavailable",
         message: "Graphics preview requires converter-graphics.wasm".into(),
@@ -28,22 +28,25 @@ pub fn convert(_input: &str, _output: &str, _source: &str) -> Result<(), Convert
 }
 
 #[cfg(feature = "graphics-preview")]
-pub fn convert(input: &str, output: &str, source: &str) -> Result<(), ConvertError> {
+pub fn convert(input: &str, output: &str, source: &str, target: &str) -> Result<(), ConvertError> {
     use super::{conversion_error, io_error, parse_error};
     use std::{fs::File, io::{BufReader, Cursor}};
     if source == "dwg" {
-        let options = acadrust::DwgReadOptions::default()
-            .with_max_decompressed_bytes(256 << 20)
-            .with_mesh_limits(1_000_000, 4_000_000);
-        let document = acadrust::DwgReader::from_file_with_options(input, options)
-            .and_then(|mut reader| reader.read())
+        let bytes = std::fs::read(input).map_err(|e| io_error(e.to_string()))?;
+        let options = cadkit_core::ReadOptions::default().with_limits(cadkit_core::Limits::strict());
+        let document = cadkit_dwg::read(&bytes, &options)
             .map_err(|e| parse_error(format!("Read DWG: {e}")))?;
+        if target == "cad-json" {
+            // Pass the native drawing model to the viewer, without a DXF round trip.
+            let file = File::create(output).map_err(|e| io_error(e.to_string()))?;
+            return serde_json::to_writer(file, &document)
+                .map_err(|e| conversion_error(format!("Write CAD model: {e}")));
+        }
         // Modern DXF uses UTF-8; retaining an older DWG code page would garble
         // non-ASCII text in the browser's existing DXF reader.
-        return acadrust::DxfWriter::new(&document)
-            .with_version(acadrust::types::DxfVersion::AC1032)
-            .write_to_file(output)
-            .map_err(|e| conversion_error(format!("Write DXF: {e}")));
+        let dxf = cadkit_dxf::write(&document, cadkit_dxf::DxfVersion::R2018)
+            .map_err(|e| conversion_error(format!("Write DXF: {e}")))?;
+        return std::fs::write(output, dxf).map_err(|e| io_error(e.to_string()));
     }
     use raster_codec::{ImageDecoder, ImageFormat, ImageReader, Limits};
     if source == "pcx" {

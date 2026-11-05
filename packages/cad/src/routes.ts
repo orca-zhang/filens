@@ -2,6 +2,10 @@ import { createDefaultPreviewRoutes, type FormatDefinition } from '@filens/core/
 
 export const CAD_FORMAT_ROUTES: FormatDefinition[] = [
   {
+    extensions: ['cad-json'], family: 'cad', driverId: 'cad', targetFormat: 'cad-json',
+    contentTypes: ['application/vnd.filens.cad+json']
+  },
+  {
     extensions: ['dxf'],
     family: 'cad',
     driverId: 'cad',
@@ -13,6 +17,6 @@ export const CAD_FORMAT_ROUTES: FormatDefinition[] = [
 export function createCadPreviewRoutes(baseRoutes = createDefaultPreviewRoutes()): FormatDefinition[] {
   return [
     ...CAD_FORMAT_ROUTES,
-    ...baseRoutes.filter((route) => !route.extensions.some((extension) => extension === 'dxf'))
+    ...baseRoutes.filter((route) => !route.extensions.some((extension) => ['dxf', 'cad-json'].includes(extension)))
   ];
 }

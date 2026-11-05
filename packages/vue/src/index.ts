@@ -5,6 +5,7 @@ import PptxPreview from './PptxPreview.vue';
 import Preview from './Preview.vue';
 
 export { createVueDefaultPreviewRoutes } from './defaults';
+export { createVueDefaultPreviewDrivers } from './lazy-drivers';
 export { IworkPreview, PptxPreview, Preview };
 export default PptxPreview;
 

@@ -287,7 +287,8 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
     ['Orbit the assembly to inspect its gears', 0.2, 1.2, '3MF：查看齿轮结构', '3MF: inspect the gears'],
     ['Drag to look around the spherical panorama', 0.2, 1.3, '360° 照片：拖拽环视', '360° photo: look around'],
     ['Header zoom for the spherical photo', 0, 1.5, '地址栏全景缩放', 'Panorama zoom beside the address bar'],
-    ['Play the 360° video and look around while it runs', 0.6, 1.6, '360° 视频：边播放边环视', '360° video: play and look around']
+    ['360° video: scrub the bottom timeline', 0, 1.8, '底部进度条：拖动定位', 'Bottom timeline: scrub to seek'],
+    ['Play the 360° video and look around while it runs', 0.6, 2.4, '底部控件播放，全景拖拽环视', 'Bottom playback controls and 360° look-around']
   ].map(([en, skip, duration, zh, caption]) => {
     const segment = recording.segments.find(segment => segment.en === en);
     assert.ok(segment, `Missing recorded scene: ${en}`);

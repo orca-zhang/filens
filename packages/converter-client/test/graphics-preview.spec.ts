@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { loadDxfDrawing } from '@filens/cad';
 import { createWasmConverterClient } from '../src';
+import { createWasmCoreRunner } from '../src/wasi-runner';
 import { pngPixels } from './helpers/png-rgba';
 
 const root = new URL('../../../', import.meta.url);
@@ -76,6 +77,25 @@ describe('graphics previews through the shared WASM conversion core', () => {
     }
     expect(core).not.toHaveBeenCalled();
     expect(graphics).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([['txt', 'docx'], ['tga', 'dxf']])('rejects %s to %s sent directly to the graphics module', async (source, target) => {
+    const run = createWasmCoreRunner({ wasm: graphicsWasm });
+    const invocation = await run({
+      args: ['converter-graphics', '--input', '/work/input', '--output', '/work/output',
+        '--source', source, '--target', target, '--result', '/work/result.json'],
+      files: { '/work/input': new TextEncoder().encode('Unrelated document') },
+      readFiles: ['/work/result.json', '/work/output']
+    });
+    expect(invocation.exitCode).toBe(1);
+    expect(JSON.parse(new TextDecoder().decode(invocation.files['/work/result.json'])))
+      .toMatchObject({ ok: false, errorCode: 'unsupported_format' });
+    expect(invocation.files['/work/output']).toBeUndefined();
+  });
+
+  it('retains the 64 MiB graphics input limit', async () => {
+    await expect(client.convert({ source: new Uint8Array((64 << 20) + 1), sourceFormat: 'tga', targetFormat: 'png' }, context))
+      .rejects.toMatchObject({ result: { errorCode: 'parse_error', errorMessage: 'Graphics input exceeds the 64 MiB limit' } });
   });
 
   it('identifies the required module when only the compact document core is configured', async () => {

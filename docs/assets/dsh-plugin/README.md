@@ -8,11 +8,11 @@ The recording shows the actual Desktop installer using its **default installatio
 
 中文：演示使用默认安装源，包含真实桌面安装、立即启用、Word 预览、Excel 工作表切换，以及 PPT 全屏翻页和 Esc 退出。全屏后点击画面，再用 **Page Down / Page Up** 翻页。下载等待与工作区准备已剪去，字幕与鼠标标记为录制注释；速度对比单独测量。
 
-README embeds **25 fps, full-color animated WebP** at 960 px wide. The GIF alternative also runs at **25 fps**, with a separate adaptive 256-entry palette per scene and Sierra error-diffusion dithering. Keeping each scene's palette stable avoids palette flicker. Lossless frame optimization verifies displayed colors and timing. The loops keep short, actual-speed highlights; MP4 retains the full walkthrough at 25 fps. No motion interpolation or speed-up is used. GIF still has a palette color limit, so WebP is the default for gradients, stars and model materials.
+The installation README preview uses **25 fps, full-color animated WebP** at 960 px wide; the main README's 3D / panorama gallery uses GIF. Both formats run at **25 fps**. GIF uses a separate adaptive 256-entry palette per scene and Sierra error-diffusion dithering. Keeping each scene's palette stable avoids palette flicker. Lossless frame optimization verifies displayed colors and timing. The loops keep short, actual-speed highlights; MP4 retains the full walkthrough at 25 fps. No motion interpolation or editing speed-up is used; the panorama video's selected playback rate is visible in its player. WebP preserves full color for gradients, stars and model materials.
 
 The capture viewport matches the display's aspect ratio, so native fullscreen slides fill the recorded picture without gray recorder padding. The captions occupy a separate strip below the picture.
 
-中文：README 默认展示 **25 fps 的全彩动画 WebP**；GIF 同样为 **25 fps**，每段单独生成稳定的 256 色调色板并采用误差扩散抖色。通过缩短停留和片段控制帧数，保留真实操作速度；完整过程见 MP4。
+中文：安装演示使用全彩动画 WebP，主 README 的 3D / 全景画廊使用 GIF，均为 **25 fps**。GIF 每段单独生成稳定的 256 色调色板并采用误差扩散抖色。通过缩短停留和片段控制帧数，保留真实操作速度；全景视频播放器中会显示所选播放倍率，完整过程见 MP4。
 
 录制画布跟随显示器比例，PPT 全屏画面填满录制区域，不补灰边；字幕单独放在画面下方。
 
@@ -22,11 +22,11 @@ The historical 0.1.2 installation recording and its hashes remain in [history/0.
 
 [Gallery animated WebP](3d-and-panorama.webp) · [Gallery GIF](3d-and-panorama.gif) · [Full gallery MP4](3d-and-panorama.mp4) · [Recording evidence and hashes](3d-and-panorama-recording.json)
 
-The companion gallery was re-recorded on **2026-11-05** in the installed **DSH Desktop 0.2.1-rc.5**, using an isolated **current source build** with base version 0.1.3 and CLI 0.5.6. Its runtime hash is recorded in the evidence; this source build differs from public 0.1.3. Its exact preview runtime and client are shipped in 0.1.5, verified by hash. It expands the document pane, orbits and zooms a GLB space robot, opens model tools beside the address bar to change view/projection and section, then inspects a multi-part 3MF gearbox. It also looks around a Milky Way panorama, uses header zoom, then seeks and plays a spherical NASA black-hole video using the header timeline and playback controls. These are actual pointer, wheel and control interactions; the video is muted.
+The companion gallery was re-recorded on **2026-11-05** in the installed **DSH Desktop 0.2.1-rc.5**, using the published **dsh-filens@0.1.6** package and CLI 0.5.6 in an isolated profile. All 76 installed package files match the published release tarball; runtime, client and manifest hashes are recorded in the evidence. It expands the document pane, orbits and zooms a GLB space robot, opens model tools beside the address bar to change view/projection and section, then inspects a multi-part 3MF gearbox. It also looks around a Milky Way panorama, uses header zoom, then drags the **bottom timeline** and plays a spherical NASA black-hole video using the **controls at the bottom of the player**. The capture checks that playback controls are absent from the address bar and the timeline is visible near the bottom of the picture. These are actual pointer, wheel and control interactions; the video is muted.
 
 The copied photo and video keep their original JPEG/WebM bytes, with `.pano` / `.360v` filenames selecting FiLens's spherical routes. Ordinary `.jpg` / `.webm` files open in the normal image/video viewer. This recording does not demonstrate automatic panorama detection.
 
-中文：画廊已于 2026-11-05 使用隔离的当前源码构建重新录制，展示太空机器人、行星齿轮箱、银河全景照片与 NASA 黑洞全景视频；新增地址栏模型工具、视图 / 剖切、全景缩放、视频进度与播放控件的真实操作。录制时的源码版本与公开 npm 0.1.3 分别标记；相同运行时与客户端已用于 0.1.5，并以校验值核对。照片、视频仅使用 `.pano` / `.360v` 扩展名选择球面预览，原始字节不变。
+中文：画廊已于 2026-11-05 使用公开版 **dsh-filens@0.1.6** 在隔离配置中重新录制，76 个已安装文件均与发布包一致。演示太空机器人、行星齿轮箱、银河全景照片与 NASA 黑洞全景视频，包含地址栏模型工具、视图 / 剖切、全景缩放，以及**播放器底部进度条拖动和播放控件**的真实操作；录制时验证地址栏不含播放控件、进度条位于画面底部且可见。照片、视频仅使用 `.pano` / `.360v` 扩展名选择球面预览，原始字节不变。
 
 | Sample | Source and license |
 | --- | --- |
@@ -165,8 +165,8 @@ node scripts/benchmark-dsh-office-preview.mjs \
 # Encode the completed capture without reinstalling or reopening DSH.
 node scripts/capture-dsh-plugin-demo.mjs --encode-only
 
-# Optional: make a new gallery using that isolated installation.
-node scripts/capture-dsh-visual-demo.mjs
+# Record the gallery using an isolated installation of the current published plugin.
+node scripts/capture-dsh-visual-demo.mjs --home /path/to/isolated-0.1.6-profile
 ```
 
 Run the commands from the repository root. Set `DSH_DESKTOP_EXECUTABLE` if the app is installed elsewhere. The benchmark changes the test profile's FiLens enable switch to compare the real renderers, then restores it. The recording script writes raw video and intermediate frames under ignored `dist/dsh-demo/`, and the WebP, GIF, MP4 and evidence JSON under this directory.
