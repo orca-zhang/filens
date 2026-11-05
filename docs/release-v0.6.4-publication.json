@@ -1,0 +1,147 @@
+{
+  "observedAt": "2026-11-05T04:41:58.570Z",
+  "tag": "v0.6.4",
+  "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
+  "releaseId": 434773832,
+  "status": "published-and-verified",
+  "sourceCommit": "952d3e3f34bf27bf65764dc1b1840b30d35c5e8c",
+  "sourceDirty": false,
+  "publishedAt": "2026-11-05T04:40:21Z",
+  "totalAssets": 15,
+  "allAssetNamesMatch": true,
+  "bodyMatchesEnglishNotes": true,
+  "downloadTableFirst": true,
+  "npmArchivesOnRegistry": 30,
+  "duplicateAssetNames": false,
+  "duplicateContentHashes": false,
+  "assets": [
+    {
+      "file": "dsh-filens-0.1.3.tgz",
+      "id": 712066970,
+      "bytes": 6846421,
+      "sha256": "1341c54436e20d265547290f26719d075023137e642bcf787e0ed65ee9bb73f7",
+      "serverDigest": "sha256:1341c54436e20d265547290f26719d075023137e642bcf787e0ed65ee9bb73f7",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
+      "id": 712031219,
+      "bytes": 34140743,
+      "sha256": "5338bdc4025fcc070b23327f71abd2416736771b9c491966ccdac550c1ef95a9",
+      "serverDigest": "sha256:5338bdc4025fcc070b23327f71abd2416736771b9c491966ccdac550c1ef95a9",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
+      "id": 712031191,
+      "bytes": 19722272,
+      "sha256": "7ad751535a9d119976b58fb86b5ae2221ab713517c908edd42bf986c7c909387",
+      "serverDigest": "sha256:7ad751535a9d119976b58fb86b5ae2221ab713517c908edd42bf986c7c909387",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
+      "id": 712022546,
+      "bytes": 36567390,
+      "sha256": "89ac38e5d159a326041843b91d711382917d048b08190f7e1db1b7128ebf7e55",
+      "serverDigest": "sha256:89ac38e5d159a326041843b91d711382917d048b08190f7e1db1b7128ebf7e55",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-lite.tar.gz",
+      "id": 712022522,
+      "bytes": 19838915,
+      "sha256": "b855823471ebf727110d05c9e75660237e2e0489391ef4f62a88200a59e85ffd",
+      "serverDigest": "sha256:b855823471ebf727110d05c9e75660237e2e0489391ef4f62a88200a59e85ffd",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
+      "id": 712022440,
+      "bytes": 34818439,
+      "sha256": "7b712c3acbf08496fb9f08f158d657a10c6e07744c96f73da57baf11db43aea9",
+      "serverDigest": "sha256:7b712c3acbf08496fb9f08f158d657a10c6e07744c96f73da57baf11db43aea9",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
+      "id": 712018220,
+      "bytes": 20004062,
+      "sha256": "f32a258e6224115b62f6fcc60cae456c5b46a506b58d303a4dce61855fe0a4f5",
+      "serverDigest": "sha256:f32a258e6224115b62f6fcc60cae456c5b46a506b58d303a4dce61855fe0a4f5",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-full.zip",
+      "id": 712041699,
+      "bytes": 36796476,
+      "sha256": "21d8edcbe5a1c9430c5c7f6efad6f08379551ddf22f5e0e248ce51ef18347a81",
+      "serverDigest": "sha256:21d8edcbe5a1c9430c5c7f6efad6f08379551ddf22f5e0e248ce51ef18347a81",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-lite.zip",
+      "id": 712039844,
+      "bytes": 19773833,
+      "sha256": "4755da9e1987db869e72a0f8f100fecae1752369b3c7d4a4944d7c24b04490f5",
+      "serverDigest": "sha256:4755da9e1987db869e72a0f8f100fecae1752369b3c7d4a4944d7c24b04490f5",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-android-sdk-0.1.4.zip",
+      "id": 712018221,
+      "bytes": 6697678,
+      "sha256": "e38e16b4af255039d0e014432cda23510fef5b6cf3bc8fa40c12e6a4150fcc00",
+      "serverDigest": "sha256:e38e16b4af255039d0e014432cda23510fef5b6cf3bc8fa40c12e6a4150fcc00",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-ios-sdk-0.1.4.zip",
+      "id": 712018212,
+      "bytes": 6694819,
+      "sha256": "fd8b4f3ff6c7c138a7b133b4ec24175381d7b8c1f2b881ffd3b329f906e97c40",
+      "serverDigest": "sha256:fd8b4f3ff6c7c138a7b133b4ec24175381d7b8c1f2b881ffd3b329f906e97c40",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-preview-0.3.4-all-in-one.zip",
+      "id": 712018224,
+      "bytes": 12479237,
+      "sha256": "48535402f75f52f753c5d9e7d0a1f6cad94ff0e38dd7a2f19dd8808d1ec72e61",
+      "serverDigest": "sha256:48535402f75f52f753c5d9e7d0a1f6cad94ff0e38dd7a2f19dd8808d1ec72e61",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-preview-0.3.4-split.zip",
+      "id": 712018216,
+      "bytes": 6668077,
+      "sha256": "15db5f4f4c63793da55a9b4614a4b98a86e41eb0a2f70e88166aa500b2d606d7",
+      "serverDigest": "sha256:15db5f4f4c63793da55a9b4614a4b98a86e41eb0a2f70e88166aa500b2d606d7",
+      "downloadVerified": true
+    },
+    {
+      "file": "filens-release-v0.6.4.json",
+      "id": 712083057,
+      "bytes": 14759,
+      "sha256": "dc73acb3852969602d73582b8ed716b4c5cd347e8d6344d654d1a412d064fb38",
+      "serverDigest": "sha256:dc73acb3852969602d73582b8ed716b4c5cd347e8d6344d654d1a412d064fb38",
+      "downloadVerified": true
+    },
+    {
+      "file": "SHA256SUMS",
+      "id": 712083048,
+      "bytes": 1379,
+      "sha256": "540c925abc4e569007e42fb90eeee5caca64ee775ee2eb0d9a556ca969a20f4d",
+      "serverDigest": "sha256:540c925abc4e569007e42fb90eeee5caca64ee775ee2eb0d9a556ca969a20f4d",
+      "downloadVerified": true
+    }
+  ],
+  "documentationCommit": "5832159",
+  "latestRelease": true,
+  "publicDownloadLinks": {
+    "authenticationRequired": false,
+    "method": "HTTP HEAD with redirects",
+    "passed": 15,
+    "total": 15
+  }
+}

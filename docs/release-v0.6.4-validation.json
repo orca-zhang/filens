@@ -1,12 +1,14 @@
 {
   "tag": "v0.6.4",
   "date": "2026-11-05",
-  "observedAt": "2026-11-05T04:05:02.028Z",
-  "status": "npm-published-and-verified",
+  "observedAt": "2026-11-05T04:41:58.571Z",
+  "status": "published-and-verified",
   "previousRelease": "v0.6.3",
   "source": {
     "baseCommit": "66e01abbd36834ca20defc576ceb64d79efbd5b0",
-    "finalSourceInReleaseManifest": true
+    "finalSourceInReleaseManifest": true,
+    "finalCommit": "952d3e3f34bf27bf65764dc1b1840b30d35c5e8c",
+    "documentationCommit": "5832159"
   },
   "components": {
     "preview": "0.3.4",
@@ -343,6 +345,10 @@
     "modules": "module-npm-publication.json",
     "dsh": "dsh-plugin-publication.json",
     "step": "step-npm-publication.json",
-    "github": "release-v0.6.4-publication.json"
+    "github": "release-v0.6.4-publication.json",
+    "githubStatus": "published-and-verified",
+    "githubUrl": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
+    "githubAssets": 15,
+    "duplicateAttachmentsRemoved": 30
   }
 }

@@ -22,5 +22,10 @@
     "pdfLatestMediansAndRatiosMatchRaw": true,
     "npmRegistryPackages": 30,
     "repositoryLinksUseTagForCodeAndMainForPublicationReceipt": true
+  },
+  "publication": {
+    "status": "published-and-verified",
+    "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
+    "publishedAt": "2026-11-05T04:40:21Z"
   }
 }
