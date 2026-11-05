@@ -1,6 +1,6 @@
 {
   "name": "@filens/office",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Office, PDF, and iWork preview drivers for @filens.",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,12 +30,12 @@
   },
   "dependencies": {
     "@filens/docx": "^0.1.1",
-    "@filens/iwork": "^0.1.1",
+    "@filens/iwork": "^0.1.2",
     "@filens/pdf": "^0.1.1",
-    "@filens/xlsx": "^0.1.1"
+    "@filens/xlsx": "^0.1.2"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.2"
+    "@filens/core": "^0.1.3"
   },
   "devDependencies": {
     "@filens/core": "file:../core",

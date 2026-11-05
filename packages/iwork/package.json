@@ -1,6 +1,6 @@
 {
   "name": "@filens/iwork",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Front-end native iWork parsing and preview core for Keynote, Pages, and Numbers.",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,8 +42,8 @@
     "test:unit": "node ../../scripts/generate-iwork-proto.mjs && vitest run"
   },
   "dependencies": {
-    "@filens/core": "^0.1.2",
-    "@filens/xlsx": "^0.1.1",
+    "@filens/core": "^0.1.3",
+    "@filens/xlsx": "^0.1.2",
     "protobufjs": "^7.4.0",
     "snappyjs": "^0.7.0"
   },

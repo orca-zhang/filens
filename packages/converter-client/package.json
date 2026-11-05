@@ -1,6 +1,6 @@
 {
   "name": "@filens/converter-client",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Optional WASM, HTTP, and mock converter client adapters for @filens multi-format preview routes.",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,7 +37,7 @@
     "test:unit": "vitest run"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.2"
+    "@filens/core": "^0.1.3"
   },
   "devDependencies": {
     "@filens/core": "file:../core"

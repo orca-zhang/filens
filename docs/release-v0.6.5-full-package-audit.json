@@ -1,0 +1,204 @@
+{
+  "observedAt": "2026-11-05T11:31:05.455Z",
+  "archives": [
+    {
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
+      "bytes": 32760945,
+      "files": 80,
+      "nestedArchives": [],
+      "compressedAssets": [
+        {
+          "file": "pdfium.wasm.gz",
+          "bytes": 1994579
+        },
+        {
+          "file": "converter-image.wasm.gz",
+          "bytes": 481449
+        },
+        {
+          "file": "converter-text.wasm.gz",
+          "bytes": 3667069
+        },
+        {
+          "file": "preview/filens.js.gz",
+          "bytes": 3533344
+        },
+        {
+          "file": "preview/filens.js.br",
+          "bytes": 3395083
+        }
+      ],
+      "unpackedBreakdown": {
+        "CLI and resources": 7120593,
+        "skills": 13344,
+        "preview": 15560538,
+        "models": 16052200,
+        "licenses": 1200137,
+        "native": 8498206
+      },
+      "sha256": "b3412d5c4c396bc6c3a262ab0989a0b2542d8a8621f8652fd7ac42b090566091",
+      "previewPrecompressedCopies": {
+        "gzipBytes": 3533344,
+        "brotliBytes": 3395083,
+        "totalBytes": 6928427,
+        "decodeMatchesRawJavaScript": true,
+        "usedByCLIHtmlPreview": false
+      }
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
+      "bytes": 33440050,
+      "files": 82,
+      "nestedArchives": [],
+      "compressedAssets": [
+        {
+          "file": "pdfium.wasm.gz",
+          "bytes": 1994579
+        },
+        {
+          "file": "converter-image.wasm.gz",
+          "bytes": 481449
+        },
+        {
+          "file": "converter-text.wasm.gz",
+          "bytes": 3667069
+        },
+        {
+          "file": "preview/filens.js.gz",
+          "bytes": 3533344
+        },
+        {
+          "file": "preview/filens.js.br",
+          "bytes": 3395083
+        }
+      ],
+      "unpackedBreakdown": {
+        "CLI and resources": 8455425,
+        "skills": 13344,
+        "preview": 15560538,
+        "models": 16052200,
+        "licenses": 1200137,
+        "native": 8278174
+      },
+      "sha256": "0d574a3024cc5d58febbcc898ba77da4d2539549f20fff5bf088faa46695e10c",
+      "previewPrecompressedCopies": {
+        "gzipBytes": 3533344,
+        "brotliBytes": 3395083,
+        "totalBytes": 6928427,
+        "decodeMatchesRawJavaScript": true,
+        "usedByCLIHtmlPreview": false
+      }
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
+      "bytes": 35185926,
+      "files": 80,
+      "nestedArchives": [],
+      "compressedAssets": [
+        {
+          "file": "pdfium.wasm.gz",
+          "bytes": 1994579
+        },
+        {
+          "file": "converter-image.wasm.gz",
+          "bytes": 481449
+        },
+        {
+          "file": "converter-text.wasm.gz",
+          "bytes": 3667069
+        },
+        {
+          "file": "preview/filens.js.gz",
+          "bytes": 3533344
+        },
+        {
+          "file": "preview/filens.js.br",
+          "bytes": 3395083
+        }
+      ],
+      "unpackedBreakdown": {
+        "CLI and resources": 7234807,
+        "skills": 13344,
+        "preview": 15560538,
+        "models": 16052200,
+        "licenses": 1200137,
+        "native": 14293186
+      },
+      "sha256": "9f8c80961cd809b1afdc99dc0966b10fa426fc7608d2e733922731fb90aea532",
+      "previewPrecompressedCopies": {
+        "gzipBytes": 3533344,
+        "brotliBytes": 3395083,
+        "totalBytes": 6928427,
+        "decodeMatchesRawJavaScript": true,
+        "usedByCLIHtmlPreview": false
+      }
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-full.zip",
+      "bytes": 35417895,
+      "files": 82,
+      "nestedArchives": [],
+      "compressedAssets": [
+        {
+          "file": "pdfium.wasm.gz",
+          "bytes": 1994579
+        },
+        {
+          "file": "converter-image.wasm.gz",
+          "bytes": 481449
+        },
+        {
+          "file": "preview/filens.js.gz",
+          "bytes": 3533344
+        },
+        {
+          "file": "preview/filens.js.br",
+          "bytes": 3395083
+        },
+        {
+          "file": "converter-text.wasm.gz",
+          "bytes": 3667069
+        }
+      ],
+      "unpackedBreakdown": {
+        "CLI and resources": 7149553,
+        "native": 14106432,
+        "licenses": 1200137,
+        "models": 16052200,
+        "preview": 15560538,
+        "skills": 13344
+      },
+      "sha256": "1d22e00e652823fa9a835c024f282aefa68227b90e2f2e09ff23372d466c87ee",
+      "previewPrecompressedCopies": {
+        "gzipBytes": 3533344,
+        "brotliBytes": 3395083,
+        "totalBytes": 6928427,
+        "decodeMatchesRawJavaScript": true,
+        "usedByCLIHtmlPreview": false
+      }
+    }
+  ],
+  "tag": "v0.6.5",
+  "npmEntries": [
+    {
+      "name": "filens-cli",
+      "version": "0.5.6",
+      "bytes": 18860,
+      "unpackedBytes": 52546,
+      "nestedArchives": [],
+      "previewVersion": "0.3.4",
+      "integrity": "sha512-crmmlo+PMe5MRqKOhzH1OyumNA6mt+7oOoCEu33glz/b9+SceopSDe4iFbfVr4a2xB724lAVXch+tuj2SbvB/g=="
+    },
+    {
+      "name": "filens-cli-lite",
+      "version": "0.5.6",
+      "bytes": 18840,
+      "unpackedBytes": 52380,
+      "nestedArchives": [],
+      "previewVersion": "0.3.4",
+      "integrity": "sha512-FuUgqet1kIlTglFZovijiNWKNdN1Lyhk9NqmlSPGciiyTmjdxPpB7HYjJK8SLtHWrgLZiSNwwvjZ43rlCFEXmQ=="
+    }
+  ],
+  "conclusion": "No nested ZIP/TGZ/release archives in any Full download or npm CLI entry. WASM .gz files are required CLI resources. Full preview includes raw JS and equivalent gzip/Brotli representations (6,928,427 bytes combined); the precompressed JS is for web serving and not read by native HTML export. Existing published Full assets were audited without replacement.",
+  "passed": true
+}

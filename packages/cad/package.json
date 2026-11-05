@@ -1,6 +1,6 @@
 {
   "name": "@filens/cad",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Browser-native CAD preview driver for the @filens multi-format preview runtime.",
   "type": "module",
   "main": "./dist/index.js",
@@ -39,7 +39,7 @@
     "test:unit": "vitest run"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.2"
+    "@filens/core": "^0.1.3"
   },
   "devDependencies": {
     "@filens/core": "file:../core"

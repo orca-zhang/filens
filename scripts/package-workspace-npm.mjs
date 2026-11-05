@@ -16,12 +16,13 @@ if (requested.length && (requested[0] !== '--package' || requested.length !== 2)
 const selected = requested[1];
 await mkdir(output, { recursive: true });
 const packages = [];
-for (const entry of await readdir(path.join(root, 'packages'))) {
-  const source = path.join(root, 'packages', entry);
+for (const entry of await readdir(path.join(root, 'packages'), { withFileTypes: true })) {
+  if (!entry.isDirectory()) continue;
+  const source = path.join(root, 'packages', entry.name);
   const metadata = JSON.parse(await readFile(path.join(source, 'package.json'), 'utf8'));
   if (!metadata.name.startsWith('@filens/') || metadata.private) continue;
   if (selected && metadata.name !== selected) continue;
-  const directory = path.join(output, entry);
+  const directory = path.join(output, entry.name);
   await rm(directory, { recursive: true, force: true });
   await mkdir(directory, { recursive: true });
   // Keep debug maps in local builds; production packages need runtime, types
