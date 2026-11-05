@@ -1,23 +1,23 @@
 {
-  "observedAt": "2026-11-05T03:40:01.847Z",
+  "observedAt": "2026-11-05T11:52:13.421Z",
   "command": "node scripts/test-workspace-npm.mjs --registry",
   "source": "public npm registry with fresh cache; isolated consumer without workspace links",
   "packages": [
     {
       "name": "@filens/archive",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/cad",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/converter-client",
-      "version": "0.1.2"
+      "version": "0.1.3"
     },
     {
       "name": "@filens/core",
-      "version": "0.1.2"
+      "version": "0.1.3"
     },
     {
       "name": "@filens/design",
@@ -37,11 +37,11 @@
     },
     {
       "name": "@filens/iwork",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/media",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/mindmap",
@@ -53,11 +53,11 @@
     },
     {
       "name": "@filens/office",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/panorama",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "@filens/pdf",
@@ -65,15 +65,15 @@
     },
     {
       "name": "@filens/text",
-      "version": "0.1.1"
-    },
-    {
-      "name": "@filens/vue",
       "version": "0.1.2"
     },
     {
+      "name": "@filens/vue",
+      "version": "0.1.3"
+    },
+    {
       "name": "@filens/xlsx",
-      "version": "0.1.1"
+      "version": "0.1.2"
     }
   ],
   "passed": true,

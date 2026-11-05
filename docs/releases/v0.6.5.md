@@ -20,7 +20,7 @@
 
 ## Changelog
 
-Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4). Components: **browser preview 0.3.5**, **iOS/Android source SDKs 0.1.5**, and **CLI 0.5.6** with smaller Lite bundles and refreshed Full preview assets. The CLI/OCR binaries and resources are retained byte-for-byte from their verified v0.6.4 bundles. **DSH 0.1.6 is unchanged and still embeds preview 0.3.4.** This release updates GitHub downloads; npm versions are unchanged.
+Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4). Components: **browser preview 0.3.5**, **iOS/Android source SDKs 0.1.5**, and **CLI 0.5.6** with smaller Lite bundles and refreshed Full preview assets. The CLI/OCR binaries and resources are retained byte-for-byte from their verified v0.6.4 bundles. **DSH 0.1.6 is unchanged and still embeds preview 0.3.4.** The initial GitHub publication kept npm versions unchanged; see the npm follow-up below.
 
 ### Direct DWG previews and smaller downloads
 
@@ -51,6 +51,16 @@ Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 - Keep parsing and conversion in the frontend WASM/TypeScript core. Go remains a thin wrapper. Retain MIT and bundled third-party notices, including the CAD reader's MIT distribution notices.
 
 [Release validation](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/release-v0.6.5-validation.json) · [Native/offline checks](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/release-v0.6.5-native-validation.json) · [Support matrix](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/support-matrix.md) · [Full changelog](https://github.com/IceWhaleTech/filens/blob/v0.6.5/CHANGELOG.md)
+
+<!-- npm-followup:start -->
+### npm follow-up — 2026-11-05
+
+[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.5) is public: **16.19 MiB download / 31.79 MiB installed**, including both builds. Fresh-registry installation, TypeScript declarations, 64 real browser previews and production consumer bundling pass.
+
+Eleven updated `@filens/*` module patches are public, with all planned versions verified against the registry and default tags promoted after their dependencies became available. CLI/OCR 0.5.6 and DSH 0.1.6 retain their existing npm versions and preview 0.3.4 pins.
+
+[Current npm publication status](https://github.com/IceWhaleTech/filens/blob/main/docs/release-v0.6.5-npm-publication.json) · [Public preview checks](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-npm-registry-validation.json) · [Full bundle content audit](https://github.com/IceWhaleTech/filens/blob/main/docs/release-v0.6.5-full-package-audit.json). Full archives contain no nested release ZIP/TGZ; their preview JS includes gzip/Brotli representations totaling 6,928,427 bytes for web serving. Native HTML export reads the raw JS.
+<!-- npm-followup:end -->
 
 ## Use FiLens on ZimaOS
 

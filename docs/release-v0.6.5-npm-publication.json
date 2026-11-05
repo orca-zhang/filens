@@ -1,0 +1,394 @@
+{
+  "observedAt": "2026-11-05T11:53:17.238Z",
+  "tag": "v0.6.5",
+  "sourceCommit": "bacf2a8365d3c4214665c36d19e4456052ff511a",
+  "status": "published-and-integrity-verified",
+  "registry": "https://registry.npmjs.org/",
+  "newVersions": [
+    {
+      "name": "@filens/archive",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/cad",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/converter-client",
+      "version": "0.1.3"
+    },
+    {
+      "name": "@filens/core",
+      "version": "0.1.3"
+    },
+    {
+      "name": "@filens/iwork",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/media",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/office",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/panorama",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/text",
+      "version": "0.1.2"
+    },
+    {
+      "name": "@filens/vue",
+      "version": "0.1.3"
+    },
+    {
+      "name": "@filens/xlsx",
+      "version": "0.1.2"
+    },
+    {
+      "name": "filens-preview",
+      "version": "0.3.5"
+    }
+  ],
+  "unchangedCLIAndDSH": [
+    {
+      "name": "filens-cli",
+      "version": "0.5.6",
+      "previewVersion": "0.3.4"
+    },
+    {
+      "name": "filens-cli-lite",
+      "version": "0.5.6",
+      "previewVersion": "0.3.4"
+    },
+    {
+      "name": "dsh-filens",
+      "version": "0.1.6",
+      "previewVersion": "0.3.4"
+    }
+  ],
+  "fullBundleAudit": "release-v0.6.5-full-package-audit.json",
+  "packages": [
+    {
+      "name": "@filens/archive",
+      "version": "0.1.2",
+      "file": "filens-archive-0.1.2.tgz",
+      "bytes": 490254,
+      "unpackedBytes": 1273501,
+      "sha256": "3cb7eb6aee5ee91a83cf6884ae748b31f83ed1d57736cc5a377c95fb428e390f",
+      "integrity": "sha512-0V4qwOtpSkLUW15Zu1f9UrvOnXeObqzrWmoobUhjMn+bPQMMINP8pvvdP/WAR/x11AJc1420h8auqaaWCevqaA==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:33:11.183Z",
+      "tarball": "https://registry.npmjs.org/@filens/archive/-/archive-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/cad",
+      "version": "0.1.2",
+      "file": "filens-cad-0.1.2.tgz",
+      "bytes": 35757,
+      "unpackedBytes": 159680,
+      "sha256": "517e6fa2267553eaae15b869753211d83bc6d06c71ec5757fb532b0ffe06e008",
+      "integrity": "sha512-4y8iKGYHTkqlNblhS3uVQK7IhctxFjIdjPzjU1pDCrftONBxfWXDLiRxVWvHfzAUz8zQbcAiJj17iS5Yqj/7yQ==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:33:05.103Z",
+      "tarball": "https://registry.npmjs.org/@filens/cad/-/cad-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/converter-client",
+      "version": "0.1.3",
+      "file": "filens-converter-client-0.1.3.tgz",
+      "bytes": 1320516,
+      "unpackedBytes": 3940355,
+      "sha256": "fee6a1fb16dfe40027e5029d32d1ed56eb6935fb0f56660c03697b2226705802",
+      "integrity": "sha512-AxcROvWYZsmu+mfMVPKDVMNONiL8x1QypwAR3kcjlrQdqCTZQuvHjRmA4EO8t3NrYzUwp5yD/xbRAERBeegSjA==",
+      "latest": "0.1.3",
+      "publishedAt": "2026-11-05T11:50:09.024Z",
+      "tarball": "https://registry.npmjs.org/@filens/converter-client/-/converter-client-0.1.3.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/core",
+      "version": "0.1.3",
+      "file": "filens-core-0.1.3.tgz",
+      "bytes": 149605,
+      "unpackedBytes": 623727,
+      "sha256": "fd1c0c1074773698b41d3cd9113025c71c359eada45575857d5f81e819fae3f2",
+      "integrity": "sha512-CxQmTqf26EVdBvTXHlDCVEKXtEjDw6WElYzPSNpImW4uh1hpl8l6j/JYP7+FJ97yomYgYJMLddEk7q8ISmDGMA==",
+      "latest": "0.1.3",
+      "publishedAt": "2026-11-05T11:32:28.651Z",
+      "tarball": "https://registry.npmjs.org/@filens/core/-/core-0.1.3.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/design",
+      "version": "0.1.1",
+      "file": "filens-design-0.1.1.tgz",
+      "bytes": 2656,
+      "unpackedBytes": 6928,
+      "sha256": "7f0b6bb6ff3988c1bb1fe74772a80a15c5cbe7f0cbdf7b5f775aac7e56b64ed8",
+      "integrity": "sha512-r5TX1M8SfbMkIGJHlmxqbleNbDIax5Qigu/0pWMF3dMz4KH6IzsyIi94KqT+8tdExDh5KLCYMT1dOpav/4Nqlw==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.1",
+      "publishedAt": "2026-11-05T03:37:06.162Z",
+      "tarball": "https://registry.npmjs.org/@filens/design/-/design-0.1.1.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/diagram",
+      "version": "0.1.1",
+      "file": "filens-diagram-0.1.1.tgz",
+      "bytes": 10498,
+      "unpackedBytes": 34363,
+      "sha256": "cffbcfc164fa3f847ae09a25fe8c0f63ac8e6fada0adb5a266c53151756d6b74",
+      "integrity": "sha512-IEKvFlmyCmfamjpkM1umqfu6CaEB3ds/cH03Z1atR4KqROpxPVkGrWeWoISJgz1UHdp87vAAN1YlaTm6OchxGA==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.1",
+      "publishedAt": "2026-11-05T03:36:49.071Z",
+      "tarball": "https://registry.npmjs.org/@filens/diagram/-/diagram-0.1.1.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/docx",
+      "version": "0.1.1",
+      "file": "filens-docx-0.1.1.tgz",
+      "bytes": 6310,
+      "unpackedBytes": 17933,
+      "sha256": "d8e47b27e8c301364909117e341f6a6a6f869f11b53234a387aa7f0cf8a9cc6e",
+      "integrity": "sha512-wMO9eFvEKW1Y8mpSe4sA6+YxuPgP5c6it9dUvDANCzW6JqV3+D2h7avNNvmXheFB7H2uNq/qI9s+7Rgm6MELCQ==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.1",
+      "publishedAt": "2026-11-05T03:36:49.324Z",
+      "tarball": "https://registry.npmjs.org/@filens/docx/-/docx-0.1.1.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/books",
+      "version": "0.1.1",
+      "file": "filens-books-0.1.1.tgz",
+      "bytes": 9978,
+      "unpackedBytes": 29605,
+      "sha256": "ebc2a2c4f582fb4efc1bb13c4d07a7b527eecaf560c66a5986d366932bf460da",
+      "integrity": "sha512-GjYHBe9MaQ/KyiMkPEWtf/CkOFf7xGvsJTrMjWDxLg3zdGsWL1Bb4iTx72MKj6nzFAM+2jizuXRBNb7xYY1rzg==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.1",
+      "publishedAt": "2026-11-05T03:36:50.871Z",
+      "tarball": "https://registry.npmjs.org/@filens/books/-/books-0.1.1.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/iwork",
+      "version": "0.1.2",
+      "file": "filens-iwork-0.1.2.tgz",
+      "bytes": 1549381,
+      "unpackedBytes": 3693142,
+      "sha256": "eeaa51747739771b1c0f7edb8ccd36f2d9e4bf5044ddb61104aa6810d26960c9",
+      "integrity": "sha512-gAQOUMr6APMnUezR8aMLctPAA8dv2qpY8qIVBwiqWdvJ5vShPWF8oA0Fk3rM5W+I/D4SrLW743gNoli33VVL2g==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:34:37.854Z",
+      "tarball": "https://registry.npmjs.org/@filens/iwork/-/iwork-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/media",
+      "version": "0.1.2",
+      "file": "filens-media-0.1.2.tgz",
+      "bytes": 114596,
+      "unpackedBytes": 513885,
+      "sha256": "fc3bf70e8eba3e4bc31d3eb980bc40cb32048da9a00f7320bbe4dc56e45e13d2",
+      "integrity": "sha512-cHXlTnaUmkRkdlkkQsRTez06cFPSWCDY5WuncRBrKtZV8joHWzlO8iDdHHcIiLIy5GfgDeiMzmKOKIFPCoDc8A==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:33:44.917Z",
+      "tarball": "https://registry.npmjs.org/@filens/media/-/media-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/mindmap",
+      "version": "0.1.1",
+      "file": "filens-mindmap-0.1.1.tgz",
+      "bytes": 8185,
+      "unpackedBytes": 26058,
+      "sha256": "993715827e751b91eff927e809d33659a25b94183a14ecfa4528f642cbbe8291",
+      "integrity": "sha512-8jkK/9OJx8A/zwMMUcgxe2pXRtN9/L/MCdlJXpe+Q/djwwHNiUt0rwO4qDHBrOOMFLdmxTS++geYcRS2ofAXEA==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.1",
+      "publishedAt": "2026-11-05T03:36:37.842Z",
+      "tarball": "https://registry.npmjs.org/@filens/mindmap/-/mindmap-0.1.1.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/model3d",
+      "version": "0.1.2",
+      "file": "filens-model3d-0.1.2.tgz",
+      "bytes": 51679,
+      "unpackedBytes": 203980,
+      "sha256": "4fefa606f3df3055d2dba672be7593b6460fefcae1a104a8aab0280d6ca5fabb",
+      "integrity": "sha512-01VwVYQHEdmCVQD8y3vUMv92IZPch2L1PpGqfB8mJruCom32ySO7poSb6Ii08Zfj5G/afOwXhFiTIwBoRbsfkA==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T03:37:01.589Z",
+      "tarball": "https://registry.npmjs.org/@filens/model3d/-/model3d-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/office",
+      "version": "0.1.2",
+      "file": "filens-office-0.1.2.tgz",
+      "bytes": 6744,
+      "unpackedBytes": 22624,
+      "sha256": "0668276b6775f7b52213aeec6c120b68c3ceb46f6f9240c36c2f0bc3dd46dfe6",
+      "integrity": "sha512-gk1JcjU8vUBIXJ6E9aY7qhSaO53wZRh+83vGObJo3u1LXm6VJUrf7IeGvaGO6aZ61LAGBTEZDWsPkmDVMFZesQ==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:32:56.409Z",
+      "tarball": "https://registry.npmjs.org/@filens/office/-/office-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/panorama",
+      "version": "0.1.2",
+      "file": "filens-panorama-0.1.2.tgz",
+      "bytes": 78119,
+      "unpackedBytes": 298605,
+      "sha256": "b7181b3ceb9cc1a2cd48eea5c33f9b1da5a07245350f84ed5444eda79f97b76a",
+      "integrity": "sha512-n8tJ7zDlzugz9zYeesK/hutFMMKpdf0f0bm3zGDjCw+dHYz5gWbl3SbqCnNZ2Gmogyl+NoHkHU06a1TgYk7N7w==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:33:00.190Z",
+      "tarball": "https://registry.npmjs.org/@filens/panorama/-/panorama-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/pdf",
+      "version": "0.1.1",
+      "file": "filens-pdf-0.1.1.tgz",
+      "bytes": 304975,
+      "unpackedBytes": 1103570,
+      "sha256": "17e27c4c6d26f6a0ce2aa6f4406750ed69fb065f29cca69a334225fc3b8cfca8",
+      "integrity": "sha512-aPVXw27xO4TEqNngCvIROS7hWWxhexeTf6WZfHzfb3X6DeBlcJ2FDHHRndYDhVmDlPz4RbWxqX+f77PU3Yn+qQ==",
+      "reusedPublishedArtifact": true,
+      "latest": "0.1.1",
+      "publishedAt": "2026-11-05T03:37:38.460Z",
+      "tarball": "https://registry.npmjs.org/@filens/pdf/-/pdf-0.1.1.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": false,
+      "verified": true
+    },
+    {
+      "name": "@filens/text",
+      "version": "0.1.2",
+      "file": "filens-text-0.1.2.tgz",
+      "bytes": 6149,
+      "unpackedBytes": 20011,
+      "sha256": "b1db82fd04d2f2e470f5b28063a10727d68949d31e2df9ed15ee613c1aacfc86",
+      "integrity": "sha512-LVaOgmDi4IWDknnLp5eKsLJgzxUH/0zLyb+Em+jPkRoXPVAewgi0OpDdF03qsRdkLpNuoZR2WtzNCpKkEykGLQ==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:32:41.469Z",
+      "tarball": "https://registry.npmjs.org/@filens/text/-/text-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/vue",
+      "version": "0.1.3",
+      "file": "filens-vue-0.1.3.tgz",
+      "bytes": 98351,
+      "unpackedBytes": 485134,
+      "sha256": "d8c370c338ba4f8efefb4c4e9acf53fd14a1da3f237096b56f4ce444019a535d",
+      "integrity": "sha512-C4snFVjJ0p2A7x1bPnWMyuXz7nfVeagyv7ncreEKZ5zEN3LhT+Gat9aLAFUEPDReQc0Md/klSoO/Blp6LWP7HQ==",
+      "latest": "0.1.3",
+      "publishedAt": "2026-11-05T11:33:57.179Z",
+      "tarball": "https://registry.npmjs.org/@filens/vue/-/vue-0.1.3.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "@filens/xlsx",
+      "version": "0.1.2",
+      "file": "filens-xlsx-0.1.2.tgz",
+      "bytes": 14931,
+      "unpackedBytes": 46485,
+      "sha256": "ff6d10890e55f5c4e8a8657d002e71dbc378ba0a397a73b5f51c05fd32ddacda",
+      "integrity": "sha512-ZhOg+JFStmLJ4flsJorMfnB+4cbKDP1aQDmNyrVsZsyULhLxBxMN99s3Xs9uFvAqEGdT1Mo/+5wpL/eC9kiBrA==",
+      "latest": "0.1.2",
+      "publishedAt": "2026-11-05T11:33:06.735Z",
+      "tarball": "https://registry.npmjs.org/@filens/xlsx/-/xlsx-0.1.2.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    },
+    {
+      "name": "filens-preview",
+      "version": "0.3.5",
+      "file": "filens-preview-0.3.5.tgz",
+      "bytes": 16973644,
+      "unpackedBytes": 33338772,
+      "sha256": "b428140900faade2c22a4ffb784a4c28383a0ab9ec296ea01c6178507ad7ff2e",
+      "integrity": "sha512-UC0iHpu8oZA0+1vSRaelmmJmRej3CrqfAc+7Ax0rBhXIZt9D1fIsxaQZ9eFpY4ATEjg3p/oo7sAEkkIyf595pQ==",
+      "privacyChecked": true,
+      "latest": "0.3.5",
+      "publishedAt": "2026-11-05T11:39:44.885Z",
+      "tarball": "https://registry.npmjs.org/filens-preview/-/filens-preview-0.3.5.tgz",
+      "registryHttpStatus": 200,
+      "downloadVerified": true,
+      "newVersion": true,
+      "verified": true
+    }
+  ],
+  "validationReports": [
+    "module-npm-validation.json",
+    "module-npm-registry-validation.json",
+    "preview-npm-registry-validation.json"
+  ]
+}

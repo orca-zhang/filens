@@ -117,6 +117,8 @@ Rotate and zoom 3D models, look around 360° photos and play panoramic video in 
 
 **Preview 0.3.5:** split ZIP **5.61 MiB**, all-in-one ZIP **10.59 MiB**. Download from [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
+npm: [filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.5), **16.19 MiB** download / **31.79 MiB** installed, including both builds. [Public registry checks](docs/preview-npm-registry-validation.json).
+
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
 
 ```html

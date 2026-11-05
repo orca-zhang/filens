@@ -1,13 +1,13 @@
 {
-  "observedAt": "2026-11-05T10:51:27.581Z",
+  "observedAt": "2026-11-05T11:53:26.547Z",
   "tag": "v0.6.5",
   "language": "en",
   "files": {
-    "docs/release-v0.6.5.md": "25232f124dc757f775effdc6da7ae4128299609282a5d93df25df5a76dd54a7b",
-    "docs/releases/v0.6.5.md": "25232f124dc757f775effdc6da7ae4128299609282a5d93df25df5a76dd54a7b",
-    "CHANGELOG.md": "edff9beca8776c48ccb205e076a95ce502726fc853c5087af43474d91b01d310",
-    "README.md": "7dd146e86de9f3f4b057ac2cb5085aebf932c8ec9818b77a11312ea107e948a1",
-    "README.zh-CN.md": "0dc2d95955cb5fbd5a07091bae53256b4621164885bfe82e82d6ce704995a8ac"
+    "docs/release-v0.6.5.md": "25e3ccaa7756092b744cdba2a6fa4d3450b63e6c4c1ef42b509099d6e53c494b",
+    "docs/releases/v0.6.5.md": "25e3ccaa7756092b744cdba2a6fa4d3450b63e6c4c1ef42b509099d6e53c494b",
+    "CHANGELOG.md": "869adebb769356aafeb8aea139ce27b7cf4b13524f302e0a953585889906f32b",
+    "README.md": "e3639b870dc994c2fa67e6a032cbbd1aefdfd537e2765b92d514e9dd6ca01d44",
+    "README.zh-CN.md": "bc0f1d23871ff262fab20c8f3bc4fddc3df0015fc9b9858d66ae434f1fe92301"
   },
   "checks": {
     "downloadTableFirst": true,
@@ -21,11 +21,13 @@
     "zimaosBannerPresent": true,
     "zimaosSeparateVersionsPreserved": true,
     "dshRuntimeVersionExplicit": true,
-    "npmPublicationNotClaimed": true,
     "sourceSDKsLabeled": true,
     "nativeReuseExplained": true,
     "bothReleaseDocumentsMatch": true,
     "readmeVersionsAndSizesUpdated": true,
-    "readmeDshThreeComparisonsProminent": true
+    "readmeDshThreeComparisonsProminent": true,
+    "npmFollowupStatusExplicit": true,
+    "previewPublicVersion": "0.3.5",
+    "pendingNpmVersions": []
   }
 }

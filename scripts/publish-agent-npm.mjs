@@ -34,6 +34,8 @@ const entryNames=['filens-cli','filens-cli-lite'];
 // A DSH dependency upload must not promote the standalone CLI before its
 // separately published preview runtime is ready.
 const tagOf=pkg=>versionOf(pkg).includes('-')?'next':cliOnly&&entryNames.includes(pkg.name)?'dsh':'latest';
+// npm may stage dependencies for review; keep module defaults installable.
+const uploadTagOf=pkg=>modules&&tagOf(pkg)==='latest'?'next':tagOf(pkg);
 const existing=new Set();
 const releaseKey=release.version??'workspace';
 const receiptFile=path.join(directory,`publication-state-${releaseKey}.json`);
@@ -107,7 +109,7 @@ if(!dry){
  if(errors.length)throw new AggregateError(errors.map(r=>r.reason),'Entry packages are not publicly available; rerun to resume verification');
  // Reconcile tags after verification, including when the exact version was
  // already uploaded as a DSH dependency in an earlier partial publication.
- for(const pkg of entries){
+ for(const pkg of (modules?release.packages:entries)){
   const response=await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg.name)}?filens-tag-check=${Date.now()}`,{signal:AbortSignal.timeout(20000)});
   if(!response.ok)throw new Error(`Registry tags ${pkg.name}: HTTP ${response.status}`);
   const published=await response.json();
@@ -120,7 +122,7 @@ async function publish(pkg){
  if(existing.has(pkg.name)){console.log(`Verified existing ${pkg.name}@${versionOf(pkg)}`);return;}
  if(accepted.has(keyOf(pkg))){console.log(`Previously accepted ${pkg.name}@${versionOf(pkg)}; awaiting public verification`);return;}
  console.log(`${dry?'Dry run':'Publishing'} ${pkg.name}@${versionOf(pkg)}`);
- await run(['publish',path.join(directory,pkg.file),'--ignore-scripts','--access','public','--tag',tagOf(pkg),'--registry=https://registry.npmjs.org/',...(dry?['--dry-run']:[])]);
+ await run(['publish',path.join(directory,pkg.file),'--ignore-scripts','--access','public','--tag',uploadTagOf(pkg),'--registry=https://registry.npmjs.org/',...(dry?['--dry-run']:[])]);
  if(!dry){
   // HTTP 202 is a successful npm upload, but the immutable version may still be
   // under review. Persist the receipt so a retry never submits it again.

@@ -117,6 +117,8 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 **预览 0.3.5：**分包 ZIP **5.61 MiB**，单 JS 版 ZIP **10.59 MiB**。从 [v0.6.5 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
 
+npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.5)，下载 **16.19 MiB** / 安装 **31.79 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
+
 两种构建使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。
 
 ```html

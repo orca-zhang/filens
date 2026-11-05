@@ -1,7 +1,7 @@
 {
-  "observedAt": "2026-11-03T17:06:12.917Z",
+  "observedAt": "2026-11-05T11:43:18.310Z",
   "name": "filens-preview",
-  "version": "0.3.2",
+  "version": "0.3.5",
   "source": "public registry with fresh npm cache",
   "platform": "darwin-arm64",
   "passed": true,
@@ -9,7 +9,7 @@
     "Standalone installation without runtime dependencies",
     "MIT license and third-party notices",
     "TypeScript consumer imports of split and all-in-one exports",
-    "48 real browser previews from installed assets",
+    "64 real browser previews from installed assets",
     "No external runtime requests",
     "Single JavaScript runtime request for all-in-one",
     "CLI loopback HTTP restrictions",

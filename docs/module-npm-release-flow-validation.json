@@ -1,0 +1,41 @@
+{
+  "observedAt": "2026-11-05T11:49:45.303Z",
+  "passed": true,
+  "checks": {
+    "dryRunStableUploadsUseNext": true,
+    "dryRunStableUploads": 7,
+    "acceptedImmutableVersionsNotResubmitted": 11,
+    "defaultRegistryInstallationWithHeldTags": {
+      "observedAt": "2026-11-05T11:41:44.958Z",
+      "passed": true,
+      "versions": {
+        "@filens/vue": "0.1.2",
+        "@filens/media": "0.1.1",
+        "@filens/panorama": "0.1.1",
+        "@filens/converter-client": "0.1.2"
+      },
+      "freshCache": true,
+      "source": "public npm registry"
+    },
+    "registryUnavailableDependencyBlocksLatestPromotion": true,
+    "retryDidNotResubmitAcceptedVersions": true,
+    "deferredTagsVerified": {
+      "@filens/media": "0.1.1",
+      "@filens/panorama": "0.1.1",
+      "@filens/vue": "0.1.2"
+    },
+    "allDependenciesPublicBeforeLatestPromotion": true
+  },
+  "deferredLatest": [
+    "@filens/media@0.1.2",
+    "@filens/panorama@0.1.2",
+    "@filens/vue@0.1.3"
+  ],
+  "completedAt": "2026-11-05T11:53:17.283Z",
+  "previouslyPendingDependency": "@filens/converter-client@0.1.3",
+  "promotedLatest": {
+    "@filens/media": "0.1.2",
+    "@filens/panorama": "0.1.2",
+    "@filens/vue": "0.1.3"
+  }
+}
