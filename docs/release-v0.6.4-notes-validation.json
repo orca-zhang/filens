@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-05T06:23:11.059Z",
+  "observedAt": "2026-11-05T06:31:29.003Z",
   "tag": "v0.6.4",
   "language": "en",
   "files": {
@@ -29,6 +29,10 @@
   "publication": {
     "status": "published-and-verified",
     "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
-    "publishedAt": "2026-11-05T04:40:21Z"
+    "publishedAt": "2026-11-05T04:40:21Z",
+    "bodyVerifiedAt": "2026-11-05T06:31:29.003Z",
+    "bodyMatchesEnglishNotes": true,
+    "bodySHA256": "c0fcc3e3762b1f92821916fa15019768f5e61567aeb0f280b05cd9c818a56403",
+    "documentationCommit": "ac7632195709e40c32fa9ae3f7887dca99f0112c"
   }
 }
