@@ -1,13 +1,13 @@
 {
-  "observedAt": "2026-11-05T10:42:01.580Z",
+  "observedAt": "2026-11-05T10:51:27.581Z",
   "tag": "v0.6.5",
   "language": "en",
   "files": {
-    "docs/release-v0.6.5.md": "daf6ab3aca7ae632b4a6447f7da8549b82faea43f262404d5a3f455719920e59",
-    "docs/releases/v0.6.5.md": "daf6ab3aca7ae632b4a6447f7da8549b82faea43f262404d5a3f455719920e59",
-    "CHANGELOG.md": "a53bc9081c3671d8dd8080e1775ad6a89495c3742ea75c253f8c7aebd60c5972",
-    "README.md": "4faae340add2d6ab726600b02699e7b30a430380fe998cbf17e2daf38d538595",
-    "README.zh-CN.md": "2732417875f8972a19947336716285235ab46130d995ac2cefe77d2a8e345b55"
+    "docs/release-v0.6.5.md": "25232f124dc757f775effdc6da7ae4128299609282a5d93df25df5a76dd54a7b",
+    "docs/releases/v0.6.5.md": "25232f124dc757f775effdc6da7ae4128299609282a5d93df25df5a76dd54a7b",
+    "CHANGELOG.md": "edff9beca8776c48ccb205e076a95ce502726fc853c5087af43474d91b01d310",
+    "README.md": "7dd146e86de9f3f4b057ac2cb5085aebf932c8ec9818b77a11312ea107e948a1",
+    "README.zh-CN.md": "0dc2d95955cb5fbd5a07091bae53256b4621164885bfe82e82d6ce704995a8ac"
   },
   "checks": {
     "downloadTableFirst": true,

@@ -1,12 +1,12 @@
 | Download | Link | Download size |
 | --- | --- | ---: |
-| CLI Lite: darwin-arm64 | [filens-0.5.6-macos-arm64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-lite.tar.gz) | 17.76 MiB |
+| CLI Lite: darwin-arm64 | [filens-0.5.6-macos-arm64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-lite.tar.gz) | 7.17 MiB (7,518,519 bytes) |
 | CLI Full (OCR): darwin-arm64 | [filens-0.5.6-macos-arm64-full.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-full.tar.gz) | 31.89 MiB |
-| CLI Lite: linux-x64 | [filens-0.5.6-linux-x64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-lite.tar.gz) | 17.61 MiB |
+| CLI Lite: linux-x64 | [filens-0.5.6-linux-x64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-lite.tar.gz) | 7.01 MiB (7,353,756 bytes) |
 | CLI Full (OCR): linux-x64 | [filens-0.5.6-linux-x64-full.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-full.tar.gz) | 33.56 MiB |
-| CLI Lite: linux-arm64 | [filens-0.5.6-linux-arm64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-lite.tar.gz) | 17.49 MiB |
+| CLI Lite: linux-arm64 | [filens-0.5.6-linux-arm64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-lite.tar.gz) | 6.90 MiB (7,237,880 bytes) |
 | CLI Full (OCR): linux-arm64 | [filens-0.5.6-linux-arm64-full.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-full.tar.gz) | 31.24 MiB |
-| CLI Lite: win32-x64 | [filens-0.5.6-windows-x64-lite.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-lite.zip) | 17.54 MiB |
+| CLI Lite: win32-x64 | [filens-0.5.6-windows-x64-lite.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-lite.zip) | 6.96 MiB (7,296,027 bytes) |
 | CLI Full (OCR): win32-x64 | [filens-0.5.6-windows-x64-full.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-full.zip) | 33.78 MiB |
 | Browser runtime: split | [filens-preview-0.3.5-split.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-split.zip) | 5.61 MiB |
 | Browser runtime: all-in-one | [filens-preview-0.3.5-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip) | 10.59 MiB |
@@ -16,11 +16,11 @@
 | Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/SHA256SUMS) | SHA-256 |
 | Build manifest | [filens-release-v0.6.5.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-release-v0.6.5.json) | Versions, sizes and validation |
 
-**13 package downloads + manifest + checksums (15 assets).** Full includes OCR runtime/models; Lite leaves OCR optional. Both CLI profiles include the updated offline viewer. Mobile ZIPs are source SDKs. MiB = 1,048,576 bytes.
+**13 package downloads + manifest + checksums (15 assets).** Full includes OCR runtime/models and preview 0.3.5. Lite retains reading, search and conversion with OCR/preview assets optional. All four Lite archives are **below 10,000,000 bytes (10 MB)**; native packaging and release aggregation reject archives at or above this limit. Mobile ZIPs are source SDKs. MiB = 1,048,576 bytes.
 
 ## Changelog
 
-Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4). Components: **browser preview 0.3.5**, **iOS/Android source SDKs 0.1.5**, and **CLI 0.5.6** with refreshed preview assets. The CLI/OCR binaries and resources are retained byte-for-byte from their verified v0.6.4 bundles. **DSH 0.1.6 is unchanged and still embeds preview 0.3.4.** This release updates GitHub downloads; npm versions are unchanged.
+Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4). Components: **browser preview 0.3.5**, **iOS/Android source SDKs 0.1.5**, and **CLI 0.5.6** with smaller Lite bundles and refreshed Full preview assets. The CLI/OCR binaries and resources are retained byte-for-byte from their verified v0.6.4 bundles. **DSH 0.1.6 is unchanged and still embeds preview 0.3.4.** This release updates GitHub downloads; npm versions are unchanged.
 
 ### Direct DWG previews and smaller downloads
 
@@ -43,10 +43,11 @@ Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 
 ### Offline packages and validation
 
-- Refresh all eight macOS arm64, Linux x64/arm64 and Windows x64 Full/Lite archives with preview **0.3.5**, retaining the original CLI/OCR payloads. Verify archive integrity, exact extracted files, embedded WASM and precompressed JS.
+- Reduce Lite downloads to **6.90–7.17 MiB**, retaining the original reading/search/conversion payloads and removing bundled preview assets. Enforce a strict **<10,000,000-byte** archive budget in native packaging, Windows test bundles and release aggregation, including manifest-only refreshes. Boundary checks accept 9,999,999 bytes and reject 10,000,000.
+- Refresh Full bundles with preview **0.3.5**, retaining the original CLI/OCR payloads. Lite users can download and extract `filens-preview-0.3.5-all-in-one.zip`, then run `filens preview report.pdf --assets /path/to/filens-preview-0.3.5-all-in-one --no-open`; `FILENS_PREVIEW_DIR` or a `preview/` directory beside the executable also works. Verify archive integrity, exact extracted files, embedded WASM and Full precompressed JS.
 - Refresh both mobile source SDKs to **0.1.5**, carrying the same split runtime and archive sidecars. Chromium and WebKit mobile bridges pass **22 checks**; physical-device and precompiled AAR/XCFramework validation remain outside this release.
 - Pass **856 unit checks**, **2,128 conversion-policy checks**, **328/328 real-WASM conversion jobs**, and Go wrapper tests. The installed preview package passes **64 real browser previews**, public TypeScript imports and production consumer bundling checks; standalone HTML passes **17 Chromium checks** with network access blocked.
-- Verify macOS Full/Lite with an empty PATH, automatic local resources, text reading and Full OCR. Verify three exported TXT/DWG HTML previews after the CLI exits, with the browser offline. Linux/Windows native execution is not repeated; their unchanged binaries/resources are checked against the prior published archives.
+- Verify macOS Full/Lite with an empty PATH, automatic local conversion resources, text reading, search, conversion and Full OCR. Confirm Lite has no bundled viewer and exports correctly with separately supplied preview assets. Verify three exported TXT/DWG HTML previews after the CLI exits, with the browser offline. Linux/Windows native execution is not repeated; their unchanged binaries/resources are checked against the prior published archives.
 - Keep parsing and conversion in the frontend WASM/TypeScript core. Go remains a thin wrapper. Retain MIT and bundled third-party notices, including the CAD reader's MIT distribution notices.
 
 [Release validation](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/release-v0.6.5-validation.json) · [Native/offline checks](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/release-v0.6.5-native-validation.json) · [Support matrix](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/support-matrix.md) · [Full changelog](https://github.com/IceWhaleTech/filens/blob/v0.6.5/CHANGELOG.md)

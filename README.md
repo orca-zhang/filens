@@ -18,10 +18,10 @@
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
 | Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite: 17.49–17.76 MiB · Full: 31.24–33.78 MiB** offline downloads, including preview assets; Full includes OCR runtime and models. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Approximate size | **Lite: 6.90–7.17 MiB (<10 MB) · Full: 31.24–33.78 MiB** offline downloads; Full includes preview assets, OCR runtime and models. Lite downloads preview assets separately. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.92–2.20 MiB**. The CLI sizes above measure complete **v0.6.5 offline archive downloads**, including preview **0.3.5**; Full also includes OCR runtime and models. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.6 component installations remain **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.5 source-build main runtimes: **4.15 MB Brotli** summed across split files, or **3.40 MB Brotli / 3.53 MB gzip / 6.66 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.92–2.20 MiB**. The CLI sizes above measure complete **v0.6.5 offline archive downloads**. Full includes preview **0.3.5**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.6 component installations remain **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.5 source-build main runtimes: **4.15 MB Brotli** summed across split files, or **3.40 MB Brotli / 3.53 MB gzip / 6.66 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 ## Agent CLI
 
@@ -33,7 +33,7 @@ The native executable is **0.92–2.20 MiB**. The CLI sizes above measure comple
 
 > Install filens for me. Find skills/filens/SKILL.md at https://github.com/IceWhaleTech/filens and follow it to set up the CLI and skill.
 
-[Skill guide](skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest) and extract the entire archive. Full includes OCR and models; Lite leaves OCR optional. Both include offline preview assets and need no Node.js or npm.
+[Skill guide](skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest) and extract the entire archive. Full includes offline preview assets, OCR and models. Lite keeps OCR and preview assets optional. Both run without Node.js or npm.
 
 ```sh
 filens 'read "report.pdf" as json'
@@ -49,7 +49,7 @@ filens capacity --json
 
 ### Offline browser previews
 
-**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.5 release bundles include preview 0.3.5; npm CLI 0.5.6 and DSH 0.1.6 retain their published runtime versions. Other installation methods can prepare preview assets in advance with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.5 Full bundles include preview 0.3.5. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.5-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.6 and DSH 0.1.6 retain their published runtime versions; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -70,7 +70,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.20 MiB · Lite 17.76 MiB · Full 31.89 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.5 offline downloads · macOS arm64 · CLI 0.5.6 / preview 0.3.5; Full includes OCR models; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.89 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.5 offline downloads · macOS arm64 · CLI 0.5.6; Full includes preview 0.3.5 and OCR models; Lite adds preview assets separately; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)

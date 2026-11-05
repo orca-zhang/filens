@@ -51,6 +51,7 @@ jobs:
       - run: npm ci
       - run: node scripts/setup-agent-upx.mjs
       - run: npm run test:agent:privacy
+      - run: node --test scripts/agent-release-limits.test.mjs
       - run: npm run test:agent
       - run: npm run test:agent:layout
       - run: node scripts/package-agent-npm.mjs

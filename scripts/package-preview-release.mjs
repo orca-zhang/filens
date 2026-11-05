@@ -4,6 +4,7 @@ import { cp, mkdir, readFile, readdir, rm, stat, utimes, writeFile } from 'node:
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertReleaseDirectory } from './agent-release-privacy.mjs';
+import { assertNativeArchiveLimit } from './agent-release-limits.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const tag = process.argv[2];
@@ -66,7 +67,7 @@ for (const item of native?.assets ?? []) {
   if (artifact.sha256 !== item.sha256) throw new Error('Native CLI archive differs from the measured artifact');
   assets.push({ ...artifact, platform: item.platform, binaryBytes: item.binaryBytes });
 }
-// Native bundles already contain their CLI, preview and optional OCR resources.
+// Full bundles contain preview/OCR resources; Lite keeps both optional.
 // Keep npm launchers, platform dependencies and library modules on the registry;
 // attach the DSH adapter as a distinct plugin download.
 for (const source of ['dist/dsh-npm']) {
@@ -91,6 +92,7 @@ for (const item of assets) console.log(`${item.file}: ${(item.bytes / 1048576).t
 
 async function measure(file, kind, unpackedBytes) {
   const bytes = await readFile(path.join(directory, file));
+  assertNativeArchiveLimit({ file, kind, bytes: bytes.length });
   return { file, kind, bytes: bytes.length, ...(unpackedBytes === undefined ? {} : { unpackedBytes }),
     sha256: createHash('sha256').update(bytes).digest('hex') };
 }

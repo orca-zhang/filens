@@ -18,10 +18,10 @@
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
 | 支持格式（按扩展名） | **349 种**。 | **450 种**，含直接预览与本地 WASM 转换后预览。 |
-| 大概多大 | **Lite 17.49–17.76 MiB · Full 31.24–33.78 MiB** 离线下载，已含预览资源；Full 含 OCR 运行时与模型。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 大概多大 | **Lite 6.90–7.17 MiB（<10 MB） · Full 31.24–33.78 MiB** 离线下载；Full 含预览资源、OCR 运行时与模型，Lite 的预览资源另行下载。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.92–2.20 MiB**。上表 CLI 体积为 **v0.6.5 完整离线压缩包下载量**，已含预览 **0.3.5**；Full 另含 OCR 运行时与模型。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.6 基础组件安装体积仍为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.5 源码构建的主运行时按分包合计 **4.15 MB Brotli**，单 JS 版预压缩产物为 **3.40 MB Brotli / 3.53 MB gzip / 6.66 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.92–2.20 MiB**。上表 CLI 体积为 **v0.6.5 完整离线压缩包下载量**，Full 内置预览 **0.3.5**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.6 基础组件安装体积仍为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.5 源码构建的主运行时按分包合计 **4.15 MB Brotli**，单 JS 版预压缩产物为 **3.40 MB Brotli / 3.53 MB gzip / 6.66 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 ## Agent CLI
 
@@ -33,7 +33,7 @@
 
 > 帮我安装 filens，去 https://github.com/IceWhaleTech/filens 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。
 
-[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.5 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5) 下载对应平台的离线包并完整解压。Full 自带 OCR 与模型，Lite 不含 OCR；两者均内置离线预览资源，无需 Node.js 或 npm。
+[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.5 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
 
 ```sh
 filens '读取 "report.pdf"，以 JSON 输出'
@@ -49,7 +49,7 @@ filens capacity --json
 
 ### 离线浏览器预览
 
-**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.5 Release 离线包已内置预览 0.3.5，解压后即可使用；npm CLI 0.5.6 与 DSH 0.1.6 保留各自已发布的运行时版本。其他安装方式可提前运行 `filens setup-preview` 准备预览资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.5 Full 包内置预览 0.3.5，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.5-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 与 DSH 0.1.6 保留各自已发布的运行时版本；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -70,7 +70,7 @@ filens preview report.pdf --mode serve
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.20 MiB · Lite 17.76 MiB · Full 31.89 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.5 离线下载 · macOS arm64 · CLI 0.5.6 / 预览 0.3.5；Full 含 OCR 模型；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.89 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.5 离线下载 · macOS arm64 · CLI 0.5.6；Full 含预览 0.3.5 和 OCR 模型，Lite 另配预览资源；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)

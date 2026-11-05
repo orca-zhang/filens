@@ -7,6 +7,14 @@ import { executableName, platformPackageName } from './agent-platforms.mjs';
 // separately measured. Keep every supported native CLI close to 2 MiB.
 export const CLI_BINARY_LIMIT = Math.floor(2.2 * 1048576);
 export const PREVIEW_PACKAGE_LIMIT = 40 * 1048576;
+export const LITE_ARCHIVE_LIMIT = 10_000_000;
+
+export function assertNativeArchiveLimit({ kind, bytes, file }) {
+  if (kind === 'cli-lite') {
+    assert.ok(Number.isSafeInteger(bytes) && bytes > 0 && bytes < LITE_ARCHIVE_LIMIT,
+      `${file}: Lite archive must be smaller than ${LITE_ARCHIVE_LIMIT} bytes (${bytes} bytes)`);
+  }
+}
 
 export function checkAgentReleaseLimits(release, directory) {
   const binaries = release.targets.map(platform => {

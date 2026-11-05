@@ -1,8 +1,9 @@
 {
-  "observedAt": "2026-11-05T10:25:04.052Z",
+  "observedAt": "2026-11-05T10:49:37.827Z",
   "tag": "v0.6.5",
   "cliVersion": "0.5.6",
   "previewVersion": "0.3.5",
+  "liteArchiveLimitBytesExclusive": 10000000,
   "platform": "darwin-arm64",
   "emptyPATH": true,
   "resourceOverrides": false,
@@ -11,14 +12,16 @@
       "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
       "kind": "cli-lite",
       "platform": "darwin-arm64",
-      "bytes": 18625319,
-      "unpackedBytes": 25229469,
+      "bytes": 7518519,
+      "unpackedBytes": 9669390,
       "binaryBytes": 2306336,
-      "sha256": "9902c250defd238094c67d10a517f66a4b244ada1cbc654239b359ef10f014da",
+      "sha256": "d2d0faf6ca04582adac49bc3218013c718105b003a54e2f67bd9bd84477d18f1",
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
-      "previewMatches": true,
+      "previewBundled": false,
+      "previewMatches": null,
+      "liteUnderLimit": true,
       "nativeExecuted": true
     },
     {
@@ -32,21 +35,25 @@
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
+      "previewBundled": true,
       "previewMatches": true,
+      "liteUnderLimit": null,
       "nativeExecuted": true
     },
     {
       "file": "filens-0.5.6-linux-x64-lite.tar.gz",
       "kind": "cli-lite",
       "platform": "linux-x64",
-      "bytes": 18460198,
-      "unpackedBytes": 24008551,
+      "bytes": 7353756,
+      "unpackedBytes": 8448471,
       "binaryBytes": 1085420,
-      "sha256": "af2e222323251e050f7a1f08155c598e70f355f7fbdc78139e33b83a3d55297d",
+      "sha256": "e9c82cee748654acbd314b07be174a813e62ab329c98dedf453538c3d77c8d45",
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
-      "previewMatches": true,
+      "previewBundled": false,
+      "previewMatches": null,
+      "liteUnderLimit": true,
       "nativeExecuted": false
     },
     {
@@ -60,21 +67,25 @@
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
+      "previewBundled": true,
       "previewMatches": true,
+      "liteUnderLimit": null,
       "nativeExecuted": false
     },
     {
       "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
       "kind": "cli-lite",
       "platform": "linux-arm64",
-      "bytes": 18343759,
-      "unpackedBytes": 23892509,
+      "bytes": 7237880,
+      "unpackedBytes": 8332429,
       "binaryBytes": 969376,
-      "sha256": "0b5101205e552d46dbb33db20817ce63b708f1cd96e6f58320a11616fe7e1e37",
+      "sha256": "aee9fda2ca388838d491e2662255f0f967479a809d504badfb2c0a7a85809aa5",
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
-      "previewMatches": true,
+      "previewBundled": false,
+      "previewMatches": null,
+      "liteUnderLimit": true,
       "nativeExecuted": false
     },
     {
@@ -88,21 +99,25 @@
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
+      "previewBundled": true,
       "previewMatches": true,
+      "liteUnderLimit": null,
       "nativeExecuted": false
     },
     {
       "file": "filens-0.5.6-windows-x64-lite.zip",
       "kind": "cli-lite",
       "platform": "win32-x64",
-      "bytes": 18395251,
-      "unpackedBytes": 23923085,
+      "bytes": 7296027,
+      "unpackedBytes": 8362987,
       "binaryBytes": 999936,
-      "sha256": "8ba32a2bca58ffc370b1a8d74c7bc87bbe8f9b518bd9c95ff2c270b8d4e09c08",
+      "sha256": "f2a773fbef3ad90220b072b70ce796b010366b96fc9093ae2ac9e4e876f1b9da",
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
-      "previewMatches": true,
+      "previewBundled": false,
+      "previewMatches": null,
+      "liteUnderLimit": true,
       "nativeExecuted": false
     },
     {
@@ -116,7 +131,9 @@
       "archiveIntegrity": true,
       "extractedPayloadMatches": true,
       "wasmValid": true,
+      "previewBundled": true,
       "previewMatches": true,
+      "liteUnderLimit": null,
       "nativeExecuted": false
     }
   ],
@@ -125,6 +142,9 @@
       "profile": "cli-lite",
       "capacity": true,
       "textRead": true,
+      "search": true,
+      "conversion": true,
+      "previewBundled": false,
       "ocr": false,
       "emptyPATH": true,
       "resourceOverrides": false
@@ -133,6 +153,9 @@
       "profile": "cli-full",
       "capacity": true,
       "textRead": true,
+      "search": true,
+      "conversion": true,
+      "previewBundled": true,
       "ocr": true,
       "emptyPATH": true,
       "resourceOverrides": false
@@ -143,19 +166,22 @@
       "profile": "cli-lite",
       "input": "evidence.txt",
       "passed": true,
-      "externalRequests": 0
+      "externalRequests": 0,
+      "optionalAssets": true
     },
     {
       "profile": "cli-full",
       "input": "evidence.txt",
       "passed": true,
-      "externalRequests": 0
+      "externalRequests": 0,
+      "optionalAssets": false
     },
     {
       "profile": "cli-full",
       "input": "filens-cafe-2018.dwg",
       "passed": true,
-      "externalRequests": 0
+      "externalRequests": 0,
+      "optionalAssets": false
     }
   ],
   "provenance": [
@@ -165,7 +191,8 @@
       "previousSHA256": "f32a258e6224115b62f6fcc60cae456c5b46a506b58d303a4dce61855fe0a4f5",
       "unchangedCLIAndOCRFiles": 34,
       "unchangedCLIAndOCRPayloads": true,
-      "previewMatches": true
+      "previewBundled": false,
+      "liteArchiveLimitBytes": 10000000
     },
     {
       "file": "filens-0.5.6-macos-arm64-full.tar.gz",
@@ -181,7 +208,8 @@
       "previousSHA256": "b855823471ebf727110d05c9e75660237e2e0489391ef4f62a88200a59e85ffd",
       "unchangedCLIAndOCRFiles": 34,
       "unchangedCLIAndOCRPayloads": true,
-      "previewMatches": true
+      "previewBundled": false,
+      "liteArchiveLimitBytes": 10000000
     },
     {
       "file": "filens-0.5.6-linux-x64-full.tar.gz",
@@ -197,7 +225,8 @@
       "previousSHA256": "7ad751535a9d119976b58fb86b5ae2221ab713517c908edd42bf986c7c909387",
       "unchangedCLIAndOCRFiles": 34,
       "unchangedCLIAndOCRPayloads": true,
-      "previewMatches": true
+      "previewBundled": false,
+      "liteArchiveLimitBytes": 10000000
     },
     {
       "file": "filens-0.5.6-linux-arm64-full.tar.gz",
@@ -213,7 +242,8 @@
       "previousSHA256": "4755da9e1987db869e72a0f8f100fecae1752369b3c7d4a4944d7c24b04490f5",
       "unchangedCLIAndOCRFiles": 34,
       "unchangedCLIAndOCRPayloads": true,
-      "previewMatches": true
+      "previewBundled": false,
+      "liteArchiveLimitBytes": 10000000
     },
     {
       "file": "filens-0.5.6-windows-x64-full.zip",

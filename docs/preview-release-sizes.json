@@ -41,9 +41,9 @@
     {
       "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
       "kind": "cli-lite",
-      "bytes": 18625319,
-      "unpackedBytes": 25229469,
-      "sha256": "9902c250defd238094c67d10a517f66a4b244ada1cbc654239b359ef10f014da",
+      "bytes": 7518519,
+      "unpackedBytes": 9669390,
+      "sha256": "d2d0faf6ca04582adac49bc3218013c718105b003a54e2f67bd9bd84477d18f1",
       "platform": "darwin-arm64",
       "binaryBytes": 2306336
     },
@@ -59,9 +59,9 @@
     {
       "file": "filens-0.5.6-linux-x64-lite.tar.gz",
       "kind": "cli-lite",
-      "bytes": 18460198,
-      "unpackedBytes": 24008551,
-      "sha256": "af2e222323251e050f7a1f08155c598e70f355f7fbdc78139e33b83a3d55297d",
+      "bytes": 7353756,
+      "unpackedBytes": 8448471,
+      "sha256": "e9c82cee748654acbd314b07be174a813e62ab329c98dedf453538c3d77c8d45",
       "platform": "linux-x64",
       "binaryBytes": 1085420
     },
@@ -77,9 +77,9 @@
     {
       "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
       "kind": "cli-lite",
-      "bytes": 18343759,
-      "unpackedBytes": 23892509,
-      "sha256": "0b5101205e552d46dbb33db20817ce63b708f1cd96e6f58320a11616fe7e1e37",
+      "bytes": 7237880,
+      "unpackedBytes": 8332429,
+      "sha256": "aee9fda2ca388838d491e2662255f0f967479a809d504badfb2c0a7a85809aa5",
       "platform": "linux-arm64",
       "binaryBytes": 969376
     },
@@ -95,9 +95,9 @@
     {
       "file": "filens-0.5.6-windows-x64-lite.zip",
       "kind": "cli-lite",
-      "bytes": 18395251,
-      "unpackedBytes": 23923085,
-      "sha256": "8ba32a2bca58ffc370b1a8d74c7bc87bbe8f9b518bd9c95ff2c270b8d4e09c08",
+      "bytes": 7296027,
+      "unpackedBytes": 8362987,
+      "sha256": "f2a773fbef3ad90220b072b70ce796b010366b96fc9093ae2ac9e4e876f1b9da",
       "platform": "win32-x64",
       "binaryBytes": 999936
     },
@@ -121,7 +121,7 @@
     }
   ],
   "provenance": {
-    "nativeCLIAndOCR": "Verified byte-for-byte reuse of v0.6.4 CLI 0.5.6 binaries/resources, with only preview and bundle README refreshed.",
+    "nativeCLIAndOCR": "Verified byte-for-byte reuse of v0.6.4 CLI 0.5.6 binaries/resources, with Full preview and bundle README refreshed; Lite preview assets omitted.",
     "nativeReport": "release-v0.6.5-native-validation.json",
     "dsh": "Unchanged published dsh-filens-0.1.6.tgz; embeds preview 0.3.4.",
     "npm": "No npm registry publication in this GitHub release.",

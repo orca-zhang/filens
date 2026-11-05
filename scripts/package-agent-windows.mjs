@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { zipSync, strToU8 } from 'fflate';
 import { buildAgentBinary } from './agent-rust-build.mjs';
 import { assertReleaseDirectory, privacyIssues } from './agent-release-privacy.mjs';
+import { assertNativeArchiveLimit } from './agent-release-limits.mjs';
 import { platformPackageName } from './agent-platforms.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -46,7 +47,9 @@ for(const flavor of ['full','lite']){
     }
   }}
   await visit(directory);
-  const zip=zipSync(files,{level:6});const archive=path.join(root,'dist/windows',`${name}.zip`);await writeFile(archive,zip);
+  const zip=zipSync(files,{level:6});const archive=path.join(root,'dist/windows',`${name}.zip`);
+  assertNativeArchiveLimit({file:path.basename(archive),kind:`cli-${flavor}`,bytes:zip.length});
+  await writeFile(archive,zip);
   const info={flavor,file:path.basename(archive),bytes:zip.length,unpackedBytes:Object.values(files).reduce((sum,b)=>sum+b.length,0),sha256:createHash('sha256').update(zip).digest('hex'),binaryCompression,nativeWindowsExecution:false};
   outputs.push(info);console.log(`${info.file}: ${(info.bytes/1048576).toFixed(2)} MiB zipped`);
 }
