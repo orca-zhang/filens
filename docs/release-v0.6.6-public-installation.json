@@ -1,0 +1,36 @@
+{
+  "observedAt": "2026-11-06T09:56:32.548Z",
+  "dsh": [
+    {
+      "name": "dsh-filens-workspace",
+      "version": "0.1.1",
+      "installedFromPublicRegistry": true
+    },
+    {
+      "name": "dsh-filens",
+      "version": "0.1.8",
+      "installedFromPublicRegistry": true
+    }
+  ],
+  "preview": {
+    "observedAt": "2026-11-06T09:55:53.790Z",
+    "name": "filens-preview",
+    "version": "0.3.6",
+    "source": "public registry with fresh npm cache",
+    "platform": "darwin-arm64",
+    "passed": true,
+    "checks": [
+      "Standalone installation without runtime dependencies",
+      "MIT license and third-party notices",
+      "TypeScript consumer imports of split and all-in-one exports",
+      "64 real browser previews from installed assets",
+      "No external runtime requests",
+      "Single JavaScript runtime request for all-in-one",
+      "CLI loopback HTTP restrictions",
+      "Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg",
+      "12 PDF/iWork/RAW/STEP/HEIF/RAR previews after Vite production bundling of npm exports"
+    ],
+    "mediaBrowser": "chromium",
+    "browserReport": "preview-validation.json"
+  }
+}

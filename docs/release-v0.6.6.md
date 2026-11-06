@@ -54,7 +54,7 @@ The recordings use the pre-release workspace candidate and preserve its original
 
 ### npm packages and offline bundles
 
-- Publish `dsh-filens@0.1.8`, `dsh-filens-workspace@0.1.1` and `filens-preview@0.3.6`.
+- Publish `dsh-filens@0.1.8`, `dsh-filens-workspace@0.1.1` and `filens-preview@0.3.6`; verify public tarballs and their `latest` tags.
 - Publish `@filens/core@0.1.4`, `@filens/vue@0.1.4`, `@filens/media@0.1.3` and `@filens/panorama@0.1.3`, with updated minimum dependency versions.
 - Verify the workspace dependency publicly before publishing the main adapter; verify module dependencies before promoting their `latest` tags.
 - Refresh browser archives, mobile source SDKs and Full native bundles with preview 0.3.6. Keep parsing and conversion in the shared frontend/WASM core.

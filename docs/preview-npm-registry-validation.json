@@ -1,21 +1,19 @@
 {
-  "observedAt": "2026-11-05T11:43:18.310Z",
   "name": "filens-preview",
-  "version": "0.3.5",
-  "source": "public registry with fresh npm cache",
-  "platform": "darwin-arm64",
-  "passed": true,
-  "checks": [
-    "Standalone installation without runtime dependencies",
-    "MIT license and third-party notices",
-    "TypeScript consumer imports of split and all-in-one exports",
-    "64 real browser previews from installed assets",
-    "No external runtime requests",
-    "Single JavaScript runtime request for all-in-one",
-    "CLI loopback HTTP restrictions",
-    "Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg",
-    "12 PDF/iWork/RAW/STEP/HEIF/RAR previews after Vite production bundling of npm exports"
-  ],
-  "mediaBrowser": "chromium",
-  "browserReport": "preview-validation.json"
+  "version": "0.3.6",
+  "file": "filens-preview-0.3.6.tgz",
+  "bytes": 17010961,
+  "unpackedBytes": 33431342,
+  "sha256": "30f0ec55ec9b952b6e2a1ac0473d173a49b650d6c8779fe45ec96425f9545aed",
+  "integrity": "sha512-uhVxSo5s++ePdKUpQk2GE6iUXTSWga6iZr7FrksdHpBB5d1j240t5BRcH9pBnRizJwsz2ZQzYej6TDR56NiDSQ==",
+  "license": "MIT",
+  "latest": "0.3.6",
+  "publishedAt": "2026-11-06T09:53:13.746Z",
+  "tarball": "https://registry.npmjs.org/filens-preview/-/filens-preview-0.3.6.tgz",
+  "registryHttpStatus": 200,
+  "downloadVerified": true,
+  "verified": true,
+  "observedAt": "2026-11-06T09:55:04.299Z",
+  "registry": "https://registry.npmjs.org/",
+  "status": "publicly-available-integrity-verified"
 }

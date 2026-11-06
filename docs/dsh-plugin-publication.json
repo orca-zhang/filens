@@ -1,28 +1,76 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.6",
-  "file": "dsh-filens-0.1.6.tgz",
-  "bytes": 6849586,
-  "unpackedBytes": 20536588,
-  "sha256": "58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
-  "integrity": "sha512-CHr8kf5evB1Zog0UJycNWLwZlTCIgZ/UVjs8qNKeQxkKc1Xke/dhwjbM5r85PHMgzaEhXAXJrqy5ZEbvAIatuA==",
-  "cliVersion": "0.5.6",
-  "previewVersion": "0.3.4",
-  "previewSHA256": "727a8fbe06a40b0c3da759f48b5db4f66343e2415e31e16423bd62894285786e",
-  "extensions": 450,
+  "version": "0.1.8",
+  "file": "dsh-filens-0.1.8.tgz",
+  "bytes": 6096331,
+  "unpackedBytes": 18433125,
+  "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
+  "integrity": "sha512-KM0ecm427IUVapti1qfDgVYa2eD13Wq4VeHTj4TRZg/s7t1qWrFHgfwaGPnsTCriNcWjTk3pveb+ohmmCt6d5A==",
   "privacyChecked": true,
-  "latest": "0.1.6",
-  "publishedAt": "2026-11-05T07:16:15.258Z",
+  "cliVersion": "0.5.6",
+  "previewVersion": "0.3.6",
+  "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
+  "extensions": 451,
+  "workspaceVersion": "0.1.1",
+  "packages": [
+    {
+      "name": "dsh-filens-workspace",
+      "version": "0.1.1",
+      "file": "dsh-filens-workspace-0.1.1.tgz",
+      "bytes": 31139,
+      "unpackedBytes": 121624,
+      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
+      "integrity": "sha512-gVc3p0t7/pfKydU3gdx7n/sn1ysyGc3AdICaNUloFWLJPyQa1PNfy89/p/JRab/7BARaSy202dgJJgywV3LRXg==",
+      "privacyChecked": true
+    },
+    {
+      "name": "dsh-filens",
+      "version": "0.1.8",
+      "file": "dsh-filens-0.1.8.tgz",
+      "bytes": 6096331,
+      "unpackedBytes": 18433125,
+      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
+      "integrity": "sha512-KM0ecm427IUVapti1qfDgVYa2eD13Wq4VeHTj4TRZg/s7t1qWrFHgfwaGPnsTCriNcWjTk3pveb+ohmmCt6d5A==",
+      "privacyChecked": true
+    }
+  ],
   "license": "MIT",
-  "registry": "https://registry.npmjs.org/",
+  "latest": "0.1.8",
+  "publishedAt": "2026-11-06T09:54:30.976Z",
+  "tarball": "https://registry.npmjs.org/dsh-filens/-/dsh-filens-0.1.8.tgz",
   "registryHttpStatus": 200,
-  "tarball": "https://registry.npmjs.org/dsh-filens/-/dsh-filens-0.1.6.tgz",
+  "downloadVerified": true,
+  "verified": true,
+  "registry": "https://registry.npmjs.org/",
   "status": "publicly-available-integrity-verified",
-  "observedAt": "2026-11-05T07:26:47.164Z",
-  "cliDependenciesReport": "dsh-cli-dependencies-publication.json",
-  "previewSource": "shared frontend split runtime with compact address-bar controls embedded in the plugin",
+  "observedAt": "2026-11-06T09:55:04.299Z",
   "registryTarballDownloadVerified": true,
+  "workspace": {
+    "name": "dsh-filens-workspace",
+    "version": "0.1.1",
+    "file": "dsh-filens-workspace-0.1.1.tgz",
+    "bytes": 31139,
+    "unpackedBytes": 121624,
+    "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
+    "integrity": "sha512-gVc3p0t7/pfKydU3gdx7n/sn1ysyGc3AdICaNUloFWLJPyQa1PNfy89/p/JRab/7BARaSy202dgJJgywV3LRXg==",
+    "privacyChecked": true,
+    "license": "MIT",
+    "latest": "0.1.1",
+    "publishedAt": "2026-11-06T09:51:47.007Z",
+    "tarball": "https://registry.npmjs.org/dsh-filens-workspace/-/dsh-filens-workspace-0.1.1.tgz",
+    "registryHttpStatus": 200,
+    "downloadVerified": true,
+    "verified": true
+  },
   "previousVersions": [
+    {
+      "version": "0.1.6",
+      "integrity": "sha512-CHr8kf5evB1Zog0UJycNWLwZlTCIgZ/UVjs8qNKeQxkKc1Xke/dhwjbM5r85PHMgzaEhXAXJrqy5ZEbvAIatuA==",
+      "sha256": "58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
+      "bytes": 6849586,
+      "unpackedBytes": 20536588,
+      "publishedAt": "2026-11-05T07:16:15.258Z"
+    },
     {
       "version": "0.1.5",
       "integrity": "sha512-Of/OmWGtcrEjzandneCuHemxjgGu8HGJ4skm7Mz70TcXVv2rQ1OlilDdaPZFwZgeOwjxdu3Mv8N7kLvQnxWolw==",
@@ -43,12 +91,5 @@
       "unpackedBytes": 20516935,
       "publishedAt": "2026-11-05T03:59:23.205Z"
     }
-  ],
-  "sourceCommit": "449143a0c5c02d9a00b3eb66d26221008b930786",
-  "githubRelease": {
-    "tag": "v0.6.4",
-    "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
-    "file": "dsh-filens-0.1.6.tgz",
-    "verifiedAt": "2026-11-05T07:26:47.164Z"
-  }
+  ]
 }

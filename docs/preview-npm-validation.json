@@ -1,8 +1,8 @@
 {
-  "observedAt": "2026-11-06T09:15:35.447Z",
+  "observedAt": "2026-11-06T09:55:53.790Z",
   "name": "filens-preview",
   "version": "0.3.6",
-  "source": "offline npm tarball",
+  "source": "public registry with fresh npm cache",
   "platform": "darwin-arm64",
   "passed": true,
   "checks": [

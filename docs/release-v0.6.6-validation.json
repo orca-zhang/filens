@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-06T09:21:28.339854+00:00",
+  "observedAt": "2026-11-06T09:56:32.254018+00:00",
   "tag": "v0.6.6",
   "components": {
     "cli": "0.5.6",
@@ -46,7 +46,9 @@
       "cliFormats": 349
     },
     "recordingRuntime": "Shared preview/sidebar runtime unchanged; workspace adds missing-file checks and has separate actual Desktop validation",
-    "documentationRepack": "Validated runtime files unchanged after README updates"
+    "documentationRepack": "Validated runtime files unchanged after README updates",
+    "npmPublicPackages": 7,
+    "npmPublicInstallation": "Preview 0.3.6 public registry installation passes browser/type/rebundling checks; DSH 0.1.8 and workspace 0.1.1 install from public registry and match tested runtime"
   },
   "artifactCount": {
     "packages": 14,
