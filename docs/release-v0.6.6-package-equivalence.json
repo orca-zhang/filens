@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-06T09:21:28.338006+00:00",
+  "observedAt": "2026-11-06T10:21:44.842014+00:00",
   "checks": [
     {
       "file": "filens-preview-0.3.6.tgz",
@@ -7,19 +7,14 @@
       "runtimeFileCount": 71
     }
   ],
-  "note": "DSH 0.1.8/workspace 0.1.1 supersede 0.1.7/0.1.0 with missing-file filtering and fresh package/Desktop verification.",
+  "note": "DSH 0.1.9 supersedes 0.1.8/standalone workspace 0.1.1 with RC.1 compatibility and a bundled private workspace; shared preview runtime unchanged.",
   "dshFinalRuntimeMatchesTestedInstallation": true,
-  "dshComparedFiles": 69,
+  "dshComparedFiles": 86,
   "dshPackages": [
     {
-      "name": "dsh-filens-workspace",
-      "version": "0.1.1",
-      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea"
-    },
-    {
       "name": "dsh-filens",
-      "version": "0.1.8",
-      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0"
+      "version": "0.1.9",
+      "sha256": "f823edf4e55444b30fb26c6341569f2de92cc471203060be5f061114288c4d9e"
     }
   ]
 }

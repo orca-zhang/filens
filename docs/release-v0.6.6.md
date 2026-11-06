@@ -61,7 +61,7 @@ The recordings use the pre-release workspace candidate and preserve its original
 
 - Publish `dsh-filens@0.1.9` and `filens-preview@0.3.6`; verify public tarballs and their `latest` tags.
 - Publish `@filens/core@0.1.4`, `@filens/vue@0.1.4`, `@filens/media@0.1.3` and `@filens/panorama@0.1.3`, with updated minimum dependency versions.
-- Verify the workspace dependency publicly before publishing the main adapter; verify module dependencies before promoting their `latest` tags.
+- Bundle the private File workspace implementation inside the DSH adapter; verify module dependencies before promoting their `latest` tags.
 - Refresh browser archives, mobile source SDKs and Full native bundles with preview 0.3.6. Keep parsing and conversion in the shared frontend/WASM core.
 
 Validation includes final packaged-runtime browser tests, offline HTML previews, Chromium/WebKit mobile bridges, desktop workspace regressions and public artifact integrity checks. Linux/Windows native execution and physical mobile-device tests were not repeated. See [release validation](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/release-v0.6.6-validation.json) for exact scope.

@@ -1,14 +1,15 @@
 {
-  "observedAt": "2026-11-06T09:56:32.254018+00:00",
+  "observedAt": "2026-11-06T10:21:44.842014+00:00",
   "tag": "v0.6.6",
   "passed": true,
-  "assetCount": 16,
+  "assetCount": 15,
   "checks": [
-    "All 14 package SHA-256 values and byte sizes match the download table",
-    "Download table precedes Changelog and the existing ZimaOS banner",
-    "Official Mod Store instructions and advertising destination retained",
-    "DSH 0.1.8 and workspace 0.1.1 replace 0.1.7 and 0.1.0 within v0.6.6",
-    "Both READMEs use measured current sizes and 450 source preview formats, 451 routes and 349 CLI formats",
-    "All seven target npm versions and latest tags are publicly verified"
+    "All 13 package SHA-256 values and sizes match the final downloads",
+    "Download table precedes Changelog and ZimaOS banner; official Mod Store instructions retained",
+    "DSH 0.1.9 includes the private workspace and supports DSH 0.2.2-rc.1",
+    "Original v0.6.6 tag remains unchanged; separate DSH patch source commit recorded",
+    "Both READMEs use measured package sizes and unchanged 450 preview source formats, 451 routes and 349 CLI formats",
+    "All six active target npm versions/latest tags are publicly verified",
+    "Actual RC.1 Desktop UI installs one public plugin package and activates all three entries"
   ]
 }

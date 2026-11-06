@@ -5,7 +5,9 @@
   "components": {
     "preview": "0.3.6",
     "mobileSdk": "0.1.6",
-    "cli": "0.5.6"
+    "cli": "0.5.6",
+    "dsh": "0.1.9",
+    "workspace": "0.1.9"
   },
   "scope": "Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.",
   "assets": [
@@ -110,22 +112,14 @@
       "binaryBytes": 1000448
     },
     {
-      "file": "dsh-filens-workspace-0.1.1.tgz",
+      "file": "dsh-filens-0.1.9.tgz",
       "kind": "npm-package",
-      "bytes": 31139,
-      "unpackedBytes": 121624,
-      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
-      "name": "dsh-filens-workspace",
-      "version": "0.1.1"
-    },
-    {
-      "file": "dsh-filens-0.1.8.tgz",
-      "kind": "npm-package",
-      "bytes": 6096331,
-      "unpackedBytes": 18433125,
-      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
+      "bytes": 6097035,
+      "unpackedBytes": 18434406,
+      "sha256": "f823edf4e55444b30fb26c6341569f2de92cc471203060be5f061114288c4d9e",
       "name": "dsh-filens",
-      "version": "0.1.8"
+      "version": "0.1.9"
     }
-  ]
+  ],
+  "workspaceIncluded": true
 }

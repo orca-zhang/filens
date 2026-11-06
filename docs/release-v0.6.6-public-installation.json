@@ -1,15 +1,13 @@
 {
-  "observedAt": "2026-11-06T09:56:32.548Z",
+  "observedAt": "2026-11-06T10:21:44.842014+00:00",
   "dsh": [
     {
-      "name": "dsh-filens-workspace",
-      "version": "0.1.1",
-      "installedFromPublicRegistry": true
-    },
-    {
       "name": "dsh-filens",
-      "version": "0.1.8",
-      "installedFromPublicRegistry": true
+      "version": "0.1.9",
+      "installedFromPublicRegistry": true,
+      "actualDSHDesktopUI": true,
+      "dsh": "0.2.2-rc.1",
+      "workspaceBundled": true
     }
   ],
   "preview": {

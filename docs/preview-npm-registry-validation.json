@@ -13,7 +13,7 @@
   "registryHttpStatus": 200,
   "downloadVerified": true,
   "verified": true,
-  "observedAt": "2026-11-06T09:55:04.299Z",
+  "observedAt": "2026-11-06T10:20:22.263Z",
   "registry": "https://registry.npmjs.org/",
   "status": "publicly-available-integrity-verified"
 }

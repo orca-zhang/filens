@@ -168,5 +168,26 @@
     "Native fullscreen skipped in this compatibility run",
     "rc.5/alpha.3 declarations retained from earlier validation; no new full run on those versions",
     "No conversion algorithm or runtime changes; existing format-coverage and benchmark limits remain"
-  ]
+  ],
+  "sourceCommit": "781add672523acab5455c7de1509b8bd045c4af3",
+  "webReadOnly": {
+    "version": "0.2.2-rc.1",
+    "profile": "filens-test",
+    "policy": "read-only",
+    "checks": [
+      "bundle installation mounts both Host entries",
+      "Preview client participates in the real DSH module graph",
+      "real webServer serves the directly mounted runtime",
+      "filens_capacity through the installed DSH tool pipeline (read-only)",
+      "filens_read through the installed DSH tool pipeline (read-only)",
+      "filens_read through the installed DSH tool pipeline (read-only)",
+      "filens_excerpt through the installed DSH tool pipeline (read-only)",
+      "filens_search through the installed DSH tool pipeline (read-only)",
+      "real read-only sandbox refuses conversion output without creating a file",
+      "disable Tools independently while Preview stays active",
+      "disable Preview removes its route/client while Tools stays active",
+      "both entries re-enable without duplicate registrations"
+    ]
+  },
+  "publicUIInstallation": "dsh-0.1.9-public-ui-installation.json"
 }

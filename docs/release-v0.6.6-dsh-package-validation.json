@@ -1,32 +1,26 @@
 {
-  "observedAt": "2026-11-06T09:50:07.643632+00:00",
+  "observedAt": "2026-11-06T10:21:44.842014+00:00",
   "checks": [
-    "Registry dependency uses exact version, with no file: runtime dependency",
-    "Workspace is bundled in the adapter and separately installable",
-    "Workspace archive includes client, server, attachment resolver and MIT license",
-    "Main adapter is gated on public workspace dependency verification",
-    "Workspace paths and attachments are checked through DSH stat; confirmed missing entries are excluded, while permission/connection errors remain visible"
+    "Only dsh-filens is published and installed; the workspace is a private bundled implementation",
+    "No runtime file: dependencies in the public package",
+    "RC.1 engine and DSH/Cordis peer declarations match the tested runtime",
+    "All tarball file bytes match the clean DSH-installed package",
+    "Real RC.1 Plugins → Add plugin → Install → Enable now accepts the public npm package and activates all three native entries",
+    "Preview, Tools and File workspace retain independent native switches"
   ],
+  "comparedFiles": 86,
   "packages": [
     {
-      "name": "dsh-filens-workspace",
-      "version": "0.1.1",
-      "file": "dsh-filens-workspace-0.1.1.tgz",
-      "bytes": 31139,
-      "unpackedBytes": 121624,
-      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
-      "integrity": "sha512-gVc3p0t7/pfKydU3gdx7n/sn1ysyGc3AdICaNUloFWLJPyQa1PNfy89/p/JRab/7BARaSy202dgJJgywV3LRXg==",
-      "privacyChecked": true
-    },
-    {
       "name": "dsh-filens",
-      "version": "0.1.8",
-      "file": "dsh-filens-0.1.8.tgz",
-      "bytes": 6096331,
-      "unpackedBytes": 18433125,
-      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
-      "integrity": "sha512-KM0ecm427IUVapti1qfDgVYa2eD13Wq4VeHTj4TRZg/s7t1qWrFHgfwaGPnsTCriNcWjTk3pveb+ohmmCt6d5A==",
+      "version": "0.1.9",
+      "file": "dsh-filens-0.1.9.tgz",
+      "bytes": 6097035,
+      "unpackedBytes": 18434406,
+      "sha256": "f823edf4e55444b30fb26c6341569f2de92cc471203060be5f061114288c4d9e",
+      "integrity": "sha512-u7mPTtqnQcDvDAIn6l5g+9i5lpP7m24zRNH20IZb6qZhoiMH+7QEMj9BVHx7EIeXhsQe8Gk9RcTZRvzGUxLgtw==",
       "privacyChecked": true
     }
-  ]
+  ],
+  "workspaceIncluded": true,
+  "publicUIInstallation": "dsh-0.1.9-public-ui-installation.json"
 }
