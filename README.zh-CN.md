@@ -109,7 +109,7 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 **DSH 0.1.8：下载 5.81 MiB / 解包 17.58 MiB**，包含工作台；独立工作台包 **0.03 MiB**。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/dsh-plugin-package.json)。
 <!-- dsh-package-metrics:end -->
 
-**0.1.7 演示：**在真实 DSH Desktop 中使用中文界面与中文字幕分别录制，使用正式升版前的本地工作台候选构建。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.8/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
+**0.1.7 演示：** 在真实 DSH Desktop 中使用中文界面与中文字幕分别录制，使用正式升版前的本地工作台候选构建。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.8/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
 
 ![DSH 中文实机演示：Word 阅读、Excel 工作表和 PPT 全屏](docs/assets/dsh-release/office-preview.zh-CN.gif)
 
@@ -119,13 +119,11 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 0.1.8 新增独立的「文件工作台」（`dsh-filens-workspace@0.1.1`）：按会话收拢文件，显示真实缩略图和相关文件，并能返回文件所在的消息或对应提问；开关独立于侧栏预览。
 
-**工作台 0.1.1：**DSH 确认已不存在的路径和附件不再进入卡片、数量、文件列表及相关文件。刷新会重新检查；扫描后删除的文件在打开时确认不存在也会移除。权限不足或连接失败仍显示错误状态。
-
 ![DSH 中文实机演示：文件群组、相关文件和原提问定位](docs/assets/dsh-release/file-workspace.zh-CN.gif)
 
 ### 浏览器集成：单文件与按需分包
 
-**预览 0.3.6：**分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从 [v0.6.6 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
+**预览 0.3.6：** 分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从 [v0.6.6 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
 
 npm：[filens-preview@0.3.6](https://www.npmjs.com/package/filens-preview/v/0.3.6)，下载 **16.22 MiB** / 安装 **31.88 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
 
@@ -149,7 +147,7 @@ npm：[filens-preview@0.3.6](https://www.npmjs.com/package/filens-preview/v/0.3.
 
 ### iOS / Android SDK
 
-**SDK 0.1.6 / 预览 0.3.6：**iOS ZIP **5.64 MiB**，Android ZIP **5.65 MiB**。
+**SDK 0.1.6 / 预览 0.3.6：** iOS ZIP **5.64 MiB**，Android ZIP **5.65 MiB**。
 提供 Swift Package 与 Android Library 源码 SDK，封装同一份
 前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md) · [运行时与 SDK 体积](docs/preview-sizes.md)。
 

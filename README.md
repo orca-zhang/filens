@@ -119,8 +119,6 @@ Rotate and zoom 3D models, look around 360° photos and play panoramic video in 
 
 Version 0.1.8 adds **File workspace** (`dsh-filens-workspace@0.1.1`): session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview.
 
-**Workspace 0.1.1:** paths and attachments confirmed missing by DSH are excluded from cards, counts, navigation and related files. Refresh rechecks availability; files deleted after scanning disappear when opening detects their absence. Permission or connection failures retain their error states.
-
 ![English DSH demo: session file groups, related files and navigation to the source question](docs/assets/dsh-release/file-workspace.en.gif)
 
 ### Browser integration: single file or split modules
