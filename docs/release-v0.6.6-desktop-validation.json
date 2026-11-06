@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-06T09:12:52.778Z",
+  "capturedAt": "2026-11-06T09:44:58.015Z",
   "dsh": "0.2.1-rc.5",
   "scope": "Installed DSH Desktop; synthetic 270-turn and one-turn sessions; real local documents; no model calls or user history edits",
   "checks": [
@@ -9,7 +9,8 @@
     "Temporary session files are hidden by default and can be revealed; ordinary documents in the OS temporary directory remain visible",
     "Session groups start folded; expand, collapse and session filtering retain the correct files",
     "All history pages collected; shared paths deduplicate, different directories stay separate",
-    "Missing, corrupt and source-code files use icons; read errors are collapsed in the reader",
+    "Confirmed missing references are excluded before cards, session counts and related-file recommendations are built",
+    "Existing corrupt and source-code files retain type covers; only confirmed absence is hidden",
     "Stored generic attachment resolves through the native provider and previews real PDF bytes",
     "Related files explain their reference relationship, open with keyboard or mouse, and retain source messages",
     "Same file retains four exact source occurrences across two sessions",
@@ -18,14 +19,16 @@
     "Source navigation loads the oldest history and scrolls to its stable message identity",
     "An answer file switches from Trajectory to Chat and locates its corresponding question",
     "100% fits completely in the real sidebar and workspace toolbars",
-    "Workspace plugin has the native localized title 文件工作台 and a package icon",
+    "Workspace plugin has the native localized title \u6587\u4ef6\u5de5\u4f5c\u53f0 and a package icon",
     "Native plugin manager disables and enables File workspace independently of sidebar Preview",
     "Workspace attachment preview remains functional while sidebar Preview is disabled",
     "100% also fits at a 600-pixel Desktop window width",
     "Narrow-window details become an inset bottom sheet and dismiss without leaving the document",
     "Group cards fit a narrow window in both grid and list modes",
-    "Word, PowerPoint and Excel show real rendered thumbnails rather than fallback covers"
+    "Word, PowerPoint and Excel show real rendered thumbnails rather than fallback covers",
+    "A file deleted after scanning disappears when opened, including navigation and related-file lists",
+    "Refreshing rechecks existence and restores a file recreated at the same path"
   ],
-  "source": "Clean npm install from 0.1.7 and 0.1.0 tarballs; documentation repacked afterward with runtime unchanged",
-  "checksPassed": 22
+  "source": "Clean npm installation from 0.1.8/0.1.1 tarballs; documentation only repacked afterward",
+  "checksPassed": 25
 }
