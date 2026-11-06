@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-06T09:12:42.599Z",
+  "observedAt": "2026-11-06T09:50:07.643632+00:00",
   "checks": [
     "Registry dependency uses exact version, with no file: runtime dependency",
     "Workspace is bundled in the adapter and separately installable",

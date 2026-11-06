@@ -7,5 +7,19 @@
       "runtimeFileCount": 71
     }
   ],
-  "note": "DSH 0.1.8/workspace 0.1.1 supersede 0.1.7/0.1.0 with missing-file filtering and fresh package/Desktop verification."
+  "note": "DSH 0.1.8/workspace 0.1.1 supersede 0.1.7/0.1.0 with missing-file filtering and fresh package/Desktop verification.",
+  "dshFinalRuntimeMatchesTestedInstallation": true,
+  "dshComparedFiles": 69,
+  "dshPackages": [
+    {
+      "name": "dsh-filens-workspace",
+      "version": "0.1.1",
+      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea"
+    },
+    {
+      "name": "dsh-filens",
+      "version": "0.1.8",
+      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0"
+    }
+  ]
 }
