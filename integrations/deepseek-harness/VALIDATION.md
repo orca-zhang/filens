@@ -1,5 +1,15 @@
 # DSH integration validation
 
+## 0.1.9 — DSH 0.2.2-rc.1 and one-package installation
+
+Validated on **2026-11-06**, macOS arm64, installed **DSH Desktop 0.2.2-rc.1** / Cordis **4.1.0** and Node **24.11.0**. The engine declaration and matching DSH/Cordis peer declarations now admit RC.1 while retaining the previously validated rc.5/alpha.3 versions.
+
+File workspace is a private implementation bundled inside `dsh-filens@0.1.9`; only the public `dsh-filens` package is installed or published. Preview, Tools and File workspace retain independent native plugin switches. The private package has a separate internal name so an older standalone `dsh-filens-workspace` installation cannot shadow the bundled implementation.
+
+All **34 Node tests** pass against the RC.1 dependencies. The real Desktop workspace suite passes **25 checks**, including stored attachments, 270-turn history pagination, exact source/question navigation, independent switches, real Office thumbnails, missing-file removal/restoration and narrow-window details. The six-format installed-package sidebar suite covers PDF, DOCX, PPTX, Keynote, STEP and ZIP. Native fullscreen is skipped in this compatibility run.
+
+RC.1 retains its narrow-window navigation dialog offscreen. Escape now ignores offscreen/hidden dialogs while preserving visible modal handling; the Desktop test exercises both cases. The preview/WASM/CLI formats are unchanged. Earlier rc.5/alpha.3 results below are historical validation, not fresh platform runs. Windows/Linux Desktop and physical mobile devices were not rerun.
+
 ## File workspace — 2026-11-06 (unpublished)
 
 The source build adds a native `main` panel and `sidebar.panellist` entry,

@@ -20,14 +20,14 @@ const stage = path.join(output, 'stage');
 await rm(stage, { recursive: true, force: true });
 await mkdir(stage, { recursive: true });
 for (const file of metadata.files) await cp(path.join(source, file), path.join(stage, file), { recursive: true });
-const workspaceStage = path.join(stage, 'node_modules/dsh-filens-workspace');
+const workspaceStage = path.join(stage, 'node_modules/@filens/dsh-workspace');
 await mkdir(workspaceStage, { recursive: true });
 for (const file of workspaceMetadata.files) await cp(path.join(source, 'workspace', file), path.join(workspaceStage, file), { recursive: true });
 await cp(path.join(root, 'LICENSE'), path.join(workspaceStage, 'LICENSE'));
 await cp(path.join(source, 'workspace/README.md'), path.join(workspaceStage, 'README.md'));
 await writeFile(path.join(workspaceStage, 'package.json'), JSON.stringify(workspaceMetadata, null, 2) + '\n');
-// Local development uses file:./workspace; the public adapter pins the independently installable package.
-metadata.dependencies['dsh-filens-workspace'] = workspaceMetadata.version;
+// The private workspace ships inside the adapter, retaining its own DSH switch.
+metadata.dependencies['@filens/dsh-workspace'] = workspaceMetadata.version;
 delete metadata.scripts;
 delete metadata.devDependencies;
 await writeFile(path.join(stage, 'package.json'), JSON.stringify(metadata, null, 2) + '\n');
@@ -46,14 +46,13 @@ return {
   privacyChecked: true,
 };
 }
-const workspace = await pack(workspaceStage);
 const adapter = await pack(stage);
 const support = JSON.parse(await readFile(path.join(source, 'lib/support.json'), 'utf8'));
 const release = { ...adapter,
   cliVersion: metadata.dependencies['filens-cli'], previewVersion: support.previewVersion,
   previewSHA256: createHash('sha256').update(await readFile(path.join(source, 'lib/runtime/filens.js'))).digest('hex'),
-  extensions: support.extensions.length, workspaceVersion: workspace.version,
-  packages: [workspace, adapter],
+  extensions: support.extensions.length, workspaceIncluded: true,
+  packages: [adapter],
 };
 await writeFile(path.join(output, 'release.json'), JSON.stringify(release, null, 2) + '\n');
 await writeFile(path.join(root, 'docs/dsh-plugin-package.json'), JSON.stringify(release, null, 2) + '\n');

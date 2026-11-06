@@ -15,10 +15,10 @@ const profile = path.join(testHome, 'profiles/desktop');
 await mkdir(path.join(profile, 'node_modules'), { recursive: true });
 await mkdir(output, { recursive: true });
 await symlink(plugin, path.join(profile, 'node_modules/dsh-filens'));
-await cp(path.join(plugin, 'workspace'), path.join(profile, 'node_modules/dsh-filens-workspace'), { recursive: true });
+await cp(path.join(plugin, 'workspace'), path.join(profile, 'node_modules/@filens/dsh-workspace'), { recursive: true });
 await writeFile(path.join(profile, 'package.json'), JSON.stringify({
   name: 'dsh-profile-desktop', private: true,
-  dependencies: { 'dsh-filens': `file:${plugin}`, 'dsh-filens-workspace': `file:${path.join(plugin, 'workspace')}` },
+  dependencies: { 'dsh-filens': `file:${plugin}`, '@filens/dsh-workspace': `file:${path.join(plugin, 'workspace')}` },
   dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', 'dsh-filens'] } },
 }, null, 2));
 await writeFile(path.join(profile, 'cordis.yml'), '[]\n');

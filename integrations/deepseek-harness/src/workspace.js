@@ -200,7 +200,12 @@ export function FilensWorkspace({ refresh, locate }) {
     backButton?.focus();
     const close = event => {
       if (event.key === 'Escape' && !document.fullscreenElement && !/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)
-          && !document.querySelector('dialog[open], [role="dialog"], .pptxv-model-tools:not([hidden]), details[open]')) {
+          && ![...document.querySelectorAll('dialog[open], [role="dialog"], .pptxv-model-tools:not([hidden]), details[open]')].some(element => {
+            // DSH keeps its narrow-window navigation dialog mounted offscreen.
+            const rect = element.getBoundingClientRect();
+            return element.checkVisibility() && rect.width > 0 && rect.height > 0
+              && rect.right > 0 && rect.bottom > 0 && rect.left < innerWidth && rect.top < innerHeight;
+          })) {
         if (root.current?.querySelector('.fw-inspector')) {
           setInfo(false);
           root.current.querySelector('.fw-info-toggle')?.focus();

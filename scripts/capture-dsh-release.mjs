@@ -33,10 +33,10 @@ async function capture() {
   await mkdir(path.join(profile, 'node_modules'), { recursive: true });
   await mkdir(directory);
   await symlink(plugin, path.join(profile, 'node_modules/dsh-filens'));
-  const workspace = path.join(plugin, 'node_modules/dsh-filens-workspace');
-  await cp(argument('--workspace-dir', workspace), path.join(profile, 'node_modules/dsh-filens-workspace'), { recursive: true });
+  const workspace = path.join(plugin, 'node_modules/@filens/dsh-workspace');
+  await cp(argument('--workspace-dir', workspace), path.join(profile, 'node_modules/@filens/dsh-workspace'), { recursive: true });
   await writeFile(path.join(profile, 'package.json'), JSON.stringify({ name: 'filens-release-demo', private: true,
-    dependencies: { 'dsh-filens': `file:${plugin}`, 'dsh-filens-workspace': 'file:./node_modules/dsh-filens-workspace' },
+    dependencies: { 'dsh-filens': `file:${plugin}`, '@filens/dsh-workspace': 'file:./node_modules/@filens/dsh-workspace' },
     dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', 'dsh-filens'] } } }));
   await writeFile(path.join(profile, 'cordis.yml'), '[]\n');
   await writeFile(path.join(profile, 'cordis.patch.yml'), '- id: filens-tools\n  disabled: true\n');
@@ -344,7 +344,7 @@ async function capture() {
     const support = JSON.parse(await readFile(path.join(plugin, 'lib/support.json'), 'utf8'));
     const components = { cli: installed.dependencies['filens-cli'], preview: support.previewVersion, extensions: support.extensions.length,
       previewSHA256: createHash('sha256').update(await readFile(path.join(plugin, 'lib/runtime/filens.js'))).digest('hex'),
-      workspaceSHA256: createHash('sha256').update(await readFile(path.join(profile, 'node_modules/dsh-filens-workspace/client.js'))).digest('hex') };
+      workspaceSHA256: createHash('sha256').update(await readFile(path.join(profile, 'node_modules/@filens/dsh-workspace/client.js'))).digest('hex') };
     for (const [name, film] of films) {
       const folder = path.join(work, name);
       await mkdir(folder, { recursive: true });

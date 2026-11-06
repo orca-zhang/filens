@@ -58,7 +58,7 @@ export function desktopInstrumentation({ pointer = false } = {}) {
         configurable: true, set(fn) { load = fn; },
         get() {
           return function (registration) {
-            if (['dsh-filens', 'dsh-filens-workspace', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'].includes(registration.id)) {
+            if (['dsh-filens', '@filens/dsh-workspace', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'].includes(registration.id)) {
               const factory = registration.factory;
               registration = { ...registration, factory(require) {
                 const exports = factory(require);

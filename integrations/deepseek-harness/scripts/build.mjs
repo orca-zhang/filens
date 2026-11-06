@@ -71,7 +71,7 @@ const textExtensions = new Set(module.formats.filter(item => ['text', 'markdown'
 await writeFile(path.join(output, 'support.json'), JSON.stringify({ previewVersion: previewPackage.version, previewSource: 'workspace', extensions, binaryExtensions: extensions.filter(extension => !textExtensions.has(extension)), runtime }, null, 2) + '\n');
 for (const [source, id, destination, basePath] of [
   ['client.js', 'dsh-filens', path.join(output, 'client.js'), runtime.basePath],
-  ['workspace-client.js', 'dsh-filens-workspace', path.join(root, 'workspace/client.js'), runtime.basePath.replace('/_filens/', '/_filens-workspace/')],
+  ['workspace-client.js', '@filens/dsh-workspace', path.join(root, 'workspace/client.js'), runtime.basePath.replace('/_filens/', '/_filens-workspace/')],
 ]) {
 const result = await build({
   entryPoints: [path.join(root, 'src', source)], bundle: true, format: 'cjs', platform: 'browser', target: 'es2022', write: false,

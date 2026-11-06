@@ -4,14 +4,14 @@
 
 Compared with v0.6.5.
 
-- Publish **dsh-filens 0.1.8** and the independently switchable **dsh-filens-workspace 0.1.1**. Gather local references and attachments across paginated conversation history, deduplicate files while retaining sources, and return to the exact message or question.
+- Publish **dsh-filens 0.1.9** with the independently switchable **File workspace built in**. Add DSH **0.2.2-rc.1** / Cordis **4.1** engine and peer compatibility. Only one plugin package needs installation. Gather local references and attachments across paginated conversation history, deduplicate files while retaining sources, and return to the exact message or question.
 - Hide session file references only after DSH confirms their paths or attachments no longer exist; refresh rechecks availability, and deletion discovered while opening removes stale cards, navigation and recommendations. Keep permission and connection failures visible.
 - Group files under short session titles with thumbnail mosaics; render Office/PDF thumbnails and recognizable type covers. Add related files, temporary-file filtering, a narrower file list and a ZimaOS Photos-style details panel.
 - Fix clipped zoom percentages, workspace activation/module naming and the duplicate demo pointer. Keep sidebar previews and document tools independently available.
 - Release **preview 0.3.6**, **@filens/core 0.1.4**, **@filens/vue 0.1.4**, **@filens/media 0.1.3** and **@filens/panorama 0.1.3**. Localize panorama hints and playback controls through all 28 existing dictionaries; language changes preserve the current video and position. Keep the original video duration during progressive playback.
 - Refresh Full offline bundles and **mobile source SDKs 0.1.6** with preview 0.3.6. CLI/OCR 0.5.6 native bytes remain unchanged; Lite stays below 10 MB. npm CLI 0.5.6 still prepares preview 0.3.4 unless assets are supplied explicitly. ZimaOS Mod Store remains 0.5.1.
 - Add six separately recorded Chinese/English DSH Desktop demos for Office, 3D/panoramas and the workspace. Use the matching FiLens introduction PPTX; Chinese Office bodies, sheets and headings are localized. Preserve candidate-build provenance and existing benchmark versions.
-- Keep download tables, SHA-256 checksums, the build manifest and the ZimaOS banner in the release notes. Publish the workspace dependency before the main DSH adapter and verify public registry integrity.
+- Keep download tables, SHA-256 checksums, the build manifest and the ZimaOS banner in the release notes. Verify public registry integrity of the single DSH plugin package.
 
 ## v0.6.5 — 2026-11-05
 

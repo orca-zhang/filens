@@ -19,9 +19,11 @@ await mkdir(path.join(profile, 'node_modules'), { recursive: true });
 await mkdir(directory);
 await mkdir(output, { recursive: true });
 await symlink(plugin, path.join(profile, 'node_modules/dsh-filens'));
-await cp(workspace, path.join(profile, 'node_modules/dsh-filens-workspace'), { recursive: true });
+if (!process.env.FILENS_DSH_TEST_PLUGIN) {
+  await cp(workspace, path.join(profile, 'node_modules/@filens/dsh-workspace'), { recursive: true });
+}
 await writeFile(path.join(profile, 'package.json'), JSON.stringify({ name: 'filens-workspace-test', private: true,
-  dependencies: { 'dsh-filens': `file:${plugin}`, 'dsh-filens-workspace': `file:${workspace}` },
+  dependencies: { 'dsh-filens': `file:${plugin}` },
   dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', 'dsh-filens'] } } }));
 await writeFile(path.join(profile, 'cordis.yml'), '[]\n');
 await writeFile(path.join(profile, 'cordis.patch.yml'), '- id: filens-tools\n  disabled: true\n');
@@ -221,7 +223,7 @@ try {
   assert.deepEqual(await page.locator('.fw-inspector-heading').boundingBox(), heading);
   const requestId = await page.locator('.fw-stage .filens-dsh-view').getAttribute('data-request-id');
   await page.keyboard.press('Escape');
-  assert.equal(await page.locator('.fw-inspector').count(), 0);
+  await page.locator('.fw-inspector').waitFor({ state: 'detached' });
   assert.equal(await page.locator('.fw-info-toggle').evaluate(node => node === document.activeElement), true);
   await page.locator('.fw-info-toggle').click();
   assert.equal(await page.locator('.fw-stage .filens-dsh-view').getAttribute('data-request-id'), requestId);
@@ -261,7 +263,7 @@ try {
   });
   assert.ok(plugins.some(row => row.patchId === 'filens-workspace'), JSON.stringify(plugins));
   const workspacePlugin = plugins.find(row => row.patchId === 'filens-workspace');
-  assert.equal(workspacePlugin.moduleName, 'dsh-filens-workspace');
+  assert.equal(workspacePlugin.moduleName, '@filens/dsh-workspace');
   assert.equal(workspacePlugin.meta.title.zh, '文件工作台');
   record('Workspace plugin has the native localized title 文件工作台 and a package icon');
   async function toggle(id, enabled) {
@@ -301,8 +303,17 @@ try {
   assert.ok(sheet.x > reader.x && sheet.x + sheet.width < reader.x + reader.width);
   assert.ok(sheet.y > reader.y && sheet.y + sheet.height < reader.y + reader.height);
   await page.screenshot({ path: path.join(output, 'info-photos-mobile.png') });
+  await page.evaluate(() => {
+    const modal = document.createElement('div');
+    modal.id = 'filens-test-dialog'; modal.role = 'dialog';
+    modal.style.cssText = 'position:fixed;top:10px;left:10px;width:100px;height:100px';
+    document.body.append(modal);
+  });
   await page.keyboard.press('Escape');
-  assert.equal(await page.locator('.fw-inspector').count(), 0);
+  assert.equal(await page.locator('.fw-inspector').count(), 1);
+  await page.locator('#filens-test-dialog').evaluate(node => node.remove());
+  await page.keyboard.press('Escape');
+  await page.locator('.fw-inspector').waitFor({ state: 'detached' });
   assert.equal(await page.locator('.fw-stage .filens-dsh[data-phase=ready]').count(), 1);
   record('Narrow-window details become an inset bottom sheet and dismiss without leaving the document');
   await page.locator('.fw-mobile-back').click();
@@ -345,7 +356,7 @@ try {
   await page.locator('.fw-card-open').filter({ hasText: 'sample.py' }).waitFor();
   await page.screenshot({ path: path.join(output, 'restored-file.png') });
   record('Refreshing rechecks existence and restores a file recreated at the same path');
-  await writeFile(path.join(output, 'validation.json'), JSON.stringify({ capturedAt: new Date().toISOString(), dsh: '0.2.1-rc.5',
+  await writeFile(path.join(output, 'validation.json'), JSON.stringify({ capturedAt: new Date().toISOString(), dsh: await app.evaluate(({ app }) => app.getVersion()),
     scope: 'Installed DSH Desktop; synthetic 270-turn and one-turn sessions; real local documents; no model calls or user history edits', checks }, null, 2));
 } catch (error) {
   await page.screenshot({ path: path.join(output, 'failure.png') }).catch(() => {});

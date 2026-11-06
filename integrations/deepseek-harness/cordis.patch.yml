@@ -4,4 +4,4 @@
     - id: filens-preview
       name: dsh-filens
     - id: filens-workspace
-      name: dsh-filens-workspace
+      name: '@filens/dsh-workspace'

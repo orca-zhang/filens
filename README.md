@@ -10,7 +10,7 @@
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
-**Latest release: [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · preview **0.3.6** · mobile SDKs **0.1.6** · DSH **0.1.8**.
+**Latest release: [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · preview **0.3.6** · mobile SDKs **0.1.6** · DSH **0.1.9**.
 
 [▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
 
@@ -51,7 +51,7 @@ filens capacity --json
 
 ### Offline browser previews
 
-**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.6 Full bundles include preview 0.3.6. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.6-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.6 retains preview 0.3.4; DSH 0.1.8 embeds preview 0.3.6; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.6 Full bundles include preview 0.3.6. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.6-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.6 retains preview 0.3.4; DSH 0.1.9 embeds preview 0.3.6; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -103,10 +103,10 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 Recorded November 5, 2026 on Apple M4 Pro/macOS and DSH Desktop 0.2.1-rc.5: nine paired rounds per format, medians through render readiness, excluding application startup. Office and PDF use separate runs; these are retained FiLens 0.1.3 measurements. PDF cached opens also improve from **110 to 77 ms (1.43×)**. [Office samples and method](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [PDF samples and method](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
-Install [`dsh-filens@0.1.8`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
+Install [`dsh-filens@0.1.9`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.8: 5.81 MiB download / 17.58 MiB unpacked**, including the workspace; standalone workspace archive **0.03 MiB**. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
+**DSH 0.1.9: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
 <!-- dsh-package-metrics:end -->
 
 **0.1.7 demos:** recorded in DSH Desktop with English UI and captions, using the local workspace candidate before the formal version bump. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
@@ -117,7 +117,7 @@ Rotate and zoom 3D models, look around 360° photos and play panoramic video in 
 
 ![English DSH demo: GLB and 3MF models, the Milky Way and 360-degree video](docs/assets/dsh-release/3d-and-panorama.en.gif)
 
-Version 0.1.8 adds **File workspace** (`dsh-filens-workspace@0.1.1`): session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview.
+Version 0.1.9 includes **File workspace** in the same `dsh-filens` installation: session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview. Supports DSH **0.2.2-rc.1**, alongside the previously validated rc.5/alpha.3 versions.
 
 ![English DSH demo: session file groups, related files and navigation to the source question](docs/assets/dsh-release/file-workspace.en.gif)
 

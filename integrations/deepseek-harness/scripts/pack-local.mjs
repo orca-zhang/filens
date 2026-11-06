@@ -42,7 +42,7 @@ try {
   pkg.dependencies['filens-cli'] = version;
   pkg.optionalDependencies = { [coreName]: version, [ocrName]: version };
   pkg.bundledDependencies = [...(pkg.bundledDependencies ?? []), 'filens-cli', coreName, ocrName];
-  await copy(path.join(root, 'workspace'), path.join(stage, 'node_modules/dsh-filens-workspace'));
+  await copy(path.join(root, 'workspace'), path.join(stage, 'node_modules/@filens/dsh-workspace'));
   delete pkg.scripts;
   delete pkg.devDependencies;
   const launcher = path.join(stage, 'node_modules/filens-cli');

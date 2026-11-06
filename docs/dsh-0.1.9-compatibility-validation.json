@@ -1,0 +1,172 @@
+{
+  "observedAt": "2026-11-06T10:17:00.378Z",
+  "plugin": "dsh-filens@0.1.9",
+  "dsh": "0.2.2-rc.1",
+  "cordis": "4.1.0",
+  "platform": "darwin-arm64",
+  "onePackageInstallation": true,
+  "installer": "Installed DSH bundled pnpm 11.28.5; only dsh-filens-0.1.9.tgz passed to add",
+  "workspace": "Private @filens/dsh-workspace bundled in dsh-filens; no registry publication or separate install",
+  "independentSwitches": [
+    "Preview",
+    "Tools",
+    "File workspace"
+  ],
+  "package": {
+    "name": "dsh-filens",
+    "version": "0.1.9",
+    "file": "dsh-filens-0.1.9.tgz",
+    "bytes": 6097035,
+    "unpackedBytes": 18434406,
+    "sha256": "f823edf4e55444b30fb26c6341569f2de92cc471203060be5f061114288c4d9e",
+    "integrity": "sha512-u7mPTtqnQcDvDAIn6l5g+9i5lpP7m24zRNH20IZb6qZhoiMH+7QEMj9BVHx7EIeXhsQe8Gk9RcTZRvzGUxLgtw==",
+    "privacyChecked": true
+  },
+  "nodeTests": {
+    "node": "24.11.0",
+    "passed": 34,
+    "failed": 0
+  },
+  "workspaceDesktop": {
+    "capturedAt": "2026-11-06T10:17:00.378Z",
+    "dsh": "0.2.2-rc.1",
+    "scope": "Installed DSH Desktop; synthetic 270-turn and one-turn sessions; real local documents; no model calls or user history edits",
+    "checks": [
+      "Group cards show shortened session titles with the full title on hover, and real Office thumbnails",
+      "Group thumbnails fill the cover; two files use both halves and short titles use a compact caption",
+      "Collapsed sessions align with file grid columns and preview at most four representative files",
+      "Temporary session files are hidden by default and can be revealed; ordinary documents in the OS temporary directory remain visible",
+      "Session groups start folded; expand, collapse and session filtering retain the correct files",
+      "All history pages collected; shared paths deduplicate, different directories stay separate",
+      "Confirmed missing references are excluded before cards, session counts and related-file recommendations are built",
+      "Existing corrupt and source-code files retain type covers; only confirmed absence is hidden",
+      "Stored generic attachment resolves through the native provider and previews real PDF bytes",
+      "Related files explain their reference relationship, open with keyboard or mouse, and retain source messages",
+      "Same file retains four exact source occurrences across two sessions",
+      "The reader file sidebar is at most 160 pixels wide",
+      "Photos-style details keep the filename fixed, show actual byte size, follow theme and close with Escape without reopening the preview",
+      "Source navigation loads the oldest history and scrolls to its stable message identity",
+      "An answer file switches from Trajectory to Chat and locates its corresponding question",
+      "100% fits completely in the real sidebar and workspace toolbars",
+      "Workspace plugin has the native localized title 文件工作台 and a package icon",
+      "Native plugin manager disables and enables File workspace independently of sidebar Preview",
+      "Workspace attachment preview remains functional while sidebar Preview is disabled",
+      "100% also fits at a 600-pixel Desktop window width",
+      "Narrow-window details become an inset bottom sheet and dismiss without leaving the document",
+      "Group cards fit a narrow window in both grid and list modes",
+      "Word, PowerPoint and Excel show real rendered thumbnails rather than fallback covers",
+      "A file deleted after scanning disappears when opened, including navigation and related-file lists",
+      "Refreshing rechecks existence and restores a file recreated at the same path"
+    ]
+  },
+  "sidebarDesktop": {
+    "environment": {
+      "version": "0.2.2-rc.1",
+      "node": "24.21.0",
+      "electron": "44.7.0",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "url": "dsh-app://app/",
+    "registrations": [
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/text",
+        "extensions": 0
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/markdown",
+        "extensions": 2
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/html",
+        "extensions": 2
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/image",
+        "extensions": 8
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/pdf",
+        "extensions": 1
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office",
+        "extensions": 4
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/excel",
+        "extensions": 4
+      },
+      {
+        "id": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code",
+        "extensions": 115
+      },
+      {
+        "id": "dsh-filens",
+        "extensions": 451
+      }
+    ],
+    "results": [
+      {
+        "name": "filens-cosmic-atlas.pdf",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "filens-aurora-guide.docx",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "filens-field-notes.pptx",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "filens-weekend.key",
+        "rendered": true,
+        "fillsPane": true
+      },
+      {
+        "name": "rounded-cube.step",
+        "rendered": true,
+        "fillsPane": true,
+        "toolbar": false,
+        "orbitZoomAndReset": true
+      },
+      {
+        "name": "sample-nested-archives.zip",
+        "rendered": true,
+        "fillsPane": true
+      }
+    ],
+    "nativeFullscreenTested": false,
+    "errors": []
+  },
+  "webIntegration": {
+    "version": "0.2.2-rc.1",
+    "profile": "filens-test",
+    "policy": "workspace-write",
+    "checks": [
+      "bundle installation mounts both Host entries",
+      "Preview client participates in the real DSH module graph",
+      "real webServer serves the directly mounted runtime",
+      "filens_capacity through the installed DSH tool pipeline (workspace-write)",
+      "filens_read through the installed DSH tool pipeline (workspace-write)",
+      "filens_read through the installed DSH tool pipeline (workspace-write)",
+      "filens_excerpt through the installed DSH tool pipeline (workspace-write)",
+      "filens_search through the installed DSH tool pipeline (workspace-write)",
+      "filens_convert writes a new XLSX through the installed DSH tool pipeline",
+      "command parameters explicitly select disk workspace through the installed DSH pipeline",
+      "disable Tools independently while Preview stays active",
+      "disable Preview removes its route/client while Tools stays active",
+      "both entries re-enable without duplicate registrations"
+    ]
+  },
+  "limitations": [
+    "macOS arm64 Desktop only; Windows/Linux Desktop not tested",
+    "Native fullscreen skipped in this compatibility run",
+    "rc.5/alpha.3 declarations retained from earlier validation; no new full run on those versions",
+    "No conversion algorithm or runtime changes; existing format-coverage and benchmark limits remain"
+  ]
+}

@@ -1,6 +1,6 @@
 {
-  "name": "dsh-filens-workspace",
-  "version": "0.1.1",
+  "name": "@filens/dsh-workspace",
+  "version": "0.1.9",
   "type": "module",
   "description": "Session file collection, previews and source navigation for DSH.",
   "license": "MIT",
@@ -8,10 +8,6 @@
     "type": "git",
     "url": "git+https://github.com/IceWhaleTech/filens.git",
     "directory": "integrations/deepseek-harness/workspace"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   },
   "files": [
     "index.js",
@@ -23,7 +19,7 @@
   "icon": "./icon.svg",
   "peerDependencies": {
     "dsh-filens": "* || >=0.1.7-0",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5 || 0.2.2-alpha.3"
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1"
   },
   "peerDependenciesMeta": {
     "dsh-filens": {
@@ -49,5 +45,6 @@
         "zod"
       ]
     }
-  }
+  },
+  "private": true
 }
