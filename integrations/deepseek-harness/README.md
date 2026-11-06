@@ -14,13 +14,15 @@ Native sidebar previews embed directly in DSH's existing file preview pane. FiLe
 
 **New in 0.1.7:** a third, independently switchable **File workspace** plugin adds a full-page file gallery and reading canvas. It gathers supported local file references and attachments from paginated session history, retains each source occurrence, and links back to its message or question. Local file selection, drag-and-drop, thumbnails, filters and search reuse the sidebar's preview core. Use **Refresh session files** to rescan. Browser-selected files must be reopened after a reload; deleted or inaccessible source files cannot be previewed. Developer information appears in the bottom corner. The reader’s **Related files** section lists up to six files by shared message, question, folder or session, explains each relationship, and opens the file on click. Recommendations use existing references only. Collapsed sessions use group cards aligned with the file grid with up to four real file thumbnails with type-cover fallbacks. Files without thumbnails use folded-page type covers. Session labels use short human-readable titles with the full title on hover. Temporary session artifacts are hidden by default with a reveal button; useful results in OS temporary directories and explicitly selected local files remain visible. The reader file list is 144–160px wide. The file details card follows ZimaOS Photos with a fixed filename header, scrolling sections, three-column related-file thumbnails and a bottom sheet in narrow windows. Sizes use actual bytes after reading; session reference dates are labeled separately from local modification dates. [Actual DSH screenshots, validation scope and reproduction](../../docs/assets/dsh-workspace/README.md).
 
-The **`dsh-filens@0.1.7` supports 450 source-file extensions** (451 route entries including internal `cad-json`). Counts use unique extensions and include direct previews and previews after local WASM conversion. Source builds use the current shared manifest; their exact count is in the build's `lib/support.json`. See the [support matrix](../../docs/support-matrix.md) and [validation record](VALIDATION.md) for format coverage and fidelity limits.
+The **`dsh-filens@0.1.8` supports 450 source-file extensions** (451 route entries including internal `cad-json`). Counts use unique extensions and include direct previews and previews after local WASM conversion. Source builds use the current shared manifest; their exact count is in the build's `lib/support.json`. See the [support matrix](../../docs/support-matrix.md) and [validation record](VALIDATION.md) for format coverage and fidelity limits.
+
+**0.1.8 / workspace 0.1.1:** session scans check paths and stored attachments through DSH metadata. Confirmed missing files are omitted from cards, counts, navigation and related files. Refresh rechecks existence; a file deleted after scanning is removed when opening detects its absence. Permission and connection failures remain visible. This check does not read or parse complete files.
 
 The adapter uses `filens-cli@0.5.6` and shared preview 0.3.6. It adds no parsing or conversion algorithms.
 
 Tested on macOS arm64 with DSH **Desktop/Web 0.2.1-rc.5**, **Web 0.2.2-alpha.3** and Node 24. Other DSH versions remain unverified.
 
-**English recordings for 0.1.7:** actual DSH UI, English captions and synthetic sessions. [Release notes and recording provenance](../../docs/releases/dsh-filens-0.1.7/README.md). Recorded with the local workspace candidate before the formal version bump; original recording metadata is preserved.
+**English recordings for 0.1.7:** actual DSH UI, English captions and synthetic sessions. [Release notes and recording provenance](../../docs/releases/dsh-filens-0.1.8/README.md). Recorded with the local workspace candidate before the formal version bump; original recording metadata is preserved.
 
 ![Word and Excel previews, and a fullscreen PPT presentation in English DSH](../../docs/assets/dsh-release/office-preview.en.gif)
 
@@ -58,17 +60,17 @@ Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a 
 The same sidebar supports interactive 3D models and 360° media. Drag to orbit or look around; scroll to zoom. For spherical JPEG/video samples, use `.pano` / `.360v` filenames, preserving the original bytes; ordinary `.jpg` / `.webm` use the normal image/video view. [Gallery MP4, sources and recording details](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery).
 
 <!-- dsh-package-metrics:start -->
-Adapter 0.1.7: **5.81 MiB** download / **17.58 MiB** unpacked, including the workspace; standalone workspace **0.03 MiB**. CLI/OCR, DSH dependencies and caches are separate. [Exact package receipt](../../docs/dsh-plugin-package.json).
+Adapter 0.1.8: **5.81 MiB** download / **17.58 MiB** unpacked, including the workspace; standalone workspace **0.03 MiB**. CLI/OCR, DSH dependencies and caches are separate. [Exact package receipt](../../docs/dsh-plugin-package.json).
 <!-- dsh-package-metrics:end -->
 
 The 0.1.6 header controls and packaged runtime are covered by [the validation receipt](../../docs/dsh-compact-controls-validation.json). Sidebar latency tables retain their measured 0.1.3 snapshot.
 
 ## Install and build
 
-Install [`dsh-filens@0.1.7`](https://www.npmjs.com/package/dsh-filens) directly from Desktop:
+Install [`dsh-filens@0.1.8`](https://www.npmjs.com/package/dsh-filens) directly from Desktop:
 
 1. Open **Plugins** and click **Add plugin**.
-2. Enter `dsh-filens`, or `dsh-filens@0.1.7` to pin the version, and click **Install**.
+2. Enter `dsh-filens`, or `dsh-filens@0.1.8` to pin the version, and click **Install**.
 3. When installation completes, click **Enable now**. The bundle provides separate FiLens Tools, FiLens Preview and File workspace entries that can be enabled independently; the recorded Desktop version enables them immediately.
 
 Keep the default installation source; no registry change is needed.
@@ -76,9 +78,9 @@ Keep the default installation source; no registry change is needed.
 The CLI also installs into a specific profile. Fully quit Desktop before managing its profile from the CLI, then reopen it after installation:
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+dsh plugin --profile desktop add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 # For a Web profile:
-dsh plugin --profile web add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+dsh plugin --profile web add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 ```
 
 The plugin includes its client, preview WASM, archive worker and notices. npm platform dependencies supply CLI/OCR binaries and models; no compilation or separate model download is needed. Keep optional dependencies enabled. Platforms are macOS arm64, Linux x64/arm64 and Windows x64; native execution was verified on macOS arm64, with cross-built Linux/Windows artifacts.
@@ -96,20 +98,20 @@ Artifacts and checksums are recorded in `dist/dsh-npm/release.json`. The build u
 For Web, use the DSH CLI matching the intended runtime:
 
 ```sh
-dsh plugin --profile web add /absolute/path/dsh-filens-0.1.7.tgz
+dsh plugin --profile web add /absolute/path/dsh-filens-0.1.8.tgz
 dsh web
 ```
 
 For Desktop, open the app once to initialize its profile, fully quit it, then:
 
 ```sh
-dsh plugin --profile desktop add /absolute/path/dsh-filens-0.1.7.tgz
+dsh plugin --profile desktop add /absolute/path/dsh-filens-0.1.8.tgz
 ```
 
 If macOS reports `dsh: command not found`, use the Desktop UI above or invoke the app's bundled CLI directly:
 
 ```sh
-"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile desktop add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 ```
 
 Reopen Desktop after installation. The profile manager may print peer warnings because DSH supplies shared packages from its own runtime; startup and the checks below verify the actual shared instances.
@@ -148,7 +150,7 @@ For Office files or PDFs with native text, ask the agent: "Read the native docum
 
 Per-call `ocr` is `"auto"`, `"never"` or `"always"`; global `ocr: false` takes precedence. DSH defaults OpenXML Office paths to `never`, including named archive members; PDF, scans and other paths keep `auto`. Set `ocr: "auto"` explicitly when embedded image text matters. `never` retains native text and skips images/scans; `always` forces PDF page OCR. `ocr_min_confidence` defaults to 0.8; low/unscored lines are omitted with partial-result warnings. Scores are detector confidence, not recognition accuracy. OCR blocks are marked `source: "ocr"`; verify even high-scoring text.
 
-Plugin **0.1.6** requires its matching CLI **0.5.6** and WASM. Version 0.1.0 / CLI 0.5.2 only supported the global `ocr: false` setting or `--no-ocr`; update the complete package together.
+Plugin **0.1.8** requires its matching CLI **0.5.6** and WASM. Version 0.1.0 / CLI 0.5.2 only supported the global `ocr: false` setting or `--no-ocr`; update the complete package together.
 
 Plugin 0.1.2 treats intentional `ocr: "never"` as a successful native-text request: `textScope: "native-text"`, exit 0 and `complete: true` unless another failure/limit occurs. It still reports skipped image text. OCR-enabled scope is `"native-and-ocr"`; actual OCR errors and low-confidence omissions remain partial (exit 3). `content.ocr.results[]` locates each skipped/complete/partial/failed attempt by page, slide, shape and media where available. Published 0.1.0 / CLI 0.5.2 retain the earlier partial status for skipped OCR. Sidebar previews are unaffected.
 

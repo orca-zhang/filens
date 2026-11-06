@@ -5,9 +5,9 @@ Collect local file references and attachments from conversation history, preview
 Install both plugins, then reopen DSH Desktop:
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+dsh plugin --profile desktop add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 ```
 
-File workspace has its own plugin switch. Files remain in their original locations; deleted or inaccessible files cannot be previewed. Browser-selected files must be reopened after a reload. Related files use existing references without model calls.
+File workspace has its own plugin switch. Files remain in their original locations. Confirmed missing references are excluded after DSH metadata checks; refresh rechecks availability. Files deleted after scanning disappear when opening detects absence. Permission and connection errors retain their error states. Browser-selected files must be reopened after a reload. Related files use existing references without model calls.
 
 Tested on macOS arm64 with DSH Desktop 0.2.1-rc.5. See the [setup guide and actual Desktop recordings](https://github.com/IceWhaleTech/filens/tree/main/integrations/deepseek-harness).

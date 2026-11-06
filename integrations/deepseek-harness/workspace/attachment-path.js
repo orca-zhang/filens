@@ -10,13 +10,17 @@ export class WorkspaceAttachments extends TypertRemoteService {
   // enforce read limits and filesystem permissions. No file bytes are served here.
   attachmentPath(sessionId, attachment, signal) {
     signal?.throwIfAborted();
+    const image = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(attachment?.mediaType);
     if (typeof sessionId !== 'string' || !sessionId || !attachment
       || !/^sha256:[a-f0-9]{64}$/.test(attachment.attachmentId)
-      || typeof attachment.name !== 'string' || !attachment.name || /[/\\\0]/.test(attachment.name)
-      || ['.', '..'].includes(attachment.name) || !Number.isSafeInteger(attachment.bytes) || attachment.bytes < 0) {
+      || (!image && (typeof attachment.name !== 'string' || !attachment.name))
+      || (attachment.name !== undefined && (typeof attachment.name !== 'string' || /[/\\\0]/.test(attachment.name) || ['.', '..'].includes(attachment.name)))
+      || (attachment.mediaType !== undefined && !image)
+      || (image && (!Number.isSafeInteger(attachment.width) || attachment.width <= 0 || !Number.isSafeInteger(attachment.height) || attachment.height <= 0))
+      || !Number.isSafeInteger(attachment.bytes) || attachment.bytes < 0) {
       throw new Error('Invalid DSH file attachment reference');
     }
-    const path = this.ctx.attachments.fileHostPath(attachment);
+    const path = image ? this.ctx.attachments.imageHostPath(attachment) : this.ctx.attachments.fileHostPath(attachment);
     if (!path) throw new Error('This attachment storage does not expose a filesystem path');
     return path;
   }

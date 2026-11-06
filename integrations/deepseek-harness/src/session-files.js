@@ -89,7 +89,7 @@ export function extractSessionFiles(records, session, extensions) {
       }
     }
     // Explicit links, inline file references and absolute paths. Prose alone
-    // cannot prove a file exists; unreadable references remain visible as such.
+    // cannot prove a file exists; collection checks through DSH before display.
     for (const match of text.matchAll(/\[[^\]\n]*\]\(<?([^\n)>]+)>?\)/g)) {
       const target = match[1].replace(/\s+["'][\s\S]*$/, '');
       try { addPath(decodeURIComponent(target.replace(/\\([ ()])/g, '$1'))); } catch { /* Invalid URL encoding is not a file reference. */ }
@@ -125,8 +125,35 @@ export function mergeSessionFiles(collections) {
 }
 
 export function remoteValue(result) {
-  if (!result.ok) throw new Error(result.error?.message || result.message || 'DSH request failed');
+  if (!result.ok) throw result.error ?? new Error(result.message || 'DSH request failed');
   return result.value;
+}
+
+export function isMissingFile(error) {
+  return ['workspace-file/not-found', 'ENOENT', 'ENOTDIR'].includes(error?.code);
+}
+
+export async function existingSessionFiles(remote, files, signal) {
+  const present = new Array(files.length).fill(true);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(4, files.length) }, async () => {
+    while (next < files.length) {
+      const index = next++, entry = files[index];
+      signal.throwIfAborted();
+      try {
+        const sessionId = entry.origins[0].sessionId;
+        const path = entry.attachment
+          ? remoteValue(await remote.filensWorkspace.attachmentPath(sessionId, entry.attachment, signal)) : entry.path;
+        const stat = remoteValue(await remote.workspaceFiles.stat(sessionId, path, signal));
+        if (Number.isSafeInteger(stat.bytes)) entry.size = stat.bytes;
+      } catch (error) {
+        signal.throwIfAborted();
+        // Only confirmed absence is hidden; permission and connection errors remain visible.
+        if (isMissingFile(error)) present[index] = false;
+      }
+    }
+  }));
+  return files.filter((entry, index) => present[index]);
 }
 
 export async function collectSessionFiles(remote, extensions, signal, progress) {
@@ -160,7 +187,7 @@ export async function collectSessionFiles(remote, extensions, signal, progress) 
         beforeSeq = next;
         page = remoteValue(await remote.session.page({ address: { kind: 'session', sessionId: session.sessionId }, maxMessages: 500, beforeSeq, throughSeq }, signal));
       } while (true);
-      collections.push(extractSessionFiles(records, session, extensions));
+      collections.push(await existingSessionFiles(remote, extractSessionFiles(records, session, extensions), signal));
     } catch (error) {
       signal.throwIfAborted();
       errors.push({ sessionId: session.sessionId, title: sessionTitle(session), message: error.message });

@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-11-06T09:23:15.760910+00:00",
+  "tag": "v0.6.6",
+  "checks": [
+    "All 14 downloadable packages match release table bytes and SHA-256",
+    "Download table precedes Changelog and the retained ZimaOS banner",
+    "Official ZimaOS advertising link and Mod Store instructions retained",
+    "Both READMEs use current release/component versions and measured native/browser/npm/SDK/DSH sizes",
+    "Both READMEs distinguish 450 source preview formats from 451 routes and 349 CLI formats",
+    "Historical benchmark versions and scope remain explicit"
+  ],
+  "passed": true,
+  "assetCount": 16,
+  "components": {
+    "preview": "0.3.6",
+    "mobileSdk": "0.1.6",
+    "cli": "0.5.6"
+  }
+}

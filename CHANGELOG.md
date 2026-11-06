@@ -4,7 +4,8 @@
 
 Compared with v0.6.5.
 
-- Publish **dsh-filens 0.1.7** and the independently switchable **dsh-filens-workspace 0.1.0**. Gather local references and attachments across paginated conversation history, deduplicate files while retaining sources, and return to the exact message or question.
+- Publish **dsh-filens 0.1.8** and the independently switchable **dsh-filens-workspace 0.1.1**. Gather local references and attachments across paginated conversation history, deduplicate files while retaining sources, and return to the exact message or question.
+- Hide session file references only after DSH confirms their paths or attachments no longer exist; refresh rechecks availability, and deletion discovered while opening removes stale cards, navigation and recommendations. Keep permission and connection failures visible.
 - Group files under short session titles with thumbnail mosaics; render Office/PDF thumbnails and recognizable type covers. Add related files, temporary-file filtering, a narrower file list and a ZimaOS Photos-style details panel.
 - Fix clipped zoom percentages, workspace activation/module naming and the duplicate demo pointer. Keep sidebar previews and document tools independently available.
 - Release **preview 0.3.6**, **@filens/core 0.1.4**, **@filens/vue 0.1.4**, **@filens/media 0.1.3** and **@filens/panorama 0.1.3**. Localize panorama hints and playback controls through all 28 existing dictionaries; language changes preserve the current video and position. Keep the original video duration during progressive playback.

@@ -1,4 +1,4 @@
-# FiLens for DSH 0.1.7: a home for your session files
+# FiLens for DSH 0.1.8: a home for your session files
 
 > Released with [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6). Demos retain their original local-candidate recording metadata.
 
@@ -15,6 +15,8 @@ Open **File workspace** to browse files referenced in your conversations, previe
 - Inspect properties, location, related files and reference sources, then jump to the exact message or question. Narrow windows use a bottom information card.
 - Hide Office lock files, system artifacts and editor temporary files by default, with a reveal button. Keep useful outputs stored in OS temporary directories.
 
+- **0.1.8:** exclude paths and attachments confirmed missing by DSH; refresh rechecks existence and opening removes references deleted after scanning. Permission and connection failures remain visible.
+
 ## Native sidebar previews remain available
 
 The sidebar continues to preview Office, PDF, iWork, CAD/3D, RAW and 360° media. Compact zoom and fullscreen controls remain available, with a 144–160px file list in the workspace reader. File workspace, sidebar Preview and document Tools have independent switches and share the local preview core.
@@ -28,7 +30,7 @@ The sidebar continues to preview Office, PDF, iWork, CAD/3D, RAW and 360° media
 Fully quit Desktop, run the command, then reopen it:
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+dsh plugin --profile desktop add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 ```
 
 ## Validation and limits

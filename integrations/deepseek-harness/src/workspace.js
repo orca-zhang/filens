@@ -1,7 +1,7 @@
 import { createElement as h, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { FilensBody, FilensActions, useAppearance } from './preview.js';
 import { relatedFiles } from './related-files.js';
-import { isTemporaryFile, shortSessionTitle } from './session-files.js';
+import { isTemporaryFile, shortSessionTitle, isMissingFile } from './session-files.js';
 
 // Keep browser-selected files across panel navigation; release them on unload.
 const empty = () => ({ files: [], active: null, scan: { done: 0, total: 0, loading: false, errors: [], started: false } });
@@ -117,7 +117,12 @@ function FilePreview({ entry, thumbnail = false }) {
         setSource({ id: entry.id, bytes });
         rememberSize(entry.id, bytes.byteLength);
       })
-      .catch(error => { if (!cancelled) setSource({ id: entry.id, error: error.message }); });
+      .catch(error => {
+        if (cancelled) return;
+        if (entry.origins && isMissingFile(error)) {
+          update({ files: snapshot.files.filter(file => file.id !== entry.id), active: snapshot.active === entry.id ? null : snapshot.active });
+        } else setSource({ id: entry.id, error: error.message });
+      });
     return () => { cancelled = true; controller.abort(); };
   }, [entry.id, entry.file, visible, read, attempt]);
   const error = source?.id === entry.id && source.error;

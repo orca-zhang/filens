@@ -136,7 +136,8 @@ async function verifyPublic(pkg){
  let lastStatus='not available';
  for(let attempt=0;attempt<verifyAttempts;attempt++){
   let response;
-  try{response=await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg.name)}/${versionOf(pkg)}`,{signal:AbortSignal.timeout(20000)});}
+  // A cached 404 can outlive npm's processing queue; ask for fresh metadata.
+  try{response=await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg.name)}/${versionOf(pkg)}?filens-verify=${Date.now()}`,{signal:AbortSignal.timeout(20000)});}
   catch(error){lastStatus=error.message;}
   if(response?.ok){
    const published=await response.json();

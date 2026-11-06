@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { collectSessionFiles, extractSessionFiles, isTemporaryFile, mergeSessionFiles, resolveFilePath, sessionTitle, shortSessionTitle } from '../src/session-files.js';
+import { collectSessionFiles, existingSessionFiles, extractSessionFiles, isTemporaryFile, mergeSessionFiles, resolveFilePath, sessionTitle, shortSessionTitle } from '../src/session-files.js';
 
 const extensions = ['pdf', 'docx', 'png', 'xlsx'];
 const session = { sessionId: 'review', cwd: '/work', projections: { values: { title: '设计评审' } } };
@@ -114,4 +114,34 @@ test('does not loop or report completeness when a history cursor stalls', async 
   await collectSessionFiles(remote, extensions, new AbortController().signal, state => states.push(state));
   assert.match(states.at(-1).errors[0].message, /cursor/);
   assert.equal(states.at(-1).files.length, 0);
+});
+
+test('collection hides only confirmed missing paths and attachments, preserving permission and network errors', async () => {
+  const files = extractSessionFiles([question(1, '`kept.pdf` `gone.pdf` `denied.pdf` `offline.pdf`', [
+    { type: 'file', attachment: { attachmentId: `sha256:${'a'.repeat(64)}`, name: 'lost.pdf', bytes: 8 } },
+    { type: 'image', attachment: { attachmentId: `sha256:${'b'.repeat(64)}`, mediaType: 'image/png', bytes: 8, width: 1, height: 1 } },
+  ])], session, extensions);
+  const paths = [];
+  const remote = {
+    filensWorkspace: { attachmentPath: async (id, ref) => ({ ok: true, value: ref.mediaType ? '/images/lost.png' : '/attachments/lost.pdf' }) },
+    workspaceFiles: { stat: async (id, path) => {
+      assert.equal(id, session.sessionId); paths.push(path);
+      if (/gone|lost/.test(path)) return { ok: false, error: { code: 'workspace-file/not-found', message: 'Missing' } };
+      if (path.includes('denied')) return { ok: false, error: { code: 'fs/permission-denied', message: 'Denied' } };
+      if (path.includes('offline')) throw new Error('Connection unavailable');
+      return { ok: true, value: { bytes: 123 } };
+    } },
+  };
+  const result = await existingSessionFiles(remote, files, new AbortController().signal);
+  assert.deepEqual(result.map(file => file.name).sort(), ['denied.pdf', 'kept.pdf', 'offline.pdf']);
+  assert.equal(result.find(file => file.name === 'kept.pdf').size, 123);
+  assert.ok(paths.includes('/images/lost.png'));
+  assert.ok(paths.includes('/attachments/lost.pdf'));
+});
+
+test('existence checks propagate cancellation instead of classifying it as absence', async () => {
+  const controller = new AbortController();
+  const remote = { workspaceFiles: { stat: async () => { controller.abort(); throw controller.signal.reason; } } };
+  const files = extractSessionFiles([question(1, '`report.pdf`')], session, extensions);
+  await assert.rejects(existingSessionFiles(remote, files, controller.signal), { name: 'AbortError' });
 });

@@ -36,10 +36,6 @@ function applyWorkspace(ctx) {
     try {
       await collectSessionFiles(ctx.remote, __FILENS_EXTENSIONS__, signal, state => setSessionFiles(state, entry => async readSignal => {
         const origin = entry.origins[0];
-        if (entry.attachmentKind === 'image') {
-          const result = remoteValue(await ctx.remote.session.attachment({ sessionId: origin.sessionId, attachment: entry.attachment }, readSignal));
-          return Uint8Array.from(atob(result.data), character => character.charCodeAt(0));
-        }
         const path = entry.attachment ? remoteValue(await ctx.remote.filensWorkspace.attachmentPath(origin.sessionId, entry.attachment, readSignal)) : entry.path;
         const result = remoteValue(await ctx.remote.workspaceFiles.readBytes(origin.sessionId, path, {}, readSignal));
         if (!result.eof || result.offset !== 0) throw new Error('DSH returned an incomplete file');

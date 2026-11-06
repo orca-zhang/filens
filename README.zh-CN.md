@@ -12,7 +12,7 @@
 
 [▶ 观看 30 秒演示](apps/demo/public/home/filens-demo.mp4) · [预览动图](docs/assets/readme/demo.gif) · [完整格式与限制](docs/support-matrix.zh-CN.md)
 
-**最新版本：[v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · 预览 **0.3.6** · 移动端 SDK **0.1.6** · DSH **0.1.7**。
+**最新版本：[v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · 预览 **0.3.6** · 移动端 SDK **0.1.6** · DSH **0.1.8**。
 
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
@@ -51,7 +51,7 @@ filens capacity --json
 
 ### 离线浏览器预览
 
-**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.6 Full 包内置预览 0.3.6，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.6-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 保留预览 0.3.4；DSH 0.1.7 内置预览 0.3.6；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.6 Full 包内置预览 0.3.6，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.6-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 保留预览 0.3.4；DSH 0.1.8 内置预览 0.3.6；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -103,13 +103,13 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 2026 年 11 月 5 日，Apple M4 Pro / macOS、DSH Desktop 0.2.1-rc.5，每种格式配对测量 9 轮，取读取至渲染就绪的中位数，不含应用启动。Office 与 PDF 分轮测量；这里保留 FiLens 0.1.3 的实测结果。PDF 重复打开也从 **110 ms 降至 77 ms（1.43×）**。[Office 原始样本与方法](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [PDF 原始样本与方法](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
 
-在「插件 → 添加插件」中填写 [`dsh-filens@0.1.7`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
+在「插件 → 添加插件」中填写 [`dsh-filens@0.1.8`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.7：下载 5.81 MiB / 解包 17.58 MiB**，包含工作台；独立工作台包 **0.03 MiB**。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/dsh-plugin-package.json)。
+**DSH 0.1.8：下载 5.81 MiB / 解包 17.58 MiB**，包含工作台；独立工作台包 **0.03 MiB**。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/dsh-plugin-package.json)。
 <!-- dsh-package-metrics:end -->
 
-**0.1.7 演示：**在真实 DSH Desktop 中使用中文界面与中文字幕分别录制，使用正式升版前的本地工作台候选构建。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.7/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
+**0.1.7 演示：**在真实 DSH Desktop 中使用中文界面与中文字幕分别录制，使用正式升版前的本地工作台候选构建。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.8/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
 
 ![DSH 中文实机演示：Word 阅读、Excel 工作表和 PPT 全屏](docs/assets/dsh-release/office-preview.zh-CN.gif)
 
@@ -117,7 +117,9 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ![DSH 中文实机演示：GLB、3MF、银河全景和 360° 视频](docs/assets/dsh-release/3d-and-panorama.zh-CN.gif)
 
-0.1.7 新增独立的「文件工作台」（`dsh-filens-workspace@0.1.0`）：按会话收拢文件，显示真实缩略图和相关文件，并能返回文件所在的消息或对应提问；开关独立于侧栏预览。
+0.1.8 新增独立的「文件工作台」（`dsh-filens-workspace@0.1.1`）：按会话收拢文件，显示真实缩略图和相关文件，并能返回文件所在的消息或对应提问；开关独立于侧栏预览。
+
+**工作台 0.1.1：**DSH 确认已不存在的路径和附件不再进入卡片、数量、文件列表及相关文件。刷新会重新检查；扫描后删除的文件在打开时确认不存在也会移除。权限不足或连接失败仍显示错误状态。
 
 ![DSH 中文实机演示：文件群组、相关文件和原提问定位](docs/assets/dsh-release/file-workspace.zh-CN.gif)
 

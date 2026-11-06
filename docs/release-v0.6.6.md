@@ -12,8 +12,8 @@
 | Browser runtime: all-in-one | [filens-preview-0.3.6-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip) | 10.61 MiB |
 | iOS source SDK | [filens-ios-sdk-0.1.6.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-ios-sdk-0.1.6.zip) | 5.64 MiB |
 | Android source SDK | [filens-android-sdk-0.1.6.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-android-sdk-0.1.6.zip) | 5.65 MiB |
-| dsh-filens-workspace 0.1.0 | [dsh-filens-workspace-0.1.0.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-workspace-0.1.0.tgz) | 0.03 MiB |
-| dsh-filens 0.1.7 | [dsh-filens-0.1.7.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-0.1.7.tgz) | 5.81 MiB |
+| dsh-filens-workspace 0.1.1 | [dsh-filens-workspace-0.1.0.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-workspace-0.1.0.tgz) | 0.03 MiB |
+| dsh-filens 0.1.8 | [dsh-filens-0.1.8.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-0.1.8.tgz) | 5.81 MiB |
 | Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/SHA256SUMS) | SHA-256 |
 | Build manifest | [filens-release-v0.6.6.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-release-v0.6.6.json) | Versions, sizes and validation |
 
@@ -21,7 +21,7 @@
 
 ## Changelog
 
-Compared with [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5). Components: **DSH 0.1.7**, **File workspace 0.1.0**, **preview 0.3.6**, **mobile source SDKs 0.1.6**, and **CLI/OCR 0.5.6**. Native CLI/OCR and WASM payloads are retained byte-for-byte from verified v0.6.5 archives; Full bundles refresh the preview assets. npm CLI 0.5.6 retains its preview 0.3.4 setup pin. The ZimaOS Mod Store package remains 0.5.1.
+Compared with [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5). Components: **DSH 0.1.8**, **File workspace 0.1.1**, **preview 0.3.6**, **mobile source SDKs 0.1.6**, and **CLI/OCR 0.5.6**. Native CLI/OCR and WASM payloads are retained byte-for-byte from verified v0.6.5 archives; Full bundles refresh the preview assets. npm CLI 0.5.6 retains its preview 0.3.4 setup pin. The ZimaOS Mod Store package remains 0.5.1.
 
 ### File workspace for DeepSeek Harness
 
@@ -29,6 +29,7 @@ Compared with [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 - Collect supported local references and attachments from paginated conversation history. Deduplicate files while retaining every source occurrence; return to the exact message or its originating question.
 - Collapse sessions into cards with short titles and up to four representative previews. Office/PDF thumbnails use the real renderer; unavailable thumbnails have recognizable file-type covers.
 - Find related files by shared message, question, folder or session, with an explanation for each recommendation and no model calls.
+- Exclude paths and attachments only after DSH confirms they no longer exist. Recheck on refresh, and remove stale cards, navigation and recommendations when opening discovers deletion. Keep permission and connection failures visible.
 - Hide lock, editor and system temporary artifacts by default, with a reveal button. Useful outputs in OS temporary directories remain visible; filtering does not delete files.
 - Add a ZimaOS Photos-style details panel, actual file sizes, a 144–160px reader list and narrow-window layouts. Fix clipped zoom percentages, workspace activation and module naming.
 
@@ -37,7 +38,7 @@ Compared with [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 Install both plugins, then reopen DSH Desktop:
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+dsh plugin --profile desktop add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 ```
 
 ### Localized controls and real Desktop demos
@@ -47,13 +48,13 @@ dsh plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
 - Record six Chinese/English demos separately in the installed DSH Desktop: Office, 3D/panoramas and File workspace. Office uses the matching 14-slide FiLens introduction PPTX; Chinese Word bodies, spreadsheet headings and sheet names are localized.
 - Update both READMEs with measured package/runtime sizes and current format counts: **450 preview source extensions** (451 routes including internal `cad-json`) and **349 CLI extensions**. Registration counts are not a claim that every format was retested.
 
-[English demos and release notes](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.7/release-notes.en.md) · [中文演示与发布说明](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.7/release-notes.zh-CN.md) · [Media and original recording provenance](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.7/README.md)
+[English demos and release notes](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.8/release-notes.en.md) · [中文演示与发布说明](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.8/release-notes.zh-CN.md) · [Media and original recording provenance](https://github.com/IceWhaleTech/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.8/README.md)
 
 The recordings use the pre-release workspace candidate and preserve its original metadata; they are not fresh performance benchmarks. Existing DSH speed comparisons retain their 0.1.3 measurement versions. Files stay in their original locations; deleted or inaccessible files cannot be previewed, and browser-selected files need reopening after reload.
 
 ### npm packages and offline bundles
 
-- Publish `dsh-filens@0.1.7`, `dsh-filens-workspace@0.1.0` and `filens-preview@0.3.6`.
+- Publish `dsh-filens@0.1.8`, `dsh-filens-workspace@0.1.1` and `filens-preview@0.3.6`.
 - Publish `@filens/core@0.1.4`, `@filens/vue@0.1.4`, `@filens/media@0.1.3` and `@filens/panorama@0.1.3`, with updated minimum dependency versions.
 - Verify the workspace dependency publicly before publishing the main adapter; verify module dependencies before promoting their `latest` tags.
 - Refresh browser archives, mobile source SDKs and Full native bundles with preview 0.3.6. Keep parsing and conversion in the shared frontend/WASM core.

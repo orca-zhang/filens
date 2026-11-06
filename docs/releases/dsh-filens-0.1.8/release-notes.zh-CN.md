@@ -1,4 +1,4 @@
-# FiLens for DSH 0.1.7：把会话里的文件放到一起
+# FiLens for DSH 0.1.8：把会话里的文件放到一起
 
 > 随 [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 发布；演示保留本地候选构建的原始录制记录。
 
@@ -15,6 +15,8 @@
 - 详情面板展示属性、位置、相关文件和引用来源，支持跳回原消息或对应提问；窄窗口使用底部信息卡。
 - 默认隐藏 Office 锁文件、系统杂项和编辑器临时文件，可手动显示。保留临时目录中正常生成的结果文件。
 
+- **0.1.8：**DSH 确认已不存在的路径和附件不再显示；刷新会重查，扫描后删除的文件在打开时确认不存在也会移除；权限与连接错误仍保留。
+
 ## 沿用原生侧栏预览
 
 侧栏预览继续支持 Office、PDF、iWork、CAD／3D、RAW 和 360° 媒体。缩放比例和全屏控件保持紧凑，阅读列表宽度为 144–160px。工作台、侧栏预览和文档工具分别启停，使用共享的本地预览内核。
@@ -28,7 +30,7 @@
 完全退出桌面应用后执行，安装完成再重新打开：
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.7 dsh-filens-workspace@0.1.0
+dsh plugin --profile desktop add dsh-filens@0.1.8 dsh-filens-workspace@0.1.1
 ```
 
 ## 验证与限制

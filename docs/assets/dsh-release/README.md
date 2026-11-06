@@ -1,6 +1,6 @@
 # DSH release demos · 中文 / English
 
-Six new recordings for the proposed FiLens DSH 0.1.7 release. [Review page](../../releases/dsh-filens-0.1.7/review.html) · [Release packet](../../releases/dsh-filens-0.1.7/README.md).
+Six new recordings for the proposed FiLens DSH 0.1.7 release. [Review page](../../releases/dsh-filens-0.1.8/review.html) · [Release packet](../../releases/dsh-filens-0.1.8/README.md).
 
 中文和英文分别使用对应语言的 DSH 界面、文件名、合成会话和字幕。三个主题分别提供 GIF、全彩动画 WebP、完整 MP4、封面 PNG 和录制证据 JSON。素材来自真实安装的 DSH Desktop 0.2.1-rc.5，使用独立临时配置，不读取个人会话，不调用模型。预览内容由共享内核实际解析、渲染；缩略图不是预先贴入的图片。
 
@@ -30,4 +30,4 @@ Captions are a single language per recording, in a separate strip below the appl
 
 Localized filenames preserve the original file bytes. Panorama JPEG/video are renamed `.pano` / `.360v` to select supported spherical routes; ordinary `.jpg` / `.webm` use regular image/video previews. This does not demonstrate automatic detection of panoramic metadata.
 
-The [manifest](manifest.json) lists sizes, SHA-256 hashes, dimensions, durations and the tested environment. [Final validation](validation.json) covers playback, language switching, frame timing and links; [source equivalence](source-candidate-equivalence.json) compares all 67 built files. Per-recording JSON files retain sample hashes and successful interaction assertions. Reproduction commands are in the [release packet](../../releases/dsh-filens-0.1.7/README.md).
+The [manifest](manifest.json) lists sizes, SHA-256 hashes, dimensions, durations and the tested environment. [Final validation](validation.json) covers playback, language switching, frame timing and links; [source equivalence](source-candidate-equivalence.json) compares all 67 built files. Per-recording JSON files retain sample hashes and successful interaction assertions. Reproduction commands are in the [release packet](../../releases/dsh-filens-0.1.8/README.md).

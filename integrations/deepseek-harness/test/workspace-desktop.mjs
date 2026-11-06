@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { copyFile, cp, mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, mkdtemp, readFile, symlink, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +31,10 @@ await mkdir(path.join(directory, 'second'));
 await copyFile(path.join(directory, documentName), path.join(directory, 'second', documentName));
 await writeFile(path.join(directory, 'sample.py'), 'print("Source files use icons in the gallery")\n');
 await writeFile(path.join(directory, 'corrupt.pdf'), 'This is deliberately not a PDF document.');
+await mkdir(path.join(directory, '__MACOSX'));
+for (const name of [`~$${documentName}`, `._${documentName}`, '__MACOSX/metadata.pdf']) {
+  await copyFile(path.join(directory, documentName), path.join(directory, name));
+}
 const attachmentBytes = await readFile(path.join(repo, 'apps/demo/public/samples/filens-cosmic-atlas.pdf'));
 const digest = createHash('sha256').update(attachmentBytes).digest('hex');
 const attachment = { attachmentId: `sha256:${digest}`, name: '上传的图鉴.pdf', bytes: attachmentBytes.length };
@@ -128,21 +132,21 @@ try {
     }
   }
   await expandSessions();
-  assert.equal(await page.locator('.fw-card').count(), 7);
+  assert.equal(await page.locator('.fw-card').count(), 6);
   const fileCard = await page.locator('.fw-card').first().boundingBox();
   assert.ok(Math.abs(groupCard.width - fileCard.width) <= 1);
   record('Collapsed sessions align with file grid columns and preview at most four representative files');
   assert.equal(await page.locator('.fw-card-open').filter({ hasText: /~\$|^\._|metadata\.pdf/ }).count(), 0);
   await page.getByRole('button', { name: /显示 3 个临时文件|Show 3 temporary files/ }).click();
-  await page.waitForFunction(() => document.querySelectorAll('.fw-card').length === 10);
+  await page.waitForFunction(() => document.querySelectorAll('.fw-card').length === 9);
   assert.equal(await page.locator('.fw-card-open').filter({ hasText: /~\$|^\._|metadata\.pdf/ }).count(), 3);
   await page.getByRole('button', { name: /隐藏 3 个临时文件|Hide 3 temporary files/ }).click();
-  await page.waitForFunction(() => document.querySelectorAll('.fw-card').length === 7);
+  await page.waitForFunction(() => document.querySelectorAll('.fw-card').length === 6);
   record('Temporary session files are hidden by default and can be revealed; ordinary documents in the OS temporary directory remain visible');
   assert.equal(await page.locator('.fw-card-open').filter({ hasText: documentName }).count(), 3);
   const firstGroupFiles = await page.locator('.fw-session-group').first().locator('.fw-card').count();
   await page.locator('.fw-session-group > summary').first().click();
-  await page.waitForFunction(count => document.querySelectorAll('.fw-card').length === count, 7 - firstGroupFiles);
+  await page.waitForFunction(count => document.querySelectorAll('.fw-card').length === count, 6 - firstGroupFiles);
   await expandSessions();
   await page.getByRole('combobox', { name: /来源会话|Source session/ }).selectOption(sessionIds[0]);
   assert.equal(await page.locator('.fw-session-group').count(), 1);
@@ -150,26 +154,19 @@ try {
   await page.getByRole('combobox', { name: /来源会话|Source session/ }).selectOption('all');
   record('Session groups start folded; expand, collapse and session filtering retain the correct files');
   record('All history pages collected; shared paths deduplicate, different directories stay separate');
-  const missing = page.locator('.fw-card').filter({ has: page.locator('.fw-card-open', { hasText: 'missing.pdf' }) });
-  await missing.scrollIntoViewIfNeeded();
-  await missing.locator('.fw-preview-placeholder[data-state=unavailable]').waitFor();
-  assert.equal(await missing.locator('.fw-thumb').innerText(), 'PDF\n无法读取');
+  assert.equal(await page.locator('.fw-card-open').filter({ hasText: 'missing.pdf' }).count(), 0);
+  record('Confirmed missing references are excluded before cards, session counts and related-file recommendations are built');
   const code = page.locator('.fw-card').filter({ has: page.locator('.fw-card-open', { hasText: 'sample.py' }) });
   await code.locator('.fw-file-symbol').waitFor();
   assert.equal(await code.locator('.filens-dsh').count(), 0);
   assert.equal(await code.locator('.fw-file-symbol').getAttribute('data-icon'), 'code');
   assert.notEqual(await code.locator('.fw-file-symbol').evaluate(node => getComputedStyle(node).color),
-    await missing.locator('.fw-file-symbol').evaluate(node => getComputedStyle(node).color));
+    await page.locator('.fw-card').filter({ hasText: 'corrupt.pdf' }).locator('.fw-file-symbol').evaluate(node => getComputedStyle(node).color));
   const corrupt = page.locator('.fw-card').filter({ has: page.locator('.fw-card-open', { hasText: 'corrupt.pdf' }) });
   await corrupt.scrollIntoViewIfNeeded();
   await corrupt.locator('.filens-dsh[data-phase=error]').waitFor({ timeout: 65000 });
   assert.equal(await corrupt.locator('.fw-preview-placeholder').isVisible(), true);
   assert.equal(await corrupt.locator('[role=alert]').isVisible(), false);
-  await missing.locator('.fw-card-open').click();
-  await page.locator('.fw-stage .fw-read-error').waitFor();
-  assert.equal(await page.locator('.fw-stage details:not([open])').count(), 1);
-  assert.ok(!(await page.locator('.fw-stage').innerText()).includes('no entry at'));
-  await page.getByRole('button', { name: /返回工作台|Back to workspace/ }).first().click();
   await page.locator('.fw-card').filter({ has: page.locator('.fw-card-open', { hasText: documentName }) }).first().locator('.filens-dsh[data-phase=ready]').waitFor({ timeout: 65000 });
   await page.screenshot({ path: path.join(output, 'file-icons.png') });
   await page.evaluate(() => window.__DSH_DEMO_CTX__.get('theme').setTheme('dark'));
@@ -179,10 +176,9 @@ try {
   await page.locator('.fw-workspace:not(.fw-dark)').waitFor();
   await page.getByRole('button', { name: /列表视图|List view/ }).click();
   assert.equal(await code.locator('.fw-file-symbol').isVisible(), true);
-  assert.equal(await missing.locator('.fw-preview-placeholder').isVisible(), true);
   await page.screenshot({ path: path.join(output, 'file-icons-list.png') });
   await page.getByRole('button', { name: /网格视图|Grid view/ }).click();
-  record('Missing, corrupt and source-code files use icons; read errors are collapsed in the reader');
+  record('Existing corrupt and source-code files retain type covers; only confirmed absence is hidden');
   const attachmentCard = page.locator('.fw-card').filter({ hasText: attachment.name });
   await attachmentCard.locator('.fw-card-open').click();
   await page.waitForFunction(() => document.querySelector('.fw-stage [role=alert]') || ['ready', 'error'].includes(document.querySelector('.fw-stage .filens-dsh')?.dataset.phase), null, { timeout: 65000 });
@@ -196,7 +192,8 @@ try {
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('.fw-reader-title strong').innerText(), documentName);
   await page.locator('.fw-stage .filens-dsh[data-phase=ready]').waitFor({ timeout: 65000 });
-  assert.equal(await page.locator('.fw-related-file').count(), 5);
+  assert.equal(await page.locator('.fw-related-file').count(), 4);
+  assert.equal(await page.locator('.fw-related-file').filter({ hasText: 'missing.pdf' }).count(), 0);
   await page.locator('.fw-related-file').filter({ hasText: documentName }).first().locator('.filens-dsh[data-phase=ready]').waitFor({ timeout: 65000 });
   assert.equal(await page.locator('.fw-origin').count(), 4);
   await page.locator('.fw-related').scrollIntoViewIfNeeded();
@@ -282,8 +279,9 @@ try {
   await toggle(previewId, false);
   await page.getByRole('button', { name: /^(文件工作台|File workspace)$/ }).click();
   await page.locator('.fw-session-group').first().waitFor();
+  await page.waitForFunction(() => !document.querySelector('.fw-appbar-end button')?.disabled);
   await expandSessions();
-  await page.waitForFunction(() => document.querySelectorAll('.fw-card').length === 7);
+  await page.waitForFunction(() => document.querySelectorAll('.fw-card').length === 6);
   await page.locator('.fw-card-open').filter({ hasText: attachment.name }).click();
   await page.locator('.fw-stage .filens-dsh[data-phase=ready]').waitFor({ timeout: 65000 });
   await toggle(previewId, true);
@@ -331,6 +329,20 @@ try {
   assert.equal(await localGroup.locator('.fw-card').count(), 3);
   await localGroup.screenshot({ path: path.join(output, 'office-thumbnails.png') });
   record('Word, PowerPoint and Excel show real rendered thumbnails rather than fallback covers');
+  const returnButton = page.getByRole('button', { name: /返回工作台|Back to workspace/ }).first();
+  if (await returnButton.isVisible()) await returnButton.click();
+  await expandSessions();
+  await unlink(path.join(directory, 'sample.py'));
+  await page.locator('.fw-card-open').filter({ hasText: 'sample.py' }).click();
+  await page.waitForFunction(() => ![...document.querySelectorAll('.fw-card-open,.fw-file-row,.fw-related-file')].some(node => node.textContent.includes('sample.py')));
+  record('A file deleted after scanning disappears when opened, including navigation and related-file lists');
+  await writeFile(path.join(directory, 'sample.py'), 'print("restored")');
+  await page.getByRole('button', { name: /刷新会话文件|Refresh session files/ }).click();
+  await page.getByRole('button', { name: /刷新会话文件|Refresh session files/ }).waitFor({ state: 'visible' });
+  await page.waitForFunction(() => !document.querySelector('.fw-appbar-end button')?.disabled);
+  await expandSessions();
+  await page.locator('.fw-card-open').filter({ hasText: 'sample.py' }).waitFor();
+  record('Refreshing rechecks existence and restores a file recreated at the same path');
   await writeFile(path.join(output, 'validation.json'), JSON.stringify({ capturedAt: new Date().toISOString(), dsh: '0.2.1-rc.5',
     scope: 'Installed DSH Desktop; synthetic 270-turn and one-turn sessions; real local documents; no model calls or user history edits', checks }, null, 2));
 } catch (error) {

@@ -11,3 +11,13 @@ test('attachment metadata uses canonical DSH references and rejects unsafe names
     assert.throws(() => resolve({ ...reference, ...change }), /Invalid/);
   }
 });
+
+test('image attachment paths use the native image store and validate image metadata', () => {
+  const ref = { attachmentId: `sha256:${'b'.repeat(64)}`, mediaType: 'image/png', width: 8, height: 6, bytes: 42 };
+  const receiver = { ctx: { attachments: { imageHostPath: value => { assert.deepEqual(value, ref); return '/images/sample.png'; } } } };
+  const resolve = value => WorkspaceAttachments.prototype.attachmentPath.call(receiver, 'session-test', value);
+  assert.equal(resolve(ref), '/images/sample.png');
+  for (const change of [{ width: 0 }, { height: -1 }, { mediaType: 'text/plain' }, { name: '../bad.png' }]) {
+    assert.throws(() => resolve({ ...ref, ...change }), /Invalid/);
+  }
+});
