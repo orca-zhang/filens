@@ -1,0 +1,171 @@
+{
+  "observedAt": "2026-11-06T09:57:54.686Z",
+  "tag": "v0.6.6",
+  "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6",
+  "releaseId": 436312175,
+  "publishedAt": "2026-11-06T09:57:11Z",
+  "sourceCommit": "2dbce909f696672c7208414c0b8a07d7089d2e27",
+  "sourceDocumentationCommit": "e066218020b31bead9f6dc4df594c9f96e107aaa",
+  "status": "published-and-publicly-verified",
+  "assetCount": 16,
+  "assets": [
+    {
+      "file": "dsh-filens-0.1.8.tgz",
+      "bytes": 6096331,
+      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-0.1.8.tgz"
+    },
+    {
+      "file": "dsh-filens-workspace-0.1.1.tgz",
+      "bytes": 31139,
+      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-workspace-0.1.1.tgz"
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
+      "bytes": 32783469,
+      "sha256": "4305ddcbe62cb70ed79549f1fc2a9716a453b59b996dabfb5d9fb4b17d52f914",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-linux-arm64-full.tar.gz"
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
+      "bytes": 7237877,
+      "sha256": "af846e209c28a1e15de7ca349b160a30ad0e3f6efcc8c9b511c7e9a2210b7733",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-linux-arm64-lite.tar.gz"
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
+      "bytes": 35209365,
+      "sha256": "6085a7495e73ace1eaf7132cffd10cf57b35d2cd1698a23180591b4fde46eb40",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-linux-x64-full.tar.gz"
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-lite.tar.gz",
+      "bytes": 7353759,
+      "sha256": "152499f8ffb309ab7c7b24feccd7d6cd144df17b67367dd9e69105e64f571387",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-linux-x64-lite.tar.gz"
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
+      "bytes": 33462205,
+      "sha256": "184317c940c3a692e3f515b12a46fc3d925895825bb02af467c01d9257311430",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-macos-arm64-full.tar.gz"
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
+      "bytes": 7518522,
+      "sha256": "e7ddf7be39079bb9dca730a1c406779e8caccc482d18647126dd90aa3d4b52bc",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-macos-arm64-lite.tar.gz"
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-full.zip",
+      "bytes": 35440060,
+      "sha256": "a8244a55ec92d8917cce53daf005dc799754cd73bfb8e1ff0de4fde59d9979d5",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-windows-x64-full.zip"
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-lite.zip",
+      "bytes": 7296027,
+      "sha256": "c0408a9cd2847ee6075e4ea4dec9fee330c2e81a1335e824903a1584489e86e3",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-0.5.6-windows-x64-lite.zip"
+    },
+    {
+      "file": "filens-android-sdk-0.1.6.zip",
+      "bytes": 5919551,
+      "sha256": "b83d0ad8a56819e59b497389fd3c451b001b9505fbab58b4caeadba89e7e7d08",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-android-sdk-0.1.6.zip"
+    },
+    {
+      "file": "filens-ios-sdk-0.1.6.zip",
+      "bytes": 5916678,
+      "sha256": "05ef2867782ef7c04da3ffd16b27b669b143163f9c3a613a7da8eeed3f504d9c",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-ios-sdk-0.1.6.zip"
+    },
+    {
+      "file": "filens-preview-0.3.6-all-in-one.zip",
+      "bytes": 11122820,
+      "sha256": "318193c4bb01f19eed0d572da3eac3c3f44c049d42b5b3b30a3ed8f01ade7794",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip"
+    },
+    {
+      "file": "filens-preview-0.3.6-split.zip",
+      "bytes": 5889855,
+      "sha256": "5f7823a44f23474492e573fcc7c85ec62de1302c9ce6f161a52276a94d8a7dd9",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-split.zip"
+    },
+    {
+      "file": "filens-release-v0.6.6.json",
+      "bytes": 9034,
+      "sha256": "154b7bd662b2c52fe15607bbb8f5c6974f2f96304c816f00af54e901b247b2ca",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-release-v0.6.6.json"
+    },
+    {
+      "file": "SHA256SUMS",
+      "bytes": 1476,
+      "sha256": "1409a66fe90ad78288a0bba6d36a9c9ff62ce3ef4eccfef6305e613135263c38",
+      "serverDigestVerified": true,
+      "anonymousDownloadStatus": 206,
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/SHA256SUMS"
+    }
+  ],
+  "bodyMatchesNotes": true,
+  "requiredOrder": "download table → Changelog → ZimaOS banner",
+  "zimaosBannerPublic": true,
+  "localizedMedia": [
+    {
+      "file": "office-preview.en.gif",
+      "status": 200
+    },
+    {
+      "file": "office-preview.zh-CN.gif",
+      "status": 200
+    },
+    {
+      "file": "3d-and-panorama.en.gif",
+      "status": 200
+    },
+    {
+      "file": "3d-and-panorama.zh-CN.gif",
+      "status": 200
+    },
+    {
+      "file": "file-workspace.en.gif",
+      "status": 200
+    },
+    {
+      "file": "file-workspace.zh-CN.gif",
+      "status": 200
+    }
+  ],
+  "npmPublication": "release-v0.6.6-npm-publication.json"
+}
