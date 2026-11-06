@@ -1,0 +1,344 @@
+{
+  "checkedAt": "2026-11-06T08:59:15.397Z",
+  "scope": "Built client, workspace, preview assets and support manifest; package metadata may differ",
+  "sourcePackageVersion": "0.1.6",
+  "installedCandidate": "0.1.7-workspace.8",
+  "allComparedBytesMatch": true,
+  "files": [
+    {
+      "file": "lib/client.js",
+      "bytes": 36437,
+      "sha256": "28b7c47be1b2b88a8bab91acc46dcf29e64881727f5669536715679c17318150"
+    },
+    {
+      "file": "lib/images.js",
+      "bytes": 2920,
+      "sha256": "3313cc8ea0aa88f8c8e859b891fc2555c50bbef930ca761cf3b065b47c119fbf"
+    },
+    {
+      "file": "lib/preview-host.js",
+      "bytes": 3813,
+      "sha256": "d710c978ec32f8fed3ea8e7d303000e93396b4d286798591a7325f0b3ffad2d6"
+    },
+    {
+      "file": "lib/requests.js",
+      "bytes": 13166,
+      "sha256": "9ea68e0f1dade926dbe07d2fb7b1eb9a6674bfd24dc2aefdc8de2453f627ade7"
+    },
+    {
+      "file": "lib/runtime/archive/7zz.wasm",
+      "bytes": 1116075,
+      "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc"
+    },
+    {
+      "file": "lib/runtime/chunks/archive-driver-BbGU__xX.js",
+      "bytes": 32633,
+      "sha256": "01d25d4cd5d29234afa7321f315e5acb6f9c744653c659e9f50aa59bdf1a6e4b"
+    },
+    {
+      "file": "lib/runtime/chunks/browser-video-session-Bsnfmds7.js",
+      "bytes": 36215,
+      "sha256": "954a270a4fe48f80b37f106429e32c2e95980cd2a6f5e529c52cb734371a8392"
+    },
+    {
+      "file": "lib/runtime/chunks/cad-driver-Br4Z6yFf.js",
+      "bytes": 62164,
+      "sha256": "75f4282b1f0ef3e7586e55835a39d1d16ca7930ffb22dd832c097ddc55a39a95"
+    },
+    {
+      "file": "lib/runtime/chunks/client-CimnZvD8.js",
+      "bytes": 73209,
+      "sha256": "db744f355a99dc625c0a790d6be383882f8369b1283aae047811b627e9b6c81b"
+    },
+    {
+      "file": "lib/runtime/chunks/codec-preview-driver-D1Q2EAzx.js",
+      "bytes": 5923,
+      "sha256": "09ad855d58c76237dcf43921ada4b645929553988d7dc405363316841c6d6778"
+    },
+    {
+      "file": "lib/runtime/chunks/compression-CLhefix_.js",
+      "bytes": 12546,
+      "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730"
+    },
+    {
+      "file": "lib/runtime/chunks/diagram-driver-CDGGgK5j.js",
+      "bytes": 21861,
+      "sha256": "f638663f07021c9b9e9d9e5bdb0016e16642d6641e0af99592ee0634c7ef3371"
+    },
+    {
+      "file": "lib/runtime/chunks/docx-driver-CjOsLIKp.js",
+      "bytes": 8989,
+      "sha256": "5e703f3be45768a8b293e210168e3678248737c41ff9931de8f48eaba023a452"
+    },
+    {
+      "file": "lib/runtime/chunks/docx-engine-DhLsMf1L.js",
+      "bytes": 76591,
+      "sha256": "572db05323e763a697cce0927d14e18d8c2e804635a09a03b24eb24f2b71fc26"
+    },
+    {
+      "file": "lib/runtime/chunks/dom-DlyGVlrQ.js",
+      "bytes": 160510,
+      "sha256": "3f68c13d822ae0e1516079bdab1bb9475fec7d63bcc261d875709b14f00f9518"
+    },
+    {
+      "file": "lib/runtime/chunks/ebook-driver-BG0ftTjM.js",
+      "bytes": 17026,
+      "sha256": "59a73905adf070a13a0af84e2e9e5ffcb6138c755ac28756ca9478c378bc8380"
+    },
+    {
+      "file": "lib/runtime/chunks/font-loading-BPv1ZV5e.js",
+      "bytes": 19219,
+      "sha256": "6cda0d6fe419fa03836b37f4e1cf23ea4d4f24551ea81c18a2cddb0eac670925"
+    },
+    {
+      "file": "lib/runtime/chunks/font-matching-9VMxhVQV.js",
+      "bytes": 10512,
+      "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9"
+    },
+    {
+      "file": "lib/runtime/chunks/index-Cw_BMbKL.js",
+      "bytes": 322823,
+      "sha256": "38d50a37f2567e23416f7f7fe9e6742f9537b3112633cbcbf40c0c97188198cd"
+    },
+    {
+      "file": "lib/runtime/chunks/index-D1RoxD0J.js",
+      "bytes": 15372,
+      "sha256": "354a0d5507a6f33986af6537d2ebed1838adbb524e09d0b3e8d124d24a83001c"
+    },
+    {
+      "file": "lib/runtime/chunks/iwork-driver-BDUIBwgE.js",
+      "bytes": 1231922,
+      "sha256": "df92afac03b5da4cba13b3bd89719efa9d15e384fd093ccbd5520782edc9ecc2"
+    },
+    {
+      "file": "lib/runtime/chunks/media-runtime-D-07rKNs.js",
+      "bytes": 146447,
+      "sha256": "00e07d4b5185c429b1ad653ece83eb3276c4f227a0b6c3b1b4f5c153d087bc1f"
+    },
+    {
+      "file": "lib/runtime/chunks/mindmap-driver-D5jGaahq.js",
+      "bytes": 15708,
+      "sha256": "60f3bf7eaea5be074dcc700a04c67c4b7bf685392043e8c3275555f7d91a273f"
+    },
+    {
+      "file": "lib/runtime/chunks/model-3ds-ppXS_UoN.js",
+      "bytes": 8439,
+      "sha256": "fbd1d55524debaf176b1f8422f06542698ddd7046719ff25fd5344e61de78754"
+    },
+    {
+      "file": "lib/runtime/chunks/model-cache-DTm-qAoU.js",
+      "bytes": 3380,
+      "sha256": "77633be010d1b5c58538a2506a9342226cdc61877135a6f048e6f6b352349f06"
+    },
+    {
+      "file": "lib/runtime/chunks/model-fbx-QxbnYmWL.js",
+      "bytes": 44882,
+      "sha256": "29e04dbad57d2978fa92cdd71703c3ca902165f31dd63c9d75292985b7e2a29a"
+    },
+    {
+      "file": "lib/runtime/chunks/model-gltf-EWkfAPO-.js",
+      "bytes": 43825,
+      "sha256": "b6da0a03ad01401a8011a4e94078dbc4899e57fea58f1f064229fda1e737dccd"
+    },
+    {
+      "file": "lib/runtime/chunks/model-ldraw-By5-Dq8t.js",
+      "bytes": 24698,
+      "sha256": "0fc86eb494070d039adf5a1cc82bdc544e1eab5ebe298f7592fab43490e1104a"
+    },
+    {
+      "file": "lib/runtime/chunks/model-mtl-D8HNzCuR.js",
+      "bytes": 4278,
+      "sha256": "3a6eb08d85883b148f578e507e3e7de7f7eaf1580892a5c60761946d85d622b1"
+    },
+    {
+      "file": "lib/runtime/chunks/model-obj-B-XcjXe7.js",
+      "bytes": 8794,
+      "sha256": "cb139446d8a31e9179613bd2e72c0d074d9f840de3dedd23b2898eb94aaa5dfe"
+    },
+    {
+      "file": "lib/runtime/chunks/model-usdz-R7kRbAgr.js",
+      "bytes": 8761,
+      "sha256": "11f82a16aed8b445b4cba011c745f58b0862a371f9cd5db6620b461b3635a0e1"
+    },
+    {
+      "file": "lib/runtime/chunks/model-vrml-jsY8PaeB.js",
+      "bytes": 185862,
+      "sha256": "408d373189e733293fdc74c0ff378fda08cd680e0189267d2cb7dfd0cb90f747"
+    },
+    {
+      "file": "lib/runtime/chunks/model3d-driver-Bj4vrGvE.js",
+      "bytes": 106826,
+      "sha256": "43c34f96ed55b63d0a5a9a072dc14b7a384de0afc057a84eb013cabe5657cb95"
+    },
+    {
+      "file": "lib/runtime/chunks/mp4box.all-Bw_Tlr0T-D0URDfA1.js",
+      "bytes": 182354,
+      "sha256": "604a189e08459f2af803c3ee9cdf7865bd29570e2a782ee1c9ef1fd1a68e19c4"
+    },
+    {
+      "file": "lib/runtime/chunks/native-drivers-DGPSUz-Z.js",
+      "bytes": 50083,
+      "sha256": "306b7bfa2b8672d50082131efcc68ee6b7baf9934452c7128826fdf8d31d9eb9"
+    },
+    {
+      "file": "lib/runtime/chunks/office-attachments-CprbjlU9.js",
+      "bytes": 32456,
+      "sha256": "7a21b1b278f4d1ad0e64f5e8c493fec7421489a40e517e1a3cd3a7926b32a9a8"
+    },
+    {
+      "file": "lib/runtime/chunks/panorama-driver-FQS5iR8D.js",
+      "bytes": 187080,
+      "sha256": "6be89e905e0b9232f515f50d4e57962bcfdc4e07d2ad3b35458945bcf06f4041"
+    },
+    {
+      "file": "lib/runtime/chunks/pdf-driver-BHQuMgaa.js",
+      "bytes": 14521,
+      "sha256": "474667da1384e6fc014afeb43f7cd9518652ebd39eb84334c0c7e2881e0a02fa"
+    },
+    {
+      "file": "lib/runtime/chunks/pdf-Dzzffz3p.js",
+      "bytes": 448320,
+      "sha256": "a1b4b73ebccdcb52e068879ed366080825bd8c199d36f32b1dc0cc4b82bb8b68"
+    },
+    {
+      "file": "lib/runtime/chunks/pptx-driver-C2D7eFTt.js",
+      "bytes": 97438,
+      "sha256": "411ddb438e24c617158fc655139c6bbd4d314384eb78ddb41e138c2ed1b585f7"
+    },
+    {
+      "file": "lib/runtime/chunks/rust-step-importer-Cshf21mM.js",
+      "bytes": 2775,
+      "sha256": "602ac4e9532276a153b42023e1c12fca748401d1752edbcd6497a04e3c1e76ee"
+    },
+    {
+      "file": "lib/runtime/chunks/svg-selection-IMnE-8rI.js",
+      "bytes": 928,
+      "sha256": "49914fc16209b773b2108da286859fa6e54cbd3ea5f518390f8c3b1cacfc25dc"
+    },
+    {
+      "file": "lib/runtime/chunks/table-CBvjyc9e.js",
+      "bytes": 7943,
+      "sha256": "81e03df0d2f6b49461a662acc22d5ae56d3dbd2258eec1059f18bb19789647de"
+    },
+    {
+      "file": "lib/runtime/chunks/three-j_n6p391.js",
+      "bytes": 675754,
+      "sha256": "228353ef9da8fa1af9b4f6e643ee0bbccacc567b889a2421b7193be63900edbf"
+    },
+    {
+      "file": "lib/runtime/chunks/touch-gestures-CIlEOGpc.js",
+      "bytes": 2240,
+      "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe"
+    },
+    {
+      "file": "lib/runtime/chunks/vendor-DMYWoejl.js",
+      "bytes": 823,
+      "sha256": "a1f8328eb6976868c90b362e7d21c5e17f60c1e760b0752fe50ffc7f34bc71d4"
+    },
+    {
+      "file": "lib/runtime/chunks/vue-DzetfKQ5.js",
+      "bytes": 68358,
+      "sha256": "406cedfa7660fcae4fa5e9a3d61f3d0a27c75c9b5008657c0259395cfda0806c"
+    },
+    {
+      "file": "lib/runtime/chunks/xlsx-driver-gi9jp7yf.js",
+      "bytes": 19531,
+      "sha256": "519a62621a9cd97cf13dcdfcebaa878ae0975a24fa298c43e76ffb6a9fe7a09b"
+    },
+    {
+      "file": "lib/runtime/chunks/xml-compat-DIhpt_3t.js",
+      "bytes": 28071,
+      "sha256": "cf9181a98b10899761ba234d5afc661aed1b439f8513a06762c548fbe74ab892"
+    },
+    {
+      "file": "lib/runtime/chunks/zip-compat-Bqyft7N6.js",
+      "bytes": 70045,
+      "sha256": "253e93f6cd2e7a036038ba99542a42367568aeebab4e829a779b35ad34379264"
+    },
+    {
+      "file": "lib/runtime/chunks/zip-encrypted-CH58PL7x.js",
+      "bytes": 102341,
+      "sha256": "2d346b823f0463b2582277a553f180a8537b873d2c53563702325c2c0c799011"
+    },
+    {
+      "file": "lib/runtime/converter-cad.wasm",
+      "bytes": 908040,
+      "sha256": "6f8195d3b5f1a7b46f112c6884a43088845e885263f990ddc01d431b1046bb8e"
+    },
+    {
+      "file": "lib/runtime/converter-core.wasm",
+      "bytes": 950142,
+      "sha256": "2ccc511a7b0b4950d284beed41601a934101716a92a3eedaa2c04e3abe60edeb"
+    },
+    {
+      "file": "lib/runtime/converter-image.wasm",
+      "bytes": 1492779,
+      "sha256": "e0c8f9e33ec1308aa65d67783b2d38878720935c1fe0caa9a994e37d0d73d3b7"
+    },
+    {
+      "file": "lib/runtime/converter-office.wasm",
+      "bytes": 379469,
+      "sha256": "06709fa82060fd3691563b41ff4312d490381f8e353e6e9074ac6281d9cc9d8a"
+    },
+    {
+      "file": "lib/runtime/converter-postscript.wasm",
+      "bytes": 2487685,
+      "sha256": "22fe8e62e6dacd06a4aaf8b665ea4c0258e86c0276795f82577bbf240c28d4fd"
+    },
+    {
+      "file": "lib/runtime/converter-raster.wasm",
+      "bytes": 1789624,
+      "sha256": "a3fde4a2318af800bfa3be4a02e8675530e85544ca4cd69734f717ca39004184"
+    },
+    {
+      "file": "lib/runtime/filens-step.wasm",
+      "bytes": 947729,
+      "sha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc"
+    },
+    {
+      "file": "lib/runtime/filens.js",
+      "bytes": 174,
+      "sha256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b"
+    },
+    {
+      "file": "lib/runtime/libheif.wasm",
+      "bytes": 1457990,
+      "sha256": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5"
+    },
+    {
+      "file": "lib/runtime/pdf.worker.min.mjs",
+      "bytes": 1078612,
+      "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5"
+    },
+    {
+      "file": "lib/runtime/style.css",
+      "bytes": 56219,
+      "sha256": "8994289413b1e8fcfd57e0beb373385e744570b8eab0f09a20941639e16b7f0f"
+    },
+    {
+      "file": "lib/runtime/THIRD-PARTY-NOTICES.txt",
+      "bytes": 752464,
+      "sha256": "d495d19c64b1831fc5aa6c54e2e33d9ce90ab24b5614eb606f6ed6d2cf2e21e4"
+    },
+    {
+      "file": "lib/runtime-manifest.js",
+      "bytes": 8907,
+      "sha256": "58c3a814cfaa6e595f7bf1cf12ac3752a92288164381173a4924d035a9731141"
+    },
+    {
+      "file": "lib/support.json",
+      "bytes": 17771,
+      "sha256": "d95579be03b38be35ab5893e46eba1c7971cd08021569030a432a6b76252704d"
+    },
+    {
+      "file": "lib/tools.js",
+      "bytes": 10650,
+      "sha256": "b373ccd72aaf170a0296f3ab0dade6faaad999cad81b7988c86709929d9993c5"
+    },
+    {
+      "file": "dsh-filens-workspace/client.js",
+      "bytes": 113860,
+      "sha256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+    }
+  ]
+}

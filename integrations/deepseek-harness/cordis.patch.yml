@@ -3,3 +3,5 @@
       name: dsh-filens/tools
     - id: filens-preview
       name: dsh-filens
+    - id: filens-workspace
+      name: dsh-filens-workspace

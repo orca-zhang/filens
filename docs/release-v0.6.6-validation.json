@@ -1,0 +1,80 @@
+{
+  "observedAt": "2026-11-06T09:21:28.339854+00:00",
+  "tag": "v0.6.6",
+  "components": {
+    "cli": "0.5.6",
+    "preview": "0.3.6",
+    "mobileSdk": "0.1.6",
+    "dsh": "0.1.7",
+    "workspace": "0.1.0",
+    "zimaos": "0.5.1"
+  },
+  "releaseChecksPassed": true,
+  "checks": {
+    "productionBuilds": "core, panorama, media, Vue, demo, split/all-in-one preview, embedded DSH passed",
+    "unit": {
+      "core": "passed",
+      "panorama": "passed",
+      "media": "passed",
+      "vue": 70,
+      "dsh": 31,
+      "dshNode": "24.21.0"
+    },
+    "browserPlaybackControls": 14,
+    "dshBrowser": "12 format sidebar previews plus lazy loading, compact controls, file switching, source ownership and unload passed",
+    "desktopWorkspace": 22,
+    "desktopSource": "Clean npm tarball installation with synthetic stored history and actual DSH Desktop 0.2.1-rc.5",
+    "previewPackage": "64 real previews from isolated installation; public TypeScript API; 12 previews after consumer Vite bundling; native audio/HEIF and explicit MOV codec errors; no external runtime requests",
+    "offlineHTML": 17,
+    "mobileBridge": {
+      "passed": 22,
+      "browsers": [
+        "chromium",
+        "webkit"
+      ],
+      "physicalDevices": false
+    },
+    "native": "Eight archive/payload integrity checks and privacy audits; macOS arm64 Full/Lite capacity and Chinese DOCX reading with empty PATH; Full OCR on scan.png",
+    "liteArchiveLimitBytesExclusive": 10000000,
+    "packagePrivacy": "All native directories and npm tarballs passed existing release audit",
+    "formatCounts": {
+      "previewSourceFormats": 450,
+      "previewRouteEntries": 451,
+      "internalModelExtensions": [
+        "cad-json"
+      ],
+      "cliFormats": 349
+    },
+    "recordingRuntime": "66 of 67 compared files unchanged from recorded candidate; lib/support.json changes only previewVersion metadata",
+    "documentationRepack": "Validated runtime files unchanged after README updates"
+  },
+  "artifactCount": {
+    "packages": 14,
+    "manifest": 1,
+    "checksums": 1,
+    "total": 16
+  },
+  "delivery": {
+    "raw": 6694111,
+    "gzip": 3540902,
+    "brotli": 3401399,
+    "gzipEncoder": "Zopfli 15 iterations",
+    "brotliEncoder": "Brotli quality 11",
+    "gzipFile": "filens.js.gz",
+    "brotliFile": "filens.js.br",
+    "limit": 4000000
+  },
+  "provenance": {
+    "native": "Byte-for-byte reuse of verified v0.6.5 CLI/OCR and WASM payloads, with bundle README and Full preview refreshed",
+    "npmCLI": "Unchanged 0.5.6, prepares preview 0.3.4 unless explicit assets are supplied",
+    "recordings": "Pre-release workspace.8 candidate, original metadata preserved; runtime equivalence checked",
+    "sourceSDKs": "Source with complete offline runtime, not AAR/XCFramework",
+    "zimaos": "Mod Store remains 0.5.1 / CLI 0.5.0 / preview 0.2.0"
+  },
+  "limits": [
+    "Linux/Windows native execution and physical mobile-device tests were not repeated.",
+    "Existing performance benchmarks keep their original measurement versions; no new performance claim.",
+    "Full repository E2E and unchanged conversion corpus were not rerun for this UI-focused release.",
+    "Workspace indexes references, not backups; inaccessible files cannot preview and local selections must be reopened after reload."
+  ]
+}

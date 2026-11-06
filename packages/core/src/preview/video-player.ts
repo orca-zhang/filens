@@ -6,11 +6,14 @@ export function resolveMediaDuration(duration: number, durationSeconds?: number)
 }
 
 /** Bind the shared controls to an ordinary or recovered HTML video. */
-export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElement, signal: AbortSignal, durationSeconds?: number) {
+export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElement, signal: AbortSignal, durationSeconds?: number, translate: (message: string) => string = message => message) {
+  const t = translate;
+  const refreshLabels: Array<() => void> = [];
   const nativeControls = video.controls;
   video.controls = false;
   const controls = createVideoPlaybackControls(root, {
     signal,
+    translate,
     togglePlayback: () => {
       if (video.paused) void video.play().catch(() => undefined); else video.pause();
     },
@@ -33,16 +36,15 @@ export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElem
     const pip = document.createElement('button');
     pip.type = 'button';
     pip.className = 'pptxv-video-pip';
-    pip.setAttribute('aria-label', 'Picture in picture');
-    pip.title = 'Picture in picture';
     pip.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="11" y="11" width="8" height="6" rx="1" fill="currentColor"/></svg>';
+    let pipUnavailable = false;
     pip.addEventListener('click', () => {
       const request = document.pictureInPictureElement === video ? document.exitPictureInPicture() : video.requestPictureInPicture();
-      void request.catch(() => { pip.title = 'Picture in picture is unavailable for this video'; });
+      void request.catch(() => { pipUnavailable = true; syncPip(); });
     }, { signal });
     const syncPip = () => {
-      const label = document.pictureInPictureElement === video ? 'Exit picture in picture' : 'Picture in picture';
-      pip.title = label;
+      const label = t(document.pictureInPictureElement === video ? 'Exit picture in picture' : 'Picture in picture');
+      pip.title = pipUnavailable ? t('Picture in picture is unavailable for this video') : label;
       pip.setAttribute('aria-label', label);
     };
     video.addEventListener('enterpictureinpicture', syncPip, { signal });
@@ -51,23 +53,25 @@ export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElem
       video.addEventListener(event, () => { pip.disabled = !video.videoWidth; }, { signal });
     }
     pip.disabled = !video.videoWidth;
+    refreshLabels.push(syncPip);
+    syncPip();
     controls.addControl(pip);
   }
   const captions = document.createElement('select');
   captions.className = 'pptxv-video-rate pptxv-video-captions';
-  captions.setAttribute('aria-label', 'Video subtitles');
-  captions.title = 'Subtitles';
   const syncCaptions = () => {
+    captions.setAttribute('aria-label', t('Subtitles'));
+    captions.title = t('Subtitles');
     const tracks = Array.from(video.textTracks).filter(track => track.kind === 'subtitles' || track.kind === 'captions');
     captions.hidden = tracks.length === 0;
     captions.replaceChildren();
     const off = document.createElement('option');
-    off.value = '-1'; off.textContent = 'CC off';
+    off.value = '-1'; off.textContent = t('Subtitles off');
     captions.append(off);
     tracks.forEach((track, index) => {
       const option = document.createElement('option');
       option.value = String(index);
-      option.textContent = track.label || track.language || `Subtitles ${index + 1}`;
+      option.textContent = track.label || track.language || t('Subtitles {number}').replace('{number}', String(index + 1));
       captions.append(option);
     });
     captions.value = String(tracks.findIndex(track => track.mode === 'showing'));
@@ -96,4 +100,11 @@ export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElem
     video.controls = nativeControls;
   }, { once: true });
   sync();
+  return {
+    refreshTranslations() {
+      controls.refreshTranslations();
+      refreshLabels.forEach(refresh => refresh());
+      syncCaptions();
+    }
+  };
 }

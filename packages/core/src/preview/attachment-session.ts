@@ -183,6 +183,7 @@ export function createAttachmentPreviewSession(
   };
 
   const overrides: Partial<PreviewSession> = {
+    refreshTranslations() { inner.refreshTranslations?.(); child?.refreshTranslations?.(); },
     async load(source: PreviewSource, loadContext: PreviewLoadContext) {
       controller?.abort();
       back();

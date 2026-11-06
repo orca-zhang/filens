@@ -121,7 +121,7 @@ async function capture() {
     await page.screenshot({ path: path.join(work, 'panorama-photo.png') });
     await scene('360° 视频：打开 NASA 黑洞全景', '360° video: open NASA’s black-hole panorama', () => open('NASA Black Hole.360v', 'panorama-video'), 2300);
     await scene('底部进度条：拖动进入黑洞之旅', '360° video: scrub the bottom timeline', async () => {
-      const timeline = playback().getByRole('slider', { name: 'Panorama video position', exact: true });
+      const timeline = playback().getByRole('slider', { name: /^(Panorama video position|Playback position|播放进度)$/, exact: true });
       const bounds = await timeline.boundingBox();
       const canvas = await page.locator('.panoramav-canvas').boundingBox();
       assert.ok(bounds && canvas && bounds.y >= canvas.y + canvas.height * 0.75, 'The timeline must remain at the bottom of the player.');
@@ -135,7 +135,7 @@ async function capture() {
     checks.push('panorama video timeline and playback controls visible at the bottom of the player, absent from the address bar');
     await scene('播放全景视频，同时拖拽改变视角', 'Play the 360° video and look around while it runs', async () => {
       await playback().locator('.pptxv-video-rate').selectOption('1.5');
-      await click(playback().getByRole('button', { name: 'Play panorama video', exact: true }));
+      await click(playback().getByRole('button', { name: /^(Play panorama video|Play|播放)$/, exact: true }));
       await viewer().waitForFunction(() => { const video = document.querySelector('video'); return video && !video.paused && video.currentTime > 26; });
       await drag('.panoramav-canvas', 220, -30);
       assert.ok(await viewer().locator('video').evaluate(video => !video.paused && video.currentTime > 27));

@@ -12,16 +12,18 @@
 
 [▶ 观看 30 秒演示](apps/demo/public/home/filens-demo.mp4) · [预览动图](docs/assets/readme/demo.gif) · [完整格式与限制](docs/support-matrix.zh-CN.md)
 
-**最新版本：[v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5)** · CLI **0.5.6** · 预览 **0.3.5** · 移动端 SDK **0.1.5** · DSH **0.1.6**。
+**最新版本：[v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · 预览 **0.3.6** · 移动端 SDK **0.1.6** · DSH **0.1.7**。
 
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
 | 支持格式（按扩展名） | **349 种**。 | **450 种**，含直接预览与本地 WASM 转换后预览。 |
-| 大概多大 | **Lite 6.90–7.17 MiB（<10 MB） · Full 31.24–33.78 MiB** 离线下载；Full 含预览资源、OCR 运行时与模型，Lite 的预览资源另行下载。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 大概多大 | **Lite 6.90–7.17 MiB（<10 MB） · Full 31.26–33.80 MiB** 离线下载；Full 含预览资源、OCR 运行时与模型，Lite 的预览资源另行下载。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.92–2.20 MiB**。上表 CLI 体积为 **v0.6.5 完整离线压缩包下载量**，Full 内置预览 **0.3.5**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.6 基础组件安装体积仍为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.5 源码构建的主运行时按分包合计 **4.15 MB Brotli**，单 JS 版预压缩产物为 **3.40 MB Brotli / 3.53 MB gzip / 6.66 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.92–2.20 MiB**。上表 CLI 体积为 **v0.6.6 完整离线压缩包下载量**，Full 内置预览 **0.3.6**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.6 基础组件安装体积仍为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.6 源码构建的主运行时按分包合计 **4.16 MB Brotli**，单 JS 版预压缩产物为 **3.40 MB Brotli / 3.54 MB gzip / 6.69 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+
+格式清单已于 2026-11-06 核对：CLI **349** 个扩展名；预览 **450** 个源文件扩展名（内部另有 `cad-json`，共 **451** 个路由项）。[版本、数量与完整扩展名](docs/release-v0.6.6-format-counts.json)。
 
 ## Agent CLI
 
@@ -33,7 +35,7 @@
 
 > 帮我安装 filens，去 https://github.com/IceWhaleTech/filens 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。
 
-[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.5 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
+[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.6 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
 
 ```sh
 filens '读取 "report.pdf"，以 JSON 输出'
@@ -49,7 +51,7 @@ filens capacity --json
 
 ### 离线浏览器预览
 
-**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.5 Full 包内置预览 0.3.5，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.5-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 与 DSH 0.1.6 保留各自已发布的运行时版本；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.6 Full 包内置预览 0.3.6，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.6-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 保留预览 0.3.4；DSH 0.1.7 内置预览 0.3.6；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -70,7 +72,7 @@ filens preview report.pdf --mode serve
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.89 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.5 离线下载 · macOS arm64 · CLI 0.5.6；Full 含预览 0.3.5 和 OCR 模型，Lite 另配预览资源；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.6 离线下载 · macOS arm64 · CLI 0.5.6；Full 含预览 0.3.6 和 OCR 模型，Lite 另配预览资源；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -101,23 +103,29 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 2026 年 11 月 5 日，Apple M4 Pro / macOS、DSH Desktop 0.2.1-rc.5，每种格式配对测量 9 轮，取读取至渲染就绪的中位数，不含应用启动。Office 与 PDF 分轮测量；这里保留 FiLens 0.1.3 的实测结果。PDF 重复打开也从 **110 ms 降至 77 ms（1.43×）**。[Office 原始样本与方法](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [PDF 原始样本与方法](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
 
-在「插件 → 添加插件」中填写 [`dsh-filens@0.1.6`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
+在「插件 → 添加插件」中填写 [`dsh-filens@0.1.7`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.6：下载 6.53 MiB / 解包 19.59 MiB** ；CLI/OCR 依赖与 DSH 缓存另计。[包体积实测](docs/dsh-plugin-publication.json)。
+**DSH 0.1.7：下载 5.81 MiB / 解包 17.58 MiB**，包含工作台；独立工作台包 **0.03 MiB**。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/dsh-plugin-package.json)。
 <!-- dsh-package-metrics:end -->
 
-![在 DSH 桌面安装 FiLens、预览 Office 文件并全屏演示 PPT](docs/assets/dsh-plugin/install-and-preview.webp)
+**0.1.7 演示：**在真实 DSH Desktop 中使用中文界面与中文字幕分别录制，使用正式升版前的本地工作台候选构建。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.7/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
 
-在同一侧栏中旋转、缩放 3D 模型，环视 360° 照片并播放全景视频。[全彩动画 WebP](docs/assets/dsh-plugin/3d-and-panorama.webp) · [完整 MP4](docs/assets/dsh-plugin/3d-and-panorama.mp4)。
+![DSH 中文实机演示：Word 阅读、Excel 工作表和 PPT 全屏](docs/assets/dsh-release/office-preview.zh-CN.gif)
 
-![在 DSH 中旋转 GLB 和 3MF 模型、环视银河全景照片并播放 360° 视频](docs/assets/dsh-plugin/3d-and-panorama.gif)
+在同一侧栏中旋转、缩放 3D 模型，环视 360° 照片并播放全景视频。[全彩动画 WebP](docs/assets/dsh-release/3d-and-panorama.zh-CN.webp) · [完整 MP4](docs/assets/dsh-release/3d-and-panorama.zh-CN.mp4)。
+
+![DSH 中文实机演示：GLB、3MF、银河全景和 360° 视频](docs/assets/dsh-release/3d-and-panorama.zh-CN.gif)
+
+0.1.7 新增独立的「文件工作台」（`dsh-filens-workspace@0.1.0`）：按会话收拢文件，显示真实缩略图和相关文件，并能返回文件所在的消息或对应提问；开关独立于侧栏预览。
+
+![DSH 中文实机演示：文件群组、相关文件和原提问定位](docs/assets/dsh-release/file-workspace.zh-CN.gif)
 
 ### 浏览器集成：单文件与按需分包
 
-**预览 0.3.5：**分包 ZIP **5.61 MiB**，单 JS 版 ZIP **10.59 MiB**。从 [v0.6.5 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
+**预览 0.3.6：**分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从 [v0.6.6 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
 
-npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.5)，下载 **16.19 MiB** / 安装 **31.79 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
+npm：[filens-preview@0.3.6](https://www.npmjs.com/package/filens-preview/v/0.3.6)，下载 **16.22 MiB** / 安装 **31.88 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
 
 两种构建使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。
 
@@ -139,7 +147,7 @@ npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.
 
 ### iOS / Android SDK
 
-**SDK 0.1.5 / 预览 0.3.5：**iOS ZIP **5.63 MiB**，Android ZIP **5.64 MiB**。
+**SDK 0.1.6 / 预览 0.3.6：**iOS ZIP **5.64 MiB**，Android ZIP **5.65 MiB**。
 提供 Swift Package 与 Android Library 源码 SDK，封装同一份
 前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md) · [运行时与 SDK 体积](docs/preview-sizes.md)。
 
@@ -166,7 +174,7 @@ npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.
 | --- | ---: | ---: | ---: |
 | 转换核心 WASM（Office 加密检测） | 927.9 KiB | 414.3 KiB | **334.3 KiB** |
 | 图像 / RAW 核心 WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
-| 媒体 / 全景预览 | 464.6 KiB | 128.7 KiB | **108.2 KiB** |
+| 媒体 / 全景预览 | 465.1 KiB | 128.8 KiB | **108.3 KiB** |
 | STEP truck WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
 文档、图像 / RAW 与 STEP 的 WASM 模块独立按需加载。媒体预览模块与图像转换核心分别计量。JS 分包已包含对应 CSS，共享依赖和 Worker 单列。
@@ -184,8 +192,8 @@ npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.
 | 演示站入口 | 241.8 KiB | 69.5 KiB | **58.1 KiB** |
 | Agent CLI 演示界面 | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
 | 共享第三方依赖 | 813.1 KiB | 229.7 KiB | **192.1 KiB** |
-| PPTX / 核心运行时 | 384.7 KiB | 108.0 KiB | **91.5 KiB** |
-| Vue 预览容器 | 213.8 KiB | 58.2 KiB | **46.5 KiB** |
+| PPTX / 核心运行时 | 385.3 KiB | 108.2 KiB | **91.8 KiB** |
+| Vue 预览容器 | 247.2 KiB | 66.0 KiB | **52.5 KiB** |
 | DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
 | DOCX 按需引擎 | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
 | Office 附件 | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
@@ -203,7 +211,7 @@ npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.
 | 3DS 模型加载器 | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
 | LDraw 模型加载器 | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
 | USDZ 模型加载器 | 8.5 KiB | 2.6 KiB | **2.4 KiB** |
-| VRML 模型加载器 | 178.0 KiB | 46.4 KiB | **39.7 KiB** |
+| VRML 模型加载器 | 178.0 KiB | 46.4 KiB | **39.8 KiB** |
 | 媒体解码加载器 | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
 | 压缩包预览 | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
 | RAR / 7z 解压 WASM（可选） | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
@@ -213,7 +221,7 @@ npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.
 | PDF Worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | STEP truck 加载器 | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-本次构建的入口、预加载 JS 与 CSS 合计 **461.4 KiB Brotli**（原始 1945.7 KiB / gzip 548.5 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
+本次构建的入口、预加载 JS 与 CSS 合计 **461.8 KiB Brotli**（原始 1946.8 KiB / gzip 548.9 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
 
 </details>
 
@@ -224,7 +232,7 @@ npm：[filens-preview@0.3.5](https://www.npmjs.com/package/filens-preview/v/0.3.
 
 [DWG 优化实测](docs/dwg-preview-optimization.md) 记录了精简 CAD 读取器（443 KB gzip）、直接加载图纸模型，以及 13 份图纸的性能；该读取器已计入上面的构建实测。
 
-上表为 v0.6.5 演示站正式构建实测；新增独立构建的[完整实测](docs/preview-build-sizes.json)另外计量，已包含内嵌依赖。单个分包不代表该格式全部下载成本。
+上表为 v0.6.6 演示站正式构建实测；新增独立构建的[完整实测](docs/preview-build-sizes.json)另外计量，已包含内嵌依赖。单个分包不代表该格式全部下载成本。
 
 </details>
 

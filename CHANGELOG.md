@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.6 — 2026-11-06
+
+Compared with v0.6.5.
+
+- Publish **dsh-filens 0.1.7** and the independently switchable **dsh-filens-workspace 0.1.0**. Gather local references and attachments across paginated conversation history, deduplicate files while retaining sources, and return to the exact message or question.
+- Group files under short session titles with thumbnail mosaics; render Office/PDF thumbnails and recognizable type covers. Add related files, temporary-file filtering, a narrower file list and a ZimaOS Photos-style details panel.
+- Fix clipped zoom percentages, workspace activation/module naming and the duplicate demo pointer. Keep sidebar previews and document tools independently available.
+- Release **preview 0.3.6**, **@filens/core 0.1.4**, **@filens/vue 0.1.4**, **@filens/media 0.1.3** and **@filens/panorama 0.1.3**. Localize panorama hints and playback controls through all 28 existing dictionaries; language changes preserve the current video and position. Keep the original video duration during progressive playback.
+- Refresh Full offline bundles and **mobile source SDKs 0.1.6** with preview 0.3.6. CLI/OCR 0.5.6 native bytes remain unchanged; Lite stays below 10 MB. npm CLI 0.5.6 still prepares preview 0.3.4 unless assets are supplied explicitly. ZimaOS Mod Store remains 0.5.1.
+- Add six separately recorded Chinese/English DSH Desktop demos for Office, 3D/panoramas and the workspace. Use the matching FiLens introduction PPTX; Chinese Office bodies, sheets and headings are localized. Preserve candidate-build provenance and existing benchmark versions.
+- Keep download tables, SHA-256 checksums, the build manifest and the ZimaOS banner in the release notes. Publish the workspace dependency before the main DSH adapter and verify public registry integrity.
+
 ## v0.6.5 — 2026-11-05
 
 - Highlight the three measured DSH first-open comparisons at the start of both README plugin sections: PPTX **13.56×**, DOCX **16.46×** and PDF **1.73×**, retaining benchmark versions and source reports.

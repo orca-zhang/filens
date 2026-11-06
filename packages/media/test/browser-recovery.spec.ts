@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PreviewSession } from '@filens/core';
+import type { PreviewOptions, PreviewSession } from '@filens/core';
 import { createCodecPreviewDrivers } from '../src/codec-preview-driver';
 
 const { recover } = vi.hoisted(() => ({ recover: vi.fn() }));
 vi.mock('../src/engine', () => ({ recoverBrowserVideo: recover }));
 const sessions: PreviewSession[] = [];
 const context = (name: string) => ({ descriptor: { source: '/original.mp4', name, extension: name.split('.').pop()! } });
-const setup = () => {
+const setup = (options: PreviewOptions = {}) => {
   const convert = vi.fn();
   const host = document.createElement('div');
-  const session = createCodecPreviewDrivers({ convert }, true)[1].createSession(host);
+  const session = createCodecPreviewDrivers({ convert }, true)[1].createSession(host, options);
   sessions.push(session); return { host, session, convert };
 };
 beforeEach(() => {
@@ -22,6 +22,24 @@ beforeEach(() => {
 afterEach(() => { sessions.splice(0).forEach(session => session.destroy()); vi.restoreAllMocks(); });
 
 describe('optional browser recovery', () => {
+  it('retains translations after native recovery and refreshes the recovered player in place', async () => {
+    let chinese = true;
+    const { host, session } = setup({ translate: key => chinese && key === 'Play' ? '播放' : key });
+    const load = context('phone.mov');
+    await session.load(load.descriptor.source, load);
+    expect(host.querySelector('[aria-label="播放"]')).not.toBeNull();
+    host.querySelector('source')!.dispatchEvent(new Event('error'));
+    await vi.waitFor(() => expect(recover).toHaveBeenCalledOnce());
+    expect(host.querySelector('[aria-label="播放"]')).not.toBeNull();
+    const video = host.querySelector('video')!;
+    video.currentTime = 12;
+    chinese = false;
+    session.refreshTranslations?.();
+    expect(host.querySelector('[aria-label="Play"]')).not.toBeNull();
+    expect(host.querySelector('video')).toBe(video);
+    expect(video.currentTime).toBe(12);
+  });
+
   it('keeps playable originals on the native path without loading recovery or a converter', async () => {
     const { host, session, convert } = setup(); const load = context('native.mp4');
     await session.load(load.descriptor.source, load);

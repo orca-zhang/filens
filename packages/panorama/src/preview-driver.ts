@@ -105,7 +105,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
   private readonly resourceResolver?: PreviewResourceResolver;
   private state: PanoramaPreviewState;
 
-  constructor(private readonly host: HTMLElement, options: PreviewOptions = {}, private readonly processor?: PanoramaProcessor) {
+  constructor(private readonly host: HTMLElement, private readonly options: PreviewOptions = {}, private readonly processor?: PanoramaProcessor) {
     this.resourceResolver = options.resourceResolver;
     this.root = document.createElement('div');
     this.root.className = 'panoramav-preview';
@@ -113,7 +113,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
     this.stage.className = 'panoramav-stage';
     this.hint = document.createElement('div');
     this.hint.className = 'panoramav-hint';
-    this.hint.textContent = 'Drag to look around · Pinch or scroll to zoom';
+    this.refreshTranslations();
     this.notice = document.createElement('div');
     this.notice.className = 'panoramav-notice';
     this.notice.setAttribute('role', 'status');
@@ -136,6 +136,12 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
       panX: 0,
       panY: 0
     };
+  }
+
+  refreshTranslations(): void {
+    const t = this.options.translate ?? ((message: string) => message);
+    this.hint.textContent = t('Drag to look around · Pinch or scroll to zoom');
+    this.playbackControls?.refreshTranslations();
   }
 
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
@@ -657,6 +663,7 @@ export class PanoramaPreviewSession implements PreviewSession<PanoramaPreviewSta
     this.playbackControls = createVideoPlaybackControls(this.root, {
       signal,
       mediaName: 'panorama video',
+      translate: this.options.translate,
       togglePlayback: () => {
         const renderer = this.calibratedRenderer;
         if (renderer) {

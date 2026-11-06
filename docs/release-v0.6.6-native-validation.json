@@ -1,0 +1,119 @@
+{
+  "tag": "v0.6.6",
+  "cliVersion": "0.5.6",
+  "previewVersion": "0.3.6",
+  "previousRelease": "v0.6.5",
+  "provenance": "All native CLI/OCR and WASM payloads retained byte-for-byte from verified v0.6.5 archives; only bundle README and Full preview assets refreshed.",
+  "liteArchiveLimitBytesExclusive": 10000000,
+  "archives": [
+    {
+      "file": "filens-0.5.6-macos-arm64-lite.tar.gz",
+      "nativeFilesRetained": 34,
+      "retainedPayloadSHA256": "097d9e194c403910f396a1e7a898fe868a07744bd539ca86cc139a0f3e757196",
+      "previousArchiveSHA256": "d2d0faf6ca04582adac49bc3218013c718105b003a54e2f67bd9bd84477d18f1",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": false,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.6-macos-arm64-full.tar.gz",
+      "nativeFilesRetained": 73,
+      "retainedPayloadSHA256": "3dd09b0d6683215b8ca5d44b207cbca45af2eeb7638ca9d3f7ecede70f43ba80",
+      "previousArchiveSHA256": "0d574a3024cc5d58febbcc898ba77da4d2539549f20fff5bf088faa46695e10c",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": true,
+      "previewVersion": "0.3.6"
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-lite.tar.gz",
+      "nativeFilesRetained": 34,
+      "retainedPayloadSHA256": "6d98242e1beae7f5833102070ce2b03d2217eec4c0a51035e5f2bff86ebc88fd",
+      "previousArchiveSHA256": "e9c82cee748654acbd314b07be174a813e62ab329c98dedf453538c3d77c8d45",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": false,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.6-linux-x64-full.tar.gz",
+      "nativeFilesRetained": 71,
+      "retainedPayloadSHA256": "7e4ec479aad43d2cbf9866b6863b6aa12f7697395c7e35e65a5a2e57b4eb184e",
+      "previousArchiveSHA256": "9f8c80961cd809b1afdc99dc0966b10fa426fc7608d2e733922731fb90aea532",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": true,
+      "previewVersion": "0.3.6"
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-lite.tar.gz",
+      "nativeFilesRetained": 34,
+      "retainedPayloadSHA256": "ba52432d209e25852f6625faad377de202c0a9b0c3c344efe796c56387d9cc8e",
+      "previousArchiveSHA256": "aee9fda2ca388838d491e2662255f0f967479a809d504badfb2c0a7a85809aa5",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": false,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.6-linux-arm64-full.tar.gz",
+      "nativeFilesRetained": 71,
+      "retainedPayloadSHA256": "10ed24220fdaeba481d132ddfbf0439b40da05000528d8f77a77f2495f58f086",
+      "previousArchiveSHA256": "b3412d5c4c396bc6c3a262ab0989a0b2542d8a8621f8652fd7ac42b090566091",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": true,
+      "previewVersion": "0.3.6"
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-lite.zip",
+      "nativeFilesRetained": 34,
+      "retainedPayloadSHA256": "e7139c1fdbd7b449e83e53b4c6abd30250b9337b3b171d6f758517da24ee762c",
+      "previousArchiveSHA256": "f2a773fbef3ad90220b072b70ce796b010366b96fc9093ae2ac9e4e876f1b9da",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": false,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.6-windows-x64-full.zip",
+      "nativeFilesRetained": 73,
+      "retainedPayloadSHA256": "6331fe4b78b7a84966405520a6c37971150b19721e86b9e304dd147ffaf44035",
+      "previousArchiveSHA256": "1d22e00e652823fa9a835c024f282aefa68227b90e2f2e09ff23372d466c87ee",
+      "previousArchiveVerified": true,
+      "retainedPayloadByteIdentical": true,
+      "archiveIntegrity": true,
+      "previewBundled": true,
+      "previewVersion": "0.3.6"
+    }
+  ],
+  "nativeExecution": "macOS arm64 Full/Lite capacity and Chinese DOCX reading with empty PATH; Full scan OCR passed. Linux/Windows native payloads verified and reused without execution",
+  "macOSSmoke": [
+    {
+      "profile": "lite",
+      "capacity": true,
+      "formats": 349,
+      "readingChineseDocx": true,
+      "emptyPATH": true,
+      "ocrAvailable": false
+    },
+    {
+      "profile": "full",
+      "capacity": true,
+      "formats": 349,
+      "readingChineseDocx": true,
+      "emptyPATH": true,
+      "ocrAvailable": true,
+      "scanOCR": true
+    }
+  ],
+  "privacyChecked": true
+}

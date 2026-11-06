@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-11-05T10:23:20.924Z",
+  "observedAt": "2026-11-06T09:12:14.085Z",
   "platform": "darwin-arm64",
   "scope": "Real embedded HTML opened via file:// after CLI exit. Chromium/Firefox use offline mode; WebKit uses blocked HTTP(S) routes because its automation offline switch also blocks local files. Readiness is checked; no pixel-fidelity claim or OS default-browser-launch validation.",
   "checks": [

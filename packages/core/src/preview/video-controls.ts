@@ -12,6 +12,7 @@ export interface VideoPlaybackState {
 export interface VideoPlaybackActions {
   signal: AbortSignal;
   mediaName?: 'video' | 'panorama video';
+  translate?: (message: string) => string;
   togglePlayback(): void;
   seek(seconds: number): void;
   toggleMuted(): void;
@@ -55,20 +56,31 @@ function formatTime(seconds: number): string {
 export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPlaybackActions) {
   const { signal } = actions;
   const mediaName = actions.mediaName ?? 'video';
+  const t = actions.translate ?? ((message: string) => message);
+  const labels = new Map<HTMLElement, string>();
+  const label = (node: HTMLElement, key: string) => {
+    labels.set(node, key);
+    node.setAttribute('aria-label', t(key));
+    if (node instanceof HTMLButtonElement || node instanceof HTMLSelectElement) node.title = t(key);
+  };
+  const updateButton = (node: HTMLButtonElement, key: string, icon: Icon) => {
+    setButton(node, t(key), icon);
+    labels.set(node, key);
+  };
   const controls = document.createElement('div');
   controls.className = 'pptxv-video-controls';
   controls.dataset.previewControls = '';
   controls.setAttribute('role', 'group');
-  controls.setAttribute('aria-label', `${mediaName === 'video' ? 'Video' : 'Panorama video'} controls`);
+  label(controls, mediaName === 'video' ? 'Video controls' : 'Panorama video controls');
   const viewControls = document.createElement('div');
   viewControls.className = 'panoramav-view-controls';
   viewControls.dataset.previewControls = '';
   viewControls.setAttribute('role', 'group');
-  viewControls.setAttribute('aria-label', 'Panorama view controls');
+  label(viewControls, 'Panorama view controls');
   const button = (parent: HTMLElement, label: string, icon: Icon, action: () => void) => {
     const node = document.createElement('button');
     node.type = 'button';
-    setButton(node, label, icon);
+    updateButton(node, label, icon);
     node.addEventListener('click', action, { signal });
     parent.append(node);
     return node;
@@ -81,7 +93,7 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
   timeline.type = 'range';
   timeline.min = '0';
   timeline.step = '0.01';
-  timeline.setAttribute('aria-label', `${mediaName === 'video' ? 'Video' : 'Panorama video'} position`);
+  label(timeline, 'Playback position');
   const time = document.createElement('output');
   time.className = 'pptxv-video-time';
   const showPosition = (position: number) => {
@@ -103,9 +115,9 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
   controls.append(timeline);
   const row = document.createElement('div');
   row.className = 'pptxv-video-control-row';
-  const play = button(row, `Play ${mediaName}`, 'play', actions.togglePlayback);
-  const backward = button(row, `Rewind ${mediaName} 5 seconds`, 'backward', () => actions.seek(state.currentTime - 5));
-  const forward = button(row, `Forward ${mediaName} 5 seconds`, 'forward', () => actions.seek(state.currentTime + 5));
+  const play = button(row, 'Play', 'play', actions.togglePlayback);
+  const backward = button(row, 'Rewind 5 seconds', 'backward', () => actions.seek(state.currentTime - 5));
+  const forward = button(row, 'Forward 5 seconds', 'forward', () => actions.seek(state.currentTime + 5));
   backward.className = forward.className = 'pptxv-video-skip';
   row.append(time);
   const spacer = document.createElement('span');
@@ -113,20 +125,19 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
   row.append(spacer);
   const audio = document.createElement('div');
   audio.className = 'pptxv-video-volume';
-  const mute = button(audio, `Unmute ${mediaName}`, 'muted', actions.toggleMuted);
+  const mute = button(audio, 'Unmute', 'muted', actions.toggleMuted);
   const volume = document.createElement('input');
   volume.type = 'range';
   volume.min = '0';
   volume.max = '1';
   volume.step = '0.01';
-  volume.setAttribute('aria-label', `${mediaName === 'video' ? 'Video' : 'Panorama video'} volume`);
+  label(volume, 'Volume');
   volume.addEventListener('input', () => actions.setVolume(Number(volume.value)), { signal });
   audio.append(volume);
   row.append(audio);
   const speed = document.createElement('select');
   speed.className = 'pptxv-video-rate';
-  speed.setAttribute('aria-label', `${mediaName === 'video' ? 'Video' : 'Panorama video'} playback speed`);
-  speed.title = 'Playback speed';
+  label(speed, 'Playback speed');
   for (const rate of [0.5, 1, 1.5, 2]) {
     const option = document.createElement('option');
     option.value = String(rate);
@@ -135,25 +146,27 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
   }
   speed.addEventListener('change', () => actions.setPlaybackRate(Number(speed.value)), { signal });
   row.append(speed);
-  const fullscreen = button(row, 'Enter video fullscreen', 'fullscreen', () => {
+  let fullscreenUnavailable = false;
+  const fullscreen = button(row, 'Enter fullscreen', 'fullscreen', () => {
     void actions.fullscreen().catch(() => {
-      fullscreen.title = 'Fullscreen is unavailable in this browser';
+      fullscreenUnavailable = true;
+      syncFullscreen();
     });
   });
   fullscreen.disabled = !root.requestFullscreen;
   const syncFullscreen = () => {
     const active = document.fullscreenElement === root;
-    setButton(fullscreen, `${active ? 'Exit' : 'Enter'} ${mediaName === 'video' ? 'video' : 'panorama'} fullscreen`, active ? 'exitFullscreen' : 'fullscreen');
-    if (fullscreen.disabled) fullscreen.title = 'Fullscreen is unavailable in this browser';
+    updateButton(fullscreen, active ? 'Exit fullscreen' : 'Enter fullscreen', active ? 'exitFullscreen' : 'fullscreen');
+    if (fullscreen.disabled || fullscreenUnavailable) fullscreen.title = t('Fullscreen is unavailable in this browser');
   };
   document.addEventListener('fullscreenchange', syncFullscreen, { signal });
   syncFullscreen();
   controls.append(row);
   let zoomOut: HTMLButtonElement | undefined, zoomIn: HTMLButtonElement | undefined;
   if (actions.zoom && actions.resetView) {
-    zoomOut = button(viewControls, 'Zoom out panorama', 'zoomOut', () => actions.zoom?.(-0.2));
-    zoomIn = button(viewControls, 'Zoom in panorama', 'zoomIn', () => actions.zoom?.(0.2));
-    button(viewControls, 'Reset panorama view', 'reset', actions.resetView);
+    zoomOut = button(viewControls, 'Zoom out', 'zoomOut', () => actions.zoom?.(-0.2));
+    zoomIn = button(viewControls, 'Zoom in', 'zoomIn', () => actions.zoom?.(0.2));
+    button(viewControls, 'Reset view', 'reset', actions.resetView);
     root.append(viewControls);
   }
   root.append(controls);
@@ -173,12 +186,16 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
   }, { signal });
 
   return {
+    refreshTranslations() {
+      labels.forEach((key, node) => label(node, key));
+      syncFullscreen();
+    },
     addControl(element: HTMLElement) { row.insertBefore(element, speed); },
     sync(next: VideoPlaybackState) {
       const changedPlayback = !state || state.paused !== next.paused;
       const changedAudio = !state || state.audioAvailable !== next.audioAvailable || state.muted !== next.muted || state.volume !== next.volume;
       state = next;
-      if (changedPlayback) setButton(play, `${state.paused ? 'Play' : 'Pause'} ${mediaName}`, state.paused ? 'play' : 'pause');
+      if (changedPlayback) updateButton(play, state.paused ? 'Play' : 'Pause', state.paused ? 'play' : 'pause');
       const duration = Number.isFinite(state.duration) ? Math.max(0, state.duration) : 0;
       timeline.max = String(duration || 0.1);
       timeline.disabled = backward.disabled = forward.disabled = duration <= 0;
@@ -188,7 +205,7 @@ export function createVideoPlaybackControls(root: HTMLElement, actions: VideoPla
       }
       if (changedAudio) {
         const silent = state.muted || state.volume === 0;
-        setButton(mute, state.audioAvailable ? `${silent ? 'Unmute' : 'Mute'} ${mediaName}` : 'Audio unavailable for this panorama preview', silent ? 'muted' : 'volume');
+        updateButton(mute, state.audioAvailable ? (silent ? 'Unmute' : 'Mute') : 'Audio unavailable for this panorama preview', silent ? 'muted' : 'volume');
         mute.disabled = volume.disabled = !state.audioAvailable;
         volume.hidden = !state.audioAvailable;
         volume.value = String(state.muted ? 0 : state.volume);

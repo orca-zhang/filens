@@ -1,0 +1,339 @@
+{
+  "preparedAt": "2026-11-06T08:57:08.576077+00:00",
+  "status": "draft-not-published",
+  "proposedVersion": "0.1.7",
+  "sourcePackageMetadata": "0.1.6",
+  "equivalentInstalledCandidate": "0.1.7-workspace.8",
+  "sourceEquivalence": "source-candidate-equivalence.json",
+  "matchingFiles": 67,
+  "environment": {
+    "dsh": "0.2.1-rc.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "electron": "44.7.0"
+  },
+  "previewVersion": "0.3.5",
+  "cliVersion": "0.5.6",
+  "registeredExtensions": 451,
+  "modelCalls": 0,
+  "syntheticHistory": true,
+  "nativePlatformsTested": [
+    "macOS arm64"
+  ],
+  "recordings": [
+    {
+      "topic": "office-preview",
+      "locale": "zh-CN",
+      "recordedAt": "2026-11-06T08:52:48.773Z",
+      "evidence": "office-preview.zh-CN-recording.json",
+      "checks": [
+        "Word document body matches the recording language",
+        "Word: read directly in the DSH sidebar",
+        "Expand the preview; zoom beside the address bar",
+        "Excel: switch sheets without leaving the preview",
+        "FiLens introduction cover matches the recording language",
+        "PowerPoint: open the FiLens introduction",
+        "Present fullscreen; Page Down advances slides",
+        "Esc returns to DSH",
+        "capture complete"
+      ],
+      "artifacts": [
+        {
+          "file": "office-preview.zh-CN.gif",
+          "bytes": 7968824,
+          "sha256": "d3ba9cae49a8f59637a3be098bb78067679795270e066223d76a3b81b66c5136",
+          "width": 960,
+          "height": 594,
+          "frames": 203,
+          "durationSeconds": 10.15
+        },
+        {
+          "file": "office-preview.zh-CN.webp",
+          "bytes": 3354548,
+          "sha256": "0ed09cba638b9d5bb07de91cc4af5cb0e7b0b45b3219bd9db03afa3a7daa51c9",
+          "width": 960,
+          "height": 594,
+          "frames": 200
+        },
+        {
+          "file": "office-preview.zh-CN.mp4",
+          "bytes": 1551241,
+          "sha256": "e61039c51601daba3fdc010c62ac176941243f028f1eee8a23adc7e15a2a7e97",
+          "width": 1280,
+          "height": 792,
+          "durationSeconds": 11.9,
+          "frames": 238
+        },
+        {
+          "file": "office-preview.zh-CN.png",
+          "bytes": 518812,
+          "sha256": "237872bb65eccdf445b41d1e0696ea3ea55655e3cb30423845e9ffec34e34c40",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    {
+      "topic": "3d-and-panorama",
+      "locale": "zh-CN",
+      "recordedAt": "2026-11-06T08:52:48.774Z",
+      "evidence": "3d-and-panorama.zh-CN-recording.json",
+      "checks": [
+        "3D models: drag to orbit and scroll to zoom",
+        "Model tools: view, projection and section",
+        "3MF assemblies: inspect the gears",
+        "Panorama interaction hint matches the recording language",
+        "360° photos: look around the Milky Way",
+        "360° video: seek with the bottom timeline",
+        "Play the panorama and change the view",
+        "Live language switching translates paused controls without replacing video or resetting playback position",
+        "capture complete"
+      ],
+      "artifacts": [
+        {
+          "file": "3d-and-panorama.zh-CN.gif",
+          "bytes": 21947126,
+          "sha256": "f8e59c0ef069be0782a00f330cc456d7f752da29b575c64b1e8b1547d73a3986",
+          "width": 960,
+          "height": 594,
+          "frames": 268,
+          "durationSeconds": 13.45
+        },
+        {
+          "file": "3d-and-panorama.zh-CN.webp",
+          "bytes": 6115908,
+          "sha256": "58cd962e7df6dac0a49dc589c97e0b2809faa90da5ce0fafbdbe5d4d7a8e5207",
+          "width": 960,
+          "height": 594,
+          "frames": 264
+        },
+        {
+          "file": "3d-and-panorama.zh-CN.mp4",
+          "bytes": 2762203,
+          "sha256": "2862a6bcd890fc2bfcfaf2b8662563bb96a24f61ab7e548c7dfddca32d9cb071",
+          "width": 1280,
+          "height": 792,
+          "durationSeconds": 16.05,
+          "frames": 321
+        },
+        {
+          "file": "3d-and-panorama.zh-CN.png",
+          "bytes": 534495,
+          "sha256": "cd333c406e73d5dd0913279d7e893b67c4d5f9015bac7906825ec582c5b1487a",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    {
+      "topic": "file-workspace",
+      "locale": "zh-CN",
+      "recordedAt": "2026-11-06T08:52:48.775Z",
+      "evidence": "file-workspace.zh-CN-recording.json",
+      "checks": [
+        "Session files, collected into thumbnail groups",
+        "Expand a session: live Word, PowerPoint and Excel previews",
+        "Search by session title; temporary lock files stay hidden",
+        "Open a file: a compact list and a large reading canvas",
+        "File details: properties, related files and source messages",
+        "Related files: linked by message, question and session",
+        "Jump back to the exact question behind the file",
+        "Follow DSH dark mode with the same collected files",
+        "capture complete"
+      ],
+      "artifacts": [
+        {
+          "file": "file-workspace.zh-CN.gif",
+          "bytes": 4453032,
+          "sha256": "55374c8ce3cf777ca5947c03d8a807bbe3d708914b4d1604f53bf4ddac253cd0",
+          "width": 960,
+          "height": 594,
+          "frames": 279,
+          "durationSeconds": 14.25,
+          "lightSidebarChecked": true
+        },
+        {
+          "file": "file-workspace.zh-CN.webp",
+          "bytes": 2159334,
+          "sha256": "e49d67e302b9e04cc64b84bbb927d4e8fab528c1c7de3ffa2bf8a704a1712994",
+          "width": 960,
+          "height": 594,
+          "frames": 257
+        },
+        {
+          "file": "file-workspace.zh-CN.mp4",
+          "bytes": 953828,
+          "sha256": "7bf16baa24104c2b6ecef97bdc9650023a3a2cc717fc7bc663c32c40737ad722",
+          "width": 1280,
+          "height": 792,
+          "durationSeconds": 14.85,
+          "frames": 297
+        },
+        {
+          "file": "file-workspace.zh-CN.png",
+          "bytes": 95458,
+          "sha256": "c975aeedbebd2a5ea7ee8ab1c232f15389b63a3c808822ae4f806a2008528f8e",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    {
+      "topic": "office-preview",
+      "locale": "en",
+      "recordedAt": "2026-11-06T08:53:48.873Z",
+      "evidence": "office-preview.en-recording.json",
+      "checks": [
+        "Word document body matches the recording language",
+        "Word: read directly in the DSH sidebar",
+        "Expand the preview; zoom beside the address bar",
+        "Excel: switch sheets without leaving the preview",
+        "FiLens introduction cover matches the recording language",
+        "PowerPoint: open the FiLens introduction",
+        "Present fullscreen; Page Down advances slides",
+        "Esc returns to DSH",
+        "capture complete"
+      ],
+      "artifacts": [
+        {
+          "file": "office-preview.en.gif",
+          "bytes": 8230427,
+          "sha256": "13f66a0ae7d5f2dc97166aeabd67d60d08ddd3b91b6810ddd9771c529f00e161",
+          "width": 960,
+          "height": 594,
+          "frames": 200,
+          "durationSeconds": 10.0
+        },
+        {
+          "file": "office-preview.en.webp",
+          "bytes": 3494964,
+          "sha256": "baf409cc77edda1e18f737029d1d14b77a74ef69b7975605174cf4a47a44df99",
+          "width": 960,
+          "height": 594,
+          "frames": 200
+        },
+        {
+          "file": "office-preview.en.mp4",
+          "bytes": 1531116,
+          "sha256": "4d865649d2f10eebd6733170a6b3626fa83d3d893189f209d248ea8a439a5a1b",
+          "width": 1280,
+          "height": 792,
+          "durationSeconds": 11.6,
+          "frames": 232
+        },
+        {
+          "file": "office-preview.en.png",
+          "bytes": 519557,
+          "sha256": "bb4475a086e9c7da963709e6c82bea4edb8e3cea36b8b43a1e4b4c1345e8fc2a",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    {
+      "topic": "3d-and-panorama",
+      "locale": "en",
+      "recordedAt": "2026-11-06T08:53:48.874Z",
+      "evidence": "3d-and-panorama.en-recording.json",
+      "checks": [
+        "3D models: drag to orbit and scroll to zoom",
+        "Model tools: view, projection and section",
+        "3MF assemblies: inspect the gears",
+        "Panorama interaction hint matches the recording language",
+        "360° photos: look around the Milky Way",
+        "360° video: seek with the bottom timeline",
+        "Play the panorama and change the view",
+        "Live language switching translates paused controls without replacing video or resetting playback position",
+        "capture complete"
+      ],
+      "artifacts": [
+        {
+          "file": "3d-and-panorama.en.gif",
+          "bytes": 22848418,
+          "sha256": "a4682950acba2a92edd0d89d798d9fa696646bd865cf75ed4dd3509ff7f2c7d5",
+          "width": 960,
+          "height": 594,
+          "frames": 265,
+          "durationSeconds": 13.35
+        },
+        {
+          "file": "3d-and-panorama.en.webp",
+          "bytes": 6536438,
+          "sha256": "93c90b2f6e38aa9664873f64993bc2c48e91647d5905987a04ae7c10476b290e",
+          "width": 960,
+          "height": 594,
+          "frames": 263
+        },
+        {
+          "file": "3d-and-panorama.en.mp4",
+          "bytes": 2825990,
+          "sha256": "f058441c1d3a012018fa44c3c1c3e958933bfbb9db7717a16ce18ca4cf5c5034",
+          "width": 1280,
+          "height": 792,
+          "durationSeconds": 15.95,
+          "frames": 319
+        },
+        {
+          "file": "3d-and-panorama.en.png",
+          "bytes": 533082,
+          "sha256": "154041b232a37903f9acf155de3950117ec4c475b23759dfbc2617f746c53e4d",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    {
+      "topic": "file-workspace",
+      "locale": "en",
+      "recordedAt": "2026-11-06T08:53:48.874Z",
+      "evidence": "file-workspace.en-recording.json",
+      "checks": [
+        "Session files, collected into thumbnail groups",
+        "Expand a session: live Word, PowerPoint and Excel previews",
+        "Search by session title; temporary lock files stay hidden",
+        "Open a file: a compact list and a large reading canvas",
+        "File details: properties, related files and source messages",
+        "Related files: linked by message, question and session",
+        "Jump back to the exact question behind the file",
+        "Follow DSH dark mode with the same collected files",
+        "capture complete"
+      ],
+      "artifacts": [
+        {
+          "file": "file-workspace.en.gif",
+          "bytes": 4750779,
+          "sha256": "06a0f9474597093cac63a987085f63cd11b45d5b16fc5f90212c3808fe6097b3",
+          "width": 960,
+          "height": 594,
+          "frames": 286,
+          "durationSeconds": 14.6,
+          "lightSidebarChecked": true
+        },
+        {
+          "file": "file-workspace.en.webp",
+          "bytes": 2254064,
+          "sha256": "c377c3d184f24a722c81310f1b46b7c5e35af3e885dfa2bc8bd60975dae96f7d",
+          "width": 960,
+          "height": 594,
+          "frames": 270
+        },
+        {
+          "file": "file-workspace.en.mp4",
+          "bytes": 1016612,
+          "sha256": "268b72489ddfe409e5dcadd268bd5397ae53803dd2c61ff38b1b25d82bb9784c",
+          "width": 1280,
+          "height": 792,
+          "durationSeconds": 15.25,
+          "frames": 305
+        },
+        {
+          "file": "file-workspace.en.png",
+          "bytes": 90972,
+          "sha256": "ab160175b70c1c8a14cc9d2664170e6a274aac893c287151b74331689c8ce0be",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    }
+  ]
+}

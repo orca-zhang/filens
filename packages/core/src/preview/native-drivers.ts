@@ -911,6 +911,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
   private media: HTMLMediaElement | null = null;
   private audioPlayer: AudioPreviewPlayer | null = null;
   private durationSeconds?: number;
+  private videoPlayer?: ReturnType<typeof createVideoPreviewPlayer>;
 
   constructor(host: HTMLElement, private readonly options: PreviewOptions = {}) {
     super(host);
@@ -1039,7 +1040,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
 
       this.root.className = `pptxv-native-preview pptxv-native-preview--${family === 'audio' ? 'audio' : 'video'}`;
       this.root.replaceChildren(media);
-      if (media instanceof HTMLVideoElement) createVideoPreviewPlayer(this.root, media, signal, this.durationSeconds);
+      if (media instanceof HTMLVideoElement) this.videoPlayer = createVideoPreviewPlayer(this.root, media, signal, this.durationSeconds, this.options.translate);
       if (family === 'audio') {
         const player = new AudioPreviewPlayer(media, context, this.options, signal);
         this.audioPlayer = player;
@@ -1081,7 +1082,10 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
     this.state.error = null;
   }
 
+  refreshTranslations(): void { this.videoPlayer?.refreshTranslations(); }
+
   private releaseMedia(): void {
+    this.videoPlayer = undefined;
     const media = this.media;
     this.media = null;
     if (media) {

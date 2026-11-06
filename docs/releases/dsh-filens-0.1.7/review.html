@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FiLens for DSH · 发布素材审阅</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f5f3;color:#202326;font:15px/1.7 system-ui,-apple-system,sans-serif}main{max-width:1120px;margin:auto;padding:48px 24px 72px}header{display:flex;justify-content:space-between;gap:24px;align-items:start;margin-bottom:32px}h1{font-size:30px;letter-spacing:-.7px;margin:8px 0}h2{font-size:20px;margin:0}p{margin:8px 0 0;color:#62676b}.eyebrow{font-size:12px;letter-spacing:.08em;color:#72777b}.switch{display:flex;gap:4px;padding:4px;border:1px solid #d8dbdc;border-radius:9px;background:#fff;white-space:nowrap}button{border:0;background:transparent;padding:7px 14px;border-radius:5px;color:#64696e;cursor:pointer;font:inherit;font-size:13px}button[aria-pressed=true]{background:#23272a;color:#fff}.links{display:flex;gap:18px;flex-wrap:wrap;margin:20px 0 32px}a{color:#375e79;text-underline-offset:4px}.film{background:#fff;border:1px solid #dddfe0;border-radius:12px;margin:0 0 24px;overflow:hidden}.film-copy{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:22px 26px}.film-copy p{font-size:14px}.downloads{display:flex;gap:18px;white-space:nowrap;font-size:13px}video{display:block;width:100%;background:#ebeef0;border-top:1px solid #e3e5e6;height:auto}.notice{border-top:1px solid #d8dbdc;padding-top:20px;font-size:13px}code{font-size:13px}footer{margin-top:28px;font-size:12px;color:#7b8085}@media(max-width:700px){main{padding:28px 14px}header,.film-copy{flex-direction:column;gap:14px}h1{font-size:25px}.film-copy{padding:18px}}
+</style>
+<main>
+<header><div><div class="eyebrow">FiLens / DeepSeek Harness / 0.1.7</div><h1 id="heading">发布素材审阅</h1><p id="intro">三组实机演示，中英文界面与字幕分别录制。</p></div><div class="switch" aria-label="Language"><button data-locale="zh-CN" aria-pressed="true">中文</button><button data-locale="en" aria-pressed="false">English</button></div></header>
+<nav class="links"><a id="notes" href="release-notes.zh-CN.md">发布说明</a><a id="post" href="announcement.zh-CN.md">社区短文案</a><a id="material" href="README.md">安装说明与素材清单</a></nav>
+<section id="films"></section>
+<p class="notice" id="notice">v0.6.6 发布素材。真实 DSH Desktop 0.2.1-rc.5 / macOS arm64，合成会话与真实文件，无模型调用。GIF 为精简片段，MP4 保留完整操作；两者均不作为性能测试。</p>
+<footer>FiLens · IceWhaleTech · <a href="../../assets/dsh-release/README.md">Sources &amp; recording details</a></footer>
+</main>
+<script>
+const base='../../assets/dsh-release/';
+const mediaRevision='filens-introduction-20261106';
+const films=[
+ {id:'file-workspace',zh:'文件工作台',en:'File workspace',cn:'会话分组、真实缩略图、相关文件，返回原提问。',desc:'Session groups, real thumbnails, related files and the originating question.'},
+ {id:'office-preview',zh:'Office 侧栏预览',en:'Office sidebar previews',cn:'中文 Word 与 Excel，FiLens 中文介绍 PPT 的预览与全屏演示。',desc:'Read Word, switch Excel sheets and present the English FiLens introduction.'},
+ {id:'3d-and-panorama',zh:'3D 与 360° 全景',en:'3D and 360° panoramas',cn:'旋转模型、查看剖切、环视银河，播放全景视频。',desc:'Orbit models, inspect sections, explore the Milky Way and play panoramic video.'}
+];
+function setLanguage(locale){
+ const en=locale==='en';document.documentElement.lang=locale;
+ document.querySelector('#heading').textContent=en?'Release media review':'发布素材审阅';
+ document.querySelector('#intro').textContent=en?'Three desktop demos, recorded separately with English and Chinese UI and captions.':'三组实机演示，中英文界面与字幕分别录制。';
+ document.querySelectorAll('[data-locale]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.locale===locale));
+ const notes=document.querySelector('#notes');notes.href=`release-notes.${locale}.md`;notes.textContent=en?'Release notes':'发布说明';
+ const post=document.querySelector('#post');post.href=`announcement.${locale}.md`;post.textContent=en?'Community announcement':'社区短文案';
+ document.querySelector('#material').textContent=en?'Setup and media inventory':'安装说明与素材清单';
+ document.querySelector('#notice').textContent=en?'Release media for v0.6.6. Recorded in the installed DSH Desktop 0.2.1-rc.5 on macOS arm64, with synthetic sessions, real files and no model calls. GIFs keep shorter highlights; MP4s retain the full actions. Neither is a performance benchmark.':'v0.6.6 发布素材。真实 DSH Desktop 0.2.1-rc.5 / macOS arm64，合成会话与真实文件，无模型调用。GIF 为精简片段，MP4 保留完整操作；两者均不作为性能测试。';
+ document.querySelector('#films').replaceChildren(...films.map(f=>{
+  const card=document.createElement('article');card.className='film';
+  const prefix=base+f.id+'.'+locale;
+  card.innerHTML=`<div class="film-copy"><div><h2>${en?f.en:f.zh}</h2><p>${en?f.desc:f.cn}</p></div><div class="downloads"><a href="${prefix}.gif?v=${mediaRevision}">GIF ↗</a><a href="${prefix}.mp4?v=${mediaRevision}">MP4 ↗</a><a href="${prefix}.webp?v=${mediaRevision}">WebP ↗</a></div></div><video controls muted loop playsinline preload="metadata" poster="${prefix}.png?v=${mediaRevision}" src="${prefix}.mp4?v=${mediaRevision}"></video>`;
+  return card;
+ }));
+}
+document.querySelectorAll('[data-locale]').forEach(b=>b.addEventListener('click',()=>setLanguage(b.dataset.locale)));
+setLanguage('zh-CN');
+</script>
+</html>

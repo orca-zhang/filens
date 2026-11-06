@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-05",
+  "date": "2026-11-06",
   "scope": "Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.",
   "name": "filens-preview",
-  "version": "0.3.5",
-  "file": "filens-preview-0.3.5.tgz",
-  "bytes": 16973644,
-  "unpackedBytes": 33338772,
-  "sha256": "b428140900faade2c22a4ffb784a4c28383a0ab9ec296ea01c6178507ad7ff2e",
-  "integrity": "sha512-UC0iHpu8oZA0+1vSRaelmmJmRej3CrqfAc+7Ax0rBhXIZt9D1fIsxaQZ9eFpY4ATEjg3p/oo7sAEkkIyf595pQ==",
+  "version": "0.3.6",
+  "file": "filens-preview-0.3.6.tgz",
+  "bytes": 17010961,
+  "unpackedBytes": 33431342,
+  "sha256": "30f0ec55ec9b952b6e2a1ac0473d173a49b650d6c8779fe45ec96425f9545aed",
+  "integrity": "sha512-uhVxSo5s++ePdKUpQk2GE6iUXTSWga6iZr7FrksdHpBB5d1j240t5BRcH9pBnRizJwsz2ZQzYej6TDR56NiDSQ==",
   "files": [
     {
       "path": "LICENSE",
@@ -15,7 +15,7 @@
     },
     {
       "path": "README.md",
-      "bytes": 18690
+      "bytes": 18687
     },
     {
       "path": "dist/all-in-one/archive/7zz.wasm",
@@ -31,15 +31,15 @@
     },
     {
       "path": "dist/all-in-one/filens.js",
-      "bytes": 6659807
+      "bytes": 6694111
     },
     {
       "path": "dist/all-in-one/filens.js.br",
-      "bytes": 3395083
+      "bytes": 3401399
     },
     {
       "path": "dist/all-in-one/filens.js.gz",
-      "bytes": 3533344
+      "bytes": 3540902
     },
     {
       "path": "dist/all-in-one/index.html",
@@ -51,7 +51,7 @@
     },
     {
       "path": "dist/index.d.ts",
-      "bytes": 2340
+      "bytes": 2471
     },
     {
       "path": "dist/split/archive/7zz.wasm",
@@ -66,35 +66,35 @@
       "bytes": 906114
     },
     {
-      "path": "dist/split/chunks/archive-driver-BOGfa5TQ.js",
+      "path": "dist/split/chunks/archive-driver-DVI8sVux.js",
       "bytes": 32633
     },
     {
-      "path": "dist/split/chunks/browser-video-session-CrCMygCQ.js",
-      "bytes": 36038
+      "path": "dist/split/chunks/browser-video-session-Dc6-h6-c.js",
+      "bytes": 36215
     },
     {
-      "path": "dist/split/chunks/cad-driver-ChCam12l.js",
+      "path": "dist/split/chunks/cad-driver-BgJddbcO.js",
       "bytes": 62164
     },
     {
-      "path": "dist/split/chunks/client-D-W40Nzr.js",
+      "path": "dist/split/chunks/client-iEyXOo6t.js",
       "bytes": 2527
     },
     {
-      "path": "dist/split/chunks/codec-preview-driver-DNHoRKlv.js",
-      "bytes": 5799
+      "path": "dist/split/chunks/codec-preview-driver-CKq6KfdC.js",
+      "bytes": 5923
     },
     {
       "path": "dist/split/chunks/compression-CLhefix_.js",
       "bytes": 12546
     },
     {
-      "path": "dist/split/chunks/diagram-driver-BjD8dcTB.js",
+      "path": "dist/split/chunks/diagram-driver-DsLpt3ne.js",
       "bytes": 21861
     },
     {
-      "path": "dist/split/chunks/docx-driver-CNCkCE4_.js",
+      "path": "dist/split/chunks/docx-driver-JPKgFGkk.js",
       "bytes": 8989
     },
     {
@@ -106,7 +106,7 @@
       "bytes": 160510
     },
     {
-      "path": "dist/split/chunks/ebook-driver-rfC5NcMq.js",
+      "path": "dist/split/chunks/ebook-driver-B4fqJYs_.js",
       "bytes": 17026
     },
     {
@@ -118,23 +118,23 @@
       "bytes": 10512
     },
     {
-      "path": "dist/split/chunks/index-Cdzkc_I6.js",
-      "bytes": 279587
+      "path": "dist/split/chunks/index-B3nBUstj.js",
+      "bytes": 322823
     },
     {
-      "path": "dist/split/chunks/index-MviKQD97.js",
+      "path": "dist/split/chunks/index-B7mrXSaA.js",
       "bytes": 15372
     },
     {
-      "path": "dist/split/chunks/iwork-driver-CuqfWrDD.js",
+      "path": "dist/split/chunks/iwork-driver-B1QdmJls.js",
       "bytes": 23357
     },
     {
-      "path": "dist/split/chunks/media-runtime-DliMN5Ky.js",
+      "path": "dist/split/chunks/media-runtime-DRtqKwpT.js",
       "bytes": 146447
     },
     {
-      "path": "dist/split/chunks/mindmap-driver-BPKC4cJw.js",
+      "path": "dist/split/chunks/mindmap-driver-D1eeFTEh.js",
       "bytes": 15708
     },
     {
@@ -174,7 +174,7 @@
       "bytes": 185862
     },
     {
-      "path": "dist/split/chunks/model3d-driver-DtDROBhg.js",
+      "path": "dist/split/chunks/model3d-driver-CymFjidu.js",
       "bytes": 106826
     },
     {
@@ -182,19 +182,19 @@
       "bytes": 182354
     },
     {
-      "path": "dist/split/chunks/native-drivers-CUaYYm2u.js",
-      "bytes": 49672
+      "path": "dist/split/chunks/native-drivers-BnPicWwk.js",
+      "bytes": 50083
     },
     {
       "path": "dist/split/chunks/office-attachments-CprbjlU9.js",
       "bytes": 32456
     },
     {
-      "path": "dist/split/chunks/panorama-driver-Cj2LHpPD.js",
-      "bytes": 186878
+      "path": "dist/split/chunks/panorama-driver-B6KUf7dx.js",
+      "bytes": 187080
     },
     {
-      "path": "dist/split/chunks/pdf-driver-0AU12AcI.js",
+      "path": "dist/split/chunks/pdf-driver-Beysa_Kq.js",
       "bytes": 14521
     },
     {
@@ -202,11 +202,11 @@
       "bytes": 448320
     },
     {
-      "path": "dist/split/chunks/pptx-driver-BbD4TtGp.js",
+      "path": "dist/split/chunks/pptx-driver-EsAO_2Cn.js",
       "bytes": 97438
     },
     {
-      "path": "dist/split/chunks/rust-step-importer-z8X5Cxzq.js",
+      "path": "dist/split/chunks/rust-step-importer-B_6tx8QH.js",
       "bytes": 2775
     },
     {
@@ -234,7 +234,7 @@
       "bytes": 68358
     },
     {
-      "path": "dist/split/chunks/xlsx-driver-CdZ0hbVj.js",
+      "path": "dist/split/chunks/xlsx-driver-vglTai3j.js",
       "bytes": 19531
     },
     {
@@ -299,7 +299,7 @@
     },
     {
       "path": "package.json",
-      "bytes": 1166
+      "bytes": 1280
     }
   ],
   "privacyChecked": true

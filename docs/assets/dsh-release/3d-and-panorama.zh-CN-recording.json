@@ -1,0 +1,212 @@
+{
+  "recordedAt": "2026-11-06T08:52:48.774Z",
+  "environment": {
+    "dsh": "0.2.1-rc.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "electron": "44.7.0"
+  },
+  "plugin": "dsh-filens@0.1.6",
+  "installationSource": "isolated local source build",
+  "components": {
+    "cli": "0.5.6",
+    "preview": "0.3.5",
+    "extensions": 451,
+    "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
+    "workspaceSHA256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+  },
+  "source": "Installed Desktop application, isolated local source build, actual UI interactions",
+  "locale": "zh-CN",
+  "windowCompositing": "opaque native window background for screencast transparency",
+  "editing": "Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions are annotations. No pointer overlay is added. This is not a timing comparison.",
+  "encoding": {
+    "fps": 20,
+    "webp": {
+      "width": 960,
+      "quality": 92,
+      "color": "full color"
+    },
+    "gif": {
+      "width": 960,
+      "colors": 256,
+      "palette": "adaptive per scene",
+      "dither": "sierra2_4a",
+      "optimization": "lossless frame differences, displayed pixels and timing verified"
+    },
+    "highlightFrames": 269,
+    "highlightSeconds": 13.45
+  },
+  "modelCalls": 0,
+  "checks": [
+    "3D models: drag to orbit and scroll to zoom",
+    "Model tools: view, projection and section",
+    "3MF assemblies: inspect the gears",
+    "Panorama interaction hint matches the recording language",
+    "360° photos: look around the Milky Way",
+    "360° video: seek with the bottom timeline",
+    "Play the panorama and change the view",
+    "Live language switching translates paused controls without replacing video or resetting playback position",
+    "capture complete"
+  ],
+  "documents": [
+    {
+      "name": "极光观测手册.docx",
+      "source": "apps/demo/public/samples/filens-aurora-guide.zh-CN.docx",
+      "bytes": 601706,
+      "sha256": "535d42bb20c556bd063a1ccf17d4b0e33fe04eed8a9bdc86549125d52987d37b"
+    },
+    {
+      "name": "观测站数据.xlsx",
+      "source": "apps/demo/public/samples/filens-observatory.zh-CN.xlsx",
+      "bytes": 6633,
+      "sha256": "2f6099ad50ad74f579e7fe913222cbcdeb6a9c60ea705516ad72c7c21ab31b18"
+    },
+    {
+      "name": "FiLens 介绍.pptx",
+      "source": "apps/demo/public/samples/filens-introduction.zh-CN.pptx",
+      "bytes": 3276757,
+      "sha256": "772fd13e340fc611ac6f4c0e0fbe1cf49566797495ae1700c56cd3dedb52587f"
+    },
+    {
+      "name": "宇宙图鉴.pdf",
+      "source": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+      "bytes": 689455,
+      "sha256": "7f085e7cfcb77645a9e296cd527150037868f7e1ead61fddf6d1a316b9576a69"
+    },
+    {
+      "name": "山间湖泊.jpg",
+      "source": "apps/demo/public/samples/photo-alpine-lake.jpg",
+      "bytes": 392850,
+      "sha256": "d60c6def5ea6401ac3e5b153ad34f50443361f12dd56bc1da01b41c27fc3bc7a"
+    },
+    {
+      "name": "轨道机器人.glb",
+      "source": "apps/demo/public/samples/models/orbital-bot.glb",
+      "bytes": 490004,
+      "sha256": "4a10b664de88ff4fd095aa21ed62a933ff7008b9142703dc082bef51476557f3"
+    },
+    {
+      "name": "行星齿轮箱.3mf",
+      "source": "apps/demo/public/samples/models/planetary-gearbox.3mf",
+      "bytes": 340782,
+      "sha256": "d8f597c428a7910a3fa4ca80742f990178a2adb547f572d8c74cb417f5df8ca6"
+    },
+    {
+      "name": "银河全景.pano",
+      "source": "apps/demo/public/samples/showcase/milky-way-360.jpg",
+      "bytes": 2535413,
+      "sha256": "b13b4411bd5e1f0074fdc095fe15156b69725e3d272d9cf5aec47154458442e4"
+    },
+    {
+      "name": "黑洞之旅.360v",
+      "source": "apps/demo/public/samples/panorama/nasa-black-hole-360.webm",
+      "bytes": 6153631,
+      "sha256": "32973db236c2998ffa5d66d8da78efd6d5d32846269f2fd7a511b47ef169d41d"
+    }
+  ],
+  "chapters": [
+    {
+      "start": 0,
+      "duration": 2.7,
+      "sourceStart": 13.003,
+      "zh": "3D 模型：拖拽旋转，滚轮缩放",
+      "en": "3D models: drag to orbit and scroll to zoom"
+    },
+    {
+      "start": 2.7,
+      "duration": 3.05,
+      "sourceStart": 15.72,
+      "zh": "模型工具：视图、投影和剖切",
+      "en": "Model tools: view, projection and section"
+    },
+    {
+      "start": 5.75,
+      "duration": 3,
+      "sourceStart": 18.764,
+      "zh": "3MF 装配：查看齿轮结构",
+      "en": "3MF assemblies: inspect the gears"
+    },
+    {
+      "start": 8.75,
+      "duration": 2.5,
+      "sourceStart": 22.24,
+      "zh": "360° 照片：拖拽探索银河全景",
+      "en": "360° photos: look around the Milky Way"
+    },
+    {
+      "start": 11.25,
+      "duration": 1.6,
+      "sourceStart": 25.225,
+      "zh": "360° 视频：用底部进度条定位",
+      "en": "360° video: seek with the bottom timeline"
+    },
+    {
+      "start": 12.85,
+      "duration": 3.2,
+      "sourceStart": 26.805,
+      "zh": "播放全景视频，同时改变视角",
+      "en": "Play the panorama and change the view"
+    }
+  ],
+  "highlightChapters": [
+    {
+      "start": 0,
+      "duration": 2.2,
+      "sourceStart": 13.003,
+      "zh": "3D 模型：拖拽旋转，滚轮缩放",
+      "en": "3D models: drag to orbit and scroll to zoom"
+    },
+    {
+      "start": 2.2,
+      "duration": 2.95,
+      "sourceStart": 15.72,
+      "zh": "模型工具：视图、投影和剖切",
+      "en": "Model tools: view, projection and section"
+    },
+    {
+      "start": 5.15,
+      "duration": 2.5,
+      "sourceStart": 18.764,
+      "zh": "3MF 装配：查看齿轮结构",
+      "en": "3MF assemblies: inspect the gears"
+    },
+    {
+      "start": 7.65,
+      "duration": 1.9,
+      "sourceStart": 22.24,
+      "zh": "360° 照片：拖拽探索银河全景",
+      "en": "360° photos: look around the Milky Way"
+    },
+    {
+      "start": 9.55,
+      "duration": 1.6,
+      "sourceStart": 25.225,
+      "zh": "360° 视频：用底部进度条定位",
+      "en": "360° video: seek with the bottom timeline"
+    },
+    {
+      "start": 11.15,
+      "duration": 2.3,
+      "sourceStart": 26.805,
+      "zh": "播放全景视频，同时改变视角",
+      "en": "Play the panorama and change the view"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.webp",
+      "bytes": 6115908,
+      "sha256": "58cd962e7df6dac0a49dc589c97e0b2809faa90da5ce0fafbdbe5d4d7a8e5207"
+    },
+    {
+      "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.gif",
+      "bytes": 21947126,
+      "sha256": "f8e59c0ef069be0782a00f330cc456d7f752da29b575c64b1e8b1547d73a3986"
+    },
+    {
+      "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.mp4",
+      "bytes": 2762203,
+      "sha256": "2862a6bcd890fc2bfcfaf2b8662563bb96a24f61ab7e548c7dfddca32d9cb071"
+    }
+  ]
+}

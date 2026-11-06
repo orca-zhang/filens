@@ -205,6 +205,10 @@ export class Previewer implements PreviewerInstance {
     this.activeSession?.setScale?.(scale);
   }
 
+  refreshTranslations(): void {
+    this.activeSession?.refreshTranslations?.();
+  }
+
   fit(mode?: PreviewOptions['fit']): void {
     this.activeSession?.fit?.(mode);
   }

@@ -14,7 +14,7 @@ if(modules&&dsh)throw new Error('Choose --modules or --dsh');
 if(cliOnly&&(modules||dsh))throw new Error('--cli-only applies to CLI packages');
 const directory=path.join(root,dsh?'dist/dsh-npm':modules?'dist/workspace-npm':'dist/npm');
 const metadata=JSON.parse(await readFile(path.join(directory,'release.json'),'utf8'));
-const release=dsh?{version:metadata.version,packages:[metadata]}:metadata;
+const release=dsh?{version:metadata.version,packages:metadata.packages??[metadata]}:metadata;
 if(cliOnly)release.packages=release.packages.filter(pkg=>pkg.name!=='filens-preview');
 if(!modules&&!dsh&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
 const integrities=new Map();
@@ -30,7 +30,7 @@ if(!Number.isSafeInteger(verifyAttempts)||verifyAttempts<1||verifyAttempts>360)t
 if(!modules&&!dsh)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
 const versionOf=pkg=>pkg.version??release.version;
 const keyOf=pkg=>`${pkg.name}@${versionOf(pkg)}`;
-const entryNames=['filens-cli','filens-cli-lite'];
+const entryNames=dsh?['dsh-filens']:['filens-cli','filens-cli-lite'];
 // A DSH dependency upload must not promote the standalone CLI before its
 // separately published preview runtime is ready.
 const tagOf=pkg=>versionOf(pkg).includes('-')?'next':cliOnly&&entryNames.includes(pkg.name)?'dsh':'latest';

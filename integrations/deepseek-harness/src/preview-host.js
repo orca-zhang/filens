@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import { runtime } from './runtime-manifest.js';
+export { runtime };
 
 export const name = 'filens-preview';
 export const inject = ['webServer'];
@@ -10,12 +11,12 @@ export const inject = ['webServer'];
 const types = { '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.wasm': 'application/wasm', '.txt': 'text/plain; charset=utf-8', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 
 /** Only built, enumerated runtime resources are exposed. This route never accepts document paths. */
-export function runtimeResource(request) {
+export function runtimeResource(request, basePath = runtime.basePath) {
   const url = new URL(request.url);
   const pathname = url.pathname;
   if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
-  if (!pathname.startsWith(runtime.basePath)) return new Response(null, { status: 404 });
-  const file = pathname.slice(runtime.basePath.length);
+  if (!pathname.startsWith(basePath)) return new Response(null, { status: 404 });
+  const file = pathname.slice(basePath.length);
   if (!Object.hasOwn(runtime.files, file)) return new Response(null, { status: 404 });
   const entry = runtime.files[file];
   const headers = {
@@ -41,15 +42,17 @@ export function runtimeResource(request) {
   return new Response(Readable.toWeb(stream), { headers });
 }
 
-export function apply(ctx) {
+export function apply(ctx) { applyRuntime(ctx); }
+
+export function applyRuntime(ctx, basePath = runtime.basePath) {
   // rc.5 and alpha.3 share this Node handler contract; only alpha.3 also has
   // the newer resource handler contract.
-  ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: runtime.basePath.slice(0, -1), async handler(req, res) {
+  ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: basePath.slice(0, -1), async handler(req, res) {
     const controller = new AbortController();
     const close = () => { if (!res.writableFinished) controller.abort(); };
     res.once('close', close);
     try {
-      const response = runtimeResource(new Request(new URL(req.url, ctx.webServer.getOrigin()), { method: req.method, signal: controller.signal }));
+      const response = runtimeResource(new Request(new URL(req.url, ctx.webServer.getOrigin()), { method: req.method, signal: controller.signal }), basePath);
       res.writeHead(response.status, Object.fromEntries(response.headers));
       if (response.body) await pipeline(Readable.fromWeb(response.body), res);
       else res.end();

@@ -1,0 +1,240 @@
+{
+  "recordedAt": "2026-11-06T08:52:48.775Z",
+  "environment": {
+    "dsh": "0.2.1-rc.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "electron": "44.7.0"
+  },
+  "plugin": "dsh-filens@0.1.6",
+  "installationSource": "isolated local source build",
+  "components": {
+    "cli": "0.5.6",
+    "preview": "0.3.5",
+    "extensions": 451,
+    "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
+    "workspaceSHA256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+  },
+  "source": "Installed Desktop application, isolated local source build, actual UI interactions",
+  "locale": "zh-CN",
+  "windowCompositing": "opaque native window background for screencast transparency",
+  "editing": "Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions are annotations. No pointer overlay is added. This is not a timing comparison.",
+  "encoding": {
+    "fps": 20,
+    "webp": {
+      "width": 960,
+      "quality": 92,
+      "color": "full color"
+    },
+    "gif": {
+      "width": 960,
+      "colors": 256,
+      "palette": "adaptive per scene",
+      "dither": "sierra2_4a",
+      "optimization": "lossless frame differences, displayed pixels and timing verified"
+    },
+    "highlightFrames": 285,
+    "highlightSeconds": 14.25
+  },
+  "modelCalls": 0,
+  "checks": [
+    "Session files, collected into thumbnail groups",
+    "Expand a session: live Word, PowerPoint and Excel previews",
+    "Search by session title; temporary lock files stay hidden",
+    "Open a file: a compact list and a large reading canvas",
+    "File details: properties, related files and source messages",
+    "Related files: linked by message, question and session",
+    "Jump back to the exact question behind the file",
+    "Follow DSH dark mode with the same collected files",
+    "capture complete"
+  ],
+  "documents": [
+    {
+      "name": "极光观测手册.docx",
+      "source": "apps/demo/public/samples/filens-aurora-guide.zh-CN.docx",
+      "bytes": 601706,
+      "sha256": "535d42bb20c556bd063a1ccf17d4b0e33fe04eed8a9bdc86549125d52987d37b"
+    },
+    {
+      "name": "观测站数据.xlsx",
+      "source": "apps/demo/public/samples/filens-observatory.zh-CN.xlsx",
+      "bytes": 6633,
+      "sha256": "2f6099ad50ad74f579e7fe913222cbcdeb6a9c60ea705516ad72c7c21ab31b18"
+    },
+    {
+      "name": "FiLens 介绍.pptx",
+      "source": "apps/demo/public/samples/filens-introduction.zh-CN.pptx",
+      "bytes": 3276757,
+      "sha256": "772fd13e340fc611ac6f4c0e0fbe1cf49566797495ae1700c56cd3dedb52587f"
+    },
+    {
+      "name": "宇宙图鉴.pdf",
+      "source": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+      "bytes": 689455,
+      "sha256": "7f085e7cfcb77645a9e296cd527150037868f7e1ead61fddf6d1a316b9576a69"
+    },
+    {
+      "name": "山间湖泊.jpg",
+      "source": "apps/demo/public/samples/photo-alpine-lake.jpg",
+      "bytes": 392850,
+      "sha256": "d60c6def5ea6401ac3e5b153ad34f50443361f12dd56bc1da01b41c27fc3bc7a"
+    },
+    {
+      "name": "轨道机器人.glb",
+      "source": "apps/demo/public/samples/models/orbital-bot.glb",
+      "bytes": 490004,
+      "sha256": "4a10b664de88ff4fd095aa21ed62a933ff7008b9142703dc082bef51476557f3"
+    },
+    {
+      "name": "行星齿轮箱.3mf",
+      "source": "apps/demo/public/samples/models/planetary-gearbox.3mf",
+      "bytes": 340782,
+      "sha256": "d8f597c428a7910a3fa4ca80742f990178a2adb547f572d8c74cb417f5df8ca6"
+    },
+    {
+      "name": "银河全景.pano",
+      "source": "apps/demo/public/samples/showcase/milky-way-360.jpg",
+      "bytes": 2535413,
+      "sha256": "b13b4411bd5e1f0074fdc095fe15156b69725e3d272d9cf5aec47154458442e4"
+    },
+    {
+      "name": "黑洞之旅.360v",
+      "source": "apps/demo/public/samples/panorama/nasa-black-hole-360.webm",
+      "bytes": 6153631,
+      "sha256": "32973db236c2998ffa5d66d8da78efd6d5d32846269f2fd7a511b47ef169d41d"
+    }
+  ],
+  "chapters": [
+    {
+      "start": 0,
+      "duration": 1.9,
+      "sourceStart": 31.605,
+      "zh": "会话文件自动汇集，折叠成预览群组",
+      "en": "Session files, collected into thumbnail groups"
+    },
+    {
+      "start": 1.9,
+      "duration": 1.9,
+      "sourceStart": 33.507,
+      "zh": "展开会话：Word、PPT、Excel 都有真实缩略图",
+      "en": "Expand a session: live Word, PowerPoint and Excel previews"
+    },
+    {
+      "start": 3.8,
+      "duration": 1.85,
+      "sourceStart": 35.427,
+      "zh": "按会话标题查找，临时锁文件默认隐藏",
+      "en": "Search by session title; temporary lock files stay hidden"
+    },
+    {
+      "start": 5.65,
+      "duration": 1.85,
+      "sourceStart": 37.259,
+      "zh": "打开文件：窄文件栏与大画布",
+      "en": "Open a file: a compact list and a large reading canvas"
+    },
+    {
+      "start": 7.5,
+      "duration": 1.75,
+      "sourceStart": 39.112,
+      "zh": "文件详情：属性、相关文件与来源消息",
+      "en": "File details: properties, related files and source messages"
+    },
+    {
+      "start": 9.25,
+      "duration": 1.75,
+      "sourceStart": 40.841,
+      "zh": "相关文件：按同一消息、提问和会话推荐",
+      "en": "Related files: linked by message, question and session"
+    },
+    {
+      "start": 11,
+      "duration": 2.1,
+      "sourceStart": 42.575,
+      "zh": "返回原提问，定位文件产生的位置",
+      "en": "Jump back to the exact question behind the file"
+    },
+    {
+      "start": 13.1,
+      "duration": 1.75,
+      "sourceStart": 44.816,
+      "zh": "跟随 DSH 深色外观，保持同一套文件",
+      "en": "Follow DSH dark mode with the same collected files"
+    }
+  ],
+  "highlightChapters": [
+    {
+      "start": 0,
+      "duration": 1.8,
+      "sourceStart": 31.605,
+      "zh": "会话文件自动汇集，折叠成预览群组",
+      "en": "Session files, collected into thumbnail groups"
+    },
+    {
+      "start": 1.8,
+      "duration": 1.8,
+      "sourceStart": 33.507,
+      "zh": "展开会话：Word、PPT、Excel 都有真实缩略图",
+      "en": "Expand a session: live Word, PowerPoint and Excel previews"
+    },
+    {
+      "start": 3.6,
+      "duration": 1.8,
+      "sourceStart": 35.427,
+      "zh": "按会话标题查找，临时锁文件默认隐藏",
+      "en": "Search by session title; temporary lock files stay hidden"
+    },
+    {
+      "start": 5.4,
+      "duration": 1.8,
+      "sourceStart": 37.259,
+      "zh": "打开文件：窄文件栏与大画布",
+      "en": "Open a file: a compact list and a large reading canvas"
+    },
+    {
+      "start": 7.2,
+      "duration": 1.75,
+      "sourceStart": 39.112,
+      "zh": "文件详情：属性、相关文件与来源消息",
+      "en": "File details: properties, related files and source messages"
+    },
+    {
+      "start": 8.95,
+      "duration": 1.75,
+      "sourceStart": 40.841,
+      "zh": "相关文件：按同一消息、提问和会话推荐",
+      "en": "Related files: linked by message, question and session"
+    },
+    {
+      "start": 10.7,
+      "duration": 1.8,
+      "sourceStart": 42.575,
+      "zh": "返回原提问，定位文件产生的位置",
+      "en": "Jump back to the exact question behind the file"
+    },
+    {
+      "start": 12.5,
+      "duration": 1.75,
+      "sourceStart": 44.816,
+      "zh": "跟随 DSH 深色外观，保持同一套文件",
+      "en": "Follow DSH dark mode with the same collected files"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/assets/dsh-release/file-workspace.zh-CN.webp",
+      "bytes": 2159334,
+      "sha256": "e49d67e302b9e04cc64b84bbb927d4e8fab528c1c7de3ffa2bf8a704a1712994"
+    },
+    {
+      "path": "docs/assets/dsh-release/file-workspace.zh-CN.gif",
+      "bytes": 4453032,
+      "sha256": "55374c8ce3cf777ca5947c03d8a807bbe3d708914b4d1604f53bf4ddac253cd0"
+    },
+    {
+      "path": "docs/assets/dsh-release/file-workspace.zh-CN.mp4",
+      "bytes": 953828,
+      "sha256": "7bf16baa24104c2b6ecef97bdc9650023a3a2cc717fc7bc663c32c40737ad722"
+    }
+  ]
+}

@@ -14,8 +14,8 @@ Generated from the production demo by `npm run report:bundle-sizes`. Units are K
 | Demo entry | 241.8 KiB | 69.5 KiB | **58.1 KiB** |
 | Agent CLI demo UI | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
 | Shared vendor dependencies | 813.1 KiB | 229.7 KiB | **192.1 KiB** |
-| PPTX / core runtime | 384.7 KiB | 108.0 KiB | **91.5 KiB** |
-| Vue preview host | 213.8 KiB | 58.2 KiB | **46.5 KiB** |
+| PPTX / core runtime | 385.3 KiB | 108.2 KiB | **91.8 KiB** |
+| Vue preview host | 247.2 KiB | 66.0 KiB | **52.5 KiB** |
 | DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
 | On-demand DOCX engine | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
 | Office attachments | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
@@ -33,8 +33,8 @@ Generated from the production demo by `npm run report:bundle-sizes`. Units are K
 | 3DS model loader | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
 | LDraw model loader | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
 | USDZ model loader | 8.5 KiB | 2.6 KiB | **2.4 KiB** |
-| VRML model loader | 178.0 KiB | 46.4 KiB | **39.7 KiB** |
-| Media / panorama preview | 464.6 KiB | 128.7 KiB | **108.2 KiB** |
+| VRML model loader | 178.0 KiB | 46.4 KiB | **39.8 KiB** |
+| Media / panorama preview | 465.1 KiB | 128.8 KiB | **108.3 KiB** |
 | Media decoder loader | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
 | Archive preview | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
 | RAR / 7z extraction WASM (optional) | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
@@ -45,7 +45,7 @@ Generated from the production demo by `npm run report:bundle-sizes`. Units are K
 | truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Initial entry, preload, and CSS: **1945.7 KiB raw / 548.5 KiB gzip / 461.4 KiB Brotli**. This excludes HTML, imagery, video, sample files, and later requests. Shared vendor dependencies are included here and must be considered when reading individual module sizes. PDF and iWork have separate workers.
+Initial entry, preload, and CSS: **1946.8 KiB raw / 548.9 KiB gzip / 461.8 KiB Brotli**. This excludes HTML, imagery, video, sample files, and later requests. Shared vendor dependencies are included here and must be considered when reading individual module sizes. PDF and iWork have separate workers.
 
 [Exact byte counts and file names](assets/bundle-sizes.json). Compression measurements use the actual build's gzip and Brotli artifacts; server negotiation and caching determine real network transfer. This is a build snapshot, not the size of a published npm tarball.
 

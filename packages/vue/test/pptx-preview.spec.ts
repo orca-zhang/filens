@@ -248,6 +248,31 @@ describe('PptxPreview', () => {
     } finally { wrapper.unmount(); target.remove(); }
   });
 
+  it('translates paused video controls on locale and message changes without reloading media', async () => {
+    const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+    const load = vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
+    const wrapper = mount(Preview, { props: { src: '/example.mp4', name: 'example.mp4', locale: 'zh_CN' } });
+    const other = mount(Preview, { props: { src: '/other.mp4', name: 'other.mp4', locale: 'en_US' } });
+    try {
+      await waitFor(() => expect(wrapper.find('.pptxv-video-controls [aria-label="播放"]').exists()).toBe(true));
+      await waitFor(() => expect(other.find('.pptxv-video-controls [aria-label="Play"]').exists()).toBe(true));
+      const video = wrapper.find('video').element;
+      video.currentTime = 12;
+      video.dispatchEvent(new Event('timeupdate'));
+      const loads = load.mock.calls.length;
+      await wrapper.setProps({ locale: 'en_US' });
+      expect(wrapper.find('.pptxv-video-controls [aria-label="Play"]').attributes('title')).toBe('Play');
+      expect(wrapper.find('video').element).toBe(video);
+      expect(video.currentTime).toBe(12);
+      expect(load).toHaveBeenCalledTimes(loads);
+      await wrapper.setProps({ messages: { Play: 'Start playback' } });
+      expect(wrapper.find('.pptxv-video-controls [aria-label="Start playback"]').exists()).toBe(true);
+      expect(other.find('.pptxv-video-controls [aria-label="Play"]').exists()).toBe(true);
+    } finally {
+      wrapper.unmount(); other.unmount(); pause.mockRestore(); load.mockRestore();
+    }
+  });
+
   it('provides real text zoom and shell fullscreen without native driver capabilities', async () => {
     const target = document.createElement('div'); document.body.append(target);
     const wrapper = mount(Preview, { attachTo: document.body, props: {

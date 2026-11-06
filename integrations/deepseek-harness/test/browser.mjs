@@ -51,7 +51,7 @@ const harness = await build({
     const ctx = {
       effect: fn => { disposers.push(fn()); },
       documentPreviews: { register: spec => { window.registration=spec; return () => { window.registration=undefined; }; } },
-      slots: { inject: (name, fn) => fn(), register: (spec, body) => { if(spec.name.endsWith('.action')) action=body; else component=body; return () => {}; } }
+      slots: { inject: (name, fn) => fn(), register: (spec, body) => { if(spec.name === 'sidebar.right.tab.document.action') action=body; if(spec.name === 'sidebar.right.tab.document') component=body; return () => {}; } }
     };
     plugin.apply(ctx);
     window.pluginExports=plugin;
@@ -166,7 +166,7 @@ try {
         assert.equal(await isolated.locator('audio').evaluate(media => media.playbackRate), 1.5);
       }
       if (name === 'sample-video.mp4') {
-        await isolated.getByRole('combobox', { name: 'Video playback speed', exact: true }).selectOption('2');
+        await isolated.getByRole('combobox', { name: 'Playback speed', exact: true }).selectOption('2');
         assert.equal(await isolated.locator('video').evaluate(media => media.playbackRate), 2);
       }
       if (expected === 'archive-driver') {

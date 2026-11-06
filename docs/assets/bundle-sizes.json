@@ -68,22 +68,22 @@
     {
       "name": "index",
       "files": [
-        "assets/index-B_AYKA03.js",
+        "assets/index-BaG4g47O.js",
         "assets/index-TVRuDlD1.css"
       ],
       "raw": 247554,
-      "gzip": 71127,
-      "brotli": 59468
+      "gzip": 71126,
+      "brotli": 59487
     },
     {
       "name": "AgentWorkbench",
       "files": [
-        "assets/AgentWorkbench-CoyPrdpd.js",
-        "assets/AgentWorkbench-DBTuznrs.css"
+        "assets/AgentWorkbench-DBTuznrs.css",
+        "assets/AgentWorkbench-DHSf_3An.js"
       ],
       "raw": 35706,
-      "gzip": 13830,
-      "brotli": 11391
+      "gzip": 13828,
+      "brotli": 11396
     },
     {
       "name": "vendor",
@@ -97,32 +97,32 @@
     {
       "name": "core",
       "files": [
-        "assets/core-C_t28xlh.css",
-        "assets/core-D-RpQMC0.js"
+        "assets/core-7u-htcDl.js",
+        "assets/core-C_t28xlh.css"
       ],
-      "raw": 393934,
-      "gzip": 110551,
-      "brotli": 93686
+      "raw": 394560,
+      "gzip": 110805,
+      "brotli": 93967
     },
     {
       "name": "preview",
       "files": [
-        "assets/preview-BiKbA8h7.js",
-        "assets/preview-CapCQxZ7.css"
+        "assets/preview-CapCQxZ7.css",
+        "assets/preview-E1aQcqn7.js"
       ],
-      "raw": 218967,
-      "gzip": 59618,
-      "brotli": 47657
+      "raw": 253166,
+      "gzip": 67606,
+      "brotli": 53769
     },
     {
       "name": "office",
       "files": [
-        "assets/office-CU3QONSv.js",
+        "assets/office-DPaxhb74.js",
         "assets/office-E2UjPKuF.css"
       ],
       "raw": 52956,
-      "gzip": 16427,
-      "brotli": 14780
+      "gzip": 16426,
+      "brotli": 14787
     },
     {
       "name": "docx-engine",
@@ -181,32 +181,32 @@
     {
       "name": "iwork",
       "files": [
-        "assets/iwork-DbxtwI86.css",
-        "assets/iwork-VlF_lfhi.js"
+        "assets/iwork-B2k7jvVT.js",
+        "assets/iwork-DbxtwI86.css"
       ],
       "raw": 41519,
-      "gzip": 12433,
-      "brotli": 11086
+      "gzip": 12432,
+      "brotli": 11081
     },
     {
       "name": "design",
       "files": [
-        "assets/design-DMErPUwf.css",
-        "assets/design-Dv7t2omF.js"
+        "assets/design-CjO7wkve.js",
+        "assets/design-DMErPUwf.css"
       ],
       "raw": 102999,
-      "gzip": 29111,
-      "brotli": 25032
+      "gzip": 29109,
+      "brotli": 24949
     },
     {
       "name": "model3d",
       "files": [
         "assets/model3d-B1myDZRM.css",
-        "assets/model3d-B2ZO73XL.js"
+        "assets/model3d-BEaxbnNf.js"
       ],
       "raw": 111614,
-      "gzip": 32496,
-      "brotli": 28341
+      "gzip": 32493,
+      "brotli": 28338
     },
     {
       "name": "model-gltf",
@@ -220,11 +220,11 @@
     {
       "name": "model-fbx",
       "files": [
-        "assets/model-fbx-BJqsNIp3.js"
+        "assets/model-fbx-Brxpg_du.js"
       ],
       "raw": 44958,
-      "gzip": 14428,
-      "brotli": 12860
+      "gzip": 14424,
+      "brotli": 12899
     },
     {
       "name": "model-obj",
@@ -247,11 +247,11 @@
     {
       "name": "model-3ds",
       "files": [
-        "assets/model-3ds-C99ybuAA.js"
+        "assets/model-3ds-3RFpIhlT.js"
       ],
       "raw": 8553,
-      "gzip": 2901,
-      "brotli": 2579
+      "gzip": 2899,
+      "brotli": 2576
     },
     {
       "name": "model-ldraw",
@@ -274,40 +274,40 @@
     {
       "name": "model-vrml",
       "files": [
-        "assets/model-vrml-UtgDz5vb.js"
+        "assets/model-vrml-EdrPnRqH.js"
       ],
       "raw": 182226,
-      "gzip": 47485,
-      "brotli": 40687
+      "gzip": 47481,
+      "brotli": 40766
     },
     {
       "name": "media",
       "files": [
-        "assets/media-6moCrhIV.js",
+        "assets/media-BZytKCId.js",
         "assets/media-DHiDD_Uj.css"
       ],
-      "raw": 475741,
-      "gzip": 131776,
-      "brotli": 110767
+      "raw": 476245,
+      "gzip": 131909,
+      "brotli": 110862
     },
     {
       "name": "media-runtime",
       "files": [
-        "assets/media-runtime-cMmrqeRI.js"
+        "assets/media-runtime-CR0JAexe.js"
       ],
       "raw": 146550,
       "gzip": 53716,
-      "brotli": 46582
+      "brotli": 46606
     },
     {
       "name": "archive",
       "files": [
         "assets/archive-CTXgQqRv.css",
-        "assets/archive-DlNZ5vNM.js"
+        "assets/archive-DpXH5ify.js"
       ],
-      "raw": 49274,
-      "gzip": 14997,
-      "brotli": 13422
+      "raw": 49264,
+      "gzip": 14991,
+      "brotli": 13418
     },
     {
       "name": "archive-engine",
@@ -331,11 +331,11 @@
       "name": "text",
       "files": [
         "assets/text-D3SswQaz.css",
-        "assets/text-DoRKgxj-.js"
+        "assets/text-Dv5QlJWm.js"
       ],
       "raw": 18554,
-      "gzip": 7019,
-      "brotli": 6211
+      "gzip": 7017,
+      "brotli": 6213
     },
     {
       "name": "iwork-worker",
@@ -367,23 +367,23 @@
     {
       "name": "step-runtime",
       "files": [
-        "assets/step-runtime-B8rnDPWM.js"
+        "assets/step-runtime-CMJIb6uo.js"
       ],
       "raw": 2825,
-      "gzip": 1421,
+      "gzip": 1422,
       "brotli": 1248
     }
   ],
   "initial": {
-    "raw": 1992405,
-    "gzip": 561700,
-    "brotli": 472481,
+    "raw": 1993535,
+    "gzip": 562086,
+    "brotli": 472876,
     "files": [
-      "assets/index-B_AYKA03.js",
+      "assets/index-BaG4g47O.js",
       "assets/vendor-l4mFrO8n.js",
-      "assets/core-D-RpQMC0.js",
+      "assets/core-7u-htcDl.js",
       "assets/zip-compat-DzV7CPW5.js",
-      "assets/media-6moCrhIV.js",
+      "assets/media-BZytKCId.js",
       "assets/core-C_t28xlh.css",
       "assets/media-DHiDD_Uj.css",
       "assets/index-TVRuDlD1.css"

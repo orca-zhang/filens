@@ -31,7 +31,7 @@ await mkdir(output, { recursive: true });
 
 // Only expose the existing client context to prepare an empty sample workspace.
 // All recorded install, file opening and preview actions use the normal UI.
-export function desktopInstrumentation() {
+export function desktopInstrumentation({ pointer = false } = {}) {
   const installPointer = () => {
     const pointer = document.createElement('div');
     pointer.setAttribute('aria-hidden', 'true');
@@ -44,8 +44,10 @@ export function desktopInstrumentation() {
     }, true);
     document.addEventListener('fullscreenchange', () => (document.fullscreenElement ?? document.body).append(pointer));
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installPointer, { once: true });
-  else installPointer();
+  if (pointer) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installPointer, { once: true });
+    else installPointer();
+  }
   if (window !== window.top) return;
   let loader;
   Object.defineProperty(window, '__ModuleLoader__', {
@@ -56,13 +58,17 @@ export function desktopInstrumentation() {
         configurable: true, set(fn) { load = fn; },
         get() {
           return function (registration) {
-            if (['dsh-filens', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'].includes(registration.id)) {
+            if (['dsh-filens', 'dsh-filens-workspace', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'].includes(registration.id)) {
               const factory = registration.factory;
               registration = { ...registration, factory(require) {
                 const exports = factory(require);
                 return { ...exports, apply(ctx, ...args) {
                   window.__DSH_DEMO_CTX__ = ctx;
-                  return exports.apply(ctx, ...args);
+                  try {
+                    const result = exports.apply(ctx, ...args);
+                    if (result?.catch) return result.catch(error => { console.error('Plugin apply failed:', registration.id, error.stack ?? String(error)); throw error; });
+                    return result;
+                  } catch (error) { console.error('Plugin apply failed:', registration.id, error.stack ?? String(error)); throw error; }
                 } };
               } };
             }
@@ -75,21 +81,23 @@ export function desktopInstrumentation() {
   });
 }
 
-export async function launchDesktop(home, recordVideo) {
+export async function launchDesktop(home, recordVideo, options = {}) {
   const env = { ...process.env, DSH_HOME: home };
   delete env.ELECTRON_RUN_AS_NODE;
   const app = await _electron.launch({
     executablePath, args: [`--user-data-dir=${path.join(home, 'electron')}`], env,
-    locale: 'zh-CN',
+    locale: options.locale ?? 'zh-CN',
     timeout: 60000
   });
+  app.process().stderr.on('data', data => { if (!options.quiet && /Error|failed/.test(String(data))) console.log('DSH:', String(data).slice(0, 2500)); });
   const page = await app.firstWindow();
-  await page.addInitScript(desktopInstrumentation);
-  const viewport = await app.evaluate(({ BrowserWindow, screen }, recordVideo) => {
+  await page.addInitScript(desktopInstrumentation, { pointer: options.pointer ?? recordVideo });
+  const viewport = await app.evaluate(({ BrowserWindow, screen }, { recordVideo, opaque }) => {
     let viewport = { width: 1280, height: 820 };
     for (const window of BrowserWindow.getAllWindows()) {
-      if (window.webContents.getURL().includes('welcome.html')) window.close();
+      if (window.webContents.getURL().includes('welcome.html')) window.hide();
       else {
+        if (opaque) { window.setVibrancy(null); window.setBackgroundColor('#ffffff'); }
         // Match native fullscreen's display aspect ratio. Otherwise Playwright
         // pads 16:9 fullscreen frames into the taller window video with gray.
         const display = screen.getDisplayMatching(window.getBounds());
@@ -98,7 +106,7 @@ export async function launchDesktop(home, recordVideo) {
       }
     }
     return viewport;
-  }, recordVideo);
+  }, { recordVideo, opaque: options.opaque });
   await page.reload();
   await page.waitForFunction(() => window.__DSH_DEMO_CTX__?.get('workspaces') && window.__DSH_DEMO_CTX__?.get('uiWorkspace'));
   // Bring the initialized main window forward before testing native fullscreen.
@@ -268,7 +276,7 @@ async function capture() {
   }
 }
 
-export async function encodeRecording(recordingFile = recordingPath, basename = 'install-and-preview', requiredCheck = 'Escape exits fullscreen') {
+export async function encodeRecording(recordingFile = recordingPath, basename = 'install-and-preview', requiredCheck = 'Escape exits fullscreen', options = {}) {
   const work = path.dirname(recordingFile);
   const recording = JSON.parse(await readFile(recordingFile, 'utf8'));
   const { width, height } = recording.viewport ?? { width: 1280, height: 820 };
@@ -276,7 +284,9 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
   const ffmpeg = args => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: 'inherit' });
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width, height: captionHeight }, deviceScaleFactor: 1 });
-  const fps = 25;
+  const fps = options.fps ?? 25;
+  const destination = options.output ?? output;
+  await mkdir(destination, { recursive: true });
   const gallery = basename === '3d-and-panorama';
   // Keep the full walkthrough in MP4. The looping images retain short, actual-
   // speed interactions, rather than long pauses or accelerated camera motion.
@@ -296,16 +306,16 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
     return { ...segment, start, end: Math.min(segment.end, start + duration), zh, en: caption };
   }) : recording.segments
     .filter(segment => segment.en !== 'Click an Office file in the workspace')
-    .map(segment => ({ ...segment, end: Math.min(segment.end, Math.max(segment.start + 1.2, (segment.actionEnd ?? segment.end - 0.6) + 0.4)) }));
+    .map(segment => ({ ...segment, end: Math.min(segment.end, Math.max(segment.start + (options.locale ? 1.8 : 1.2), (segment.actionEnd ?? segment.end - 0.6) + (options.locale ? 0.8 : 0.4))) }));
   const render = async (segments, prefix, target) => {
     const chapters = [];
     let timeline = 0;
     for (const [index, segment] of segments.entries()) {
-      await page.evaluate(({ zh, en, index, count }) => {
+      await page.evaluate(({ zh, en, index, count, locale }) => {
         document.querySelector('.step').textContent = `${String(index + 1).padStart(2, '0')} / ${count}`;
-        document.querySelector('strong').textContent = zh;
-        document.querySelector('small').textContent = en;
-      }, { ...segment, index, count: segments.length });
+        document.querySelector('strong').textContent = locale === 'en' ? en : zh;
+        document.querySelector('small').textContent = locale ? '' : en;
+      }, { ...segment, index, count: segments.length, locale: options.locale });
       const caption = path.join(work, `${prefix}-caption-${index}.png`);
       await page.screenshot({ path: caption });
       const frames = Math.max(1, Math.round((segment.end - segment.start) * fps));
@@ -321,7 +331,7 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
     ffmpeg(['-f', 'concat', '-safe', '0', '-i', concat, '-c', 'copy', '-movflags', '+faststart', target]);
     return chapters;
   };
-  const video = path.join(output, `${basename}.mp4`);
+  const video = path.join(destination, `${basename}.mp4`);
   const shortVideo = path.join(work, 'highlights.mp4');
   let chapters, highlightChapters;
   try {
@@ -333,10 +343,10 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
   await rm(framesDirectory, { recursive: true, force: true });
   await mkdir(framesDirectory);
   ffmpeg(['-i', shortVideo, '-vf', `fps=${fps},scale=960:-1:flags=lanczos`, path.join(framesDirectory, 'frame-%04d.png')]);
-  const webp = path.join(output, `${basename}.webp`);
+  const webp = path.join(destination, `${basename}.webp`);
   const frames = (await readdir(framesDirectory)).filter(name => name.endsWith('.png')).sort().map(name => path.join(framesDirectory, name));
   execFileSync('img2webp', ['-loop', '0', '-lossy', '-q', '92', '-m', '4', '-d', String(1000 / fps), ...frames, '-o', webp]);
-  const gif = path.join(output, `${basename}.gif`);
+  const gif = path.join(destination, `${basename}.gif`);
   const gifWidth = gallery ? 800 : 960;
   const gifClips = [];
   for (const [index] of highlights.entries()) {
@@ -351,12 +361,14 @@ export async function encodeRecording(recordingFile = recordingPath, basename = 
     source: recording.installationSource === 'isolated local source build'
       ? 'Installed Desktop application, isolated local source build, actual UI interactions'
       : 'Installed Desktop application, public npm package, actual UI interactions',
-    editing: 'Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions and pointer are annotations. This is not a timing comparison.',
+    locale: options.locale ?? 'bilingual captions',
+    windowCompositing: recording.windowCompositing,
+    editing: `Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions are annotations.${recording.pointer === false ? ' No pointer overlay is added.' : ' A pointer annotation may be included.'} This is not a timing comparison.`,
     encoding: { fps, webp: { width: 960, quality: 92, color: 'full color' }, gif: { width: gifWidth, colors: 256, palette: 'adaptive per scene', dither: 'sierra2_4a', optimization: 'lossless frame differences, displayed pixels and timing verified' }, highlightFrames: frames.length, highlightSeconds: frames.length / fps },
     modelCalls: 0, checks: recording.checks, documents: recording.documents, chapters, highlightChapters,
     artifacts: await Promise.all([webp, gif, video].map(async file => ({ path: path.relative(root, file), bytes: (await stat(file)).size, sha256: createHash('sha256').update(await readFile(file)).digest('hex') })))
   };
-  await writeFile(path.join(output, basename === 'install-and-preview' ? 'demo-recording.json' : `${basename}-recording.json`), JSON.stringify(report, null, 2) + '\n');
+  await writeFile(path.join(destination, basename === 'install-and-preview' ? 'demo-recording.json' : `${basename}-recording.json`), JSON.stringify(report, null, 2) + '\n');
   console.log(`Saved ${fps} fps, ${frames.length / fps} second highlights: ${path.relative(root, webp)}`);
 }
 

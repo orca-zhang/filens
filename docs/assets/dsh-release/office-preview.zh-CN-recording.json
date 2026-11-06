@@ -1,0 +1,212 @@
+{
+  "recordedAt": "2026-11-06T08:52:48.773Z",
+  "environment": {
+    "dsh": "0.2.1-rc.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "electron": "44.7.0"
+  },
+  "plugin": "dsh-filens@0.1.6",
+  "installationSource": "isolated local source build",
+  "components": {
+    "cli": "0.5.6",
+    "preview": "0.3.5",
+    "extensions": 451,
+    "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
+    "workspaceSHA256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+  },
+  "source": "Installed Desktop application, isolated local source build, actual UI interactions",
+  "locale": "zh-CN",
+  "windowCompositing": "opaque native window background for screencast transparency",
+  "editing": "Download waits, workspace preparation and verification screenshots are cut. MP4 keeps the full walkthrough. WebP/GIF keep shorter actual-speed highlights with fewer idle holds. Captions are annotations. No pointer overlay is added. This is not a timing comparison.",
+  "encoding": {
+    "fps": 20,
+    "webp": {
+      "width": 960,
+      "quality": 92,
+      "color": "full color"
+    },
+    "gif": {
+      "width": 960,
+      "colors": 256,
+      "palette": "adaptive per scene",
+      "dither": "sierra2_4a",
+      "optimization": "lossless frame differences, displayed pixels and timing verified"
+    },
+    "highlightFrames": 203,
+    "highlightSeconds": 10.15
+  },
+  "modelCalls": 0,
+  "checks": [
+    "Word document body matches the recording language",
+    "Word: read directly in the DSH sidebar",
+    "Expand the preview; zoom beside the address bar",
+    "Excel: switch sheets without leaving the preview",
+    "FiLens introduction cover matches the recording language",
+    "PowerPoint: open the FiLens introduction",
+    "Present fullscreen; Page Down advances slides",
+    "Esc returns to DSH",
+    "capture complete"
+  ],
+  "documents": [
+    {
+      "name": "极光观测手册.docx",
+      "source": "apps/demo/public/samples/filens-aurora-guide.zh-CN.docx",
+      "bytes": 601706,
+      "sha256": "535d42bb20c556bd063a1ccf17d4b0e33fe04eed8a9bdc86549125d52987d37b"
+    },
+    {
+      "name": "观测站数据.xlsx",
+      "source": "apps/demo/public/samples/filens-observatory.zh-CN.xlsx",
+      "bytes": 6633,
+      "sha256": "2f6099ad50ad74f579e7fe913222cbcdeb6a9c60ea705516ad72c7c21ab31b18"
+    },
+    {
+      "name": "FiLens 介绍.pptx",
+      "source": "apps/demo/public/samples/filens-introduction.zh-CN.pptx",
+      "bytes": 3276757,
+      "sha256": "772fd13e340fc611ac6f4c0e0fbe1cf49566797495ae1700c56cd3dedb52587f"
+    },
+    {
+      "name": "宇宙图鉴.pdf",
+      "source": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+      "bytes": 689455,
+      "sha256": "7f085e7cfcb77645a9e296cd527150037868f7e1ead61fddf6d1a316b9576a69"
+    },
+    {
+      "name": "山间湖泊.jpg",
+      "source": "apps/demo/public/samples/photo-alpine-lake.jpg",
+      "bytes": 392850,
+      "sha256": "d60c6def5ea6401ac3e5b153ad34f50443361f12dd56bc1da01b41c27fc3bc7a"
+    },
+    {
+      "name": "轨道机器人.glb",
+      "source": "apps/demo/public/samples/models/orbital-bot.glb",
+      "bytes": 490004,
+      "sha256": "4a10b664de88ff4fd095aa21ed62a933ff7008b9142703dc082bef51476557f3"
+    },
+    {
+      "name": "行星齿轮箱.3mf",
+      "source": "apps/demo/public/samples/models/planetary-gearbox.3mf",
+      "bytes": 340782,
+      "sha256": "d8f597c428a7910a3fa4ca80742f990178a2adb547f572d8c74cb417f5df8ca6"
+    },
+    {
+      "name": "银河全景.pano",
+      "source": "apps/demo/public/samples/showcase/milky-way-360.jpg",
+      "bytes": 2535413,
+      "sha256": "b13b4411bd5e1f0074fdc095fe15156b69725e3d272d9cf5aec47154458442e4"
+    },
+    {
+      "name": "黑洞之旅.360v",
+      "source": "apps/demo/public/samples/panorama/nasa-black-hole-360.webm",
+      "bytes": 6153631,
+      "sha256": "32973db236c2998ffa5d66d8da78efd6d5d32846269f2fd7a511b47ef169d41d"
+    }
+  ],
+  "chapters": [
+    {
+      "start": 0,
+      "duration": 1.9,
+      "sourceStart": 0.293,
+      "zh": "Word：在 DSH 侧栏直接阅读",
+      "en": "Word: read directly in the DSH sidebar"
+    },
+    {
+      "start": 1.9,
+      "duration": 1.6,
+      "sourceStart": 2.19,
+      "zh": "展开阅读，缩放工具就在地址栏旁",
+      "en": "Expand the preview; zoom beside the address bar"
+    },
+    {
+      "start": 3.5,
+      "duration": 2.65,
+      "sourceStart": 3.797,
+      "zh": "Excel：切换工作表，保留表格结构",
+      "en": "Excel: switch sheets without leaving the preview"
+    },
+    {
+      "start": 6.15,
+      "duration": 2.35,
+      "sourceStart": 6.458,
+      "zh": "PowerPoint：打开 FiLens 介绍",
+      "en": "PowerPoint: open the FiLens introduction"
+    },
+    {
+      "start": 8.5,
+      "duration": 2.3,
+      "sourceStart": 9.083,
+      "zh": "全屏演示，Page Down 翻页",
+      "en": "Present fullscreen; Page Down advances slides"
+    },
+    {
+      "start": 10.8,
+      "duration": 1.1,
+      "sourceStart": 11.365,
+      "zh": "Esc 退出，回到 DSH",
+      "en": "Esc returns to DSH"
+    }
+  ],
+  "highlightChapters": [
+    {
+      "start": 0,
+      "duration": 1.8,
+      "sourceStart": 0.293,
+      "zh": "Word：在 DSH 侧栏直接阅读",
+      "en": "Word: read directly in the DSH sidebar"
+    },
+    {
+      "start": 1.8,
+      "duration": 1.6,
+      "sourceStart": 2.19,
+      "zh": "展开阅读，缩放工具就在地址栏旁",
+      "en": "Expand the preview; zoom beside the address bar"
+    },
+    {
+      "start": 3.4,
+      "duration": 1.95,
+      "sourceStart": 3.797,
+      "zh": "Excel：切换工作表，保留表格结构",
+      "en": "Excel: switch sheets without leaving the preview"
+    },
+    {
+      "start": 5.35,
+      "duration": 1.8,
+      "sourceStart": 6.458,
+      "zh": "PowerPoint：打开 FiLens 介绍",
+      "en": "PowerPoint: open the FiLens introduction"
+    },
+    {
+      "start": 7.15,
+      "duration": 1.9,
+      "sourceStart": 9.083,
+      "zh": "全屏演示，Page Down 翻页",
+      "en": "Present fullscreen; Page Down advances slides"
+    },
+    {
+      "start": 9.05,
+      "duration": 1.1,
+      "sourceStart": 11.365,
+      "zh": "Esc 退出，回到 DSH",
+      "en": "Esc returns to DSH"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/assets/dsh-release/office-preview.zh-CN.webp",
+      "bytes": 3354548,
+      "sha256": "0ed09cba638b9d5bb07de91cc4af5cb0e7b0b45b3219bd9db03afa3a7daa51c9"
+    },
+    {
+      "path": "docs/assets/dsh-release/office-preview.zh-CN.gif",
+      "bytes": 7968824,
+      "sha256": "d3ba9cae49a8f59637a3be098bb78067679795270e066223d76a3b81b66c5136"
+    },
+    {
+      "path": "docs/assets/dsh-release/office-preview.zh-CN.mp4",
+      "bytes": 1551241,
+      "sha256": "e61039c51601daba3fdc010c62ac176941243f028f1eee8a23adc7e15a2a7e97"
+    }
+  ]
+}

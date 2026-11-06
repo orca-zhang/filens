@@ -81,7 +81,7 @@ for (const packed of [false, true]) {
     const canvas = page.locator('#realtime-panorama-test canvas');
     await expect(canvas).toHaveAttribute('data-insta360-context-status', 'ready');
     await expect.poll(() => page.evaluate(() => (window as any).realtimePanoramaTest.getState().currentTime)).toBeGreaterThan(0.1);
-    await page.getByRole('button', { name: 'Pause panorama video', exact: true }).click();
+    await page.getByRole('button', { name: 'Pause', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).realtimePanoramaTest.getState().paused)).toBe(true);
     // Let the final requested video paint settle, then ensure pause is idle.
     await page.waitForTimeout(100);
@@ -100,30 +100,30 @@ for (const packed of [false, true]) {
     await expect.poll(() => page.evaluate(() => (window as any).realtimePanoramaTest.getState().scale)).toBeGreaterThan(1);
     expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().currentTime)).toBeCloseTo(paused, 2);
 
-    await page.getByRole('slider', { name: 'Panorama video position' }).evaluate((element) => {
+    await page.getByRole('slider', { name: 'Playback position' }).evaluate((element) => {
       (element as HTMLInputElement).value = '1.2';
       element.dispatchEvent(new Event('change'));
     });
     await expect.poll(() => page.evaluate(() => (window as any).realtimePanoramaTest.getState().currentTime)).toBeCloseTo(1.2, 2);
-    await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Audio unavailable for this panorama preview' })).toBeDisabled();
     expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().capabilities.volume)).toBe(false);
-    await page.getByRole('combobox', { name: 'Panorama video playback speed' }).selectOption('0.5');
+    await page.getByRole('combobox', { name: 'Playback speed' }).selectOption('0.5');
     expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().playbackRate)).toBe(0.5);
-    await page.getByRole('button', { name: 'Reset panorama view' }).click();
+    await page.getByRole('button', { name: 'Reset view' }).click();
     expect(await page.evaluate(() => (window as any).realtimePanoramaTest.getState().scale)).toBe(1);
-    await page.getByRole('button', { name: 'Enter panorama fullscreen' }).click();
+    await page.getByRole('button', { name: 'Enter fullscreen' }).click();
     await expect.poll(() => page.evaluate(() => document.fullscreenElement?.classList.contains('panoramav-preview'))).toBe(true);
     await expect(canvas).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Exit panorama fullscreen' }).click();
+    await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Exit fullscreen' }).click();
     await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false);
     await page.setViewportSize({ width: 320, height: 640 });
     await page.locator('#realtime-panorama-test').evaluate(host => { (host as HTMLElement).style.width = '100%'; });
     for (const control of [
-      page.getByRole('button', { name: 'Play panorama video', exact: true }),
-      page.getByRole('combobox', { name: 'Panorama video playback speed' }),
-      page.getByRole('button', { name: 'Enter panorama fullscreen' })
+      page.getByRole('button', { name: 'Play', exact: true }),
+      page.getByRole('combobox', { name: 'Playback speed' }),
+      page.getByRole('button', { name: 'Enter fullscreen' })
     ]) {
       await expect(control).toBeVisible();
       const bounds = (await control.boundingBox())!;
@@ -145,12 +145,12 @@ test('stitches a real raw INSV with the Photos renderer', async ({ page }) => {
   const canvas = page.locator('canvas.panoramav-canvas');
   await expect(canvas).toHaveAttribute('data-insta360-projection-kind', 'dual_fisheye', { timeout: 30_000 });
   await expect(canvas).toHaveAttribute('data-insta360-video-seam', /ready|cached/, { timeout: 30_000 });
-  await page.getByRole('button', { name: 'Pause panorama video', exact: true }).click();
-  await page.getByRole('slider', { name: 'Panorama video position' }).evaluate((element) => {
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('slider', { name: 'Playback position' }).evaluate((element) => {
     (element as HTMLInputElement).value = '3';
     element.dispatchEvent(new Event('change'));
   });
-  await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible({ timeout: 30_000 });
   await expect(canvas).toHaveAttribute('data-insta360-video-seam', /ready|cached/, { timeout: 30_000 });
   await expect(page.locator('.panoramav-notice')).toHaveCount(0);
 });

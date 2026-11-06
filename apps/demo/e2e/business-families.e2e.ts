@@ -282,10 +282,10 @@ test('offers samples for browser-native images and panorama aliases', async ({ p
   await expect(page.locator('.wb-preview-title strong')).toHaveText('nasa-black-hole-360.webm');
   await expect(page.locator('canvas.panoramav-canvas')).toBeVisible({ timeout: 15_000 });
   const panoramaVideo = page.locator('video.panoramav-video-source');
-  await expect(page.getByRole('button', { name: 'Play panorama video', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Play panorama video', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect.poll(() => panoramaVideo.evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Pause panorama video', exact: true }).click();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
 });
 
 test('lists only locally bundled real-device live photo samples', async ({ page }) => {

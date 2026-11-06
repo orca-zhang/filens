@@ -67,7 +67,7 @@ class CodecPreviewSession implements PreviewSession {
     try {
       const { BrowserVideoSession } = await import('./browser-video-session');
       if (controller.signal.aborted || this.controller !== controller) return;
-      const child = new BrowserVideoSession(this.host, typeof this.browserMedia === 'object' ? this.browserMedia : {}, previous);
+      const child = new BrowserVideoSession(this.host, typeof this.browserMedia === 'object' ? this.browserMedia : {}, previous, this.options.translate);
       this.attach(child, controller);
       await child.load(source, context);
     } catch (error) { this.fail(error, controller); }
@@ -134,6 +134,7 @@ class CodecPreviewSession implements PreviewSession {
   private emit<T extends PreviewEventName>(event: T, payload: PreviewEventMap[T]): void {
     this.listeners.get(event)?.forEach(handler => handler(payload as never));
   }
+  refreshTranslations(): void { this.child?.refreshTranslations?.(); }
   setScale(scale: number): void { this.child?.setScale?.(scale); }
   fit(mode?: PreviewOptions['fit']): void { this.child?.fit?.(mode); }
   rotate(degrees?: number): void { this.child?.rotate?.(degrees); }

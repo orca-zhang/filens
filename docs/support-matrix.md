@@ -4,7 +4,7 @@ English | [简体中文](support-matrix.zh-CN.md)
 
 filens provides read-only file previews in modern browsers. The complete preview host currently covers **450 source-file formats**, counted by unique extension, including direct previews and previews after local WASM conversion. Format support does not imply full compatibility with its authoring application.
 
-Checked against the current source on **2026-11-05**. The default Vue routes register **451 unique extensions**: 319 direct source formats, 131 conversion source formats, and the internal `cad-json` drawing-model entry. The internal entry is excluded from the 450 source-file count; applications with custom routes or older releases may differ.
+Checked against the current source on **2026-11-06**. The default Vue routes register **451 unique extensions**: 319 direct source formats, 131 conversion source formats, and the internal `cad-json` drawing-model entry. The internal entry is excluded from the 450 source-file count; applications with custom routes or older releases may differ.
 
 The demo lists supported formats only, distinguishing built-in samples from formats that require importing a file. A missing sample does not mean the decoder is missing. HEIC/HEIF primary-image decoding is already available through the media driver and local WASM fallback; the demo includes original samples.
 

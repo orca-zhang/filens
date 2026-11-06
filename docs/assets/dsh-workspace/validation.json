@@ -1,0 +1,73 @@
+{
+  "capturedAt": "2026-11-06T03:59:20.725Z",
+  "environment": {
+    "version": "0.2.1-rc.5",
+    "electron": "44.7.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "url": "dsh-app://app/",
+  "scope": "Real installed DSH Desktop; isolated test home; local source build; no model calls or user profile edits.",
+  "viewport": {
+    "width": 1600,
+    "height": 1040
+  },
+  "samples": [
+    {
+      "source": "filens-aurora-guide.docx",
+      "name": "极光观测手册.docx",
+      "bytes": 601507
+    },
+    {
+      "source": "filens-field-notes.pptx",
+      "name": "Beyond the Visible.pptx",
+      "bytes": 659484
+    },
+    {
+      "source": "photo-alpine-lake.jpg",
+      "name": "阿尔卑斯山湖.jpg",
+      "bytes": 392850
+    },
+    {
+      "source": "filens-cosmic-atlas.pdf",
+      "name": "宇宙图鉴.pdf",
+      "bytes": 689455
+    },
+    {
+      "source": "filens-observatory.xlsx",
+      "name": "观测站数据.xlsx",
+      "bytes": 6393
+    },
+    {
+      "source": "models/orbital-bot.glb",
+      "name": "轨道机器人.glb",
+      "bytes": 490004
+    }
+  ],
+  "checks": [
+    "fresh profile opens the native DSH main panel with an empty file picker",
+    "six real files render live thumbnails: DOCX, PPTX, JPG, PDF, XLSX, GLB",
+    "filename search, category filter and list/grid controls change real file results",
+    "极光观测手册.docx: shared renderer opens successfully in the main canvas",
+    "real zoom controls work and the inspector toggles without replacing the document",
+    "宇宙图鉴.pdf: shared renderer opens successfully in the main canvas",
+    "轨道机器人.glb: shared renderer opens successfully in the main canvas",
+    "3D orbit changes the actual WebGL canvas",
+    "阿尔卑斯山湖.jpg: shared renderer opens successfully in the main canvas",
+    "Beyond the Visible.pptx: shared renderer opens successfully in the main canvas",
+    "native DSH navigation away and back preserves the six browser-selected files",
+    "changing the actual DSH theme updates the workspace and live previews",
+    "narrow workspace retains a visible back button and restores the file gallery"
+  ],
+  "screenshots": [
+    "01-empty.png",
+    "02-gallery.png",
+    "03-document.png",
+    "04-pdf.png",
+    "05-model.png",
+    "06-image.png",
+    "07-presentation.png",
+    "08-gallery-dark.png"
+  ],
+  "errors": []
+}

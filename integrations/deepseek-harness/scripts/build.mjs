@@ -69,16 +69,21 @@ const extensions = [...new Set(module.formats.map(item => item.extension))].sort
 if (!Array.isArray(extensions) || !extensions.length) throw new Error('Cannot discover shared preview extensions');
 const textExtensions = new Set(module.formats.filter(item => ['text', 'markdown', 'code'].includes(item.family)).map(item => item.extension));
 await writeFile(path.join(output, 'support.json'), JSON.stringify({ previewVersion: previewPackage.version, previewSource: 'workspace', extensions, binaryExtensions: extensions.filter(extension => !textExtensions.has(extension)), runtime }, null, 2) + '\n');
+for (const [source, id, destination, basePath] of [
+  ['client.js', 'dsh-filens', path.join(output, 'client.js'), runtime.basePath],
+  ['workspace-client.js', 'dsh-filens-workspace', path.join(root, 'workspace/client.js'), runtime.basePath.replace('/_filens/', '/_filens-workspace/')],
+]) {
 const result = await build({
-  entryPoints: [path.join(root, 'src/client.js')], bundle: true, format: 'cjs', platform: 'browser', target: 'es2022', write: false,
-  external: ['react'],
+  entryPoints: [path.join(root, 'src', source)], bundle: true, format: 'cjs', platform: 'browser', target: 'es2022', write: false,
+  external: ['react', 'zod'],
   loader: { '.css': 'text' },
   define: {
     __FILENS_EXTENSIONS__: JSON.stringify(extensions),
     __FILENS_BINARY_EXTENSIONS__: JSON.stringify(extensions.filter(extension => !textExtensions.has(extension))),
-    __FILENS_RUNTIME_PATH__: JSON.stringify(runtime.basePath),
+    __FILENS_RUNTIME_PATH__: JSON.stringify(basePath),
     __FILENS_RUNTIME_STYLES__: JSON.stringify(styleFiles[0]),
   },
 });
-await writeFile(path.join(output, 'client.js'), `window.__ModuleLoader__.load({id:"dsh-filens",factory:(require)=>{var module={exports:{}};var exports=module.exports;\n${result.outputFiles[0].text}\nreturn module.exports;}});\n`);
+await writeFile(destination, `window.__ModuleLoader__.load({id:${JSON.stringify(id)},factory:(require)=>{var module={exports:{}};var exports=module.exports;\n${result.outputFiles[0].text}\nreturn module.exports;}});\n`);
+}
 console.log(`Built dsh-filens: ${extensions.length} preview extensions, ${Object.keys(files).length} runtime files.`);

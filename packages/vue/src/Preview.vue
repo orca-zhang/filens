@@ -1208,6 +1208,8 @@ onMounted(async () => {
   await loadSource();
 });
 
+watch([locale, () => props.messages], () => previewer.value?.refreshTranslations?.(), { deep: true });
+
 watch(
   () => props.src,
   async () => {

@@ -1,14 +1,37 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.6",
-  "file": "dsh-filens-0.1.6.tgz",
-  "bytes": 6849586,
-  "unpackedBytes": 20536588,
-  "sha256": "58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
-  "integrity": "sha512-CHr8kf5evB1Zog0UJycNWLwZlTCIgZ/UVjs8qNKeQxkKc1Xke/dhwjbM5r85PHMgzaEhXAXJrqy5ZEbvAIatuA==",
+  "version": "0.1.7",
+  "file": "dsh-filens-0.1.7.tgz",
+  "bytes": 6095903,
+  "unpackedBytes": 18430319,
+  "sha256": "639afbf86f0a2584f584bb115d7d2d1770c738dac54049951ee83549fb9cadff",
+  "integrity": "sha512-00Lpy3OQzsjSLT6dOVAxuSyK9pyw4dK3ob65z8yYPjbEQ81fmavJ1qgbfH4t2cjbidQlkSxm0XZOJYV32kmteg==",
+  "privacyChecked": true,
   "cliVersion": "0.5.6",
-  "previewVersion": "0.3.4",
-  "previewSHA256": "727a8fbe06a40b0c3da759f48b5db4f66343e2415e31e16423bd62894285786e",
-  "extensions": 450,
-  "privacyChecked": true
+  "previewVersion": "0.3.6",
+  "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
+  "extensions": 451,
+  "workspaceVersion": "0.1.0",
+  "packages": [
+    {
+      "name": "dsh-filens-workspace",
+      "version": "0.1.0",
+      "file": "dsh-filens-workspace-0.1.0.tgz",
+      "bytes": 30607,
+      "unpackedBytes": 119543,
+      "sha256": "97eaeba9e865f63ca9d155d96df31de8cdbc49965a02ecffff68629e126c637c",
+      "integrity": "sha512-8ZzXbKgPJw1pdE954qcwSfEWa26YJgWNClrcjT1O/PlQ1tQoxLvW/q9bt6/hpv61I6zFErqSL3HFQa5UUAjnAQ==",
+      "privacyChecked": true
+    },
+    {
+      "name": "dsh-filens",
+      "version": "0.1.7",
+      "file": "dsh-filens-0.1.7.tgz",
+      "bytes": 6095903,
+      "unpackedBytes": 18430319,
+      "sha256": "639afbf86f0a2584f584bb115d7d2d1770c738dac54049951ee83549fb9cadff",
+      "integrity": "sha512-00Lpy3OQzsjSLT6dOVAxuSyK9pyw4dK3ob65z8yYPjbEQ81fmavJ1qgbfH4t2cjbidQlkSxm0XZOJYV32kmteg==",
+      "privacyChecked": true
+    }
+  ]
 }

@@ -113,7 +113,7 @@ describe('panorama load ownership', () => {
   });
   it('retires calibrated controls retained after destruction', () => {
     const { host, s } = session(), renderer = { pause: vi.fn(), play: vi.fn(), seek: vi.fn(), close: vi.fn(), paused: false, duration: 10, currentTime: 2 };
-    (s as any).calibratedRenderer = renderer; (s as any).createPlaybackControls(); const button = host.querySelector('[aria-label="Play panorama video"]') as HTMLButtonElement, range = host.querySelector('input')!;
+    (s as any).calibratedRenderer = renderer; (s as any).createPlaybackControls(); const button = host.querySelector('[aria-label="Play"]') as HTMLButtonElement, range = host.querySelector('input')!;
     s.destroy(); button.click(); range.dispatchEvent(new Event('change')); expect(renderer.pause).not.toHaveBeenCalled(); expect(renderer.seek).not.toHaveBeenCalled();
   });
   it('clears calibrated image decoding handlers and its URL on destruction', async () => {

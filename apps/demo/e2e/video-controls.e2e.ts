@@ -43,12 +43,10 @@ for (const width of [960, 320]) {
       const video = host.locator('video');
       await expect.poll(() => page.evaluate(() => (window as any).videoControlsTest.getState().loading)).toBe(false);
       if (recovery) await expect.poll(() => video.evaluate((video: HTMLVideoElement) => video.currentSrc)).toMatch(/^blob:/);
-      const name = panorama ? 'panorama video' : 'video';
-      const capitalized = panorama ? 'Panorama video' : 'Video';
-      const play = host.getByRole('button', { name: `Play ${name}`, exact: true });
-      const mute = host.getByRole('button', { name: `${panorama ? 'Unmute' : 'Mute'} ${name}`, exact: true });
-      const speed = host.getByRole('combobox', { name: `${capitalized} playback speed` });
-      const fullscreen = host.getByRole('button', { name: `Enter ${panorama ? 'panorama' : 'video'} fullscreen` });
+      const play = host.getByRole('button', { name: 'Play', exact: true });
+      const mute = host.getByRole('button', { name: panorama ? 'Unmute' : 'Mute', exact: true });
+      const speed = host.getByRole('combobox', { name: 'Playback speed' });
+      const fullscreen = host.getByRole('button', { name: 'Enter fullscreen' });
       for (const control of [play, mute, speed, fullscreen]) {
         await expect(control).toBeVisible();
         const box = (await control.boundingBox())!;
@@ -58,11 +56,11 @@ for (const width of [960, 320]) {
       // Exercise the actual buttons, not HTMLMediaElement.play() from the test.
       await play.click();
       await expect.poll(() => video.evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0.1);
-      await host.getByRole('button', { name: `Pause ${name}`, exact: true }).click();
+      await host.getByRole('button', { name: 'Pause', exact: true }).click();
       await expect.poll(() => video.evaluate((video: HTMLVideoElement) => video.paused)).toBe(true);
       await speed.selectOption('1.5');
       await expect.poll(() => video.evaluate((video: HTMLVideoElement) => video.playbackRate)).toBe(1.5);
-      const position = host.getByRole('slider', { name: `${capitalized} position`, exact: true });
+      const position = host.getByRole('slider', { name: 'Playback position', exact: true });
       await position.evaluate(element => {
         const slider = element as HTMLInputElement;
         slider.value = String(Number(slider.max) / 2);
@@ -75,18 +73,18 @@ for (const width of [960, 320]) {
       await mute.click();
       await expect.poll(() => video.evaluate((video: HTMLVideoElement) => video.muted)).toBe(!wasMuted);
       if (width > 540) {
-        await host.getByRole('slider', { name: `${capitalized} volume` }).fill('0.4');
+        await host.getByRole('slider', { name: 'Volume' }).fill('0.4');
         await expect.poll(() => video.evaluate((video: HTMLVideoElement) => video.volume)).toBe(0.4);
       }
       if (panorama) {
-        await host.getByRole('button', { name: 'Zoom in panorama' }).click();
+        await host.getByRole('button', { name: 'Zoom in' }).click();
         expect(await page.evaluate(() => (window as any).videoControlsTest.getState().scale)).toBeGreaterThan(1);
-        await host.getByRole('button', { name: 'Reset panorama view' }).click();
+        await host.getByRole('button', { name: 'Reset view' }).click();
         expect(await page.evaluate(() => (window as any).videoControlsTest.getState().scale)).toBe(1);
       }
       if (!panorama) {
         await video.evaluate((video: HTMLVideoElement) => { video.addTextTrack('captions', 'English', 'en'); });
-        const captions = host.getByRole('combobox', { name: 'Video subtitles' });
+        const captions = host.getByRole('combobox', { name: 'Subtitles' });
         await expect(captions).toBeVisible();
         await captions.selectOption('0');
         expect(await video.evaluate((video: HTMLVideoElement) => video.textTracks[0].mode)).toBe('showing');
@@ -99,7 +97,7 @@ for (const width of [960, 320]) {
       await expect.poll(() => page.evaluate(() => document.fullscreenElement?.classList.contains('pptxv-has-video-controls'))).toBe(true);
       await expect(play).toBeVisible();
       if (panorama) await expect(host.locator('canvas')).toBeVisible();
-      await host.getByRole('button', { name: `Exit ${panorama ? 'panorama' : 'video'} fullscreen` }).click();
+      await host.getByRole('button', { name: 'Exit fullscreen' }).click();
       await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false);
       await host.locator('.pptxv-has-video-controls').focus();
       await page.keyboard.press('Space');

@@ -10,6 +10,16 @@
       "integrity": "sha512-0V4qwOtpSkLUW15Zu1f9UrvOnXeObqzrWmoobUhjMn+bPQMMINP8pvvdP/WAR/x11AJc1420h8auqaaWCevqaA=="
     },
     {
+      "name": "@filens/books",
+      "version": "0.1.1",
+      "file": "filens-books-0.1.1.tgz",
+      "bytes": 9978,
+      "unpackedBytes": 29605,
+      "sha256": "ebc2a2c4f582fb4efc1bb13c4d07a7b527eecaf560c66a5986d366932bf460da",
+      "integrity": "sha512-GjYHBe9MaQ/KyiMkPEWtf/CkOFf7xGvsJTrMjWDxLg3zdGsWL1Bb4iTx72MKj6nzFAM+2jizuXRBNb7xYY1rzg==",
+      "reusedPublishedArtifact": true
+    },
+    {
       "name": "@filens/cad",
       "version": "0.1.2",
       "file": "filens-cad-0.1.2.tgz",
@@ -29,12 +39,12 @@
     },
     {
       "name": "@filens/core",
-      "version": "0.1.3",
-      "file": "filens-core-0.1.3.tgz",
-      "bytes": 149605,
-      "unpackedBytes": 623727,
-      "sha256": "fd1c0c1074773698b41d3cd9113025c71c359eada45575857d5f81e819fae3f2",
-      "integrity": "sha512-CxQmTqf26EVdBvTXHlDCVEKXtEjDw6WElYzPSNpImW4uh1hpl8l6j/JYP7+FJ97yomYgYJMLddEk7q8ISmDGMA=="
+      "version": "0.1.4",
+      "file": "filens-core-0.1.4.tgz",
+      "bytes": 150155,
+      "unpackedBytes": 625477,
+      "sha256": "848173d2175d39303ff7bae18185ff6268142d1ea6863aca2b556034f7c20d15",
+      "integrity": "sha512-AstdHFibXrYmY1hryKAtqObGG+hD14z3JV3d7VvO+06m7QY3OkFTHiZbonNlPMlpObi4kSOdXMuRQZ0BIutkDw=="
     },
     {
       "name": "@filens/design",
@@ -67,16 +77,6 @@
       "reusedPublishedArtifact": true
     },
     {
-      "name": "@filens/books",
-      "version": "0.1.1",
-      "file": "filens-books-0.1.1.tgz",
-      "bytes": 9978,
-      "unpackedBytes": 29605,
-      "sha256": "ebc2a2c4f582fb4efc1bb13c4d07a7b527eecaf560c66a5986d366932bf460da",
-      "integrity": "sha512-GjYHBe9MaQ/KyiMkPEWtf/CkOFf7xGvsJTrMjWDxLg3zdGsWL1Bb4iTx72MKj6nzFAM+2jizuXRBNb7xYY1rzg==",
-      "reusedPublishedArtifact": true
-    },
-    {
       "name": "@filens/iwork",
       "version": "0.1.2",
       "file": "filens-iwork-0.1.2.tgz",
@@ -87,12 +87,12 @@
     },
     {
       "name": "@filens/media",
-      "version": "0.1.2",
-      "file": "filens-media-0.1.2.tgz",
-      "bytes": 114596,
-      "unpackedBytes": 513885,
-      "sha256": "fc3bf70e8eba3e4bc31d3eb980bc40cb32048da9a00f7320bbe4dc56e45e13d2",
-      "integrity": "sha512-cHXlTnaUmkRkdlkkQsRTez06cFPSWCDY5WuncRBrKtZV8joHWzlO8iDdHHcIiLIy5GfgDeiMzmKOKIFPCoDc8A=="
+      "version": "0.1.3",
+      "file": "filens-media-0.1.3.tgz",
+      "bytes": 114766,
+      "unpackedBytes": 514427,
+      "sha256": "4966182f35ad0ca59473be8e9932c4c1f444e549c3a07f6ca1ce0ff6e169c52c",
+      "integrity": "sha512-7kMuQfiBIekCT6EHnJPXDYvEFR16/VX3uW5ER0ZygL9f0tihn0DYE0MPM5lW3hpLoK4mNaTvSvqohmMTDx23cg=="
     },
     {
       "name": "@filens/mindmap",
@@ -125,12 +125,12 @@
     },
     {
       "name": "@filens/panorama",
-      "version": "0.1.2",
-      "file": "filens-panorama-0.1.2.tgz",
-      "bytes": 78119,
-      "unpackedBytes": 298605,
-      "sha256": "b7181b3ceb9cc1a2cd48eea5c33f9b1da5a07245350f84ed5444eda79f97b76a",
-      "integrity": "sha512-n8tJ7zDlzugz9zYeesK/hutFMMKpdf0f0bm3zGDjCw+dHYz5gWbl3SbqCnNZ2Gmogyl+NoHkHU06a1TgYk7N7w=="
+      "version": "0.1.3",
+      "file": "filens-panorama-0.1.3.tgz",
+      "bytes": 78221,
+      "unpackedBytes": 298919,
+      "sha256": "47ea1f9770072fe149eacc0eaf217657263556c597738afc84b10d50dfafc3fd",
+      "integrity": "sha512-id1KxHAtuse1tePn9Q2Pz82Q0uA96is/BZA8eky+OmICMnfQOg6tEgjPSr+ruu9oyUcvOq7bk5sIfJ6q83a4+A=="
     },
     {
       "name": "@filens/pdf",
@@ -153,12 +153,12 @@
     },
     {
       "name": "@filens/vue",
-      "version": "0.1.3",
-      "file": "filens-vue-0.1.3.tgz",
-      "bytes": 98351,
-      "unpackedBytes": 485134,
-      "sha256": "d8c370c338ba4f8efefb4c4e9acf53fd14a1da3f237096b56f4ce444019a535d",
-      "integrity": "sha512-C4snFVjJ0p2A7x1bPnWMyuXz7nfVeagyv7ncreEKZ5zEN3LhT+Gat9aLAFUEPDReQc0Md/klSoO/Blp6LWP7HQ=="
+      "version": "0.1.4",
+      "file": "filens-vue-0.1.4.tgz",
+      "bytes": 115142,
+      "unpackedBytes": 583359,
+      "sha256": "df363b970bafb7f8e42671ae8e529fad5c4f659e9cdb26541d95a96fd1405756",
+      "integrity": "sha512-k2E44E6ooib2swfJ2g3LXqE158ijnGNDR95gcrLD36A3+b0p43BBl76AUXOM6HgY6Ce2KXeBD4NBc+0nkWsv2A=="
     },
     {
       "name": "@filens/xlsx",

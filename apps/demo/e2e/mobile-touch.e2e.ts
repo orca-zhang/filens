@@ -251,7 +251,7 @@ test('native video playback controls remain tappable', async ({ page }) => {
     file: 'sample-video.mp4', contentType: 'video/mp4', selector: 'video'
   });
   const video = page.locator('video');
-  await page.getByRole('button', { name: 'Play video', exact: true }).tap();
+  await page.getByRole('button', { name: 'Play', exact: true }).tap();
   await expect.poll(() => video.evaluate(video => (video as HTMLVideoElement).paused)).toBe(false);
   await page.evaluate(() => (window as any).mobileTouch.session.destroy());
 });

@@ -101,6 +101,32 @@ describe('Panorama preview driver', () => {
     });
   });
 
+  it('refreshes the interaction hint and silent-video controls without resetting the view', () => {
+    const host = document.createElement('div');
+    let chinese = true;
+    const messages: Record<string, string> = {
+      'Drag to look around · Pinch or scroll to zoom': '拖动环视 · 双指捏合或滚动缩放',
+      Play: '播放', 'Playback position': '播放进度',
+      'Audio unavailable for this panorama preview': '此全景预览暂不支持音频',
+      'Zoom in': '放大'
+    };
+    const session = new PanoramaPreviewSession(host, { translate: key => chinese ? messages[key] ?? key : key });
+    const internal = session as unknown as { createPlaybackControls(): void };
+    internal.createPlaybackControls();
+    session.setScale(1.4);
+    expect(host.querySelector('.panoramav-hint')?.textContent).toBe(messages['Drag to look around · Pinch or scroll to zoom']);
+    expect(host.querySelector('[aria-label="播放"]')?.getAttribute('title')).toBe('播放');
+    expect(host.querySelector<HTMLButtonElement>('[aria-label="此全景预览暂不支持音频"]')?.disabled).toBe(true);
+    const state = { ...session.getState() };
+    chinese = false;
+    session.refreshTranslations();
+    expect(host.querySelector('[aria-label="Play"]')?.getAttribute('title')).toBe('Play');
+    expect(host.querySelector('[aria-label="Playback position"]')).not.toBeNull();
+    expect(host.querySelector('.panoramav-hint')?.textContent).toContain('Drag to look around');
+    expect(session.getState()).toEqual(state);
+    session.destroy();
+  });
+
   it('provides play and committed seek controls for calibrated video', () => {
     const host = document.createElement('div');
     const session = new PanoramaPreviewSession(host);
@@ -121,7 +147,7 @@ describe('Panorama preview driver', () => {
     Object.assign(internal.state, { family: 'panorama-video', paused: false, currentTime: 2, duration: 10 });
     internal.createPlaybackControls();
 
-    (host.querySelector('[aria-label="Pause panorama video"]') as HTMLButtonElement).click();
+    (host.querySelector('[aria-label="Pause"]') as HTMLButtonElement).click();
     expect(renderer.pause).toHaveBeenCalledOnce();
     const timeline = host.querySelector('input[type="range"]') as HTMLInputElement;
     timeline.value = '6';

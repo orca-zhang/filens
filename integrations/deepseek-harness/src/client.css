@@ -95,7 +95,7 @@
 .filens-dsh-actions .filens-dsh-controls :is(.pptxv-button, .archivev-button, .xlsxv-sheet-tab, .pptxv-audio-import) { min-height: 28px; padding: 3px 6px; border: 0; border-radius: 5px; background: transparent; color: inherit; font: inherit; white-space: nowrap; }
 .filens-dsh-actions .filens-dsh-controls :is(button, input, select, summary):focus-visible { outline: 2px solid var(--filens-accent); outline-offset: -2px; }
 .filens-dsh-actions .filens-dsh-controls .pptxv-status { min-width: 0; max-width: none; padding: 0 4px; font: inherit; white-space: nowrap; }
-.filens-dsh-actions .filens-dsh-controls .pptxv-zoom-status { flex: 0 0 4ch; width: 4ch; max-width: 4ch; padding: 0; }
+.filens-dsh-actions .filens-dsh-controls .pptxv-zoom-status { flex: 0 0 auto; width: auto; min-width: 5ch; max-width: none; padding: 0 2px; overflow: visible; text-overflow: clip; font-variant-numeric: tabular-nums; }
 .filens-dsh-actions .filens-dsh-controls :is(.pptxv-pill--hidden, .pptxv-layer-menu--hidden) { display: none; }
 .filens-dsh-actions .filens-dsh-controls .xlsxv-sheet-tabs { display: flex; padding: 0; border: 0; overflow: visible; background: transparent; }
 .filens-dsh-actions .filens-dsh-controls .pptxv-model-tools-toggle { position: static; width: 28px; height: 28px; }

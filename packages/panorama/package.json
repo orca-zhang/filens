@@ -1,6 +1,6 @@
 {
   "name": "@filens/panorama",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "360 panorama preview driver for the @filens multi-format preview runtime.",
   "type": "module",
   "main": "./dist/index.js",
@@ -46,7 +46,7 @@
     "@types/three": "^0.176.0"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.3"
+    "@filens/core": "^0.1.4"
   },
   "devDependencies": {
     "@filens/core": "file:../core"

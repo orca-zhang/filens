@@ -204,7 +204,7 @@ export interface AudioPreviewOptions {
 export interface PreviewOptions {
   /** Shared by nested previews; hosts should pass it through unchanged. */
   containerContext?: PreviewContainerContext;
-  /** Optional translation for container/attachment controls. */
+  /** Optional translation for preview controls and interaction hints. */
   translate?: (message: string) => string;
   /** Return null to cancel. Called again when the supplied password is incorrect. */
   requestPassword?: (request: PreviewPasswordRequest) => string | null | Promise<string | null>;
@@ -533,6 +533,7 @@ export interface PreviewEventMap {
 }
 
 export interface PreviewSession<TState extends PreviewItemState = PreviewItemState> {
+  refreshTranslations?(): void;
   getAttachments?(): Promise<PreviewAttachment[]>;
   getFontReferences?(): readonly PreviewFontReference[];
   refreshFonts?(update: PreviewFontRefresh): Promise<void> | void;
@@ -573,6 +574,8 @@ export interface PreviewSession<TState extends PreviewItemState = PreviewItemSta
 }
 
 export interface PreviewerInstance<TState extends PreviewItemState = PreviewItemState> {
+  /** Refresh driver labels after the translation callback changes, preserving the loaded media. */
+  refreshTranslations?(): void;
   preview(source: PreviewSource | SourceDescriptor, descriptor?: Partial<SourceDescriptor>): Promise<void>;
   destroy(): void;
   getState(): TState;

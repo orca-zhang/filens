@@ -1,5 +1,54 @@
 # DSH integration validation
 
+## File workspace — 2026-11-06 (unpublished)
+
+The source build adds a native `main` panel and `sidebar.panellist` entry,
+sharing the existing preview body and controls with the sidebar. A fresh,
+isolated installed macOS arm64 DSH Desktop 0.2.1-rc.5 profile selects six real
+files through the browser file picker. The capture checks live thumbnails,
+search, categories, list/grid layout, document zoom, file details, 3D orbit,
+and retaining files across native DSH panel navigation. Theme and narrow-view
+checks are recorded with their actual results in the capture report.
+
+The workspace is a third bundle entry with independent Host/client lifetimes
+and a separate static runtime prefix. Its title is **File workspace**; developer
+information appears in the bottom corner. Compact neutral styling follows DSH.
+The zoom percentage uses intrinsic width; real text bounds are checked at 100%
+in both sidebar and workspace controls.
+
+`test/workspace-desktop.mjs` runs the installed Desktop with synthetic stored
+270-turn and one-turn histories and real DOCX/PDF bytes. It verifies full
+pagination, cross-session deduplication, distinct same-name paths, every source
+occurrence, uploaded-file preview through the native attachment provider,
+loading/scrolling to an old exact message identity, question navigation from
+Trajectory back into Chat, and the independent plugin toggle.
+
+The Photos-style file details use a fixed filename header and independently
+scrolling sections. Desktop checks verify actual byte size after reading,
+header position while scrolling, Escape dismissal and focus restoration,
+the same preview request after reopening details, light/dark themes, and
+an inset bottom sheet at a 600-pixel window width. The layout references
+ZimaOS Photos; it does not add EXIF, camera or GPS metadata parsing.
+
+Collapsed sessions now use group cards aligned with the file grid with up to four representative
+file previews, falling back to type covers. Office thumbnails also appear in
+related files; Word, PowerPoint and Excel are rendered from real sample bytes.
+Titles use native projections, log titles or the first question instead of IDs;
+short labels retain the full title on hover. Covers fill the card in one-, two-,
+three- or four-file arrangements; the caption contains only title and count. The file covers reuse the demo's folded-page
+design and are checked in light/dark, grid/list and narrow layouts. The reader
+file list is 144–160 pixels wide. Temporary references stay indexed but are
+hidden by default from the gallery, reader list and related files; a button
+reveals them. Tests cover lock files, AppleDouble copies, backup artifacts and
+system folders, and retain ordinary results in OS temporary directories.
+
+The first workspace open scans session metadata; **Refresh session files**
+rescans it. Only supported local path references and attachment blocks are
+collected. This is a reference index, not a file backup. Deleted/inaccessible
+paths cannot be previewed. Manually selected files remain in memory until app
+reload or workspace unload. No npm publication has been made.
+[Screenshots, reproduction and machine-readable checks](../../docs/assets/dsh-workspace/README.md).
+
 ## 0.1.6 compact address-bar controls — 2026-11-05
 
 Every format keeps **zoom out / percentage / zoom in / fullscreen** in the

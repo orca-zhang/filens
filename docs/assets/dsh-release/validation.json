@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-11-06T08:59:15.396Z",
+  "status": "draft-not-published",
+  "checks": [
+    "All six final MP4 files load with real video dimensions",
+    "Playback advances in both languages",
+    "Language switch replaces every video and localized release link",
+    "Updated media URLs include the FiLens introduction revision",
+    "Office card descriptions distinguish Chinese and English document content",
+    "600-pixel review page has no horizontal overflow",
+    "No page script errors",
+    "Six GIF durations match the verified editing timeline",
+    "GIF merging preserves displayed pixels and durations",
+    "Both encoded workspace GIFs retain a light sidebar in light mode",
+    "Public release media and documents pass existing privacy checks",
+    "67 built source files match the installed 0.1.7-workspace.8 candidate",
+    "Panorama hints and playback controls follow Chinese and English in real DSH",
+    "Live language switching keeps the same paused video and playback position",
+    "Installed Desktop boots and file workspace activates; original profile settings are preserved",
+    "Four browser playback-control regressions pass for ordinary and panorama video at 960px and 320px",
+    "58 local material links resolve",
+    "Both Office recordings render the existing FiLens introduction PPTX in the matching language",
+    "Chinese Word body, spreadsheet headers, cells and worksheet names are localized",
+    "FiLens introduction cover and Page Down navigation are verified in native DSH",
+    "Chinese fixture generation preserves formulas, images and relationships and reproduces identical bytes",
+    "All six recording reports verify their selected documents against the repository bytes"
+  ],
+  "modelCalls": 0,
+  "unitTestsPassed": 91,
+  "browserControlTestsPassed": 4
+}

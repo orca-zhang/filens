@@ -1,5 +1,5 @@
 import { createVideoPreviewPlayer, resolveMediaDuration, type PreviewEventMap, type PreviewEventName, type MediaPreviewState, type PreviewLoadContext,
-  type PreviewSession, type PreviewSource } from '@filens/core';
+  type PreviewOptions, type PreviewSession, type PreviewSource } from '@filens/core';
 import { recoverBrowserVideo, type BrowserMediaOptions } from './engine';
 
 /** Optional recovery session with the same controls as native video previews. */
@@ -9,11 +9,12 @@ export class BrowserVideoSession implements PreviewSession {
   private playback?: Awaited<ReturnType<typeof recoverBrowserVideo>>;
   private root?: HTMLDivElement;
   private video?: HTMLVideoElement;
+  private player?: ReturnType<typeof createVideoPreviewPlayer>;
   private listeners = new Map<PreviewEventName, Set<(payload: never) => void>>();
   private state: MediaPreviewState = { family: 'video', currentTime: 0, paused: true, muted: false, volume: 1, loading: false, error: null, warnings: [],
     capabilities: { playback: true, timeline: true, volume: true, fullscreen: true, download: true, subtitles: false } };
 
-  constructor(private host: HTMLElement, private options: BrowserMediaOptions, private resume?: MediaPreviewState) {}
+  constructor(private host: HTMLElement, private options: BrowserMediaOptions, private resume?: MediaPreviewState, private translate?: PreviewOptions['translate']) {}
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
     this.destroy();
     const controller = this.controller = new AbortController();
@@ -38,7 +39,7 @@ export class BrowserVideoSession implements PreviewSession {
     video.muted = resume?.muted ?? false;
     video.playbackRate = resume?.playbackRate ?? 1;
     root.append(video); this.host.append(root);
-    createVideoPreviewPlayer(root, video, signal, durationSeconds);
+    this.player = createVideoPreviewPlayer(root, video, signal, durationSeconds, this.translate);
     let rendered = false;
     const sync = () => {
       if (signal.aborted) return;
@@ -66,6 +67,7 @@ export class BrowserVideoSession implements PreviewSession {
       this.playback = playback; sync();
     } catch (error) { fail(error); }
   }
+  refreshTranslations() { this.player?.refreshTranslations(); }
   getState() { return this.state; }
   on<T extends PreviewEventName>(event: T, handler: (payload: PreviewEventMap[T]) => void) {
     const handlers = this.listeners.get(event) ?? new Set(); this.listeners.set(event, handlers);
@@ -85,6 +87,7 @@ export class BrowserVideoSession implements PreviewSession {
     this.state = { ...this.state, loading: false };
   }
   private release() {
+    this.player = undefined;
     const playback = this.playback; this.playback = undefined;
     void playback?.close();
     this.root?.remove(); this.root = undefined; this.video = undefined;
