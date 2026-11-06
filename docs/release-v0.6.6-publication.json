@@ -1,29 +1,22 @@
 {
-  "observedAt": "2026-11-06T09:57:54.686Z",
+  "observedAt": "2026-11-06T10:23:00.104Z",
   "tag": "v0.6.6",
   "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6",
   "releaseId": 436312175,
   "publishedAt": "2026-11-06T09:57:11Z",
   "sourceCommit": "2dbce909f696672c7208414c0b8a07d7089d2e27",
-  "sourceDocumentationCommit": "e066218020b31bead9f6dc4df594c9f96e107aaa",
+  "sourceDocumentationCommit": "e232cd1508fb06f3901644272ba1e0ce7547517f",
+  "dshSourceCommit": "781add672523acab5455c7de1509b8bd045c4af3",
   "status": "published-and-publicly-verified",
-  "assetCount": 16,
+  "assetCount": 15,
   "assets": [
     {
-      "file": "dsh-filens-0.1.8.tgz",
-      "bytes": 6096331,
-      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
+      "file": "dsh-filens-0.1.9.tgz",
+      "bytes": 6097035,
+      "sha256": "f823edf4e55444b30fb26c6341569f2de92cc471203060be5f061114288c4d9e",
       "serverDigestVerified": true,
       "anonymousDownloadStatus": 206,
-      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-0.1.8.tgz"
-    },
-    {
-      "file": "dsh-filens-workspace-0.1.1.tgz",
-      "bytes": 31139,
-      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
-      "serverDigestVerified": true,
-      "anonymousDownloadStatus": 206,
-      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-workspace-0.1.1.tgz"
+      "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-0.1.9.tgz"
     },
     {
       "file": "filens-0.5.6-linux-arm64-full.tar.gz",
@@ -123,16 +116,16 @@
     },
     {
       "file": "filens-release-v0.6.6.json",
-      "bytes": 9034,
-      "sha256": "154b7bd662b2c52fe15607bbb8f5c6974f2f96304c816f00af54e901b247b2ca",
+      "bytes": 12211,
+      "sha256": "6106fba041f2a3cbe529da302586f0344ba6458280a3f793f0d6158e28dab675",
       "serverDigestVerified": true,
       "anonymousDownloadStatus": 206,
       "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-release-v0.6.6.json"
     },
     {
       "file": "SHA256SUMS",
-      "bytes": 1476,
-      "sha256": "1409a66fe90ad78288a0bba6d36a9c9ff62ce3ef4eccfef6305e613135263c38",
+      "bytes": 1379,
+      "sha256": "fda1fd1a4610fef08f83690a5155b414b296e321f4e9314f8acd6319ebaf8a0a",
       "serverDigestVerified": true,
       "anonymousDownloadStatus": 206,
       "publicUrl": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/SHA256SUMS"
