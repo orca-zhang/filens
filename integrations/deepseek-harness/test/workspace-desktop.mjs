@@ -335,6 +335,7 @@ try {
   await unlink(path.join(directory, 'sample.py'));
   await page.locator('.fw-card-open').filter({ hasText: 'sample.py' }).click();
   await page.waitForFunction(() => ![...document.querySelectorAll('.fw-card-open,.fw-file-row,.fw-related-file')].some(node => node.textContent.includes('sample.py')));
+  await page.screenshot({ path: path.join(output, 'deleted-file-hidden.png') });
   record('A file deleted after scanning disappears when opened, including navigation and related-file lists');
   await writeFile(path.join(directory, 'sample.py'), 'print("restored")');
   await page.getByRole('button', { name: /刷新会话文件|Refresh session files/ }).click();
@@ -342,6 +343,7 @@ try {
   await page.waitForFunction(() => !document.querySelector('.fw-appbar-end button')?.disabled);
   await expandSessions();
   await page.locator('.fw-card-open').filter({ hasText: 'sample.py' }).waitFor();
+  await page.screenshot({ path: path.join(output, 'restored-file.png') });
   record('Refreshing rechecks existence and restores a file recreated at the same path');
   await writeFile(path.join(output, 'validation.json'), JSON.stringify({ capturedAt: new Date().toISOString(), dsh: '0.2.1-rc.5',
     scope: 'Installed DSH Desktop; synthetic 270-turn and one-turn sessions; real local documents; no model calls or user history edits', checks }, null, 2));

@@ -5,11 +5,7 @@
       "file": "filens-preview-0.3.6.tgz",
       "validatedRuntimeUnchangedAfterDocumentationRepack": true,
       "runtimeFileCount": 71
-    },
-    {
-      "file": "dsh-filens-0.1.7.tgz",
-      "validatedRuntimeUnchangedAfterDocumentationRepack": true,
-      "runtimeFileCount": 80
     }
-  ]
+  ],
+  "note": "DSH 0.1.8/workspace 0.1.1 supersede 0.1.7/0.1.0 with missing-file filtering and fresh package/Desktop verification."
 }

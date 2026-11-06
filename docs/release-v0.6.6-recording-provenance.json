@@ -1,9 +1,11 @@
 {
-  "checkedAt": "2026-11-06T09:19:32.056Z",
+  "checkedAt": "2026-11-06T09:47:04.654Z",
   "recordedCandidate": "0.1.7-workspace.8",
-  "formalVersion": "0.1.7",
+  "formalVersion": "0.1.8",
+  "workspaceVersion": "0.1.1",
   "recordedPreviewMetadata": "0.3.5",
   "formalPreviewMetadata": "0.3.6",
+  "scope": "Shared preview runtime and sidebar match the recordings. Workspace 0.1.1 adds existence checks and image attachment metadata resolution; its changes have separate unit and actual Desktop checks. Original recording metadata is preserved.",
   "files": [
     {
       "file": "lib/client.js",
@@ -337,11 +339,12 @@
     },
     {
       "file": "dsh-filens-workspace/client.js",
-      "sha256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f",
-      "matchesRecordedBuild": true
+      "sha256": "af96a6823a4b7830eef9ed84a9aee4013dfc6a2addb26eaed2779c55f0ef3097",
+      "matchesRecordedBuild": false
     }
   ],
   "changedFiles": [
-    "lib/support.json"
+    "lib/support.json",
+    "dsh-filens-workspace/client.js"
   ]
 }

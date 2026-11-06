@@ -4,27 +4,28 @@
     "Registry dependency uses exact version, with no file: runtime dependency",
     "Workspace is bundled in the adapter and separately installable",
     "Workspace archive includes client, server, attachment resolver and MIT license",
-    "Main adapter is gated on public workspace dependency verification"
+    "Main adapter is gated on public workspace dependency verification",
+    "Workspace paths and attachments are checked through DSH stat; confirmed missing entries are excluded, while permission/connection errors remain visible"
   ],
   "packages": [
     {
       "name": "dsh-filens-workspace",
-      "version": "0.1.0",
-      "file": "dsh-filens-workspace-0.1.0.tgz",
-      "bytes": 30607,
-      "unpackedBytes": 119543,
-      "sha256": "97eaeba9e865f63ca9d155d96df31de8cdbc49965a02ecffff68629e126c637c",
-      "integrity": "sha512-8ZzXbKgPJw1pdE954qcwSfEWa26YJgWNClrcjT1O/PlQ1tQoxLvW/q9bt6/hpv61I6zFErqSL3HFQa5UUAjnAQ==",
+      "version": "0.1.1",
+      "file": "dsh-filens-workspace-0.1.1.tgz",
+      "bytes": 31139,
+      "unpackedBytes": 121624,
+      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
+      "integrity": "sha512-gVc3p0t7/pfKydU3gdx7n/sn1ysyGc3AdICaNUloFWLJPyQa1PNfy89/p/JRab/7BARaSy202dgJJgywV3LRXg==",
       "privacyChecked": true
     },
     {
       "name": "dsh-filens",
-      "version": "0.1.7",
-      "file": "dsh-filens-0.1.7.tgz",
-      "bytes": 6095903,
-      "unpackedBytes": 18430319,
-      "sha256": "639afbf86f0a2584f584bb115d7d2d1770c738dac54049951ee83549fb9cadff",
-      "integrity": "sha512-00Lpy3OQzsjSLT6dOVAxuSyK9pyw4dK3ob65z8yYPjbEQ81fmavJ1qgbfH4t2cjbidQlkSxm0XZOJYV32kmteg==",
+      "version": "0.1.8",
+      "file": "dsh-filens-0.1.8.tgz",
+      "bytes": 6096331,
+      "unpackedBytes": 18433125,
+      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
+      "integrity": "sha512-KM0ecm427IUVapti1qfDgVYa2eD13Wq4VeHTj4TRZg/s7t1qWrFHgfwaGPnsTCriNcWjTk3pveb+ohmmCt6d5A==",
       "privacyChecked": true
     }
   ]

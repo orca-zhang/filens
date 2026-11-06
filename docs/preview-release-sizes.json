@@ -110,22 +110,22 @@
       "binaryBytes": 1000448
     },
     {
-      "file": "dsh-filens-workspace-0.1.0.tgz",
+      "file": "dsh-filens-workspace-0.1.1.tgz",
       "kind": "npm-package",
-      "bytes": 30607,
-      "unpackedBytes": 119543,
-      "sha256": "97eaeba9e865f63ca9d155d96df31de8cdbc49965a02ecffff68629e126c637c",
+      "bytes": 31139,
+      "unpackedBytes": 121624,
+      "sha256": "bb31edd7ed53e5fcc5013ec8bd3c98ceb8d4afadf17648d709084201b3532aea",
       "name": "dsh-filens-workspace",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
-      "file": "dsh-filens-0.1.7.tgz",
+      "file": "dsh-filens-0.1.8.tgz",
       "kind": "npm-package",
-      "bytes": 6095903,
-      "unpackedBytes": 18430319,
-      "sha256": "639afbf86f0a2584f584bb115d7d2d1770c738dac54049951ee83549fb9cadff",
+      "bytes": 6096331,
+      "unpackedBytes": 18433125,
+      "sha256": "a2ffc72af05727ec481517eb10711331576938f757035d307b114c59eaa9fcb0",
       "name": "dsh-filens",
-      "version": "0.1.7"
+      "version": "0.1.8"
     }
   ]
 }

@@ -12,7 +12,7 @@
 | Browser runtime: all-in-one | [filens-preview-0.3.6-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip) | 10.61 MiB |
 | iOS source SDK | [filens-ios-sdk-0.1.6.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-ios-sdk-0.1.6.zip) | 5.64 MiB |
 | Android source SDK | [filens-android-sdk-0.1.6.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-android-sdk-0.1.6.zip) | 5.65 MiB |
-| dsh-filens-workspace 0.1.1 | [dsh-filens-workspace-0.1.0.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-workspace-0.1.0.tgz) | 0.03 MiB |
+| dsh-filens-workspace 0.1.1 | [dsh-filens-workspace-0.1.1.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-workspace-0.1.1.tgz) | 0.03 MiB |
 | dsh-filens 0.1.8 | [dsh-filens-0.1.8.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/dsh-filens-0.1.8.tgz) | 5.81 MiB |
 | Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/SHA256SUMS) | SHA-256 |
 | Build manifest | [filens-release-v0.6.6.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-release-v0.6.6.json) | Versions, sizes and validation |
@@ -29,7 +29,7 @@ Compared with [v0.6.5](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 - Collect supported local references and attachments from paginated conversation history. Deduplicate files while retaining every source occurrence; return to the exact message or its originating question.
 - Collapse sessions into cards with short titles and up to four representative previews. Office/PDF thumbnails use the real renderer; unavailable thumbnails have recognizable file-type covers.
 - Find related files by shared message, question, folder or session, with an explanation for each recommendation and no model calls.
-- Exclude paths and attachments only after DSH confirms they no longer exist. Recheck on refresh, and remove stale cards, navigation and recommendations when opening discovers deletion. Keep permission and connection failures visible.
+- Exclude paths and attachments only after DSH confirms they no longer exist. Refresh rechecks availability; opening removes stale cards, navigation and recommendations after deletion. Keep permission and connection failures visible.
 - Hide lock, editor and system temporary artifacts by default, with a reveal button. Useful outputs in OS temporary directories remain visible; filtering does not delete files.
 - Add a ZimaOS Photos-style details panel, actual file sizes, a 144–160px reader list and narrow-window layouts. Fix clipped zoom percentages, workspace activation and module naming.
 

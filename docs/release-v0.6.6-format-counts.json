@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-11-06T09:20:35.644037+00:00",
+  "checkedAt": "2026-11-06T09:47:04.606920+00:00",
   "previewVersion": "0.3.6",
-  "dshVersion": "0.1.7",
+  "dshVersion": "0.1.8",
   "cliVersion": "0.5.6",
   "counting": "Unique filename extensions; format registration is not an assertion that every format was retested. cad-json is an internal model and excluded from user-facing format counts.",
   "previewSourceFormats": 450,

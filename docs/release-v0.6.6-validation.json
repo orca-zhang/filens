@@ -5,8 +5,8 @@
     "cli": "0.5.6",
     "preview": "0.3.6",
     "mobileSdk": "0.1.6",
-    "dsh": "0.1.7",
-    "workspace": "0.1.0",
+    "dsh": "0.1.8",
+    "workspace": "0.1.1",
     "zimaos": "0.5.1"
   },
   "releaseChecksPassed": true,
@@ -17,13 +17,13 @@
       "panorama": "passed",
       "media": "passed",
       "vue": 70,
-      "dsh": 31,
+      "dsh": 34,
       "dshNode": "24.21.0"
     },
     "browserPlaybackControls": 14,
     "dshBrowser": "12 format sidebar previews plus lazy loading, compact controls, file switching, source ownership and unload passed",
-    "desktopWorkspace": 22,
-    "desktopSource": "Clean npm tarball installation with synthetic stored history and actual DSH Desktop 0.2.1-rc.5",
+    "desktopWorkspace": 25,
+    "desktopSource": "Final 0.1.8/0.1.1 clean tarball installation, synthetic stored history, actual DSH Desktop 0.2.1-rc.5",
     "previewPackage": "64 real previews from isolated installation; public TypeScript API; 12 previews after consumer Vite bundling; native audio/HEIF and explicit MOV codec errors; no external runtime requests",
     "offlineHTML": 17,
     "mobileBridge": {
@@ -45,7 +45,7 @@
       ],
       "cliFormats": 349
     },
-    "recordingRuntime": "66 of 67 compared files unchanged from recorded candidate; lib/support.json changes only previewVersion metadata",
+    "recordingRuntime": "Shared preview/sidebar runtime unchanged; workspace adds missing-file checks and has separate actual Desktop validation",
     "documentationRepack": "Validated runtime files unchanged after README updates"
   },
   "artifactCount": {
