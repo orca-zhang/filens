@@ -1,7 +1,7 @@
 import { normalizeExtension } from './formats';
 import { AudioPreviewPlayer } from './audio-player';
 import { bindPreviewTouchGestures } from './touch-gestures';
-import { createVideoPreviewPlayer } from './video-player';
+import { createVideoPreviewPlayer, resolveMediaDuration } from './video-player';
 import type {
   ImagePreviewState,
   MediaPreviewState,
@@ -910,6 +910,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
   };
   private media: HTMLMediaElement | null = null;
   private audioPlayer: AudioPreviewPlayer | null = null;
+  private durationSeconds?: number;
 
   constructor(host: HTMLElement, private readonly options: PreviewOptions = {}) {
     super(host);
@@ -917,6 +918,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
 
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
     const family = resolveMediaFamily(context);
+    this.durationSeconds = family === 'audio' ? undefined : context.descriptor.durationSeconds;
     this.state = {
       ...this.state,
       loading: false,
@@ -928,7 +930,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
         fullscreen: family !== 'audio',
         subtitles: family !== 'audio'
       },
-      duration: undefined,
+      duration: resolveMediaDuration(NaN, this.durationSeconds),
       currentTime: 0,
       paused: true,
       playbackRate: 1
@@ -1037,7 +1039,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
 
       this.root.className = `pptxv-native-preview pptxv-native-preview--${family === 'audio' ? 'audio' : 'video'}`;
       this.root.replaceChildren(media);
-      if (media instanceof HTMLVideoElement) createVideoPreviewPlayer(this.root, media, signal);
+      if (media instanceof HTMLVideoElement) createVideoPreviewPlayer(this.root, media, signal, this.durationSeconds);
       if (family === 'audio') {
         const player = new AudioPreviewPlayer(media, context, this.options, signal);
         this.audioPlayer = player;
@@ -1070,7 +1072,7 @@ export class MediaPreviewSession extends NativePreviewSession<MediaPreviewState>
   }
 
   private syncMediaState(media: HTMLMediaElement): void {
-    this.state.duration = Number.isFinite(media.duration) ? media.duration : undefined;
+    this.state.duration = resolveMediaDuration(media.duration, this.durationSeconds);
     this.state.currentTime = media.currentTime || 0;
     this.state.paused = media.paused;
     this.state.muted = media.muted;

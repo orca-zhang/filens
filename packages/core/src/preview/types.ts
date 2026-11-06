@@ -32,6 +32,8 @@ export interface SourceDescriptor {
   extension?: string;
   contentType?: string;
   size?: number;
+  /** Original video total in seconds; a positive finite value overrides partial stream durations. */
+  durationSeconds?: number;
 }
 
 export interface PreviewLoadContext {

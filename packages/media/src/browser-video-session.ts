@@ -1,4 +1,4 @@
-import { createVideoPreviewPlayer, type PreviewEventMap, type PreviewEventName, type MediaPreviewState, type PreviewLoadContext,
+import { createVideoPreviewPlayer, resolveMediaDuration, type PreviewEventMap, type PreviewEventName, type MediaPreviewState, type PreviewLoadContext,
   type PreviewSession, type PreviewSource } from '@filens/core';
 import { recoverBrowserVideo, type BrowserMediaOptions } from './engine';
 
@@ -22,7 +22,8 @@ export class BrowserVideoSession implements PreviewSession {
     context.signal?.addEventListener('abort', abort, { once: true });
     this.removeParent = () => context.signal?.removeEventListener('abort', abort);
     signal.addEventListener('abort', () => this.release(), { once: true });
-    this.state = { ...this.state, title: context.descriptor.name, loading: true, error: null, duration: undefined,
+    const durationSeconds = context.descriptor.durationSeconds;
+    this.state = { ...this.state, title: context.descriptor.name, loading: true, error: null, duration: resolveMediaDuration(NaN, durationSeconds),
       currentTime: 0, paused: true, muted: false, volume: 1, playbackRate: 1 };
     this.emit('loading', this.state); this.emit('statechange', this.state);
     if (context.signal?.aborted) controller.abort(context.signal.reason);
@@ -37,11 +38,11 @@ export class BrowserVideoSession implements PreviewSession {
     video.muted = resume?.muted ?? false;
     video.playbackRate = resume?.playbackRate ?? 1;
     root.append(video); this.host.append(root);
-    createVideoPreviewPlayer(root, video, signal);
+    createVideoPreviewPlayer(root, video, signal, durationSeconds);
     let rendered = false;
     const sync = () => {
       if (signal.aborted) return;
-      this.state = { ...this.state, duration: Number.isFinite(video.duration) ? video.duration : undefined,
+      this.state = { ...this.state, duration: resolveMediaDuration(video.duration, durationSeconds),
         currentTime: video.currentTime, paused: video.paused, volume: video.volume, muted: video.muted, playbackRate: video.playbackRate };
       if (!rendered && video.videoWidth > 0 && video.readyState >= 2) {
         rendered = true; this.state = { ...this.state, loading: false }; this.emit('rendered', this.state);

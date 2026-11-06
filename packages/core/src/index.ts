@@ -12,7 +12,7 @@ export * from './preview';
 export { bindPreviewTouchGestures, type PreviewTouchGestureOptions } from './preview/touch-gestures';
 export { bindPreviewSvgSelection } from './preview/svg-selection';
 export { createVideoPlaybackControls, type VideoPlaybackActions, type VideoPlaybackState } from './preview/video-controls';
-export { createVideoPreviewPlayer } from './preview/video-player';
+export { createVideoPreviewPlayer, resolveMediaDuration } from './preview/video-player';
 export type {
   Model3dPreviewNode,
   Model3dPreviewState,

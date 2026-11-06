@@ -6,6 +6,8 @@ export interface SourceDescriptor {
   extension?: string;
   contentType?: string;
   size?: number;
+  /** Original video total in seconds; overrides partial stream durations when positive and finite. */
+  durationSeconds?: number;
   password?: string;
 }
 export interface BrowserPreviewOptions {

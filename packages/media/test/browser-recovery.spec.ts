@@ -54,6 +54,22 @@ describe('optional browser recovery', () => {
     expect(session.getState().capabilities.download).toBe(true);
   });
 
+  it('keeps original total duration in state and controls across native recovery', async () => {
+    const { host, session } = setup();
+    const load = context('growing.mov');
+    Object.assign(load.descriptor, { durationSeconds: 60 });
+    await session.load(load.descriptor.source, load);
+    host.querySelector('source')!.dispatchEvent(new Event('error'));
+    await vi.waitFor(() => expect(recover).toHaveBeenCalledOnce());
+    const video = host.querySelector('video')!;
+    for (const duration of [6, 12, 60]) {
+      Object.defineProperty(video, 'duration', { configurable: true, value: duration });
+      video.dispatchEvent(new Event('durationchange'));
+      expect(session.getState()).toMatchObject({ duration: 60 });
+      expect(host.querySelector<HTMLInputElement>('.pptxv-video-timeline')!.max).toBe('60');
+    }
+  });
+
   it.each([true, false])('preserves playback settings when native recovery begins (paused=%s)', async paused => {
     const { host, session } = setup(); const load = context('resume.mov');
     await session.load(load.descriptor.source, load);

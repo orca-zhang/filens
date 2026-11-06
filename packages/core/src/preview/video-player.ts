@@ -1,7 +1,12 @@
 import { createVideoPlaybackControls } from './video-controls';
 
+export function resolveMediaDuration(duration: number, durationSeconds?: number): number | undefined {
+  if (durationSeconds !== undefined && Number.isFinite(durationSeconds) && durationSeconds > 0) return durationSeconds;
+  return Number.isFinite(duration) ? duration : undefined;
+}
+
 /** Bind the shared controls to an ordinary or recovered HTML video. */
-export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElement, signal: AbortSignal) {
+export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElement, signal: AbortSignal, durationSeconds?: number) {
   const nativeControls = video.controls;
   video.controls = false;
   const controls = createVideoPlaybackControls(root, {
@@ -10,7 +15,8 @@ export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElem
       if (video.paused) void video.play().catch(() => undefined); else video.pause();
     },
     seek: seconds => {
-      if (Number.isFinite(video.duration)) video.currentTime = Math.max(0, Math.min(seconds, video.duration));
+      const duration = resolveMediaDuration(video.duration, durationSeconds);
+      if (duration !== undefined) video.currentTime = Math.max(0, Math.min(seconds, duration));
     },
     toggleMuted: () => {
       video.muted = !video.muted;
@@ -75,7 +81,7 @@ export function createVideoPreviewPlayer(root: HTMLElement, video: HTMLVideoElem
   syncCaptions();
   const sync = () => controls.sync({
     currentTime: video.currentTime,
-    duration: video.duration,
+    duration: resolveMediaDuration(video.duration, durationSeconds) ?? 0,
     paused: video.paused,
     muted: video.muted,
     volume: video.volume,

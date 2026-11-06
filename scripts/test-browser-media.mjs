@@ -1,7 +1,7 @@
 // Real browser codecs and MSE; only an ordinary static/Range fixture server.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +17,12 @@ try {
   execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=640x360:rate=30',
     '-f', 'lavfi', '-i', 'sine=frequency=440', '-t', '20', '-c:v', 'libx264', '-threads', '2',
     '-g', '300', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-movflags', '+faststart', file]);
+  execFileSync('ffmpeg', ['-v', 'error', '-i', file, '-c', 'copy', '-f', 'hls', '-hls_time', '2',
+    '-hls_list_size', '0', '-hls_segment_type', 'fmp4', '-hls_segment_filename', path.join(directory, 'segment%03d.m4s'),
+    path.join(directory, 'playlist.m3u8')]);
+  const fragmented = { init: readFileSync(path.join(directory, 'init.mp4')).toString('base64'),
+    segments: readdirSync(directory).filter(name => name.endsWith('.m4s')).sort()
+      .map(name => readFileSync(path.join(directory, name)).toString('base64')) };
   const vp9File = path.join(directory, 'vp9.mp4');
   execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=640x360:rate=30',
     '-t', '5', '-c:v', 'libvpx-vp9', '-threads', '2', '-deadline', 'realtime', '-cpu-used', '8', '-g', '30', '-movflags', '+faststart', vp9File]);
@@ -69,6 +75,71 @@ try {
         } finally { session.destroy(); window.VideoEncoder = nativeEncoder; window.VideoDecoder = nativeDecoder; window.fetch = fetch; }
       });
       assert.equal(direct.codecs, 0); assert.equal(direct.fetches, 0); assert.ok(direct.width > 0 && direct.time > 0);
+      const durations = await page.evaluate(async fragmented => {
+        const api = window.filensMedia;
+        const input = api.createBrowserMediaSource('/original.mp4');
+        const { format } = await new api.MediaFormatInspector().openMp4(input);
+        input.close();
+        const total = Math.max(format.duration || 0, ...format.tracks.map(track => track.duration));
+        const mime = `video/mp4; codecs="${format.tracks.map(track => track.codec).join(', ')}"`;
+        const reports = [];
+        for (const metadata of [true, false]) {
+          const source = new MediaSource();
+          const url = URL.createObjectURL(source);
+          const session = api.createMediaPreviewDrivers().find(driver => driver.id === 'media')
+            .createSession(document.querySelector('#host'));
+          const observed = [];
+          session.on('statechange', state => observed.push(state.duration));
+          try {
+            const opened = new Promise(resolve => source.addEventListener('sourceopen', resolve, { once: true }));
+            await session.load(url, { descriptor: { source: url, name: 'progressive.mp4', extension: 'mp4',
+              ...(metadata ? { durationSeconds: total } : {}) } });
+            await opened;
+            if (!metadata) source.duration = Infinity;
+            const buffer = source.addSourceBuffer(mime);
+            const append = data => new Promise((resolve, reject) => {
+              buffer.addEventListener('updateend', resolve, { once: true });
+              buffer.addEventListener('error', reject, { once: true });
+              buffer.appendBuffer(Uint8Array.from(atob(data), byte => byte.charCodeAt(0)));
+            });
+            const ready = new Promise(resolve => session.on('rendered', resolve));
+            await append(fragmented.init);
+            await append(fragmented.segments[0]);
+            await ready;
+            // Emulate a producer reporting only the completed fragment length.
+            if (metadata) source.duration = Math.ceil(buffer.buffered.end(0) + 1);
+            const video = document.querySelector('#host video');
+            const timeline = document.querySelector('#host .pptxv-video-timeline');
+            const preparing = session.getState().duration;
+            const disabledWhilePreparing = timeline.disabled;
+            const partial = video.duration;
+            video.muted = true;
+            document.querySelector('#host .pptxv-video-control-row button').click();
+            const deadline = performance.now() + 5000;
+            while (video.currentTime < .1 && performance.now() < deadline) await new Promise(resolve => setTimeout(resolve, 25));
+            if (video.currentTime < .1) throw new Error('Progressive video failed to play');
+            document.querySelector('#host .pptxv-video-control-row button').click();
+            for (const segment of fragmented.segments.slice(1)) await append(segment);
+            source.endOfStream();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            timeline.value = '15'; timeline.dispatchEvent(new Event('change'));
+            await new Promise(resolve => video.addEventListener('seeked', resolve, { once: true }));
+            const seek = video.currentTime;
+            reports.push({ metadata, total, partial, preparing, disabledWhilePreparing, duration: session.getState().duration,
+              max: Number(timeline.max), seek, paused: video.paused, observed });
+          } finally { session.destroy(); URL.revokeObjectURL(url); }
+        }
+        return reports;
+      }, fragmented);
+      for (const result of durations) {
+        if (result.metadata) { assert.ok(result.partial < result.total - 1, JSON.stringify(result)); assert.equal(result.preparing, result.total); }
+        else { assert.equal(result.partial, Infinity); assert.equal(result.preparing, undefined); assert.equal(result.disabledWhilePreparing, true); }
+        assert.ok(Math.abs(result.duration - result.total) < .1, JSON.stringify(result));
+        assert.ok(Math.abs(result.max - result.total) < .1);
+        assert.ok(Math.abs(result.seek - 15) < .1); assert.equal(result.paused, true);
+        assert.ok(result.observed.every(value => value === undefined || Math.abs(value - result.total) < .1), JSON.stringify(result));
+      }
+      console.log(`${name}: original total stays stable during progressive MSE appends; unknown total resolves on completion`);
       const recovery = [];
       for (const paused of [true, false]) recovery.push(await page.evaluate(async paused => {
         const session = window.filensMedia.createMediaPreviewDrivers({ browserMedia: true }).find(driver => driver.id === 'media').createSession(document.querySelector('#host'));
@@ -171,7 +242,7 @@ try {
         return results;
       }) : [];
       assert.deepEqual(pageErrors, []);
-      reports.push({ browser: name, version: browser.version(), direct, recovery, transcoding, ranged, offline, rejectedRange, benchmarks,
+      reports.push({ browser: name, version: browser.version(), direct, durations, recovery, transcoding, ranged, offline, rejectedRange, benchmarks,
         bytesServed, fixtureBytes: statSync(file).size, virtualRangeBytes: total, hardwareExecution: 'unknown' });
       writeFileSync(process.env.FILENS_MEDIA_RESULTS ?? path.join(tmpdir(), 'filens-browser-media-results.json'), `${JSON.stringify(reports, null, 2)}\n`);
       console.log(`${name}: native, bounded Range, forward/backward paused seeking, offline Blob and cleanup passed`);

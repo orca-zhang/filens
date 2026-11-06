@@ -27,7 +27,7 @@ try {
         document.querySelector('#file').onchange = event => {
           viewer?.destroy(); document.body.dataset.state='loading';
           const file = event.target.files[0];
-          viewer = createPreview('#preview', { src: file, name: file.name, browserMedia: true,
+          viewer = createPreview('#preview', { src: { source: file, name: file.name, durationSeconds: 4 }, browserMedia: true,
             mediaConverter: { convert() { window.conversions++; throw new Error('Conversion service must not run'); } },
             onRendered: () => { document.body.dataset.state='ready'; },
             onError: error => { document.body.dataset.state='error'; document.body.dataset.error=error.message; }
@@ -56,16 +56,19 @@ try {
     await page.goto(`${origin}/?mode=${mode}`); await page.waitForFunction(() => window.ready);
     await page.locator('#file').setInputFiles({ name: 'original.mov', mimeType: 'video/quicktime', buffer: readFileSync(fixture) });
     await expect(page.locator('#preview source')).toHaveCount(1);
+    await expect(page.locator('#preview .pptxv-video-timeline')).toHaveAttribute('max', '4');
     await page.locator('#preview source').evaluate(source => {
       document.body.dataset.state = 'recovering'; source.dispatchEvent(new Event('error'));
     });
     await expect.poll(() => page.locator('body').getAttribute('data-state'), { timeout: 20000 }).toBe('ready');
     const result = await page.locator('#preview video').evaluate(async video => {
       video.muted = true; await video.play(); await new Promise(resolve => setTimeout(resolve, 350));
-      return { width: video.videoWidth, time: video.currentTime, source: video.currentSrc, conversions: window.conversions };
+      return { width: video.videoWidth, time: video.currentTime, source: video.currentSrc, conversions: window.conversions,
+        duration: Number(document.querySelector('#preview .pptxv-video-timeline').max) };
     });
     assert.equal(result.width, 320); assert.ok(result.time > 0); assert.ok(result.source.startsWith('blob:'));
     assert.equal(result.conversions, 0); assert.deepEqual(errors, []);
+    assert.equal(result.duration, 4);
     assert.ok(!requests.some(url => /media_info|libheif\.wasm|converter-.*\.wasm/.test(url)));
     await page.evaluate(() => window.destroyPreview()); await expect(page.locator('#preview video')).toHaveCount(0);
     results.push({ mode, ...result, requests: requests.length });

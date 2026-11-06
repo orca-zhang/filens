@@ -36,6 +36,27 @@ The handoff retains the last playback position, paused state, volume, mute and
 playback speed, matching the stage continuity used in share-front. It adds no
 media dependency or codec asset.
 
+For a progressively prepared video, pass the original total in seconds through
+the source descriptor. Native playback and browser recovery use this same total
+for state, progress and seek limits instead of the currently prepared length:
+
+```ts
+const viewer = createPreview('#preview', {
+  src: { source: '/preview/movie.mp4', name: 'movie.mp4', durationSeconds: 60 },
+  browserMedia: true
+});
+```
+
+Only positive finite metadata overrides the browser duration. Without valid
+metadata, native duration handling is unchanged: an infinite or missing total
+keeps seeking disabled until a finite total is available. Stream producers must
+keep an incomplete stream's duration unknown, rather than report the sum of its
+prepared fragments. The bundled MP4 recovery engine already sets the full duration
+from original metadata before appending fragments. The source total is cleared
+when switching files. This ports the metadata rule from
+[share-front](https://github.com/IceWhaleTech/share-front/commit/4162baadaa374306bf64872d5d0e6c182f745c91)
+and [Photos](https://github.com/IceWhaleTech/ZimaOS-Photos/commit/b24cf344).
+
 The browser-local runtime can work offline with local files after its JavaScript
 has loaded. The split distribution needs its optional chunks available or cached;
 the all-in-one distribution embeds this video runtime. Remote URLs still need
@@ -156,6 +177,15 @@ codec execution and picture presentation. These injections do not claim Chrome
 naturally rejects those originals.
 
 [Recorded validation and raw results](browser-media-validation-2026-11-03.md).
+
+The 2026-11-06 duration update passed 96 related core/media unit checks, media
+source type checking, the existing engine snapshot and isolated package checks,
+module builds, and split/all-in-one builds and public preview recovery tests.
+Chrome 156 also decoded progressive fMP4 while the original 20.033-second total
+stayed fixed despite an 11-second prepared duration; unknown totals stayed
+unseekable until completion. Core source type checking passed; the full core
+test type check still reports the same 29 diagnostics as the pre-change sources.
+No style value, icon, dependency or conversion backend was added.
 
 Remaining work: broader demux/audio/subtitle support, measured automatic software
 retry, wiring adaptive output changes, long-duration/thermal/memory testing, and
