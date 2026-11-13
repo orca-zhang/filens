@@ -1,0 +1,985 @@
+{
+  "checkedAt": "2026-11-13T16:20:24.445667+00:00",
+  "scope": "Project-authored recordings, screenshots and generated sample documents, including embedded PPTX images and repository URLs. Published v0.6.7 tags, npm payloads and release attachments are immutable.",
+  "result": "No old project branding detected in the checked text, image samples or historical watermark frames.",
+  "sampling": {
+    "method": "Full-frame OCR at one-second intervals, including first and final frames; still images checked once. A separate full-frame tile scan and complete historical-watermark frame scan supplement these samples.",
+    "files": 103,
+    "samples": 1058,
+    "residualMatches": 0,
+    "excludedOtherPluginNames": [
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+        "frame": 24,
+        "text": "9I80 dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+        "frame": 25,
+        "text": "SIXD dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+        "frame": 25,
+        "text": "Fltl dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+        "frame": 50,
+        "text": "Flt dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+        "frame": 24,
+        "text": "900 dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+        "frame": 25,
+        "text": "SIXD dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.gif",
+        "frame": 24,
+        "text": "920 dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.gif",
+        "frame": 25,
+        "text": "9i9n dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
+        "frame": 25,
+        "text": "5kl dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
+        "frame": 50,
+        "text": "Fltl dsh-plugin-whale-pet@"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.webp",
+        "frame": 24,
+        "text": "9l20 dsh-plugin-whale-pet"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.webp",
+        "frame": 25,
+        "text": "9l20 dsh-plugin-whale-pet"
+      }
+    ],
+    "results": [
+      {
+        "path": "apps/demo/public/home/archive.webp",
+        "samples": 1,
+        "sha256": "cc3efd9c8d1a0e8197eb4e910a278e1e41b589e6282cd5181e59bbda08801170"
+      },
+      {
+        "path": "apps/demo/public/home/cad.webp",
+        "samples": 1,
+        "sha256": "bc64f42f6f3fe7fa040f84fced0b96e666abdc73ac87c98e2f06bc84161c4036"
+      },
+      {
+        "path": "apps/demo/public/home/demo-poster.webp",
+        "samples": 1,
+        "sha256": "0d9536fc8a12c8230ee5098c9615482287e52bf756877f407efe75e96ce64dff"
+      },
+      {
+        "path": "apps/demo/public/home/document.webp",
+        "samples": 1,
+        "sha256": "a04ed0bcc627f49cc8a388306d7fe1cf33a5026026920ed36018218630bdf983"
+      },
+      {
+        "path": "apps/demo/public/home/ebook.webp",
+        "samples": 1,
+        "sha256": "462299bf544f598fd3b6780971d27d31e159a666d2b4ab8bcf83032e8264a271"
+      },
+      {
+        "path": "apps/demo/public/home/filens-demo.mp4",
+        "samples": 50,
+        "sha256": "d2a6ab3a93aa762d3bd8e1a1c49d3923b2da781a9c22f3e8f4a9536b772d9e85"
+      },
+      {
+        "path": "apps/demo/public/home/iwork.webp",
+        "samples": 1,
+        "sha256": "a05187498dc31239d6568d2ab24da5e8091cce4427782fb87fab313b09cde9fd"
+      },
+      {
+        "path": "apps/demo/public/home/landscape.webp",
+        "samples": 1,
+        "sha256": "fad68f74a2148f2e9a4f74837933f2efdd56cbfc31771c6f3d939e5b05d078c0"
+      },
+      {
+        "path": "apps/demo/public/home/model.webp",
+        "samples": 1,
+        "sha256": "45b71a942a8dd4b87b0a62de972ed1d464dcd818a7a4f1b8f91466bc479d14f8"
+      },
+      {
+        "path": "apps/demo/public/home/music.webp",
+        "samples": 1,
+        "sha256": "8833cd3bfb88aab7407940032878e516effe40e0966275d7774526d39f8dafe0"
+      },
+      {
+        "path": "apps/demo/public/home/panorama.webp",
+        "samples": 1,
+        "sha256": "a3aa675cb1ac150d74e6d3a3af81404dccbf494612740d03adb672bede81e6ad"
+      },
+      {
+        "path": "apps/demo/public/home/pdf.webp",
+        "samples": 1,
+        "sha256": "6807addd34fd1247d29516b1768d548a9ea54ef492111eade23e96bfc0b51ad4"
+      },
+      {
+        "path": "apps/demo/public/home/presentation.webp",
+        "samples": 1,
+        "sha256": "4807a6c11d6530253b6c57fd1f89fbf65298374510b67c696e62f655dfe2146c"
+      },
+      {
+        "path": "apps/demo/public/home/spreadsheet.webp",
+        "samples": 1,
+        "sha256": "691330655d88afdb3e41099956665dac5a207b8cb86bca26b560e0b7b2d3cd90"
+      },
+      {
+        "path": "apps/demo/public/home/video.webp",
+        "samples": 1,
+        "sha256": "44cfc51409456f79df0583789ec7b69a76b7cbf8fd630f337f1c48bdb9ee8bd7"
+      },
+      {
+        "path": "docs/assets/agent-cli/invoice-blur.png",
+        "samples": 1,
+        "sha256": "9d3d55e17e34020157aafa87e50867213c3bbb5dae00c917a7eed245d4cfc36e"
+      },
+      {
+        "path": "docs/assets/agent-cli/invoice-heavy-blur.png",
+        "samples": 1,
+        "sha256": "ace5a5fa5316ee516f5709a58f4ae2b14e6ff91658b9c48424edde0b32af80a0"
+      },
+      {
+        "path": "docs/assets/agent-cli/invoice-small.png",
+        "samples": 1,
+        "sha256": "b70bd9e319e78ddbebc867c0e2959b02d750520f30392446a62aa53c258f02a1"
+      },
+      {
+        "path": "docs/assets/agent-cli/invoice-tiny.png",
+        "samples": 1,
+        "sha256": "58a13fc0a68f5188ad6073a4d15a75a92633608876e9e377582131de82951425"
+      },
+      {
+        "path": "docs/assets/agent-cli/invoice-zh.png",
+        "samples": 1,
+        "sha256": "1cf45dbe429595ee24b83c1439e1dafbeacc29909a01f1931429602e21b92a04"
+      },
+      {
+        "path": "docs/assets/agent-cli/terminal-demo.gif",
+        "samples": 107,
+        "sha256": "bd9ed5a93bc069fd2005162cefe375f1f3a35b6fcf17edc6b2b9d254b04e8026"
+      },
+      {
+        "path": "docs/assets/agent-cli/terminal-demo.png",
+        "samples": 1,
+        "sha256": "b75c140cf7504a2b9c1408a895fbad0923a8052e00b9798b90e30ea0f35aefb8"
+      },
+      {
+        "path": "docs/assets/agent-cli/terminal-demo.zh-CN.gif",
+        "samples": 107,
+        "sha256": "6eb9c307ff5423b117251ecec9d4b46128994cd39f2738b405a215640df033a7"
+      },
+      {
+        "path": "docs/assets/agent-cli/terminal-demo.zh-CN.png",
+        "samples": 1,
+        "sha256": "2fe2bdbf096200c47394f7543b192bba0e59940a7f97d7eb297b0e26c2ab7897"
+      },
+      {
+        "path": "docs/assets/brand/filens-liquid-ai-2048.png",
+        "samples": 1,
+        "sha256": "a8bd070940a14b68c84bc10611cf0fa55fed9d42e3c098759d36c6f02822cfed"
+      },
+      {
+        "path": "docs/assets/brand/filens-liquid-ai-512.png",
+        "samples": 1,
+        "sha256": "5c9ad6bde5ee8eeb0b8ce704f9ecc767f65f76f2c3a3a354796194272688b703"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.gif",
+        "samples": 28,
+        "sha256": "138882714399971a1369ba25195740c0b4f5fc23d4c998e19022c3eabdc56c76"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.mp4",
+        "samples": 35,
+        "sha256": "2b36c26a5db3b589d45acd47189f9966232c1dbcbe47571ea5bfd337e4881f45"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.webp",
+        "samples": 28,
+        "sha256": "cdfb52fde50232890972098fd077d7bdc9f37bdebb60dcddb296bb63d41aa9bd"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/desktop-step.jpg",
+        "samples": 1,
+        "sha256": "27d4bfae47d6bcc34f184eeab6264ee6e8f1a8f8d5a02d7a261774716191fb4c"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/desktop-word.jpg",
+        "samples": 1,
+        "sha256": "1f43c603bf76737fa59c968f0328b43ccbd7df5e5701fcdb076b726e06453015"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+        "samples": 31,
+        "sha256": "17172dd7058657419381bda92dd0ca064caa145c1c0385978c32feea955910e2"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+        "samples": 31,
+        "sha256": "b8b472bf9fcae6f15de8aaaccd8eb24ab7470e3be025bf4c4fd835202b5d1215"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+        "samples": 31,
+        "sha256": "cf6f2f58d0f536a9a652dc15c0778d285a9b660156e1e8b3090aa5628a7fd54c"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.gif",
+        "samples": 30,
+        "sha256": "b5983d331eccab25ad6bee324d9750f6a3dfb02d2c2f700d370196b0e9a7469f"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
+        "samples": 31,
+        "sha256": "7f0b3bcd1eed4846cb1abb678553da2cc087e0bef58867246bf9a8badfcbbf72"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.webp",
+        "samples": 30,
+        "sha256": "db8f06d714bf8322d0f67659c9ad3ab591e7443e2920b8380be98e84040d7e67"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/model-narrow.jpg",
+        "samples": 1,
+        "sha256": "d559b6ed419890b05ea1c97d1f8a9f832579fb6762e5c854146750aad5ee4d33"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/narrow-dark.jpg",
+        "samples": 1,
+        "sha256": "ed3441a578c3efa43d5809dd60a33d2b5f0085de52f1d4934d350137c81c3300"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.en.gif",
+        "samples": 28,
+        "sha256": "c36fb0a4e1b1b6589d8a84bfd4c5acbd497e39fece87cf62f6848758968b5c36"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.en.mp4",
+        "samples": 18,
+        "sha256": "714f10938ad6f03b5c6990b8275a50755becc32286f3ea735d6973ef835d2d50"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.en.png",
+        "samples": 1,
+        "sha256": "59eb31543ae1cd98665fee7118ce99735a7d52f74e409d5f9ca3e0b585d2be96"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.en.webp",
+        "samples": 28,
+        "sha256": "ecd22b28618624789797f12826309439a86b092678a3818bb4b8877db34312b2"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.gif",
+        "samples": 28,
+        "sha256": "7522b4bf53b2d777fc4f82062ce75c041b12581fb87036b8a1468ef7f45d892b"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.mp4",
+        "samples": 18,
+        "sha256": "3fe406d115c7fab6728fd2dd5da43100ad8fa8980c27b0c2330f569b1368ad64"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.png",
+        "samples": 1,
+        "sha256": "13732cebf8441090f86b9dbf722c155ba578c66c7758f4d79341506527ae9d86"
+      },
+      {
+        "path": "docs/assets/dsh-release/3d-and-panorama.zh-CN.webp",
+        "samples": 28,
+        "sha256": "0045d68ac326be41cabf2828b9a2cdf041164c0867d4bcd60e2434595793c1ec"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.en.gif",
+        "samples": 29,
+        "sha256": "a8df551d19f25f53f42ad9e178dddd6302b07d9ede4c115c523b13551e8c511d"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.en.mp4",
+        "samples": 17,
+        "sha256": "ca67f63a5c395b68e6b94cff534d33964883c3c4fa96a42985fda60c55f79943"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.en.png",
+        "samples": 1,
+        "sha256": "12b4864f920370b6b0a737899b6b87d49160f4c19fdd87e715550ea9071b7f0d"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.en.webp",
+        "samples": 29,
+        "sha256": "e1a7e9d0cbd2d6be0383c9bdf23b50f58d9ae733981bc6745a4c71f3e9d89902"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.zh-CN.gif",
+        "samples": 29,
+        "sha256": "6c00f55bcc4bee75322290a37927461ac2c73b9f84837e92e82cdc0488bcc277"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.zh-CN.mp4",
+        "samples": 17,
+        "sha256": "7cc5705e2fb7c3861d88c31f0292012b94664c5f4244e48dfb80ee7ed29c082c"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.zh-CN.png",
+        "samples": 1,
+        "sha256": "40c3b143814d626020fa2cea9f1230b83b4bffe6d06da7a63fb8ac325f735410"
+      },
+      {
+        "path": "docs/assets/dsh-release/file-workspace.zh-CN.webp",
+        "samples": 28,
+        "sha256": "148e99186112385cb643d83c30ecd4136a40ea1038d77b7f31d00c76f478dafd"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.en.gif",
+        "samples": 22,
+        "sha256": "104e3c785729b77fae36958dc7ff777547a3ddb169ccfcee18ae86407f9c0bd0"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.en.mp4",
+        "samples": 14,
+        "sha256": "b1b638bfde6877cd9bbb0e8fbe694aff47c05f1c9e4f2595bfab9241aa118c00"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.en.png",
+        "samples": 1,
+        "sha256": "323468330f08a50396781402bbf72a6ea96edb73949a37361fb7036e8ce5a092"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.en.webp",
+        "samples": 22,
+        "sha256": "05c9b194ebb0536e81f704bd94e33312012102cf2849ce3e68ff37542ebc29d9"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.zh-CN.gif",
+        "samples": 22,
+        "sha256": "58940574800cb41ae5d0e42d4596366096db350fa2fc669eeccae45a9a033544"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.zh-CN.mp4",
+        "samples": 14,
+        "sha256": "8bb6867abb92c61358f7fa708945855aa1307920a7862a07c8dc7e7da4ad0a69"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.zh-CN.png",
+        "samples": 1,
+        "sha256": "97c16fe7d3751a9e942919f16065b5b6850b6df768ff92d6505a3ac142cd14f1"
+      },
+      {
+        "path": "docs/assets/dsh-release/office-preview.zh-CN.webp",
+        "samples": 22,
+        "sha256": "3c78d88de1621af84fff773fd609a34cd909ff6d48cccbfb18767d22db50703b"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/01-empty.png",
+        "samples": 1,
+        "sha256": "4d6cabb560817d5f4c29d3861e5915df4da9f323fac19cc0d912d944103a45ca"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/02-gallery.png",
+        "samples": 1,
+        "sha256": "18c4bbacadc9a2d8f5004fe5c138b7faa3d416ae1b49187e9788c0a32481f9b0"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/03-document.png",
+        "samples": 1,
+        "sha256": "58e737478ca999908f8b309a7b4cdd1639b1a46b5b830741094bd1faf35f8a36"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/04-pdf.png",
+        "samples": 1,
+        "sha256": "9bf38f29be4ea0f9c3348a1665e29bf7106b48c224247db9e5ad95158427cd1d"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/05-model.png",
+        "samples": 1,
+        "sha256": "500daa131488678cab9e07a5bcb468c6521709e2572c98e2c5f3b07681e39beb"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/06-image.png",
+        "samples": 1,
+        "sha256": "db4611a494ef0ce46ec1b40182fae1055c2da70f09dac06c9809f0919c04257b"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/07-presentation.png",
+        "samples": 1,
+        "sha256": "77c91e3aab9fc5284236dbfdb4222d12bc642848a0a9a4a8b5b4840c89aab2b9"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/08-gallery-dark.png",
+        "samples": 1,
+        "sha256": "8cdc6d060365e34f84369a85f24d348edd1fb5fb7952699d683a85ee19ec4f71"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/deleted-file-hidden.png",
+        "samples": 1,
+        "sha256": "a1fcf90b79095f6ecb04f249ab01ea6c119f0bf2f73e866e546cdb513ab1b7d2"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/file-icons-dark.png",
+        "samples": 1,
+        "sha256": "2408b7ee4c80e9b25d4c2fbcebf3a707b243fc401b6d790af71936813be021ce"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/file-icons-list.png",
+        "samples": 1,
+        "sha256": "19da0f3b3854b25f6e03ce8187a50572618e1daf55fe8010fb66ea0debdfa45e"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/file-icons.png",
+        "samples": 1,
+        "sha256": "0f3d25f0967bf10eac31d15f1e46d1186429ced8964fad0c5069538f4d026fc3"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/info-photos-dark.png",
+        "samples": 1,
+        "sha256": "4f0638a1730115e2b1b5c1cc1f3f4f3a67537cc2ca134105c7980fb489b0353f"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/info-photos-light.png",
+        "samples": 1,
+        "sha256": "5de3a9e2d98366e6e537729f44d6cb9aa5738e53bfe8b4548eb319c041d8fc6d"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/info-photos-mobile.png",
+        "samples": 1,
+        "sha256": "033985d161fad2b06e46fe47f8e1bb2b9445f6c2c39c2970fb4f10666077c7db"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/office-thumbnails.png",
+        "samples": 1,
+        "sha256": "a3dfdb550a7753d849cb995b64b6647f868135168ba215d2818bbf31a6cb9140"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/related-files.png",
+        "samples": 1,
+        "sha256": "b648348b9eb724695df1414f58584e2322cd8359bacb48562550b1bdd564ecd2"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/restored-file.png",
+        "samples": 1,
+        "sha256": "326f8c1470a366a265e0fa0128a1d75923f2de781b131ca2efe7f538b23522af"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/sessions-collapsed-mobile.png",
+        "samples": 1,
+        "sha256": "4f18cca4e2cd5b596248b49cf20d96e19a113111c8609398b5c1c92b71bd5787"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/sessions-collapsed.png",
+        "samples": 1,
+        "sha256": "6c9a659a05b9156b22a276225db6c7f01c1f7d462f1fcc8e1e7b359dba8f2cb9"
+      },
+      {
+        "path": "docs/assets/dsh-workspace/sessions-list-mobile.png",
+        "samples": 1,
+        "sha256": "330bceabf0e1918aebf8fc157352dbded33a4b57040098df6e95c1db37da8291"
+      },
+      {
+        "path": "docs/assets/performance/pptx-first-preview.webp",
+        "samples": 1,
+        "sha256": "dbdb1cf3fc1b1ac94a67465b11857e7977dbde9c21a7e0b183255e50e7fa2884"
+      },
+      {
+        "path": "docs/assets/performance/raw-sensor-preview.webp",
+        "samples": 1,
+        "sha256": "9c6f478985304019ca360e92f372bcd03db13ec035d9422c070f5e8e9eca953d"
+      },
+      {
+        "path": "docs/assets/performance/xls-formula-preview.webp",
+        "samples": 1,
+        "sha256": "786896cff870ab41304a1e7ae4e4c00886e6ce5cb4edb712e10010d28f82911f"
+      },
+      {
+        "path": "docs/assets/performance/xls-solver-preview.webp",
+        "samples": 1,
+        "sha256": "2a2a5175aedc9f6ea4db5061d6fed00fdf53dd82fd25a9c1953cb1d0e7c4f54e"
+      },
+      {
+        "path": "docs/assets/readme/demo.gif",
+        "samples": 34,
+        "sha256": "bcb1519e9778a59a3225f2182b3cbdd741723ac5383684695865674d21d23733"
+      },
+      {
+        "path": "docs/assets/readme/overview.webp",
+        "samples": 1,
+        "sha256": "f24402dfc639b0ba46d8709236127ad74e54a593cedca1e56c5dbeaa90cd0ef0"
+      },
+      {
+        "path": "docs/assets/readme/zimaos-banner.en.png",
+        "samples": 1,
+        "sha256": "36aa0d1d268188691b3483685a74251f38576dd9972591e5e8390f1a6199dacf"
+      },
+      {
+        "path": "docs/assets/readme/zimaos-banner.zh-CN.png",
+        "samples": 1,
+        "sha256": "5a9c39d4285422787b6a7fded5c53ae5c98cef5290a24b1632a82dd02ed5ee6a"
+      },
+      {
+        "path": "docs/assets/rust-engines/pdf-fonts.png",
+        "samples": 1,
+        "sha256": "0e0b982bee78dcecd70de20c1d09a0fd18e2b54b7b9042f97c830b09424a8560"
+      },
+      {
+        "path": "docs/assets/rust-engines/pdf-type3.png",
+        "samples": 1,
+        "sha256": "f76c7b96cdda8c98e74fff685b08fdb6f21f6206b7374fb2a81247e510b3cbe0"
+      },
+      {
+        "path": "docs/assets/rust-engines/pdf-unicode.png",
+        "samples": 1,
+        "sha256": "c26edcd9c60b65c6e949a62d023d8c80a5df15bb65173896140046516a420791"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-assembly.png",
+        "samples": 1,
+        "sha256": "dfafa22c1761dab2d43b45f4c6bb124a8fbb672818d9e682a97470b5808b60ec"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-fixed-missing-faces.png",
+        "samples": 1,
+        "sha256": "022bac52802f2925f861a6a677b1d94db104203d6e65a0414f5fc788aad3eb36"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-fixed-rounded.png",
+        "samples": 1,
+        "sha256": "cc6fca80973d363d1fb058754c587d52c0b69d6d4d56fea4c09df84ee14e032b"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-missing-faces.png",
+        "samples": 1,
+        "sha256": "b7d4e156eff271927c2f84cba3ba5208e33b7937144e8061cfa4515f70327dc7"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-refined-foot.png",
+        "samples": 1,
+        "sha256": "47412ed3b35bd22427409e00597e654dd312b5f972bdb432085c90baad10e0ef"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-refined-turbine.png",
+        "samples": 1,
+        "sha256": "23eba49b6e32887f959da1000749adfda3542b86ceff28be5dca6b9e426eff83"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-reviewed-assembly.png",
+        "samples": 1,
+        "sha256": "c3e18bd3a7ef87bcdaea2931829ac15d2671f31c70cf2879ee519988bc2b212b"
+      },
+      {
+        "path": "docs/assets/rust-engines/step-reviewed-head.png",
+        "samples": 1,
+        "sha256": "2a5d2dfb7e0794951ade9c0947275e5a205b23dbed2b702174c2715d78b7109a"
+      }
+    ]
+  },
+  "staticImages": {
+    "files": 72,
+    "overlappingTilesPerImage": 4,
+    "tilesChecked": 288,
+    "scale": 3,
+    "residualMatches": 0
+  },
+  "historicalWatermarks": {
+    "files": 9,
+    "framesChecked": 4450,
+    "regionNormalizedFromTopLeft": [
+      0.87,
+      0.82,
+      1,
+      0.92
+    ],
+    "scale": 4,
+    "residualMatches": 0,
+    "timingPreserved": true,
+    "results": [
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.mp4",
+        "framesChecked": 849,
+        "sha256": "2b36c26a5db3b589d45acd47189f9966232c1dbcbe47571ea5bfd337e4881f45"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+        "framesChecked": 377,
+        "sha256": "17172dd7058657419381bda92dd0ca064caa145c1c0385978c32feea955910e2"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+        "framesChecked": 727,
+        "sha256": "b8b472bf9fcae6f15de8aaaccd8eb24ab7470e3be025bf4c4fd835202b5d1215"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
+        "framesChecked": 727,
+        "sha256": "7f0b3bcd1eed4846cb1abb678553da2cc087e0bef58867246bf9a8badfcbbf72"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+        "framesChecked": 372,
+        "sha256": "cf6f2f58d0f536a9a652dc15c0778d285a9b660156e1e8b3090aa5628a7fd54c"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.gif",
+        "framesChecked": 341,
+        "sha256": "138882714399971a1369ba25195740c0b4f5fc23d4c998e19022c3eabdc56c76"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.webp",
+        "framesChecked": 337,
+        "sha256": "cdfb52fde50232890972098fd077d7bdc9f37bdebb60dcddb296bb63d41aa9bd"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.gif",
+        "framesChecked": 366,
+        "sha256": "b5983d331eccab25ad6bee324d9750f6a3dfb02d2c2f700d370196b0e9a7469f"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/install-and-preview.webp",
+        "framesChecked": 354,
+        "sha256": "db8f06d714bf8322d0f67659c9ad3ab591e7443e2920b8380be98e84040d7e67"
+      }
+    ]
+  },
+  "embeddedImages": {
+    "entries": 103,
+    "uniqueImages": 83,
+    "uniform2x2PlaceholdersCheckedWithoutOCR": 1,
+    "residualMatches": 0,
+    "containers": [
+      {
+        "path": "apps/demo/public/samples/a.numbers",
+        "sha256": "be5e02bd170683345595e928a71979d3b4582ea0ca44214a35c643957a281ab0"
+      },
+      {
+        "path": "apps/demo/public/samples/a.pages",
+        "sha256": "4714477138d0a4090fc2ee2ba2ebb6adcd0fb6ce20a28897a6247a8e17d1ddce"
+      },
+      {
+        "path": "apps/demo/public/samples/filens-aurora-guide.docx",
+        "sha256": "3dd79b9a3ad29476dd80d91e79553c52706b2cdfa916771641ec43454f9763a1"
+      },
+      {
+        "path": "apps/demo/public/samples/filens-aurora-guide.zh-CN.docx",
+        "sha256": "535d42bb20c556bd063a1ccf17d4b0e33fe04eed8a9bdc86549125d52987d37b"
+      },
+      {
+        "path": "apps/demo/public/samples/filens-field-notes.pptx",
+        "sha256": "1d19a97f7eb03bdbc6b32b52307cb4ebff4e7436554dde4155883d2b56aed7a1"
+      },
+      {
+        "path": "apps/demo/public/samples/filens-introduction.en.pptx",
+        "sha256": "5b616cf02e78cac2852fe5d01402dc58540836af9505ca71104e0d2f4577e062"
+      },
+      {
+        "path": "apps/demo/public/samples/filens-introduction.zh-CN.pptx",
+        "sha256": "3edde1ca06cef9c9a463bfb70c24fb7561e32697974ba0693901b3b9dc041f38"
+      },
+      {
+        "path": "apps/demo/public/samples/filens-weekend.key",
+        "sha256": "0d1fa06a23395434089ea24ce284fce2dfee4c7e1e51138be6038bb2ab41befb"
+      },
+      {
+        "path": "apps/demo/public/samples/pepper-carrot.epub",
+        "sha256": "d321f923e0bdd81748c78a4a2bb9cb53463b93c9256d444eb724d5b8e3222bba"
+      },
+      {
+        "path": "apps/demo/public/samples/rich-docx-images.docx",
+        "sha256": "72f40baa1b89e4849e817121dbbf148ed78e51be9bf04d8e6f4bc1494aa517b7"
+      },
+      {
+        "path": "apps/demo/public/samples/rich-docx-tables.docx",
+        "sha256": "5e23ecb6ec09b5db467ddeb22110c2aab83d1218662e8f7c8db444f085e081cc"
+      },
+      {
+        "path": "apps/demo/public/samples/rich-pptx-pictures.pptx",
+        "sha256": "20b6295563e217804af81f8b5fee5e5cef9e766ac401d825d536ffe6d674edd0"
+      },
+      {
+        "path": "apps/demo/public/samples/rich-pptx-shapes.pptx",
+        "sha256": "302dc642b791f49da6057b69a7ef2a0804f61d9469e7e49e9e734ae3305951cc"
+      },
+      {
+        "path": "apps/demo/public/samples/rich-spreadsheet.ods",
+        "sha256": "a551ef35d3faddae4bf135960bde419f4a0140f9398c2218614b089ae8a4b46f"
+      },
+      {
+        "path": "apps/demo/public/samples/vue-office-test.pptx",
+        "sha256": "1d32b02a71f548d8c2c60bdeea87366fe039f747fda8bb0ef8a22512913fe520"
+      }
+    ]
+  },
+  "presentations": [
+    {
+      "path": "apps/demo/public/samples/filens-introduction.en.pptx",
+      "beforeSHA256": "590916a586cc75c9a13e742c57a6171358928ff7eee12a573fda78b8bc4b8476",
+      "sha256": "5b616cf02e78cac2852fe5d01402dc58540836af9505ca71104e0d2f4577e062",
+      "changedParts": [
+        "ppt/slides/slide1.xml",
+        "ppt/media/image8.png",
+        "ppt/media/image9.png",
+        "ppt/media/image10.jpg",
+        "ppt/slides/slide14.xml"
+      ],
+      "unchangedPartsVerified": 104,
+      "slides": 14,
+      "zipIntegrity": true,
+      "xmlWellFormed": true
+    },
+    {
+      "path": "apps/demo/public/samples/filens-introduction.zh-CN.pptx",
+      "beforeSHA256": "772fd13e340fc611ac6f4c0e0fbe1cf49566797495ae1700c56cd3dedb52587f",
+      "sha256": "3edde1ca06cef9c9a463bfb70c24fb7561e32697974ba0693901b3b9dc041f38",
+      "changedParts": [
+        "ppt/slides/slide1.xml",
+        "ppt/media/image8.png",
+        "ppt/media/image9.png",
+        "ppt/media/image10.jpg",
+        "ppt/slides/slide14.xml"
+      ],
+      "unchangedPartsVerified": 104,
+      "slides": 14,
+      "zipIntegrity": true,
+      "xmlWellFormed": true
+    }
+  ],
+  "refreshedStillImages": [
+    {
+      "path": "apps/demo/public/home/model.webp",
+      "beforeSHA256": "486426d36bb875147020e0598ec58336b65f277bd6552e02ccef96cdbd651da0",
+      "sha256": "45b71a942a8dd4b87b0a62de972ed1d464dcd818a7a4f1b8f91466bc479d14f8"
+    },
+    {
+      "path": "docs/assets/dsh-plugin/desktop-step.jpg",
+      "beforeSHA256": "d1cacfaeac2c7a6f663a2667c3e4a95ab861a39b626cb6c799a75452fee0c646",
+      "sha256": "27d4bfae47d6bcc34f184eeab6264ee6e8f1a8f8d5a02d7a261774716191fb4c"
+    },
+    {
+      "path": "docs/assets/dsh-plugin/desktop-word.jpg",
+      "beforeSHA256": "6732ee2b29ec3a239393c245b4e51004723a65865d8c4a9966837102bd7345d0",
+      "sha256": "1f43c603bf76737fa59c968f0328b43ccbd7df5e5701fcdb076b726e06453015"
+    },
+    {
+      "path": "docs/assets/dsh-plugin/model-narrow.jpg",
+      "beforeSHA256": "d7f702e68d143bb0d49aa6652efe30344d794178e91491b9797004ccf7dfffa7",
+      "sha256": "d559b6ed419890b05ea1c97d1f8a9f832579fb6762e5c854146750aad5ee4d33"
+    },
+    {
+      "path": "docs/assets/dsh-plugin/narrow-dark.jpg",
+      "beforeSHA256": "d6e1817206218aa396527404240b6fb81d05b403cfcf814fa15e4b581460289f",
+      "sha256": "ed3441a578c3efa43d5809dd60a33d2b5f0085de52f1d4934d350137c81c3300"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/01-empty.png",
+      "beforeSHA256": "33ed3eea5c0f74467ef7ab2fc05811954c066d29eb162fa2fe80f5576d1f9e8c",
+      "sha256": "4d6cabb560817d5f4c29d3861e5915df4da9f323fac19cc0d912d944103a45ca"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/02-gallery.png",
+      "beforeSHA256": "deebb5ffc7d1d779d2c43048a32c22872baca6f6760cad5dfc02ae809ea49d2e",
+      "sha256": "18c4bbacadc9a2d8f5004fe5c138b7faa3d416ae1b49187e9788c0a32481f9b0"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/03-document.png",
+      "beforeSHA256": "009ee4b56540e7bfa7f01446ee2dfbeb9c6ed232b5f246a827bdf7515a0287c0",
+      "sha256": "58e737478ca999908f8b309a7b4cdd1639b1a46b5b830741094bd1faf35f8a36"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/04-pdf.png",
+      "beforeSHA256": "6ff2f82fcc793824655b4181d1fd4300611e7b3a18e93a4274a50a5adce00cb9",
+      "sha256": "9bf38f29be4ea0f9c3348a1665e29bf7106b48c224247db9e5ad95158427cd1d"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/05-model.png",
+      "beforeSHA256": "2ac559aba23dd1f92cb99a689149131c526a4fe71e47b071990aeefce5abd8b2",
+      "sha256": "500daa131488678cab9e07a5bcb468c6521709e2572c98e2c5f3b07681e39beb"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/06-image.png",
+      "beforeSHA256": "9926783ad6562803390e0bcd540677290f04e183894adeffc1aac83f805a59d2",
+      "sha256": "db4611a494ef0ce46ec1b40182fae1055c2da70f09dac06c9809f0919c04257b"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/07-presentation.png",
+      "beforeSHA256": "816e5cf760519162f70395c57c8675a20775bd3ff397e0d62a423b595207fa06",
+      "sha256": "77c91e3aab9fc5284236dbfdb4222d12bc642848a0a9a4a8b5b4840c89aab2b9"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/08-gallery-dark.png",
+      "beforeSHA256": "b8d74b2cc1520d5ca7f89244bb1d0fb58ce60614438a8d8e145c9e3c482fe044",
+      "sha256": "8cdc6d060365e34f84369a85f24d348edd1fb5fb7952699d683a85ee19ec4f71"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/deleted-file-hidden.png",
+      "beforeSHA256": "8bd070d9c5e02d9f542849666778a8aba4fcc08dcb3f28333986ce739a3c380a",
+      "sha256": "a1fcf90b79095f6ecb04f249ab01ea6c119f0bf2f73e866e546cdb513ab1b7d2"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/file-icons-dark.png",
+      "beforeSHA256": "46b46cf8673b3282a6d8ab21c8fa6911282c43a2d4a864601ebb4be03ea2c967",
+      "sha256": "2408b7ee4c80e9b25d4c2fbcebf3a707b243fc401b6d790af71936813be021ce"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/file-icons-list.png",
+      "beforeSHA256": "79a135e7b7ac0d65020344f0118e36b8932a12f8fa1a383f98c7a02b88fc1a79",
+      "sha256": "19da0f3b3854b25f6e03ce8187a50572618e1daf55fe8010fb66ea0debdfa45e"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/file-icons.png",
+      "beforeSHA256": "bfb08b22ad099412a0a131fa047dec2dc70f866d1bc937eb09464c3cda367e0c",
+      "sha256": "0f3d25f0967bf10eac31d15f1e46d1186429ced8964fad0c5069538f4d026fc3"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/info-photos-dark.png",
+      "beforeSHA256": "2a4277dee9fee156696b35e0c4f088b23c4f040ce997c2102076d11802f2aad7",
+      "sha256": "4f0638a1730115e2b1b5c1cc1f3f4f3a67537cc2ca134105c7980fb489b0353f"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/info-photos-light.png",
+      "beforeSHA256": "261c3f055442d1a9465a0a2cae06ebca0220c50be6e0a098fa16c861801816f7",
+      "sha256": "5de3a9e2d98366e6e537729f44d6cb9aa5738e53bfe8b4548eb319c041d8fc6d"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/info-photos-mobile.png",
+      "beforeSHA256": "d39adb2f9b99697b65baef36f5ca2ea0e355fdf9343a71487e822d67f36dba38",
+      "sha256": "033985d161fad2b06e46fe47f8e1bb2b9445f6c2c39c2970fb4f10666077c7db"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/office-thumbnails.png",
+      "beforeSHA256": "68d1441a9e63a998fe0dab0a34732a67acab0fcab3db20150006e852ac4cfcbc",
+      "sha256": "a3dfdb550a7753d849cb995b64b6647f868135168ba215d2818bbf31a6cb9140"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/related-files.png",
+      "beforeSHA256": "24e116e9c759b295ecee1a7e183fd1a60cedecc9a3eb88bf3884aa17851f922e",
+      "sha256": "b648348b9eb724695df1414f58584e2322cd8359bacb48562550b1bdd564ecd2"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/restored-file.png",
+      "beforeSHA256": "0add0c682a5e85dd06a983b9d3f7a450d35f6bba477bdb5b97ac1afb957b3c16",
+      "sha256": "326f8c1470a366a265e0fa0128a1d75923f2de781b131ca2efe7f538b23522af"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/sessions-collapsed-mobile.png",
+      "beforeSHA256": "46120ece53023fef2365ec8180d4804c4db72a146d6cf82a2123cd77a842a049",
+      "sha256": "4f18cca4e2cd5b596248b49cf20d96e19a113111c8609398b5c1c92b71bd5787"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/sessions-collapsed.png",
+      "beforeSHA256": "69a8be3ae04d1b00573b17bbd090455fe3ddedc0dadc37b57a4ccc15adf9198e",
+      "sha256": "6c9a659a05b9156b22a276225db6c7f01c1f7d462f1fcc8e1e7b359dba8f2cb9"
+    },
+    {
+      "path": "docs/assets/dsh-workspace/sessions-list-mobile.png",
+      "beforeSHA256": "cda1c8f9a9276d01290350825fe4420bf46e29b2a45b395d25cc1c5ad9db4c29",
+      "sha256": "330bceabf0e1918aebf8fc157352dbded33a4b57040098df6e95c1db37da8291"
+    }
+  ],
+  "desktopRecordings": {
+    "recordings": 6,
+    "plugin": "dsh-filens@0.1.10",
+    "preview": "0.3.7",
+    "cli": "0.5.7",
+    "dsh": "0.2.2-rc.1",
+    "platform": "macOS arm64",
+    "sourceFilesMatchPublishedPackage": 71,
+    "documentReferences": 54,
+    "modelCalls": 0,
+    "validation": "assets/dsh-release/validation.json"
+  },
+  "browser": {
+    "recordings": [
+      {
+        "locale": "zh-CN",
+        "src": "../../assets/dsh-release/file-workspace.zh-CN.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/file-workspace.zh-CN.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 15.15,
+        "advancedBy": 0.335636
+      },
+      {
+        "locale": "zh-CN",
+        "src": "../../assets/dsh-release/office-preview.zh-CN.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/office-preview.zh-CN.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 12.45,
+        "advancedBy": 0.327577
+      },
+      {
+        "locale": "zh-CN",
+        "src": "../../assets/dsh-release/3d-and-panorama.zh-CN.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/3d-and-panorama.zh-CN.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 16.25,
+        "advancedBy": 0.33716
+      },
+      {
+        "locale": "en",
+        "src": "../../assets/dsh-release/file-workspace.en.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/file-workspace.en.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 15.65,
+        "advancedBy": 0.25921
+      },
+      {
+        "locale": "en",
+        "src": "../../assets/dsh-release/office-preview.en.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/office-preview.en.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 12.4,
+        "advancedBy": 0.254024
+      },
+      {
+        "locale": "en",
+        "src": "../../assets/dsh-release/3d-and-panorama.en.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/3d-and-panorama.en.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 16.2,
+        "advancedBy": 0.254479
+      }
+    ],
+    "localLinks": 30,
+    "languageSwitching": true,
+    "narrowViewport": {
+      "viewport": 600,
+      "scroll": 600
+    },
+    "pageErrors": []
+  },
+  "metadata": {
+    "checkedAt": "2026-11-13T16:18:57.402182+00:00",
+    "recordingReports": 9,
+    "currentArtifacts": 27,
+    "documentReferences": 64,
+    "freshRecordingDocumentReferences": 54,
+    "manifestArtifacts": 24,
+    "sourceFilesMatch": 71,
+    "gifWebpDurationsMatchTimeline": true,
+    "localMarkdownLinks": 308,
+    "missingLinks": []
+  },
+  "limitations": [
+    "Full-frame animated-media OCR is sampled at one-second intervals; every frame was additionally scanned in the known historical watermark area.",
+    "Historical performance measurements were not rerun.",
+    "Third-party repository references and original protocol package namespaces retain their actual upstream owners; deliberately damaged or encrypted format-detection fixtures were not rewritten."
+  ]
+}

@@ -8,7 +8,7 @@
 
 ![真实 CLI 演示：OCR 坐标、关键摘录、嵌套压缩包搜索与读取、重复文件、相似图片、CSV 转 XLSX、离线 HTML 表格和 STEP 预览](docs/assets/agent-cli/terminal-demo.zh-CN.gif)
 
-[![八种真实预览：Office、PDF、iWork、CAD、3D 与全景](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
+[![八种真实预览：Office、PDF、iWork、CAD、3D 与全景](docs/assets/readme/overview.webp?v=branding-20261114)](apps/demo/public/home/filens-demo.mp4)
 
 [▶ 观看 30 秒演示](apps/demo/public/home/filens-demo.mp4) · [预览动图](docs/assets/readme/demo.gif) · [完整格式与限制](docs/support-matrix.zh-CN.md)
 
@@ -109,17 +109,17 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 **DSH 0.1.10：下载 5.81 MiB / 解包 17.58 MiB**，包含内置工作台。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/dsh-plugin-package.json)。
 <!-- dsh-package-metrics:end -->
 
-**0.1.7 演示：** 在真实 DSH Desktop 中使用中文界面与中文字幕分别录制，使用正式升版前的本地工作台候选构建。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.8/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
+**0.1.10 演示：** 已在真实 DSH Desktop 0.2.2-rc.1 中使用中文界面与中文字幕重新录制，构建与公开包一致。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.8/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
 
-![DSH 中文实机演示：Word 阅读、Excel 工作表和 PPT 全屏](docs/assets/dsh-release/office-preview.zh-CN.gif)
+![DSH 中文实机演示：Word 阅读、Excel 工作表和 PPT 全屏](docs/assets/dsh-release/office-preview.zh-CN.gif?v=branding-20261114)
 
-在同一侧栏中旋转、缩放 3D 模型，环视 360° 照片并播放全景视频。[全彩动画 WebP](docs/assets/dsh-release/3d-and-panorama.zh-CN.webp) · [完整 MP4](docs/assets/dsh-release/3d-and-panorama.zh-CN.mp4)。
+在同一侧栏中旋转、缩放 3D 模型，环视 360° 照片并播放全景视频。[全彩动画 WebP](docs/assets/dsh-release/3d-and-panorama.zh-CN.webp?v=branding-20261114) · [完整 MP4](docs/assets/dsh-release/3d-and-panorama.zh-CN.mp4?v=branding-20261114)。
 
-![DSH 中文实机演示：GLB、3MF、银河全景和 360° 视频](docs/assets/dsh-release/3d-and-panorama.zh-CN.gif)
+![DSH 中文实机演示：GLB、3MF、银河全景和 360° 视频](docs/assets/dsh-release/3d-and-panorama.zh-CN.gif?v=branding-20261114)
 
 0.1.10 将「文件工作台」合并到 `dsh-filens`，只需安装一个插件：按会话收拢文件，显示真实缩略图和相关文件，并能返回文件所在的消息或对应提问；开关独立于侧栏预览。支持 DSH **0.2.2-rc.1**，保留此前验证的 rc.5/alpha.3 支持。
 
-![DSH 中文实机演示：文件群组、相关文件和原提问定位](docs/assets/dsh-release/file-workspace.zh-CN.gif)
+![DSH 中文实机演示：文件群组、相关文件和原提问定位](docs/assets/dsh-release/file-workspace.zh-CN.gif?v=branding-20261114)
 
 ### 浏览器集成：单文件与按需分包
 

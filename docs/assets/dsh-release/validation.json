@@ -1,31 +1,105 @@
 {
-  "checkedAt": "2026-11-06T08:59:15.396Z",
-  "status": "draft-not-published",
+  "checkedAt": "2026-11-13T16:20:24.445667+00:00",
+  "status": "published-package-media-refresh",
+  "plugin": "dsh-filens@0.1.10",
+  "environment": {
+    "dsh": "0.2.2-rc.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
   "checks": [
-    "All six final MP4 files load with real video dimensions",
-    "Playback advances in both languages",
-    "Language switch replaces every video and localized release link",
-    "Updated media URLs include the FiLens introduction revision",
-    "Office card descriptions distinguish Chinese and English document content",
+    "Six recordings completed in the installed DSH Desktop with successful interaction assertions",
+    "All six MP4 files load real 1280×792 video frames and playback advances",
+    "Language switch replaces all videos, posters, downloads and localized release links",
+    "Updated media URLs use filens-branding-20261114",
     "600-pixel review page has no horizontal overflow",
     "No page script errors",
-    "Six GIF durations match the verified editing timeline",
-    "GIF merging preserves displayed pixels and durations",
-    "Both encoded workspace GIFs retain a light sidebar in light mode",
-    "Public release media and documents pass existing privacy checks",
-    "67 built source files match the installed 0.1.7-workspace.8 candidate",
-    "Panorama hints and playback controls follow Chinese and English in real DSH",
-    "Live language switching keeps the same paused video and playback position",
-    "Installed Desktop boots and file workspace activates; original profile settings are preserved",
-    "Four browser playback-control regressions pass for ordinary and panorama video at 960px and 320px",
-    "58 local material links resolve",
-    "Both Office recordings render the existing FiLens introduction PPTX in the matching language",
-    "Chinese Word body, spreadsheet headers, cells and worksheet names are localized",
-    "FiLens introduction cover and Page Down navigation are verified in native DSH",
-    "Chinese fixture generation preserves formulas, images and relationships and reproduces identical bytes",
-    "All six recording reports verify their selected documents against the repository bytes"
+    "All review-page local links and 308 local Markdown references resolve",
+    "All six GIF and WebP durations match their recording timelines",
+    "All 24 manifest artifact hashes and sizes match the current media",
+    "All six recording reports match 54 selected document references to the repository bytes",
+    "71 built client, runtime and workspace files match the published 0.1.10 package",
+    "Updated media and embedded sample images pass the documented branding OCR checks"
   ],
+  "browser": {
+    "recordings": [
+      {
+        "locale": "zh-CN",
+        "src": "../../assets/dsh-release/file-workspace.zh-CN.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/file-workspace.zh-CN.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 15.15,
+        "advancedBy": 0.335636
+      },
+      {
+        "locale": "zh-CN",
+        "src": "../../assets/dsh-release/office-preview.zh-CN.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/office-preview.zh-CN.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 12.45,
+        "advancedBy": 0.327577
+      },
+      {
+        "locale": "zh-CN",
+        "src": "../../assets/dsh-release/3d-and-panorama.zh-CN.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/3d-and-panorama.zh-CN.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 16.25,
+        "advancedBy": 0.33716
+      },
+      {
+        "locale": "en",
+        "src": "../../assets/dsh-release/file-workspace.en.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/file-workspace.en.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 15.65,
+        "advancedBy": 0.25921
+      },
+      {
+        "locale": "en",
+        "src": "../../assets/dsh-release/office-preview.en.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/office-preview.en.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 12.4,
+        "advancedBy": 0.254024
+      },
+      {
+        "locale": "en",
+        "src": "../../assets/dsh-release/3d-and-panorama.en.mp4?v=filens-branding-20261114",
+        "poster": "../../assets/dsh-release/3d-and-panorama.en.png?v=filens-branding-20261114",
+        "width": 1280,
+        "height": 792,
+        "duration": 16.2,
+        "advancedBy": 0.254479
+      }
+    ],
+    "localLinks": 30,
+    "languageSwitching": true,
+    "narrowViewport": {
+      "viewport": 600,
+      "scroll": 600
+    },
+    "pageErrors": []
+  },
+  "metadata": {
+    "checkedAt": "2026-11-13T16:18:57.402182+00:00",
+    "recordingReports": 9,
+    "currentArtifacts": 27,
+    "documentReferences": 64,
+    "freshRecordingDocumentReferences": 54,
+    "manifestArtifacts": 24,
+    "sourceFilesMatch": 71,
+    "gifWebpDurationsMatchTimeline": true,
+    "localMarkdownLinks": 308,
+    "missingLinks": []
+  },
   "modelCalls": 0,
-  "unitTestsPassed": 91,
-  "browserControlTestsPassed": 4
+  "syntheticHistory": true,
+  "performanceBenchmarksRerun": false,
+  "brandingAudit": "../../branding-media-validation.json"
 }

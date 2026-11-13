@@ -8,7 +8,7 @@
 
 ![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicate files, similar images, CSV-to-XLSX conversion, offline HTML workbook and STEP previews](docs/assets/agent-cli/terminal-demo.gif)
 
-[![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
+[![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp?v=branding-20261114)](apps/demo/public/home/filens-demo.mp4)
 
 **Latest release: [v0.6.7](https://github.com/orca-zhang/filens/releases/tag/v0.6.7)** · CLI **0.5.7** · preview **0.3.7** · mobile SDKs **0.1.7** · DSH **0.1.10**.
 
@@ -109,17 +109,17 @@ Install [`dsh-filens@0.1.10`](https://www.npmjs.com/package/dsh-filens) in **Plu
 **DSH 0.1.10: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
 <!-- dsh-package-metrics:end -->
 
-**0.1.7 demos:** recorded in DSH Desktop with English UI and captions, using the local workspace candidate before the formal version bump. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
+**0.1.10 demos:** refreshed in DSH Desktop 0.2.2-rc.1 with English UI and captions, using a build matching the published package. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
 
-![English DSH demo: Word, Excel sheets and fullscreen PowerPoint](docs/assets/dsh-release/office-preview.en.gif)
+![English DSH demo: Word, Excel sheets and fullscreen PowerPoint](docs/assets/dsh-release/office-preview.en.gif?v=branding-20261114)
 
-Rotate and zoom 3D models, look around 360° photos and play panoramic video in the same sidebar. [Full-color animated WebP](docs/assets/dsh-release/3d-and-panorama.en.webp) · [Full MP4](docs/assets/dsh-release/3d-and-panorama.en.mp4).
+Rotate and zoom 3D models, look around 360° photos and play panoramic video in the same sidebar. [Full-color animated WebP](docs/assets/dsh-release/3d-and-panorama.en.webp?v=branding-20261114) · [Full MP4](docs/assets/dsh-release/3d-and-panorama.en.mp4?v=branding-20261114).
 
-![English DSH demo: GLB and 3MF models, the Milky Way and 360-degree video](docs/assets/dsh-release/3d-and-panorama.en.gif)
+![English DSH demo: GLB and 3MF models, the Milky Way and 360-degree video](docs/assets/dsh-release/3d-and-panorama.en.gif?v=branding-20261114)
 
 Version 0.1.10 includes **File workspace** in the same `dsh-filens` installation: session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview. Supports DSH **0.2.2-rc.1**, alongside the previously validated rc.5/alpha.3 versions.
 
-![English DSH demo: session file groups, related files and navigation to the source question](docs/assets/dsh-release/file-workspace.en.gif)
+![English DSH demo: session file groups, related files and navigation to the source question](docs/assets/dsh-release/file-workspace.en.gif?v=branding-20261114)
 
 ### Browser integration: single file or split modules
 

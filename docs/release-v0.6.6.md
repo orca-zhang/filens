@@ -38,7 +38,7 @@ Compared with [v0.6.5](https://github.com/orca-zhang/filens/releases/tag/v0.6.5)
 - Hide lock, editor and system temporary artifacts by default, with a reveal button. Useful outputs in OS temporary directories remain visible; filtering does not delete files.
 - Add a ZimaOS Photos-style details panel, actual file sizes, a 144–160px reader list and narrow-window layouts. Fix clipped zoom percentages, workspace activation and module naming.
 
-![File workspace recorded in DSH Desktop](https://raw.githubusercontent.com/orca-zhang/filens/v0.6.6/docs/assets/dsh-release/file-workspace.en.gif)
+![File workspace recorded in DSH Desktop](https://raw.githubusercontent.com/orca-zhang/filens/main/docs/assets/dsh-release/file-workspace.en.gif?v=branding-20261114)
 
 Install both plugins, then reopen DSH Desktop:
 
@@ -53,9 +53,9 @@ dsh plugin --profile desktop add dsh-filens@0.1.9
 - Record six Chinese/English demos separately in the installed DSH Desktop: Office, 3D/panoramas and File workspace. Office uses the matching 14-slide FiLens introduction PPTX; Chinese Word bodies, spreadsheet headings and sheet names are localized.
 - Update both READMEs with measured package/runtime sizes and current format counts: **450 preview source extensions** (451 routes including internal `cad-json`) and **349 CLI extensions**. Registration counts are not a claim that every format was retested.
 
-[English demos and release notes](https://github.com/orca-zhang/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.8/release-notes.en.md) · [中文演示与发布说明](https://github.com/orca-zhang/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.8/release-notes.zh-CN.md) · [Media and original recording provenance](https://github.com/orca-zhang/filens/blob/v0.6.6/docs/releases/dsh-filens-0.1.8/README.md)
+[English demos and release notes](https://github.com/orca-zhang/filens/blob/main/docs/releases/dsh-filens-0.1.8/release-notes.en.md) · [中文演示与发布说明](https://github.com/orca-zhang/filens/blob/main/docs/releases/dsh-filens-0.1.8/release-notes.zh-CN.md) · [Media and original recording provenance](https://github.com/orca-zhang/filens/blob/main/docs/releases/dsh-filens-0.1.8/README.md)
 
-The recordings use the pre-release workspace candidate and preserve its original metadata; they are not fresh performance benchmarks. Existing DSH speed comparisons retain their 0.1.3 measurement versions. Files stay in their original locations; deleted or inaccessible files cannot be previewed, and browser-selected files need reopening after reload.
+The linked recordings were refreshed with FiLens DSH 0.1.10, preview 0.3.7 and CLI 0.5.7 to display the current FiLens branding; they are not fresh performance benchmarks. Existing DSH speed comparisons retain their 0.1.3 measurement versions. Files stay in their original locations; deleted or inaccessible files cannot be previewed, and browser-selected files need reopening after reload.
 
 ### npm packages and offline bundles
 

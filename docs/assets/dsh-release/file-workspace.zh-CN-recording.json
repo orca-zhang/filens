@@ -1,19 +1,19 @@
 {
-  "recordedAt": "2026-11-06T08:52:48.775Z",
+  "recordedAt": "2026-11-13T15:53:12.791Z",
   "environment": {
-    "dsh": "0.2.1-rc.5",
+    "dsh": "0.2.2-rc.1",
     "platform": "darwin",
     "arch": "arm64",
     "electron": "44.7.0"
   },
-  "plugin": "dsh-filens@0.1.6",
+  "plugin": "dsh-filens@0.1.10",
   "installationSource": "isolated local source build",
   "components": {
-    "cli": "0.5.6",
-    "preview": "0.3.5",
+    "cli": "0.5.7",
+    "preview": "0.3.7",
     "extensions": 451,
     "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
-    "workspaceSHA256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+    "workspaceSHA256": "1252d5d59d0facbe8a4b8ff145ebf6283ead2ab2bc4834791279fac8707ae2d0"
   },
   "source": "Installed Desktop application, isolated local source build, actual UI interactions",
   "locale": "zh-CN",
@@ -33,8 +33,8 @@
       "dither": "sierra2_4a",
       "optimization": "lossless frame differences, displayed pixels and timing verified"
     },
-    "highlightFrames": 285,
-    "highlightSeconds": 14.25
+    "highlightFrames": 284,
+    "highlightSeconds": 14.2
   },
   "modelCalls": 0,
   "checks": [
@@ -64,8 +64,8 @@
     {
       "name": "FiLens 介绍.pptx",
       "source": "apps/demo/public/samples/filens-introduction.zh-CN.pptx",
-      "bytes": 3276757,
-      "sha256": "772fd13e340fc611ac6f4c0e0fbe1cf49566797495ae1700c56cd3dedb52587f"
+      "bytes": 3295849,
+      "sha256": "3edde1ca06cef9c9a463bfb70c24fb7561e32697974ba0693901b3b9dc041f38"
     },
     {
       "name": "宇宙图鉴.pdf",
@@ -108,56 +108,56 @@
     {
       "start": 0,
       "duration": 1.9,
-      "sourceStart": 31.605,
+      "sourceStart": 33.202,
       "zh": "会话文件自动汇集，折叠成预览群组",
       "en": "Session files, collected into thumbnail groups"
     },
     {
       "start": 1.9,
-      "duration": 1.9,
-      "sourceStart": 33.507,
+      "duration": 2.05,
+      "sourceStart": 35.103,
       "zh": "展开会话：Word、PPT、Excel 都有真实缩略图",
       "en": "Expand a session: live Word, PowerPoint and Excel previews"
     },
     {
-      "start": 3.8,
+      "start": 3.95,
       "duration": 1.85,
-      "sourceStart": 35.427,
+      "sourceStart": 37.131,
       "zh": "按会话标题查找，临时锁文件默认隐藏",
       "en": "Search by session title; temporary lock files stay hidden"
     },
     {
-      "start": 5.65,
-      "duration": 1.85,
-      "sourceStart": 37.259,
+      "start": 5.8,
+      "duration": 1.95,
+      "sourceStart": 38.974,
       "zh": "打开文件：窄文件栏与大画布",
       "en": "Open a file: a compact list and a large reading canvas"
     },
     {
-      "start": 7.5,
-      "duration": 1.75,
-      "sourceStart": 39.112,
+      "start": 7.75,
+      "duration": 1.7,
+      "sourceStart": 40.928,
       "zh": "文件详情：属性、相关文件与来源消息",
       "en": "File details: properties, related files and source messages"
     },
     {
-      "start": 9.25,
+      "start": 9.45,
       "duration": 1.75,
-      "sourceStart": 40.841,
+      "sourceStart": 42.652,
       "zh": "相关文件：按同一消息、提问和会话推荐",
       "en": "Related files: linked by message, question and session"
     },
     {
-      "start": 11,
-      "duration": 2.1,
-      "sourceStart": 42.575,
+      "start": 11.2,
+      "duration": 2.2,
+      "sourceStart": 44.411,
       "zh": "返回原提问，定位文件产生的位置",
       "en": "Jump back to the exact question behind the file"
     },
     {
-      "start": 13.1,
+      "start": 13.4,
       "duration": 1.75,
-      "sourceStart": 44.816,
+      "sourceStart": 46.789,
       "zh": "跟随 DSH 深色外观，保持同一套文件",
       "en": "Follow DSH dark mode with the same collected files"
     }
@@ -166,56 +166,56 @@
     {
       "start": 0,
       "duration": 1.8,
-      "sourceStart": 31.605,
+      "sourceStart": 33.202,
       "zh": "会话文件自动汇集，折叠成预览群组",
       "en": "Session files, collected into thumbnail groups"
     },
     {
       "start": 1.8,
       "duration": 1.8,
-      "sourceStart": 33.507,
+      "sourceStart": 35.103,
       "zh": "展开会话：Word、PPT、Excel 都有真实缩略图",
       "en": "Expand a session: live Word, PowerPoint and Excel previews"
     },
     {
       "start": 3.6,
       "duration": 1.8,
-      "sourceStart": 35.427,
+      "sourceStart": 37.131,
       "zh": "按会话标题查找，临时锁文件默认隐藏",
       "en": "Search by session title; temporary lock files stay hidden"
     },
     {
       "start": 5.4,
       "duration": 1.8,
-      "sourceStart": 37.259,
+      "sourceStart": 38.974,
       "zh": "打开文件：窄文件栏与大画布",
       "en": "Open a file: a compact list and a large reading canvas"
     },
     {
       "start": 7.2,
-      "duration": 1.75,
-      "sourceStart": 39.112,
+      "duration": 1.7,
+      "sourceStart": 40.928,
       "zh": "文件详情：属性、相关文件与来源消息",
       "en": "File details: properties, related files and source messages"
     },
     {
-      "start": 8.95,
+      "start": 8.9,
       "duration": 1.75,
-      "sourceStart": 40.841,
+      "sourceStart": 42.652,
       "zh": "相关文件：按同一消息、提问和会话推荐",
       "en": "Related files: linked by message, question and session"
     },
     {
-      "start": 10.7,
+      "start": 10.65,
       "duration": 1.8,
-      "sourceStart": 42.575,
+      "sourceStart": 44.411,
       "zh": "返回原提问，定位文件产生的位置",
       "en": "Jump back to the exact question behind the file"
     },
     {
-      "start": 12.5,
+      "start": 12.45,
       "duration": 1.75,
-      "sourceStart": 44.816,
+      "sourceStart": 46.789,
       "zh": "跟随 DSH 深色外观，保持同一套文件",
       "en": "Follow DSH dark mode with the same collected files"
     }
@@ -223,18 +223,18 @@
   "artifacts": [
     {
       "path": "docs/assets/dsh-release/file-workspace.zh-CN.webp",
-      "bytes": 2159334,
-      "sha256": "e49d67e302b9e04cc64b84bbb927d4e8fab528c1c7de3ffa2bf8a704a1712994"
+      "bytes": 2266552,
+      "sha256": "148e99186112385cb643d83c30ecd4136a40ea1038d77b7f31d00c76f478dafd"
     },
     {
       "path": "docs/assets/dsh-release/file-workspace.zh-CN.gif",
-      "bytes": 4453032,
-      "sha256": "55374c8ce3cf777ca5947c03d8a807bbe3d708914b4d1604f53bf4ddac253cd0"
+      "bytes": 4691126,
+      "sha256": "6c00f55bcc4bee75322290a37927461ac2c73b9f84837e92e82cdc0488bcc277"
     },
     {
       "path": "docs/assets/dsh-release/file-workspace.zh-CN.mp4",
-      "bytes": 953828,
-      "sha256": "7bf16baa24104c2b6ecef97bdc9650023a3a2cc717fc7bc663c32c40737ad722"
+      "bytes": 1012362,
+      "sha256": "7cc5705e2fb7c3861d88c31f0292012b94664c5f4244e48dfb80ee7ed29c082c"
     }
   ]
 }

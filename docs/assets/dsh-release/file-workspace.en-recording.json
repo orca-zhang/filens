@@ -1,19 +1,19 @@
 {
-  "recordedAt": "2026-11-06T08:53:48.874Z",
+  "recordedAt": "2026-11-13T15:55:27.931Z",
   "environment": {
-    "dsh": "0.2.1-rc.5",
+    "dsh": "0.2.2-rc.1",
     "platform": "darwin",
     "arch": "arm64",
     "electron": "44.7.0"
   },
-  "plugin": "dsh-filens@0.1.6",
+  "plugin": "dsh-filens@0.1.10",
   "installationSource": "isolated local source build",
   "components": {
-    "cli": "0.5.6",
-    "preview": "0.3.5",
+    "cli": "0.5.7",
+    "preview": "0.3.7",
     "extensions": 451,
     "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
-    "workspaceSHA256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+    "workspaceSHA256": "1252d5d59d0facbe8a4b8ff145ebf6283ead2ab2bc4834791279fac8707ae2d0"
   },
   "source": "Installed Desktop application, isolated local source build, actual UI interactions",
   "locale": "en",
@@ -64,8 +64,8 @@
     {
       "name": "FiLens Introduction.pptx",
       "source": "apps/demo/public/samples/filens-introduction.en.pptx",
-      "bytes": 3272592,
-      "sha256": "590916a586cc75c9a13e742c57a6171358928ff7eee12a573fda78b8bc4b8476"
+      "bytes": 3291682,
+      "sha256": "5b616cf02e78cac2852fe5d01402dc58540836af9505ca71104e0d2f4577e062"
     },
     {
       "name": "Cosmic Atlas.pdf",
@@ -108,56 +108,56 @@
     {
       "start": 0,
       "duration": 1.9,
-      "sourceStart": 31.147000000000002,
+      "sourceStart": 32.98,
       "zh": "会话文件自动汇集，折叠成预览群组",
       "en": "Session files, collected into thumbnail groups"
     },
     {
       "start": 1.9,
-      "duration": 1.9,
-      "sourceStart": 33.049,
+      "duration": 2.05,
+      "sourceStart": 34.88,
       "zh": "展开会话：Word、PPT、Excel 都有真实缩略图",
       "en": "Expand a session: live Word, PowerPoint and Excel previews"
     },
     {
-      "start": 3.8,
+      "start": 3.95,
       "duration": 2.2,
-      "sourceStart": 34.97,
+      "sourceStart": 36.911,
       "zh": "按会话标题查找，临时锁文件默认隐藏",
       "en": "Search by session title; temporary lock files stay hidden"
     },
     {
-      "start": 6,
-      "duration": 1.85,
-      "sourceStart": 37.184,
+      "start": 6.15,
+      "duration": 2,
+      "sourceStart": 39.131,
       "zh": "打开文件：窄文件栏与大画布",
       "en": "Open a file: a compact list and a large reading canvas"
     },
     {
-      "start": 7.85,
+      "start": 8.15,
       "duration": 1.75,
-      "sourceStart": 39.038999999999994,
+      "sourceStart": 41.121,
       "zh": "文件详情：属性、相关文件与来源消息",
       "en": "File details: properties, related files and source messages"
     },
     {
-      "start": 9.6,
+      "start": 9.9,
       "duration": 1.75,
-      "sourceStart": 40.768,
+      "sourceStart": 42.847,
       "zh": "相关文件：按同一消息、提问和会话推荐",
       "en": "Related files: linked by message, question and session"
     },
     {
-      "start": 11.35,
-      "duration": 2.1,
-      "sourceStart": 42.522,
+      "start": 11.65,
+      "duration": 2.2,
+      "sourceStart": 44.599,
       "zh": "返回原提问，定位文件产生的位置",
       "en": "Jump back to the exact question behind the file"
     },
     {
-      "start": 13.45,
+      "start": 13.85,
       "duration": 1.8,
-      "sourceStart": 44.769999999999996,
+      "sourceStart": 46.978,
       "zh": "跟随 DSH 深色外观，保持同一套文件",
       "en": "Follow DSH dark mode with the same collected files"
     }
@@ -166,56 +166,56 @@
     {
       "start": 0,
       "duration": 1.8,
-      "sourceStart": 31.147000000000002,
+      "sourceStart": 32.98,
       "zh": "会话文件自动汇集，折叠成预览群组",
       "en": "Session files, collected into thumbnail groups"
     },
     {
       "start": 1.8,
       "duration": 1.8,
-      "sourceStart": 33.049,
+      "sourceStart": 34.88,
       "zh": "展开会话：Word、PPT、Excel 都有真实缩略图",
       "en": "Expand a session: live Word, PowerPoint and Excel previews"
     },
     {
       "start": 3.6,
       "duration": 2.1,
-      "sourceStart": 34.97,
+      "sourceStart": 36.911,
       "zh": "按会话标题查找，临时锁文件默认隐藏",
       "en": "Search by session title; temporary lock files stay hidden"
     },
     {
       "start": 5.7,
       "duration": 1.8,
-      "sourceStart": 37.184,
+      "sourceStart": 39.131,
       "zh": "打开文件：窄文件栏与大画布",
       "en": "Open a file: a compact list and a large reading canvas"
     },
     {
       "start": 7.5,
       "duration": 1.75,
-      "sourceStart": 39.038999999999994,
+      "sourceStart": 41.121,
       "zh": "文件详情：属性、相关文件与来源消息",
       "en": "File details: properties, related files and source messages"
     },
     {
       "start": 9.25,
       "duration": 1.75,
-      "sourceStart": 40.768,
+      "sourceStart": 42.847,
       "zh": "相关文件：按同一消息、提问和会话推荐",
       "en": "Related files: linked by message, question and session"
     },
     {
       "start": 11,
       "duration": 1.8,
-      "sourceStart": 42.522,
+      "sourceStart": 44.599,
       "zh": "返回原提问，定位文件产生的位置",
       "en": "Jump back to the exact question behind the file"
     },
     {
       "start": 12.8,
       "duration": 1.8,
-      "sourceStart": 44.769999999999996,
+      "sourceStart": 46.978,
       "zh": "跟随 DSH 深色外观，保持同一套文件",
       "en": "Follow DSH dark mode with the same collected files"
     }
@@ -223,18 +223,18 @@
   "artifacts": [
     {
       "path": "docs/assets/dsh-release/file-workspace.en.webp",
-      "bytes": 2254064,
-      "sha256": "c377c3d184f24a722c81310f1b46b7c5e35af3e885dfa2bc8bd60975dae96f7d"
+      "bytes": 2058940,
+      "sha256": "e1a7e9d0cbd2d6be0383c9bdf23b50f58d9ae733981bc6745a4c71f3e9d89902"
     },
     {
       "path": "docs/assets/dsh-release/file-workspace.en.gif",
-      "bytes": 4750779,
-      "sha256": "06a0f9474597093cac63a987085f63cd11b45d5b16fc5f90212c3808fe6097b3"
+      "bytes": 4065896,
+      "sha256": "a8df551d19f25f53f42ad9e178dddd6302b07d9ede4c115c523b13551e8c511d"
     },
     {
       "path": "docs/assets/dsh-release/file-workspace.en.mp4",
-      "bytes": 1016612,
-      "sha256": "268b72489ddfe409e5dcadd268bd5397ae53803dd2c61ff38b1b25d82bb9784c"
+      "bytes": 983609,
+      "sha256": "ca67f63a5c395b68e6b94cff534d33964883c3c4fa96a42985fda60c55f79943"
     }
   ]
 }

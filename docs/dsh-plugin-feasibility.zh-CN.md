@@ -109,7 +109,7 @@ dsh plugin --profile web add dsh-filens
 
 已在用户安装的 macOS arm64 桌面版 `0.2.1-rc.5` 的隔离测试 home 完成安装与真实侧栏 DOCX、Keynote、STEP、ZIP 预览，保留截图。真实 Web profile 的工具管线在 `0.2.1-rc.5`、`0.2.2-alpha.3` 验证读取、OCR、搜索、摘录、转换及独立启停。浏览器适配测试覆盖 12 个代表样例，具体记录见 [VALIDATION.md](../integrations/deepseek-harness/VALIDATION.md)。
 
-![已安装 DSH 桌面版中的 FiLens STEP 侧栏预览](assets/dsh-plugin/desktop-step.jpg)
+![已安装 DSH 桌面版中的 FiLens STEP 侧栏预览](assets/dsh-plugin/desktop-step.jpg?v=branding-20261114)
 
 权限边界：CLI 默认将执行工作区和 OCR/PDF 中间图片保留在内存中；已在 DSH 严格 `read-only` 下通过查询、读取、OCR、搜索与摘录。转换的最终输出仍需写权限，实际沙箱会拒绝无权限的输出提交。CLI 0.5.2 包含此改造；四个平台均已打包，原生执行验证在 macOS arm64 完成。
 

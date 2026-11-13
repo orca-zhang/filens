@@ -163,22 +163,22 @@
       "Page Down navigation through all three slides",
       "Escape exits fullscreen"
     ],
-    "recordingReport": "assets/dsh-plugin/demo-recording.json",
+    "recordingReport": "demo-recording.json",
     "artifacts": [
       {
-        "path": "docs/assets/dsh-plugin/install-and-preview.webp",
-        "bytes": 5803648,
-        "sha256": "e13fd86ccf809c221d14a2dcc9c55b38a78c2e178493decf1d80274a18be6da0"
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+        "bytes": 5663522,
+        "sha256": "cf6f2f58d0f536a9a652dc15c0778d285a9b660156e1e8b3090aa5628a7fd54c"
       },
       {
-        "path": "docs/assets/dsh-plugin/install-and-preview.gif",
-        "bytes": 17327040,
-        "sha256": "18f89d815aaf97549218023d08f1b95ed99456c320362567d8d21c204311b09e"
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+        "bytes": 15356306,
+        "sha256": "17172dd7058657419381bda92dd0ca064caa145c1c0385978c32feea955910e2"
       },
       {
-        "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
-        "bytes": 3751766,
-        "sha256": "dbf96572efd7afc7010573a8fa716181699906cee830e465ade929c315bea2e9"
+        "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+        "bytes": 3629121,
+        "sha256": "b8b472bf9fcae6f15de8aaaccd8eb24ab7470e3be025bf4c4fd835202b5d1215"
       }
     ],
     "installedArtifacts": [
@@ -206,7 +206,29 @@
         "matchingPackagedFiles": 43,
         "allFilesMatch": true
       }
-    ]
+    ],
+    "brandingRefresh": {
+      "refreshedAt": "2026-11-13T16:18:50.568025+00:00",
+      "change": "Preview attribution refreshed to FiLens; original interactions, captions, durations and recorded package versions are preserved. This is not a new performance measurement.",
+      "timingPreserved": true,
+      "originalArtifacts": [
+        {
+          "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.webp",
+          "bytes": 5803648,
+          "sha256": "e13fd86ccf809c221d14a2dcc9c55b38a78c2e178493decf1d80274a18be6da0"
+        },
+        {
+          "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.gif",
+          "bytes": 17327040,
+          "sha256": "18f89d815aaf97549218023d08f1b95ed99456c320362567d8d21c204311b09e"
+        },
+        {
+          "path": "docs/assets/dsh-plugin/history/0.1.2/install-and-preview.mp4",
+          "bytes": 3751766,
+          "sha256": "dbf96572efd7afc7010573a8fa716181699906cee830e465ade929c315bea2e9"
+        }
+      ]
+    }
   },
   "performance": {
     "report": "assets/dsh-plugin/office-preview-benchmark.json",

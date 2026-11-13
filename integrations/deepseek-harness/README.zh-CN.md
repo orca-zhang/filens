@@ -21,9 +21,9 @@
 
 实测版本：macOS arm64 上的 DSH **桌面版/Web 0.2.1-rc.5**、**Web 0.2.2-alpha.3**、**桌面版/Web 0.2.2-rc.1**，Node 24。其他 DSH 版本尚未验证。
 
-**0.1.7 中文录制：**真实 DSH 中文界面、单语字幕和合成会话。[发布说明与录制来源](../../docs/releases/dsh-filens-0.1.8/README.md)。录制使用正式升版前的本地工作台候选构建，保留原始版本记录。
+**0.1.10 中文录制：**已在真实 DSH Desktop 0.2.2-rc.1 中使用中文界面、单语字幕和合成会话重新录制，构建与公开包一致。[发布说明与录制来源](../../docs/releases/dsh-filens-0.1.8/README.md)。
 
-![中文 DSH 中的 Word、Excel 预览与 PPT 全屏演示](../../docs/assets/dsh-release/office-preview.zh-CN.gif)
+![中文 DSH 中的 Word、Excel 预览与 PPT 全屏演示](../../docs/assets/dsh-release/office-preview.zh-CN.gif?v=branding-20261114)
 
 点击 DSH 工作区文件列表中的 Office 文件，即可使用 FiLens 侧栏预览。Excel 可直接切换工作表；PPT 点击「全屏」后，点击画面，用 **Page Down / Page Up** 演示翻页，**Esc** 返回。DOCX/PPTX 直接渲染，省去 LibreOffice 转 PDF 的步骤。
 
@@ -33,7 +33,7 @@
 | DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
 | PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
-同机 9 轮配对实测；提速倍数 = 同轮内置中位数 ÷ FiLens 中位数，表中倍数仅指**首开**。首开为进程内该文件首次打开，保留系统与持久缓存；内置 Office 转 PDF，FiLens 直接渲染。[范围与方法](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [新版演示 MP4](../../docs/assets/dsh-release/office-preview.zh-CN.mp4) · [新版演示 GIF](../../docs/assets/dsh-release/office-preview.zh-CN.gif)。
+同机 9 轮配对实测；提速倍数 = 同轮内置中位数 ÷ FiLens 中位数，表中倍数仅指**首开**。首开为进程内该文件首次打开，保留系统与持久缓存；内置 Office 转 PDF，FiLens 直接渲染。[范围与方法](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [新版演示 MP4](../../docs/assets/dsh-release/office-preview.zh-CN.mp4?v=branding-20261114) · [新版演示 GIF](../../docs/assets/dsh-release/office-preview.zh-CN.gif?v=branding-20261114)。
 
 PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内置提速 **1.43×**（**110 → 77 ms**，耗时减少 **30.0%**）。样例为 689,455 字节，每次仍加载并校验文档，关闭时释放 worker。[PDF 全部样本、波动与方法](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
 
@@ -48,13 +48,13 @@ PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内�
 
 解析范围与各库完整能力不同，速度比不代表保真度或所有文件上的综合排名。[原始样本与复现](../../docs/featured-performance.md)。
 
-**DSH 0.1.6：**所有格式在地址栏旁统一显示缩小、缩放比例、放大和全屏。去掉翻页、旋转与适应按钮，保留键盘翻页；工作表、压缩包与附件控件收进工具菜单；音视频进度条和播放控件保留在播放器下方，CAD 图层和 3D 属性保留独立入口。各格式驱动首次使用时加载，模块与 WASM 随后复用。入口 JS 请求合计 **351.5 KiB**，TXT 首开运行时请求合计 **456.8 KiB**，不含文档与 DSH 本身。[0.1.6 运行时实测](../../docs/assets/dsh-plugin/format-loading-current.json)。历史安装演示使用公开版 0.1.3，历史 3D / 全景演示使用公开版 0.1.6；上方单语演示使用正式升版前的工作台候选构建。PDF 重复打开复用已校验的首张像素，最多 4 张 / 16 MiB，30 秒空闲后过期；每次仍加载并校验文档，关闭时释放 Worker，密码与打印路径不复用。[PDF 计时与边界](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
+**DSH 0.1.6：**所有格式在地址栏旁统一显示缩小、缩放比例、放大和全屏。去掉翻页、旋转与适应按钮，保留键盘翻页；工作表、压缩包与附件控件收进工具菜单；音视频进度条和播放控件保留在播放器下方，CAD 图层和 3D 属性保留独立入口。各格式驱动首次使用时加载，模块与 WASM 随后复用。入口 JS 请求合计 **351.5 KiB**，TXT 首开运行时请求合计 **456.8 KiB**，不含文档与 DSH 本身。[0.1.6 运行时实测](../../docs/assets/dsh-plugin/format-loading-current.json)。历史安装演示使用公开版 0.1.3，历史 3D / 全景演示使用公开版 0.1.6；上方单语演示使用 FiLens DSH 0.1.10、预览内核 0.3.7 和 CLI 0.5.7。PDF 重复打开复用已校验的首张像素，最多 4 张 / 16 MiB，30 秒空闲后过期；每次仍加载并校验文档，关闭时释放 Worker，密码与打印路径不复用。[PDF 计时与边界](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
 
 0.1.3 同样支持 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。[完整测量、成本和边界](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
 
-![中文 DSH 中旋转 GLB 和 3MF 模型，环视全景照片并播放 360° 视频](../../docs/assets/dsh-release/3d-and-panorama.zh-CN.gif)
+![中文 DSH 中旋转 GLB 和 3MF 模型，环视全景照片并播放 360° 视频](../../docs/assets/dsh-release/3d-and-panorama.zh-CN.gif?v=branding-20261114)
 
-![文件工作台：会话分组、相关文件与原提问定位](../../docs/assets/dsh-release/file-workspace.zh-CN.gif)
+![文件工作台：会话分组、相关文件与原提问定位](../../docs/assets/dsh-release/file-workspace.zh-CN.gif?v=branding-20261114)
 
 同一个侧栏也支持交互式 3D 和 360° 全景：拖拽旋转或环视，滚轮缩放。球面照片、视频样例分别用 `.pano` / `.360v` 文件名选择全景预览，保留原始文件字节；普通 `.jpg` / `.webm` 使用常规图片、视频预览。[画廊 MP4、素材与录制说明](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery)。
 

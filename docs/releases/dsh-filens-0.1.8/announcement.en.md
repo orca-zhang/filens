@@ -6,6 +6,6 @@ Office files get rendered thumbnails. Other files retain clear type covers, temp
 
 The native sidebar preview remains available, with an independent workspace switch. Parsing and previewing run locally.
 
-Recorded in DSH Desktop, in English: [File workspace](../../assets/dsh-release/file-workspace.en.gif) · [Office previews](../../assets/dsh-release/office-preview.en.gif) · [3D / panoramas](../../assets/dsh-release/3d-and-panorama.en.gif)
+Recorded in DSH Desktop, in English: [File workspace](../../assets/dsh-release/file-workspace.en.gif?v=branding-20261114) · [Office previews](../../assets/dsh-release/office-preview.en.gif?v=branding-20261114) · [3D / panoramas](../../assets/dsh-release/3d-and-panorama.en.gif?v=branding-20261114)
 
 [Project and setup](https://github.com/orca-zhang/filens/tree/main/integrations/deepseek-harness)

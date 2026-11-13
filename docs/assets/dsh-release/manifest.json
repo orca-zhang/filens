@@ -1,19 +1,18 @@
 {
-  "preparedAt": "2026-11-06T08:57:08.576077+00:00",
-  "status": "draft-not-published",
-  "proposedVersion": "0.1.7",
-  "sourcePackageMetadata": "0.1.6",
-  "equivalentInstalledCandidate": "0.1.7-workspace.8",
+  "preparedAt": "2026-11-13T16:11:22.093646+00:00",
+  "status": "published-package-media-refresh",
+  "sourcePackageMetadata": "0.1.10",
+  "equivalentPublishedPackage": "dsh-filens@0.1.10",
   "sourceEquivalence": "source-candidate-equivalence.json",
-  "matchingFiles": 67,
+  "matchingFiles": 71,
   "environment": {
-    "dsh": "0.2.1-rc.5",
+    "dsh": "0.2.2-rc.1",
     "platform": "darwin",
     "arch": "arm64",
     "electron": "44.7.0"
   },
-  "previewVersion": "0.3.5",
-  "cliVersion": "0.5.6",
+  "previewVersion": "0.3.7",
+  "cliVersion": "0.5.7",
   "registeredExtensions": 451,
   "modelCalls": 0,
   "syntheticHistory": true,
@@ -24,7 +23,7 @@
     {
       "topic": "office-preview",
       "locale": "zh-CN",
-      "recordedAt": "2026-11-06T08:52:48.773Z",
+      "recordedAt": "2026-11-13T15:53:12.789Z",
       "evidence": "office-preview.zh-CN-recording.json",
       "checks": [
         "Word document body matches the recording language",
@@ -40,34 +39,35 @@
       "artifacts": [
         {
           "file": "office-preview.zh-CN.gif",
-          "bytes": 7968824,
-          "sha256": "d3ba9cae49a8f59637a3be098bb78067679795270e066223d76a3b81b66c5136",
+          "bytes": 7746438,
+          "sha256": "58940574800cb41ae5d0e42d4596366096db350fa2fc669eeccae45a9a033544",
           "width": 960,
           "height": 594,
-          "frames": 203,
-          "durationSeconds": 10.15
+          "frames": 200,
+          "durationSeconds": 10.2
         },
         {
           "file": "office-preview.zh-CN.webp",
-          "bytes": 3354548,
-          "sha256": "0ed09cba638b9d5bb07de91cc4af5cb0e7b0b45b3219bd9db03afa3a7daa51c9",
+          "bytes": 3133454,
+          "sha256": "3c78d88de1621af84fff773fd609a34cd909ff6d48cccbfb18767d22db50703b",
           "width": 960,
           "height": 594,
-          "frames": 200
+          "frames": 198,
+          "durationSeconds": 10.2
         },
         {
           "file": "office-preview.zh-CN.mp4",
-          "bytes": 1551241,
-          "sha256": "e61039c51601daba3fdc010c62ac176941243f028f1eee8a23adc7e15a2a7e97",
+          "bytes": 1635111,
+          "sha256": "8bb6867abb92c61358f7fa708945855aa1307920a7862a07c8dc7e7da4ad0a69",
           "width": 1280,
           "height": 792,
-          "durationSeconds": 11.9,
-          "frames": 238
+          "frames": 249,
+          "durationSeconds": 12.45
         },
         {
           "file": "office-preview.zh-CN.png",
-          "bytes": 518812,
-          "sha256": "237872bb65eccdf445b41d1e0696ea3ea55655e3cb30423845e9ffec34e34c40",
+          "bytes": 517147,
+          "sha256": "97c16fe7d3751a9e942919f16065b5b6850b6df768ff92d6505a3ac142cd14f1",
           "width": 1280,
           "height": 720
         }
@@ -76,15 +76,15 @@
     {
       "topic": "3d-and-panorama",
       "locale": "zh-CN",
-      "recordedAt": "2026-11-06T08:52:48.774Z",
+      "recordedAt": "2026-11-13T15:53:12.791Z",
       "evidence": "3d-and-panorama.zh-CN-recording.json",
       "checks": [
         "3D models: drag to orbit and scroll to zoom",
         "Model tools: view, projection and section",
         "3MF assemblies: inspect the gears",
         "Panorama interaction hint matches the recording language",
-        "360° photos: look around the Milky Way",
-        "360° video: seek with the bottom timeline",
+        "360\u00b0 photos: look around the Milky Way",
+        "360\u00b0 video: seek with the bottom timeline",
         "Play the panorama and change the view",
         "Live language switching translates paused controls without replacing video or resetting playback position",
         "capture complete"
@@ -92,34 +92,35 @@
       "artifacts": [
         {
           "file": "3d-and-panorama.zh-CN.gif",
-          "bytes": 21947126,
-          "sha256": "f8e59c0ef069be0782a00f330cc456d7f752da29b575c64b1e8b1547d73a3986",
+          "bytes": 22762273,
+          "sha256": "7522b4bf53b2d777fc4f82062ce75c041b12581fb87036b8a1468ef7f45d892b",
           "width": 960,
           "height": 594,
-          "frames": 268,
-          "durationSeconds": 13.45
+          "frames": 273,
+          "durationSeconds": 13.65
         },
         {
           "file": "3d-and-panorama.zh-CN.webp",
-          "bytes": 6115908,
-          "sha256": "58cd962e7df6dac0a49dc589c97e0b2809faa90da5ce0fafbdbe5d4d7a8e5207",
+          "bytes": 6409536,
+          "sha256": "0045d68ac326be41cabf2828b9a2cdf041164c0867d4bcd60e2434595793c1ec",
           "width": 960,
           "height": 594,
-          "frames": 264
+          "frames": 270,
+          "durationSeconds": 13.65
         },
         {
           "file": "3d-and-panorama.zh-CN.mp4",
-          "bytes": 2762203,
-          "sha256": "2862a6bcd890fc2bfcfaf2b8662563bb96a24f61ab7e548c7dfddca32d9cb071",
+          "bytes": 2872421,
+          "sha256": "3fe406d115c7fab6728fd2dd5da43100ad8fa8980c27b0c2330f569b1368ad64",
           "width": 1280,
           "height": 792,
-          "durationSeconds": 16.05,
-          "frames": 321
+          "frames": 325,
+          "durationSeconds": 16.25
         },
         {
           "file": "3d-and-panorama.zh-CN.png",
-          "bytes": 534495,
-          "sha256": "cd333c406e73d5dd0913279d7e893b67c4d5f9015bac7906825ec582c5b1487a",
+          "bytes": 538096,
+          "sha256": "13732cebf8441090f86b9dbf722c155ba578c66c7758f4d79341506527ae9d86",
           "width": 1280,
           "height": 720
         }
@@ -128,7 +129,7 @@
     {
       "topic": "file-workspace",
       "locale": "zh-CN",
-      "recordedAt": "2026-11-06T08:52:48.775Z",
+      "recordedAt": "2026-11-13T15:53:12.791Z",
       "evidence": "file-workspace.zh-CN-recording.json",
       "checks": [
         "Session files, collected into thumbnail groups",
@@ -144,35 +145,35 @@
       "artifacts": [
         {
           "file": "file-workspace.zh-CN.gif",
-          "bytes": 4453032,
-          "sha256": "55374c8ce3cf777ca5947c03d8a807bbe3d708914b4d1604f53bf4ddac253cd0",
+          "bytes": 4691126,
+          "sha256": "6c00f55bcc4bee75322290a37927461ac2c73b9f84837e92e82cdc0488bcc277",
           "width": 960,
           "height": 594,
           "frames": 279,
-          "durationSeconds": 14.25,
-          "lightSidebarChecked": true
+          "durationSeconds": 14.2
         },
         {
           "file": "file-workspace.zh-CN.webp",
-          "bytes": 2159334,
-          "sha256": "e49d67e302b9e04cc64b84bbb927d4e8fab528c1c7de3ffa2bf8a704a1712994",
+          "bytes": 2266552,
+          "sha256": "148e99186112385cb643d83c30ecd4136a40ea1038d77b7f31d00c76f478dafd",
           "width": 960,
           "height": 594,
-          "frames": 257
+          "frames": 267,
+          "durationSeconds": 14.2
         },
         {
           "file": "file-workspace.zh-CN.mp4",
-          "bytes": 953828,
-          "sha256": "7bf16baa24104c2b6ecef97bdc9650023a3a2cc717fc7bc663c32c40737ad722",
+          "bytes": 1012362,
+          "sha256": "7cc5705e2fb7c3861d88c31f0292012b94664c5f4244e48dfb80ee7ed29c082c",
           "width": 1280,
           "height": 792,
-          "durationSeconds": 14.85,
-          "frames": 297
+          "frames": 303,
+          "durationSeconds": 15.15
         },
         {
           "file": "file-workspace.zh-CN.png",
-          "bytes": 95458,
-          "sha256": "c975aeedbebd2a5ea7ee8ab1c232f15389b63a3c808822ae4f806a2008528f8e",
+          "bytes": 92484,
+          "sha256": "40c3b143814d626020fa2cea9f1230b83b4bffe6d06da7a63fb8ac325f735410",
           "width": 1280,
           "height": 720
         }
@@ -181,7 +182,7 @@
     {
       "topic": "office-preview",
       "locale": "en",
-      "recordedAt": "2026-11-06T08:53:48.873Z",
+      "recordedAt": "2026-11-13T15:55:27.929Z",
       "evidence": "office-preview.en-recording.json",
       "checks": [
         "Word document body matches the recording language",
@@ -197,34 +198,35 @@
       "artifacts": [
         {
           "file": "office-preview.en.gif",
-          "bytes": 8230427,
-          "sha256": "13f66a0ae7d5f2dc97166aeabd67d60d08ddd3b91b6810ddd9771c529f00e161",
+          "bytes": 8394380,
+          "sha256": "104e3c785729b77fae36958dc7ff777547a3ddb169ccfcee18ae86407f9c0bd0",
           "width": 960,
           "height": 594,
-          "frames": 200,
-          "durationSeconds": 10.0
+          "frames": 205,
+          "durationSeconds": 10.25
         },
         {
           "file": "office-preview.en.webp",
-          "bytes": 3494964,
-          "sha256": "baf409cc77edda1e18f737029d1d14b77a74ef69b7975605174cf4a47a44df99",
+          "bytes": 3357264,
+          "sha256": "05c9b194ebb0536e81f704bd94e33312012102cf2849ce3e68ff37542ebc29d9",
           "width": 960,
           "height": 594,
-          "frames": 200
+          "frames": 205,
+          "durationSeconds": 10.25
         },
         {
           "file": "office-preview.en.mp4",
-          "bytes": 1531116,
-          "sha256": "4d865649d2f10eebd6733170a6b3626fa83d3d893189f209d248ea8a439a5a1b",
+          "bytes": 1761749,
+          "sha256": "b1b638bfde6877cd9bbb0e8fbe694aff47c05f1c9e4f2595bfab9241aa118c00",
           "width": 1280,
           "height": 792,
-          "durationSeconds": 11.6,
-          "frames": 232
+          "frames": 248,
+          "durationSeconds": 12.4
         },
         {
           "file": "office-preview.en.png",
-          "bytes": 519557,
-          "sha256": "bb4475a086e9c7da963709e6c82bea4edb8e3cea36b8b43a1e4b4c1345e8fc2a",
+          "bytes": 518140,
+          "sha256": "323468330f08a50396781402bbf72a6ea96edb73949a37361fb7036e8ce5a092",
           "width": 1280,
           "height": 720
         }
@@ -233,15 +235,15 @@
     {
       "topic": "3d-and-panorama",
       "locale": "en",
-      "recordedAt": "2026-11-06T08:53:48.874Z",
+      "recordedAt": "2026-11-13T15:55:27.931Z",
       "evidence": "3d-and-panorama.en-recording.json",
       "checks": [
         "3D models: drag to orbit and scroll to zoom",
         "Model tools: view, projection and section",
         "3MF assemblies: inspect the gears",
         "Panorama interaction hint matches the recording language",
-        "360° photos: look around the Milky Way",
-        "360° video: seek with the bottom timeline",
+        "360\u00b0 photos: look around the Milky Way",
+        "360\u00b0 video: seek with the bottom timeline",
         "Play the panorama and change the view",
         "Live language switching translates paused controls without replacing video or resetting playback position",
         "capture complete"
@@ -249,34 +251,35 @@
       "artifacts": [
         {
           "file": "3d-and-panorama.en.gif",
-          "bytes": 22848418,
-          "sha256": "a4682950acba2a92edd0d89d798d9fa696646bd865cf75ed4dd3509ff7f2c7d5",
+          "bytes": 23439197,
+          "sha256": "c36fb0a4e1b1b6589d8a84bfd4c5acbd497e39fece87cf62f6848758968b5c36",
           "width": 960,
           "height": 594,
-          "frames": 265,
-          "durationSeconds": 13.35
+          "frames": 267,
+          "durationSeconds": 13.6
         },
         {
           "file": "3d-and-panorama.en.webp",
-          "bytes": 6536438,
-          "sha256": "93c90b2f6e38aa9664873f64993bc2c48e91647d5905987a04ae7c10476b290e",
+          "bytes": 6578108,
+          "sha256": "ecd22b28618624789797f12826309439a86b092678a3818bb4b8877db34312b2",
           "width": 960,
           "height": 594,
-          "frames": 263
+          "frames": 264,
+          "durationSeconds": 13.6
         },
         {
           "file": "3d-and-panorama.en.mp4",
-          "bytes": 2825990,
-          "sha256": "f058441c1d3a012018fa44c3c1c3e958933bfbb9db7717a16ce18ca4cf5c5034",
+          "bytes": 2888636,
+          "sha256": "714f10938ad6f03b5c6990b8275a50755becc32286f3ea735d6973ef835d2d50",
           "width": 1280,
           "height": 792,
-          "durationSeconds": 15.95,
-          "frames": 319
+          "frames": 324,
+          "durationSeconds": 16.2
         },
         {
           "file": "3d-and-panorama.en.png",
-          "bytes": 533082,
-          "sha256": "154041b232a37903f9acf155de3950117ec4c475b23759dfbc2617f746c53e4d",
+          "bytes": 528182,
+          "sha256": "59eb31543ae1cd98665fee7118ce99735a7d52f74e409d5f9ca3e0b585d2be96",
           "width": 1280,
           "height": 720
         }
@@ -285,7 +288,7 @@
     {
       "topic": "file-workspace",
       "locale": "en",
-      "recordedAt": "2026-11-06T08:53:48.874Z",
+      "recordedAt": "2026-11-13T15:55:27.931Z",
       "evidence": "file-workspace.en-recording.json",
       "checks": [
         "Session files, collected into thumbnail groups",
@@ -301,35 +304,35 @@
       "artifacts": [
         {
           "file": "file-workspace.en.gif",
-          "bytes": 4750779,
-          "sha256": "06a0f9474597093cac63a987085f63cd11b45d5b16fc5f90212c3808fe6097b3",
+          "bytes": 4065896,
+          "sha256": "a8df551d19f25f53f42ad9e178dddd6302b07d9ede4c115c523b13551e8c511d",
           "width": 960,
           "height": 594,
-          "frames": 286,
-          "durationSeconds": 14.6,
-          "lightSidebarChecked": true
+          "frames": 277,
+          "durationSeconds": 14.6
         },
         {
           "file": "file-workspace.en.webp",
-          "bytes": 2254064,
-          "sha256": "c377c3d184f24a722c81310f1b46b7c5e35af3e885dfa2bc8bd60975dae96f7d",
+          "bytes": 2058940,
+          "sha256": "e1a7e9d0cbd2d6be0383c9bdf23b50f58d9ae733981bc6745a4c71f3e9d89902",
           "width": 960,
           "height": 594,
-          "frames": 270
+          "frames": 269,
+          "durationSeconds": 14.6
         },
         {
           "file": "file-workspace.en.mp4",
-          "bytes": 1016612,
-          "sha256": "268b72489ddfe409e5dcadd268bd5397ae53803dd2c61ff38b1b25d82bb9784c",
+          "bytes": 983609,
+          "sha256": "ca67f63a5c395b68e6b94cff534d33964883c3c4fa96a42985fda60c55f79943",
           "width": 1280,
           "height": 792,
-          "durationSeconds": 15.25,
-          "frames": 305
+          "frames": 313,
+          "durationSeconds": 15.65
         },
         {
           "file": "file-workspace.en.png",
-          "bytes": 90972,
-          "sha256": "ab160175b70c1c8a14cc9d2664170e6a274aac893c287151b74331689c8ce0be",
+          "bytes": 88883,
+          "sha256": "12b4864f920370b6b0a737899b6b87d49160f4c19fdd87e715550ea9071b7f0d",
           "width": 1280,
           "height": 720
         }

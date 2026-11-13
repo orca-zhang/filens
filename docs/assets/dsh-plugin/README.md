@@ -1,6 +1,8 @@
 # DSH Desktop installation, Office and PDF preview
 
-[Animated WebP](install-and-preview.webp) · [GIF](install-and-preview.gif) · [Full MP4](install-and-preview.mp4) · [Recording evidence](demo-recording.json) · [Office timings](office-preview-benchmark.json) · [PDF timings](pdf-preview-benchmark.json)
+[Animated WebP](install-and-preview.webp?v=branding-20261114) · [GIF](install-and-preview.gif?v=branding-20261114) · [Full MP4](install-and-preview.mp4?v=branding-20261114) · [Recording evidence](demo-recording.json) · [Office timings](office-preview-benchmark.json) · [PDF timings](pdf-preview-benchmark.json)
+
+Branding refreshed on **2026-11-14**: recorded preview labels now display only **FiLens**, including the 0.1.2 archive and companion screenshots. Media hashes are updated in each recording report; the original hashes are retained in its branding-refresh evidence. These historical clips retain their recorded interactions, captions, timing and package versions. [Current 0.1.10 recordings](../dsh-release/README.md).
 
 Recorded on **2026-11-05**, using the installed **DeepSeek Harness Desktop 0.2.1-rc.5**, Electron **44.7.0**, macOS arm64 and the public npm package **dsh-filens@0.1.3**. The installed CLI is **0.5.6** and the shared preview runtime is **0.3.4**, registering **450 extensions**. All work used isolated temporary DSH profiles, with no model calls or changes to the normal user profile.
 
@@ -20,7 +22,7 @@ The historical 0.1.2 installation recording and its hashes remain in [history/0.
 
 ## 3D and 360 gallery
 
-[Gallery animated WebP](3d-and-panorama.webp) · [Gallery GIF](3d-and-panorama.gif) · [Full gallery MP4](3d-and-panorama.mp4) · [Recording evidence and hashes](3d-and-panorama-recording.json)
+[Gallery animated WebP](3d-and-panorama.webp?v=branding-20261114) · [Gallery GIF](3d-and-panorama.gif?v=branding-20261114) · [Full gallery MP4](3d-and-panorama.mp4?v=branding-20261114) · [Recording evidence and hashes](3d-and-panorama-recording.json)
 
 The companion gallery was re-recorded on **2026-11-05** in the installed **DSH Desktop 0.2.1-rc.5**, using the published **dsh-filens@0.1.6** package and CLI 0.5.6 in an isolated profile. All 76 installed package files match the published release tarball; runtime, client and manifest hashes are recorded in the evidence. It expands the document pane, orbits and zooms a GLB space robot, opens model tools beside the address bar to change view/projection and section, then inspects a multi-part 3MF gearbox. It also looks around a Milky Way panorama, uses header zoom, then drags the **bottom timeline** and plays a spherical NASA black-hole video using the **controls at the bottom of the player**. The capture checks that playback controls are absent from the address bar and the timeline is visible near the bottom of the picture. These are actual pointer, wheel and control interactions; the video is muted.
 

@@ -1,19 +1,19 @@
 {
-  "recordedAt": "2026-11-06T08:53:48.873Z",
+  "recordedAt": "2026-11-13T15:55:27.929Z",
   "environment": {
-    "dsh": "0.2.1-rc.5",
+    "dsh": "0.2.2-rc.1",
     "platform": "darwin",
     "arch": "arm64",
     "electron": "44.7.0"
   },
-  "plugin": "dsh-filens@0.1.6",
+  "plugin": "dsh-filens@0.1.10",
   "installationSource": "isolated local source build",
   "components": {
-    "cli": "0.5.6",
-    "preview": "0.3.5",
+    "cli": "0.5.7",
+    "preview": "0.3.7",
     "extensions": 451,
     "previewSHA256": "b6d138005eb9773211ea11ed60212e5295954713d12a4851f4d5a89d92cdfc8b",
-    "workspaceSHA256": "3a676ded80041cc541cb9e21ea7caa7b0fa42efe0ce838b21dfeba1de010271f"
+    "workspaceSHA256": "1252d5d59d0facbe8a4b8ff145ebf6283ead2ab2bc4834791279fac8707ae2d0"
   },
   "source": "Installed Desktop application, isolated local source build, actual UI interactions",
   "locale": "en",
@@ -33,8 +33,8 @@
       "dither": "sierra2_4a",
       "optimization": "lossless frame differences, displayed pixels and timing verified"
     },
-    "highlightFrames": 200,
-    "highlightSeconds": 10
+    "highlightFrames": 205,
+    "highlightSeconds": 10.25
   },
   "modelCalls": 0,
   "checks": [
@@ -64,8 +64,8 @@
     {
       "name": "FiLens Introduction.pptx",
       "source": "apps/demo/public/samples/filens-introduction.en.pptx",
-      "bytes": 3272592,
-      "sha256": "590916a586cc75c9a13e742c57a6171358928ff7eee12a573fda78b8bc4b8476"
+      "bytes": 3291682,
+      "sha256": "5b616cf02e78cac2852fe5d01402dc58540836af9505ca71104e0d2f4577e062"
     },
     {
       "name": "Cosmic Atlas.pdf",
@@ -107,43 +107,43 @@
   "chapters": [
     {
       "start": 0,
-      "duration": 1.8,
-      "sourceStart": 0.319,
+      "duration": 2.2,
+      "sourceStart": 0.38,
       "zh": "Word：在 DSH 侧栏直接阅读",
       "en": "Word: read directly in the DSH sidebar"
     },
     {
-      "start": 1.8,
-      "duration": 1.6,
-      "sourceStart": 2.11,
+      "start": 2.2,
+      "duration": 1.65,
+      "sourceStart": 2.567,
       "zh": "展开阅读，缩放工具就在地址栏旁",
       "en": "Expand the preview; zoom beside the address bar"
     },
     {
-      "start": 3.4,
-      "duration": 2.6,
-      "sourceStart": 3.702,
+      "start": 3.85,
+      "duration": 2.7,
+      "sourceStart": 4.2,
       "zh": "Excel：切换工作表，保留表格结构",
       "en": "Excel: switch sheets without leaving the preview"
     },
     {
-      "start": 6,
-      "duration": 2.3,
-      "sourceStart": 6.285,
+      "start": 6.55,
+      "duration": 2.45,
+      "sourceStart": 6.9,
       "zh": "PowerPoint：打开 FiLens 介绍",
       "en": "PowerPoint: open the FiLens introduction"
     },
     {
-      "start": 8.3,
+      "start": 9,
       "duration": 2.3,
-      "sourceStart": 8.753,
+      "sourceStart": 9.555,
       "zh": "全屏演示，Page Down 翻页",
       "en": "Present fullscreen; Page Down advances slides"
     },
     {
-      "start": 10.6,
-      "duration": 1,
-      "sourceStart": 11.049,
+      "start": 11.3,
+      "duration": 1.1,
+      "sourceStart": 11.877,
       "zh": "Esc 退出，回到 DSH",
       "en": "Esc returns to DSH"
     }
@@ -152,42 +152,42 @@
     {
       "start": 0,
       "duration": 1.8,
-      "sourceStart": 0.319,
+      "sourceStart": 0.38,
       "zh": "Word：在 DSH 侧栏直接阅读",
       "en": "Word: read directly in the DSH sidebar"
     },
     {
       "start": 1.8,
-      "duration": 1.6,
-      "sourceStart": 2.11,
+      "duration": 1.65,
+      "sourceStart": 2.567,
       "zh": "展开阅读，缩放工具就在地址栏旁",
       "en": "Expand the preview; zoom beside the address bar"
     },
     {
-      "start": 3.4,
-      "duration": 1.9,
-      "sourceStart": 3.702,
+      "start": 3.45,
+      "duration": 2,
+      "sourceStart": 4.2,
       "zh": "Excel：切换工作表，保留表格结构",
       "en": "Excel: switch sheets without leaving the preview"
     },
     {
-      "start": 5.3,
+      "start": 5.45,
       "duration": 1.8,
-      "sourceStart": 6.285,
+      "sourceStart": 6.9,
       "zh": "PowerPoint：打开 FiLens 介绍",
       "en": "PowerPoint: open the FiLens introduction"
     },
     {
-      "start": 7.1,
+      "start": 7.25,
       "duration": 1.9,
-      "sourceStart": 8.753,
+      "sourceStart": 9.555,
       "zh": "全屏演示，Page Down 翻页",
       "en": "Present fullscreen; Page Down advances slides"
     },
     {
-      "start": 9,
-      "duration": 1,
-      "sourceStart": 11.049,
+      "start": 9.15,
+      "duration": 1.1,
+      "sourceStart": 11.877,
       "zh": "Esc 退出，回到 DSH",
       "en": "Esc returns to DSH"
     }
@@ -195,18 +195,18 @@
   "artifacts": [
     {
       "path": "docs/assets/dsh-release/office-preview.en.webp",
-      "bytes": 3494964,
-      "sha256": "baf409cc77edda1e18f737029d1d14b77a74ef69b7975605174cf4a47a44df99"
+      "bytes": 3357264,
+      "sha256": "05c9b194ebb0536e81f704bd94e33312012102cf2849ce3e68ff37542ebc29d9"
     },
     {
       "path": "docs/assets/dsh-release/office-preview.en.gif",
-      "bytes": 8230427,
-      "sha256": "13f66a0ae7d5f2dc97166aeabd67d60d08ddd3b91b6810ddd9771c529f00e161"
+      "bytes": 8394380,
+      "sha256": "104e3c785729b77fae36958dc7ff777547a3ddb169ccfcee18ae86407f9c0bd0"
     },
     {
       "path": "docs/assets/dsh-release/office-preview.en.mp4",
-      "bytes": 1531116,
-      "sha256": "4d865649d2f10eebd6733170a6b3626fa83d3d893189f209d248ea8a439a5a1b"
+      "bytes": 1761749,
+      "sha256": "b1b638bfde6877cd9bbb0e8fbe694aff47c05f1c9e4f2595bfab9241aa118c00"
     }
   ]
 }

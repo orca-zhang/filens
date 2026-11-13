@@ -60,6 +60,7 @@ async function capture() {
       sha256: createHash('sha256').update(bytes).digest('hex') });
   }
   const names = definitions.map(([, name]) => name);
+  await writeFile(path.join(directory, `~$${names[0]}`), 'Synthetic Office lock file for recording.\n');
   const codeName = text('观测计划.py', 'observation.py');
   await writeFile(path.join(directory, codeName), 'from datetime import datetime\n\nprint("Plan the next observation", datetime.now())\n');
   const titles = [text('极光观测计划', 'Night watch'), text('现场素材整理', 'Field notes')];

@@ -22,9 +22,9 @@ The adapter uses `filens-cli@0.5.7` and shared preview 0.3.7. It adds no parsing
 
 Tested on macOS arm64 with DSH **Desktop/Web 0.2.1-rc.5**, **Web 0.2.2-alpha.3**, **Desktop/Web 0.2.2-rc.1** and Node 24. Other DSH versions remain unverified.
 
-**English recordings for 0.1.7:** actual DSH UI, English captions and synthetic sessions. [Release notes and recording provenance](../../docs/releases/dsh-filens-0.1.8/README.md). Recorded with the local workspace candidate before the formal version bump; original recording metadata is preserved.
+**English recordings for 0.1.10:** refreshed in DSH Desktop 0.2.2-rc.1 with English captions and synthetic sessions, using a build matching the published package. [Release notes and recording provenance](../../docs/releases/dsh-filens-0.1.8/README.md).
 
-![Word and Excel previews, and a fullscreen PPT presentation in English DSH](../../docs/assets/dsh-release/office-preview.en.gif)
+![Word and Excel previews, and a fullscreen PPT presentation in English DSH](../../docs/assets/dsh-release/office-preview.en.gif?v=branding-20261114)
 
 Open Office files in DSH's file sidebar to use FiLens. Switch Excel worksheets inside the preview. For PPT, click **Fullscreen**, click the slide to focus, use **Page Down / Page Up** to present, and press **Esc** to return. DOCX/PPTX render directly without LibreOffice-to-PDF conversion.
 
@@ -34,7 +34,7 @@ Open Office files in DSH's file sidebar to use FiLens. Switch Excel worksheets i
 | DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
 | PDF | **190 / 77** | 329 / 110 | **1.73×** |
 
-Nine paired rounds on one macOS machine. Speedup = matched built-in median ÷ FiLens median; ratios describe **first opens**. First means the first opening of that file per process; system/persistent caches remain. Built-in Office converts to PDF; FiLens renders directly. [Ranges and method](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [New demo MP4](../../docs/assets/dsh-release/office-preview.en.mp4) · [New demo GIF](../../docs/assets/dsh-release/office-preview.en.gif).
+Nine paired rounds on one macOS machine. Speedup = matched built-in median ÷ FiLens median; ratios describe **first opens**. First means the first opening of that file per process; system/persistent caches remain. Built-in Office converts to PDF; FiLens renders directly. [Ranges and method](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [New demo MP4](../../docs/assets/dsh-release/office-preview.en.mp4?v=branding-20261114) · [New demo GIF](../../docs/assets/dsh-release/office-preview.en.gif?v=branding-20261114).
 
 PDF uses a separate nine-round paired run after first-page pixel reuse: cached opens are **1.43×** faster than built in (**110 → 77 ms**, **30.0%** less time). The 689,455-byte sample still loads and validates on every open; closing releases the worker. [PDF samples, ranges and method](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
@@ -49,13 +49,13 @@ The workloads below time complete parser calls on identical inputs, **excluding 
 
 Library feature/fidelity scopes differ; these ratios are not an overall ranking across files. [Raw samples and reproduction](../../docs/featured-performance.md).
 
-**DSH 0.1.6:** the address bar contains zoom out, the compact 4-character zoom percentage, zoom in and fullscreen for every preview type. The 3D inspector and CAD layers retain compact entries; worksheet, archive and attachment controls are grouped in a Tools menu. Audio/video playback and progress remain below the player. Page, rotation and manual Fit / Width / Height buttons are omitted; keyboard slide navigation remains available. The matching driver loads on first use; modules and WASM are reused. Initial JS requests total **351.5 KiB**; TXT first-open runtime requests total **456.8 KiB**, excluding document bytes and DSH. [0.1.6 runtime measurements](../../docs/assets/dsh-plugin/format-loading-current.json). The historical installation recording uses public 0.1.3, and the historical 3D/360° gallery uses public 0.1.6. The single-language recordings above use the pre-release workspace candidate. PDF reopens reuse validated first-page pixels, bounded to four pages / 16 MiB / 30 idle seconds; each open still loads and validates its document, and closing releases the worker. Password opens and printing bypass reuse. [PDF timings and limits](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+**DSH 0.1.6:** the address bar contains zoom out, the compact 4-character zoom percentage, zoom in and fullscreen for every preview type. The 3D inspector and CAD layers retain compact entries; worksheet, archive and attachment controls are grouped in a Tools menu. Audio/video playback and progress remain below the player. Page, rotation and manual Fit / Width / Height buttons are omitted; keyboard slide navigation remains available. The matching driver loads on first use; modules and WASM are reused. Initial JS requests total **351.5 KiB**; TXT first-open runtime requests total **456.8 KiB**, excluding document bytes and DSH. [0.1.6 runtime measurements](../../docs/assets/dsh-plugin/format-loading-current.json). The historical installation recording uses public 0.1.3, and the historical 3D/360° gallery uses public 0.1.6. The single-language recordings above use FiLens DSH 0.1.10, preview 0.3.7 and CLI 0.5.7. PDF reopens reuse validated first-page pixels, bounded to four pages / 16 MiB / 30 idle seconds; each open still loads and validates its document, and closing releases the worker. Password opens and printing bypass reuse. [PDF timings and limits](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
 Version 0.1.3 also reuses parsed XLSX/iWork models and STEP CPU meshes within a shared four-entry / 64 MiB estimated model budget / 30-second idle lifetime. [Complete measurements, costs and limits](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
 
-![Orbit GLB and 3MF models, explore a spherical photo and play a 360-degree video in English DSH](../../docs/assets/dsh-release/3d-and-panorama.en.gif)
+![Orbit GLB and 3MF models, explore a spherical photo and play a 360-degree video in English DSH](../../docs/assets/dsh-release/3d-and-panorama.en.gif?v=branding-20261114)
 
-![File workspace: session file groups, related files and the originating question](../../docs/assets/dsh-release/file-workspace.en.gif)
+![File workspace: session file groups, related files and the originating question](../../docs/assets/dsh-release/file-workspace.en.gif?v=branding-20261114)
 
 The same sidebar supports interactive 3D models and 360° media. Drag to orbit or look around; scroll to zoom. For spherical JPEG/video samples, use `.pano` / `.360v` filenames, preserving the original bytes; ordinary `.jpg` / `.webm` use the normal image/video view. [Gallery MP4, sources and recording details](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery).
 

@@ -218,18 +218,40 @@
   "artifacts": [
     {
       "path": "docs/assets/dsh-plugin/3d-and-panorama.webp",
-      "bytes": 7880206,
-      "sha256": "c7e3aa768176baa7d5253a533dcd2f1ddb94077b28a6e0b1740830f09f1759cd"
+      "bytes": 7671390,
+      "sha256": "cdfb52fde50232890972098fd077d7bdc9f37bdebb60dcddb296bb63d41aa9bd"
     },
     {
       "path": "docs/assets/dsh-plugin/3d-and-panorama.gif",
-      "bytes": 21921703,
-      "sha256": "7396ba9e53829523b7b26a28766045ed43dde372ff33cf6ea50b9cf711ddc138"
+      "bytes": 19230587,
+      "sha256": "138882714399971a1369ba25195740c0b4f5fc23d4c998e19022c3eabdc56c76"
     },
     {
       "path": "docs/assets/dsh-plugin/3d-and-panorama.mp4",
-      "bytes": 5415250,
-      "sha256": "ddbe1b0e6d2273f98a16a488ce2616b82f2253a222752070e1453ea85c7ce894"
+      "bytes": 4872843,
+      "sha256": "2b36c26a5db3b589d45acd47189f9966232c1dbcbe47571ea5bfd337e4881f45"
     }
-  ]
+  ],
+  "brandingRefresh": {
+    "refreshedAt": "2026-11-13T16:18:50.568025+00:00",
+    "change": "Preview attribution refreshed to FiLens; original interactions, captions, durations and recorded package versions are preserved. This is not a new performance measurement.",
+    "timingPreserved": true,
+    "originalArtifacts": [
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.webp",
+        "bytes": 7880206,
+        "sha256": "c7e3aa768176baa7d5253a533dcd2f1ddb94077b28a6e0b1740830f09f1759cd"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.gif",
+        "bytes": 21921703,
+        "sha256": "7396ba9e53829523b7b26a28766045ed43dde372ff33cf6ea50b9cf711ddc138"
+      },
+      {
+        "path": "docs/assets/dsh-plugin/3d-and-panorama.mp4",
+        "bytes": 5415250,
+        "sha256": "ddbe1b0e6d2273f98a16a488ce2616b82f2253a222752070e1453ea85c7ce894"
+      }
+    ]
+  }
 }

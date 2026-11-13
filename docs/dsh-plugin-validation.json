@@ -362,20 +362,42 @@
     "artifacts": [
       {
         "path": "docs/assets/dsh-plugin/install-and-preview.webp",
-        "bytes": 5716044,
-        "sha256": "a8708d570f5077a5cc85cc9f87538c9c5c2618340e246cff45f51d740c528d6a"
+        "bytes": 5602132,
+        "sha256": "db8f06d714bf8322d0f67659c9ad3ab591e7443e2920b8380be98e84040d7e67"
       },
       {
         "path": "docs/assets/dsh-plugin/install-and-preview.gif",
-        "bytes": 17634894,
-        "sha256": "ef59a5b081c2b2b2ab3c71a79f129ba53afc4b5f368f7de264a79841e8d20c58"
+        "bytes": 15317849,
+        "sha256": "b5983d331eccab25ad6bee324d9750f6a3dfb02d2c2f700d370196b0e9a7469f"
       },
       {
         "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
-        "bytes": 3475083,
-        "sha256": "b84f15c01677b6181b443c5e6d6721ec1861704b821c36a2754cb0d0b1340cf8"
+        "bytes": 3311666,
+        "sha256": "7f0b3bcd1eed4846cb1abb678553da2cc087e0bef58867246bf9a8badfcbbf72"
       }
-    ]
+    ],
+    "brandingRefresh": {
+      "refreshedAt": "2026-11-13T16:18:50.568025+00:00",
+      "change": "Preview attribution refreshed to FiLens; original interactions, captions, durations and recorded package versions are preserved. This is not a new performance measurement.",
+      "timingPreserved": true,
+      "originalArtifacts": [
+        {
+          "path": "docs/assets/dsh-plugin/install-and-preview.webp",
+          "bytes": 5716044,
+          "sha256": "a8708d570f5077a5cc85cc9f87538c9c5c2618340e246cff45f51d740c528d6a"
+        },
+        {
+          "path": "docs/assets/dsh-plugin/install-and-preview.gif",
+          "bytes": 17634894,
+          "sha256": "ef59a5b081c2b2b2ab3c71a79f129ba53afc4b5f368f7de264a79841e8d20c58"
+        },
+        {
+          "path": "docs/assets/dsh-plugin/install-and-preview.mp4",
+          "bytes": 3475083,
+          "sha256": "b84f15c01677b6181b443c5e6d6721ec1861704b821c36a2754cb0d0b1340cf8"
+        }
+      ]
+    }
   },
   "headerControlsReport": "dsh-header-controls-validation.json",
   "modelReuse": "dsh-model-reopen-validation.json",
