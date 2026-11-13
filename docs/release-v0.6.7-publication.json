@@ -1,0 +1,126 @@
+{
+  "observedAt": "2026-11-13T14:48:34.775108+00:00",
+  "tag": "v0.6.7",
+  "url": "https://github.com/orca-zhang/filens/releases/tag/v0.6.7",
+  "releaseId": 444314809,
+  "publishedAt": "2026-11-13T14:48:06Z",
+  "sourceCommit": "e5b5b3fad9b719ba9b9d314dd88d705d99f18ba4",
+  "status": "published-and-publicly-verified",
+  "latest": true,
+  "anonymousReleaseApiStatus": 200,
+  "anonymousLatestApiStatus": 200,
+  "assetCount": 15,
+  "assets": [
+    {
+      "file": "dsh-filens-0.1.10.tgz",
+      "bytes": 6097078,
+      "sha256": "740d800948bb4fc15a776e890846b80c5a2d3c014a4a36c4279a12056e4934fd",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/dsh-filens-0.1.10.tgz"
+    },
+    {
+      "file": "filens-0.5.7-linux-arm64-full.tar.gz",
+      "bytes": 32779869,
+      "sha256": "18923d66ae04f4d1015af160a8b1c77a0000054308559aa26a571a7c9dc907a9",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-arm64-full.tar.gz"
+    },
+    {
+      "file": "filens-0.5.7-linux-arm64-lite.tar.gz",
+      "bytes": 7239327,
+      "sha256": "2dca7064a9a8a3630af1930b9e7203f622ddfa94d896621c540fcbb7f5d6b871",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-arm64-lite.tar.gz"
+    },
+    {
+      "file": "filens-0.5.7-linux-x64-full.tar.gz",
+      "bytes": 35209822,
+      "sha256": "45542cd0c6a259d7146b1ff06a2462eddc355ab6a907cbf36e6c3a9fe0d2a0b8",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-x64-full.tar.gz"
+    },
+    {
+      "file": "filens-0.5.7-linux-x64-lite.tar.gz",
+      "bytes": 7352078,
+      "sha256": "0f58f99fc2af8f9f96a4ae7d242c1c5b4eab4cafcd7c24b1c3bbb3a8a0a1a01a",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-x64-lite.tar.gz"
+    },
+    {
+      "file": "filens-0.5.7-macos-arm64-full.tar.gz",
+      "bytes": 33461606,
+      "sha256": "79c40239b2c6d66d784db62efa816ed1496e625eb6630b2b949e63991b2a306c",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-macos-arm64-full.tar.gz"
+    },
+    {
+      "file": "filens-0.5.7-macos-arm64-lite.tar.gz",
+      "bytes": 7518239,
+      "sha256": "d73b18754fb7c6968aeda418c1c2b8871e7a9d97f6fb93f976b01c7bee6bbed5",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-macos-arm64-lite.tar.gz"
+    },
+    {
+      "file": "filens-0.5.7-windows-x64-full.zip",
+      "bytes": 35439648,
+      "sha256": "e7b379f09c9f49a3b4559803e85226335c0c3bd0510e8d3ce2e690e358ce0a8d",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-windows-x64-full.zip"
+    },
+    {
+      "file": "filens-0.5.7-windows-x64-lite.zip",
+      "bytes": 7295513,
+      "sha256": "6a346e0221efa5b928463f7401a97995b5588ee2321d5fe3362815e4b6fb41fa",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-windows-x64-lite.zip"
+    },
+    {
+      "file": "filens-android-sdk-0.1.7.zip",
+      "bytes": 5919487,
+      "sha256": "dcc31b726d8164250b5713a6ae44de99f1f0ad9291a4af5490a80ce369c0c23b",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-android-sdk-0.1.7.zip"
+    },
+    {
+      "file": "filens-ios-sdk-0.1.7.zip",
+      "bytes": 5916616,
+      "sha256": "fb4bd1b7018351d61955d499861ae6871491c2f644c11c84e34279baec680ac7",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-ios-sdk-0.1.7.zip"
+    },
+    {
+      "file": "filens-preview-0.3.7-all-in-one.zip",
+      "bytes": 11122660,
+      "sha256": "72724d4bc09d01d40fc870769b67edbafd410ec10413c5e99d2dba8e90115690",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-preview-0.3.7-all-in-one.zip"
+    },
+    {
+      "file": "filens-preview-0.3.7-split.zip",
+      "bytes": 5889821,
+      "sha256": "01d5b79fab19b77768ba2efbe0afc45671661e04352c0f0f3a1fda12ecb3ccec",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-preview-0.3.7-split.zip"
+    },
+    {
+      "file": "filens-release-v0.6.7.json",
+      "bytes": 4891,
+      "sha256": "a948bd77e4526b10f259097809065b36dea3ec84382a3a5b107c8e0f42923f6b",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-release-v0.6.7.json",
+      "anonymousDownloadStatus": 200,
+      "anonymousDownloadVerified": true
+    },
+    {
+      "file": "SHA256SUMS",
+      "bytes": 1380,
+      "sha256": "bb3d71ee83481a7c29d19b88a380d9ea1b0b9eb5d5b87cf9f856ebc999e9d4a8",
+      "serverDigestVerified": true,
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.7/SHA256SUMS",
+      "anonymousDownloadStatus": 200,
+      "anonymousDownloadVerified": true
+    }
+  ],
+  "bodyMatchesNotes": true,
+  "npmPublication": "release-v0.6.7-npm-publication.json"
+}
