@@ -1,14 +1,14 @@
 # filens Agent CLI
 
 <!-- agent-cli-size:npm:start -->
-**v0.5.6 · MIT · CLI executable 2.20 MiB · Lite 9.27 MiB · Full 32.49 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
+**v0.5.7 · MIT · CLI executable 2.20 MiB · Lite 9.27 MiB · Full 32.49 MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).
 
 | Platform | CLI executable | Lite installed / download | Full installed / download |
 | --- | ---: | ---: | ---: |
 | darwin-arm64 | 2.20 MiB | 9.27 / 7.23 MiB | 32.49 / 21.43 MiB |
-| linux-x64 | 1.04 MiB | 8.11 / 7.03 MiB | 37.06 / 23.00 MiB |
-| linux-arm64 | 0.92 MiB | 8.00 / 6.91 MiB | 31.43 / 20.70 MiB |
-| win32-x64 | 0.95 MiB | 8.02 / 6.94 MiB | 36.80 / 23.18 MiB |
+| linux-x64 | 1.03 MiB | 8.11 / 7.02 MiB | 37.06 / 23.00 MiB |
+| linux-arm64 | 0.93 MiB | 8.00 / 6.92 MiB | 31.43 / 20.70 MiB |
+| win32-x64 | 0.95 MiB | 8.03 / 6.94 MiB | 36.81 / 23.18 MiB |
 
 Totals add the launcher and selected platform packages from npm pack. Node.js, npm caches, filesystem overhead and the optional frontend preview package are excluded. Bundled dependencies retain their own licenses; see THIRD-PARTY-NOTICES.md in the platform packages.
 <!-- agent-cli-size:npm:end -->
@@ -212,4 +212,4 @@ one profile at a time. Platform packages are implementation components.
 [Protocol, limitations and source build](https://github.com/orca-zhang/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
-`npm install -g /path/to/filens-cli-0.5.6.tgz /path/to/filens-cli-PLATFORM-0.5.6.tgz /path/to/filens-ocr-PLATFORM-0.5.6.tgz`.
+`npm install -g /path/to/filens-cli-0.5.7.tgz /path/to/filens-cli-PLATFORM-0.5.7.tgz /path/to/filens-ocr-PLATFORM-0.5.7.tgz`.

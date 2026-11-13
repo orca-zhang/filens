@@ -33,12 +33,12 @@ for (const platform of ['ios', 'android']) {
     await cp(path.join(root, 'sdk', guide), path.join(directory, 'sdk', guide));
   }
   await writeFile(path.join(directory, 'manifest.json'), `${JSON.stringify({
-    version, previewVersion, platform, kind: 'source-sdk-with-offline-assets', watermark: 'FiLens © IceWhale'
+    version, previewVersion, platform, kind: 'source-sdk-with-offline-assets', watermark: 'FiLens'
   }, null, 2)}\n`);
   const instructions = platform === 'ios'
     ? 'Add sdk/ios as a local Swift Package in Xcode and link FilensPreview. Requires iOS 15+ and Swift 5.9+. The offline runtime is already included; npm is not needed to integrate this archive.'
     : 'Include sdk/android/filens-preview as an Android Library module, or run gradle -p sdk/android :filens-preview:assembleRelease using JDK 17+, Gradle 8.9 and Android SDK 35. Requires Android API 26+ and a current Android System WebView. The offline runtime is already included. This is a source SDK; it is not a precompiled AAR.';
-  await writeFile(path.join(directory, 'README.md'), `# FiLens ${platform === 'ios' ? 'iOS' : 'Android'} SDK ${version}\n\n${instructions}\n\nRuntime: filens-preview ${previewVersion}. Files are previewed locally with the shared frontend and WASM. Default watermark: FiLens © IceWhale.\n\nSee [the integration guide](sdk/README.md) ([简体中文](sdk/README.zh-CN.md)) for API examples and platform settings. Its source-build instructions refer to the full repository: https://github.com/orca-zhang/filens. Keep LICENSE and the runtime's THIRD-PARTY-NOTICES.txt when redistributing.\n\nNative device validation remains pending; see the integration guide for the exact compile and browser checks.\n`);
+  await writeFile(path.join(directory, 'README.md'), `# FiLens ${platform === 'ios' ? 'iOS' : 'Android'} SDK ${version}\n\n${instructions}\n\nRuntime: filens-preview ${previewVersion}. Files are previewed locally with the shared frontend and WASM. Default watermark: FiLens.\n\nSee [the integration guide](sdk/README.md) ([简体中文](sdk/README.zh-CN.md)) for API examples and platform settings. Its source-build instructions refer to the full repository: https://github.com/orca-zhang/filens. Keep LICENSE and the runtime's THIRD-PARTY-NOTICES.txt when redistributing.\n\nNative device validation remains pending; see the integration guide for the exact compile and browser checks.\n`);
   await assertReleaseDirectory(directory);
   const file = `${name}.zip`;
   await rm(path.join(output, file), { force: true });

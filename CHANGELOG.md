@@ -1,5 +1,16 @@
 # Changelog
 
+
+## 0.6.7
+
+CLI 0.5.7 · browser preview 0.3.7 · mobile source SDKs 0.1.7 · DSH adapter/workspace 0.1.10 · Vue wrapper 0.1.5.
+
+- Display only `FiLens` in preview watermarks, including fullscreen and hidden-toolbar views, and in the DSH File workspace footer.
+- Move repository, release, source and installation links to `orca-zhang/filens`.
+- Refresh standalone browser builds, both mobile source SDKs, the bundled DSH workspace and Full CLI preview assets. Rebuild CLI 0.5.7 to include the new repository link in offline HTML and pin preview 0.3.7 in npm launchers; retain verified OCR libraries/models and conversion engines from v0.6.6.
+
+[Downloads and validation](docs/release-v0.6.7.md)
+
 ## v0.6.6 — 2026-11-06
 
 Compared with v0.6.5.

@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-06",
-  "version": "0.3.6",
+  "date": "2026-11-13",
+  "version": "0.3.7",
   "unit": "bytes",
   "scope": "Current source checkout runtime build (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.",
   "builds": {
@@ -344,9 +344,9 @@
         },
         {
           "file": "filens.js",
-          "raw": 56519,
-          "gzip": 11085,
-          "brotli": 9847
+          "raw": 56507,
+          "gzip": 11067,
+          "brotli": 9844
         },
         {
           "file": "libheif.wasm",
@@ -362,9 +362,9 @@
         }
       ],
       "main": {
-        "raw": 15875932,
-        "gzip": 5328238,
-        "brotli": 4158671
+        "raw": 15875920,
+        "gzip": 5328220,
+        "brotli": 4158668
       },
       "archive": {
         "raw": 1168795,
@@ -372,9 +372,9 @@
         "brotli": 356992
       },
       "total": {
-        "raw": 17044727,
-        "gzip": 5786947,
-        "brotli": 4515663
+        "raw": 17044715,
+        "gzip": 5786929,
+        "brotli": 4515660
       }
     },
     "all-in-one": {
@@ -393,15 +393,15 @@
         },
         {
           "file": "filens.js",
-          "raw": 6694111,
-          "gzip": 3581663,
-          "brotli": 3401399
+          "raw": 6694186,
+          "gzip": 3581640,
+          "brotli": 3401548
         }
       ],
       "main": {
-        "raw": 6694111,
-        "gzip": 3581663,
-        "brotli": 3401399
+        "raw": 6694186,
+        "gzip": 3581640,
+        "brotli": 3401548
       },
       "archive": {
         "raw": 1168795,
@@ -409,14 +409,14 @@
         "brotli": 356992
       },
       "total": {
-        "raw": 7862906,
-        "gzip": 4040372,
-        "brotli": 3758391
+        "raw": 7862981,
+        "gzip": 4040349,
+        "brotli": 3758540
       },
       "delivery": {
-        "raw": 6694111,
-        "gzip": 3540902,
-        "brotli": 3401399,
+        "raw": 6694186,
+        "gzip": 3540936,
+        "brotli": 3401548,
         "gzipEncoder": "Zopfli 15 iterations",
         "brotliEncoder": "Brotli quality 11",
         "gzipFile": "filens.js.gz",

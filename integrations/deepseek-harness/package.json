@@ -1,6 +1,6 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Local previews for 450 file formats with a session file workspace, including Office, PDF, iWork, CAD/3D, RAW and 360° media.",
   "type": "module",
   "license": "MIT",
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "~3.18.6-alpha.2",
-    "filens-cli": "0.5.6",
+    "filens-cli": "0.5.7",
     "@filens/dsh-workspace": "file:./workspace"
   },
   "bundledDependencies": [

@@ -153,12 +153,12 @@
     },
     {
       "name": "@filens/vue",
-      "version": "0.1.4",
-      "file": "filens-vue-0.1.4.tgz",
-      "bytes": 115142,
-      "unpackedBytes": 583359,
-      "sha256": "df363b970bafb7f8e42671ae8e529fad5c4f659e9cdb26541d95a96fd1405756",
-      "integrity": "sha512-k2E44E6ooib2swfJ2g3LXqE158ijnGNDR95gcrLD36A3+b0p43BBl76AUXOM6HgY6Ce2KXeBD4NBc+0nkWsv2A=="
+      "version": "0.1.5",
+      "file": "filens-vue-0.1.5.tgz",
+      "bytes": 115133,
+      "unpackedBytes": 583345,
+      "sha256": "bbe6acd107e124fcb2c42a0b4783ef292f676f1f02f9407fb60489389d6451cf",
+      "integrity": "sha512-WKd9RKXVGAhznrgV7BfsuEbXcbWfOotri0QHpMJYk8PPV/lcwpRm+izeg5Keo6VCiS3OmGgjs1tIrTfVAlhtyg=="
     },
     {
       "name": "@filens/xlsx",

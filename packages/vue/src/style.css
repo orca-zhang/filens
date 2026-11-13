@@ -580,7 +580,7 @@
 .pptxv-main-stage::after,
 .pptxv-main-view:fullscreen::after,
 .pptxv-main-view :fullscreen::after {
-  content: "FiLens © IceWhale";
+  content: "FiLens";
   position: absolute;
   right: 12px;
   bottom: 12px;

@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-13",
+  "tag": "v0.6.7",
+  "baseRelease": "v0.6.6",
+  "scope": "Verified public CLI 0.5.6 archives against downloaded SHA256SUMS. Rebuilt CLI 0.5.7 with Rust 1.93.0 for all four targets and Full/Lite profiles. Full includes preview 0.3.7. Conversion WASM, OCR libraries/models, skills and licenses are byte-for-byte unchanged. Linux/Windows native execution and physical mobile devices were not retested.",
+  "archives": [
+    {
+      "file": "filens-0.5.7-macos-arm64-lite.tar.gz",
+      "baseArchiveSHA256": "e7ddf7be39079bb9dca730a1c406779e8caccc482d18647126dd90aa3d4b52bc",
+      "retainedPayloadFiles": 32,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.7-macos-arm64-full.tar.gz",
+      "baseArchiveSHA256": "184317c940c3a692e3f515b12a46fc3d925895825bb02af467c01d9257311430",
+      "retainedPayloadFiles": 71,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": "0.3.7"
+    },
+    {
+      "file": "filens-0.5.7-linux-x64-lite.tar.gz",
+      "baseArchiveSHA256": "152499f8ffb309ab7c7b24feccd7d6cd144df17b67367dd9e69105e64f571387",
+      "retainedPayloadFiles": 32,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.7-linux-x64-full.tar.gz",
+      "baseArchiveSHA256": "6085a7495e73ace1eaf7132cffd10cf57b35d2cd1698a23180591b4fde46eb40",
+      "retainedPayloadFiles": 69,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": "0.3.7"
+    },
+    {
+      "file": "filens-0.5.7-linux-arm64-lite.tar.gz",
+      "baseArchiveSHA256": "af846e209c28a1e15de7ca349b160a30ad0e3f6efcc8c9b511c7e9a2210b7733",
+      "retainedPayloadFiles": 32,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.7-linux-arm64-full.tar.gz",
+      "baseArchiveSHA256": "4305ddcbe62cb70ed79549f1fc2a9716a453b59b996dabfb5d9fb4b17d52f914",
+      "retainedPayloadFiles": 69,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": "0.3.7"
+    },
+    {
+      "file": "filens-0.5.7-windows-x64-lite.zip",
+      "baseArchiveSHA256": "c0408a9cd2847ee6075e4ea4dec9fee330c2e81a1335e824903a1584489e86e3",
+      "retainedPayloadFiles": 32,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": null
+    },
+    {
+      "file": "filens-0.5.7-windows-x64-full.zip",
+      "baseArchiveSHA256": "a8244a55ec92d8917cce53daf005dc799754cd73bfb8e1ff0de4fde59d9979d5",
+      "retainedPayloadFiles": 71,
+      "enginesAndOcrPayloadsUnchanged": true,
+      "cliRebuilt": true,
+      "archiveIntegrity": true,
+      "privacyChecked": true,
+      "previewVersion": "0.3.7"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-13",
+  "tag": "v0.6.7",
+  "archives": 13,
+  "passed": true,
+  "checks": [
+    "Release asset SHA-256 and archive integrity",
+    "No old IceWhaleTech/filens links in any release archive payload",
+    "CLI VERSION files match 0.5.7",
+    "iOS/Android source SDKs 0.1.7 embed preview 0.3.7 and declare the FiLens watermark",
+    "DSH 0.1.10 bundles workspace 0.1.10, depends on CLI 0.5.7 and has no IceWhale text in preview styles",
+    "Both npm CLI launchers pin preview 0.3.7 and platform components 0.5.7"
+  ]
+}

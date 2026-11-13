@@ -1,6 +1,6 @@
-# Preview 0.3.6 runtime and package sizes
+# Preview 0.3.7 runtime and package sizes
 
-Source runtimes measured 2026-11-06; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
+Source runtimes measured 2026-11-13; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
 
 | Runtime | Raw MB | gzip MB | Brotli MB |
 | --- | ---: | ---: | ---: |
@@ -16,13 +16,13 @@ Source runtimes measured 2026-11-06; these include current checkout changes and 
 
 | Package | Compressed download | Installed file bytes |
 | --- | ---: | ---: |
-| filens-preview 0.3.6 | 16.22 MiB | 31.88 MiB |
+| filens-preview 0.3.7 | 16.22 MiB | 31.88 MiB |
 
 This local npm pack receipt does not establish registry publication. The npm package includes **both** complete runtime directories, archive assets, types, documentation and license notices. MiB = 1,048,576 bytes; excludes the npm cache and filesystem allocation overhead. [Exact package bytes and SHA-256](preview-package-sizes.json).
 
-## Published mobile source SDKs 0.1.6
+## Published mobile source SDKs 0.1.7
 
-These release snapshots are measured separately from the current source build above. Each SDK includes the complete offline split runtime 0.3.6; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
+These release snapshots are measured separately from the current source build above. Each SDK includes the complete offline split runtime 0.3.7; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
 
 | SDK | ZIP download | Extracted file bytes |
 | --- | ---: | ---: |

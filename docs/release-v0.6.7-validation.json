@@ -1,0 +1,163 @@
+{
+  "date": "2026-11-13",
+  "tag": "v0.6.7",
+  "components": {
+    "cli": "0.5.7",
+    "preview": "0.3.7",
+    "mobileSdk": "0.1.7",
+    "dsh": "0.1.10",
+    "vue": "0.1.5"
+  },
+  "scope": "Local release candidates. Registry and GitHub publication are recorded separately. Desktop uses isolated synthetic sessions and real files. No model calls or modifications to user history.",
+  "checks": {
+    "previewPackage": {
+      "observedAt": "2026-11-13T13:53:28.645Z",
+      "name": "filens-preview",
+      "version": "0.3.7",
+      "source": "offline npm tarball",
+      "platform": "darwin-arm64",
+      "passed": true,
+      "checks": [
+        "Standalone installation without runtime dependencies",
+        "MIT license and third-party notices",
+        "TypeScript consumer imports of split and all-in-one exports",
+        "64 real browser previews from installed assets",
+        "No external runtime requests",
+        "Single JavaScript runtime request for all-in-one",
+        "CLI loopback HTTP restrictions",
+        "Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg",
+        "12 PDF/iWork/RAW/STEP/HEIF/RAR previews after Vite production bundling of npm exports"
+      ],
+      "mediaBrowser": "chromium",
+      "browserReport": "preview-validation.json"
+    },
+    "offlineHtml": {
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "passed": 51,
+      "report": "preview-html-validation.json"
+    },
+    "mobileBridge": {
+      "browsers": [
+        "chromium",
+        "webkit"
+      ],
+      "passed": 22,
+      "physicalDevicesTested": false
+    },
+    "dshNodeTests": {
+      "passed": 34,
+      "node": "24",
+      "command": "FILENS_TEST_COMMAND=<local Full CLI> node --test test/*.test.mjs"
+    },
+    "dshBrowser": {
+      "completePreviews": 12,
+      "lazyLoading": 16,
+      "interactions": [
+        "loading identifies the file and respects reduced motion",
+        "closing and reopening PDF releases each worker, reuses exact first-page pixels and skips repeated page decoding",
+        "cached Numbers restores its archive for lazy sheets, preserves sheet content and releases workers",
+        "all 16 format paths retain working zoom and fullscreen; PPTX omits page/fit/rotation controls and keeps keyboard slide navigation",
+        "document fullscreen opens from the keyboard, contains controls and restores them to the header on exit",
+        "live DSH language and theme changes preserve the document and current page",
+        "3D canvas fills the pane without a toolbar and supports direct orbit/zoom",
+        "double-click restores the complete 3D model after orbit and zoom",
+        "compact model inspector preserves the canvas; zoom, fullscreen, keyboard tabs, search and section controls work in a narrow dark pane",
+        "3D auto framing keeps the whole model visible in a tall narrow pane",
+        "Word pages fit narrow/resized panes, visibly zoom and support fullscreen through the common controls",
+        "resizing the Word pane preserves the reading position",
+        "late events from a previous document are ignored",
+        "localized parser failure exposes details and a working retry action",
+        "encrypted documents expose the password form and render after password entry",
+        "short panes do not inherit a fixed minimum height",
+        "concurrent tabs share runtime assets but keep controls and lifecycle independent"
+      ],
+      "errors": [],
+      "failures": []
+    },
+    "dshDesktop": {
+      "capturedAt": "2026-11-13T13:52:56.581Z",
+      "dsh": "0.2.2-rc.1",
+      "scope": "Installed DSH Desktop; synthetic 270-turn and one-turn sessions; real local documents; no model calls or user history edits",
+      "checks": [
+        "Group cards show shortened session titles with the full title on hover, and real Office thumbnails",
+        "Group thumbnails fill the cover; two files use both halves and short titles use a compact caption",
+        "Collapsed sessions align with file grid columns and preview at most four representative files",
+        "Temporary session files are hidden by default and can be revealed; ordinary documents in the OS temporary directory remain visible",
+        "Session groups start folded; expand, collapse and session filtering retain the correct files",
+        "All history pages collected; shared paths deduplicate, different directories stay separate",
+        "Confirmed missing references are excluded before cards, session counts and related-file recommendations are built",
+        "Existing corrupt and source-code files retain type covers; only confirmed absence is hidden",
+        "Stored generic attachment resolves through the native provider and previews real PDF bytes",
+        "Related files explain their reference relationship, open with keyboard or mouse, and retain source messages",
+        "Same file retains four exact source occurrences across two sessions",
+        "The reader file sidebar is at most 160 pixels wide",
+        "Photos-style details keep the filename fixed, show actual byte size, follow theme and close with Escape without reopening the preview",
+        "Source navigation loads the oldest history and scrolls to its stable message identity",
+        "An answer file switches from Trajectory to Chat and locates its corresponding question",
+        "100% fits completely in the real sidebar and workspace toolbars",
+        "Workspace plugin has the native localized title 文件工作台 and a package icon",
+        "Native plugin manager disables and enables File workspace independently of sidebar Preview",
+        "Workspace attachment preview remains functional while sidebar Preview is disabled",
+        "100% also fits at a 600-pixel Desktop window width",
+        "Narrow-window details become an inset bottom sheet and dismiss without leaving the document",
+        "Group cards fit a narrow window in both grid and list modes",
+        "Word, PowerPoint and Excel show real rendered thumbnails rather than fallback covers",
+        "A file deleted after scanning disappears when opened, including navigation and related-file lists",
+        "Refreshing rechecks existence and restores a file recreated at the same path"
+      ]
+    },
+    "npmCliInstallation": {
+      "version": "0.5.7",
+      "tests": {
+        "offline": {
+          "command": "node scripts/test-agent-npm.mjs",
+          "platform": "darwin-arm64",
+          "passed": true,
+          "observedAt": "2026-11-13T14:02:22.762Z",
+          "freshNpmCache": false,
+          "preview": true
+        }
+      }
+    },
+    "branding": {
+      "report": "release-v0.6.7-branding-validation.json",
+      "passed": true,
+      "layouts": [
+        "normal",
+        "hidden toolbar",
+        "fullscreen"
+      ],
+      "runtimes": [
+        "split",
+        "all-in-one",
+        "DSH embedded"
+      ],
+      "workspaceFooter": "FiLens"
+    },
+    "packages": {
+      "passed": true,
+      "report": "release-v0.6.7-package-validation.json",
+      "archives": 13
+    },
+    "vuePackage": {
+      "version": "0.1.5",
+      "buildPassed": true,
+      "archivePrivacyPassed": true,
+      "stylesheetContainsIceWhale": false
+    },
+    "dshLockfile": {
+      "cliVersion": "0.5.7",
+      "tarballIntegritiesVerified": true,
+      "npmCiDryRunOfflinePassed": true
+    }
+  },
+  "limitations": [
+    "Linux and Windows executables are cross-built; native execution was not retested.",
+    "Mobile ZIPs contain source SDKs with offline assets; physical iOS/Android devices were not retested.",
+    "WebKit iWork previews retain their documented file:// worker restriction and pass local HTTP compatibility checks."
+  ]
+}

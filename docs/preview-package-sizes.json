@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-06",
+  "date": "2026-11-13",
   "scope": "Exact versioned npm pack artifact; includes split/all-in-one runtimes, types, README and license notices. Excludes npm cache and filesystem allocation overhead. Public registry integrity and installation are verified separately.",
   "name": "filens-preview",
-  "version": "0.3.6",
-  "file": "filens-preview-0.3.6.tgz",
-  "bytes": 17010961,
-  "unpackedBytes": 33431342,
-  "sha256": "30f0ec55ec9b952b6e2a1ac0473d173a49b650d6c8779fe45ec96425f9545aed",
-  "integrity": "sha512-uhVxSo5s++ePdKUpQk2GE6iUXTSWga6iZr7FrksdHpBB5d1j240t5BRcH9pBnRizJwsz2ZQzYej6TDR56NiDSQ==",
+  "version": "0.3.7",
+  "file": "filens-preview-0.3.7.tgz",
+  "bytes": 17010829,
+  "unpackedBytes": 33431658,
+  "sha256": "b33c99b0808db1587972453375f845b702cee945fe3b560eb48d4290f8918fae",
+  "integrity": "sha512-CGqklSrw9rlFD8vEG6SrwSio1gLIEAGGdiZRa/1KzIasUfNbCg7ynCQ28mRjpIZIDV5v1CWSDsJ+n5GHC6fRWQ==",
   "files": [
     {
       "path": "LICENSE",
@@ -15,7 +15,7 @@
     },
     {
       "path": "README.md",
-      "bytes": 18687
+      "bytes": 18770
     },
     {
       "path": "dist/all-in-one/archive/7zz.wasm",
@@ -23,7 +23,7 @@
     },
     {
       "path": "dist/all-in-one/asset-packing.json",
-      "bytes": 8525
+      "bytes": 8524
     },
     {
       "path": "dist/all-in-one/assets/archive-worker-B6HC1WMX.js",
@@ -31,15 +31,15 @@
     },
     {
       "path": "dist/all-in-one/filens.js",
-      "bytes": 6694111
+      "bytes": 6694186
     },
     {
       "path": "dist/all-in-one/filens.js.br",
-      "bytes": 3401399
+      "bytes": 3401548
     },
     {
       "path": "dist/all-in-one/filens.js.gz",
-      "bytes": 3540902
+      "bytes": 3540936
     },
     {
       "path": "dist/all-in-one/index.html",
@@ -47,7 +47,7 @@
     },
     {
       "path": "dist/all-in-one/THIRD-PARTY-NOTICES.txt",
-      "bytes": 793063
+      "bytes": 793059
     },
     {
       "path": "dist/index.d.ts",
@@ -279,7 +279,7 @@
     },
     {
       "path": "dist/split/filens.js",
-      "bytes": 56519
+      "bytes": 56507
     },
     {
       "path": "dist/split/index.html",
@@ -295,11 +295,11 @@
     },
     {
       "path": "dist/split/THIRD-PARTY-NOTICES.txt",
-      "bytes": 752464
+      "bytes": 752460
     },
     {
       "path": "package.json",
-      "bytes": 1280
+      "bytes": 1276
     }
   ],
   "privacyChecked": true

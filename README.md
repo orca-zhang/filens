@@ -10,7 +10,7 @@
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
-**Latest release: [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · preview **0.3.6** · mobile SDKs **0.1.6** · DSH **0.1.9**.
+**Latest release: [v0.6.7](https://github.com/orca-zhang/filens/releases/tag/v0.6.7)** · CLI **0.5.7** · preview **0.3.7** · mobile SDKs **0.1.7** · DSH **0.1.10**.
 
 [▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
 
@@ -18,10 +18,10 @@
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
 | Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite: 6.90–7.17 MiB (<10 MB) · Full: 31.26–33.80 MiB** offline downloads; Full includes preview assets, OCR runtime and models. Lite downloads preview assets separately. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Approximate size | **Lite 6.90–7.17 MiB (<10 MB) · Full 31.26–33.80 MiB** offline downloads; Full includes preview assets, OCR runtime and models. Lite adds OCR/preview assets separately. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.92–2.20 MiB**. The CLI sizes above measure complete **v0.6.6 offline archive downloads**. Full includes preview **0.3.6**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.6 component installations remain **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.6 source-build main runtimes: **4.16 MB Brotli** summed across split files, or **3.40 MB Brotli / 3.54 MB gzip / 6.69 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.93–2.20 MiB**. The CLI sizes above measure complete **v0.6.7 offline archive downloads**. Full includes preview **0.3.7**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.7 component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.7 source-build main runtimes: **4.16 MB Brotli** summed across split files, or **3.40 MB Brotli / 3.54 MB gzip / 6.69 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 Verified November 6, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Versions, counts and complete extension list](docs/release-v0.6.6-format-counts.json).
 
@@ -51,7 +51,7 @@ filens capacity --json
 
 ### Offline browser previews
 
-**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.6 Full bundles include preview 0.3.6. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/orca-zhang/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.6-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.6 retains preview 0.3.4; DSH 0.1.9 embeds preview 0.3.6; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.7:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.7 Full bundles include preview 0.3.7. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-preview-0.3.7-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.7-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.7 pins preview 0.3.7; DSH 0.1.10 embeds preview 0.3.7; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -72,7 +72,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.6 offline downloads · macOS arm64 · CLI 0.5.6; Full includes preview 0.3.6 and OCR models; Lite adds preview assets separately; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 offline downloads · macOS arm64 · CLI 0.5.7; Full includes preview 0.3.7 and OCR models; Lite adds preview assets separately; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
@@ -103,10 +103,10 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 Recorded November 5, 2026 on Apple M4 Pro/macOS and DSH Desktop 0.2.1-rc.5: nine paired rounds per format, medians through render readiness, excluding application startup. Office and PDF use separate runs; these are retained FiLens 0.1.3 measurements. PDF cached opens also improve from **110 to 77 ms (1.43×)**. [Office samples and method](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [PDF samples and method](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
 
-Install [`dsh-filens@0.1.9`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
+Install [`dsh-filens@0.1.10`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.9: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
+**DSH 0.1.10: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
 <!-- dsh-package-metrics:end -->
 
 **0.1.7 demos:** recorded in DSH Desktop with English UI and captions, using the local workspace candidate before the formal version bump. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
@@ -117,15 +117,15 @@ Rotate and zoom 3D models, look around 360° photos and play panoramic video in 
 
 ![English DSH demo: GLB and 3MF models, the Milky Way and 360-degree video](docs/assets/dsh-release/3d-and-panorama.en.gif)
 
-Version 0.1.9 includes **File workspace** in the same `dsh-filens` installation: session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview. Supports DSH **0.2.2-rc.1**, alongside the previously validated rc.5/alpha.3 versions.
+Version 0.1.10 includes **File workspace** in the same `dsh-filens` installation: session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview. Supports DSH **0.2.2-rc.1**, alongside the previously validated rc.5/alpha.3 versions.
 
 ![English DSH demo: session file groups, related files and navigation to the source question](docs/assets/dsh-release/file-workspace.en.gif)
 
 ### Browser integration: single file or split modules
 
-**Preview 0.3.6:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
+**Preview 0.3.7:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [v0.6.7](https://github.com/orca-zhang/filens/releases/tag/v0.6.7). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
-npm: [filens-preview@0.3.6](https://www.npmjs.com/package/filens-preview/v/0.3.6), **16.22 MiB** download / **31.88 MiB** installed, including both builds. [Public registry checks](docs/preview-npm-registry-validation.json).
+npm: [filens-preview@0.3.7](https://www.npmjs.com/package/filens-preview/v/0.3.7), **16.22 MiB** download / **31.88 MiB** installed, including both builds. [Public registry checks](docs/preview-npm-registry-validation.json).
 
 The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
 
@@ -147,7 +147,7 @@ Deploy the extracted runtime directory and import its `filens.js` over HTTP(S). 
 
 ### iOS / Android SDKs
 
-**SDK 0.1.6 / preview 0.3.6:** iOS ZIP **5.64 MiB**, Android ZIP **5.65 MiB**.
+**SDK 0.1.7 / preview 0.3.7:** iOS ZIP **5.64 MiB**, Android ZIP **5.65 MiB**.
 Source SDKs are available as a local Swift Package and an Android
 Library, sharing the offline frontend and WASM runtime. See the
 [mobile SDK integration guide](sdk/README.md) and

@@ -1,6 +1,6 @@
 {
   "name": "@filens/vue",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Vue 3 wrapper for the @filens/core PPTX preview library.",
   "type": "module",
   "main": "./dist/index.js",

@@ -8,7 +8,7 @@ code does not implement format parsing or conversion. These are preview componen
 they currently do not expose native APIs for reading, OCR, search, or standalone
 conversion results.
 
-SDK version: **0.1.6**. Shared preview runtime: **0.3.6**. The SDK ZIPs in Releases
+SDK version: **0.1.7**. Shared preview runtime: **0.3.7**. The SDK ZIPs in Releases
 already include the offline assets. Extract an archive and integrate its `sdk/ios`
 or `sdk/android` module directly. See below for building and packaging from source.
 [Download and extracted sizes](../docs/mobile-sdk-sizes.json) ·
@@ -145,7 +145,7 @@ file.
 - APIs include `open`, `close`, `destroy`, locale and toolbar options, and rendered
   and error callbacks. The rendered callback may fire multiple times when pages
   change or frontend state updates. Callbacks from stale sessions are ignored.
-- A translucent `FiLens © IceWhale` watermark appears in the lower-right corner of
+- A translucent `FiLens` watermark appears in the lower-right corner of
   the preview by default. It remains visible when the toolbar is hidden.
 - Large files use local URLs, with byte-range reads for media. Memory use after
   parsing still depends on the format and file size. Video codecs, WebGL, fonts,

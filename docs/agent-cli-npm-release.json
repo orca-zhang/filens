@@ -1,6 +1,6 @@
 {
-  "observedAt": "2026-11-05T05:32:51.406Z",
-  "version": "0.5.6",
+  "observedAt": "2026-11-13T14:01:58.905Z",
+  "version": "0.5.7",
   "license": "MIT",
   "scope": "Actual npm pack artifacts; sum launcher and current platform packages. Full includes OCR runtime and models. Excludes Node.js, npm caches, filesystem overhead and optional frontend assets. CLI executable and frontend package are separately measured.",
   "sourceState": "Locally built release artifacts. Registry publication is recorded separately.",
@@ -10,162 +10,162 @@
       "platform": "darwin-arm64",
       "binaryBytes": 2306336,
       "lite": {
-        "installedBytes": 9720333,
-        "downloadBytes": 7578679
+        "installedBytes": 9724331,
+        "downloadBytes": 7579414
       },
       "full": {
-        "installedBytes": 34069168,
-        "downloadBytes": 22473388
+        "installedBytes": 34073154,
+        "downloadBytes": 22474109
       }
     },
     {
       "platform": "linux-x64",
-      "binaryBytes": 1085420,
+      "binaryBytes": 1083408,
       "lite": {
-        "installedBytes": 8499440,
-        "downloadBytes": 7366550
+        "installedBytes": 8501426,
+        "downloadBytes": 7365836
       },
       "full": {
-        "installedBytes": 38863310,
-        "downloadBytes": 24122424
+        "installedBytes": 38865284,
+        "downloadBytes": 24121708
       }
     },
     {
       "platform": "linux-arm64",
-      "binaryBytes": 969376,
+      "binaryBytes": 971096,
       "lite": {
-        "installedBytes": 8383400,
-        "downloadBytes": 7250518
+        "installedBytes": 8389118,
+        "downloadBytes": 7253107
       },
       "full": {
-        "installedBytes": 32952294,
-        "downloadBytes": 21704683
+        "installedBytes": 32958000,
+        "downloadBytes": 21707238
       }
     },
     {
       "platform": "win32-x64",
-      "binaryBytes": 999936,
+      "binaryBytes": 999424,
       "lite": {
-        "installedBytes": 8413943,
-        "downloadBytes": 7280015
+        "installedBytes": 8417429,
+        "downloadBytes": 7280557
       },
       "full": {
-        "installedBytes": 38591042,
-        "downloadBytes": 24302797
+        "installedBytes": 38594516,
+        "downloadBytes": 24303338
       }
     }
   ],
   "preview": {
     "name": "filens-preview",
-    "version": "0.3.4",
-    "file": "filens-preview-0.3.4.tgz",
-    "bytes": 19143998,
-    "unpackedBytes": 37121307,
-    "sha256": "562580c3c286c8fff7858bfcfd0af95d16a342cb8233b9b279684552981cbf36"
+    "version": "0.3.7",
+    "file": "filens-preview-0.3.7.tgz",
+    "bytes": 17010829,
+    "unpackedBytes": 33431658,
+    "sha256": "b33c99b0808db1587972453375f845b702cee945fe3b560eb48d4290f8918fae"
   },
   "packages": [
     {
       "name": "filens-cli-darwin-arm64",
-      "version": "0.5.6",
-      "file": "filens-cli-darwin-arm64-0.5.6.tgz",
-      "bytes": 7559839,
-      "unpackedBytes": 9667953,
-      "sha256": "f843bf4d87e12ba77c50af615191c053dcbdffe6edb7f82e98cec435a1a25e6e"
+      "version": "0.5.7",
+      "file": "filens-cli-darwin-arm64-0.5.7.tgz",
+      "bytes": 7559798,
+      "unpackedBytes": 9669791,
+      "sha256": "88e5c311b30cb91bbb1161bd5e9a4f77659c2c26e0d66dd618e598f93c03c36b"
     },
     {
       "name": "filens-ocr-darwin-arm64",
-      "version": "0.5.6",
-      "file": "filens-ocr-darwin-arm64-0.5.6.tgz",
-      "bytes": 14894689,
-      "unpackedBytes": 24348669,
-      "sha256": "ac996818bffa4eda91a961f503e99e1f099372fdcfc49bf5291709e64c755636"
+      "version": "0.5.7",
+      "file": "filens-ocr-darwin-arm64-0.5.7.tgz",
+      "bytes": 14894669,
+      "unpackedBytes": 24348657,
+      "sha256": "d68db8e9ff88d70b673e3110995f9f940ca507755a4e2b65fed3382770e48921"
     },
     {
       "name": "filens-cli-linux-x64",
-      "version": "0.5.6",
-      "file": "filens-cli-linux-x64-0.5.6.tgz",
-      "bytes": 7347710,
-      "unpackedBytes": 8447060,
-      "sha256": "f60e3e52fe27b6c87b58c41d7b078ba87f2632f1bb9add8cf8e8673f10979ce0"
+      "version": "0.5.7",
+      "file": "filens-cli-linux-x64-0.5.7.tgz",
+      "bytes": 7346220,
+      "unpackedBytes": 8446886,
+      "sha256": "252c9f0c36e39cee2fdc569927dff45038badab6b491395c9fb91b085ba42aea"
     },
     {
       "name": "filens-ocr-linux-x64",
-      "version": "0.5.6",
-      "file": "filens-ocr-linux-x64-0.5.6.tgz",
-      "bytes": 16755854,
-      "unpackedBytes": 30363704,
-      "sha256": "5364fd19c787b531ed2a084cd19dc747ad43c4c03158ddcc4d925610ceba0a91"
+      "version": "0.5.7",
+      "file": "filens-ocr-linux-x64-0.5.7.tgz",
+      "bytes": 16755846,
+      "unpackedBytes": 30363692,
+      "sha256": "1c60164ee3a9e3d915cbebedf0db6a626a015ead87908421c5a313bfe43c906e"
     },
     {
       "name": "filens-cli-linux-arm64",
-      "version": "0.5.6",
-      "file": "filens-cli-linux-arm64-0.5.6.tgz",
-      "bytes": 7231678,
-      "unpackedBytes": 8331020,
-      "sha256": "98258da5f562e645914a92cd41c519c04357161b972427c00e6dd1c3662e128d"
+      "version": "0.5.7",
+      "file": "filens-cli-linux-arm64-0.5.7.tgz",
+      "bytes": 7233491,
+      "unpackedBytes": 8334578,
+      "sha256": "bc6f005ce7218cf0474e3a1dfe465b774a517b1ed9d1d5621e5ea9be569b148e"
     },
     {
       "name": "filens-ocr-linux-arm64",
-      "version": "0.5.6",
-      "file": "filens-ocr-linux-arm64-0.5.6.tgz",
-      "bytes": 14454145,
-      "unpackedBytes": 24568728,
-      "sha256": "a1d056f5768bbce853b1fa0db8efcdcf1d64861e57cc7ec931901e57c30c5ae5"
+      "version": "0.5.7",
+      "file": "filens-ocr-linux-arm64-0.5.7.tgz",
+      "bytes": 14454105,
+      "unpackedBytes": 24568716,
+      "sha256": "1344ab0db0e3c8de80cc60ea522c07f632c3e9bcaec3d1f8be98d4d729438e6b"
     },
     {
       "name": "@orca.zhang/filens-cli-win32-x64",
-      "version": "0.5.6",
-      "file": "orca.zhang-filens-cli-win32-x64-0.5.6.tgz",
-      "bytes": 7261175,
-      "unpackedBytes": 8361563,
-      "sha256": "85b5a7189f242d25211f0d55940e70a8fddcf458cd0998a8d165009636699cab"
+      "version": "0.5.7",
+      "file": "orca.zhang-filens-cli-win32-x64-0.5.7.tgz",
+      "bytes": 7260941,
+      "unpackedBytes": 8362889,
+      "sha256": "d7701bc142ad0837d81f44acac751d7b387bf88a604d9e482b2b5fd337c61d39"
     },
     {
       "name": "@orca.zhang/filens-ocr-win32-x64",
-      "version": "0.5.6",
-      "file": "orca.zhang-filens-ocr-win32-x64-0.5.6.tgz",
-      "bytes": 17022762,
-      "unpackedBytes": 30176933,
-      "sha256": "51d6d1e991ee16fb5fd516c207dca247f4283eab1a958e66398ba3361429b4e3"
+      "version": "0.5.7",
+      "file": "orca.zhang-filens-ocr-win32-x64-0.5.7.tgz",
+      "bytes": 17022755,
+      "unpackedBytes": 30176921,
+      "sha256": "a31eda696a900578a9de01253690201bd7a959b75723f26af763034e380c9c1f"
     },
     {
       "name": "filens-cli",
-      "version": "0.5.6",
-      "file": "filens-cli-0.5.6.tgz",
-      "bytes": 18860,
-      "unpackedBytes": 52546,
-      "sha256": "8dc22dccd90e2a8c797a20f1b816005a9742f3b29439f837742722e4c51de082"
+      "version": "0.5.7",
+      "file": "filens-cli-0.5.7.tgz",
+      "bytes": 19642,
+      "unpackedBytes": 54706,
+      "sha256": "3cf5e4ed9484a816790f7730f0e35e54cbf1e5fd8910e3cef5f3a4e8c275f5b3"
     },
     {
       "name": "filens-cli-lite",
-      "version": "0.5.6",
-      "file": "filens-cli-lite-0.5.6.tgz",
-      "bytes": 18840,
-      "unpackedBytes": 52380,
-      "sha256": "532666649ae91e6382f47ea5d8c7ca217ade8a02b9270c6d91814d9882a93730"
+      "version": "0.5.7",
+      "file": "filens-cli-lite-0.5.7.tgz",
+      "bytes": 19616,
+      "unpackedBytes": 54540,
+      "sha256": "289ebca3dfae3c2de5a583f07852d93ab62493c5e2cc57bc0b9d6e059a6549f2"
     },
     {
       "name": "filens-preview",
-      "version": "0.3.4",
-      "file": "filens-preview-0.3.4.tgz",
-      "bytes": 19143998,
-      "unpackedBytes": 37121307,
-      "sha256": "562580c3c286c8fff7858bfcfd0af95d16a342cb8233b9b279684552981cbf36"
+      "version": "0.3.7",
+      "file": "filens-preview-0.3.7.tgz",
+      "bytes": 17010829,
+      "unpackedBytes": 33431658,
+      "sha256": "b33c99b0808db1587972453375f845b702cee945fe3b560eb48d4290f8918fae"
     }
   ],
   "binaryCompression": [
     {
       "platform": "darwin-arm64",
       "originalBytes": 2306336,
-      "originalSHA256": "80609465b384806635e9f01c1c041d9666aa2da5186268b9e729b151ae65936d",
+      "originalSHA256": "6fad4d0d49c1da972e859d286afd1d8759de0b41be49a95d3d4f3a71b9f53e15",
       "applied": false,
       "bytes": 2306336,
       "reason": "UPX does not support Mach-O arm64"
     },
     {
       "platform": "linux-x64",
-      "originalBytes": 3566784,
-      "originalSHA256": "ea37cee4354a70bf8515dc784268283985ac130dd2fbcff0b457a36bf3c90e17",
+      "originalBytes": 3566848,
+      "originalSHA256": "6f749edbbc099335dc024b22d527e79f13aa91f9b10a3872326d2f5b4047282f",
       "applied": true,
       "tool": "upx 5.1.0",
       "arguments": [
@@ -173,13 +173,13 @@
         "--lzma"
       ],
       "integrityTest": true,
-      "bytes": 1085420,
-      "sha256": "e381bb6ec1257f266818065203a21d4875e6d6a83d823f0ecfe51d94519b9810"
+      "bytes": 1083408,
+      "sha256": "605cdeee4ea0bdaf32eaba34598c15f5eec9b7bdc610bdcd942676639ff14d3d"
     },
     {
       "platform": "linux-arm64",
-      "originalBytes": 3035584,
-      "originalSHA256": "ba6561606f0b5cb607d2a96303c60f6a41442b2e83ea562b9e7f3e6e499fa4dc",
+      "originalBytes": 3035648,
+      "originalSHA256": "149042b49db4dc5b9dc205ff61e98b14c93c7593d3b162dcd0fa920c42644441",
       "applied": true,
       "tool": "upx 5.1.0",
       "arguments": [
@@ -187,13 +187,13 @@
         "--lzma"
       ],
       "integrityTest": true,
-      "bytes": 969376,
-      "sha256": "68d1c5bd656bbe0d579a1b1fa7615e2a2cc1e1c7e86a3b8f36fb62a11f282bc3"
+      "bytes": 971096,
+      "sha256": "ddb42082243cb2a4331cd1211f7ef11b61fbedf52dc1c735cd83c782183e48cf"
     },
     {
       "platform": "win32-x64",
       "originalBytes": 3154944,
-      "originalSHA256": "0118fb73ff822ad2705dc207396d000d05277ef44c91dd8ade48dc1bd509032f",
+      "originalSHA256": "480929a26bc3f57cb10cd85d557e21e8d848429fd15a45fb3ead37f1b767fcc8",
       "applied": true,
       "tool": "upx 5.1.0",
       "arguments": [
@@ -201,8 +201,8 @@
         "--lzma"
       ],
       "integrityTest": true,
-      "bytes": 999936,
-      "sha256": "c49b8a5fb2de21d0e649d38516f5125b09fd4cd2e7eff7f43b3adb8ca8b5fae7"
+      "bytes": 999424,
+      "sha256": "1ce62737a74e3fbd0fc7866e7db595666bfc28fbaab74f841caa452d5bab4675"
     }
   ],
   "sizeLimits": {
@@ -214,18 +214,18 @@
       },
       {
         "platform": "linux-x64",
-        "bytes": 1085420
+        "bytes": 1083408
       },
       {
         "platform": "linux-arm64",
-        "bytes": 969376
+        "bytes": 971096
       },
       {
         "platform": "win32-x64",
-        "bytes": 999936
+        "bytes": 999424
       }
     ],
     "previewInstalledLimitBytes": 41943040,
-    "previewInstalledBytes": 37121307
+    "previewInstalledBytes": 33431658
   }
 }

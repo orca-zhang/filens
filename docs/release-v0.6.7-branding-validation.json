@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-13",
+  "previewVersion": "0.3.7",
+  "dshVersion": "0.1.10",
+  "browser": "chromium",
+  "checks": [
+    {
+      "mode": "split",
+      "watermark": "FiLens",
+      "hiddenToolbar": true,
+      "fullscreen": true,
+      "workspaceFooter": "FiLens",
+      "repository": "orca-zhang/filens"
+    },
+    {
+      "mode": "all-in-one",
+      "watermark": "FiLens",
+      "hiddenToolbar": true,
+      "fullscreen": true,
+      "workspaceFooter": "FiLens",
+      "repository": "orca-zhang/filens"
+    },
+    {
+      "mode": "dsh",
+      "watermark": "FiLens",
+      "hiddenToolbar": true,
+      "fullscreen": true,
+      "workspaceFooter": "FiLens",
+      "repository": "orca-zhang/filens"
+    }
+  ]
+}

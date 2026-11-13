@@ -8,9 +8,11 @@ engines. No conversion server or host Vue installation is needed.
 For iOS and Android application embedding, the [source SDKs](../../sdk/README.zh-CN.md)
 wrap this same runtime in native views, with local file loading and lifecycle callbacks.
 
+Version **0.3.7** displays only `FiLens` in the preview watermark, including fullscreen and hidden-toolbar views.
+
 Version **0.3.0** adds the mobile source SDK integration, encrypted / solid / multipart
 RAR and 7z previews, Office attachment previews, smaller embedded WASM, shared ZIP
-loading and the default `FiLens © IceWhale` watermark. The optional archive engine
+loading and the default `FiLens` watermark. The optional archive engine
 and its worker stay external in both runtime builds.
 
 Version 0.2.0 adds 28 toolbar languages, application-icon previews and the
@@ -136,10 +138,10 @@ const viewer = createPreview('#preview', {
 Style this host for your header's width and scrolling; driver controls retain
 their actual DOM nodes and handlers. Fullscreen brings controls inside the
 fullscreen preview and restores the header on exit. Destroying the viewer
-removes its controls. This option is included in preview 0.3.6. Package and runtime measurements are
+removes its controls. This option is included in preview 0.3.7. Package and runtime measurements are
 recorded separately in the linked build receipts.
 
-Previews display a translucent `FiLens © IceWhale` watermark at the bottom right,
+Previews display a translucent `FiLens` watermark at the bottom right,
 including when the toolbar is hidden and in preview fullscreen mode.
 
 Split chunks can range from a few KB to hundreds of KB after compression. Those
