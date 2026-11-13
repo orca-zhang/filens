@@ -10,7 +10,7 @@
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
-**Latest release: [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · preview **0.3.6** · mobile SDKs **0.1.6** · DSH **0.1.9**.
+**Latest release: [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · preview **0.3.6** · mobile SDKs **0.1.6** · DSH **0.1.9**.
 
 [▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
 
@@ -33,9 +33,9 @@ Verified November 6, 2026: CLI **349** extensions; preview **450** source-file e
 
 **Ask your Agent to install it:**
 
-> Install filens for me. Find skills/filens/SKILL.md at https://github.com/IceWhaleTech/filens and follow it to set up the CLI and skill.
+> Install filens for me. Find skills/filens/SKILL.md at https://github.com/orca-zhang/filens and follow it to set up the CLI and skill.
 
-[Skill guide](skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [latest Release](https://github.com/IceWhaleTech/filens/releases/latest) and extract the entire archive. Full includes offline preview assets, OCR and models. Lite keeps OCR and preview assets optional. Both run without Node.js or npm.
+[Skill guide](skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [latest Release](https://github.com/orca-zhang/filens/releases/latest) and extract the entire archive. Full includes offline preview assets, OCR and models. Lite keeps OCR and preview assets optional. Both run without Node.js or npm.
 
 ```sh
 filens 'read "report.pdf" as json'
@@ -51,7 +51,7 @@ filens capacity --json
 
 ### Offline browser previews
 
-**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.6 Full bundles include preview 0.3.6. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.6-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.6 retains preview 0.3.4; DSH 0.1.9 embeds preview 0.3.6; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.6:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.6 Full bundles include preview 0.3.6. With Lite, download and extract [the all-in-one runtime ZIP](https://github.com/orca-zhang/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.6-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.6 retains preview 0.3.4; DSH 0.1.9 embeds preview 0.3.6; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -123,7 +123,7 @@ Version 0.1.9 includes **File workspace** in the same `dsh-filens` installation:
 
 ### Browser integration: single file or split modules
 
-**Preview 0.3.6:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
+**Preview 0.3.6:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
 npm: [filens-preview@0.3.6](https://www.npmjs.com/package/filens-preview/v/0.3.6), **16.22 MiB** download / **31.88 MiB** installed, including both builds. [Public registry checks](docs/preview-npm-registry-validation.json).
 
@@ -355,10 +355,10 @@ All dates are in 2026. RAW inputs have no embedded JPEG; preview resolution/tone
 | macOS native OCR vs RapidOCR | [Measured comparison](docs/macos-ocr-benchmark.zh-CN.md) |
 | CLI and backend integration | [Agent CLI](docs/agent-cli.md) · [Go + wazero host](examples/go-wazero-converter/README.md) |
 
-Try your files and [report a reproducible issue](https://github.com/IceWhaleTech/filens/issues/new/choose). [Roadmap](docs/roadmap.md) · [MIT license](LICENSE) · [Third-party notices](packaging/agent-third-party.md).
+Try your files and [report a reproducible issue](https://github.com/orca-zhang/filens/issues/new/choose). [Roadmap](docs/roadmap.md) · [MIT license](LICENSE) · [Third-party notices](packaging/agent-third-party.md).
 
 <sub>Preview captures come from filens. Photos and demo recordings retain their original licenses; see <a href="docs/assets/readme/SOURCES.md">visual sources and credits</a>. iWork research: <a href="https://github.com/dunhamsteve/iwork">dunhamsteve/iwork</a>; CAD lineage: <a href="https://github.com/orcastor/cad2x-converter">orcastor/cad2x-converter</a>.</sub>
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=IceWhaleTech/filens&type=Date)](https://star-history.com/#IceWhaleTech/filens&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=orca-zhang/filens&type=Date)](https://star-history.com/#orca-zhang/filens&Date)

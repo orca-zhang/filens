@@ -7,10 +7,10 @@
   "author": "FiLens contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "url": "git+https://github.com/orca-zhang/filens.git",
     "directory": "integrations/deepseek-harness"
   },
-  "homepage": "https://github.com/IceWhaleTech/filens/tree/main/integrations/deepseek-harness",
+  "homepage": "https://github.com/orca-zhang/filens/tree/main/integrations/deepseek-harness",
   "keywords": [
     "dsh-plugin",
     "deepseek-harness",

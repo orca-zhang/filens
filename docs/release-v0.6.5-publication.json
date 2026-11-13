@@ -1,7 +1,7 @@
 {
   "observedAt": "2026-11-05T11:53:57.207Z",
   "tag": "v0.6.5",
-  "url": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.5",
+  "url": "https://github.com/orca-zhang/filens/releases/tag/v0.6.5",
   "releaseId": 435079725,
   "status": "published-and-verified",
   "sourceCommit": "d82208ed184ba6b55673e1a1a362d9ca5fa382a3",
@@ -42,7 +42,7 @@
       "sha256": "58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
       "serverDigest": "sha256:58c57ac8510f8aff095279f4de786ca8bd14db66aae325fda653566634f6a998",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/dsh-filens-0.1.6.tgz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/dsh-filens-0.1.6.tgz",
       "publicHeadVerified": true
     },
     {
@@ -52,7 +52,7 @@
       "sha256": "b3412d5c4c396bc6c3a262ab0989a0b2542d8a8621f8652fd7ac42b090566091",
       "serverDigest": "sha256:b3412d5c4c396bc6c3a262ab0989a0b2542d8a8621f8652fd7ac42b090566091",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-full.tar.gz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-full.tar.gz",
       "publicHeadVerified": true
     },
     {
@@ -62,7 +62,7 @@
       "sha256": "aee9fda2ca388838d491e2662255f0f967479a809d504badfb2c0a7a85809aa5",
       "serverDigest": "sha256:aee9fda2ca388838d491e2662255f0f967479a809d504badfb2c0a7a85809aa5",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-lite.tar.gz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-lite.tar.gz",
       "publicHeadVerified": true,
       "downloadVerified": true
     },
@@ -73,7 +73,7 @@
       "sha256": "9f8c80961cd809b1afdc99dc0966b10fa426fc7608d2e733922731fb90aea532",
       "serverDigest": "sha256:9f8c80961cd809b1afdc99dc0966b10fa426fc7608d2e733922731fb90aea532",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-full.tar.gz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-full.tar.gz",
       "publicHeadVerified": true
     },
     {
@@ -83,7 +83,7 @@
       "sha256": "e9c82cee748654acbd314b07be174a813e62ab329c98dedf453538c3d77c8d45",
       "serverDigest": "sha256:e9c82cee748654acbd314b07be174a813e62ab329c98dedf453538c3d77c8d45",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-lite.tar.gz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-lite.tar.gz",
       "publicHeadVerified": true,
       "downloadVerified": true
     },
@@ -94,7 +94,7 @@
       "sha256": "0d574a3024cc5d58febbcc898ba77da4d2539549f20fff5bf088faa46695e10c",
       "serverDigest": "sha256:0d574a3024cc5d58febbcc898ba77da4d2539549f20fff5bf088faa46695e10c",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-full.tar.gz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-full.tar.gz",
       "publicHeadVerified": true
     },
     {
@@ -104,7 +104,7 @@
       "sha256": "d2d0faf6ca04582adac49bc3218013c718105b003a54e2f67bd9bd84477d18f1",
       "serverDigest": "sha256:d2d0faf6ca04582adac49bc3218013c718105b003a54e2f67bd9bd84477d18f1",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-lite.tar.gz",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-lite.tar.gz",
       "publicHeadVerified": true,
       "downloadVerified": true
     },
@@ -115,7 +115,7 @@
       "sha256": "1d22e00e652823fa9a835c024f282aefa68227b90e2f2e09ff23372d466c87ee",
       "serverDigest": "sha256:1d22e00e652823fa9a835c024f282aefa68227b90e2f2e09ff23372d466c87ee",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-full.zip",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-full.zip",
       "publicHeadVerified": true
     },
     {
@@ -125,7 +125,7 @@
       "sha256": "f2a773fbef3ad90220b072b70ce796b010366b96fc9093ae2ac9e4e876f1b9da",
       "serverDigest": "sha256:f2a773fbef3ad90220b072b70ce796b010366b96fc9093ae2ac9e4e876f1b9da",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-lite.zip",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-lite.zip",
       "publicHeadVerified": true,
       "downloadVerified": true
     },
@@ -136,7 +136,7 @@
       "sha256": "5f237e1ec40d392bb5142f5c97636ad929009fe06a411e3ece8bc4d3c4093760",
       "serverDigest": "sha256:5f237e1ec40d392bb5142f5c97636ad929009fe06a411e3ece8bc4d3c4093760",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-android-sdk-0.1.5.zip",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-android-sdk-0.1.5.zip",
       "publicHeadVerified": true
     },
     {
@@ -146,7 +146,7 @@
       "sha256": "55d2e2439ddc2c327acd8309405c28e6fbd4bf4115b5b644c230e6f58ee3418b",
       "serverDigest": "sha256:55d2e2439ddc2c327acd8309405c28e6fbd4bf4115b5b644c230e6f58ee3418b",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-ios-sdk-0.1.5.zip",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-ios-sdk-0.1.5.zip",
       "publicHeadVerified": true
     },
     {
@@ -156,7 +156,7 @@
       "sha256": "4c34cfe288351654afbbfecf3f79442a243ae07c554a269f4b8f6f5bdb54a0b3",
       "serverDigest": "sha256:4c34cfe288351654afbbfecf3f79442a243ae07c554a269f4b8f6f5bdb54a0b3",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip",
       "publicHeadVerified": true
     },
     {
@@ -166,7 +166,7 @@
       "sha256": "76f965bc1f31b8b06bdffc5f02a37e6e95417d655f1394b456e2854e0801edbd",
       "serverDigest": "sha256:76f965bc1f31b8b06bdffc5f02a37e6e95417d655f1394b456e2854e0801edbd",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-split.zip",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-preview-0.3.5-split.zip",
       "publicHeadVerified": true
     },
     {
@@ -176,7 +176,7 @@
       "sha256": "b960bdced772c8ee2436000eba65e84fac5c78daaf32202d25bc84a170680982",
       "serverDigest": "sha256:b960bdced772c8ee2436000eba65e84fac5c78daaf32202d25bc84a170680982",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-release-v0.6.5.json",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-release-v0.6.5.json",
       "publicHeadVerified": true,
       "downloadVerified": true
     },
@@ -187,7 +187,7 @@
       "sha256": "dabdbec30c454b6f83af046f9d1e7f6f9c2617b3f5665f9f70b46d6db39a8884",
       "serverDigest": "sha256:dabdbec30c454b6f83af046f9d1e7f6f9c2617b3f5665f9f70b46d6db39a8884",
       "serverDigestVerified": true,
-      "url": "https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/SHA256SUMS",
+      "url": "https://github.com/orca-zhang/filens/releases/download/v0.6.5/SHA256SUMS",
       "publicHeadVerified": true,
       "downloadVerified": true
     }

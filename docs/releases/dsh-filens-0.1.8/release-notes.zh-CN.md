@@ -1,6 +1,6 @@
 # FiLens for DSH 0.1.8：把会话里的文件放到一起
 
-> 随 [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 发布；演示保留本地候选构建的原始录制记录。
+> 随 [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6) 发布；演示保留本地候选构建的原始录制记录。
 
 以前在会话中找到一份文件，需要翻回消息，再从侧栏打开。现在可以进入「文件工作台」，按会话浏览文件、打开预览，并回到文件所在的消息或对应提问。
 

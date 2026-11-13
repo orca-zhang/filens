@@ -1,6 +1,6 @@
 # DSH 插件 0.1.8 · 发布材料
 
-版本：`dsh-filens@0.1.8`、`dsh-filens-workspace@0.1.1`，随 [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 发布。录制使用正式升版前的源码构建，其客户端、工作台和预览内核与本机验证的 `0.1.7-workspace.8` 候选包一致；当时源码元数据为 0.1.6、预览元数据为 0.3.5，原始证据保留。正式包使用预览 0.3.6。0.1.8 / 工作台 0.1.1 另加入缺失文件过滤：会话扫描和刷新会通过 DSH 检查文件及附件，确认不存在的条目不进入工作台；权限和连接错误仍保留。演示录制版本保持不变，这项补丁通过新增桌面回归验证。
+版本：`dsh-filens@0.1.8`、`dsh-filens-workspace@0.1.1`，随 [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6) 发布。录制使用正式升版前的源码构建，其客户端、工作台和预览内核与本机验证的 `0.1.7-workspace.8` 候选包一致；当时源码元数据为 0.1.6、预览元数据为 0.3.5，原始证据保留。正式包使用预览 0.3.6。0.1.8 / 工作台 0.1.1 另加入缺失文件过滤：会话扫描和刷新会通过 DSH 检查文件及附件，确认不存在的条目不进入工作台；权限和连接错误仍保留。演示录制版本保持不变，这项补丁通过新增桌面回归验证。
 
 [打开素材预览页](review.html) · [中文发布说明](release-notes.zh-CN.md) · [English release notes](release-notes.en.md) · [中文短文案](announcement.zh-CN.md) · [English announcement](announcement.en.md)
 

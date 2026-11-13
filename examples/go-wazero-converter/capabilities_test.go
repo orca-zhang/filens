@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/IceWhaleTech/filens/wasm/converter-core/manifest"
+	"github.com/orca-zhang/filens/wasm/converter-core/manifest"
 )
 
 func TestBackendChainOptionsCapabilitiesDescribeBackendsInOrder(t *testing.T) {

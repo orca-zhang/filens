@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/IceWhaleTech/filens/converter"
-	"github.com/IceWhaleTech/filens/converter/rapidocr"
+	"github.com/orca-zhang/filens/converter"
+	"github.com/orca-zhang/filens/converter/rapidocr"
 )
 
 type Failure struct {

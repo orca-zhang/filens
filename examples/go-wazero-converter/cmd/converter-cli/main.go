@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	converter "github.com/IceWhaleTech/filens/examples/go-wazero-converter"
+	converter "github.com/orca-zhang/filens/examples/go-wazero-converter"
 )
 
 func main() {

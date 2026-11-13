@@ -52,7 +52,7 @@ Copy `skills/filens/` to your agent's skills directory to enable discovery.
 Version 0.4.0 adds `filens preview FILE` using the same browser-local engines.
 The first preview installs the separate `filens-preview` package; run
 `filens setup-preview` to prepare it in advance. Subsequent previews work offline.
-Frontend assets are measured separately from the CLI installation. See the [preview guide](https://github.com/IceWhaleTech/filens/blob/main/packages/preview/README.md#cli-preview)
+Frontend assets are measured separately from the CLI installation. See the [preview guide](https://github.com/orca-zhang/filens/blob/main/packages/preview/README.md#cli-preview)
 for building the single-file/split runtime and packaging it with `--with-preview`.
 
 Version 0.5.0 generates a self-contained offline HTML by default and exits
@@ -113,7 +113,7 @@ administrator privileges or raw device access is needed. Search keeps its catalo
 memory, with no persistent index/body cache or source hashing. Common text decoding and
 ranking reuse the frontend Rust core directly; document extraction uses WASM.
 Embedding-based semantic retrieval is not implemented. See the
-[search guide](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli-search.zh-CN.md)
+[search guide](https://github.com/orca-zhang/filens/blob/main/docs/agent-cli-search.zh-CN.md)
 for scope, limits, provenance and partial results.
 
 Builds advertising `capacity.search.archives` automatically traverse ZIP,
@@ -147,7 +147,7 @@ groups and return exit 3. Paths are relative to `source.path`. Scans report grou
 for review; perceptual matches can miss altered images or match different images.
 Similarity fingerprints are recomputed each time. The document search cache and
 `--no-cache` flag do not apply. See the
-[similarity guide](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli-similarity.md)
+[similarity guide](https://github.com/orca-zhang/filens/blob/main/docs/agent-cli-similarity.md)
 for source builds, limits, grouping semantics and the measured resource-size delta.
 
 ## Workspace storage
@@ -209,7 +209,7 @@ with `FILENS_CACHE_DIR`. No automatic network access occurs while reading.
 The full and lite packages provide the same `filens` executable name; install
 one profile at a time. Platform packages are implementation components.
 
-[Protocol, limitations and source build](https://github.com/IceWhaleTech/filens/blob/main/docs/agent-cli.md)
+[Protocol, limitations and source build](https://github.com/orca-zhang/filens/blob/main/docs/agent-cli.md)
 
 Locally built release tarballs can also be installed with
 `npm install -g /path/to/filens-cli-0.5.6.tgz /path/to/filens-cli-PLATFORM-0.5.6.tgz /path/to/filens-ocr-PLATFORM-0.5.6.tgz`.

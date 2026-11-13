@@ -92,7 +92,7 @@ reader without duplicating the ZIP encryption library. The totals in the table
 include the optional archive assets and exclude notices.
 The npm package contains both directories, including notices, types and
 documentation. Packed and installed bytes are recorded for each release.
-[Package measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-package-sizes.json).
+[Package measurements](https://github.com/orca-zhang/filens/blob/main/docs/preview-package-sizes.json).
 
 Both directories contain an `index.html` with a local file picker. Serve either
 directory over HTTP(S). To integrate into another page:
@@ -118,7 +118,7 @@ directory over HTTP(S). To integrate into another page:
 `getState()`, `setScale()`, `fullscreen()` and `destroy()`. Pass `toolbar: false`
 to use your application’s toolbar, then call these controls on the returned viewer. Options include `src`, `name`, `extension`, `toolbar`, `converter`, `panoramaProcessor`,
 `resourceResolver`, `fontResolver`, `onRendered` and `onError`. The default converter
-uses the bundled frontend WASM engines. Use [`@filens/vue`](https://github.com/IceWhaleTech/filens/tree/main/packages/vue) for
+uses the bundled frontend WASM engines. Use [`@filens/vue`](https://github.com/orca-zhang/filens/tree/main/packages/vue) for
 direct Vue component integration.
 
 The current source API also accepts `controlsTarget` to place the existing
@@ -149,7 +149,7 @@ The RAR/7z engine and its worker are always separate files, never base64-embedde
 deploy both sidecars alongside the main JS to enable RAR, 7z and multi-volume ZIP.
 They can be omitted when those formats are not required.
 A separate notices file accompanies
-both builds and should be distributed with them. [Exact measurements](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-build-sizes.json).
+both builds and should be distributed with them. [Exact measurements](https://github.com/orca-zhang/filens/blob/main/docs/preview-build-sizes.json).
 
 Single-file embedding still requires browser support for WebAssembly and workers.
 Pages with a Content Security Policy must permit the generated inline styles,
@@ -161,7 +161,7 @@ self-contained HTML embeds the module instead and supports `file:` URLs.
 RAR, 7z and multi-volume ZIP require the separate archive assets over HTTP(S);
 CLI HTML shows a `--mode serve` fallback for them instead of embedding the engine.
 The supported formats and fidelity
-limits are shared with the [demo](https://github.com/IceWhaleTech/filens/blob/main/docs/support-matrix.md).
+limits are shared with the [demo](https://github.com/orca-zhang/filens/blob/main/docs/support-matrix.md).
 
 ## Languages and application icons (0.2.0)
 

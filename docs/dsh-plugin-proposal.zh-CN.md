@@ -1,6 +1,6 @@
 # filens × DeepSeek Harness 插件提案草稿
 
-用途：用于官方 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 的项目介绍与接入咨询。插件包见 [npm dsh-filens](https://www.npmjs.com/package/dsh-filens)，发布文件见 [v0.6.2](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.2)。此社区帖子草稿尚未发送。
+用途：用于官方 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 的项目介绍与接入咨询。插件包见 [npm dsh-filens](https://www.npmjs.com/package/dsh-filens)，发布文件见 [v0.6.2](https://github.com/orca-zhang/filens/releases/tag/v0.6.2)。此社区帖子草稿尚未发送。
 
 ## 建议标题
 
@@ -8,7 +8,7 @@ filens integration: local document tools and multi-format previews for DSH
 
 ## 可直接使用的中文正文
 
-大家好，我们维护开源项目 [filens](https://github.com/IceWhaleTech/filens)，已完成 DeepSeek Harness 的本地插件组合包 `dsh-filens`，包含可分别启用的两部分：
+大家好，我们维护开源项目 [filens](https://github.com/orca-zhang/filens)，已完成 DeepSeek Harness 的本地插件组合包 `dsh-filens`，包含可分别启用的两部分：
 
 1. **Agent 文档工具**：复用现有 CLI，提供文档读取、OCR、跨格式搜索和转换，返回原文、来源、完整性、截断状态及可用的证据定位。
 2. **文件预览**：复用现有 `filens-preview`，通过第三方渲染器接口接入 DSH 右侧文件预览面板，扩展 Office、iWork、CAD/3D、RAW 等格式的浏览器本地预览；菜单保留适用的 DSH 内置实现。

@@ -15,7 +15,7 @@ let revealObserver: IntersectionObserver | undefined;
 const revealAnimations = new Set<Animation>();
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 const demoAsset = (file: string) => `${asset(`home/${file}`)}?v=${demoMedia.version}`;
-const repo = 'https://github.com/IceWhaleTech/filens';
+const repo = 'https://github.com/orca-zhang/filens';
 const skillInstallPrompt = computed(() => t(
   `帮我安装 filens，去 ${repo} 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。`,
   `Install filens for me. Find skills/filens/SKILL.md at ${repo} and follow it to set up the CLI and skill.`

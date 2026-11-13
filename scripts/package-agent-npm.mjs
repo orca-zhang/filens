@@ -24,7 +24,7 @@ const packages = [];
 const binaryCompression = [];
 const rustLicenses = path.join(root,'dist/agent-rust-licenses');
 await writeRustLicenses(rustLicenses);
-const common = { version, license:'MIT', repository:{ type:'git', url:'git+https://github.com/IceWhaleTech/filens.git' }, homepage:'https://github.com/IceWhaleTech/filens#readme' };
+const common = { version, license:'MIT', repository:{ type:'git', url:'git+https://github.com/orca-zhang/filens.git' }, homepage:'https://github.com/orca-zhang/filens#readme' };
 const withPreview = args.includes('--with-preview');
 const previewPackage = args.includes('--preview-package');
 if (withPreview || previewPackage) {

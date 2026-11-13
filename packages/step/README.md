@@ -52,7 +52,7 @@ The bundled WASM is **947,729 bytes** raw, **334,212 bytes** with gzip level 9,
 or **261,101 bytes (254.98 KiB)** with Brotli 11. Those are WASM-only sizes, not
 the npm tarball or complete download. JavaScript, TypeScript declarations,
 provenance and dependency notices are also included. See
-[the size and geometry evidence](https://github.com/IceWhaleTech/filens/blob/main/docs/rust-step-browser.zh-CN.md).
+[the size and geometry evidence](https://github.com/orca-zhang/filens/blob/main/docs/rust-step-browser.zh-CN.md).
 
 Mesh transport uses a compact binary Float32 payload, preserving the previous
 reader's exact vertex and normal values. On the tested `as1-oc-214.stp` assembly,

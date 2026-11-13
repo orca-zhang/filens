@@ -179,7 +179,7 @@ See the detailed [roadmap](roadmap.md) for implementation-level work.
 Real-world files are the most valuable compatibility tests. Please try documents, presentations, iWork files, CAD drawings, panoramas, RAW photos, archives, and 3D models from your own workflows, then record anything that is missing, misplaced, slow, or impossible to open.
 
 - Read the [plain-language introduction and testing guide](filens-introduction.zh-CN.md).
-- Report reproducible problems through [GitHub Issues](https://github.com/IceWhaleTech/filens/issues/new/choose).
+- Report reproducible problems through [GitHub Issues](https://github.com/orca-zhang/filens/issues/new/choose).
 - Remove sensitive content before attaching files; if a sample cannot be shared, provide its format, producing application/version, screenshots, warnings, and the smallest reproducible description.
 
 ## Development

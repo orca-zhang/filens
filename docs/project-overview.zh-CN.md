@@ -181,7 +181,7 @@ filens 不承诺完整重建 Office 排版、图表、动画、嵌入对象或�
 真实工作文件是最有价值的兼容性测试。欢迎使用日常遇到的文档、演示文稿、iWork 文件、CAD 图纸、全景照片、RAW、压缩包和 3D 模型进行测试，并记录任何缺失、错位、卡顿或无法打开的问题。
 
 - 普通同事可以先阅读[通俗介绍与测试指南](filens-introduction.zh-CN.md)。
-- 可复现问题请提交到 [GitHub Issues](https://github.com/IceWhaleTech/filens/issues/new/choose)。
+- 可复现问题请提交到 [GitHub Issues](https://github.com/orca-zhang/filens/issues/new/choose)。
 - 上传前请移除敏感内容；如果文件不能分享，请记录格式、生成软件及版本、系统与浏览器、截图、警告信息和最小复现步骤。
 
 ## 本地开发

@@ -1,6 +1,6 @@
 # filens 接入 DeepSeek Harness：可行性与发布准备
 
-调研与实现日期：2026-11-03。依据官方文档、公开源码、npm 元数据与本地集成实测。实现见 [integrations/deepseek-harness](../integrations/deepseek-harness/README.zh-CN.md)，npm 包为 [dsh-filens@0.1.0](https://www.npmjs.com/package/dsh-filens)，对应 [v0.6.2 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.2)。
+调研与实现日期：2026-11-03。依据官方文档、公开源码、npm 元数据与本地集成实测。实现见 [integrations/deepseek-harness](../integrations/deepseek-harness/README.zh-CN.md)，npm 包为 [dsh-filens@0.1.0](https://www.npmjs.com/package/dsh-filens)，对应 [v0.6.2 Release](https://github.com/orca-zhang/filens/releases/tag/v0.6.2)。
 
 ## 结论与贡献渠道
 

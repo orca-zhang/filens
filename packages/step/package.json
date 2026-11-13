@@ -4,7 +4,7 @@
   "description": "Browser-local STEP tessellation with a compact Rust WebAssembly core.",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/IceWhaleTech/filens.git", "directory": "packages/step" },
+  "repository": { "type": "git", "url": "git+https://github.com/orca-zhang/filens.git", "directory": "packages/step" },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

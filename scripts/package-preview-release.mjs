@@ -43,7 +43,7 @@ for (const mode of ['split', 'all-in-one']) {
   await rm(target, { recursive: true, force: true });
   await cp(path.join(root, 'packages/preview/dist', mode), target, { recursive: true });
   await cp(path.join(root, 'LICENSE'), path.join(target, 'LICENSE'));
-  await writeFile(path.join(target, 'README.md'), `# FiLens Preview ${preview.version}: ${mode}\n\nDeploy this entire directory to an HTTP(S) static server and open index.html, or import createPreview from filens.js. Files are parsed and previewed locally. Default watermark: FiLens © IceWhale.\n\nRAR, 7z and multipart ZIP load archive/7zz.wasm and the archive worker under assets/ on demand; retain both sidecars to enable those formats. Keep LICENSE and THIRD-PARTY-NOTICES.txt when redistributing.\n\nIntegration: https://github.com/IceWhaleTech/filens/blob/${tag}/packages/preview/README.md\n`);
+  await writeFile(path.join(target, 'README.md'), `# FiLens Preview ${preview.version}: ${mode}\n\nDeploy this entire directory to an HTTP(S) static server and open index.html, or import createPreview from filens.js. Files are parsed and previewed locally. Default watermark: FiLens © IceWhale.\n\nRAR, 7z and multipart ZIP load archive/7zz.wasm and the archive worker under assets/ on demand; retain both sidecars to enable those formats. Keep LICENSE and THIRD-PARTY-NOTICES.txt when redistributing.\n\nIntegration: https://github.com/orca-zhang/filens/blob/${tag}/packages/preview/README.md\n`);
   await assertReleaseDirectory(target);
   // Stable ZIP timestamps make a second manifest pass keep the same payload hashes.
   await normalizeTimes(target, new Date(`${build.date}T00:00:00Z`));

@@ -10,8 +10,8 @@ Exact corresponding upstream source:
 https://github.com/ip7z/7zip/tree/e5431fa6f5505e385c6f9367260717e9c47dc2ee
 https://github.com/ip7z/7zip/archive/e5431fa6f5505e385c6f9367260717e9c47dc2ee.tar.gz
 Filens modifications, pinned hashes and complete build instructions:
-https://github.com/IceWhaleTech/filens/tree/main/packages/archive/vendor/7zip
-https://github.com/IceWhaleTech/filens/blob/main/scripts/build-archive-wasm.mjs
+https://github.com/orca-zhang/filens/tree/main/packages/archive/vendor/7zip
+https://github.com/orca-zhang/filens/blob/main/scripts/build-archive-wasm.mjs
 Emscripten platform guards are adapted from use-strict/7z-wasm:
 https://github.com/use-strict/7z-wasm/tree/521d2cf93f5964f4e77b01049e19f1b29305c454
 

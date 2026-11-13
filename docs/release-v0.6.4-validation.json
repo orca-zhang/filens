@@ -22,7 +22,7 @@
         "previewVersion": "0.3.4",
         "previewSHA256": "727a8fbe06a40b0c3da759f48b5db4f66343e2415e31e16423bd62894285786e",
         "previewSource": "shared frontend source with compact address-bar controls and bottom playback controls, embedded in DSH; standalone 0.3.4 archives retain their original payloads",
-        "validation": "https://github.com/IceWhaleTech/filens/blob/449143a0c5c02d9a00b3eb66d26221008b930786/docs/dsh-plugin-validation.json"
+        "validation": "https://github.com/orca-zhang/filens/blob/449143a0c5c02d9a00b3eb66d26221008b930786/docs/dsh-plugin-validation.json"
       }
     ]
   },
@@ -378,7 +378,7 @@
     "step": "step-npm-publication.json",
     "github": "release-v0.6.4-publication.json",
     "githubStatus": "published-and-verified",
-    "githubUrl": "https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4",
+    "githubUrl": "https://github.com/orca-zhang/filens/releases/tag/v0.6.4",
     "githubAssets": 15,
     "duplicateAttachmentsRemoved": 30,
     "githubVerifiedAt": "2026-11-05T07:26:47.164Z",

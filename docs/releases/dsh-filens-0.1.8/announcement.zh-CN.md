@@ -8,4 +8,4 @@ Office 有真实缩略图，没有缩略图的文件也有清晰的类型封面�
 
 三段中文实机演示：[文件工作台](../../assets/dsh-release/file-workspace.zh-CN.gif) · [Office 预览](../../assets/dsh-release/office-preview.zh-CN.gif) · [3D／全景](../../assets/dsh-release/3d-and-panorama.zh-CN.gif)
 
-[项目与安装说明](https://github.com/IceWhaleTech/filens/tree/main/integrations/deepseek-harness)
+[项目与安装说明](https://github.com/orca-zhang/filens/tree/main/integrations/deepseek-harness)

@@ -14,10 +14,10 @@ const copied = ref('');
 const copyError = ref(false);
 const id = useId();
 let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
-const repo = 'https://github.com/IceWhaleTech/filens';
+const repo = 'https://github.com/orca-zhang/filens';
 const skillUrl = `${import.meta.env.BASE_URL}skills/filens/SKILL.md`;
 const installCommand = computed(() => [
-  'npx --yes skills add IceWhaleTech/filens --skill filens',
+  'npx --yes skills add orca-zhang/filens --skill filens',
   target.value === 'auto' ? '' : `--agent ${target.value}`,
   scope.value === 'global' ? '--global' : '',
   '--yes'

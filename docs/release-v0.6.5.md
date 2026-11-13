@@ -1,26 +1,26 @@
 | Download | Link | Download size |
 | --- | --- | ---: |
-| CLI Lite: darwin-arm64 | [filens-0.5.6-macos-arm64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-lite.tar.gz) | 7.17 MiB (7,518,519 bytes) |
-| CLI Full (OCR): darwin-arm64 | [filens-0.5.6-macos-arm64-full.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-full.tar.gz) | 31.89 MiB |
-| CLI Lite: linux-x64 | [filens-0.5.6-linux-x64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-lite.tar.gz) | 7.01 MiB (7,353,756 bytes) |
-| CLI Full (OCR): linux-x64 | [filens-0.5.6-linux-x64-full.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-full.tar.gz) | 33.56 MiB |
-| CLI Lite: linux-arm64 | [filens-0.5.6-linux-arm64-lite.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-lite.tar.gz) | 6.90 MiB (7,237,880 bytes) |
-| CLI Full (OCR): linux-arm64 | [filens-0.5.6-linux-arm64-full.tar.gz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-full.tar.gz) | 31.24 MiB |
-| CLI Lite: win32-x64 | [filens-0.5.6-windows-x64-lite.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-lite.zip) | 6.96 MiB (7,296,027 bytes) |
-| CLI Full (OCR): win32-x64 | [filens-0.5.6-windows-x64-full.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-full.zip) | 33.78 MiB |
-| Browser runtime: split | [filens-preview-0.3.5-split.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-split.zip) | 5.61 MiB |
-| Browser runtime: all-in-one | [filens-preview-0.3.5-all-in-one.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip) | 10.59 MiB |
-| iOS source SDK | [filens-ios-sdk-0.1.5.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-ios-sdk-0.1.5.zip) | 5.63 MiB |
-| Android source SDK | [filens-android-sdk-0.1.5.zip](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-android-sdk-0.1.5.zip) | 5.64 MiB |
-| DSH plugin 0.1.6 (unchanged) | [dsh-filens-0.1.6.tgz](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/dsh-filens-0.1.6.tgz) | 6.53 MiB |
-| Checksums | [SHA256SUMS](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/SHA256SUMS) | SHA-256 |
-| Build manifest | [filens-release-v0.6.5.json](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-release-v0.6.5.json) | Versions, sizes and validation |
+| CLI Lite: darwin-arm64 | [filens-0.5.6-macos-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-lite.tar.gz) | 7.17 MiB (7,518,519 bytes) |
+| CLI Full (OCR): darwin-arm64 | [filens-0.5.6-macos-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-macos-arm64-full.tar.gz) | 31.89 MiB |
+| CLI Lite: linux-x64 | [filens-0.5.6-linux-x64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-lite.tar.gz) | 7.01 MiB (7,353,756 bytes) |
+| CLI Full (OCR): linux-x64 | [filens-0.5.6-linux-x64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-x64-full.tar.gz) | 33.56 MiB |
+| CLI Lite: linux-arm64 | [filens-0.5.6-linux-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-lite.tar.gz) | 6.90 MiB (7,237,880 bytes) |
+| CLI Full (OCR): linux-arm64 | [filens-0.5.6-linux-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-linux-arm64-full.tar.gz) | 31.24 MiB |
+| CLI Lite: win32-x64 | [filens-0.5.6-windows-x64-lite.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-lite.zip) | 6.96 MiB (7,296,027 bytes) |
+| CLI Full (OCR): win32-x64 | [filens-0.5.6-windows-x64-full.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-0.5.6-windows-x64-full.zip) | 33.78 MiB |
+| Browser runtime: split | [filens-preview-0.3.5-split.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-preview-0.3.5-split.zip) | 5.61 MiB |
+| Browser runtime: all-in-one | [filens-preview-0.3.5-all-in-one.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-preview-0.3.5-all-in-one.zip) | 10.59 MiB |
+| iOS source SDK | [filens-ios-sdk-0.1.5.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-ios-sdk-0.1.5.zip) | 5.63 MiB |
+| Android source SDK | [filens-android-sdk-0.1.5.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-android-sdk-0.1.5.zip) | 5.64 MiB |
+| DSH plugin 0.1.6 (unchanged) | [dsh-filens-0.1.6.tgz](https://github.com/orca-zhang/filens/releases/download/v0.6.5/dsh-filens-0.1.6.tgz) | 6.53 MiB |
+| Checksums | [SHA256SUMS](https://github.com/orca-zhang/filens/releases/download/v0.6.5/SHA256SUMS) | SHA-256 |
+| Build manifest | [filens-release-v0.6.5.json](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-release-v0.6.5.json) | Versions, sizes and validation |
 
 **13 package downloads + manifest + checksums (15 assets).** Full includes OCR runtime/models and preview 0.3.5. Lite retains reading, search and conversion with OCR/preview assets optional. All four Lite archives are **below 10,000,000 bytes (10 MB)**; native packaging and release aggregation reject archives at or above this limit. Mobile ZIPs are source SDKs. MiB = 1,048,576 bytes.
 
 ## Changelog
 
-Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.4). Components: **browser preview 0.3.5**, **iOS/Android source SDKs 0.1.5**, and **CLI 0.5.6** with smaller Lite bundles and refreshed Full preview assets. The CLI/OCR binaries and resources are retained byte-for-byte from their verified v0.6.4 bundles. **DSH 0.1.6 is unchanged and still embeds preview 0.3.4.** The initial GitHub publication kept npm versions unchanged; see the npm follow-up below.
+Compared with [v0.6.4](https://github.com/orca-zhang/filens/releases/tag/v0.6.4). Components: **browser preview 0.3.5**, **iOS/Android source SDKs 0.1.5**, and **CLI 0.5.6** with smaller Lite bundles and refreshed Full preview assets. The CLI/OCR binaries and resources are retained byte-for-byte from their verified v0.6.4 bundles. **DSH 0.1.6 is unchanged and still embeds preview 0.3.4.** The initial GitHub publication kept npm versions unchanged; see the npm follow-up below.
 
 ### Direct DWG previews and smaller downloads
 
@@ -31,7 +31,7 @@ Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 - Enforce bounded input, decompression, object/vertex counts, nesting and TypeScript block expansion. Buffer JSON transport and validate the model envelope without building a second full JSON tree in WASM.
 - Keep the all-in-one main JS at **3.53 MB gzip / 3.40 MB Brotli**, with supplied precompressed files below the 4,000,000-byte delivery budget. The optional archive WASM/worker remain external. Complete downloads are **5.61 MiB split (11.8% smaller)** and **10.59 MiB all-in-one (11.0% smaller)**.
 
-[DWG corpus, timings and compatibility limits](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/dwg-preview-optimization.md) · [Final runtime bytes](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/preview-build-sizes.json) · [Exact downloadable assets](https://github.com/IceWhaleTech/filens/releases/download/v0.6.5/filens-release-v0.6.5.json)
+[DWG corpus, timings and compatibility limits](https://github.com/orca-zhang/filens/blob/v0.6.5/docs/dwg-preview-optimization.md) · [Final runtime bytes](https://github.com/orca-zhang/filens/blob/v0.6.5/docs/preview-build-sizes.json) · [Exact downloadable assets](https://github.com/orca-zhang/filens/releases/download/v0.6.5/filens-release-v0.6.5.json)
 
 ### Presentation previews and demo fixes
 
@@ -50,7 +50,7 @@ Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 - Verify macOS Full/Lite with an empty PATH, automatic local conversion resources, text reading, search, conversion and Full OCR. Confirm Lite has no bundled viewer and exports correctly with separately supplied preview assets. Verify three exported TXT/DWG HTML previews after the CLI exits, with the browser offline. Linux/Windows native execution is not repeated; their unchanged binaries/resources are checked against the prior published archives.
 - Keep parsing and conversion in the frontend WASM/TypeScript core. Go remains a thin wrapper. Retain MIT and bundled third-party notices, including the CAD reader's MIT distribution notices.
 
-[Release validation](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/release-v0.6.5-validation.json) · [Native/offline checks](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/release-v0.6.5-native-validation.json) · [Support matrix](https://github.com/IceWhaleTech/filens/blob/v0.6.5/docs/support-matrix.md) · [Full changelog](https://github.com/IceWhaleTech/filens/blob/v0.6.5/CHANGELOG.md)
+[Release validation](https://github.com/orca-zhang/filens/blob/v0.6.5/docs/release-v0.6.5-validation.json) · [Native/offline checks](https://github.com/orca-zhang/filens/blob/v0.6.5/docs/release-v0.6.5-native-validation.json) · [Support matrix](https://github.com/orca-zhang/filens/blob/v0.6.5/docs/support-matrix.md) · [Full changelog](https://github.com/orca-zhang/filens/blob/v0.6.5/CHANGELOG.md)
 
 <!-- npm-followup:start -->
 ### npm follow-up — 2026-11-05
@@ -59,12 +59,12 @@ Compared with [v0.6.4](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.
 
 Eleven updated `@filens/*` module patches are public, with all planned versions verified against the registry and default tags promoted after their dependencies became available. CLI/OCR 0.5.6 and DSH 0.1.6 retain their existing npm versions and preview 0.3.4 pins.
 
-[Current npm publication status](https://github.com/IceWhaleTech/filens/blob/main/docs/release-v0.6.5-npm-publication.json) · [Public preview checks](https://github.com/IceWhaleTech/filens/blob/main/docs/preview-npm-registry-validation.json) · [Full bundle content audit](https://github.com/IceWhaleTech/filens/blob/main/docs/release-v0.6.5-full-package-audit.json). Full archives contain no nested release ZIP/TGZ; their preview JS includes gzip/Brotli representations totaling 6,928,427 bytes for web serving. Native HTML export reads the raw JS.
+[Current npm publication status](https://github.com/orca-zhang/filens/blob/main/docs/release-v0.6.5-npm-publication.json) · [Public preview checks](https://github.com/orca-zhang/filens/blob/main/docs/preview-npm-registry-validation.json) · [Full bundle content audit](https://github.com/orca-zhang/filens/blob/main/docs/release-v0.6.5-full-package-audit.json). Full archives contain no nested release ZIP/TGZ; their preview JS includes gzip/Brotli representations totaling 6,928,427 bytes for web serving. Native HTML export reads the raw JS.
 <!-- npm-followup:end -->
 
 ## Use FiLens on ZimaOS
 
-<p align="center"><a href="https://www.zimaspace.com/en/zimaos?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=filens_zimaos&amp;utm_content=release_banner_en"><img src="https://raw.githubusercontent.com/IceWhaleTech/filens/v0.6.5/docs/assets/readme/zimaos-banner.en.png" alt="ZimaOS: a personal cloud with FiLens integration" width="640" /></a></p>
+<p align="center"><a href="https://www.zimaspace.com/en/zimaos?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=filens_zimaos&amp;utm_content=release_banner_en"><img src="https://raw.githubusercontent.com/orca-zhang/filens/v0.6.5/docs/assets/readme/zimaos-banner.en.png" alt="ZimaOS: a personal cloud with FiLens integration" width="640" /></a></p>
 
 Bring local document previews to your personal cloud. Install FiLens from the official ZimaOS [Mod Store](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens), without Node.js or npm:
 
@@ -73,6 +73,6 @@ sudo zpkg update
 sudo zpkg install filens
 ```
 
-Upgrade an existing installation with `sudo zpkg upgrade filens`. Download exported offline HTML to your computer to view it; ZimaOS does not launch a browser on the server. [Installation, preview export and OCR configuration](https://github.com/IceWhaleTech/filens/blob/v0.6.5/packaging/zimaos/README.md).
+Upgrade an existing installation with `sudo zpkg upgrade filens`. Download exported offline HTML to your computer to view it; ZimaOS does not launch a browser on the server. [Installation, preview export and OCR configuration](https://github.com/orca-zhang/filens/blob/v0.6.5/packaging/zimaos/README.md).
 
 ZimaOS ModStore uses its own component versions: **0.5.1** (CLI **0.5.0**, preview **0.2.0**).

@@ -113,4 +113,4 @@ See the [full release notes](docs/release-v0.6.4.md), [support matrix](docs/supp
 
 The full release notes include the linked **ZimaOS banner**, official Mod Store installation/update commands and offline HTML/OCR guidance. The ModStore package uses its own version: **0.5.1** (CLI 0.5.0 / preview 0.2.0).
 
-[Compare with v0.6.3](https://github.com/IceWhaleTech/filens/compare/v0.6.3...main).
+[Compare with v0.6.3](https://github.com/orca-zhang/filens/compare/v0.6.3...main).

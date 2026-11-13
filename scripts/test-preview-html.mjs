@@ -171,7 +171,7 @@ try {
           if (document === saved) {
             assert.match(state.text, /FILENS_OFFLINE_HTML_2026 中文/);
             assert.equal(await page.locator('#name').textContent(), sourceName);
-            assert.equal(await page.getByRole('link', { name: 'GitHub' }).getAttribute('href'), 'https://github.com/IceWhaleTech/filens');
+            assert.equal(await page.getByRole('link', { name: 'GitHub' }).getAttribute('href'), 'https://github.com/orca-zhang/filens');
             assert.equal(await page.locator('#help').isVisible(), false);
           }
           observations.push({ browser: browserName, version: browser.version(), file: document.source.name, state: state.state, externalRequests: network.length,

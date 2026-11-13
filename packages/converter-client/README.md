@@ -1,6 +1,6 @@
 # @filens/converter-client
 
-Optional WASM, HTTP and mock conversion adapters for Filens. See the [project documentation](https://github.com/IceWhaleTech/filens) for conversion and preview APIs.
+Optional WASM, HTTP and mock conversion adapters for Filens. See the [project documentation](https://github.com/orca-zhang/filens) for conversion and preview APIs.
 
 ## CAD and raster engines
 

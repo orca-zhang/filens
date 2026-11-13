@@ -12,7 +12,7 @@
 
 [▶ 观看 30 秒演示](apps/demo/public/home/filens-demo.mp4) · [预览动图](docs/assets/readme/demo.gif) · [完整格式与限制](docs/support-matrix.zh-CN.md)
 
-**最新版本：[v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · 预览 **0.3.6** · 移动端 SDK **0.1.6** · DSH **0.1.9**。
+**最新版本：[v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6)** · CLI **0.5.6** · 预览 **0.3.6** · 移动端 SDK **0.1.6** · DSH **0.1.9**。
 
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
@@ -33,9 +33,9 @@
 
 **把这句话发给你的 Agent：**
 
-> 帮我安装 filens，去 https://github.com/IceWhaleTech/filens 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。
+> 帮我安装 filens，去 https://github.com/orca-zhang/filens 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。
 
-[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.6 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
+[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.6 Release](https://github.com/orca-zhang/filens/releases/tag/v0.6.6) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
 
 ```sh
 filens '读取 "report.pdf"，以 JSON 输出'
@@ -51,7 +51,7 @@ filens capacity --json
 
 ### 离线浏览器预览
 
-**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.6 Full 包内置预览 0.3.6，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/IceWhaleTech/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.6-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 保留预览 0.3.4；DSH 0.1.9 内置预览 0.3.6；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**CLI 0.5.6：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.6 Full 包内置预览 0.3.6，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/orca-zhang/filens/releases/download/v0.6.6/filens-preview-0.3.6-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.6-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.6 保留预览 0.3.4；DSH 0.1.9 内置预览 0.3.6；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -123,7 +123,7 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ### 浏览器集成：单文件与按需分包
 
-**预览 0.3.6：** 分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从 [v0.6.6 Release](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
+**预览 0.3.6：** 分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从 [v0.6.6 Release](https://github.com/orca-zhang/filens/releases/tag/v0.6.6) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
 
 npm：[filens-preview@0.3.6](https://www.npmjs.com/package/filens-preview/v/0.3.6)，下载 **16.22 MiB** / 安装 **31.88 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
 
@@ -348,10 +348,10 @@ ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`
 | macOS 原生 OCR 与 RapidOCR | [实测对比](docs/macos-ocr-benchmark.zh-CN.md) |
 | CLI 与后端接入 | [Agent CLI](docs/agent-cli.md) · [Go + wazero 薄壳](examples/go-wazero-converter/README.md) |
 
-欢迎用日常文件测试并[提交可复现问题](https://github.com/IceWhaleTech/filens/issues/new/choose)。[路线图](docs/roadmap.md) · [MIT 许可](LICENSE) · [第三方声明](packaging/agent-third-party.md)。
+欢迎用日常文件测试并[提交可复现问题](https://github.com/orca-zhang/filens/issues/new/choose)。[路线图](docs/roadmap.md) · [MIT 许可](LICENSE) · [第三方声明](packaging/agent-third-party.md)。
 
 <sub>预览截图来自 filens。照片与演示录像保留原许可，见<a href="docs/assets/readme/SOURCES.md">视觉来源与署名</a>。iWork 研究参考 <a href="https://github.com/dunhamsteve/iwork">dunhamsteve/iwork</a>；CAD 参考 <a href="https://github.com/orcastor/cad2x-converter">orcastor/cad2x-converter</a>。</sub>
 
 ## Star 历史
 
-[![Star History Chart](https://api.star-history.com/svg?repos=IceWhaleTech/filens&type=Date)](https://star-history.com/#IceWhaleTech/filens&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=orca-zhang/filens&type=Date)](https://star-history.com/#orca-zhang/filens&Date)

@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/IceWhaleTech/filens/converter/agent"
-	"github.com/IceWhaleTech/filens/converter/rapidocr"
+	"github.com/orca-zhang/filens/converter/agent"
+	"github.com/orca-zhang/filens/converter/rapidocr"
 )
 
 func main() {

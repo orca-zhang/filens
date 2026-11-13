@@ -90,7 +90,7 @@ try {
       if(ready.mode==='html'){
         const html=await readFile(new URL(ready.url),'utf8');
         assert.equal(ready.transport,'file');
-        assert.match(html,/https:\/\/github.com\/IceWhaleTech\/filens/);
+        assert.match(html,/https:\/\/github.com\/orca-zhang\/filens/);
         const source=JSON.parse(html.split('<script id="filens-source" type="application/json">')[1].split('</script>')[0]);
         assert.match(Buffer.from(source.data,'base64').toString('utf8'),/文档证据 42/);
         assert.equal(await closed,0);

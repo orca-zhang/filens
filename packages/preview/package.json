@@ -28,10 +28,10 @@
   "sideEffects": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "url": "git+https://github.com/orca-zhang/filens.git",
     "directory": "packages/preview"
   },
-  "homepage": "https://github.com/IceWhaleTech/filens/tree/main/packages/preview",
+  "homepage": "https://github.com/orca-zhang/filens/tree/main/packages/preview",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

@@ -1,6 +1,6 @@
 package converter
 
-import "github.com/IceWhaleTech/filens/wasm/converter-core/manifest"
+import "github.com/orca-zhang/filens/wasm/converter-core/manifest"
 
 var openXMLTargetsBySource = manifest.OpenXMLTargetsBySource()
 

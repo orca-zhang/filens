@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/IceWhaleTech/filens/wasm/converter-core/manifest"
+	"github.com/orca-zhang/filens/wasm/converter-core/manifest"
 )
 
 type ConversionPair = manifest.ConversionPair

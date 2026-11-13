@@ -1,6 +1,6 @@
 # FiLens for DSH 0.1.8: a home for your session files
 
-> Released with [v0.6.6](https://github.com/IceWhaleTech/filens/releases/tag/v0.6.6). Demos retain their original local-candidate recording metadata.
+> Released with [v0.6.6](https://github.com/orca-zhang/filens/releases/tag/v0.6.6). Demos retain their original local-candidate recording metadata.
 
 Open **File workspace** to browse files referenced in your conversations, preview them, and return to the message or question they came from.
 

@@ -317,6 +317,6 @@ export function FilensWorkspace({ refresh, locate }) {
         h('span', { className: 'fw-group-chevron' }, h(WorkspaceIcon, { name: 'arrow', size: 15 })))),
     groupOpen(group) ? h('div', { className: `fw-files fw-files-${layout}` }, group.files.map(fileCard)) : null)) : h('div', { className: 'fw-no-results' }, t('没有找到匹配的文件。', 'No matching files.')))
       : h('button', { type: 'button', className: 'fw-empty', onClick: () => picker.current.click() }, h(WorkspaceIcon, { name: 'file', size: 28 }), h('strong', null, t('暂无文件', 'No files yet')), h('span', null, t('会话中引用的文件会在这里汇集，也可以打开或拖入本机文件。', 'Files referenced in sessions appear here. You can also open or drop local files.')))),
-  h('footer', { className: 'fw-developer' }, h('a', { href: 'https://github.com/IceWhaleTech/filens', target: '_blank', rel: 'noreferrer' }, 'FiLens · IceWhaleTech')),
+  h('footer', { className: 'fw-developer' }, h('a', { href: 'https://github.com/orca-zhang/filens', target: '_blank', rel: 'noreferrer' }, 'FiLens · IceWhaleTech')),
   dragging ? h('div', { className: 'fw-drop-overlay' }, h(WorkspaceIcon, { name: 'upload', size: 40 }), h('strong', null, t('松开以添加文件', 'Drop to add files'))) : null);
 }

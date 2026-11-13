@@ -157,7 +157,7 @@ filens 还覆盖许多普通在线文档预览器不会处理的格式：
 
 ## 怎样记录一个有用的问题
 
-请提交到 [GitHub Issues](https://github.com/IceWhaleTech/filens/issues/new/choose)。一个容易复现的问题通常包含：
+请提交到 [GitHub Issues](https://github.com/orca-zhang/filens/issues/new/choose)。一个容易复现的问题通常包含：
 
 1. **文件类型**：例如 PPTX、KEY、DXF、CR3、GLB。
 2. **文件来源**：由什么软件和版本生成，例如 PowerPoint 2024、WPS、Keynote 14、AutoCAD 2023。

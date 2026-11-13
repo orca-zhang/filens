@@ -8,4 +8,4 @@ The native sidebar preview remains available, with an independent workspace swit
 
 Recorded in DSH Desktop, in English: [File workspace](../../assets/dsh-release/file-workspace.en.gif) · [Office previews](../../assets/dsh-release/office-preview.en.gif) · [3D / panoramas](../../assets/dsh-release/3d-and-panorama.en.gif)
 
-[Project and setup](https://github.com/IceWhaleTech/filens/tree/main/integrations/deepseek-harness)
+[Project and setup](https://github.com/orca-zhang/filens/tree/main/integrations/deepseek-harness)

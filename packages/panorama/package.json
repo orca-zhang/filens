@@ -54,7 +54,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IceWhaleTech/filens.git",
+    "url": "git+https://github.com/orca-zhang/filens.git",
     "directory": "packages/panorama"
   },
   "publishConfig": {
