@@ -98,7 +98,7 @@ lopdf = { version = "=0.46.0", default-features = false, optional = true }
 ttf-parser = { version = "=0.25.1", default-features = false, features = ["std"], optional = true }
 unicode-normalization = { version = "=0.1.26", optional = true }
 flate2 = "=1.1.9"
-tar = { version = "=0.4.44", default-features = false, optional = true }
+tar = { version = "=0.4.46", default-features = false, optional = true }
 
 [profile.release]
 opt-level = "z"
