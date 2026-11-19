@@ -9,6 +9,10 @@ pub fn is_archive(source: &str) -> bool {
 
 // Escape delimiter characters only; preserve ordinary paths and Unicode.
 pub fn escape_archive_path(path: &str) -> String {
+    #[cfg(windows)]
+    let path = path.replace('\\', "/");
+    #[cfg(not(windows))]
+    let path = path.to_owned();
     path.replace('%', "%25").replace('!', "%21")
 }
 pub fn unescape_archive_path(path: &str) -> String {
