@@ -111,9 +111,14 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
       await writeFile(path.join(work,'tools/ncnn_runtime_wrapper/native_loader_windows.go'),windowsLoader);
     }
     // Go's -trimpath does not rewrite paths embedded by the C compiler.
-    const cgoPathFlags = [[root, '/filens-source'], [work, '/ocr-wrapper-source'], [os.homedir(), '/toolchain-cache'],
-      ['/home', '/build-home'], ['/Users', '/build-home'], ['C:/Users', '/build-home']]
-      .map(([from, to]) => `-ffile-prefix-map=${from.replaceAll('\\', '/')}=${to}`).join(' ');
+    const pathMappings = [[root, '/filens-source'], [work, '/ocr-wrapper-source'], [os.homedir(), '/toolchain-cache'],
+      ['/home', '/build-home'], ['/Users', '/build-home'], ['C:/Users', '/build-home']];
+    // Apply the mappings to macros and debug records too; compiler/toolchain
+    // versions do not all treat -ffile-prefix-map identically.
+    const cgoPathFlags = pathMappings.flatMap(([from, to]) => {
+      from = from.replaceAll('\\', '/');
+      return [`-ffile-prefix-map=${from}=${to}`, `-fdebug-prefix-map=${from}=${to}`, `-fmacro-prefix-map=${from}=${to}`];
+    }).join(' ');
     const cgoCflags = [process.env.CGO_CFLAGS, cgoPathFlags, darwin && '-mmacosx-version-min=12.0'].filter(Boolean).join(' ');
     await new Promise((resolve, reject) => {
       const child = spawn('go', ['build','-trimpath','-buildmode=c-shared','-ldflags',`-s -w -X main.ncnnRuntimeVersion=${manifest.version}`,'-o',library,'./tools/ncnn_runtime_wrapper'], {
