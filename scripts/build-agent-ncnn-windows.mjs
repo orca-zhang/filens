@@ -19,7 +19,9 @@ export async function buildWindowsNCNN(destination, { signal } = {}) {
     const prior = JSON.parse(await readFile(path.join(destination, 'native-build.json'), 'utf8'));
     if (prior.platform === 'win32-x64' && prior.windowsPatch === windowsPatch && prior.sourceSHA256 === sourceSHA256 && sha(await readFile(library)) === prior.sha256) return;
   } catch { /* Build missing or altered artifacts. */ }
-  const work = await mkdtemp(path.join(os.tmpdir(), 'filens-ncnn-win-'));
+  const workRoot = path.join(root, 'dist/build-cache');
+  await mkdir(workRoot, { recursive:true });
+  const work = await mkdtemp(path.join(workRoot, 'filens-ncnn-win-'));
   try {
     const cached = path.join(root,'dist/build-cache',`ncnn-${commit}.tar.gz`);
     let bytes;
@@ -61,12 +63,13 @@ export async function buildWindowsNCNN(destination, { signal } = {}) {
       tools[name] = file;
     }
     const flags = `-Os -DNDEBUG -Wno-nullability-completeness -ffile-prefix-map=${source}=/ncnn-source -ffile-prefix-map=${build}=/ncnn-build -ffile-prefix-map=${os.homedir()}=/toolchain-cache`;
+    const cmakePath = value => value.replaceAll('\\', '/');
     const cmake = {
       CMAKE_SYSTEM_NAME:'Windows', CMAKE_SYSTEM_PROCESSOR:'AMD64', CMAKE_BUILD_TYPE:'Release',
       CMAKE_CXX_STANDARD:'11',
       CMAKE_C_COMPILER:`${zig};cc;-target;x86_64-windows-gnu`,
       CMAKE_CXX_COMPILER:`${zig};c++;-target;x86_64-windows-gnu`,
-      CMAKE_AR:tools.ar, CMAKE_RANLIB:tools.ranlib, CMAKE_RC_COMPILER:tools.rc,
+      CMAKE_AR:cmakePath(tools.ar), CMAKE_RANLIB:cmakePath(tools.ranlib), CMAKE_RC_COMPILER:cmakePath(tools.rc),
       CMAKE_C_FLAGS_RELEASE:flags, CMAKE_CXX_FLAGS_RELEASE:flags,
       NCNN_VERSION:'20260430', NCNN_SHARED_LIB:'ON', NCNN_C_API:'ON',
       NCNN_OPENMP:'ON', NCNN_SIMPLEOMP:'ON', NCNN_VULKAN:'OFF',
