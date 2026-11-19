@@ -147,7 +147,7 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
     const stripDebug = darwin ? '-Wl,-S' : '-Wl,--strip-debug';
     const sanitizerRuntime = !darwin && !windows ? '-fsanitize=undefined' : '';
     const externalFlags = [sanitizerRuntime, stripDebug].filter(Boolean).join(' ');
-    const ldflags = `-s -w -X main.ncnnRuntimeVersion=${manifest.version} -extldflags="${externalFlags}"`;
+    const ldflags = `-s -w -X main.ncnnRuntimeVersion=${manifest.version} -extldflags "${externalFlags}"`;
     const stagedZig = darwin ? null : await stageZigToolchain(root);
     try {
       await new Promise((resolve, reject) => {
