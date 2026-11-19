@@ -430,7 +430,10 @@ fn package_icon(bytes: &[u8], source: &str) -> IconResult<Vec<u8>> {
     if archive.len() > crate::MAX_PACKAGE_ENTRIES {
         return Err(invalid("too many package entries"));
     }
-    let names: Vec<String> = archive.file_names().map(String::from).collect();
+    let names: Vec<String> = archive.file_names()
+        .map(|name| name.map(|name| name.into_owned()))
+        .collect::<Result<_, _>>()
+        .map_err(|_| invalid("invalid package entry name"))?;
     let mut candidates = Vec::new();
     if source == "ipa" {
         let info = names

@@ -11101,7 +11101,7 @@ fn normalize_archive(
         let mut entry = archive
             .by_index(index)
             .map_err(|error| io_error(format!("open OpenXML entry: {error}")))?;
-        let name = safe_part(entry.name())?;
+        let name = safe_part(&entry.name().map_err(|e| parse_error(e.to_string()))?)?;
         if entry.size() > MAX_ENTRY_BYTES
             || total_bytes > MAX_PACKAGE_BYTES.saturating_sub(entry.size())
         {
@@ -11332,7 +11332,7 @@ fn validate_output(path: &str, target: &str) -> Result<(), ConvertError> {
         let mut entry = archive
             .by_index(index)
             .map_err(|error| conversion_error(format!("read OpenXML zip: {error}")))?;
-        let name = normalize_part(entry.name());
+        let name = normalize_part(&entry.name().map_err(|e| conversion_error(e.to_string()))?);
         if forbidden_part(&name) {
             return Err(conversion_error(format!(
                 "macro-enabled OpenXML part {name} is not allowed"

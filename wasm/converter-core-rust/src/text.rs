@@ -821,7 +821,7 @@ fn artwork(input: &str, source: &str) -> Result<(), ConvertError> {
     } else if source == "icns" {
         convert_icns_preview(input, output_path, "png")
     } else {
-        graphics::convert(input, output_path, source)
+        graphics::convert(input, output_path, source, target)
     };
     let result = converted.and_then(|()| {
         if target == "pdf" {
@@ -838,11 +838,12 @@ fn artwork(input: &str, source: &str) -> Result<(), ConvertError> {
 
 fn archive(input: &str) -> Result<ZipArchive<File>, ConvertError> {
     let file = File::open(input).map_err(|e| io_error(e.to_string()))?;
-    let z = ZipArchive::new(file).map_err(|e| parse_error(e.to_string()))?;
+    let mut z = ZipArchive::new(file).map_err(|e| parse_error(e.to_string()))?;
     if z.len() > MAX_PACKAGE_ENTRIES || z.decompressed_size().is_some_and(|n| n > MAX_INPUT as u128)
     {
         return Err(parse_error("package exceeds extraction limits".into()));
     }
+    z.validate_header_consistency().map_err(|e| parse_error(e.to_string()))?;
     Ok(z)
 }
 fn entry(z: &mut ZipArchive<File>, path: &str) -> Result<Vec<u8>, ConvertError> {
@@ -951,8 +952,11 @@ fn validate_xml(bytes: &[u8]) -> Result<(), ConvertError> {
         }
     }
 }
-fn names(z: &ZipArchive<File>) -> Vec<String> {
-    z.file_names().map(str::to_owned).collect()
+fn names(z: &ZipArchive<File>) -> Result<Vec<String>, ConvertError> {
+    z.file_names()
+        .map(|name| name.map(|name| name.into_owned()))
+        .collect::<Result<_, _>>()
+        .map_err(|e| parse_error(e.to_string()))
 }
 fn resolve(part: &str, target: &str) -> Result<String, ConvertError> {
     let mut out = PathBuf::new();
@@ -993,7 +997,7 @@ fn relationships(
         .join("_rels")
         .join(format!("{}.rels", p.file_name().unwrap().to_string_lossy()));
     let rel = rel.to_string_lossy();
-    if !z.file_names().any(|n| n == rel) {
+    if z.index_for_name(&rel).is_none() {
         return Ok(HashMap::new());
     }
     let bytes = xml_entry(z, &rel)?;
@@ -1310,7 +1314,7 @@ fn openxml(input: &str, family: &str) -> Result<(), ConvertError> {
     let mut z = archive(input)?;
     if family == "word" {
         xml_part(&mut z, "word/document.xml")?;
-        let mut others: Vec<_> = names(&z)
+        let mut others: Vec<_> = names(&z)?
             .into_iter()
             .filter(|s| {
                 s.starts_with("word/")
@@ -1360,7 +1364,7 @@ fn spreadsheet(input: &str) -> Result<(), ConvertError> {
     let mut workbook =
         calamine::open_workbook_auto(workbook_input).map_err(|e| parse_error(e.to_string()))?;
     let mut sheet_parts = HashMap::new();
-    if z.file_names().any(|p| p == "xl/workbook.xml") {
+    if z.index_for_name("xl/workbook.xml").is_some() {
         let rels = relationships(&mut z, "xl/workbook.xml")?;
         let bytes = xml_entry(&mut z, "xl/workbook.xml")?;
         let mut r = Reader::from_reader(bytes.as_slice());
@@ -1437,7 +1441,7 @@ fn spreadsheet(input: &str) -> Result<(), ConvertError> {
     // XLSB's binary worksheet records are decoded by calamine. Drawing XML
     // remains in the OPC package and is processed in its stable part order.
     if sheet_parts.is_empty() {
-        let mut drawings: Vec<_> = names(&z)
+        let mut drawings: Vec<_> = names(&z)?
             .into_iter()
             .filter(|n| n.starts_with("xl/drawings/drawing") && n.ends_with(".xml"))
             .collect();
@@ -1531,7 +1535,7 @@ fn normalize_xlsb(z: &mut ZipArchive<File>) -> Result<PathBuf, ConvertError> {
     let path = STATE.with(|s| s.borrow().as_ref().unwrap().work.join("normalized.xlsb"));
     let file = File::create(&path).map_err(|e| io_error(e.to_string()))?;
     let mut output = zip::ZipWriter::new(file);
-    for name in names(z) {
+    for name in names(z)? {
         if name.ends_with('/') {
             continue;
         }
@@ -1653,7 +1657,7 @@ fn odf_images(z: &mut ZipArchive<File>, bytes: &[u8]) -> Result<(), ConvertError
 }
 fn xps(input: &str) -> Result<(), ConvertError> {
     let mut z = archive(input)?;
-    let sequence = names(&z)
+    let sequence = names(&z)?
         .into_iter()
         .find(|n| n.to_lowercase().ends_with(".fdseq"))
         .ok_or_else(|| parse_error("missing XPS document sequence".into()))?;

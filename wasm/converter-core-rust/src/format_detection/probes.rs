@@ -573,10 +573,11 @@ pub(super) fn zip_type<R: Read + Seek>(archive: &mut zip::ZipArchive<R>) -> Opti
             .ok()?;
         return iwork_type(&bytes);
     }
-    if archive.file_names().any(|n| {
-        n.starts_with("Payload/") && n.ends_with(".app/Info.plist") && n.split('/').count() == 3
-    }) {
-        return Some("ipa");
+    for name in archive.file_names() {
+        let name = name.ok()?;
+        if name.starts_with("Payload/") && name.ends_with(".app/Info.plist") && name.split('/').count() == 3 {
+            return Some("ipa");
+        }
     }
     if archive.index_for_name("META-INF/application.xml").is_some() {
         return Some("ear");
@@ -608,12 +609,14 @@ pub(super) fn zip_type<R: Read + Seek>(archive: &mut zip::ZipArchive<R>) -> Opti
         }
     }
     // Only selected document names must outlive the immutable archive borrow.
-    let documents: Vec<_> = archive
-        .file_names()
-        .filter(|n| n.ends_with(".fdseq"))
-        .take(4)
-        .map(str::to_owned)
-        .collect();
+    let mut documents = Vec::new();
+    for name in archive.file_names() {
+        let name = name.ok()?;
+        if name.ends_with(".fdseq") {
+            documents.push(name.into_owned());
+            if documents.len() == 4 { break; }
+        }
+    }
     for name in &documents {
         let Some(bytes) = super::read_zip_part(archive, name) else {
             continue;

@@ -179,13 +179,14 @@ impl Session {
     fn zip(&mut self, path: &Path, parents: &[String], depth: usize) -> Result<(), String> {
         let file = fs::File::open(path).map_err(|e| e.to_string())?;
         let mut zip = ZipArchive::new(file).map_err(|e| e.to_string())?;
+        zip.validate_header_consistency().map_err(|e| e.to_string())?;
         let mut seen = HashSet::new();
         for i in 0..zip.len() {
             if self.result.truncated || self.selected_outcome.is_some() { break; }
             if !self.observe(parents) { break; }
             let raw = zip.by_index_raw(i).map_err(|e| e.to_string())?;
             if raw.is_dir() || raw.is_symlink() { self.result.skipped += 1; continue; }
-            let name = raw.name().to_string();
+            let name = raw.name().map_err(|e| e.to_string())?.into_owned();
             let encrypted = raw.encrypted();
             drop(raw);
             if !seen.insert(clean_name(&name).unwrap_or_else(|_|name.clone())) {
