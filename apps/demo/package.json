@@ -30,6 +30,6 @@
     "@filens/text": "file:../../packages/text",
     "@filens/xlsx": "file:../../packages/xlsx",
     "jszip": "^3.10.1",
-    "vue": "^3.5.17"
+    "vue": "^3.5.45"
   }
 }
