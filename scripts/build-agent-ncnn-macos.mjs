@@ -119,7 +119,7 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
       from = from.replaceAll('\\', '/');
       return [`-ffile-prefix-map=${from}=${to}`, `-fdebug-prefix-map=${from}=${to}`, `-fmacro-prefix-map=${from}=${to}`];
     }).join(' ');
-    const cgoCflags = [process.env.CGO_CFLAGS, cgoPathFlags, darwin && '-mmacosx-version-min=12.0'].filter(Boolean).join(' ');
+    const cgoCflags = [process.env.CGO_CFLAGS, cgoPathFlags, '-g0', darwin && '-mmacosx-version-min=12.0'].filter(Boolean).join(' ');
     await new Promise((resolve, reject) => {
       const child = spawn('go', ['build','-trimpath','-buildmode=c-shared','-ldflags',`-s -w -X main.ncnnRuntimeVersion=${manifest.version}`,'-o',library,'./tools/ncnn_runtime_wrapper'], {
         cwd:work, stdio:'inherit', signal,
