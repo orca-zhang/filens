@@ -432,6 +432,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
   };
   private readonly root: HTMLDivElement;
   private canvas: SVGSVGElement | null = null;
+  private canvasResizeObserver?: ResizeObserver;
   private drawing: CadDrawing | null = null;
   private panX = 0;
   private panY = 0;
@@ -575,6 +576,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
     const controller = this.loadController;
     this.loadController = null;
     controller?.abort();
+    this.canvasResizeObserver?.disconnect();
     this.root.replaceChildren();
     this.canvas = null;
     this.drawing = null;
@@ -629,6 +631,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
       scale: Math.max(0.1, Math.min(scale, 8))
     };
     this.applyTransform();
+    this.updateDefaultStrokeWidth();
     this.emit('statechange', this.state);
   }
 
@@ -690,8 +693,14 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
     this.canvas = svg;
     this.appliedLayers = new Set(this.state.activeLayerIds);
     stage.appendChild(svg);
+    this.canvasResizeObserver?.disconnect();
     this.root.replaceChildren(stage);
     this.applyTransform();
+    this.updateDefaultStrokeWidth();
+    if (typeof ResizeObserver !== 'undefined') {
+      this.canvasResizeObserver ??= new ResizeObserver(() => this.updateDefaultStrokeWidth());
+      this.canvasResizeObserver.observe(svg);
+    }
   }
 
   private applyLayerVisibility(): void {
@@ -713,6 +722,15 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
       }
     }
     this.appliedLayers = activeLayers;
+  }
+
+  private updateDefaultStrokeWidth(): void {
+    const svg = this.canvas;
+    const transform = svg?.getScreenCTM?.();
+    if (!svg || !transform) return;
+    // One screen pixel in drawing units. Entity widths override this inherited default.
+    const pixelsPerUnit = Math.hypot(transform.a, transform.b);
+    if (pixelsPerUnit > 0) svg.setAttribute('stroke-width', String(1 / pixelsPerUnit));
   }
 
   private applyTransform(): void {
@@ -2277,7 +2295,6 @@ function renderDrawingToSvg(drawing: CadDrawing, layerElements: Map<string, SVGE
   const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   group.setAttribute('fill', 'none');
   group.setAttribute('stroke', '#223245');
-  group.setAttribute('stroke-width', String(Math.max(width, height) / 520));
   group.setAttribute('stroke-linecap', 'round');
   group.setAttribute('stroke-linejoin', 'round');
   svg.appendChild(group);

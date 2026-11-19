@@ -15,6 +15,26 @@ async function prepare(page: Page) {
   }, url);
 }
 
+test('keeps default CAD lines one screen pixel wide on zoom and resize', async ({ page }) => {
+  await prepare(page);
+  await page.evaluate(async dxf => {
+    const state = (window as any).cadTest;
+    state.session = state.lib.createCadPreviewDriver().createSession(state.host);
+    const source = new TextEncoder().encode(dxf);
+    await state.session.load(source, { descriptor: { source, extension: 'dxf' } });
+  }, lineDxfFixture);
+  const line = page.locator('.cadv-canvas line');
+  const screenWidth = () => line.evaluate(node => {
+    const scale = (node as SVGLineElement).getScreenCTM()!.a;
+    return parseFloat(getComputedStyle(node).strokeWidth) * scale;
+  });
+  await expect.poll(screenWidth).toBeCloseTo(1);
+  await page.evaluate(() => (window as any).cadTest.session.setScale(4));
+  await expect.poll(screenWidth).toBeCloseTo(1);
+  await page.setViewportSize({ width: 480, height: 360 });
+  await expect.poll(screenWidth).toBeCloseTo(1);
+});
+
 for (const kind of ['bytes', 'slice', 'buffer', 'blob', 'wrapped']) {
   test(`decodes actual DXF ${kind} raster resources and releases them`, async ({ page }) => {
     const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await prepare(page);
