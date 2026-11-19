@@ -143,7 +143,7 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
       from = from.replaceAll('\\', '/');
       return [`-ffile-prefix-map=${from}=${to}`, `-fdebug-prefix-map=${from}=${to}`, `-fmacro-prefix-map=${from}=${to}`];
     }).join(' ');
-    const cgoCflags = [process.env.CGO_CFLAGS, cgoPathFlags, '-g0', '-fno-sanitize=all', darwin && '-mmacosx-version-min=12.0'].filter(Boolean).join(' ');
+    const cgoCflags = [process.env.CGO_CFLAGS, cgoPathFlags, '-g0', '-fno-sanitize=all', windows && '-Wno-unused-command-line-argument', darwin && '-mmacosx-version-min=12.0'].filter(Boolean).join(' ');
     const stripDebug = darwin ? '-Wl,-S' : '-Wl,--strip-debug';
     const sanitizerRuntime = !darwin && !windows ? '-fsanitize=undefined' : '';
     const externalFlags = [sanitizerRuntime, stripDebug].filter(Boolean).join(' ');
