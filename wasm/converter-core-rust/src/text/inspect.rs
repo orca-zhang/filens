@@ -99,7 +99,7 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
     let mut z = archive(&request.input)?;
     let family_prefix = format!("{family}/");
     let media_prefix = format!("{family}/media/");
-    let mut media: Vec<_> = names(&z)
+    let mut media: Vec<_> = names(&z)?
         .into_iter()
         .filter(|v| v.starts_with(&media_prefix) && !v.ends_with('/'))
         .collect();
@@ -115,7 +115,7 @@ pub(super) fn media(request: &Request) -> Result<(), ConvertError> {
     for (i, part) in slides.iter().enumerate() {
         slide_positions.entry(part.as_str()).or_insert(i + 1);
     }
-    let parts: Vec<_> = names(&z)
+    let parts: Vec<_> = names(&z)?
         .into_iter()
         .filter(|v| {
             v.starts_with(&family_prefix) && v.ends_with(".xml") && !v.contains("/_rels/")
