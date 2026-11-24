@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import JSZip from 'jszip';
+import { renderSiteChart } from './site-chart.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const snapshotPattern = /^converged-\d{4}-\d{2}-\d{2}$/;
@@ -13,7 +14,7 @@ const number = (value, digits = 1) => value == null ? '—' : value.toLocaleStri
 
 function page(data, prefix, english) {
   const t = (zh, en) => english ? en : zh;
-  const summaryChart = english ? 'summary.en.svg' : 'summary.svg';
+  const summaryChart = english ? 'site-summary.en.svg' : 'site-summary.svg';
   const ordered = [...data.baselines].sort((a, b) =>
     b.metrics.complexQuality.stock - a.metrics.complexQuality.stock ||
     b.metrics.complexQuality.filens - a.metrics.complexQuality.filens);
@@ -50,7 +51,7 @@ function page(data, prefix, english) {
 <div class="table-scroll" role="region" aria-label="${t('配对成绩，可横向滚动', 'Paired results, scroll horizontally')}" tabindex="0"><table><caption>${t('原生环境 → 安装 FiLens；质量与证据越高越好，耗时越低越好。', 'Stock → FiLens; higher quality and evidence scores are better, lower latency is better.')}</caption>
 <thead><tr><th scope="col">Harness</th><th scope="col">${t('模型 / 推理', 'Model / reasoning')}</th><th scope="col">${t('复杂题质量 / 100', 'Complex quality / 100')}</th><th scope="col">${t('带证据成功', 'Evidence success')}</th><th scope="col">p50 / ${t('整批', 'batch')}</th><th scope="col">p95</th><th scope="col">${t('全题 token', 'All-task tokens')}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <details><summary>${t('逐组运行范围、版本与限制', 'Per-harness protocols, versions and caveats')}</summary>${details}</details>
-<figure><a href="${prefix}${summaryChart}"><img src="${prefix}${summaryChart}" width="1280" height="1890" alt="${t(`${data.baselines.length} 个 harness 原生组与 FiLens 组的质量、耗时与 token 分组柱状图`, `Grouped charts of stock and FiLens quality, latency and tokens across ${data.baselines.length} harnesses`)}"></a><figcaption>${t('点击查看原始图表。缺失用量按未知处理。', 'Open the original chart. Missing usage remains unknown.')}</figcaption></figure>
+<figure><a href="${prefix}${summaryChart}"><img src="${prefix}${summaryChart}" width="1600" height="1110" alt="${t(`${data.baselines.length} 个 harness 的质量、p50、p95 与 token 四面板配对柱状图`, `Four-panel paired bar charts of quality, p50, p95 and tokens across ${data.baselines.length} harnesses`)}"></a><figcaption>${t('点击查看官网四面板原图。斜线柱为不完整用量小计，不计算节省率。', 'Open the four-panel website chart. Hatched bars show incomplete usage subtotals, without savings percentages.')}</figcaption></figure>
 </section>
 <section id="method"><h2>${t('评测方法与范围', 'Methodology and scope')}</h2>
 <p>${t('两组固定相同问题、模型、语料与设置，Agent 自主选择工具。CLI harness 每题每组重复三次；WorkBuddy 为每组一轮 13 题同批对话。失败和超时保留。', 'Each pair uses the same questions, model, corpus and settings, with autonomous tool choice. CLI harnesses repeat every task three times per condition; WorkBuddy uses one 13-task batch per condition. Failures and timeouts remain included.')}</p>
@@ -80,6 +81,9 @@ export async function stageFilensBench(rootDir, output = path.join(rootDir, 'app
     assert.ok(data.baselines.length > 0, 'Public benchmark has no results');
     const destination = path.join(output, 'snapshots', snapshot), zip = new JSZip(), sums = [];
     await mkdir(destination, { recursive: true });
+    for (const english of [false, true]) {
+      await writeFile(path.join(destination, english ? 'site-summary.en.svg' : 'site-summary.svg'), renderSiteChart(data, english));
+    }
     // Only reviewed public artifacts belong on the site; results/ contains local run archives.
     for (const file of publicFiles) {
       const bytes = await readFile(path.join(source, file));

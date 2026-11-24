@@ -6,6 +6,7 @@ import WorkbenchIcon from './WorkbenchIcon.vue';
 import demoMedia from '../home-media.json';
 import './landing.css';
 import { useDemoI18n } from '../i18n';
+import { benchmark } from '../benchmark';
 
 defineProps<{ uploadAccept: string }>();
 const emit = defineEmits<{ preview: [extension?: string]; upload: [event: Event]; agent: [] }>();
@@ -471,30 +472,30 @@ async function playDemo(): Promise<void> {
 
       <section id="benchmark" class="benchmark-section section-width" aria-labelledby="benchmark-title">
         <div class="chapter-heading">
-          <p class="eyebrow">FILENS-BENCH · 2026-11-24 · CLI 0.5.7</p>
+          <p class="eyebrow">FILENS-BENCH · {{ benchmark.date }} · CLI {{ benchmark.cliVersion }}</p>
           <h2 id="benchmark-title">{{ t('让 Agent 读得更准，也更快。', 'Help your agent read more accurately, and faster.') }}</h2>
-          <p>{{ t('13 道合成题，覆盖 Office、PDF、嵌套压缩包与扫描件。比较同一 Agent 正常安装 FiLens 前后的表现。', '13 synthetic tasks covering Office, PDFs, nested archives and scans. Compare each agent before and after a normal FiLens installation.') }}</p>
+          <p>{{ t(`${benchmark.tasks} 道合成题，覆盖 Office、PDF、嵌套压缩包与扫描件。比较同一 Agent 正常安装 FiLens 前后的表现。`, `${benchmark.tasks} synthetic tasks covering Office, PDFs, nested archives and scans. Compare each agent before and after a normal FiLens installation.`) }}</p>
         </div>
         <div class="principle-grid">
           <article class="principle">
-            <p class="principle-proof"><strong>7/7</strong><span>{{ t('组质量分提高', 'pairs improved in quality') }}</span></p>
+            <p class="principle-proof"><strong>{{ benchmark.quality }}</strong><span>{{ t('组质量分提高', 'pairs improved in quality') }}</span></p>
             <h2>{{ t('回答更准确，证据更完整', 'More accurate answers and better evidence') }}</h2>
-            <p>{{ t('质量分综合字段准确率与证据 F1，统计 11 道复杂文件题。', 'Quality combines field accuracy and evidence F1 across 11 complex-file tasks.') }}</p>
+            <p>{{ t(`质量分综合字段准确率与证据 F1，统计 ${benchmark.complexTasks} 道复杂文件题。`, `Quality combines field accuracy and evidence F1 across ${benchmark.complexTasks} complex-file tasks.`) }}</p>
           </article>
           <article class="principle">
-            <p class="principle-proof"><strong>7/7</strong><span>{{ t('组记录耗时缩短', 'pairs finished faster') }}</span></p>
+            <p class="principle-proof"><strong>{{ benchmark.latency }}</strong><span>{{ t('组记录耗时缩短', 'pairs finished faster') }}</span></p>
             <h2>{{ t('从提问到回答，用时更少', 'Less time from question to answer') }}</h2>
             <p>{{ t('CLI 比较复杂题 p50；WorkBuddy 比较单批总耗时。', 'CLI pairs compare complex-task p50; WorkBuddy compares whole-batch time.') }}</p>
           </article>
           <article class="principle">
-            <p class="principle-proof"><strong>4/4</strong><span>{{ t('组完整用量的 token 下降', 'complete-usage pairs used fewer tokens') }}</span></p>
+            <p class="principle-proof"><strong>{{ benchmark.tokens }}</strong><span>{{ t('组完整用量的 token 下降', 'complete-usage pairs used fewer tokens') }}</span></p>
             <h2>{{ t('减少处理文件的 token 用量', 'Fewer tokens spent on file tasks') }}</h2>
-            <p>{{ t('仅统计用量完整的四组；缺失记录不按零计。', 'Only the four pairs with complete usage are counted; missing records are never zero.') }}</p>
+            <p>{{ t(`仅统计用量完整的 ${benchmark.completeTokenPairs} 组；缺失记录不按零计。`, `Only the ${benchmark.completeTokenPairs} pairs with complete usage are counted; missing records are never zero.`) }}</p>
           </article>
         </div>
-        <p class="principles-note">{{ t('小型合成题集快照。各组模型不同，请比较同一 harness 内的配对变化；WorkBuddy 为单批探索性结果。', 'A small synthetic snapshot. Models differ across harnesses; compare within each pair. WorkBuddy is an exploratory single-batch result.') }}</p>
+        <p class="principles-note">{{ t('小型合成题集快照。各组模型不同，请比较同一 harness 内的配对变化；WorkBuddy 为单批探索性结果，Blue 每题每组仅测一次。', 'A small synthetic snapshot. Models differ across harnesses; compare within each pair. WorkBuddy is exploratory single-batch evidence; Blue has one attempt per task and condition.') }}</p>
         <div class="benchmark-actions">
-          <a class="button button-outline" :href="benchUrl">{{ t('查看七组成绩、方法与下载', 'See all seven pairs, methods and downloads') }} ↗</a>
+          <a class="button button-outline" :href="benchUrl">{{ t(`查看 ${benchmark.harnesses} 组成绩、方法与下载`, `See all ${benchmark.harnesses} pairs, methods and downloads`) }} ↗</a>
         </div>
       </section>
 

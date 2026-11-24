@@ -1,0 +1,168 @@
+{
+  "observedAt": "2026-11-24T16:13:09.566651+00:00",
+  "tag": "v0.6.8",
+  "url": "https://github.com/orca-zhang/filens/releases/tag/v0.6.8",
+  "releaseId": 456680953,
+  "publishedAt": "2026-11-24T11:41:20Z",
+  "sourceCommit": "e840093448a18576f2d5adf68e63c7e9cbca814d",
+  "status": "published-and-server-digest-verified",
+  "anonymousReleaseApiStatus": 403,
+  "anonymousReleaseApiLimit": "GitHub anonymous API rate limit exceeded; authenticated API used for metadata",
+  "anonymousChecksumsDownloadStatus": 200,
+  "assetCount": 16,
+  "assets": [
+    {
+      "file": "filens-preview-0.3.8-split.zip",
+      "kind": "browser-split",
+      "bytes": 5906766,
+      "unpackedBytes": 17849230,
+      "sha256": "679d49bd68085450a019a89dedeefd15945931326f948ea75c9c4ffdf1951a78",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-split.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-preview-0.3.8-all-in-one-precompressed.zip",
+      "kind": "browser-precompressed-sidecars",
+      "bytes": 7254188,
+      "unpackedBytes": 7253457,
+      "sha256": "bb517188d65fcc5f8efe634102b5844d5d008800e16792b68267b11db7eb3521",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one-precompressed.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-preview-0.3.8-all-in-one.zip",
+      "kind": "browser-all-in-one",
+      "bytes": 4332799,
+      "unpackedBytes": 8865102,
+      "sha256": "3dad49c056f17dc3a63c2df1e64e86575b15245f6cec3257d24e04c60c1299fa",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-ios-sdk-0.1.8.zip",
+      "kind": "source-sdk-ios",
+      "bytes": 5933561,
+      "unpackedBytes": 17894515,
+      "sha256": "77d6d91c667cee811349e657fbaf3ae5198505d9fba7f994e2f515b79e7a51ee",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-ios-sdk-0.1.8.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-android-sdk-0.1.8.zip",
+      "kind": "source-sdk-android",
+      "bytes": 5936431,
+      "unpackedBytes": 17890357,
+      "sha256": "2b70ca6c30ff331f23606ab90ddf638b7933e1c3a4a83d53b07d0e8cd45c0f83",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-android-sdk-0.1.8.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-macos-arm64-lite.tar.gz",
+      "kind": "cli-lite",
+      "platform": "darwin-arm64",
+      "bytes": 8097159,
+      "unpackedBytes": 11348801,
+      "binaryBytes": 3916528,
+      "sha256": "f128ad80e20739bc21283fc2d6791560cd0aff2447fd92a4edf4198cb26914ff",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-macos-arm64-lite.tar.gz",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-macos-arm64-full.tar.gz",
+      "kind": "cli-full",
+      "platform": "darwin-arm64",
+      "bytes": 27250698,
+      "unpackedBytes": 44543752,
+      "binaryBytes": 3916352,
+      "sha256": "eb37f1da6e64f4e9e18fdbd5faff6050254c157223c37177ec01454cf167d928",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-macos-arm64-full.tar.gz",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-linux-x64-lite.tar.gz",
+      "kind": "cli-lite",
+      "platform": "linux-x64",
+      "bytes": 7592209,
+      "unpackedBytes": 8676927,
+      "binaryBytes": 1244656,
+      "sha256": "1153d80da3ec9384543ccbce0bb1fd975a1c43e97587cf8699c71f0cc2744c71",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-x64-lite.tar.gz",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-linux-x64-full.tar.gz",
+      "kind": "cli-full",
+      "platform": "linux-x64",
+      "bytes": 28552323,
+      "unpackedBytes": 47463507,
+      "binaryBytes": 1244456,
+      "sha256": "ea379bf7947045cd485122b13e288b48a3d090ff4bc20fa9ea0f6bb5742de72f",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-x64-full.tar.gz",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-linux-arm64-lite.tar.gz",
+      "kind": "cli-lite",
+      "platform": "linux-arm64",
+      "bytes": 7430075,
+      "unpackedBytes": 8514397,
+      "binaryBytes": 1082124,
+      "sha256": "6c54cfb719d3b42830c61a860df8316540f004497725d0ab9babdb3e93fccce0",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-arm64-lite.tar.gz",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-linux-arm64-full.tar.gz",
+      "kind": "cli-full",
+      "platform": "linux-arm64",
+      "bytes": 26082686,
+      "unpackedBytes": 41504613,
+      "binaryBytes": 1082092,
+      "sha256": "867b54be3619202199dea8e2b707e33da35bd5bfb2b0e45c1c338ac7bc202787",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-arm64-full.tar.gz",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-windows-x64-lite.zip",
+      "kind": "cli-lite",
+      "platform": "win32-x64",
+      "bytes": 7524288,
+      "unpackedBytes": 8585825,
+      "binaryBytes": 1153536,
+      "sha256": "699c66d7a35c902934989e79c6870f05af459554ffcca2c285d5f95f87c38cad",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-windows-x64-lite.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "filens-0.5.8-windows-x64-full.zip",
+      "kind": "cli-full",
+      "platform": "win32-x64",
+      "bytes": 28817102,
+      "unpackedBytes": 47483131,
+      "binaryBytes": 1153024,
+      "sha256": "bfe8e9fe5791708096db9c380530e43e38656a96a2d38385231c39e56059e0d4",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-windows-x64-full.zip",
+      "serverDigestVerified": true
+    },
+    {
+      "file": "dsh-filens-0.1.12.tgz",
+      "kind": "npm-package",
+      "name": "dsh-filens",
+      "version": "0.1.12",
+      "bytes": 6028769,
+      "unpackedBytes": 18237489,
+      "sha256": "2c6001ef3fe7d35f29886786cac3ea4b61b07984bba5eeac9c369525f3fff0b1",
+      "publicUrl": "https://github.com/orca-zhang/filens/releases/download/v0.6.8/dsh-filens-0.1.12.tgz",
+      "serverDigestVerified": true
+    }
+  ],
+  "bodyMatchesPublicNotes": true,
+  "components": {
+    "cli": "0.5.8",
+    "preview": "0.3.8",
+    "mobileSdk": "0.1.8",
+    "dsh": "0.1.12",
+    "xlsx": "0.1.3",
+    "core": "0.1.5"
+  }
+}

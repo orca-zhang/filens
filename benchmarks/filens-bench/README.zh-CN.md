@@ -15,9 +15,9 @@ npm run build:bench
 node benchmarks/filens-bench/publish.mjs dist/filens-bench-site
 ```
 
-默认输出为 `apps/demo/dist/bench/`，包含中英文入口、固定版本 `snapshots/converged-2026-11-24/`、JSON、中英文分组柱状图、ZIP 与 `SHA256SUMS`。英文页加载英文 SVG；`build:vercel` 自动附带该目录，部署后通过 `/bench/` 访问。
+默认输出为 `apps/demo/dist/bench/`，包含中英文入口、固定版本 `snapshots/converged-2026-11-24/`、JSON、中英文分组柱状图、ZIP 与 `SHA256SUMS`。官网从各快照 JSON 生成独立的 `site-summary.svg` / `site-summary.en.svg`，沿用质量、p50 / 整批耗时、p95、token 的 2×2 四面板布局；README 图与公开 ZIP 保留原汇总图。英文页加载英文 SVG；`build:vercel` 自动附带该目录，部署后通过 `/bench/` 访问。
 
-更新成绩时，在 `published/converged-YYYY-MM-DD/` 中准备经过核对的 `baselines.json`、`summary.svg`、`summary.en.svg` 和 `README.md`，更新 `published/latest.json`，运行 `npm run test:bench:filens` 与 `npm run build:bench`。旧公开快照继续随站点发布，固定版本地址保留。构建仅读取这些公开文件，不读取本地 `results/`。
+更新成绩时，在 `published/converged-YYYY-MM-DD/` 中准备经过核对的 `baselines.json`、`summary.svg`、`summary.en.svg` 和 `README.md`，更新 `published/latest.json`，运行 `npm run test:bench:filens` 与 `npm run build:bench`。官网四面板图随 JSON 重建，首页统计也读取 `latest.json` 指向的快照。旧公开快照继续随站点发布，固定版本地址保留。构建仅读取这些公开文件，不读取本地 `results/`。
 
 ## 当前收敛成绩
 
@@ -55,7 +55,7 @@ Quality = 100 × (0.70 × 字段准确率 + 0.30 × 证据 F1)
 
 ## 题集范围
 
-当前 **v0.1 合成种子集**用于验证方法，不代表对所有文件和 agent 的通用排名。它涵盖 TXT、DOCX、XLSX、PPTX、文本 PDF、嵌套 ZIP 内 DOCX，以及可选 PNG 和扫描 PDF；题目包括版本冲突、表格取值、跨文件求和、长文尾部、扫描件和无答案拒答。参考答案与证据锚点在生成语料前独立指定。
+当前 **v0.1 合成种子集** 用于验证方法，不代表对所有文件和 agent 的通用排名。它涵盖 TXT、DOCX、XLSX、PPTX、文本 PDF、嵌套 ZIP 内 DOCX，以及可选 PNG 和扫描 PDF；题目包括版本冲突、表格取值、跨文件求和、长文尾部、扫描件和无答案拒答。参考答案与证据锚点在生成语料前独立指定。
 
 正式 v1 的建议配额为 240 道复杂文件题，另有 30 道纯文本控制题：Word/Office 40、工作簿 40、PDF 30、图片与扫描 PDF 50、演示文稿 20、压缩包 20、跨文件 20、无答案与不完整证据 20。公开真实文档需要授权和独立标注；按文档/主题家族隔离开发集与留出集。该正式题集尚未完成。
 

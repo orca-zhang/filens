@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
 import JSZip from 'jszip';
 import { stageFilensBench } from './publish.mjs';
+import { renderSiteChart } from './site-chart.mjs';
 
 const source = fileURLToPath(new URL('published/', import.meta.url));
 
@@ -21,7 +22,7 @@ test('publishes standalone bilingual results and a verifiable summary archive wi
     const data = JSON.parse(await readFile(dataPath, 'utf8'));
     // Untrusted labels must stay text, and missing usage must stay unknown.
     data.baselines[0].harness = '<img src=x onerror="alert(1)">';
-    data.baselines[0].metrics.allTaskTokensKnownSubtotal.stock = null;
+    (data.baselines[0].metrics.allTaskTokens ?? data.baselines[0].metrics.allTaskTokensKnownSubtotal).stock = null;
     await writeFile(dataPath, JSON.stringify(data));
     await writeFile(path.join(published, snapshot, 'private-trace.json'), 'not public');
     await mkdir(path.join(root, 'benchmarks/filens-bench/results'), { recursive: true });
@@ -44,6 +45,10 @@ test('publishes standalone bilingual results and a verifiable summary archive wi
       assert.equal(doc.querySelector('tbody img'), null);
       assert.match(doc.querySelector('tbody tr td:last-child').textContent, /— →/);
       assert.equal(doc.querySelectorAll('script').length, 0);
+      const chart = doc.querySelector('figure img');
+      assert.ok(chart.getAttribute('src').endsWith(lang === 'en' ? 'site-summary.en.svg' : 'site-summary.svg'));
+      assert.equal(chart.getAttribute('width'), '1600');
+      assert.equal(chart.getAttribute('height'), '1110');
       for (const element of doc.querySelectorAll('a[href], img[src]')) {
         const url = element.getAttribute('href') ?? element.getAttribute('src');
         if (url.startsWith('https://') || url.startsWith('/') || url.startsWith('#')) continue;
@@ -69,6 +74,33 @@ test('publishes standalone bilingual results and a verifiable summary archive wi
     assert.deepEqual(await readFile(path.join(version, zipName)), firstZip);
   } finally {
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('website charts keep four panels, include every harness and distinguish missing usage and batch timing', async () => {
+  const { snapshot } = JSON.parse(await readFile(path.join(source, 'latest.json'), 'utf8'));
+  const data = JSON.parse(await readFile(path.join(source, snapshot, 'baselines.json'), 'utf8'));
+  for (const english of [false, true]) {
+    const svg = renderSiteChart(data, english);
+    const dom = new JSDOM(svg, { contentType: 'image/svg+xml' });
+    const doc = dom.window.document;
+    assert.equal(doc.documentElement.getAttribute('viewBox'), '0 0 1600 1110');
+    assert.deepEqual([...doc.querySelectorAll('[data-metric]')].map(node => node.getAttribute('data-metric')), ['quality', 'p50', 'p95', 'tokens']);
+    for (const panel of doc.querySelectorAll('[data-metric]')) {
+      assert.equal(panel.querySelectorAll('[data-harness]').length, data.baselines.length);
+      assert.ok(panel.querySelector('[data-harness="ZimaOS-Blue"]'));
+    }
+    const p50 = doc.querySelector('[data-metric="p50"] [data-harness="WorkBuddy Desktop"]');
+    assert.equal(p50.querySelector('[data-condition="stock"]').getAttribute('data-value'), '57.773');
+    assert.equal(doc.querySelector('[data-metric="p95"] [data-harness="WorkBuddy Desktop"] [data-value]'), null);
+    for (const row of data.baselines.filter(row => row.metrics.allTaskTokensKnownSubtotal)) {
+      const group = [...doc.querySelectorAll('[data-metric="tokens"] [data-harness]')].find(node => node.getAttribute('data-harness') === row.harness);
+      assert.equal(group.querySelectorAll('[fill="url(#unknown)"]').length, 2);
+      assert.match(group.textContent, english ? /Incomplete\*/ : /不完整\*/);
+      assert.doesNotMatch(group.textContent, /%/);
+    }
+    assert.doesNotMatch(svg, /NaN|Infinity/);
+    dom.window.close();
   }
 });
 

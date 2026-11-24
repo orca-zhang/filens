@@ -104,6 +104,10 @@ test('switches between complete Chinese and English homepages and remembers the 
   await expect(highlights).toContainText('Insta360');
   await expect(highlights).toContainText('官方畸变标定参数');
   await expect(page.locator('#skill').getByRole('link', { name: /FiLens-Bench/ })).toHaveAttribute('href', 'https://filens.cc/bench/');
+  const benchmark = page.locator('#benchmark');
+  await expect(benchmark.locator('.principle-proof strong')).toHaveText(['8/8', '8/8', '5/5']);
+  await expect(benchmark).toContainText('仅统计用量完整的 5 组');
+  await expect(benchmark.getByRole('link')).toHaveText('查看 8 组成绩、方法与下载 ↗');
   await expect(page.getByRole('button', { name: '打开全景视频样例', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: '查看完整支持矩阵' })).toHaveAttribute('href', /support-matrix\.zh-CN\.md$/);
   await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
@@ -115,6 +119,9 @@ test('switches between complete Chinese and English homepages and remembers the 
   await expect(highlights).toContainText('first iWork 15 parser');
   await expect(highlights).toContainText('real time, entirely in the browser');
   await expect(page.locator('#skill').getByRole('link', { name: /FiLens-Bench/ })).toHaveAttribute('href', 'https://filens.cc/bench/en.html');
+  await expect(benchmark.locator('.principle-proof strong')).toHaveText(['8/8', '8/8', '5/5']);
+  await expect(benchmark).toContainText('Only the 5 pairs with complete usage');
+  await expect(benchmark.getByRole('link')).toHaveText('See all 8 pairs, methods and downloads ↗');
   await expect(page.getByRole('tab', { name: 'Docs', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'More files. More possibilities.', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open live photos sample', exact: true })).toBeVisible();
