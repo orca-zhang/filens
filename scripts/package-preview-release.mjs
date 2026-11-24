@@ -55,7 +55,7 @@ for (const item of native?.assets ?? []) {
 // Full bundles contain preview/OCR resources; Lite keeps both optional.
 // Keep npm launchers, platform dependencies and library modules on the registry;
 // attach the DSH adapter as a distinct plugin download.
-for (const source of ['dist/dsh-npm']) {
+for (const source of (process.argv.includes('--preview-only') ? [] : ['dist/dsh-npm'])) {
   const metadata = await read(`${source}/release.json`);
   for (const item of metadata.packages ?? [metadata]) {
     if (assets.some(asset => asset.file === item.file)) throw new Error(`Duplicate release asset: ${item.file}`);
@@ -88,7 +88,8 @@ async function writeManifest(report) {
   if (status.status !== 0) throw new Error('Cannot identify release source state');
   const manifestName = `filens-release-${tag}.json`;
   const manifest = { ...report, sourceCommit: commit.stdout.trim(), sourceDirty: Boolean(status.stdout.trim()),
-    validation: await read('docs/preview-npm-validation.json') };
+    validation: await read('docs/preview-npm-validation.json'),
+    ...(process.argv.includes('--preview-only') ? { splitNpmValidation: await read('docs/preview-split-npm-validation.json') } : {}) };
   await writeFile(path.join(directory, manifestName), `${JSON.stringify(manifest, null, 2)}\n`);
   const manifestAsset = await measure(manifestName, 'manifest');
   await writeFile(path.join(directory, 'SHA256SUMS'), [...report.assets, manifestAsset].map(item => `${item.sha256}  ${item.file}`).join('\n') + '\n');

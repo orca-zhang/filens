@@ -9,14 +9,16 @@ import { checkAgentReleaseLimits } from './agent-release-limits.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const modules=process.argv.includes('--modules');
 const dsh=process.argv.includes('--dsh');
+const preview=process.argv.includes('--preview');
+const previewSplit=process.argv.includes('--preview-split');
 const cliOnly=process.argv.includes('--cli-only');
-if(modules&&dsh)throw new Error('Choose --modules or --dsh');
-if(cliOnly&&(modules||dsh))throw new Error('--cli-only applies to CLI packages');
-const directory=path.join(root,dsh?'dist/dsh-npm':modules?'dist/workspace-npm':'dist/npm');
+if([modules,dsh,preview,previewSplit].filter(Boolean).length>1)throw new Error('Choose only one package publication mode');
+if(cliOnly&&(modules||dsh||preview||previewSplit))throw new Error('--cli-only applies to CLI packages');
+const directory=path.join(root,dsh?'dist/dsh-npm':modules?'dist/workspace-npm':preview?'dist/preview-npm':previewSplit?'dist/preview-split-npm':'dist/npm');
 const metadata=JSON.parse(await readFile(path.join(directory,'release.json'),'utf8'));
-const release=dsh?{version:metadata.version,packages:metadata.packages??[metadata]}:metadata;
+const release=dsh||preview||previewSplit?{version:metadata.version,packages:metadata.packages??[metadata]}:metadata;
 if(cliOnly)release.packages=release.packages.filter(pkg=>pkg.name!=='filens-preview');
-if(!modules&&!dsh&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
+if(!modules&&!dsh&&!preview&&!previewSplit&&supportedPlatforms.some(p=>!release.targets.includes(p)))throw new Error('Build all supported targets with npm run package:agent:npm first');
 const integrities=new Map();
 for(const pkg of release.packages){
  const bytes=await readFile(path.join(directory,pkg.file));
@@ -27,10 +29,10 @@ for(const pkg of release.packages){
 const dry=process.argv.includes('--dry-run');
 const verifyAttempts=Number(process.env.FILENS_NPM_VERIFY_ATTEMPTS??30);
 if(!Number.isSafeInteger(verifyAttempts)||verifyAttempts<1||verifyAttempts>360)throw new Error('FILENS_NPM_VERIFY_ATTEMPTS must be an integer between 1 and 360');
-if(!modules&&!dsh)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
+if(!modules&&!dsh&&!preview&&!previewSplit)console.log('Release size budgets passed:', JSON.stringify(checkAgentReleaseLimits(release,directory)));
 const versionOf=pkg=>pkg.version??release.version;
 const keyOf=pkg=>`${pkg.name}@${versionOf(pkg)}`;
-const entryNames=dsh?['dsh-filens']:['filens-cli','filens-cli-lite'];
+const entryNames=dsh?['dsh-filens']:preview||previewSplit?[]:['filens-cli','filens-cli-lite'];
 // A DSH dependency upload must not promote the standalone CLI before its
 // separately published preview runtime is ready.
 const tagOf=pkg=>versionOf(pkg).includes('-')?'next':cliOnly&&entryNames.includes(pkg.name)?'dsh':'latest';
@@ -109,7 +111,7 @@ if(!dry){
  if(errors.length)throw new AggregateError(errors.map(r=>r.reason),'Entry packages are not publicly available; rerun to resume verification');
  // Reconcile tags after verification, including when the exact version was
  // already uploaded as a DSH dependency in an earlier partial publication.
- for(const pkg of (modules?release.packages:entries)){
+ for(const pkg of (modules||preview||previewSplit?release.packages:entries)){
   const response=await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg.name)}?filens-tag-check=${Date.now()}`,{signal:AbortSignal.timeout(20000)});
   if(!response.ok)throw new Error(`Registry tags ${pkg.name}: HTTP ${response.status}`);
   const published=await response.json();

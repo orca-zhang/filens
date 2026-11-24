@@ -10,7 +10,7 @@
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp?v=branding-20261114)](apps/demo/public/home/filens-demo.mp4)
 
-**Latest release: [v0.6.7](https://github.com/orca-zhang/filens/releases/tag/v0.6.7)** · CLI **0.5.7** · preview **0.3.7** · mobile SDKs **0.1.7** · DSH **0.1.10**.
+**Latest release: [v0.6.8](https://github.com/orca-zhang/filens/releases/tag/v0.6.8)** · CLI **0.5.7** · preview **0.3.8** · mobile SDKs **0.1.8** · DSH **0.1.10**.
 
 [▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
 
@@ -21,7 +21,7 @@
 | Approximate size | **Lite 6.90–7.17 MiB (<10 MB) · Full 31.26–33.80 MiB** offline downloads; Full includes preview assets, OCR runtime and models. Lite adds OCR/preview assets separately. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.93–2.20 MiB**. The CLI sizes above measure complete **v0.6.7 offline archive downloads**. Full includes preview **0.3.7**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.7 component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.7 source-build main runtimes: **4.17 MB Brotli** summed across split files, or **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.93–2.20 MiB**. The CLI sizes above measure complete **v0.6.7 offline archive downloads**. Full includes preview **0.3.7**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.7 component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.8 source-build main runtimes: **4.17 MB Brotli** summed across split files, or **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 Verified November 6, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Versions, counts and complete extension list](docs/release-v0.6.6-format-counts.json).
 
@@ -123,11 +123,15 @@ Version 0.1.10 includes **File workspace** in the same `dsh-filens` installation
 
 ### Browser integration: single file or split modules
 
-**Preview 0.3.7:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [the official site](https://filens.cc/downloads/). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
+**Preview 0.3.8:** split ZIP and npm package sizes are listed in [the release report](docs/release-v0.6.8.md). Download browser runtimes from [GitHub Releases](https://github.com/orca-zhang/filens/releases/tag/v0.6.8). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
-npm: [filens-preview@0.3.7](https://www.npmjs.com/package/filens-preview/v/0.3.7), **16.22 MiB** download / **31.88 MiB** installed, including both builds. [Public registry checks](docs/preview-npm-registry-validation.json).
+npm: [filens-preview@0.3.8](https://www.npmjs.com/package/filens-preview/v/0.3.8), **9.76 MiB** / **25.50 MiB** installed with both builds; [filens-preview-split@0.3.8](https://www.npmjs.com/package/filens-preview-split/v/0.3.8) is **5.64 MiB** / **17.03 MiB** installed, 42% smaller because it omits the all-in-one build. [Package measurements](docs/preview-sizes.md) · [Release validation](docs/release-v0.6.8-validation.json).
 
-The same API is available in both builds. Vue, styles and the conversion engines are included; your app needs no Vue installation.
+The same API is available in both builds and both npm packages. Vue, styles and the conversion engines are included; your app needs no Vue installation. Install the split-only package when you want to avoid downloading the all-in-one runtime:
+
+```sh
+npm install filens-preview-split
+```
 
 ```html
 <div id="preview" style="height: 80vh"></div>
@@ -147,7 +151,7 @@ Deploy the extracted runtime directory and import its `filens.js` over HTTP(S). 
 
 ### iOS / Android SDKs
 
-**SDK 0.1.7 / preview 0.3.7:** iOS ZIP **5.64 MiB**, Android ZIP **5.65 MiB**.
+**SDK 0.1.8 / preview 0.3.8:** iOS and Android source SDKs include the split runtime and offline assets. See [exact sizes](docs/mobile-sdk-sizes.json).
 Source SDKs are available as a local Swift Package and an Android
 Library, sharing the offline frontend and WASM runtime. See the
 [mobile SDK integration guide](sdk/README.md) and

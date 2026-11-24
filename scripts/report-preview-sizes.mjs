@@ -46,6 +46,12 @@ if (packed.version === version) {
   report += `\n## Measured npm pack artifact\n\n| Package | Compressed download | Installed file bytes |\n| --- | ---: | ---: |\n| filens-preview ${version} | ${mib(packed.bytes)} MiB | ${mib(packed.unpackedBytes)} MiB |\n\nThis local npm pack receipt does not establish registry publication. The npm package includes **both** complete runtime directories, archive assets, types, documentation and license notices. MiB = 1,048,576 bytes; excludes the npm cache and filesystem allocation overhead. [Exact package bytes and SHA-256](preview-package-sizes.json).\n`;
 }
 try {
+  const splitPackage = await read('docs/preview-split-package-sizes.json');
+  if (splitPackage.version === version) {
+    report += `\n## Split-only npm pack artifact\n\n| Package | Compressed download | Installed file bytes |\n| --- | ---: | ---: |\n| filens-preview-split ${version} | ${mib(splitPackage.bytes)} MiB | ${mib(splitPackage.unpackedBytes)} MiB |\n\nThis package omits the all-in-one build. It is a local npm pack receipt; registry publication is recorded separately. [Exact package bytes and SHA-256](preview-split-package-sizes.json).\n`;
+  }
+} catch (error) { if (error.code !== 'ENOENT') throw error; }
+try {
   const sdk = await read('docs/mobile-sdk-sizes.json');
   if (sdk.previewVersion === version) {
     report += `\n## Published mobile source SDKs ${sdk.version}\n\nThese release snapshots are measured separately from the current source build above. Each SDK includes the complete offline split runtime ${version}; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.\n\n| SDK | ZIP download | Extracted file bytes |\n| --- | ---: | ---: |\n${sdk.packages.map(item => `| ${item.platform === 'ios' ? 'iOS / Swift Package' : 'Android / Java Library'} | ${mib(item.bytes)} MiB | ${mib(item.unpackedBytes)} MiB |`).join('\n')}\n\nExcludes build tools, build caches and filesystem allocation overhead. [Exact SDK bytes and SHA-256](mobile-sdk-sizes.json).\n`;

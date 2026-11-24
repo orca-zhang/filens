@@ -1,7 +1,7 @@
 {
-  "observedAt": "2026-11-13T13:53:28.645Z",
+  "observedAt": "2026-11-24T11:28:18.398Z",
   "name": "filens-preview",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "source": "offline npm tarball",
   "platform": "darwin-arm64",
   "passed": true,
@@ -9,13 +9,9 @@
     "Standalone installation without runtime dependencies",
     "MIT license and third-party notices",
     "TypeScript consumer imports of split and all-in-one exports",
-    "64 real browser previews from installed assets",
-    "No external runtime requests",
-    "Single JavaScript runtime request for all-in-one",
-    "CLI loopback HTTP restrictions",
-    "Native WAV audio, HEIF decoding and native MOV playback or explicit codec errors without FFmpeg",
-    "12 PDF/iWork/RAW/STEP/HEIF/RAR previews after Vite production bundling of npm exports"
+    "Native audio, HEIF decoding and unsupported codec handling",
+    "12 PDF/iWork/RAW/STEP/HEIF/RAR previews after production Vite bundling",
+    "No external requests during installed-package browser tests"
   ],
-  "mediaBrowser": "chromium",
-  "browserReport": "preview-validation.json"
+  "mediaBrowser": "chromium"
 }
