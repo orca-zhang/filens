@@ -15,6 +15,7 @@ const number = (value, digits = 1) => value == null ? '—' : value.toLocaleStri
 function page(data, prefix, english) {
   const t = (zh, en) => english ? en : zh;
   const summaryChart = english ? 'site-summary.en.svg' : 'site-summary.svg';
+  const chartSize = english ? { width: 2000, height: 1660 } : { width: 1600, height: 1110 };
   const ordered = [...data.baselines].sort((a, b) =>
     b.metrics.complexQuality.stock - a.metrics.complexQuality.stock ||
     b.metrics.complexQuality.filens - a.metrics.complexQuality.filens);
@@ -51,7 +52,7 @@ function page(data, prefix, english) {
 <div class="table-scroll" role="region" aria-label="${t('配对成绩，可横向滚动', 'Paired results, scroll horizontally')}" tabindex="0"><table><caption>${t('原生环境 → 安装 FiLens；质量与证据越高越好，耗时越低越好。', 'Stock → FiLens; higher quality and evidence scores are better, lower latency is better.')}</caption>
 <thead><tr><th scope="col">Harness</th><th scope="col">${t('模型 / 推理', 'Model / reasoning')}</th><th scope="col">${t('复杂题质量 / 100', 'Complex quality / 100')}</th><th scope="col">${t('带证据成功', 'Evidence success')}</th><th scope="col">p50 / ${t('整批', 'batch')}</th><th scope="col">p95</th><th scope="col">${t('全题 token', 'All-task tokens')}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <details><summary>${t('逐组运行范围、版本与限制', 'Per-harness protocols, versions and caveats')}</summary>${details}</details>
-<figure><a href="${prefix}${summaryChart}"><img src="${prefix}${summaryChart}" width="1600" height="1110" alt="${t(`${data.baselines.length} 个 harness 的质量、p50、p95 与 token 四面板配对柱状图`, `Four-panel paired bar charts of quality, p50, p95 and tokens across ${data.baselines.length} harnesses`)}"></a><figcaption>${t('点击查看官网四面板原图。斜线柱为不完整用量小计，不计算节省率。', 'Open the four-panel website chart. Hatched bars show incomplete usage subtotals, without savings percentages.')}</figcaption></figure>
+<figure><a href="${prefix}${summaryChart}"><img src="${prefix}${summaryChart}" width="${chartSize.width}" height="${chartSize.height}" alt="${english ? `Four vertical paired-bar panels compare quality, p50, p95 and tokens across ${data.baselines.length} harnesses, identified by brand marks` : `${data.baselines.length} 个 harness 的质量、p50、p95 与 token 四面板配对柱状图`}"></a><figcaption>${t('点击查看官网四面板原图。斜线柱为不完整用量小计，不计算节省率。', 'Four vertical paired-bar panels compare quality, p50, p95 and token use. A brand mark identifies every harness; incomplete token totals are shown as subtotals only.')}</figcaption></figure>
 </section>
 <section id="method"><h2>${t('评测方法与范围', 'Methodology and scope')}</h2>
 <p>${t('两组固定相同问题、模型、语料与设置，Agent 自主选择工具。CLI harness 每题每组重复三次；WorkBuddy 为每组一轮 13 题同批对话。失败和超时保留。', 'Each pair uses the same questions, model, corpus and settings, with autonomous tool choice. CLI harnesses repeat every task three times per condition; WorkBuddy uses one 13-task batch per condition. Failures and timeouts remain included.')}</p>

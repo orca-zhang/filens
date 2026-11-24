@@ -47,8 +47,8 @@ test('publishes standalone bilingual results and a verifiable summary archive wi
       assert.equal(doc.querySelectorAll('script').length, 0);
       const chart = doc.querySelector('figure img');
       assert.ok(chart.getAttribute('src').endsWith(lang === 'en' ? 'site-summary.en.svg' : 'site-summary.svg'));
-      assert.equal(chart.getAttribute('width'), '1600');
-      assert.equal(chart.getAttribute('height'), '1110');
+      assert.equal(chart.getAttribute('width'), lang === 'en' ? '2000' : '1600');
+      assert.equal(chart.getAttribute('height'), lang === 'en' ? '1660' : '1110');
       for (const element of doc.querySelectorAll('a[href], img[src]')) {
         const url = element.getAttribute('href') ?? element.getAttribute('src');
         if (url.startsWith('https://') || url.startsWith('/') || url.startsWith('#')) continue;
@@ -84,11 +84,12 @@ test('website charts keep four panels, include every harness and distinguish mis
     const svg = renderSiteChart(data, english);
     const dom = new JSDOM(svg, { contentType: 'image/svg+xml' });
     const doc = dom.window.document;
-    assert.equal(doc.documentElement.getAttribute('viewBox'), '0 0 1600 1110');
+    assert.equal(doc.documentElement.getAttribute('viewBox'), english ? '0 0 2000 1660' : '0 0 1600 1110');
     assert.deepEqual([...doc.querySelectorAll('[data-metric]')].map(node => node.getAttribute('data-metric')), ['quality', 'p50', 'p95', 'tokens']);
     for (const panel of doc.querySelectorAll('[data-metric]')) {
       assert.equal(panel.querySelectorAll('[data-harness]').length, data.baselines.length);
       assert.ok(panel.querySelector('[data-harness="ZimaOS-Blue"]'));
+      if (english) assert.equal(panel.querySelectorAll('[data-harness] image').length, data.baselines.length - 1);
     }
     const p50 = doc.querySelector('[data-metric="p50"] [data-harness="WorkBuddy Desktop"]');
     assert.equal(p50.querySelector('[data-condition="stock"]').getAttribute('data-value'), '57.773');
