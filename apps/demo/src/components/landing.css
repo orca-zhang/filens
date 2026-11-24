@@ -70,6 +70,8 @@
 .landing .highlights-section .principle-proof strong { font-size: clamp(23px, 3vw, 36px); }
 .landing .highlights-section button.text-link { display: flex; border: 0; padding: 0; background: none; color: var(--home-accent); font-size: 12px; margin-top: 18px; }
 .landing .skill-install-copy .bench-link { display: block; }
+.landing .benchmark-section { padding-block: 64px; border-top: 1px solid var(--home-line); }
+.landing .benchmark-actions { display: flex; justify-content: center; margin-top: 24px; }
 
 .landing .skill-install-section {
   display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: center; gap: 44px;

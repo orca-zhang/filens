@@ -97,8 +97,8 @@ test('switches between complete Chinese and English homepages and remembers the 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('文件的精彩，打开就看见。');
   const highlights = page.locator('#highlights');
   await expect(highlights.locator('article')).toHaveCount(3);
-  await expect(highlights).toContainText('全球唯一真开源的前端原生 PPTX');
-  await expect(highlights).toContainText('唯一率先真支持 iWork 15');
+  await expect(highlights).toContainText('唯一真开源的前端原生 PPTX');
+  await expect(highlights).toContainText('率先支持 iWork 15');
   await expect(highlights.locator('.principle-proof strong').last()).toHaveText('Panorama');
   await expect(highlights).toContainText('DJI');
   await expect(highlights).toContainText('Insta360');
@@ -112,7 +112,7 @@ test('switches between complete Chinese and English homepages and remembers the 
   await expect(page).toHaveTitle('filens · Files shine bright. Dreams take flight.');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Files shine bright.Dreams take flight.');
   await expect(highlights).toContainText('frontend-native PPTX');
-  await expect(highlights).toContainText('first and only iWork 15 parser');
+  await expect(highlights).toContainText('first iWork 15 parser');
   await expect(highlights).toContainText('real time, entirely in the browser');
   await expect(page.locator('#skill').getByRole('link', { name: /FiLens-Bench/ })).toHaveAttribute('href', 'https://filens.cc/bench/en.html');
   await expect(page.getByRole('tab', { name: 'Docs', exact: true })).toBeVisible();
