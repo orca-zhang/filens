@@ -65,9 +65,11 @@ Excerpts target long documents and preserve complete sentences/paragraphs. Short
 fitting --summary-chars is returned whole without a query. No sentence is clipped.
 Summaries select original excerpts using local density/TF-IDF/BM25/diversity scoring.
 They use no language model. JSON includes source offsets, omissions and clipping.
-Search flags: --query TEXT, --search-mode bm25|exact|files, --max-results N,
+Search flags: --query TEXT, --search-mode bm25|exact|files|glob, --max-results N,
               --max-files N, --max-depth N, --include-hidden, --no-cache (search uses memory only; no hashing).
 Search ranks full extracted text; exact uses case-sensitive literal matching.
+Glob searches filenames with *, ? and **, pruning impossible directory subtrees.
+Quote globs: --search-mode glob --query 'reports/2026/**/*.pdf'.
 It has no embedding model. Inspect search.complete and scan errors before citing.
 Search accepts directories or ZIP/JAR/WAR/EAR/APK, TAR, TGZ/TAR.GZ and GZ files.
 Nested archives expand through the shared core (up to 8 layers), including OCR.

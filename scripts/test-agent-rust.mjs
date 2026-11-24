@@ -39,7 +39,7 @@ try {
   assert.equal(capacity.capacity.ocr.enabled,false);
   assert.equal(run(['read',text,'--json']).content.text.trim(),'中文证据\nBudget 42');
   assert.equal(run(['convert',text,'converted.docx']).ok,true);
-  assert.equal(run(['convert',path.join(root,'examples/go-wazero-converter/fixtures/raw/sample.dng'),'converted.jpg']).ok,true);
+  assert.equal(run(['convert',path.join(root,'examples/converter/fixtures/raw/sample.dng'),'converted.jpg']).ok,true);
   assert.equal(run([],JSON.stringify({input:text,op:'understand'})).op,'understand');
   assert.equal(run(['--unknown','--json'],'',2).error.code,'invalid_request');
   for (const input of ['{"input":', '{"format":"toml","input":"x.txt"}', '{} {}', '{"unknown":true}']) {

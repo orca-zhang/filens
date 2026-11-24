@@ -358,7 +358,7 @@ function normalizePairs(pairs) {
 async function verifyManifest() {
   const manifest = await readJson('wasm/converter-core/manifest/conversions.json');
   const imageManifest = await readJson('wasm/converter-image/manifest/conversions.json');
-  const fixtureManifest = await readJson('examples/go-wazero-converter/fixtures/manifest.json');
+  const fixtureManifest = await readJson('examples/converter/fixtures/manifest.json');
   const normalized = normalizePairs(manifest);
   const normalizedImage = normalizePairs(imageManifest);
   const fixturePairs = normalizePairs(fixtureManifest.jobs ?? []);
@@ -577,77 +577,16 @@ async function verifyRealSampleScriptEntrypoints() {
   }
 }
 
-async function verifyGoWrapperBoundary() {
-  const supportedFormats = await readText('examples/go-wazero-converter/supported_formats.go');
-  check(
-    supportedFormats.includes('manifest.SupportedConversions()'),
-    'Go wrapper SupportedConversions must delegate to the WASM core manifest'
-  );
-  check(
-    supportedFormats.includes('manifest.IsSupportedConversionPair(sourceFormat, targetFormat)'),
-    'Go wrapper conversion preflight must delegate to the WASM core manifest'
-  );
-
-  const goFiles = await listGoFiles('examples/go-wazero-converter');
-  for (const filePath of goFiles) {
-    const source = await fs.readFile(filePath, 'utf8');
-    const displayPath = path.relative(rootDir, filePath).replace(/\\/g, '/');
-    check(!source.includes('"os/exec"'), `${displayPath} must not import os/exec`);
-    check(!/\bexec\.Command\b/.test(source), `${displayPath} must not spawn external converters`);
-    check(!/\b(soffice|libreoffice|onlyoffice|x2t|poi)\b/i.test(source), `${displayPath} must not shell out or bind to external converter engines`);
-  }
-}
-
-async function listGoFiles(relativeDir) {
-  const start = path.join(rootDir, relativeDir);
-  const files = [];
-  async function walk(current) {
-    const entries = await fs.readdir(current, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(current, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith('.go') && !entry.name.endsWith('_test.go')) {
-        files.push(fullPath);
-      }
-    }
-  }
-  await walk(start);
-  return files;
-}
-
-function extractGoErrorCodeConstants(source) {
-  const constants = [];
-  const pattern = /\b(ErrorCode[A-Za-z]+)\s*=\s*"([^"]+)"/g;
-  for (const match of source.matchAll(pattern)) {
-    constants.push([match[1], match[2]]);
-  }
-  return constants;
-}
-
-function formatPairs(pairs) {
-  return pairs.map(([name, value]) => `${name}=${value}`).join(', ');
-}
-
 async function verifyStableErrorCodes() {
   const rustSource = await readText('wasm/converter-core-rust/src/main.rs');
-  const goSource = await readText('examples/go-wazero-converter/error_codes.go');
-  const goCodes = extractGoErrorCodeConstants(goSource);
-  const expectedJson = JSON.stringify(expectedErrorCodes);
 
   for (const [, code] of expectedErrorCodes) {
     check(rustSource.includes(`"${code}"`), `Rust WASI core must preserve stable error code: ${code}`);
   }
-  check(
-    JSON.stringify(goCodes) === expectedJson,
-    `Go/wazero wrapper error codes drifted from the fixed ABI set: got ${formatPairs(goCodes)}, want ${formatPairs(expectedErrorCodes)}`
-  );
 
-  const goReadme = await readText('examples/go-wazero-converter/README.md');
   const x2tDoc = await readText('docs/x2t-wasm-evaluation.md');
   const architectureDoc = await readText('docs/multi-format-architecture.md');
   for (const [, code] of expectedErrorCodes) {
-    check(goReadme.includes(code), `Go/wazero README must document stable error code: ${code}`);
     check(x2tDoc.includes(code), `x2t evaluation doc must preserve stable error code gate: ${code}`);
     check(architectureDoc.includes(code), `multi-format architecture doc must mention stable converter error metadata: ${code}`);
   }
@@ -659,8 +598,8 @@ async function verifyX2TGuardrails() {
     'without widening this repository',
     'optional high-fidelity browser-side candidate',
     'pure WASI without JavaScript glue',
-    'Go backend paths remain thin shells around pure WASI only',
-    'examples/go-wazero-converter` must remain WASI-only'
+    'Backend runtimes must use pure WASI modules.',
+    'Keep the default backend conversion path WASI-only.'
   ]) {
     check(doc.includes(required), `x2t evaluation doc is missing guardrail text: ${required}`);
   }
@@ -673,7 +612,6 @@ async function main() {
   await verifyBrowserWasmClientBoundary();
   await verifyDemoEntrypoints();
   await verifyRealSampleScriptEntrypoints();
-  await verifyGoWrapperBoundary();
   await verifyStableErrorCodes();
   await verifyX2TGuardrails();
 

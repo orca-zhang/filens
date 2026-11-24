@@ -9,7 +9,7 @@ import { transform } from 'esbuild';
 import { minify } from 'terser';
 import ts from 'typescript';
 import lzma from 'lzma';
-import { createPackedAssetReader } from '../packages/preview/src/packed-assets.mjs';
+import { createPackedAssetReader, createGroupedPackedAssetReader } from '../packages/preview/src/packed-assets.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const decoderFile = path.join(root, 'packages/preview/vendor/lzma/decoder.wasm');
@@ -26,6 +26,51 @@ function crc32(bytes) {
   let value = -1;
   for (const byte of bytes) value = table[(value ^ byte) & 255] ^ (value >>> 8);
   return (value ^ -1) >>> 0;
+}
+
+export async function packAssetGroups(assets, cacheDirectory = path.join(root, 'node_modules/.cache/filens-assets')) {
+  const groups = [], mapping = [], indices = new Map(assets.map((asset, index) => [asset, index]));
+  // Large resources and each WASM file get independent dictionaries so using
+  // one worker or engine does not restore code for unrelated formats.
+  const large = asset => asset.kind !== 2 && asset.bytes.length >= 100_000;
+  const wasm = assets.filter(asset => asset.kind === 2);
+  for (const members of [assets.filter(asset => asset.kind !== 2 && !large(asset)),
+    ...assets.filter(large).map(asset => [asset]), ...wasm.map(asset => [asset])].filter(group => group.length)) {
+    const input = Buffer.concat(members.map(asset => asset.bytes)), checksum = crc32(input), key = sha(input);
+    const cache = path.join(cacheDirectory, `${key}-lzma-2.3.2-9.bin`);
+    let compressed;
+    try { compressed = await readFile(cache); }
+    catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      compressed = await new Promise((resolve, reject) => lzma.compress(input, 9,
+        (result, failure) => failure ? reject(failure) : resolve(Buffer.from(result))));
+      await mkdir(cacheDirectory, { recursive: true });
+      await writeFile(cache, compressed);
+    }
+    const assetIndices = members.map(asset => indices.get(asset));
+    assetIndices.forEach((index, local) => { mapping[index] = [groups.length, local]; });
+    groups.push({ compressed, layout: members.map(asset => [asset.kind, asset.bytes.length]),
+      size: input.length, checksum, sha256: key, assets: assetIndices });
+  }
+  return { groups, mapping };
+}
+
+/** @returns {import('vite').Plugin} */
+export function deferredPreviewWorkers() {
+  return {
+    name: 'filens-deferred-inline-workers', enforce: 'post', apply: 'build',
+    transform(code, id) {
+      if (!/[?&]worker(?:&|$)/.test(id) || !/[?&]inline(?:&|$)/.test(id)) return;
+      // Vite's inline wrapper eagerly creates the source string and Blob.
+      // Keep its URL fallback/revocation logic, moving setup into construction.
+      const signature = 'export default function WorkerWrapper(options) {';
+      const offset = code.indexOf(signature);
+      assert(code.startsWith('const jsContent = ') && offset > 0,
+        'Vite inline worker wrapper changed; check deferred worker initialization.');
+      const start = offset + signature.length;
+      return { code: code.slice(offset, start) + '\n' + code.slice(0, offset) + code.slice(start), map: { mappings: '' } };
+    }
+  };
 }
 
 export async function packPreviewAssets(code, { cacheDirectory = path.join(root, 'node_modules/.cache/filens-assets'), threshold = 1024 } = {}) {
@@ -70,23 +115,15 @@ export async function packPreviewAssets(code, { cacheDirectory = path.join(root,
     stripped = stripped.slice(0, start) + replacement + stripped.slice(end);
   }
   const input = Buffer.concat(assets.map(asset => asset.bytes));
-  const layout = assets.map(asset => [asset.kind, asset.bytes.length]);
   const checksum = crc32(input), key = sha(input);
-  const cache = path.join(cacheDirectory, `${key}-lzma-2.3.2-9.bin`);
-  let compressed;
-  try { compressed = await readFile(cache); }
-  catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-    compressed = await new Promise((resolve, reject) => lzma.compress(input, 9,
-      (result, failure) => failure ? reject(failure) : resolve(Buffer.from(result))));
-    await mkdir(cacheDirectory, { recursive: true });
-    await writeFile(cache, compressed);
-  }
+  const { groups, mapping } = await packAssetGroups(assets, cacheDirectory);
+  const groupArguments = groups.map(group => [group.compressed.toString('base64'), group.layout, group.size, group.checksum]);
+  const compressed = Buffer.concat(groups.map(group => group.compressed));
   const decoder = await readFile(decoderFile);
   assert.equal(sha(decoder), decoderSha256, 'Packed preview decoder differs from its pinned ABI.');
   // Verify the same decoder that browsers run, including every byte of every
   // original worker/string and the uncompressed WASM, before writing output.
-  const reader = createPackedAssetReader(decoder.toString('base64'), compressed.toString('base64'), layout, input.length, checksum);
+  const reader = createGroupedPackedAssetReader(createPackedAssetReader, decoder.toString('base64'), groupArguments, mapping);
   const urls = [];
   try {
     for (const [index, asset] of assets.entries()) {
@@ -101,7 +138,7 @@ export async function packPreviewAssets(code, { cacheDirectory = path.join(root,
     ecma: 2020, module: true, compress: { passes: 3 }, mangle: true,
     format: { comments: /@license|@preserve|^!/ }
   });
-  const bootstrap = await transform(`const ${helper}=(${createPackedAssetReader.toString()})(${JSON.stringify(decoder.toString('base64'))},${JSON.stringify(compressed.toString('base64'))},${JSON.stringify(layout)},${input.length},${checksum});`, {
+  const bootstrap = await transform(`const ${helper}=(${createGroupedPackedAssetReader.toString()})(${createPackedAssetReader.toString()},${JSON.stringify(decoder.toString('base64'))},${JSON.stringify(groupArguments)},${JSON.stringify(mapping)});`, {
     loader: 'js', target: 'es2020', minify: true, legalComments: 'none'
   });
   // Vite 5's asset scanner can mistake later code in a heavily minified bundle
@@ -119,9 +156,12 @@ export async function packPreviewAssets(code, { cacheDirectory = path.join(root,
   return {
     code: packed,
     report: {
-      format: 'lzma-alone-static-assets-v1', sourceSha256: sha(code), outputSha256: sha(packed),
+      format: 'lzma-alone-static-asset-groups-v2', sourceSha256: sha(code), outputSha256: sha(packed),
       decoder: { bytes: decoder.length, sha256: decoderSha256 },
       compressed: { bytes: compressed.length, sha256: sha(compressed) },
+      groups: groups.map(group => ({ assets: group.assets,
+        decoded: { bytes: group.size, sha256: group.sha256, crc32: group.checksum },
+        compressed: { bytes: group.compressed.length, sha256: sha(group.compressed) } })),
       decoded: { bytes: input.length, sha256: key, crc32: checksum },
       assets: assets.map(asset => ({ kind: ['text', 'base64', 'wasm'][asset.kind], bytes: asset.bytes.length, sha256: sha(asset.bytes) })),
       before: { raw: Buffer.byteLength(code), gzip: gzipSync(code, { level: 9 }).length, brotli: brotliCompressSync(code).length },

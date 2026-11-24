@@ -1,4 +1,5 @@
 import { InMemoryWasiHost, loadWasmModule } from './wasi-runner';
+import type { WasmModuleSource } from './wasi-runner';
 import type { HeifColorProfile, HeifRaster } from './heif-decoder';
 
 interface ImageCore {
@@ -10,8 +11,8 @@ interface ImageCore {
 }
 
 /** Generic buffer transport; all color math and PNG encoding execute in WASM. */
-export async function createHeifNormalizer(wasmUrl: string) {
-  const module = await loadWasmModule(wasmUrl);
+export async function createHeifNormalizer(source: WasmModuleSource) {
+  const module = await loadWasmModule(source);
   const wasi = new InMemoryWasiHost({ args: ['converter-image'], files: {} });
   const instance = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi.imports });
   wasi.setInstance(instance);

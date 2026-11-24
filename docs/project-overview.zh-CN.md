@@ -57,12 +57,20 @@ filens '理解 "report.pages"，以 JSON 输出'
 
 ## filens 的独特能力
 
+据我们所知，截至 **2026-11-24**，最核心的三项亮点是：
+
+1. **全球唯一真正开源的前端原生 PPTX 预览库，体验更好。** MIT 开源解析与渲染代码，直接通过 HTML/SVG 呈现文本、图片、形状、表格及已支持的图表，无需上传或转换服务。[真实样例的首屏与兼容性实测](performance-comparison.zh-CN.md)。
+2. **唯一率先真正支持 iWork 15 协议解析的库，也是唯一的 iWork 纯前端预览库。** Keynote、Pages、Numbers 直接在浏览器内解码和呈现，无需苹果设备或 iCloud。早期协议研究与代码基础来自 [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork)，项目保留贡献说明并继续扩展新协议与渲染能力。[iWork 实现与支持范围](../packages/iwork/README.md)。
+3. **Panorama：可能是目前对全景照片和视频畸变参数支持最好的库。** 读取 DJI、Insta360 原片内的官方标定参数，支持纯前端实时渲染全景视频；X5 原片实测接缝观感明显优于专业全景库 PSV 的通用双鱼眼投影。[画面对比与实测范围](performance-comparison.zh-CN.md#x5-原片解析厂商标定接缝更自然) · [实时渲染实现](panorama-rendering-implementation.md)。
+
+其他能力包括：
+
 - **超小的传统 Office/WPS 标准化核心**：DOC/WPS 及相关传统格式可以通过面向预览的 WASM 核心标准化为 OpenXML。预览 0.3.0 的 `converter-core.wasm` 原始体积为 **894.8 KiB**，Brotli 后为 **327.6 KiB**。
-- **PPTX 原生预览**：直接解析 PPTX，并通过 HTML/SVG 渲染文本、图片、形状、表格及已支持的二维柱状图和饼图。本地演示文稿无需上传，也无需等待转换服务；同一个查看器还能打开 iWork、CAD、RAW 与全景原片。
-- **iWork 原生解析与预览**：在端侧直接解码 Keynote、Pages 和 Numbers，包括当前版本的 iWork 协议结构。早期协议研究与代码基础来自 [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork)，当前实现明确保留这项贡献说明，并在其部分工作之上继续扩展。
 - **有开源传承的浏览器原生 CAD**：CAD 转换部分来源于 [`orcastor/cad2x-converter`](https://github.com/orcastor/cad2x-converter)，它是一个紧凑的 DXF/DWG 到 DXF/PDF/PNG/SVG 转换工具。filens 在此基础上增加了 DXF 纯浏览器解析与 SVG 渲染路径，让常见图纸无需启动原生进程或转换服务器即可预览。
 - **大量长尾视觉格式**：同一预览容器可处理带相机标定信息的全景格式、广泛的相机 RAW，以及 STEP/STP 和大量网格、场景、点云、体素、分子、动作骨骼、体数据格式。
 - **统一且可移植的本地优先架构**：原生渲染器与按需加载的 WASM 模块共享同一运行时，既可以完全留在用户设备上，也可以部署到受控的 CLI、边缘或后端宿主中，而不需要另写一套转换引擎。
+
+[FiLens-Bench 独立评测站与结果包](https://filens.cc/bench/)比较各 Agent 正常安装 FiLens 前后的复杂文件任务质量、耗时与 token 用量；[方法与复现](../benchmarks/filens-bench/README.zh-CN.md)。
 
 ## 架构
 
@@ -140,7 +148,7 @@ filens 数据来自 macOS/Darwin arm64、Apple M4 Pro、24 GiB 内存、Node.js 
 | --- | ---: | --- | --- |
 | ONLYOFFICE x2t 原生完整版（含字体） | 约 **560+ MB** 压缩包 | 原生进程，Office 转换覆盖和排版保真更完整；字体、资源和部署成本也最高 | 服务端高保真转换、批处理 |
 | [`onlyoffice-x2t-wasm`](https://github.com/cryptpad/onlyoffice-x2t-wasm/releases/tag/v9.3.0%2B0) `v9.3.0+0` | 发布 ZIP **15.79 MiB**；`x2t.wasm` **34.32 MiB**，Brotli **6.49 MiB** | 使用 Emscripten glue 的浏览器侧高保真候选，初始化和内存成本高于轻量 WASI core | 浏览器内 Office 转换、无需服务端的高保真场景 |
-| **filens converter-core** | `converter-core.wasm` **894.8 KiB**；gzip **403.3 KiB**；Brotli **327.6 KiB** | 纯 WASI，可由浏览器或 wazero 执行；优先预览标准化、结构化提取和安全降级 | 本地预览、索引、Agent 文件理解和边缘设备 |
+| **filens converter-core** | `converter-core.wasm` **894.8 KiB**；gzip **403.3 KiB**；Brotli **327.6 KiB** | 纯 WASI，可由浏览器或兼容的 WASI 宿主执行；优先预览标准化、结构化提取和安全降级 | 本地预览、索引、Agent 文件理解和边缘设备 |
 | **filens converter-image** | 可选 `converter-image.wasm` **1099.9 KiB**；gzip **298.4 KiB**；Brotli **216.3 KiB** | 仅在 RAW/ICNS 图片转换时加载 | 相机 RAW 缩略图和 ICNS 预览 |
 
 filens 两行使用 2026-11-02 的预览 0.3.0 构建实测。完整运行时、npm 包与移动 SDK 体积见[发布体积报告](preview-sizes.md)；上表仅计量单个 WASM 文件。
@@ -151,14 +159,14 @@ iWork 是文档生态中的另一处空白。传统方案通常只能调用 macO
 
 ### 本机性能快照
 
-以下结果来自同一台 Windows 10 / Xeon E5-2696 v4 / Node.js 20.20 / Go 1.24 机器，对仓库内同一组小型 DOC、XLS、PPT 样例运行 5 次。x2t-wasm 测试未加载额外字体；数字只用于观察启动和执行量级，不代表复杂文档或跨设备的通用成绩。
+以下是历史测量：当时通过已移除的 Go/wazero 宿主，在同一台 Windows 10 / Xeon E5-2696 v4 机器上运行 5 次小型 DOC、XLS、PPT 样例。它只记录旧宿主的启动和执行量级，当前代码不再提供该运行路径。
 
 | 指标 | filens WASI core | x2t-wasm `v9.3.0+0` |
 | --- | ---: | ---: |
 | DOC -> DOCX 核心转换 | **1 ms** | 中位数 **145.7 ms** |
 | XLS -> XLSX 核心转换 | **1 ms** | 中位数 **51.8 ms** |
 | PPT -> PPTX 核心转换 | **1 ms** | 中位数 **103.9 ms** |
-| 冷初始化 | 未单独隔离；由 wazero 缓存编译模块 | 中位数 **292.3 ms** |
+| 冷初始化 | 旧宿主未单独隔离 | 中位数 **292.3 ms** |
 | 初始化后 RSS 增量 | 未单独测量 | 约 **121-124 MiB** |
 
 filens 不承诺完整重建 Office 排版、图表、动画、嵌入对象或公式计算。它适合作为预览、索引和提取的轻量本地路径；当生产级 Office 转换保真是首要要求时，应按需加载或部署更重的转换引擎。
@@ -199,7 +207,7 @@ npm run dev --workspace @filens/demo
 - [PPTX 核心运行时](../packages/core/README.md)
 - [iWork 原生运行时](../packages/iwork/README.md)
 - [浏览器原生 CAD 运行时与来源说明](../packages/cad/README.md)
-- [Go/wazero WASM 宿主示例](../examples/go-wazero-converter/README.md)
+- [Rust Agent CLI 与转换命令](agent-cli.md)
 - [架构路线图](roadmap.md)
 
 **看见文件，理解文件，使用文件。**

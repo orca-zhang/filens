@@ -19,7 +19,7 @@ const out = path.resolve(root, option('--output', 'tmp/continued-review/ebook'))
 fs.mkdirSync(out, { recursive: true });
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const samples = [
-  { name: 'sample.epub', format: 'epub', bytes: fs.readFileSync(path.join(root, 'examples/go-wazero-converter/fixtures/doc/sample.epub')) },
+  { name: 'sample.epub', format: 'epub', bytes: fs.readFileSync(path.join(root, 'examples/converter/fixtures/doc/sample.epub')) },
   { name: 'generated-40-chapters.epub', format: 'epub', bytes: await createBookFixture() },
   { name: 'generated-200-pages.cbz', format: 'cbz', bytes: await createComicFixture(200) },
   { name: 'generated-1000-pages.cbz', format: 'cbz', bytes: await createComicFixture(1000) }

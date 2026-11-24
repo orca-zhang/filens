@@ -3,7 +3,7 @@
 The design gallery loads twelve original documents: six PSD, two PSB, two
 PDF-compatible AI, one EPS and one two-page PS. WebP assets are picker thumbnails
 only. Uploaded files and samples use the same frontend WASM conversion core.
-Go hosts these modules and maps their results; it does not parse PostScript.
+The Rust CLI can host the same WASI modules; format handling remains in the core.
 
 | Input | Preview path | Limits |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ WASM. Reproduce the measurement with `node scripts/check-postscript-size.mjs`.
 `createWasmConverterClient({ wasm, postscriptWasm })` selects the compact module.
 The shared protocol remains identical. If a lean core is used without that
 option, EPS/PS and legacy AI return `engine_unavailable` and
-`requiredModule: postscript`. The Go host follows that result to the sibling
+`requiredModule: postscript`. A host can follow that result to the sibling
 module. The standalone all-in-one preview embeds the combined core, which has
 a different size scope.
 

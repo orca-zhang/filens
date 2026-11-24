@@ -1,0 +1,11 @@
+{
+  "id": "codex-shared-model",
+  "harness": "codex",
+  "harnessVersion": "REPLACE_WITH_CODEX_VERSION",
+  "model": "REPLACE_WITH_SHARED_MODEL_ID",
+  "reasoningEffort": "medium",
+  "commands": {
+    "stock": ["node", "/ABSOLUTE/PATH/filens/benchmarks/filens-bench/codex-adapter.mjs", "--profile", "native"],
+    "filens": ["node", "/ABSOLUTE/PATH/filens/benchmarks/filens-bench/codex-adapter.mjs", "--profile", "with-filens"]
+  }
+}

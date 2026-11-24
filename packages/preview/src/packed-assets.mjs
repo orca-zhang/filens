@@ -1,9 +1,26 @@
 // The ABI is pinned to vendor/lzma/build-info.json. This reader contains no
 // JavaScript evaluator: only static data is packed; ESM code stays ordinary JS.
-export function createPackedAssetReader(decoderBase64, packedBase64, layout, outputSize, checksum) {
+export function createGroupedPackedAssetReader(createReader, decoderBase64, groups, mapping) {
+  let decoderModule;
+  const getDecoderModule = create => decoderModule ??= create();
+  const readers = groups.map(([payload, layout, size, checksum]) =>
+    createReader(decoderBase64, payload, layout, size, checksum, getDecoderModule));
+  return index => {
+    if (!Number.isInteger(index) || index < 0 || index >= mapping.length) throw new Error('Invalid packed preview assets.');
+    const [group, local] = mapping[index];
+    if (!Number.isInteger(group) || group < 0 || group >= readers.length) throw new Error('Invalid packed preview assets.');
+    return readers[group](local);
+  };
+}
+
+export function createPackedAssetReader(decoderBase64, packedBase64, layout, outputSize, checksum, getDecoderModule) {
   let values;
-  const fromBase64 = value => typeof Uint8Array.fromBase64 === 'function'
-    ? Uint8Array.fromBase64(value) : Uint8Array.from(atob(value), character => character.charCodeAt(0));
+  const fromBase64 = value => {
+    if (typeof Uint8Array.fromBase64 === 'function') return Uint8Array.fromBase64(value);
+    const binary = atob(value), bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+    return bytes;
+  };
   const toBase64 = bytes => {
     if (typeof bytes.toBase64 === 'function') return bytes.toBase64();
     const parts = [];
@@ -26,7 +43,10 @@ export function createPackedAssetReader(decoderBase64, packedBase64, layout, out
       if (total !== outputSize) invalid();
       const inputLength = input.length - 13;
       let memory;
-      const instance = new WebAssembly.Instance(new WebAssembly.Module(fromBase64(decoderBase64)), { a: {
+      const module = getDecoderModule
+        ? getDecoderModule(() => new WebAssembly.Module(fromBase64(decoderBase64)))
+        : new WebAssembly.Module(fromBase64(decoderBase64));
+      const instance = new WebAssembly.Instance(module, { a: {
         a: invalid, b: () => {}, c: invalid, d: invalid,
         e: size => {
           try {
@@ -51,14 +71,29 @@ export function createPackedAssetReader(decoderBase64, packedBase64, layout, out
         if (code !== 0 || summary.getUint32(0, true) !== inputLength || summary.getUint32(4, true) !== outputSize ||
             ![1, 4].includes(summary.getUint32(8, true))) invalid();
         const bytes = new Uint8Array(memory.buffer, output, outputSize);
-        const table = new Uint32Array(256);
+        const table = new Uint32Array(8 * 256);
         for (let value = 0; value < 256; value++) {
           let entry = value;
           for (let bit = 0; bit < 8; bit++) entry = entry & 1 ? 0xedb88320 ^ (entry >>> 1) : entry >>> 1;
           table[value] = entry;
         }
-        let crc = -1;
-        for (let offset = 0; offset < bytes.length; offset++) crc = table[(crc ^ bytes[offset]) & 255] ^ (crc >>> 8);
+        // Slice CRC-32 by eight bytes without relying on the host's byte order.
+        for (let slice = 1; slice < 8; slice++) {
+          for (let value = 0; value < 256; value++) {
+            const entry = table[(slice - 1) * 256 + value];
+            table[slice * 256 + value] = table[entry & 255] ^ (entry >>> 8);
+          }
+        }
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        let crc = -1, position = 0;
+        for (; position + 8 <= bytes.length; position += 8) {
+          const first = crc ^ view.getUint32(position, true), second = view.getUint32(position + 4, true);
+          crc = table[1792 + (first & 255)] ^ table[1536 + ((first >>> 8) & 255)] ^
+            table[1280 + ((first >>> 16) & 255)] ^ table[1024 + (first >>> 24)] ^
+            table[768 + (second & 255)] ^ table[512 + ((second >>> 8) & 255)] ^
+            table[256 + ((second >>> 16) & 255)] ^ table[second >>> 24];
+        }
+        for (; position < bytes.length; position++) crc = table[(crc ^ bytes[position]) & 255] ^ (crc >>> 8);
         if (((crc ^ -1) >>> 0) !== checksum) invalid();
         const text = new TextDecoder('utf-8', { fatal: true }), result = [];
         let offset = 0;

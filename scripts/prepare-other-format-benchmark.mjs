@@ -109,14 +109,14 @@ for (const name of ['x2t.js', 'x2t.wasm']) {
 }
 const conversions = [
   ['legacy-project-workflow.doc', 'apps/demo/public/samples/legacy-project-workflow.doc', 'docx'],
-  ['hyperlink.doc', 'examples/go-wazero-converter/fixtures/real/apache-poi/hyperlink.doc', 'docx'],
-  ['table-merges.doc', 'examples/go-wazero-converter/fixtures/real/apache-poi/table-merges.doc', 'docx'],
-  ['Simple.xls', 'examples/go-wazero-converter/fixtures/real/apache-poi/Simple.xls', 'xlsx'],
-  ['SimpleWithFormula.xls', 'examples/go-wazero-converter/fixtures/real/apache-poi/SimpleWithFormula.xls', 'xlsx'],
-  ['SOLVSAMP.XLS', 'examples/go-wazero-converter/fixtures/xls/SOLVSAMP.XLS', 'xlsx'],
+  ['hyperlink.doc', 'examples/converter/fixtures/real/apache-poi/hyperlink.doc', 'docx'],
+  ['table-merges.doc', 'examples/converter/fixtures/real/apache-poi/table-merges.doc', 'docx'],
+  ['Simple.xls', 'examples/converter/fixtures/real/apache-poi/Simple.xls', 'xlsx'],
+  ['SimpleWithFormula.xls', 'examples/converter/fixtures/real/apache-poi/SimpleWithFormula.xls', 'xlsx'],
+  ['SOLVSAMP.XLS', 'examples/converter/fixtures/xls/SOLVSAMP.XLS', 'xlsx'],
   ['legacy-sample-show.ppt', 'apps/demo/public/samples/legacy-sample-show.ppt', 'pptx'],
   ['rich-text.rtf', 'apps/demo/public/samples/rich-text.rtf', 'docx'],
-  ['sample.odt', 'examples/go-wazero-converter/fixtures/doc/sample.odt', 'docx'],
+  ['sample.odt', 'examples/converter/fixtures/doc/sample.odt', 'docx'],
   ['convert-numeric.csv', 'tmp/performance-other/samples/generated-numeric.csv', 'xlsx']
 ];
 for (const [name, source, target] of conversions) {

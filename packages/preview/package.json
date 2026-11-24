@@ -22,6 +22,8 @@
   },
   "files": [
     "dist",
+    "!dist/all-in-one/filens.js.br",
+    "!dist/all-in-one/filens.js.gz",
     "README.md",
     "LICENSE"
   ],

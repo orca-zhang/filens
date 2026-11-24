@@ -1,0 +1,12 @@
+import ts from 'typescript';import {readFile,writeFile,mkdir} from 'node:fs/promises';import {createHash} from 'node:crypto';
+const file=process.argv[2] ?? 'packages/preview/dist/all-in-one/filens.js',code=await readFile(file,'utf8');
+await mkdir('dist/ai-compression',{recursive:true});
+const ast=ts.createSourceFile('filens.js',code,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
+let call;function visit(n){if(ts.isVariableDeclaration(n)&&n.name.getText(ast)==='__filensPackedAsset')call=n.initializer;ts.forEachChild(n,visit);}visit(ast);
+if(!call)throw Error('Packed asset reader not found');
+const args=call.arguments.map(a=>JSON.parse(a.getText(ast)));
+await writeFile('dist/ai-compression/payload.lzma',Buffer.from(args[1],'base64'));
+await writeFile('dist/ai-compression/decoder.wasm',Buffer.from(args[0],'base64'));
+await writeFile('dist/ai-compression/source.js',code);
+await writeFile('dist/ai-compression/extracted.json',JSON.stringify({file,initializer:{start:call.getStart(ast),end:call.end},reader:call.expression.getText(ast),layout:args[2],size:args[3],crc:args[4],sha256:createHash('sha256').update(code).digest('hex')}));
+console.log({assets:args[2].length,decodedBytes:args[3],compressedBytes:Buffer.from(args[1],'base64').length});

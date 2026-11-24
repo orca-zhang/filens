@@ -35,7 +35,7 @@ The same conversion core can run in a browser, desktop or mobile client, CLI, ed
 - OCR is an optional application-provided component, so scanned files can become searchable without coupling the core to one OCR vendor;
 - legacy Office/WPS to OpenXML exists as a narrow, preview-oriented normalization path, not as a promise of full-fidelity office reconstruction.
 
-All parsing and conversion algorithms live in the front-end WebAssembly conversion core. Go wrappers only provide CLI/HTTP plumbing, validation, temporary-file handling, result mapping, output validation, and WASM invocation. Browser, desktop/mobile, CLI, edge, and backend hosts therefore reuse the same conversion implementation instead of maintaining separate format-specific engines.
+All parsing and conversion algorithms live in the shared Rust/WASM conversion core. Browser, desktop/mobile, CLI, edge, and backend hosts reuse the same implementation instead of maintaining separate format-specific engines.
 
 ### 3. An Agent-facing CLI
 
@@ -55,12 +55,20 @@ The similarity implementation's macOS arm64 local build comparison added about *
 
 ## What Makes filens Different
 
+To our knowledge, as of **November 24, 2026**, the three defining capabilities are:
+
+1. **The world's only truly open-source, frontend-native PPTX preview library, with a better viewing experience.** MIT-licensed parsing and HTML/SVG rendering display text, images, shapes, tables and supported charts without uploads or a conversion service. [Real-file preview performance and coverage](performance-comparison.md).
+2. **The first and only library to truly parse the iWork 15 protocol, and the only pure frontend iWork viewer.** Decode and display Keynote, Pages and Numbers in the browser without Apple hardware or iCloud. Earlier protocol research and code are credited to [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork), with continued protocol and rendering work built on part of that foundation. [Implementation and coverage](../packages/iwork/README.md).
+3. **Panorama: possibly the best support for panorama photo and video distortion parameters.** Read official calibration embedded in DJI and Insta360 originals and render panorama video in real time, entirely in the browser. Tested X5 seams look visibly better than specialist PSV's generic dual-fisheye projection. [Visual comparison and scope](performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams) · [Real-time rendering](panorama-rendering-implementation.md).
+
+Additional capabilities include:
+
 - **Tiny legacy Office/WPS normalization**: DOC/WPS and related legacy inputs can be normalized to OpenXML by a preview-focused WASM core. Preview 0.3.0's `converter-core.wasm` is **894.8 KiB raw and 327.6 KiB Brotli**.
-- **Native PPTX preview**: presentations are parsed directly and rendered with HTML/SVG, including text, images, shapes, tables, and supported 2D column and pie charts. Local decks need no upload or conversion service; the same viewer also opens iWork, CAD, RAW, and panorama originals.
-- **Native iWork parsing and preview**: Keynote, Pages, and Numbers are decoded on the client, including current iWork protocol structures. Earlier protocol research and code are credited to [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork), on which part of this work builds.
 - **Browser-native CAD with an open-source lineage**: the CAD conversion work is derived from [`orcastor/cad2x-converter`](https://github.com/orcastor/cad2x-converter), a compact DXF/DWG-to-DXF/PDF/PNG/SVG tool. filens adds a direct pure-browser DXF parsing and SVG rendering path for supported drawings, so common previews need no native process or conversion server.
 - **Long-tail visual formats**: the same preview host covers calibrated panorama formats, a broad camera RAW set, STEP/STP, and many mesh, scene, point-cloud, voxel, molecule, motion, and volume formats.
 - **One portable, local-first architecture**: direct renderers and on-demand WASM modules share a common runtime. They can stay entirely on the user's device or run inside a controlled CLI, edge, or backend host without introducing another conversion engine.
+
+[FiLens-Bench's dedicated results site and snapshot downloads](https://filens.cc/bench/en.html) compare complex-file quality, latency and token usage before and after each agent's normal FiLens installation. [Methodology and reproduction](../benchmarks/filens-bench/README.zh-CN.md).
 
 ## Architecture
 
@@ -138,7 +146,7 @@ The following sizes compare representative converter artifacts and packages. The
 | --- | ---: | --- | --- |
 | Full native ONLYOFFICE x2t with fonts | About **560+ MB** compressed | Native process with broad Office conversion coverage and higher layout fidelity; also the highest font, resource, and deployment cost | High-fidelity server conversion and batch processing |
 | [`onlyoffice-x2t-wasm`](https://github.com/cryptpad/onlyoffice-x2t-wasm/releases/tag/v9.3.0%2B0) `v9.3.0+0` | Release ZIP **15.79 MiB**; `x2t.wasm` **34.32 MiB**, Brotli **6.49 MiB** | A higher-fidelity browser candidate using Emscripten glue, with higher initialization and memory costs than a lightweight WASI core | In-browser Office conversion without a server |
-| **filens converter-core** | `converter-core.wasm` **894.8 KiB**; gzip **403.3 KiB**; Brotli **327.6 KiB** | Pure WASI for browser or wazero execution; optimized for preview normalization, structured extraction, and safe fallback | Local previews, indexing, Agent file understanding, and edge devices |
+| **filens converter-core** | `converter-core.wasm` **894.8 KiB**; gzip **403.3 KiB**; Brotli **327.6 KiB** | Pure WASI for browsers and compatible hosts; optimized for preview normalization, structured extraction, and safe fallback | Local previews, indexing, Agent file understanding, and edge devices |
 | **filens converter-image** | Optional `converter-image.wasm` **1099.9 KiB**; gzip **298.4 KiB**; Brotli **216.3 KiB** | Loaded only for RAW/ICNS image conversion | Camera RAW thumbnails and ICNS previews |
 
 The filens rows use the 2026-11-02 Preview 0.3.0 build. Complete runtime, npm and mobile SDK sizes are in the [release size report](preview-sizes.md); the table above measures individual WASM files.
@@ -149,14 +157,14 @@ iWork is a separate gap in the document ecosystem. Traditionally, applications h
 
 ### Local performance snapshot
 
-The following results were measured over five runs on the same Windows 10 / Xeon E5-2696 v4 / Node.js 20.20 / Go 1.24 machine, using the same small DOC, XLS, and PPT samples from this repository. The x2t-wasm run did not load additional fonts. These figures show startup and execution scale only; they are not universal benchmarks for complex documents or other hardware.
+This is a historical measurement: the retired Go/wazero host ran the same small DOC, XLS, and PPT samples five times on one Windows 10 / Xeon E5-2696 v4 machine. It records that host’s startup and execution scale; the current repository no longer provides that runtime path.
 
 | Metric | filens WASI core | x2t-wasm `v9.3.0+0` |
 | --- | ---: | ---: |
 | DOC -> DOCX core conversion | **1 ms** | Median **145.7 ms** |
 | XLS -> XLSX core conversion | **1 ms** | Median **51.8 ms** |
 | PPT -> PPTX core conversion | **1 ms** | Median **103.9 ms** |
-| Cold initialization | Not isolated; wazero caches the compiled module | Median **292.3 ms** |
+| Cold initialization | Not isolated in the retired host | Median **292.3 ms** |
 | RSS increase after initialization | Not measured separately | About **121-124 MiB** |
 
 filens does not promise complete reconstruction of Office layout, charts, animations, embedded objects, or formula calculation. Use it as the lightweight local path for preview, indexing, and extraction; load or deploy a heavier engine when production-grade Office conversion fidelity is the primary requirement.
@@ -197,7 +205,7 @@ Useful references:
 - [Core PPTX runtime](../packages/core/README.md)
 - [Native iWork runtime](../packages/iwork/README.md)
 - [Browser-native CAD runtime and attribution](../packages/cad/README.md)
-- [Go/wazero WASM host example](../examples/go-wazero-converter/README.md)
+- [Rust Agent CLI and conversion commands](agent-cli.md)
 - [Architecture roadmap](roadmap.md)
 
 **See the file. Understand the file. Work with the file.**

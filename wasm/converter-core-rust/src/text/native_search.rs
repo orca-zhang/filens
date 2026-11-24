@@ -1,6 +1,7 @@
 //! Native entry points for the exact frontend Rust decoder/retrieval sources.
 //! The CLI adds no independent parser or ranking algorithm.
 mod plain;
+pub mod path_glob;
 mod search;
 mod stopwords;
 

@@ -1,0 +1,1514 @@
+{
+  "observedAt": "2026-11-24T07:46:58.603Z",
+  "node": "v20.20.2",
+  "browser": "159.0.8154.6",
+  "scope": "Current workspace build. Single-file uses its produced Brotli sidecar; split mode Brotli-compresses each JS module and CSS at the local server, while WASM is served raw. Seven cold trials per entry and format, each in a fresh browser context. First preview timing ends at onRendered and includes first-time format worker setup. Startup byte totals include only resources requested through the selected preview; module request counts exclude the HTML page.",
+  "artifacts": {
+    "singlePerGroup": {
+      "mainSha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+      "mainRawBytes": 6931226,
+      "packedOutputSha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+      "delivery": {
+        "gzip": {
+          "bytes": 3710836,
+          "sha256": "058ead34fb2afacb456afb6586b15188b213d3cf4a6fce726f7833028f80270a",
+          "encoder": "Zopfli 15 iterations"
+        },
+        "brotli": {
+          "bytes": 3574169,
+          "sha256": "47a3642dbeab2654f1347d5b079d060daa4fed0066371d341b8897b9fab5dddc",
+          "encoder": "Brotli quality 11"
+        },
+        "limit": 4000000
+      },
+      "decoderBytes": 20283
+    },
+    "singleSharedDecoder": {
+      "mainSha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+      "mainRawBytes": 6931294,
+      "packedOutputSha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+      "delivery": {
+        "gzip": {
+          "bytes": 3710865,
+          "sha256": "ce3c4c1732b6fe166dbf91c65f8b362ee4cba17769951959b65aec7643f4dc3e",
+          "encoder": "Zopfli 15 iterations"
+        },
+        "brotli": {
+          "bytes": 3574273,
+          "sha256": "66c65bd7e19751addb1c6797a593247fd709a64edd4f378a01a4f380f43173a6",
+          "encoder": "Brotli quality 11"
+        },
+        "limit": 4000000
+      },
+      "decoderBytes": 20283
+    },
+    "split": {
+      "mainSha256": "cae15c7cd301eca095c8a70a3903a949796d5cd094fdc2d71d382c9d3a60f72f",
+      "mainRawBytes": 56501
+    }
+  },
+  "variants": {
+    "singlePerGroup": {
+      "cases": {
+        "text.txt": {
+          "samples": [
+            {
+              "importMs": 5878,
+              "readyMs": 13.099999904632568,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 107.20000004768372,
+              "readyMs": 13.400000095367432,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.10000014305115,
+              "readyMs": 13.599999904632568,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 108.80000019073486,
+              "readyMs": 13.599999904632568,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106,
+              "readyMs": 13.100000143051147,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.69999980926514,
+              "readyMs": 13,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.5,
+              "readyMs": 13.700000047683716,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 106.69999980926514,
+          "medianPreviewMs": 119.70000004768372,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 1,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931226,
+              "sha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+              "brotliBytes": 3574169
+            }
+          },
+          "startupRawBytes": 6931226,
+          "startupBrotliBytes": 3574169
+        },
+        "atlas.pdf": {
+          "samples": [
+            {
+              "importMs": 106.60000014305115,
+              "readyMs": 72.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.59999990463257,
+              "readyMs": 73.70000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.5,
+              "readyMs": 73.29999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.79999995231628,
+              "readyMs": 73.10000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.30000019073486,
+              "readyMs": 74.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.20000004768372,
+              "readyMs": 73.79999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104,
+              "readyMs": 70.80000019073486,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 105.59999990463257,
+          "medianPreviewMs": 179,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 2,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931226,
+              "sha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+              "brotliBytes": 3574169
+            }
+          },
+          "startupRawBytes": 6931226,
+          "startupBrotliBytes": 3574169
+        },
+        "sample.pages": {
+          "samples": [
+            {
+              "importMs": 104.5,
+              "readyMs": 154.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 102.80000019073486,
+              "readyMs": 150.69999980926514,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.29999995231628,
+              "readyMs": 152.20000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.70000004768372,
+              "readyMs": 151.29999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.29999995231628,
+              "readyMs": 150.79999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.10000014305115,
+              "readyMs": 150.69999980926514,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 102.69999980926514,
+              "readyMs": 152,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 103.29999995231628,
+          "medianPreviewMs": 254.69999980926514,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 2,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931226,
+              "sha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+              "brotliBytes": 3574169
+            }
+          },
+          "startupRawBytes": 6931226,
+          "startupBrotliBytes": 3574169
+        },
+        "color.heic": {
+          "samples": [
+            {
+              "importMs": 102.5,
+              "readyMs": 73.89999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.5,
+              "readyMs": 74.30000019073486,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.19999980926514,
+              "readyMs": 74.70000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 102.89999985694885,
+              "readyMs": 74.40000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.10000014305115,
+              "readyMs": 73.70000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.10000014305115,
+              "readyMs": 74.79999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 102.70000004768372,
+              "readyMs": 74.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 4,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 103.19999980926514,
+          "medianPreviewMs": 177.80000019073486,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 4,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931226,
+              "sha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+              "brotliBytes": 3574169
+            }
+          },
+          "startupRawBytes": 6931226,
+          "startupBrotliBytes": 3574169
+        },
+        "cube.stp": {
+          "samples": [
+            {
+              "importMs": 103.09999990463257,
+              "readyMs": 62.09999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.20000004768372,
+              "readyMs": 58.799999952316284,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.40000009536743,
+              "readyMs": 58.40000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.89999985694885,
+              "readyMs": 58.60000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.40000009536743,
+              "readyMs": 59,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.89999985694885,
+              "readyMs": 58.299999952316284,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.30000019073486,
+              "readyMs": 59.19999980926514,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 2,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 103.89999985694885,
+          "medianPreviewMs": 162.80000019073486,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 2,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931226,
+              "sha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+              "brotliBytes": 3574169
+            }
+          },
+          "startupRawBytes": 6931226,
+          "startupBrotliBytes": 3574169
+        }
+      }
+    },
+    "singleSharedDecoder": {
+      "cases": {
+        "text.txt": {
+          "samples": [
+            {
+              "importMs": 5709.700000047684,
+              "readyMs": 13.799999952316284,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 117.70000004768372,
+              "readyMs": 13.600000143051147,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 107.40000009536743,
+              "readyMs": 13.299999952316284,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 109.09999990463257,
+              "readyMs": 13.900000095367432,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 109,
+              "readyMs": 13.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.5,
+              "readyMs": 13.099999904632568,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 109,
+              "readyMs": 14.299999952316284,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 109,
+          "medianPreviewMs": 123,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 1,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931294,
+              "sha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+              "brotliBytes": 3574273
+            }
+          },
+          "startupRawBytes": 6931294,
+          "startupBrotliBytes": 3574273
+        },
+        "atlas.pdf": {
+          "samples": [
+            {
+              "importMs": 111.10000014305115,
+              "readyMs": 83.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 108.70000004768372,
+              "readyMs": 71,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.09999990463257,
+              "readyMs": 73.40000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.39999985694885,
+              "readyMs": 73.30000019073486,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105,
+              "readyMs": 74,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.79999995231628,
+              "readyMs": 73.60000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.59999990463257,
+              "readyMs": 76.29999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 105.79999995231628,
+          "medianPreviewMs": 179.5,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 1,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931294,
+              "sha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+              "brotliBytes": 3574273
+            }
+          },
+          "startupRawBytes": 6931294,
+          "startupBrotliBytes": 3574273
+        },
+        "sample.pages": {
+          "samples": [
+            {
+              "importMs": 106.39999985694885,
+              "readyMs": 153.70000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.5,
+              "readyMs": 154.90000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.90000009536743,
+              "readyMs": 157.09999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.5,
+              "readyMs": 160.09999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.79999995231628,
+              "readyMs": 155.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.90000009536743,
+              "readyMs": 156.29999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.59999990463257,
+              "readyMs": 155.70000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 105.5,
+          "medianPreviewMs": 260.40000009536743,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 1,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931294,
+              "sha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+              "brotliBytes": 3574273
+            }
+          },
+          "startupRawBytes": 6931294,
+          "startupBrotliBytes": 3574273
+        },
+        "color.heic": {
+          "samples": [
+            {
+              "importMs": 103.90000009536743,
+              "readyMs": 74.79999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.79999995231628,
+              "readyMs": 74.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.5,
+              "readyMs": 74.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106.5,
+              "readyMs": 74,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106,
+              "readyMs": 74.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.5,
+              "readyMs": 74.40000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.09999990463257,
+              "readyMs": 74,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 2,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 105.5,
+          "medianPreviewMs": 179.90000009536743,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 1,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931294,
+              "sha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+              "brotliBytes": 3574273
+            }
+          },
+          "startupRawBytes": 6931294,
+          "startupBrotliBytes": 3574273
+        },
+        "cube.stp": {
+          "samples": [
+            {
+              "importMs": 105.29999995231628,
+              "readyMs": 59.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 104.79999995231628,
+              "readyMs": 59.09999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 107.5,
+              "readyMs": 60.200000047683716,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 103.79999995231628,
+              "readyMs": 63,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 106,
+              "readyMs": 61,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 107.59999990463257,
+              "readyMs": 59.10000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            },
+            {
+              "importMs": 105.79999995231628,
+              "readyMs": 59.89999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 1,
+              "decoderCompilesAfterImport": 1,
+              "decoderCompilesAfterPreview": 1,
+              "moduleRequests": 1
+            }
+          ],
+          "medianImportMs": 105.79999995231628,
+          "medianPreviewMs": 166.70000004768372,
+          "medianDecoderCompilesAfterImport": 1,
+          "medianDecoderCompilesAfterPreview": 1,
+          "medianModuleRequests": 1,
+          "files": {
+            "filens.js": {
+              "rawBytes": 6931294,
+              "sha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+              "brotliBytes": 3574273
+            }
+          },
+          "startupRawBytes": 6931294,
+          "startupBrotliBytes": 3574273
+        }
+      }
+    },
+    "split": {
+      "cases": {
+        "text.txt": {
+          "samples": [
+            {
+              "importMs": 431.5,
+              "readyMs": 50.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            },
+            {
+              "importMs": 11.400000095367432,
+              "readyMs": 14.099999904632568,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            },
+            {
+              "importMs": 11.299999952316284,
+              "readyMs": 14.100000143051147,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            },
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 14.700000047683716,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            },
+            {
+              "importMs": 11.5,
+              "readyMs": 14.400000095367432,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            },
+            {
+              "importMs": 11.599999904632568,
+              "readyMs": 14.700000047683716,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            },
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 14,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 6
+            }
+          ],
+          "medianImportMs": 11.599999904632568,
+          "medianPreviewMs": 25.90000009536743,
+          "medianDecoderCompilesAfterImport": 0,
+          "medianDecoderCompilesAfterPreview": 0,
+          "medianModuleRequests": 6,
+          "files": {
+            "chunks/compression-B3uQmMlJ.js": {
+              "rawBytes": 12847,
+              "sha256": "90ddc429d991575270e572db5b9b8c12cb3041cc65568158c02a307aa9701a5b",
+              "brotliBytes": 5307
+            },
+            "chunks/index-afj0BrGi.js": {
+              "rawBytes": 324149,
+              "sha256": "8c439ec245c3362f18408f130cde74d22e0d7b273d5721ac40bee5ed55894c01",
+              "brotliBytes": 68687
+            },
+            "chunks/native-drivers-4Ce6a3Kz.js": {
+              "rawBytes": 50083,
+              "sha256": "112ff77a79ac867f967738fee72a1b085b8819868ee5012f1d11a791a2b3fd61",
+              "brotliBytes": 14453
+            },
+            "chunks/touch-gestures-CIlEOGpc.js": {
+              "rawBytes": 2240,
+              "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe",
+              "brotliBytes": 917
+            },
+            "chunks/vue-pGYQookl.js": {
+              "rawBytes": 72738,
+              "sha256": "4c97955b8645684b077381911b5a6066787de66856dbaac9d95c9311a039f598",
+              "brotliBytes": 25819
+            },
+            "filens.js": {
+              "rawBytes": 56501,
+              "sha256": "cae15c7cd301eca095c8a70a3903a949796d5cd094fdc2d71d382c9d3a60f72f",
+              "brotliBytes": 9847
+            }
+          },
+          "startupRawBytes": 518558,
+          "startupBrotliBytes": 125030
+        },
+        "atlas.pdf": {
+          "samples": [
+            {
+              "importMs": 11.700000047683716,
+              "readyMs": 1666.9000000953674,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            },
+            {
+              "importMs": 11.700000047683716,
+              "readyMs": 83.90000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            },
+            {
+              "importMs": 12.200000047683716,
+              "readyMs": 82.79999995231628,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            },
+            {
+              "importMs": 12,
+              "readyMs": 66.90000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            },
+            {
+              "importMs": 11.700000047683716,
+              "readyMs": 66.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            },
+            {
+              "importMs": 11.700000047683716,
+              "readyMs": 66.70000004768372,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            },
+            {
+              "importMs": 11.699999809265137,
+              "readyMs": 67.10000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 9
+            }
+          ],
+          "medianImportMs": 11.700000047683716,
+          "medianPreviewMs": 78.90000009536743,
+          "medianDecoderCompilesAfterImport": 0,
+          "medianDecoderCompilesAfterPreview": 0,
+          "medianModuleRequests": 9,
+          "files": {
+            "chunks/compression-B3uQmMlJ.js": {
+              "rawBytes": 12847,
+              "sha256": "90ddc429d991575270e572db5b9b8c12cb3041cc65568158c02a307aa9701a5b",
+              "brotliBytes": 5307
+            },
+            "chunks/font-matching-9VMxhVQV.js": {
+              "rawBytes": 10512,
+              "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9",
+              "brotliBytes": 3721
+            },
+            "chunks/index-afj0BrGi.js": {
+              "rawBytes": 324149,
+              "sha256": "8c439ec245c3362f18408f130cde74d22e0d7b273d5721ac40bee5ed55894c01",
+              "brotliBytes": 68687
+            },
+            "chunks/pdf-Cx0hNgPH.js": {
+              "rawBytes": 448308,
+              "sha256": "d4d4f0ea17f9d823308171076f9533edec69afb5de8679cb763162ebac11d930",
+              "brotliBytes": 109781
+            },
+            "chunks/pdf-driver-DMrBgon6.js": {
+              "rawBytes": 14560,
+              "sha256": "79c7c10b4c474ea714411f3bbc30395836ff9f2795b87a909cdf92aab8b1e632",
+              "brotliBytes": 4381
+            },
+            "chunks/touch-gestures-CIlEOGpc.js": {
+              "rawBytes": 2240,
+              "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe",
+              "brotliBytes": 917
+            },
+            "chunks/vue-pGYQookl.js": {
+              "rawBytes": 72738,
+              "sha256": "4c97955b8645684b077381911b5a6066787de66856dbaac9d95c9311a039f598",
+              "brotliBytes": 25819
+            },
+            "filens.js": {
+              "rawBytes": 56501,
+              "sha256": "cae15c7cd301eca095c8a70a3903a949796d5cd094fdc2d71d382c9d3a60f72f",
+              "brotliBytes": 9847
+            },
+            "pdf.worker.min.mjs": {
+              "rawBytes": 1078612,
+              "sha256": "f499515a0dc93d97787d693a75218a439675719283f56812067c036dcae1f8d5",
+              "brotliBytes": 238652
+            }
+          },
+          "startupRawBytes": 2020467,
+          "startupBrotliBytes": 467112
+        },
+        "sample.pages": {
+          "samples": [
+            {
+              "importMs": 11.799999952316284,
+              "readyMs": 1311.9000000953674,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            },
+            {
+              "importMs": 12.399999856948853,
+              "readyMs": 163.60000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            },
+            {
+              "importMs": 12.099999904632568,
+              "readyMs": 170,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            },
+            {
+              "importMs": 11.5,
+              "readyMs": 163.40000009536743,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            },
+            {
+              "importMs": 11.700000047683716,
+              "readyMs": 164,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            },
+            {
+              "importMs": 11.799999952316284,
+              "readyMs": 162.09999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            },
+            {
+              "importMs": 11.899999856948853,
+              "readyMs": 160.60000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 15
+            }
+          ],
+          "medianImportMs": 11.799999952316284,
+          "medianPreviewMs": 175.70000004768372,
+          "medianDecoderCompilesAfterImport": 0,
+          "medianDecoderCompilesAfterPreview": 0,
+          "medianModuleRequests": 15,
+          "files": {
+            "assets/iwork-worker-Dzf_UkLT.js": {
+              "rawBytes": 922662,
+              "sha256": "21de8493cdee53f55a404570f55699baf021b999ed57d45766f9d8ba1846d185",
+              "brotliBytes": 161262
+            },
+            "chunks/compression-B3uQmMlJ.js": {
+              "rawBytes": 12847,
+              "sha256": "90ddc429d991575270e572db5b9b8c12cb3041cc65568158c02a307aa9701a5b",
+              "brotliBytes": 5307
+            },
+            "chunks/dom-Cw1IxRDM.js": {
+              "rawBytes": 160617,
+              "sha256": "145988523557f7ac178cdce2bc5db1a008d42378fe471fdb0c0271a16ca5d081",
+              "brotliBytes": 40310
+            },
+            "chunks/font-loading-BPv1ZV5e.js": {
+              "rawBytes": 19219,
+              "sha256": "6cda0d6fe419fa03836b37f4e1cf23ea4d4f24551ea81c18a2cddb0eac670925",
+              "brotliBytes": 6634
+            },
+            "chunks/font-matching-9VMxhVQV.js": {
+              "rawBytes": 10512,
+              "sha256": "e59393fffd98a03527fb4f33c58a880dff1e35873d24c16eff27b3e6cc41bde9",
+              "brotliBytes": 3721
+            },
+            "chunks/index-afj0BrGi.js": {
+              "rawBytes": 324149,
+              "sha256": "8c439ec245c3362f18408f130cde74d22e0d7b273d5721ac40bee5ed55894c01",
+              "brotliBytes": 68687
+            },
+            "chunks/iwork-driver-D5b_MpY4.js": {
+              "rawBytes": 23357,
+              "sha256": "327228a6fd105529cae7b45fae69307acc09a9c3dc2b40f5ee9bb74a64152dbe",
+              "brotliBytes": 6940
+            },
+            "chunks/model-cache-DTm-qAoU.js": {
+              "rawBytes": 3380,
+              "sha256": "77633be010d1b5c58538a2506a9342226cdc61877135a6f048e6f6b352349f06",
+              "brotliBytes": 1211
+            },
+            "chunks/office-attachments-B7XyQNMl.js": {
+              "rawBytes": 32513,
+              "sha256": "5dcbe1f1a9d2d4a12c01d85971fcc704aa8efe8180784a3152d1120b2cf4d974",
+              "brotliBytes": 11375
+            },
+            "chunks/table-CBvjyc9e.js": {
+              "rawBytes": 7943,
+              "sha256": "81e03df0d2f6b49461a662acc22d5ae56d3dbd2258eec1059f18bb19789647de",
+              "brotliBytes": 2784
+            },
+            "chunks/touch-gestures-CIlEOGpc.js": {
+              "rawBytes": 2240,
+              "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe",
+              "brotliBytes": 917
+            },
+            "chunks/vendor-CNIhSKyp.js": {
+              "rawBytes": 863,
+              "sha256": "980bbe4a7593f69e9442223c12f4586b872e5ece401705471920511964e40a04",
+              "brotliBytes": 373
+            },
+            "chunks/vue-pGYQookl.js": {
+              "rawBytes": 72738,
+              "sha256": "4c97955b8645684b077381911b5a6066787de66856dbaac9d95c9311a039f598",
+              "brotliBytes": 25819
+            },
+            "chunks/zip-compat-D82IQ9PQ.js": {
+              "rawBytes": 72676,
+              "sha256": "2c769c24ade793573a98ee91aca567ff2210b7bcfeebc7b6c33c513962c47ae8",
+              "brotliBytes": 20740
+            },
+            "filens.js": {
+              "rawBytes": 56501,
+              "sha256": "cae15c7cd301eca095c8a70a3903a949796d5cd094fdc2d71d382c9d3a60f72f",
+              "brotliBytes": 9847
+            }
+          },
+          "startupRawBytes": 1722217,
+          "startupBrotliBytes": 365927
+        },
+        "color.heic": {
+          "samples": [
+            {
+              "importMs": 11.599999904632568,
+              "readyMs": 149.10000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            },
+            {
+              "importMs": 11.599999904632568,
+              "readyMs": 49.700000047683716,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            },
+            {
+              "importMs": 11.900000095367432,
+              "readyMs": 48.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            },
+            {
+              "importMs": 11.599999904632568,
+              "readyMs": 47.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            },
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 47.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            },
+            {
+              "importMs": 11.700000047683716,
+              "readyMs": 47.89999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            },
+            {
+              "importMs": 11.399999856948853,
+              "readyMs": 48.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 10
+            }
+          ],
+          "medianImportMs": 11.599999904632568,
+          "medianPreviewMs": 59.89999985694885,
+          "medianDecoderCompilesAfterImport": 0,
+          "medianDecoderCompilesAfterPreview": 0,
+          "medianModuleRequests": 10,
+          "files": {
+            "chunks/codec-preview-driver-DHcr672H.js": {
+              "rawBytes": 5923,
+              "sha256": "a732c714214c4e9e9487dd8e687f7c80073c5b20bebd69ab3d06866fb868ba1f",
+              "brotliBytes": 1932
+            },
+            "chunks/compression-B3uQmMlJ.js": {
+              "rawBytes": 12847,
+              "sha256": "90ddc429d991575270e572db5b9b8c12cb3041cc65568158c02a307aa9701a5b",
+              "brotliBytes": 5307
+            },
+            "chunks/index-afj0BrGi.js": {
+              "rawBytes": 324149,
+              "sha256": "8c439ec245c3362f18408f130cde74d22e0d7b273d5721ac40bee5ed55894c01",
+              "brotliBytes": 68687
+            },
+            "chunks/media-runtime-Ct-_fKsY.js": {
+              "rawBytes": 110661,
+              "sha256": "a3c62a09f66f487228ed5813eb99aa41e367997575c663fda25d653cec6ad6c0",
+              "brotliBytes": 31979
+            },
+            "chunks/native-drivers-4Ce6a3Kz.js": {
+              "rawBytes": 50083,
+              "sha256": "112ff77a79ac867f967738fee72a1b085b8819868ee5012f1d11a791a2b3fd61",
+              "brotliBytes": 14453
+            },
+            "chunks/touch-gestures-CIlEOGpc.js": {
+              "rawBytes": 2240,
+              "sha256": "c267bc11451ac7bb158cd24f4a42ae89473467e772b64dc72222325ff48409fe",
+              "brotliBytes": 917
+            },
+            "chunks/vue-pGYQookl.js": {
+              "rawBytes": 72738,
+              "sha256": "4c97955b8645684b077381911b5a6066787de66856dbaac9d95c9311a039f598",
+              "brotliBytes": 25819
+            },
+            "converter-image.wasm": {
+              "rawBytes": 1492779,
+              "sha256": "e0c8f9e33ec1308aa65d67783b2d38878720935c1fe0caa9a994e37d0d73d3b7",
+              "brotliBytes": 1492779
+            },
+            "filens.js": {
+              "rawBytes": 56501,
+              "sha256": "cae15c7cd301eca095c8a70a3903a949796d5cd094fdc2d71d382c9d3a60f72f",
+              "brotliBytes": 9847
+            },
+            "libheif.wasm": {
+              "rawBytes": 1457990,
+              "sha256": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5",
+              "brotliBytes": 1457990
+            }
+          },
+          "startupRawBytes": 3585911,
+          "startupBrotliBytes": 3109710
+        },
+        "cube.stp": {
+          "samples": [
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 1038.7000000476837,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            },
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 62.69999980926514,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            },
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 63.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            },
+            {
+              "importMs": 12.200000047683716,
+              "readyMs": 64.5,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            },
+            {
+              "importMs": 11.400000095367432,
+              "readyMs": 62.39999985694885,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            },
+            {
+              "importMs": 11.600000143051147,
+              "readyMs": 63.59999990463257,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            },
+            {
+              "importMs": 11.399999856948853,
+              "readyMs": 63.10000014305115,
+              "wasmBlobsAfterImport": 0,
+              "wasmBlobsAfterPreview": 0,
+              "decoderCompilesAfterImport": 0,
+              "decoderCompilesAfterPreview": 0,
+              "moduleRequests": 12
+            }
+          ],
+          "medianImportMs": 11.600000143051147,
+          "medianPreviewMs": 75,
+          "medianDecoderCompilesAfterImport": 0,
+          "medianDecoderCompilesAfterPreview": 0,
+          "medianModuleRequests": 12,
+          "files": {
+            "chunks/compression-B3uQmMlJ.js": {
+              "rawBytes": 12847,
+              "sha256": "90ddc429d991575270e572db5b9b8c12cb3041cc65568158c02a307aa9701a5b",
+              "brotliBytes": 5307
+            },
+            "chunks/index-afj0BrGi.js": {
+              "rawBytes": 324149,
+              "sha256": "8c439ec245c3362f18408f130cde74d22e0d7b273d5721ac40bee5ed55894c01",
+              "brotliBytes": 68687
+            },
+            "chunks/model-3ds-Cx6bPyz4.js": {
+              "rawBytes": 8439,
+              "sha256": "7ed28b2f144b1d0be9ad4b7281a0b0eb9c5b22bec2849e2d226f26c672567eb5",
+              "brotliBytes": 2507
+            },
+            "chunks/model-cache-DTm-qAoU.js": {
+              "rawBytes": 3380,
+              "sha256": "77633be010d1b5c58538a2506a9342226cdc61877135a6f048e6f6b352349f06",
+              "brotliBytes": 1211
+            },
+            "chunks/model-fbx-34GJgg7F.js": {
+              "rawBytes": 44882,
+              "sha256": "d62b2eb343b375f8bb0f377fedf53d3986390a60fdcc7a9fa3222a6ec4acae4b",
+              "brotliBytes": 12869
+            },
+            "chunks/model-vrml-bFcEw4dc.js": {
+              "rawBytes": 185988,
+              "sha256": "80b695d04d01976ac11a03c168f7182b3efe886c63ae3b005b928b3b97be2160",
+              "brotliBytes": 41617
+            },
+            "chunks/model3d-driver-Dwqa1p6e.js": {
+              "rawBytes": 106823,
+              "sha256": "caa6b3a01e70fa1cf5c988404f975b93760c3bf60e0a75b2b0d4f560db549d89",
+              "brotliBytes": 27091
+            },
+            "chunks/rust-step-importer-DP5shBqc.js": {
+              "rawBytes": 2775,
+              "sha256": "90a0fe5d6a3e36e2fdd28b39d5557be320da6468520e21b351c76fcf5d89353a",
+              "brotliBytes": 1215
+            },
+            "chunks/three-C2QOG6Zp.js": {
+              "rawBytes": 675760,
+              "sha256": "2ccb530d68ef7e66e0f3b8d33cd3af57c1b5b74310a530fdc9539f7a6fd68959",
+              "brotliBytes": 142836
+            },
+            "chunks/vue-pGYQookl.js": {
+              "rawBytes": 72738,
+              "sha256": "4c97955b8645684b077381911b5a6066787de66856dbaac9d95c9311a039f598",
+              "brotliBytes": 25819
+            },
+            "filens-step.wasm": {
+              "rawBytes": 947729,
+              "sha256": "a7fe6e147b30423e500220f2fbd69d6686983e1c1faa0048bdbf9cc978d08dbc",
+              "brotliBytes": 947729
+            },
+            "filens.js": {
+              "rawBytes": 56501,
+              "sha256": "cae15c7cd301eca095c8a70a3903a949796d5cd094fdc2d71d382c9d3a60f72f",
+              "brotliBytes": 9847
+            }
+          },
+          "startupRawBytes": 2442011,
+          "startupBrotliBytes": 1286735
+        }
+      }
+    }
+  }
+}

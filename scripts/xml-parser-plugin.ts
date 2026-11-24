@@ -1,9 +1,9 @@
-import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
 
 /** Preview only reads XML; expose the original parser without its unused builder. */
 export function xmlParserOnly(): Plugin {
-  const parser = createRequire(import.meta.url).resolve('fast-xml-parser/src/xmlparser/XMLParser.js');
+  const parser = fileURLToPath(new URL('./xmlparser/XMLParser.js', import.meta.resolve('fast-xml-parser')));
   const entry = '\0filens:xml-parser';
   return {
     name: 'filens-xml-parser-only',

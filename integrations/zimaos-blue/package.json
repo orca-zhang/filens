@@ -1,0 +1,19 @@
+{
+  "name": "filens-blue-integration",
+  "version": "9.0.1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "filens-blue-install": "install.mjs"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "files": [
+    "install.mjs",
+    "skills/filens/SKILL.md",
+    "skills/filens/references",
+    "README.md"
+  ]
+}

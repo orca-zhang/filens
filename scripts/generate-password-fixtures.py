@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / "packages/converter-client/test/fixtures/password"
 DEST.mkdir(parents=True, exist_ok=True)
 for folder, extension in [("doc", "docx"), ("xls", "xlsx"), ("ppt", "pptx")]:
-    plain = ROOT / f"examples/go-wazero-converter/fixtures/{folder}/sample.{extension}"
+    plain = ROOT / f"examples/converter/fixtures/{folder}/sample.{extension}"
     source = BytesIO(plain.read_bytes())
     # msoffcrypto's CFB writer requires the encrypted payload to use regular
     # sectors (>= 4096 bytes), so pad these intentionally tiny test packages.

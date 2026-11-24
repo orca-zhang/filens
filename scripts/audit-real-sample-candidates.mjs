@@ -6,7 +6,7 @@ import { expectedFamilyForExt } from './_preview-family-map.mjs';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const defaultRoots = [
   'apps/demo/public/samples',
-  'examples/go-wazero-converter/fixtures',
+  'examples/converter/fixtures',
   'tmp/real-samples/_sources'
 ];
 

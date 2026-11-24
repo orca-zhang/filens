@@ -16,6 +16,7 @@ const id = useId();
 let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
 const repo = 'https://github.com/orca-zhang/filens';
 const skillUrl = `${import.meta.env.BASE_URL}skills/filens/SKILL.md`;
+const publicSkillUrl = 'https://filens.cc/SKILL.md';
 const installCommand = computed(() => [
   'npx --yes skills add orca-zhang/filens --skill filens',
   target.value === 'auto' ? '' : `--agent ${target.value}`,
@@ -24,8 +25,8 @@ const installCommand = computed(() => [
 ].filter(Boolean).join(' '));
 const cliCommand = computed(() => `npm install -g ${profile.value === 'full' ? 'filens-cli' : 'filens-cli-lite'}`);
 const installPrompt = computed(() => t(
-  `帮我安装 filens，去 ${repo} 找 skills/filens/SKILL.md，按里面的说明配置 ${profile.value === 'full' ? 'Full 版 CLI（含中英文 OCR）' : 'Lite 版 CLI（按需安装 OCR）'} 和 Skill。${scope.value === 'global' ? '把 Skill 装到用户目录，供所有项目使用' : '把 Skill 装到当前项目'}${target.value === 'auto' ? '，适配当前 Agent' : `，供 ${target.value} 使用`}。装好后运行 filens capacity --json 检查是否可用，并告诉我结果。`,
-  `Install filens for me. Find skills/filens/SKILL.md at ${repo} and follow its instructions to set up the ${profile.value === 'full' ? 'Full CLI (with Chinese and English OCR)' : 'Lite CLI (install OCR as needed)'} and skill. ${scope.value === 'global' ? 'Install the skill in my user directory for all projects' : 'Install the skill in the current project'}${target.value === 'auto' ? ', for my current Agent' : `, for ${target.value}`}. After installation, run filens capacity --json to verify it works and report the results.`
+  `帮我安装 filens，读取 ${publicSkillUrl}，按里面的说明配置 ${profile.value === 'full' ? 'Full 版 CLI（含中英文 OCR）' : 'Lite 版 CLI（按需安装 OCR）'} 和 Skill。离线安装包：https://filens.cc/downloads/。${scope.value === 'global' ? '把 Skill 装到用户目录，供所有项目使用' : '把 Skill 装到当前项目'}${target.value === 'auto' ? '，适配当前 Agent' : `，供 ${target.value} 使用`}。装好后运行 filens capacity --json 检查是否可用，并告诉我结果。`,
+  `Install filens for me. Read ${publicSkillUrl} and follow its instructions to set up the ${profile.value === 'full' ? 'Full CLI (with Chinese and English OCR)' : 'Lite CLI (install OCR as needed)'} and skill. Offline packages: https://filens.cc/downloads/. ${scope.value === 'global' ? 'Install the skill in my user directory for all projects' : 'Install the skill in the current project'}${target.value === 'auto' ? ', for my current Agent' : `, for ${target.value}`}. After installation, run filens capacity --json to verify it works and report the results.`
 ));
 watch([installCommand, cliCommand, locale], () => {
   if (['install', 'cli', 'prompt'].includes(copied.value)) copied.value = '';
@@ -114,11 +115,11 @@ onUnmounted(() => clearTimeout(feedbackTimer));
 
       <section v-show="audience === 'agent'" :id="`${id}-agent-content`" class="agent-skill" :aria-labelledby="`${id}-agent`">
         <header class="agent-skill-heading"><div><h3>SKILL.md</h3><p>{{ t('与发布包共用的 Skill 原文，包含调用约定、证据定位与错误处理。', 'The same skill source shipped in the release, covering invocation, evidence references, and error handling.') }}</p></div><div class="agent-skill-actions"><button type="button" class="wb-button" @click="copy(skillMarkdown, 'skill')"><WorkbenchIcon :name="copied === 'skill' ? 'check' : 'copy'" />{{ copied === 'skill' ? t('已复制', 'Copied') : t('复制 SKILL.md', 'Copy SKILL.md') }}</button><a class="wb-button" :href="skillUrl" download="SKILL.md"><WorkbenchIcon name="download" />{{ t('下载 SKILL.md', 'Download SKILL.md') }}</a></div></header>
-        <p class="agent-skill-link">{{ t('可直接交给 Agent 的地址：', 'Share this URL with your Agent: ') }}<a :href="skillUrl" target="_blank" rel="noopener noreferrer">skills/filens/SKILL.md ↗</a></p>
+        <p class="agent-skill-link">{{ t('可直接交给 Agent 的地址：', 'Share this URL with your Agent: ') }}<a :href="publicSkillUrl" target="_blank" rel="noopener noreferrer">{{ publicSkillUrl }} ↗</a></p>
         <pre tabindex="0" :aria-label="t('SKILL.md 原文', 'SKILL.md source')"><code>{{ skillMarkdown }}</code></pre>
       </section>
 
-      <footer class="agent-footer"><span><WorkbenchIcon name="lock" />{{ t('文件在本地处理 · 首次安装需要联网', 'Files are processed locally · Initial setup requires internet access') }}</span><a :href="`${repo}/blob/main/docs/agent-cli${isEnglish ? '' : '.zh-CN'}.md`" target="_blank" rel="noopener noreferrer">{{ t('完整 CLI 文档 ↗', 'Full CLI documentation ↗') }}</a><a :href="skillUrl" download="SKILL.md">{{ t('下载 Skill', 'Download skill') }}</a></footer>
+      <footer class="agent-footer"><span><WorkbenchIcon name="lock" />{{ t('文件在本地处理 · 首次安装需要联网', 'Files are processed locally · Initial setup requires internet access') }}</span><a href="https://filens.cc/downloads/">{{ t('下载安装包', 'Download packages') }}</a><a :href="`${repo}/blob/main/docs/agent-cli${isEnglish ? '' : '.zh-CN'}.md`" target="_blank" rel="noopener noreferrer">{{ t('完整 CLI 文档 ↗', 'Full CLI documentation ↗') }}</a><a :href="skillUrl" download="SKILL.md">{{ t('下载 Skill', 'Download skill') }}</a></footer>
     </div>
     <p v-if="copied || copyError" class="agent-feedback" :class="{ 'is-error': copyError }" role="status">{{ copyError ? t('复制失败，请手动选择命令或原文复制。', 'Copy failed. Select and copy the command or source text manually.') : copied === 'install' ? t('安装命令已复制，请在终端运行。', 'Install command copied. Run it in your terminal.') : copied === 'prompt' ? t('安装提示已复制，粘贴给你的 Agent 即可。', 'Install prompt copied. Paste it into your Agent.') : t('已复制到剪贴板。', 'Copied to clipboard.') }}</p>
   </section>

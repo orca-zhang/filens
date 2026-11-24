@@ -3,7 +3,13 @@
   <h1>filens</h1>
   <p><strong>An Agent CLI. A pure frontend viewer for complex file formats.</strong></p>
   <p>Read, search, OCR, convert and preview local files. Files stay on your device.</p>
-  <p>English · <a href="README.zh-CN.md">简体中文</a> · <a href="LICENSE">MIT</a></p>
+  <p>
+    <a href="docs/performance-comparison.md"><img src="docs/assets/readme/highlight-pptx.en.svg" alt="PPTX: the only truly open-source frontend-native viewer, with a better viewing experience" width="260" /></a>
+    <a href="packages/iwork/README.md"><img src="docs/assets/readme/highlight-iwork.en.svg" alt="iWork 15: the first protocol parser and the only pure frontend iWork viewer" width="260" /></a>
+    <a href="docs/performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams"><img src="docs/assets/readme/highlight-panorama.en.svg" alt="Panorama: camera distortion calibration and real-time panorama photos and video in the browser" width="260" /></a>
+  </p>
+  <p><sub>To our knowledge, as of November 24, 2026 · <a href="docs/project-overview.md#what-makes-filens-different">Capabilities and measurements</a></sub></p>
+  <p>English · <a href="README.zh-CN.md">简体中文</a> · <a href="LICENSE">MIT</a> · <a href="https://filens.cc/bench/en.html">FiLens-Bench</a></p>
 </div>
 
 ![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicate files, similar images, CSV-to-XLSX conversion, offline HTML workbook and STEP previews](docs/assets/agent-cli/terminal-demo.gif)
@@ -21,7 +27,7 @@
 | Approximate size | **Lite 6.90–7.17 MiB (<10 MB) · Full 31.26–33.80 MiB** offline downloads; Full includes preview assets, OCR runtime and models. Lite adds OCR/preview assets separately. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.93–2.20 MiB**. The CLI sizes above measure complete **v0.6.7 offline archive downloads**. Full includes preview **0.3.7**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.7 component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.7 source-build main runtimes: **4.16 MB Brotli** summed across split files, or **3.40 MB Brotli / 3.54 MB gzip / 6.69 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+The native executable is **0.93–2.20 MiB**. The CLI sizes above measure complete **v0.6.7 offline archive downloads**. Full includes preview **0.3.7**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.7 component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.7 source-build main runtimes: **4.19 MB Brotli** summed across split files, or **3.57 MB Brotli / 3.71 MB gzip / 6.93 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
 
 Verified November 6, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Versions, counts and complete extension list](docs/release-v0.6.6-format-counts.json).
 
@@ -33,9 +39,9 @@ Verified November 6, 2026: CLI **349** extensions; preview **450** source-file e
 
 **Ask your Agent to install it:**
 
-> Install filens for me. Find skills/filens/SKILL.md at https://github.com/orca-zhang/filens and follow it to set up the CLI and skill.
+> Install filens for me. Read https://filens.cc/SKILL.md and follow it to set up the CLI and skill. Offline packages: https://filens.cc/downloads/.
 
-[Skill guide](skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [latest Release](https://github.com/orca-zhang/filens/releases/latest) and extract the entire archive. Full includes offline preview assets, OCR and models. Lite keeps OCR and preview assets optional. Both run without Node.js or npm.
+[Skill guide](https://filens.cc/SKILL.md) · For manual installation, download your platform’s offline bundle from the [official downloads](https://filens.cc/downloads/) and extract the entire archive. Full includes offline preview assets, OCR and models. Lite keeps OCR and preview assets optional. Both run without Node.js or npm.
 
 ```sh
 filens 'read "report.pdf" as json'
@@ -75,11 +81,12 @@ The HTML checks browser capabilities and blocks external resource requests. It c
   <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 offline downloads · macOS arm64 · CLI 0.5.7; Full includes preview 0.3.7 and OCR models; Lite adds preview assets separately; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
-- [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
+- [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](https://filens.cc/SKILL.md)
 - [Output formats and layouts](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 observed examples and limits](docs/agent-cli-examples.zh-CN.md)
 - [Search](docs/agent-cli-search.zh-CN.md), [nested archives](docs/agent-cli-search-archives.zh-CN.md) and [model-free key excerpts](docs/agent-cli-pruning.zh-CN.md)
 - [Duplicates and similar images](docs/agent-cli-similarity.md) · [Windows setup and validation status](docs/agent-cli-windows.zh-CN.md)
 - [Search coverage](docs/agent-cli-search-formats.zh-CN.md), [retrieval benchmarks](docs/agent-cli-search-benchmark.zh-CN.md) and [startup costs](docs/agent-cli-search-native.zh-CN.md)
+- [FiLens-Bench dedicated results site](https://filens.cc/bench/en.html): compare complex-file quality, latency and token usage before and after each agent's normal FiLens installation. [Methodology and reproduction](benchmarks/filens-bench/README.zh-CN.md).
 
 The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; use explicit `--pages` / `--slides` for selection. Field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
 
@@ -123,7 +130,7 @@ Version 0.1.10 includes **File workspace** in the same `dsh-filens` installation
 
 ### Browser integration: single file or split modules
 
-**Preview 0.3.7:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [v0.6.7](https://github.com/orca-zhang/filens/releases/tag/v0.6.7). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
+**Preview 0.3.7:** split ZIP **5.62 MiB**, all-in-one ZIP **10.61 MiB**. Download from [the official site](https://filens.cc/downloads/). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
 
 npm: [filens-preview@0.3.7](https://www.npmjs.com/package/filens-preview/v/0.3.7), **16.22 MiB** download / **31.88 MiB** installed, including both builds. [Public registry checks](docs/preview-npm-registry-validation.json).
 
@@ -281,7 +288,7 @@ npm run build:wasm
 npm run dev --workspace @filens/demo
 ```
 
-Open [the local demo](http://localhost:5173/modules/filens/?lang=en) (requires local deployment; otherwise, open [the Vercel online demo](https://filens-six.vercel.app/?lang=en)), then choose a sample or drop in a file. For hosting, see the [Vercel guide](docs/deploy-vercel.md).
+Open [the online demo](https://filens.cc/?lang=en) or [the local demo](http://localhost:5173/modules/filens/?lang=en) (requires local deployment), then choose a sample or drop in a file. For hosting, see the [Vercel guide](docs/deploy-vercel.md).
 
 ## Install on ZimaOS
 
@@ -353,7 +360,7 @@ All dates are in 2026. RAW inputs have no embedded JPEG; preview resolution/tone
 | Architecture and WASM boundaries | [Project overview](docs/project-overview.md) |
 | Frontend benchmarks and raw data | [Performance comparison](docs/performance-comparison.md) |
 | macOS native OCR vs RapidOCR | [Measured comparison](docs/macos-ocr-benchmark.zh-CN.md) |
-| CLI and backend integration | [Agent CLI](docs/agent-cli.md) · [Go + wazero host](examples/go-wazero-converter/README.md) |
+| CLI and conversion | [Rust Agent CLI](docs/agent-cli.md) · [WASM conversion core](wasm/converter-core-rust/README.md) |
 
 Try your files and [report a reproducible issue](https://github.com/orca-zhang/filens/issues/new/choose). [Roadmap](docs/roadmap.md) · [MIT license](LICENSE) · [Third-party notices](packaging/agent-third-party.md).
 

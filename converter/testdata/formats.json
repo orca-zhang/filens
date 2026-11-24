@@ -1,7 +1,7 @@
 [
   {
     "format": "doc",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.doc",
+    "input": "../examples/converter/fixtures/doc/sample.doc",
     "keywords": [
       "Fixture"
     ],
@@ -9,7 +9,7 @@
   },
   {
     "format": "docm",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.docm",
+    "input": "../examples/converter/fixtures/doc/sample.docm",
     "keywords": [
       "Fixture"
     ],
@@ -17,7 +17,7 @@
   },
   {
     "format": "dot",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.dot",
+    "input": "../examples/converter/fixtures/doc/sample.dot",
     "keywords": [
       "Fixture"
     ],
@@ -25,7 +25,7 @@
   },
   {
     "format": "dotm",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.dotm",
+    "input": "../examples/converter/fixtures/doc/sample.dotm",
     "keywords": [
       "Fixture"
     ],
@@ -33,7 +33,7 @@
   },
   {
     "format": "dotx",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.dotx",
+    "input": "../examples/converter/fixtures/doc/sample.dotx",
     "keywords": [
       "Fixture"
     ],
@@ -41,7 +41,7 @@
   },
   {
     "format": "fodt",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.fodt",
+    "input": "../examples/converter/fixtures/doc/sample.fodt",
     "keywords": [
       "Fixture"
     ],
@@ -49,7 +49,7 @@
   },
   {
     "format": "odt",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.odt",
+    "input": "../examples/converter/fixtures/doc/sample.odt",
     "keywords": [
       "Fixture"
     ],
@@ -57,7 +57,7 @@
   },
   {
     "format": "ott",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.ott",
+    "input": "../examples/converter/fixtures/doc/sample.ott",
     "keywords": [
       "Fixture"
     ],
@@ -65,7 +65,7 @@
   },
   {
     "format": "stw",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.stw",
+    "input": "../examples/converter/fixtures/doc/sample.stw",
     "keywords": [
       "Fixture"
     ],
@@ -73,7 +73,7 @@
   },
   {
     "format": "sxw",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.sxw",
+    "input": "../examples/converter/fixtures/doc/sample.sxw",
     "keywords": [
       "Fixture"
     ],
@@ -81,7 +81,7 @@
   },
   {
     "format": "wps",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.wps",
+    "input": "../examples/converter/fixtures/doc/sample.wps",
     "keywords": [
       "Fixture"
     ],
@@ -89,7 +89,7 @@
   },
   {
     "format": "wpt",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.wpt",
+    "input": "../examples/converter/fixtures/doc/sample.wpt",
     "keywords": [
       "Fixture"
     ],
@@ -97,7 +97,7 @@
   },
   {
     "format": "rtf",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.rtf",
+    "input": "../examples/converter/fixtures/doc/sample.rtf",
     "keywords": [
       "Fixture"
     ],
@@ -105,7 +105,7 @@
   },
   {
     "format": "epub",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.epub",
+    "input": "../examples/converter/fixtures/doc/sample.epub",
     "keywords": [
       "Fixture"
     ],
@@ -113,7 +113,7 @@
   },
   {
     "format": "fb2",
-    "input": "../examples/go-wazero-converter/fixtures/doc/sample.fb2",
+    "input": "../examples/converter/fixtures/doc/sample.fb2",
     "keywords": [
       "Fixture"
     ],
@@ -121,7 +121,7 @@
   },
   {
     "format": "ppt",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.ppt",
+    "input": "../examples/converter/fixtures/ppt/sample.ppt",
     "keywords": [
       "Fixture"
     ],
@@ -129,7 +129,7 @@
   },
   {
     "format": "pptm",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.pptm",
+    "input": "../examples/converter/fixtures/ppt/sample.pptm",
     "keywords": [
       "Fixture"
     ],
@@ -137,7 +137,7 @@
   },
   {
     "format": "pps",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.pps",
+    "input": "../examples/converter/fixtures/ppt/sample.pps",
     "keywords": [
       "Fixture"
     ],
@@ -145,7 +145,7 @@
   },
   {
     "format": "ppsm",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.ppsm",
+    "input": "../examples/converter/fixtures/ppt/sample.ppsm",
     "keywords": [
       "Fixture"
     ],
@@ -153,7 +153,7 @@
   },
   {
     "format": "ppsx",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.ppsx",
+    "input": "../examples/converter/fixtures/ppt/sample.ppsx",
     "keywords": [
       "Fixture"
     ],
@@ -161,7 +161,7 @@
   },
   {
     "format": "pot",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.pot",
+    "input": "../examples/converter/fixtures/ppt/sample.pot",
     "keywords": [
       "Fixture"
     ],
@@ -169,7 +169,7 @@
   },
   {
     "format": "potm",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.potm",
+    "input": "../examples/converter/fixtures/ppt/sample.potm",
     "keywords": [
       "Fixture"
     ],
@@ -177,7 +177,7 @@
   },
   {
     "format": "potx",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.potx",
+    "input": "../examples/converter/fixtures/ppt/sample.potx",
     "keywords": [
       "Fixture"
     ],
@@ -185,7 +185,7 @@
   },
   {
     "format": "dps",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.dps",
+    "input": "../examples/converter/fixtures/ppt/sample.dps",
     "keywords": [
       "Fixture"
     ],
@@ -193,7 +193,7 @@
   },
   {
     "format": "dpt",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.dpt",
+    "input": "../examples/converter/fixtures/ppt/sample.dpt",
     "keywords": [
       "Fixture"
     ],
@@ -201,7 +201,7 @@
   },
   {
     "format": "fodp",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.fodp",
+    "input": "../examples/converter/fixtures/ppt/sample.fodp",
     "keywords": [
       "Fixture"
     ],
@@ -209,7 +209,7 @@
   },
   {
     "format": "odp",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.odp",
+    "input": "../examples/converter/fixtures/ppt/sample.odp",
     "keywords": [
       "Fixture"
     ],
@@ -217,7 +217,7 @@
   },
   {
     "format": "otp",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.otp",
+    "input": "../examples/converter/fixtures/ppt/sample.otp",
     "keywords": [
       "Fixture"
     ],
@@ -225,7 +225,7 @@
   },
   {
     "format": "sxi",
-    "input": "../examples/go-wazero-converter/fixtures/ppt/sample.sxi",
+    "input": "../examples/converter/fixtures/ppt/sample.sxi",
     "keywords": [
       "Fixture"
     ],
@@ -233,7 +233,7 @@
   },
   {
     "format": "xls",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.xls",
+    "input": "../examples/converter/fixtures/xls/sample.xls",
     "keywords": [
       "Name"
     ],
@@ -241,7 +241,7 @@
   },
   {
     "format": "xlsm",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.xlsm",
+    "input": "../examples/converter/fixtures/xls/sample.xlsm",
     "keywords": [
       "Name"
     ],
@@ -249,7 +249,7 @@
   },
   {
     "format": "xlt",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.xlt",
+    "input": "../examples/converter/fixtures/xls/sample.xlt",
     "keywords": [
       "Name"
     ],
@@ -257,7 +257,7 @@
   },
   {
     "format": "xltm",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.xltm",
+    "input": "../examples/converter/fixtures/xls/sample.xltm",
     "keywords": [
       "Name"
     ],
@@ -265,7 +265,7 @@
   },
   {
     "format": "xltx",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.xltx",
+    "input": "../examples/converter/fixtures/xls/sample.xltx",
     "keywords": [
       "Name"
     ],
@@ -273,7 +273,7 @@
   },
   {
     "format": "et",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.et",
+    "input": "../examples/converter/fixtures/xls/sample.et",
     "keywords": [
       "Name"
     ],
@@ -281,7 +281,7 @@
   },
   {
     "format": "ett",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.ett",
+    "input": "../examples/converter/fixtures/xls/sample.ett",
     "keywords": [
       "Name"
     ],
@@ -289,7 +289,7 @@
   },
   {
     "format": "fods",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.fods",
+    "input": "../examples/converter/fixtures/xls/sample.fods",
     "keywords": [
       "Name"
     ],
@@ -297,7 +297,7 @@
   },
   {
     "format": "ods",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.ods",
+    "input": "../examples/converter/fixtures/xls/sample.ods",
     "keywords": [
       "Name"
     ],
@@ -305,7 +305,7 @@
   },
   {
     "format": "ots",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.ots",
+    "input": "../examples/converter/fixtures/xls/sample.ots",
     "keywords": [
       "Name"
     ],
@@ -313,7 +313,7 @@
   },
   {
     "format": "sxc",
-    "input": "../examples/go-wazero-converter/fixtures/xls/sample.sxc",
+    "input": "../examples/converter/fixtures/xls/sample.sxc",
     "keywords": [
       "Name"
     ],

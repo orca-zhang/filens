@@ -13,6 +13,7 @@ const count = Number(process.env.FILENS_BENCH_FILES || 10000);
 assert.ok(Number.isInteger(count) && count >= 1 && count <= 20000);
 const directory = await mkdtemp(path.join(os.tmpdir(), 'filens-walk-'));
 const observations = [];
+const modes = process.platform === 'darwin' ? ['native', 'fts', 'read-dir'] : ['native', 'read-dir'];
 const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 try {
   for (let group = 0; group < Math.ceil(count / 1000); group++) {
@@ -25,10 +26,10 @@ try {
   let expected;
   for (let trial = 0; trial < 6; trial++) {
     // Alternate order to reduce systematic filesystem-cache bias.
-    for (const mode of trial % 2 ? ['read-dir', 'native'] : ['native', 'read-dir']) {
+    for (const mode of trial % 2 ? [...modes].reverse() : modes) {
       const env = { ...process.env };
       delete env.FILENS_WALKER;
-      if (mode === 'read-dir') env.FILENS_WALKER = 'read-dir';
+      if (mode !== 'native') env.FILENS_WALKER = mode;
       const start = performance.now();
       const result = spawnSync(binary, ['search', directory, '--query', 'BENCH2026', '--search-mode', 'files', '--max-files', String(count), '--json', '--no-ocr'],
         { env, encoding: 'utf8', timeout: 120000, maxBuffer: 16 << 20 });
@@ -45,7 +46,7 @@ try {
       if (trial > 0) observations.push({ mode, backend: search.scan.backend, discoveryMs: search.scan.discoveryMs, processMs: Math.round(processMs * 100) / 100 });
     }
   }
-  const summary = ['native', 'read-dir'].map(mode => {
+  const summary = modes.map(mode => {
     const runs = observations.filter(o => o.mode === mode);
     return { mode, backend: runs[0].backend, medianDiscoveryMs: median(runs.map(o => o.discoveryMs)), medianProcessMs: median(runs.map(o => o.processMs)) };
   });

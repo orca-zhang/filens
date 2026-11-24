@@ -286,16 +286,23 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
     if corpus.query.trim().is_empty()
         || corpus.query.len() > 4096
         || !(1..=100).contains(&corpus.limit)
-        || !["bm25", "exact", "files"].contains(&corpus.mode.as_str())
+        || !["bm25", "exact", "files", "glob"].contains(&corpus.mode.as_str())
     {
         return Err("invalid search query, limit or mode".into());
     }
-    let query = if corpus.mode == "exact" {
+    let glob = if corpus.mode == "glob" {
+        Some(super::path_glob::PathGlob::new(&corpus.query)?)
+    } else {
+        None
+    };
+    let files_only = matches!(corpus.mode.as_str(), "files" | "glob");
+    let literal = corpus.mode == "exact" || glob.is_some();
+    let query = if literal {
         BTreeMap::new()
     } else {
         terms(&corpus.query)
     };
-    if query.is_empty() && corpus.mode != "exact" {
+    if query.is_empty() && !literal {
         return Err("query contains no searchable terms".into());
     }
     let mut chunks = Vec::new();
@@ -305,12 +312,10 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
             complete = false;
             break;
         }
-        if corpus.mode == "files" {
-            chunks.push(Span {
-                file: i,
-                start: 0,
-                end: 0,
-            });
+        if files_only {
+            if glob.as_ref().is_none_or(|glob| glob.is_match(file.name())) {
+                chunks.push(Span { file: i, start: 0, end: 0 });
+            }
         } else if corpus.mode == "exact" {
             let first_chunk = chunks.len();
             for (at, phrase) in file.text.match_indices(corpus.query.trim()) {
@@ -351,7 +356,7 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
             break;
         }
     }
-    let mut tokens = ChunkTerms::new(&corpus.files, corpus.mode == "files", &query);
+    let mut tokens = ChunkTerms::new(&corpus.files, files_only, &query);
     let exact = normalized(corpus.query.trim());
     // Retain one phrase-hit byte per BM25 chunk, at most MAX_CHUNKS bytes.
     // Reuse its tokenization normalization without retaining body strings.
@@ -364,7 +369,7 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
     let mut feature_bytes = 0usize;
     // Only query-term document frequencies are needed: memory remains bounded.
     for &span in &chunks {
-        if corpus.mode == "exact" {
+        if literal {
             lengths.push(0.0);
             features.push(None);
             continue;
@@ -408,7 +413,9 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
     for (chunk_index, &span) in chunks.iter().enumerate() {
         let source = &corpus.files[span.file];
         let value = &source.text[span.start..span.end];
-        let score = if corpus.mode == "exact" {
+        let score = if glob.is_some() {
+            1.0
+        } else if corpus.mode == "exact" {
             if value.contains(corpus.query.trim()) || source.name().contains(corpus.query.trim()) {
                 1.0
             } else {
@@ -479,7 +486,7 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
     let mut results = Vec::new();
     for i in order {
         let file = &corpus.files[i];
-        let excerpts:Vec<_>=selected[&i].iter().enumerate().filter(|_|corpus.mode!="files").map(|(j,(span,score))|{
+        let excerpts:Vec<_>=selected[&i].iter().enumerate().filter(|_|!files_only).map(|(j,(span,score))|{
             let start_line=file.text[..span.start].bytes().filter(|c|*c==b'\n').count()+1;
             let text=&file.text[span.start..span.end];
             let end_line=start_line+text.bytes().filter(|c|*c==b'\n').count()-usize::from(text.ends_with('\n'));
@@ -525,7 +532,7 @@ fn evaluate_with_feature_budget(corpus: Corpus, feature_budget: usize) -> Result
             ));
         }
     }
-    let search = json!({"version":"filens-search-v1","method":if corpus.mode=="files" {"filename-bm25"} else if corpus.mode=="exact" {"literal"} else {"bm25-exact"},
+    let search = json!({"version":"filens-search-v1","method":if glob.is_some() {"filename-glob"} else if corpus.mode=="files" {"filename-bm25"} else if corpus.mode=="exact" {"literal"} else {"bm25-exact"},
         "semantic":false,"query":corpus.query,"indexedFiles":corpus.files.len(),"matchedFiles":matched_files,"returnedFiles":results.len(),
         "chunks":chunks.len(),"complete":complete,"truncated":!complete,"noLexicalMatch":results.is_empty(),"results":results});
     let rendered = render(&search, &text, &corpus.format);
@@ -1054,5 +1061,26 @@ mod tests {
             v["search"]["results"][0]["excerpts"][0]["layout"]["blocks"][0]["page"],
             2
         );
+    }
+    #[test]
+    fn glob_matches_relative_paths_without_tokenization_or_body_evidence() {
+        let files = || ["reports/2026/预算甲.pdf", "reports/2025/预算甲.pdf", "reports/2026/deep/预算乙.pdf", "other.txt"]
+            .into_iter().map(|path| {
+                let mut file = source(&format!("/root/{path}"), "irrelevant body");
+                file.relative_path = path.into();
+                file
+            }).collect();
+        let value = run("reports/2026/预算?.pdf", "glob", files());
+        assert_eq!(value["search"]["method"], "filename-glob");
+        assert_eq!(value["search"]["matchedFiles"], 1);
+        assert_eq!(value["search"]["results"][0]["path"], "/root/reports/2026/预算甲.pdf");
+        assert_eq!(value["search"]["results"][0]["excerpts"], json!([]));
+        assert_eq!(run("*.pdf", "glob", files())["search"]["matchedFiles"], 3);
+        assert_eq!(run("reports/2026/**/*.pdf", "glob", files())["search"]["matchedFiles"], 2);
+        let all = run_limited("*", "glob", files(), 2);
+        assert_eq!(all["search"]["matchedFiles"], 4);
+        assert_eq!(all["search"]["returnedFiles"], 2);
+        assert_eq!(all["search"]["complete"], true);
+        assert_eq!(run("*.PDF", "glob", files())["search"]["matchedFiles"], 0);
     }
 }

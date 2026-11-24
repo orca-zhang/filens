@@ -6,6 +6,33 @@
   "outputDirectory": "apps/demo/dist",
   "routes": [
     {
+      "src": "/cdn",
+      "status": 410,
+      "headers": { "Cache-Control": "public, max-age=86400" }
+    },
+    {
+      "src": "/cdn/(.*)",
+      "status": 410,
+      "headers": { "Cache-Control": "public, max-age=86400" }
+    },
+    {
+      "src": "/downloads/(v[^/]+)/?",
+      "dest": "https://github.com/orca-zhang/filens/releases/tag/$1",
+      "status": 308,
+      "headers": { "Cache-Control": "public, max-age=86400" }
+    },
+    {
+      "src": "/downloads/(v[^/]+)/(.*)",
+      "dest": "https://github.com/orca-zhang/filens/releases/download/$1/$2",
+      "status": 308,
+      "headers": { "Cache-Control": "public, max-age=86400" }
+    },
+    {
+      "src": "/SKILL.md",
+      "status": 308,
+      "headers": { "Location": "/skills/filens/SKILL.md" }
+    },
+    {
       "src": "/external-samples/(.*)",
       "transforms": [
         {

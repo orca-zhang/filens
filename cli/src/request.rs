@@ -872,9 +872,12 @@ fn resolve_search(r: &mut Request) -> Result<()> {
         r.search_mode = "bm25".into();
     }
     ensure!(
-        ["bm25", "exact", "files"].contains(&r.search_mode.as_str()),
-        "searchMode must be bm25, exact or files; embedding retrieval is not installed"
+        ["bm25", "exact", "files", "glob"].contains(&r.search_mode.as_str()),
+        "searchMode must be bm25, exact, files or glob; embedding retrieval is not installed"
     );
+    if r.search_mode == "glob" {
+        crate::native_search::path_glob::PathGlob::new(&r.query).map_err(anyhow::Error::msg)?;
+    }
     ensure!(
         (1..=100).contains(&r.max_results.unwrap_or(10)),
         "maxResults must be between 1 and 100"

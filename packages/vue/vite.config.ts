@@ -1,7 +1,7 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
-import dts from 'vite-plugin-dts';
+import { packageDeclarations } from '../../scripts/package-declarations';
 import path from 'node:path';
 
 export default defineConfig({
@@ -46,7 +46,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    dts({
+    packageDeclarations({
       aliasesExclude: [/^@filens\//],
       include: ['src/**/*.ts', 'src/**/*.vue', 'src/**/*.json'],
       outDir: 'dist',
@@ -57,6 +57,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
+      cssFileName: 'style',
       entry: './src/index.ts',
       formats: ['es'],
       fileName: () => 'index.js'

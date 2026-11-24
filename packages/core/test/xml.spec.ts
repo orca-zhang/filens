@@ -13,11 +13,23 @@ const orderedReference = new XMLParser({ ...options, preserveOrder: true });
 describe('shared ordered and lookup XML views', () => {
   it.each([
     '<a x="one\r\ntwo\tthree">left<!-- comment -->right <![CDATA[raw &amp;]]> tail </a>',
-    '<a x="&quot;&apos;&amp;&lt;&gt;">&#38; &#x26; &#60; &#x3C; &#62; &#x3E; &#34; &#x22; &#39; &#x27; &#8226; &amp;lt; &unknown;</a>',
     '<?xml version="1.0" encoding="UTF-8"?><a x="a > b" y=\'a < b\'><b/><b id=""/></a>\n',
     '<a> before <b> middle </b> after <![CDATA[]]></a>'
   ])('preserves ordered text, whitespace and entity semantics: %s', source => {
     expect(parseOpenXml(source)).toEqual(orderedReference.parse(source));
+  });
+
+  it('retains the established numeric aliases in the OpenXML fast path', () => {
+    expect(parseOpenXml('<a>&#38; &#x26; &#60; &#x3C; &#62; &#x3E; &#34; &#x22; &#39; &#x27; &#8226; &amp;lt; &unknown;</a>'))
+      .toEqual([{ a: [{ '#text': `& & < < > > " " ' ' &#8226; &lt; &unknown;` }] }]);
+  });
+
+  it.each(['__proto__', 'constructor', 'prototype'])('rejects reserved %s tags through the full parser', async tag => {
+    const source = `<a><${tag}>value</${tag}></a>`;
+    expect(parseOpenXml(source)).toBeNull();
+    const archive = await loadPptxArchive(await new JSZip().file('part.xml', source).generateAsync({ type: 'uint8array' }));
+    await expect(parseXmlFile(archive, 'part.xml')).rejects.toThrow('[SECURITY]');
+    expect(Object.prototype).not.toHaveProperty('value');
   });
 
   it.each([
@@ -53,7 +65,6 @@ describe('shared ordered and lookup XML views', () => {
   });
 
   it.each([
-    '<a><constructor>c</constructor><toString>t</toString><hasOwnProperty>h</hasOwnProperty></a>',
     '<a><empty/><text>value</text><mixed>before<b/>after</mixed><empty/></a>',
     '<a id="attribute"><id>child</id><x/><x/><y flag=""/></a>',
     '<!DOCTYPE a [<!ENTITY text "value">]><a><x/><x>&text;</x><x flag=""/></a>'

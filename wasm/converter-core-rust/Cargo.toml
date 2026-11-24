@@ -71,7 +71,7 @@ text-extraction = ["format-detection-expanded", "graphics-preview", "dep:calamin
 [dependencies]
 efterscript-remelt = { version = "=0.0.7", default-features = false, optional = true }
 efterscript-vm = { version = "=0.0.7", default-features = false, optional = true }
-msoffice-crypto = { version = "=0.1.0-rc.13", default-features = false }
+msoffice-crypto = { version = "=0.1.0", default-features = false }
 png = "0.18.0"
 quick-xml = "0.41.0"
 serde = { version = "1.0.219", features = ["derive"] }
@@ -80,8 +80,8 @@ cfb = { version = "=0.15.0", optional = true }
 snap = { version = "=1.1.2", optional = true }
 # Share flate2's Rust/miniz backend with PNG and CgBI. zip's broad "deflate"
 # feature also links zopfli and zlib-rs, which preview conversions do not need.
-zip = { version = "4.3.0", default-features = false, features = ["deflate-flate2"] }
-calamine = { version = "=0.37.0", optional = true }
+zip = { version = "=9.1.3", default-features = false, features = ["deflate-flate2"] }
+calamine = { version = "=0.38.0", optional = true }
 iwork = { version = "=0.4.0", optional = true }
 djvu-rs = { version = "=0.43.0", optional = true }
 acadrust = { version = "=0.6.8", default-features = false, optional = true }
@@ -98,7 +98,10 @@ lopdf = { version = "=0.46.0", default-features = false, optional = true }
 ttf-parser = { version = "=0.25.1", default-features = false, features = ["std"], optional = true }
 unicode-normalization = { version = "=0.1.26", optional = true }
 flate2 = "=1.1.9"
-tar = { version = "=0.4.44", default-features = false, optional = true }
+tar = { version = "=0.4.46", default-features = false, optional = true }
+
+[patch.crates-io]
+iwork = { path = "vendor/iwork" }
 
 [profile.release]
 opt-level = "z"

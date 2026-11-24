@@ -1,0 +1,11 @@
+{
+  "id": "claude-code-shared-model",
+  "harness": "Claude Code",
+  "harnessVersion": "REPLACE_WITH_CLAUDE_CODE_VERSION",
+  "model": "REPLACE_WITH_PINNED_CLAUDE_MODEL_ID",
+  "reasoningEffort": "high",
+  "commands": {
+    "stock": ["node", "/ABSOLUTE/PATH/filens/benchmarks/filens-bench/claude-adapter.mjs"],
+    "filens": ["node", "/ABSOLUTE/PATH/filens/benchmarks/filens-bench/claude-adapter.mjs"]
+  }
+}

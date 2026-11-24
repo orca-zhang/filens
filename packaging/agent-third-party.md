@@ -53,9 +53,6 @@ The shared text WASM core uses lopdf 0.46.0 (MIT), ttf-parser 0.25.1
 Their notices and those of the added transitive Rust components are included
 in the package license directory as pdf-unicode-rust.txt.
 
-Legacy Go library hosts retain their existing dependency notices, including
-wazero and go.yaml.in/yaml/v3; the distributed CLI itself is Rust.
-
 FiLens first-party code is licensed under MIT; see the package's LICENSE file.
 Bundled dependencies and the Photos application code retain their original
 licenses. This notice does not relicense those components.

@@ -184,7 +184,6 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 | Optional graphics core | `graphicsWasm` accepts `converter-raster.wasm` for raster formats or `converter-graphics.wasm` for both DWG and raster formats. `converter-core-full.wasm` includes both implementations. | [Graphics checks](../packages/converter-client/test/graphics-preview.spec.ts) |
 | Optional PostScript core | `postscriptWasm` supplies `converter-postscript.wasm` for EPS/PS and non-PDF-compatible AI. | [Design preview limits](design-preview.md) |
 | HTTP adapter | Invokes the configured conversion service. | [Adapter APIs](#routes-and-source-loading) |
-| Go/wazero host | Thin shell around the same WASM core: CLI/HTTP, validation, temporary files, result/error mapping, OpenXML output validation. | [Go/wazero example](../examples/go-wazero-converter/README.md) |
 
 <sub>Browser WASI output grows on demand while reads and file sizes expose only valid bytes. Overwrite, append and sparse writes are supported; exclusive creation preserves existing files. Growth retains spare capacity and does not establish lower peak memory. [Checks](../benchmarks/frontend/2026-10-24/converter-io-review.json).</sub>
 
@@ -197,11 +196,11 @@ Listed pairs normalize files for preview; they do not promise to preserve every 
 | Header and text raster | ASCII whitespace, LF/CRLF headers, header comments, and comments between P3 samples. Binary whitespace and `#` bytes remain pixel data. |
 | Sample values | `maxval` 1–255 produces 8-bit PNG; 256–65535 produces 16-bit PNG. Values are normalized to 255/65535 with rounding. |
 | Preview operations | Converted PNG uses the image driver's zoom, fit, pan, rotation, and fullscreen controls. Browser display may reduce 16-bit precision. |
-| Runtime | Browser `createWasmConverterClient({ wasm })` and Go/wazero use the same `converter-core.wasm` implementation. HTTP integrations must provide a service with this conversion pair. |
+| Runtime | Browser `createWasmConverterClient({ wasm })` and the Rust Agent CLI use the same Rust/WASI conversion implementation. HTTP integrations must provide a service with this conversion pair. |
 | Resource limits | Input ≤256 MiB; decoded RGB ≤128 MiB (3 bytes/pixel at 8-bit, 6 at 16-bit). These are buffer limits, not a total peak-memory guarantee. |
 | Stream and metadata | Only the first image is converted. No animation, alpha channel, comment metadata export, or additional color-profile conversion. |
 | Decoder verification | [Rust tests](../wasm/converter-core-rust/src/ppm.rs) cover comments, maxval scaling, 16-bit samples, binary delimiter bytes, malformed inputs, and oversized dimensions. |
-| Integration verification | [WASM client tests](../packages/converter-client/test/converter-client.spec.ts) cover P3/P6, PNG dimensions/depth, and invalid input; [browser regression](../apps/demo/e2e/ppm.e2e.ts) checks the built-in sample and uploaded P3/P6/16-bit image pixels. The [batch fixture](../examples/go-wazero-converter/fixtures/image/sample.ppm) covers the Go/wazero host. |
+| Integration verification | [WASM client tests](../packages/converter-client/test/converter-client.spec.ts) cover P3/P6, PNG dimensions/depth, and invalid input; [browser regression](../apps/demo/e2e/ppm.e2e.ts) checks the built-in sample and uploaded P3/P6/16-bit image pixels. The [Rust CLI conversion checks](../scripts/test-agent-convert.mjs) exercise the same shared WASM core. |
 
 ### Camera RAW conversion
 

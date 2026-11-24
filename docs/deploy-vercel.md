@@ -6,18 +6,30 @@
 2. **Root Directory 保持仓库根目录**，不要改成 `apps/demo`。
 3. 点击 **Deploy**。仓库的 `vercel.json` 已配置安装命令、构建命令和输出目录，无需设置环境变量。绑定 GitHub 后，推送代码会自动部署，PR 会生成预览地址，不需要额外 workflow。
 
-部署后的 `/` 是产品首页；`/?lang=zh` 和 `/?lang=en` 可分别分享中文和英文版本。`/?view=preview` 打开预览工作台。将 Vercel 分配的正式域名填入 GitHub 仓库的 **About → Website** 即可。
+正式站点为 **https://filens.cc**，使用个人空间 `orcazhangs-projects` 下的 Vercel 项目 `filens`，域名 DNS 由个人 Cloudflare 账号管理。GitHub 仓库的 **About → Website** 使用 `https://filens.cc`。
+
+在 Vercel 项目的 **Settings → Domains** 将 `filens.cc` 绑定到 **Production**，并在 Cloudflare 添加根域名记录：
+
+| 类型 | 名称 | 目标 | 代理状态 | TTL |
+| --- | --- | --- | --- | --- |
+| CNAME | `@` | `04715ba45e98b4ab.vercel-dns-017.com` | 仅 DNS | 自动 |
+
+重新配置时以 Vercel 显示的 DNS 目标为准。Vercel 自动签发和续期 HTTPS 证书，并将 HTTP 请求以 308 跳转到 HTTPS，保留路径和查询参数。
+
+部署后的 `/` 是产品首页；`/?lang=zh` 和 `/?lang=en` 可分别分享中文和英文版本。`/?view=preview` 打开预览工作台。
+
+`/bench/` 是 FiLens-Bench 独立评测页，`/bench/en.html` 为英文版，包含成绩、方法、图表和结果包下载。它从版本管理中的 `benchmarks/filens-bench/published/` 生成，不依赖被忽略的本地运行档案；也可用 `npm run build:bench` 单独构建。[更新快照与发布](../benchmarks/filens-bench/README.zh-CN.md#独立构建与发布)。
 
 直接传入文件地址即可跳转预览，无需先打开工作台：
 
 ```text
-https://filens-six.vercel.app/?url=https%3A%2F%2Fexample.com%2Freport.pdf
+https://filens.cc/?url=https%3A%2F%2Fexample.com%2Freport.pdf
 ```
 
 使用 `encodeURIComponent(fileUrl)` 编码完整文件地址，保留原地址中的查询参数和签名。`url` 支持 HTTP(S) 地址或相对于当前站点的文件路径；下载地址不含扩展名时，可添加 `&name=report.pdf` 指定文件名。可继续搭配 `&lang=zh` 或 `&lang=en`。例如：
 
 ```js
-const previewUrl = new URL('https://filens-six.vercel.app/');
+const previewUrl = new URL('https://filens.cc/');
 previewUrl.searchParams.set('url', fileUrl);
 previewUrl.searchParams.set('name', 'report.pdf'); // 下载地址无扩展名时使用
 ```
@@ -48,9 +60,15 @@ FILENS_E2E_BASE_URL=http://127.0.0.1:4175/ npx playwright test apps/demo/e2e/lan
 2. Keep **Root Directory at the repository root**, rather than `apps/demo`.
 3. Select **Deploy**. `vercel.json` supplies the install command, build command, and output directory. No environment variables are required. Vercel's Git integration automatically deploys pushes and creates PR previews; a separate workflow is unnecessary.
 
-The product homepage lives at `/`. Share `/?lang=zh` for Chinese or `/?lang=en` for English; `/?view=preview` opens the workbench. Add the production domain assigned by Vercel to the repository's **About → Website** field.
+The production site is **https://filens.cc**, hosted by the `filens` Vercel project in the personal space `orcazhangs-projects`, with DNS managed in the personal Cloudflare account. Set the repository's **About → Website** to `https://filens.cc`.
 
-Pass `?url=` to open a file directly, for example `https://filens-six.vercel.app/?url=https%3A%2F%2Fexample.com%2Freport.pdf`. Encode the complete file URL with `encodeURIComponent(fileUrl)` or `URL.searchParams.set` to preserve query parameters and signatures. HTTP(S) URLs and paths relative to the site are supported. Add `&name=report.pdf` when the download URL has no extension, and optionally `&lang=zh` or `&lang=en`.
+Connect `filens.cc` to **Production** under **Settings → Domains** in Vercel. In Cloudflare, add a `CNAME` record for `@` pointing to `04715ba45e98b4ab.vercel-dns-017.com`, with proxy status **DNS only** and TTL **Auto**. Use the DNS target shown by Vercel if configuring this again. Vercel automatically issues and renews the HTTPS certificate and redirects HTTP requests to HTTPS with status 308, preserving paths and query parameters.
+
+The product homepage lives at `/`. Share `/?lang=zh` for Chinese or `/?lang=en` for English; `/?view=preview` opens the workbench.
+
+`/bench/` is the dedicated FiLens-Bench results site; `/bench/en.html` is its English edition. It includes scores, methodology, charts and snapshot downloads, generated from the versioned `benchmarks/filens-bench/published/` directory rather than ignored local run archives. Use `npm run build:bench` to build it independently.
+
+Pass `?url=` to open a file directly, for example `https://filens.cc/?url=https%3A%2F%2Fexample.com%2Freport.pdf`. Encode the complete file URL with `encodeURIComponent(fileUrl)` or `URL.searchParams.set` to preserve query parameters and signatures. HTTP(S) URLs and paths relative to the site are supported. Add `&name=report.pdf` when the download URL has no extension, and optionally `&lang=zh` or `&lang=en`.
 
 Third-party files display a persistent “This resource comes from a third-party site” notice and their source origin, including when loading fails. Same-origin files have no third-party label. Importing a local file or selecting a sample clears the remote URL parameters. Files are fetched directly by the browser, so the source must allow cross-origin access (CORS). Use HTTPS file URLs on HTTPS deployments to avoid mixed-content blocking. Local disk paths require the file import control.
 
@@ -59,6 +77,18 @@ The build generates both WASM converters from source using the repository's pinn
 Homepage examples, local uploads, and the walkthrough work independently. External workbench media and panorama samples load on demand from public sources through `/external-samples/` proxies, without a NAS file API or login. `vercel.json` includes these routes and strips browser origin and request metadata so Google Drive returns the original file. Existing NAS builds continue to default to `/modules/filens/`.
 
 Use the commands above to validate the Vercel build locally and run the homepage checks against the production output.
+
+## Skill and downloads / Skill 与安装包
+
+- `https://filens.cc/skills/filens/SKILL.md`：Skill 原文，其 `references/` 文件随站点一起部署；`https://filens.cc/SKILL.md` 跳转到该地址。
+- `https://filens.cc/downloads/`：下载索引页；安装包链接直接指向 GitHub Releases，npm 包可选择 npmjs 或 npmmirror。
+- `https://filens.cc/downloads/v0.6.7/`：旧版固定路径会跳转到对应 GitHub Release，不在 Vercel 输出包体。
+
+`build:vercel` 在前端构建完成后运行 `stage-site-downloads.mjs`，只生成下载索引和 Skill ZIP。安装包链接直达 GitHub Releases 或 npm registry，构建不再获取或复制 Release 二进制。升级下载版本时更新该清单及安装文档中的固定版本链接，不将安装包二进制提交到 Git。
+
+The site serves the Skill and its references, a complete Skill ZIP and a downloads index. Package links go directly to GitHub Releases or the npm registry; versioned legacy paths redirect to GitHub. The Vercel build no longer fetches or copies release binaries into the site's output. Update the manifest and versioned documentation links for future releases; binary archives stay out of Git.
+
+预览 JS 不再从 `filens.cc/cdn/` 提供；浏览器 ESM 使用固定版本的 jsDelivr npm URL。国内 npm 镜像和 Worker 来源限制见 [JavaScript CDN](js-cdn.md)。
 
 ## Output directory error / 找不到输出目录
 

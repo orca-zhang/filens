@@ -11,7 +11,7 @@ export const inject = ['tools', 'shell', 'workingDirectory', 'shellEnv'];
 export const Config = z.object({
   command: z.array(z.string()).description('Executable and fixed argv in the shell execution environment. Defaults to the packaged CLI on this Host.'),
   timeoutMs: z.number().min(1).max(600000).default(120000),
-  maxBytes: z.number().min(1).max(1048576).default(131072),
+  maxBytes: z.number().min(1).max(1048576).default(262144),
   displayChars: z.number().min(1000).max(200000).default(60000),
   ocr: z.boolean().default(true).description('Enable recognition of images and scanned pages. Disable for native document text without illustration OCR. Per-call options cannot enable OCR while disabled here.'),
 });
@@ -44,7 +44,7 @@ const tools = [
     max_images: { type: 'number', description: 'Images per read: default 4, max 16. Narrow slides or image_names for remaining images.' },
     image_names: { type: 'array', items: { type: 'string' }, description: 'Exact names from media inventory; also allows inspecting unused images.' },
   }],
-  ['search', 'search', 'Search original text in local files/nested archives with cited evidence. No embeddings.', {
+  ['search', 'search', 'First choice for local document questions: search the supplied directory once with an exact ID or short distinctive phrase. A complete positive excerpt with the answer is sufficient: cite its path and quote, then stop. Archive hits already include the full member path. Do not follow a positive hit with shell listing, grep, unzip, or extra reads. Check complete before relying on absence; if incomplete, retry only the affected source.', {
     path: pathParameter, query: { type: 'string', required: true },
     max_results: { type: 'number', description: 'Files: default 5, max 100.' }, max_files: { type: 'number' }, max_depth: { type: 'number' }, include_hidden: { type: 'boolean' },
   }],
@@ -59,9 +59,9 @@ const tools = [
 ];
 
 export function apply(ctx, options = {}) {
-  const config = { timeoutMs: 120000, maxBytes: 131072, displayChars: 60000, ocr: true, ...options };
+  const config = { timeoutMs: 120000, maxBytes: 262144, displayChars: 60000, ocr: true, ...options };
   positiveInteger(config.timeoutMs, 120000, 600000, 'timeoutMs');
-  positiveInteger(config.maxBytes, 131072, 1048576, 'maxBytes');
+  positiveInteger(config.maxBytes, 262144, 1048576, 'maxBytes');
   positiveInteger(config.displayChars, 60000, 200000, 'displayChars');
   const require = createRequire(import.meta.url);
   const launcher = join(dirname(require.resolve('filens-cli/package.json')), 'cli.mjs');

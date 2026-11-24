@@ -2,6 +2,8 @@ import { spawn, spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stageSiteDownloads } from './stage-site-downloads.mjs';
+import { stageFilensBench } from '../benchmarks/filens-bench/publish.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cargoHome = process.env.CARGO_HOME || path.join(homedir(), '.cargo');
@@ -26,6 +28,8 @@ if (spawnSync('rustup', ['--version'], { env, stdio: 'ignore' }).status !== 0) {
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 await run(npm, ['run', 'build:wasm']);
 await run(npm, ['run', 'build:demo']);
+await stageSiteDownloads(rootDir);
+await stageFilensBench(rootDir);
 
 function run(command, args, input) {
   return new Promise((resolve, reject) => {

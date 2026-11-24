@@ -31,9 +31,8 @@ URL、常见凭据和私钥特征，并核对文件白名单。结果见
 ## 二进制构建与发布检查
 
 1. `build-agent-cli.mjs` 用 Rust `--remap-path-prefix` 去除构建机的用户目录、
-   Cargo/Rustup 路径和项目绝对路径。Go CLI 使用 `-trimpath`。
-2. 三个平台的 OCR wrapper 都从同一个 SHA-256 固定的源码快照重新构建，并使用
-   Go `-trimpath`。macOS 最低目标为 12.0；Linux 使用 Zig 0.16.0，目标 glibc 2.17。
+   Cargo/Rustup 路径和项目绝对路径。Rust CLI 与 OCR wrapper 使用路径重映射。
+2. 三个平台的 OCR wrapper 都从同一个 SHA-256 固定的源码快照重新构建。macOS 最低目标为 12.0；Linux 使用 Zig 0.16.0，目标 glibc 2.17。
    已安装的用户仍使用预编译包，无需编译器。`wrapper-build.json` 记录源码与产物哈希。
 3. `agent-release-privacy.mjs` 检查目录与真实 tarball 内容，发现个人构建路径、
    签名 URL、凭据或私钥特征时拒绝打包/发布，错误消息不打印匹配内容。

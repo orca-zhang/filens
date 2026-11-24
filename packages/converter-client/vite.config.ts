@@ -1,6 +1,6 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
-import dts from 'vite-plugin-dts';
+import { packageDeclarations } from '../../scripts/package-declarations';
 import { formatDetectorWasmAssets, mediaWasmAsset } from '../../scripts/media-wasm-plugin';
 import { readFile } from 'node:fs/promises';
 
@@ -30,7 +30,7 @@ export default defineConfig({
     },
     mediaWasmAsset(),
     formatDetectorWasmAssets(),
-    dts({
+    packageDeclarations({
       include: ['src/**/*.ts'],
       outDir: 'dist',
       entryRoot: 'src',

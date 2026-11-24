@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "converged-2026-11-24",
+  "generatedAt": "2026-11-24",
+  "dataset": {
+    "name": "FiLens-Bench synthetic seed corpus",
+    "version": "0.1",
+    "tasksPerRun": 13,
+    "complexTasks": 11,
+    "textControlTasks": 2,
+    "filensCliVersion": "0.5.7",
+    "corpusSHA256": "6e3847c8e89b07da19afe53a2ded3d9924a17480b742fdc14d5ab0e9132b8300"
+  },
+  "publicationArtifacts": {
+    "summaryChart": "summary.svg",
+    "qualityRadar": "quality-radar.svg",
+    "cliArtifactIdentity": "All runs report version 0.5.7; a common binary SHA-256 and source revision were not captured consistently.",
+    "methodology": "README.md",
+    "scope": "Aggregate results, charts, methodology and per-harness limitations. Raw prompts, answers, traces and ledgers are not included in this public summary package."
+  },
+  "comparisonPolicy": {
+    "versionNumbersAreGlobal": false,
+    "selection": "One measured reference candidate per harness; candidate versions are independent and are not a shared release axis.",
+    "primaryInterpretation": "Compare stock and FiLens within the same harness. Cross-harness results are descriptive, not a strict ranking.",
+    "modelPolicy": "Keep the model fixed within each harness pair. A single model was not available across every harness.",
+    "amountsPriced": false,
+    "unknownUsageIsZero": false
+  },
+  "baselines": [
+    {
+      "harness": "Codex CLI",
+      "harnessVersion": "0.169.0-alpha.11.1",
+      "referenceVersion": "v6",
+      "model": "GPT-6.1-Sol",
+      "reasoningEffort": "xhigh",
+      "filensCliVersion": "0.5.7",
+      "protocol": "13 tasks per run; each condition repeated 3 times; 39 saved observations per condition.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 96.7,
+          "filens": 100.0
+        },
+        "evidenceSuccessRate": {
+          "stock": 84.8,
+          "filens": 100.0,
+          "unit": "percent"
+        },
+        "complexElapsedSeconds": {
+          "stockP50": 33.0,
+          "stockP95": 59.9,
+          "filensP50": 24.0,
+          "filensP95": 47.0
+        },
+        "allTaskTokensKnownSubtotal": {
+          "stock": 2313628,
+          "filens": 1753149
+        }
+      },
+      "caveats": [
+        "One additional long-tail request was not saved after a disk-full error; its latency and usage are unknown and excluded from the totals."
+      ]
+    },
+    {
+      "harness": "DSH",
+      "harnessVersion": "0.2.2-rc.1",
+      "referenceVersion": "local-v8",
+      "model": "DeepSeek-V4.1-Flash",
+      "reasoningEffort": "high",
+      "filensPackage": "dsh-filens@0.1.10 local tarball",
+      "filensCliVersion": "0.5.7",
+      "protocol": "13 tasks per run; each condition repeated 3 times; stock observations reused from the same DSH/model/corpus pair.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 96.1,
+          "filens": 100.0
+        },
+        "evidenceSuccessRate": {
+          "stock": 84.8,
+          "filens": 100.0,
+          "unit": "percent"
+        },
+        "complexElapsedSeconds": {
+          "stockP50": 18.2,
+          "stockP95": 31.7,
+          "filensP50": 9.2,
+          "filensP95": 30.0
+        },
+        "allTaskTokens": {
+          "stock": 3716055,
+          "filens": 2095331
+        }
+      },
+      "caveats": []
+    },
+    {
+      "harness": "Claude Code CLI",
+      "harnessVersion": "2.1.41",
+      "referenceVersion": "Skill-v5-R1-no-TodoWrite",
+      "model": "GPT-6.1-Sol",
+      "providerRoute": "Anthropic Messages compatible route through the local GPT provider",
+      "reasoningEffort": "high",
+      "filensCliVersion": "0.5.7",
+      "protocol": "13 tasks per run; each condition repeated 3 times; R1 stock observations reused from the same-day v5 rerun on the same model, harness, and corpus.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 66.7,
+          "filens": 81.8
+        },
+        "evidenceSuccessRate": {
+          "stock": 51.5,
+          "filens": 81.8,
+          "unit": "percent"
+        },
+        "complexElapsedSeconds": {
+          "stockP50": 37.6,
+          "stockP95": 120.0,
+          "filensP50": 22.8,
+          "filensP95": 120.0
+        },
+        "allTaskTokensKnownSubtotal": {
+          "stock": 6990001,
+          "filens": 4045783
+        }
+      },
+      "caveats": [
+        "Usage is missing for 6 stock and 6 FiLens timeouts; totals are known subtotals and cannot be used to claim token savings.",
+        "The earlier selected v5 run scored 87.9; the same-day v5 rerun scored 72.7 and R1 scored 81.8. Treat the difference as material route/model variance; R1 was selected against the latest matched rerun."
+      ]
+    },
+    {
+      "harness": "Zcode",
+      "harnessVersion": "0.17.1-2 (upstream v3.18.2)",
+      "referenceVersion": "v24-return-verification-2026-11-24",
+      "model": "GPT-6.1-Sol",
+      "reasoningEffort": "default",
+      "filensCliVersion": "0.5.7",
+      "protocol": "13 tasks per run; each condition repeated 3 times; FiLens rerun on 2026-11-24; stock observations reused from the matching model/harness/corpus run.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 50.0,
+          "filens": 100.0
+        },
+        "evidenceSuccessRate": {
+          "stock": 30.3,
+          "filens": 100.0,
+          "unit": "percent"
+        },
+        "complexElapsedSeconds": {
+          "stockP50": 85.3,
+          "stockP95": 118.1,
+          "filensP50": 23.0,
+          "filensP95": 42.7
+        },
+        "allTaskTokensKnownSubtotal": {
+          "stock": 1127085,
+          "filens": 1982136
+        }
+      },
+      "caveats": [
+        "Stock usage is unknown for 19 attempts; 1,127,085 is the known subtotal and cannot be used to calculate token savings."
+      ]
+    },
+    {
+      "harness": "WorkBuddy Desktop",
+      "harnessVersion": "5.11.3.43806934",
+      "referenceVersion": "v18-parallel-wave-no-tasks",
+      "model": "Hy4 flash",
+      "filensCliVersion": "0.5.7",
+      "protocol": "One 13-task batch conversation per condition; exploratory and not merged with per-task CLI repetitions.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 98.18,
+          "filens": 100.0
+        },
+        "evidenceCompleteComplexTasks": {
+          "stock": "9/11",
+          "filens": "11/11"
+        },
+        "elapsedSeconds": {
+          "stock": 57.773,
+          "filens": 54.073
+        },
+        "allTaskTokens": {
+          "stock": 540952,
+          "filens": 144341
+        }
+      },
+      "selectionNote": "Selected benchmark reference; candidate comparisons and selection rationale are archived outside the main score table.",
+      "caveats": [
+        "One batch per condition; exploratory result."
+      ]
+    },
+    {
+      "harness": "OpenClaw CLI",
+      "harnessVersion": "2026.11.6",
+      "referenceVersion": "v25",
+      "model": "GPT-6.1-Sol",
+      "reasoningEffort": "high",
+      "filensCliVersion": "0.5.7",
+      "protocol": "13 tasks per run; each condition repeated 3 times; FiLens rerun on 2026-11-24; one native Responses error retained as a failed attempt.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 95.2,
+          "filens": 100.0
+        },
+        "evidenceSuccessRate": {
+          "stock": 81.8,
+          "filens": 100.0,
+          "unit": "percent"
+        },
+        "complexElapsedSeconds": {
+          "stockP50": 44.9,
+          "stockP95": 89.0,
+          "filensP50": 29.0,
+          "filensP95": 40.6
+        },
+        "allTaskTokens": {
+          "stock": 4606139,
+          "filens": 2449195
+        }
+      },
+      "caveats": [
+        "One native Responses protocol error is retained as a failed attempt; FiLens had no failures and both token totals are complete."
+      ]
+    },
+    {
+      "harness": "OpenCode CLI",
+      "harnessVersion": "1.19.6",
+      "referenceVersion": "Skill-0.5.7",
+      "model": "GPT-6.1-Sol",
+      "reasoningEffort": "high",
+      "filensCliVersion": "0.5.7",
+      "protocol": "13 tasks per run; each condition repeated 3 times; all 78 attempts completed and reported usage.",
+      "metrics": {
+        "complexQuality": {
+          "stock": 94.1,
+          "filens": 100.0
+        },
+        "evidenceSuccessRate": {
+          "stock": 63.6,
+          "filens": 100.0,
+          "unit": "percent"
+        },
+        "complexElapsedSeconds": {
+          "stockP50": 28.5,
+          "stockP95": 67.1,
+          "filensP50": 21.4,
+          "filensP95": 39.4
+        },
+        "allTaskTokens": {
+          "stock": 2176843,
+          "filens": 1332998
+        }
+      },
+      "caveats": []
+    }
+  ],
+  "excludedCandidate": {
+    "harness": "Blue",
+    "candidate": "v9 shell/harness fix",
+    "status": "Non-paired validation; excluded from the matrix because a same-version stock full run is unavailable.",
+    "filensValidation": "13/13 tasks"
+  }
+}

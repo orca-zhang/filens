@@ -1,0 +1,206 @@
+{
+  "observedAt": "2026-11-24T07:37:17.362Z",
+  "browser": "159.0.8154.6",
+  "before": {
+    "jsSha256": "ace26750d226208b5425c610b8b303cbee25d3188c1de1e0e7407083e39fb9cd",
+    "groups": 5,
+    "brotliBytes": 3436757,
+    "gzipBytes": 3575099
+  },
+  "after": {
+    "jsSha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+    "groups": 8,
+    "brotliBytes": 3574169,
+    "gzipBytes": 3710836,
+    "resources": 53,
+    "exactResourceTypesOrderLengthsAndHashes": true,
+    "decodedAssetsSha256": "dc6a94045372482b5fc7ba959726dec9a9be7ee3c9b05e710ed8a8d782ebd2ad",
+    "retainedSidecars": {
+      "THIRD-PARTY-NOTICES.txt": "dfef34b7990bc4f6ca5d81acbab860fb7f681013236cb37e09c2f598a205246f",
+      "assets/archive-worker-uiv_8EYe.js": "df561ea2d7d77b96a53e33bf5aa74c343680031af2801f5634132c40258eead2",
+      "archive/7zz.wasm": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc"
+    }
+  },
+  "browserBenchmark": {
+    "singleSharedWasm": {
+      "text.txt": {
+        "medianPreviewMs": 123.20000004768372,
+        "medianImportMs": 109.39999985694885,
+        "brotliBytesRequested": 3436757,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "atlas.pdf": {
+        "medianPreviewMs": 178.20000004768372,
+        "medianImportMs": 106.59999990463257,
+        "brotliBytesRequested": 3436757,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "sample.pages": {
+        "medianPreviewMs": 266.09999990463257,
+        "medianImportMs": 107.39999985694885,
+        "brotliBytesRequested": 3436757,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "color.heic": {
+        "medianPreviewMs": 245.20000004768372,
+        "medianImportMs": 108,
+        "brotliBytesRequested": 3436757,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 4
+      },
+      "cube.stp": {
+        "medianPreviewMs": 247.59999990463257,
+        "medianImportMs": 107,
+        "brotliBytesRequested": 3436757,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 4
+      }
+    },
+    "singleIsolatedWasm": {
+      "text.txt": {
+        "medianPreviewMs": 124.10000014305115,
+        "medianImportMs": 110.30000019073486,
+        "brotliBytesRequested": 3574169,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "atlas.pdf": {
+        "medianPreviewMs": 178.79999995231628,
+        "medianImportMs": 106.09999990463257,
+        "brotliBytesRequested": 3574169,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "sample.pages": {
+        "medianPreviewMs": 264.2999999523163,
+        "medianImportMs": 106.70000004768372,
+        "brotliBytesRequested": 3574169,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "color.heic": {
+        "medianPreviewMs": 182.09999990463257,
+        "medianImportMs": 106.40000009536743,
+        "brotliBytesRequested": 3574169,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 2
+      },
+      "cube.stp": {
+        "medianPreviewMs": 167.19999980926514,
+        "medianImportMs": 106.80000019073486,
+        "brotliBytesRequested": 3574169,
+        "moduleRequests": 1,
+        "wasmBlobsAfterFirstPreview": 1
+      }
+    },
+    "split": {
+      "text.txt": {
+        "medianPreviewMs": 26.09999990463257,
+        "medianImportMs": 11.599999904632568,
+        "brotliBytesRequested": 125030,
+        "moduleRequests": 6,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "atlas.pdf": {
+        "medianPreviewMs": 94.70000004768372,
+        "medianImportMs": 12.099999904632568,
+        "brotliBytesRequested": 467112,
+        "moduleRequests": 9,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "sample.pages": {
+        "medianPreviewMs": 173.20000004768372,
+        "medianImportMs": 11.799999952316284,
+        "brotliBytesRequested": 365927,
+        "moduleRequests": 15,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "color.heic": {
+        "medianPreviewMs": 60.299999952316284,
+        "medianImportMs": 11.700000047683716,
+        "brotliBytesRequested": 3109710,
+        "moduleRequests": 10,
+        "wasmBlobsAfterFirstPreview": 0
+      },
+      "cube.stp": {
+        "medianPreviewMs": 75.09999990463257,
+        "medianImportMs": 11.599999904632568,
+        "brotliBytesRequested": 1286735,
+        "moduleRequests": 12,
+        "wasmBlobsAfterFirstPreview": 0
+      }
+    }
+  },
+  "deliveryValidation": {
+    "browser": "159.0.8154.6",
+    "limit": 4000000,
+    "exactEncodings": true,
+    "es2020": true,
+    "offlineFileHtml": true,
+    "iworkCsp": "Existing protobuf fallback requires unsafe-eval; tested separately from strict-CSP formats.",
+    "cases": [
+      {
+        "encoding": "gzip",
+        "bytes": 3710836,
+        "samplesMs": [
+          123.20000004768372,
+          107.40000009536743,
+          106.60000014305115
+        ],
+        "medianImportMs": 107.40000009536743,
+        "cspWithoutJsEval": true,
+        "formats": [
+          "text",
+          "step",
+          "atlas.pdf",
+          "legacy.doc",
+          "sample.pages",
+          "sample.numbers",
+          "weekend.key",
+          "color.heic",
+          "camera.dng",
+          "atlas-again.pdf"
+        ],
+        "deferredWasm": true
+      },
+      {
+        "encoding": "br",
+        "bytes": 3574169,
+        "samplesMs": [
+          108.20000004768372,
+          108.90000009536743,
+          113.70000004768372
+        ],
+        "medianImportMs": 108.90000009536743,
+        "cspWithoutJsEval": true,
+        "formats": [
+          "text",
+          "step",
+          "atlas.pdf",
+          "legacy.doc",
+          "sample.pages",
+          "sample.numbers",
+          "weekend.key",
+          "color.heic",
+          "camera.dng",
+          "atlas-again.pdf"
+        ],
+        "deferredWasm": true
+      }
+    ]
+  },
+  "unitValidation": {
+    "packedAssetReaderAndWorkerLifecyclePassed": true,
+    "exactAssetsAndChecksumsPassed": true,
+    "invalidInputCasesRejected": 24,
+    "separateWasmGroupsDeferredAndCached": true
+  },
+  "limitations": [
+    "iWork existing protobuf fallback requires unsafe-eval in its script policy.",
+    "Safari, Firefox, public CDN paths and peak memory were not measured."
+  ],
+  "publication": "Current workspace build only; release and CDN files were not modified."
+}

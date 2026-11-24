@@ -95,6 +95,15 @@ test('opens public samples without NAS authentication even inside a host', async
 test('switches between complete Chinese and English homepages and remembers the choice', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('文件的精彩，打开就看见。');
+  const highlights = page.locator('#highlights');
+  await expect(highlights.locator('article')).toHaveCount(3);
+  await expect(highlights).toContainText('全球唯一真开源的前端原生 PPTX');
+  await expect(highlights).toContainText('唯一率先真支持 iWork 15');
+  await expect(highlights.locator('.principle-proof strong').last()).toHaveText('Panorama');
+  await expect(highlights).toContainText('DJI');
+  await expect(highlights).toContainText('Insta360');
+  await expect(highlights).toContainText('官方畸变标定参数');
+  await expect(page.locator('#skill').getByRole('link', { name: /FiLens-Bench/ })).toHaveAttribute('href', 'https://filens.cc/bench/');
   await expect(page.getByRole('button', { name: '打开全景视频样例', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: '查看完整支持矩阵' })).toHaveAttribute('href', /support-matrix\.zh-CN\.md$/);
   await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
@@ -102,6 +111,10 @@ test('switches between complete Chinese and English homepages and remembers the 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page).toHaveTitle('filens · Files shine bright. Dreams take flight.');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Files shine bright.Dreams take flight.');
+  await expect(highlights).toContainText('frontend-native PPTX');
+  await expect(highlights).toContainText('first and only iWork 15 parser');
+  await expect(highlights).toContainText('real time, entirely in the browser');
+  await expect(page.locator('#skill').getByRole('link', { name: /FiLens-Bench/ })).toHaveAttribute('href', 'https://filens.cc/bench/en.html');
   await expect(page.getByRole('tab', { name: 'Docs', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'More files. More possibilities.', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open live photos sample', exact: true })).toBeVisible();
@@ -203,6 +216,8 @@ test('opens the filens introduction through a shareable link with all 14 slides'
   await page.goto('./?view=preview&format=showcase');
   await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.zh-CN.pptx');
   await expect(page.locator('.wb-preview-stage')).toContainText('把文件理解');
+  await expect(page.locator('.wb-preview-stage')).toContainText('github.com/orca-zhang/filens');
+  await expect(page.locator('.wb-preview-stage')).not.toContainText('IceWhaleTech/filens');
   await expect(page.locator('.wb-preview-stage')).not.toContainText('Master Title');
   await expect(page.locator('.pptxv-slide-shell')).toHaveCount(14);
   await expect(page.locator('.pptxv-toolbar')).toHaveCount(0);
@@ -215,6 +230,10 @@ test('opens the filens introduction through a shareable link with all 14 slides'
   await page.locator('.pptxv-shell').first().press('ArrowLeft');
   await page.getByRole('button', { name: '显示工具栏', exact: true }).click();
   await expect(page.locator('.pptxv-status').first()).toHaveText('1 / 14');
+  await page.goto('./?view=preview&format=showcase&lang=en');
+  await expect(page.locator('.wb-preview-title strong')).toHaveText('filens-introduction.en.pptx');
+  await expect(page.locator('.wb-preview-stage')).toContainText('github.com/orca-zhang/filens');
+  await expect(page.locator('.wb-preview-stage')).not.toContainText('IceWhaleTech/filens');
 });
 
 test('opens the public Keynote night-sky sample with three slides', async ({ page }) => {

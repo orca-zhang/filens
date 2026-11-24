@@ -171,8 +171,8 @@ The retired Go core was 82.8% larger by Brotli size at equivalent fixture covera
 
 ## Application icons and size attribution
 
-APK/IPA and PE resource icons convert to PNG in `src/icons.rs`; the Go wrapper
-continues to invoke this same core. ICO supports embedded PNG and standard
+APK/IPA and PE resource icons convert to PNG in `src/icons.rs`; the Rust CLI
+uses this same core. ICO supports embedded PNG and standard
 1/4/8/24/32-bit DIB frames. APK follows compiled application icon references and
 resource aliases; IPA uses its main bundle's XML/binary plist and normalizes
 Apple CgBI PNGs. Unsupported vector-only or asset-catalog-only icons return a
@@ -205,8 +205,8 @@ TIFF (`tif`, `tiff`), TGA, PGM/PBM/PNM, DDS, Radiance HDR, DIB, CUR, PCX,
 OpenEXR, JPEG XL, QOI and Farbfeld (`ff`) convert to PNG in
 `converter-graphics.wasm`; DWG converts to UTF-8 DXF for the existing 2D viewer.
 The module uses the `graphics-preview` feature and is loaded only when needed.
-Browser hosts configure `createWasmConverterClient({ wasm, graphicsWasm })`; the
-Go shell follows `requiredModule: "graphics"` and invokes the adjacent module.
+Browser hosts configure `createWasmConverterClient({ wasm, graphicsWasm })`; a
+host follows `requiredModule: "graphics"` and invokes the adjacent module.
 The combined `converter-core-full.wasm` includes it. TIFF shows only the first
 image, DDS only the first surface, JPEG XL only the first frame, and CUR only
 the largest image without its hotspot. OpenEXR uses the default image and color

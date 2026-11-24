@@ -4,6 +4,9 @@
 #[path = "../src/text/search.rs"]
 mod search;
 #[cfg(all(test, feature = "text-extraction"))]
+#[path = "../src/text/path_glob.rs"]
+mod path_glob;
+#[cfg(all(test, feature = "text-extraction"))]
 #[path = "../src/text/stopwords.rs"]
 mod stopwords;
 

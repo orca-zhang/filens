@@ -29,8 +29,8 @@ serde_yaml = "0.9"
 sha2 = "0.10"
 unicode-normalization = "=0.1.26"
 tempfile = "3.23"
-wasmi = { version = "=0.46.0", default-features = false, features = ["std"] }
-wasmi_wasi = "=0.46.0"
+wasmi = { version = "=0.47.2", default-features = false, features = ["std"] }
+wasmi_wasi = "=0.47.2"
 wiggle = { version = "=31.0.0", default-features = false }
 
 [target.'cfg(windows)'.dependencies]
@@ -46,3 +46,6 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = "symbols"
+
+[profile.release.package.filens-cli]
+opt-level = 3

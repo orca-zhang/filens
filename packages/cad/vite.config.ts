@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitest/config';
-import dts from 'vite-plugin-dts';
+import { packageDeclarations } from '../../scripts/package-declarations';
 
 export default defineConfig({
   base: './',
   build: {
     lib: {
+      cssFileName: 'style',
       entry: { index: './src/index.ts', routes: './src/routes.ts' },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`
@@ -20,7 +21,7 @@ export default defineConfig({
     globals: true
   },
   plugins: [
-    dts({
+    packageDeclarations({
       include: ['src/**/*.ts'],
       outDir: 'dist',
       entryRoot: 'src',

@@ -1,0 +1,1536 @@
+{
+  "observedAt": "2026-11-18T23:52:17.346Z",
+  "timezone": "Asia/Shanghai",
+  "sourceHead": "7e4f4121ec757581cc67d271b13f98d375c0ba99",
+  "source": "local working tree; includes uncommitted changes",
+  "rustSecToolVersion": "cargo-audit 0.23.0",
+  "githubSnapshotSource": "GitHub REST API: open Dependabot alerts",
+  "summary": {
+    "githubAlerts": 80,
+    "patchedLocally": 75,
+    "dependenciesRemoved": 5,
+    "githubAlertSeverities": {
+      "low": 8,
+      "medium": 33,
+      "high": 35,
+      "critical": 4
+    },
+    "unresolvedGithubAlerts": 0,
+    "uniqueNpmAdvisories": 0,
+    "rustsecVulnerabilities": 0,
+    "rustsecUnmaintainedWarnings": 9,
+    "rustsecUnsoundWarnings": 2,
+    "rustsecYankedPackages": 0
+  },
+  "limits": [
+    "本地版本核对不会关闭 GitHub 告警，也不会修补已发布的软件包。",
+    "npm 将受影响包数量和不同公告分别统计；传递依赖链不代表独立漏洞。",
+    "RustSec 扫描了所有已提交 Cargo.lock，并将未维护、不健全 API 和撤回版本与已知漏洞分开列出。",
+    "GitHub Code Scanning API 返回 HTTP 404，当前令牌也缺少 admin:repo_hook 权限；因此无法判断该仓库是否有代码扫描结果。",
+    "公告和版本范围匹配不等于漏洞可利用，也不替代运行行为验证。"
+  ],
+  "localPatches": [
+    {
+      "package": "picomatch@4.0.8-filens.1",
+      "basedOn": "picomatch@4.0.7",
+      "advisory": "GHSA-fc5q-39xc-vjpf",
+      "scope": "单分支重复 extglob 中未转义的 * 或 ? 按字面字符处理。",
+      "regressionTest": "scripts/picomatch-hotfix.test.mjs",
+      "provenance": "vendor/picomatch/FILENS-PATCH.md"
+    },
+    {
+      "package": "iwork@0.4.0",
+      "scope": "本地 vendored 适配器使用 zip@9.1.3，移除了有漏洞的 zip@2.6.1。",
+      "regressionTest": "wasm/converter-core-rust/src/zip_io.rs",
+      "provenance": "wasm/converter-core-rust/vendor/iwork/FILENS-PATCH.md"
+    },
+    {
+      "package": "Go 转换器宿主",
+      "advisory": "GHSA-5cv4-jp36-h3mw",
+      "scope": "删除 Go CLI、HTTP、Agent 与文本提取宿主，保留共享 Rust/WASM 核心和非 Go 样例资源。",
+      "validation": "本地 Dependabot 版本核对将 Go 告警标记为依赖已移除"
+    },
+    {
+      "package": "calamine@0.38.0",
+      "basedOn": "calamine@0.37.0",
+      "advisory": "RUSTSEC-2026-0436",
+      "scope": "修复恶意 XLS/XLSB/CFB 输入可触发 panic 或 OOM 的解析问题。",
+      "validation": "Rust WASM 构建与转换回归检查"
+    },
+    {
+      "package": "msoffice-crypto@0.1.0 / secure-gate@0.9.0",
+      "basedOn": "msoffice-crypto 0.1.0-rc.13 / secure-gate 0.9.0-rc.17",
+      "scope": "改用正式版依赖，移除被撤回的 secure-gate 预发布版本。",
+      "validation": "Rust WASM 构建与转换回归检查"
+    }
+  ],
+  "dependencyFiles": [
+    {
+      "file": "package-lock.json",
+      "sha256": "5ab88df711ffb9d5c9608c0b4aa883d623132cedf5aef3a91a7a6c44451ad484"
+    },
+    {
+      "file": "integrations/deepseek-harness/package-lock.json",
+      "sha256": "912a67b4c975419c08b8c71f0ab226724d35435f9ab60c8b10b9c7756557fe9b"
+    },
+    {
+      "file": "benchmarks/frontend/package-lock.json",
+      "sha256": "2dcbeab9e8b0f1aa1886f5ab43b569fe368eb4dc4d61321ed139fdeaf897e5ee"
+    },
+    {
+      "file": "benchmarks/frontend/other-formats/package-lock.json",
+      "sha256": "8fc8432a31c51316b47abbf9675a8cbf6633a5b47ec295447f41023a59ddbee8"
+    },
+    {
+      "file": "benchmarks/rust-engines/Cargo.lock",
+      "sha256": "d8b46f5d592110b6919d49f27779ca3717bc5c388b34cce5f4ee15dd91d239df"
+    },
+    {
+      "file": "cli/Cargo.lock",
+      "sha256": "93f52da389abaccdeb330e16b8b663dd201ae1f93c1fd93e1f331cb62ccff8d5"
+    },
+    {
+      "file": "wasm/converter-core-rust/Cargo.lock",
+      "sha256": "3359bb171a17f4868c4956c17ab3724f49f33cbc947189e907cc432981806331"
+    },
+    {
+      "file": "wasm/converter-image-rust/Cargo.lock",
+      "sha256": "5952f4e05a4b9d2c4a2105e562f0fef5cf9e404fa0dfd212787ac174f01afe84"
+    },
+    {
+      "file": "wasm/converter-step-rust/Cargo.lock",
+      "sha256": "cf6e18c136f9571f1dbab4c6e08d41e5d76bb605fc4841224c12dc25219312ea"
+    }
+  ],
+  "alerts": [
+    {
+      "number": 102,
+      "manifest": "package-lock.json",
+      "package": "fast-xml-parser",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-474x-hrwr-fgx4",
+      "vulnerableRange": "<= 5.11.2",
+      "resolvedVersions": [
+        "5.12.1"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/102"
+    },
+    {
+      "number": 101,
+      "manifest": "packages/core/package.json",
+      "package": "fast-xml-parser",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-474x-hrwr-fgx4",
+      "vulnerableRange": "<= 5.11.2",
+      "resolvedVersions": [
+        "5.12.1"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/101"
+    },
+    {
+      "number": 100,
+      "manifest": "packages/xlsx/package.json",
+      "package": "fast-xml-parser",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-474x-hrwr-fgx4",
+      "vulnerableRange": "<= 5.11.2",
+      "resolvedVersions": [
+        "5.12.1"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/100"
+    },
+    {
+      "number": 99,
+      "manifest": "wasm/converter-core-rust/Cargo.lock",
+      "package": "zip",
+      "ecosystem": "rust",
+      "severity": "medium",
+      "advisory": "GHSA-8hxf-qr8p-62x4",
+      "vulnerableRange": ">= 0.6.0  < 9.0.0",
+      "resolvedVersions": [
+        "9.1.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/99"
+    },
+    {
+      "number": 98,
+      "manifest": "wasm/converter-core-rust/Cargo.lock",
+      "package": "zip",
+      "ecosystem": "rust",
+      "severity": "high",
+      "advisory": "GHSA-q7v9-x93c-xqv3",
+      "vulnerableRange": ">= 1.3.0  < 9.0.0",
+      "resolvedVersions": [
+        "9.1.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/98"
+    },
+    {
+      "number": 97,
+      "manifest": "wasm/converter-core-rust/Cargo.lock",
+      "package": "zip",
+      "ecosystem": "rust",
+      "severity": "critical",
+      "advisory": "GHSA-m665-v7pm-7grj",
+      "vulnerableRange": "<= 9.0.4",
+      "resolvedVersions": [
+        "9.1.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/97"
+    },
+    {
+      "number": 96,
+      "manifest": "wasm/converter-core-rust/Cargo.lock",
+      "package": "tar",
+      "ecosystem": "rust",
+      "severity": "medium",
+      "advisory": "GHSA-3pv8-6f4r-ffg2",
+      "vulnerableRange": "<= 0.4.45",
+      "resolvedVersions": [
+        "0.4.46"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/96"
+    },
+    {
+      "number": 95,
+      "manifest": "wasm/converter-core-rust/Cargo.lock",
+      "package": "tar",
+      "ecosystem": "rust",
+      "severity": "medium",
+      "advisory": "GHSA-j4xf-2g29-59ph",
+      "vulnerableRange": "<= 0.4.44",
+      "resolvedVersions": [
+        "0.4.46"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/95"
+    },
+    {
+      "number": 94,
+      "manifest": "wasm/converter-core-rust/Cargo.lock",
+      "package": "tar",
+      "ecosystem": "rust",
+      "severity": "medium",
+      "advisory": "GHSA-gchp-q4r4-x4ff",
+      "vulnerableRange": "<= 0.4.44",
+      "resolvedVersions": [
+        "0.4.46"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/94"
+    },
+    {
+      "number": 92,
+      "manifest": "packages/core/package.json",
+      "package": "fflate",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-px8p-9vwx-vf98",
+      "vulnerableRange": ">= 0.8.0  < 0.8.3",
+      "resolvedVersions": [
+        "0.8.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/92"
+    },
+    {
+      "number": 90,
+      "manifest": "packages/converter-client/package.json",
+      "package": "fflate",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-px8p-9vwx-vf98",
+      "vulnerableRange": ">= 0.8.0  < 0.8.3",
+      "resolvedVersions": [
+        "0.8.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/90"
+    },
+    {
+      "number": 89,
+      "manifest": "package-lock.json",
+      "package": "minimatch",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-g3hv-75wg-m249",
+      "vulnerableRange": ">= 7.0.0  < 11.0.1",
+      "resolvedVersions": [
+        "11.0.9",
+        "5.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/89"
+    },
+    {
+      "number": 87,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-w74x-v6f9-j3xg",
+      "vulnerableRange": ">= 3.0.0  < 3.1.9",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/87"
+    },
+    {
+      "number": 86,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-xhq7-xmqj-769h",
+      "vulnerableRange": ">= 3.0.0  < 3.1.9",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/86"
+    },
+    {
+      "number": 85,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-333x-w4r6-6crp",
+      "vulnerableRange": ">= 3.0.0  < 3.1.9",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/85"
+    },
+    {
+      "number": 84,
+      "manifest": "package-lock.json",
+      "package": "@vitest/mocker",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-qxg6-89mg-rqv8",
+      "vulnerableRange": ">= 2.1.0-beta.7  < 4.1.12",
+      "resolvedVersions": [
+        "4.1.12"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/84"
+    },
+    {
+      "number": 83,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-9jrq-w75r-8gcw",
+      "vulnerableRange": "<= 6.4.3",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/83"
+    },
+    {
+      "number": 82,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-rq7h-c2jc-7f22",
+      "vulnerableRange": "<= 6.4.3",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/82"
+    },
+    {
+      "number": 81,
+      "manifest": "package-lock.json",
+      "package": "markdown-it",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-gfr2-rv44-r23c",
+      "vulnerableRange": ">= 14.1.0  < 14.3.3",
+      "resolvedVersions": [
+        "14.3.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/81"
+    },
+    {
+      "number": 80,
+      "manifest": "package-lock.json",
+      "package": "markdown-it",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-vfgh-jcmw-g37q",
+      "vulnerableRange": "< 14.3.3",
+      "resolvedVersions": [
+        "14.3.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/80"
+    },
+    {
+      "number": 79,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-r825-w8mm-5pxw",
+      "vulnerableRange": "<= 6.4.3",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/79"
+    },
+    {
+      "number": 78,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-587h-7wmj-h5pm",
+      "vulnerableRange": "<= 6.4.3",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/78"
+    },
+    {
+      "number": 77,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-698v-4r3x-3vcv",
+      "vulnerableRange": "<= 6.4.3",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/77"
+    },
+    {
+      "number": 76,
+      "manifest": "package-lock.json",
+      "package": "markdown-it",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-r7fv-28h4-cvq7",
+      "vulnerableRange": "< 14.3.2",
+      "resolvedVersions": [
+        "14.3.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/76"
+    },
+    {
+      "number": 75,
+      "manifest": "package-lock.json",
+      "package": "source-map-js",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-68fv-2mgg-jv7q",
+      "vulnerableRange": ">= 1.0.0  < 1.2.2",
+      "resolvedVersions": [
+        "1.2.2"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/75"
+    },
+    {
+      "number": 74,
+      "manifest": "package-lock.json",
+      "package": "@vue/server-renderer",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-g2v6-rqmx-r4w6",
+      "vulnerableRange": "< 3.5.42",
+      "resolvedVersions": [
+        "3.5.45"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/74"
+    },
+    {
+      "number": 73,
+      "manifest": "package-lock.json",
+      "package": "tinypool",
+      "ecosystem": "npm",
+      "severity": "critical",
+      "advisory": "GHSA-5gmw-xhrv-c9v3",
+      "vulnerableRange": "<= 2.1.0",
+      "resolvedVersions": [],
+      "vulnerableVersions": [],
+      "status": "dependency-removed",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/73"
+    },
+    {
+      "number": 72,
+      "manifest": "package-lock.json",
+      "package": "tinypool",
+      "ecosystem": "npm",
+      "severity": "critical",
+      "advisory": "GHSA-85c8-ppgw-ccpr",
+      "vulnerableRange": "< 2.1.2",
+      "resolvedVersions": [],
+      "vulnerableVersions": [],
+      "status": "dependency-removed",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/72"
+    },
+    {
+      "number": 70,
+      "manifest": "package-lock.json",
+      "package": "brace-expansion",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-q2hr-2g5m-vwhr",
+      "vulnerableRange": ">= 2.0.0  < 2.1.7",
+      "resolvedVersions": [
+        "5.0.13",
+        "2.1.8"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/70"
+    },
+    {
+      "number": 69,
+      "manifest": "package-lock.json",
+      "package": "brace-expansion",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-q2hr-2g5m-vwhr",
+      "vulnerableRange": ">= 4.0.0  < 5.0.12",
+      "resolvedVersions": [
+        "5.0.13",
+        "2.1.8"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/69"
+    },
+    {
+      "number": 64,
+      "manifest": "package-lock.json",
+      "package": "markdown-it",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-253c-mchw-3w2r",
+      "vulnerableRange": "< 14.3.1",
+      "resolvedVersions": [
+        "14.3.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/64"
+    },
+    {
+      "number": 63,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-qw65-cvwx-89v3",
+      "vulnerableRange": ">= 3.0.0  < 3.1.7",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/63"
+    },
+    {
+      "number": 62,
+      "manifest": "package-lock.json",
+      "package": "vitest",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-82fw-gwwq-j7x9",
+      "vulnerableRange": ">= 2.1.0  < 4.1.11",
+      "resolvedVersions": [
+        "4.1.12"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/62"
+    },
+    {
+      "number": 61,
+      "manifest": "package-lock.json",
+      "package": "@vitest/mocker",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-82fw-gwwq-j7x9",
+      "vulnerableRange": ">= 2.1.0  < 4.1.11",
+      "resolvedVersions": [
+        "4.1.12"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/61"
+    },
+    {
+      "number": 60,
+      "manifest": "package-lock.json",
+      "package": "fflate",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-px8p-9vwx-vf98",
+      "vulnerableRange": ">= 0.8.0  < 0.8.3",
+      "resolvedVersions": [
+        "0.8.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/60"
+    },
+    {
+      "number": 59,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-f65p-4m7j-42xc",
+      "vulnerableRange": ">= 3.0.0  < 3.1.6",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/59"
+    },
+    {
+      "number": 58,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-jqff-g426-hqxp",
+      "vulnerableRange": ">= 3.0.0  < 3.1.6",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/58"
+    },
+    {
+      "number": 57,
+      "manifest": "package-lock.json",
+      "package": "nanoid",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-xwg4-73v4-xw9w",
+      "vulnerableRange": "< 3.3.12",
+      "resolvedVersions": [
+        "3.3.20"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/57"
+    },
+    {
+      "number": 56,
+      "manifest": "package-lock.json",
+      "package": "nanoid",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-2v37-7h3g-55p8",
+      "vulnerableRange": "< 3.3.18",
+      "resolvedVersions": [
+        "3.3.20"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/56"
+    },
+    {
+      "number": 55,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-q3j6-qgpj-74h6",
+      "vulnerableRange": ">= 3.0.0  <= 3.1.0",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/55"
+    },
+    {
+      "number": 54,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-v39h-62p7-jpjc",
+      "vulnerableRange": ">= 3.0.0  <= 3.1.1",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/54"
+    },
+    {
+      "number": 53,
+      "manifest": "package-lock.json",
+      "package": "nanoid",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-28wg-ghj8-5hjv",
+      "vulnerableRange": "< 3.3.16",
+      "resolvedVersions": [
+        "3.3.20"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/53"
+    },
+    {
+      "number": 52,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-7p8r-x3mc-p8w7",
+      "vulnerableRange": ">= 3.0.0  < 3.1.5",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/52"
+    },
+    {
+      "number": 51,
+      "manifest": "package-lock.json",
+      "package": "postcss",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-fxqj-rqcc-2cmp",
+      "vulnerableRange": "<= 8.5.22",
+      "resolvedVersions": [
+        "8.5.33"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/51"
+    },
+    {
+      "number": 46,
+      "manifest": "package-lock.json",
+      "package": "postcss",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-r28c-9q8g-f849",
+      "vulnerableRange": "<= 8.5.17",
+      "resolvedVersions": [
+        "8.5.33"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/46"
+    },
+    {
+      "number": 45,
+      "manifest": "package-lock.json",
+      "package": "postcss",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-6g55-p6wh-862q",
+      "vulnerableRange": "<= 8.5.11",
+      "resolvedVersions": [
+        "8.5.33"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/45"
+    },
+    {
+      "number": 44,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-v2hh-gcrm-f6hx",
+      "vulnerableRange": ">= 3.0.0  <= 3.1.3",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/44"
+    },
+    {
+      "number": 43,
+      "manifest": "package-lock.json",
+      "package": "linkify-it",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-v245-v573-v5vm",
+      "vulnerableRange": "<= 5.0.1",
+      "resolvedVersions": [
+        "5.0.2"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/43"
+    },
+    {
+      "number": 42,
+      "manifest": "package-lock.json",
+      "package": "fast-uri",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-4c8g-83qw-93j6",
+      "vulnerableRange": ">= 3.0.0  < 3.1.3",
+      "resolvedVersions": [
+        "3.1.9"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/42"
+    },
+    {
+      "number": 41,
+      "manifest": "package-lock.json",
+      "package": "protobufjs",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-j3f2-48v5-ccww",
+      "vulnerableRange": ">= 7.5.0  <= 7.6.4",
+      "resolvedVersions": [
+        "7.6.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/41"
+    },
+    {
+      "number": 40,
+      "manifest": "package-lock.json",
+      "package": "brace-expansion",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-3jxr-9vmj-r5cp",
+      "vulnerableRange": ">= 2.0.0  < 2.1.2",
+      "resolvedVersions": [
+        "5.0.13",
+        "2.1.8"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/40"
+    },
+    {
+      "number": 39,
+      "manifest": "package-lock.json",
+      "package": "brace-expansion",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-3jxr-9vmj-r5cp",
+      "vulnerableRange": ">= 3.0.0  < 5.0.7",
+      "resolvedVersions": [
+        "5.0.13",
+        "2.1.8"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/39"
+    },
+    {
+      "number": 37,
+      "manifest": "package-lock.json",
+      "package": "markdown-it",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-6v5v-wf23-fmfq",
+      "vulnerableRange": "<= 14.1.1",
+      "resolvedVersions": [
+        "14.3.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/37"
+    },
+    {
+      "number": 36,
+      "manifest": "package-lock.json",
+      "package": "protobufjs-cli",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-pr59-h9ph-3fr8",
+      "vulnerableRange": "<= 1.3.1",
+      "resolvedVersions": [
+        "1.3.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/36"
+    },
+    {
+      "number": 35,
+      "manifest": "package-lock.json",
+      "package": "protobufjs",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-wcpc-wj8m-hjx6",
+      "vulnerableRange": "<= 7.6.0",
+      "resolvedVersions": [
+        "7.6.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/35"
+    },
+    {
+      "number": 33,
+      "manifest": "package-lock.json",
+      "package": "protobufjs",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-f38q-mgvj-vph7",
+      "vulnerableRange": "<= 7.6.2",
+      "resolvedVersions": [
+        "7.6.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/33"
+    },
+    {
+      "number": 32,
+      "manifest": "package-lock.json",
+      "package": "form-data",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-hmw2-7cc7-3qxx",
+      "vulnerableRange": ">= 4.0.0  < 4.0.6",
+      "resolvedVersions": [
+        "4.0.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/32"
+    },
+    {
+      "number": 31,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-v6wh-96g9-6wx3",
+      "vulnerableRange": "<= 6.4.2",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/31"
+    },
+    {
+      "number": 30,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-fx2h-pf6j-xcff",
+      "vulnerableRange": "<= 6.4.2",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/30"
+    },
+    {
+      "number": 29,
+      "manifest": "package-lock.json",
+      "package": "ws",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-96hv-2xvq-fx4p",
+      "vulnerableRange": ">= 8.0.0  < 8.21.0",
+      "resolvedVersions": [
+        "8.23.0"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/29"
+    },
+    {
+      "number": 28,
+      "manifest": "package-lock.json",
+      "package": "vitest",
+      "ecosystem": "npm",
+      "severity": "critical",
+      "advisory": "GHSA-5xrq-8626-4rwp",
+      "vulnerableRange": "< 3.2.6",
+      "resolvedVersions": [
+        "4.1.12"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/28"
+    },
+    {
+      "number": 27,
+      "manifest": "package-lock.json",
+      "package": "tmp",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-ph9p-34f9-6g65",
+      "vulnerableRange": "< 0.2.6",
+      "resolvedVersions": [
+        "0.2.7"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/27"
+    },
+    {
+      "number": 26,
+      "manifest": "package-lock.json",
+      "package": "js-cookie",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-qjx8-664m-686j",
+      "vulnerableRange": "<= 3.0.5",
+      "resolvedVersions": [
+        "3.0.8"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/26"
+    },
+    {
+      "number": 25,
+      "manifest": "package-lock.json",
+      "package": "protobufjs",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-jggg-4jg4-v7c6",
+      "vulnerableRange": "<= 7.5.7",
+      "resolvedVersions": [
+        "7.6.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/25"
+    },
+    {
+      "number": 21,
+      "manifest": "package-lock.json",
+      "package": "vite",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-4w7w-66w2-5vf9",
+      "vulnerableRange": "<= 6.4.1",
+      "resolvedVersions": [
+        "6.4.6"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/21"
+    },
+    {
+      "number": 20,
+      "manifest": "package-lock.json",
+      "package": "esbuild",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-67mh-4wv8-2f99",
+      "vulnerableRange": "<= 0.24.2",
+      "resolvedVersions": [
+        "0.25.12"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/20"
+    },
+    {
+      "number": 19,
+      "manifest": "integrations/deepseek-harness/package-lock.json",
+      "package": "undici",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-4w7w-5xrc-9h26",
+      "vulnerableRange": ">= 8.0.0  < 8.12.2",
+      "resolvedVersions": [
+        "8.12.4"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/19"
+    },
+    {
+      "number": 18,
+      "manifest": "integrations/deepseek-harness/package-lock.json",
+      "package": "undici",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-2m5v-pch6-74hx",
+      "vulnerableRange": ">= 8.0.0  < 8.12.2",
+      "resolvedVersions": [
+        "8.12.4"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/18"
+    },
+    {
+      "number": 17,
+      "manifest": "integrations/deepseek-harness/package-lock.json",
+      "package": "undici",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-qrxm-fqhp-jwvm",
+      "vulnerableRange": ">= 8.0.0  < 8.12.2",
+      "resolvedVersions": [
+        "8.12.4"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/17"
+    },
+    {
+      "number": 16,
+      "manifest": "integrations/deepseek-harness/package-lock.json",
+      "package": "undici",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-9fm3-97px-rjf6",
+      "vulnerableRange": ">= 8.0.0  < 8.12.2",
+      "resolvedVersions": [
+        "8.12.4"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/16"
+    },
+    {
+      "number": 14,
+      "manifest": "integrations/deepseek-harness/package-lock.json",
+      "package": "undici",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-xjj6-f33q-929c",
+      "vulnerableRange": ">= 8.0.0  < 8.12.2",
+      "resolvedVersions": [
+        "8.12.4"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/14"
+    },
+    {
+      "number": 10,
+      "manifest": "integrations/deepseek-harness/package-lock.json",
+      "package": "@modelcontextprotocol/client",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-6prh-2h8m-c8cw",
+      "vulnerableRange": ">= 2.0.0  < 2.3.0",
+      "resolvedVersions": [
+        "2.4.0"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/10"
+    },
+    {
+      "number": 8,
+      "manifest": "converter/go.mod",
+      "package": "golang.org/x/net",
+      "ecosystem": "go",
+      "severity": "medium",
+      "advisory": "GHSA-5cv4-jp36-h3mw",
+      "vulnerableRange": "< 0.55.0",
+      "resolvedVersions": [],
+      "vulnerableVersions": [],
+      "status": "dependency-removed",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/8"
+    },
+    {
+      "number": 7,
+      "manifest": "cli/Cargo.lock",
+      "package": "wasmi",
+      "ecosystem": "rust",
+      "severity": "high",
+      "advisory": "GHSA-g4v2-cjqp-rfmq",
+      "vulnerableRange": ">= 0.42.0  < 0.47.1",
+      "resolvedVersions": [
+        "0.47.2"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/7"
+    },
+    {
+      "number": 6,
+      "manifest": "benchmarks/frontend/package-lock.json",
+      "package": "echarts",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-fgmj-fm8m-jvvx",
+      "vulnerableRange": "< 6.1.0",
+      "resolvedVersions": [
+        "6.1.0"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/6"
+    },
+    {
+      "number": 5,
+      "manifest": "benchmarks/frontend/package-lock.json",
+      "package": "uuid",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-w5hq-g745-h8pq",
+      "vulnerableRange": "< 11.1.1",
+      "resolvedVersions": [
+        "11.1.1"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/5"
+    },
+    {
+      "number": 4,
+      "manifest": "benchmarks/frontend/package-lock.json",
+      "package": "vue",
+      "ecosystem": "npm",
+      "severity": "low",
+      "advisory": "GHSA-5j4c-8p2g-v4jx",
+      "vulnerableRange": ">= 2.0.0-alpha.1  < 3.0.0-alpha.0",
+      "resolvedVersions": [
+        "3.5.45"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/4"
+    },
+    {
+      "number": 3,
+      "manifest": "benchmarks/frontend/package-lock.json",
+      "package": "xlsx",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-5pgg-2g8v-p4x9",
+      "vulnerableRange": "< 0.20.2",
+      "resolvedVersions": [],
+      "vulnerableVersions": [],
+      "status": "dependency-removed",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/3"
+    },
+    {
+      "number": 2,
+      "manifest": "benchmarks/frontend/package-lock.json",
+      "package": "xlsx",
+      "ecosystem": "npm",
+      "severity": "high",
+      "advisory": "GHSA-4r6h-8v6p-xvw6",
+      "vulnerableRange": "< 0.19.3",
+      "resolvedVersions": [],
+      "vulnerableVersions": [],
+      "status": "dependency-removed",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/2"
+    },
+    {
+      "number": 1,
+      "manifest": "benchmarks/frontend/other-formats/package-lock.json",
+      "package": "fflate",
+      "ecosystem": "npm",
+      "severity": "medium",
+      "advisory": "GHSA-px8p-9vwx-vf98",
+      "vulnerableRange": ">= 0.8.0  < 0.8.3",
+      "resolvedVersions": [
+        "0.8.3"
+      ],
+      "vulnerableVersions": [],
+      "status": "patched-locally",
+      "url": "https://github.com/orca-zhang/filens/security/dependabot/1"
+    }
+  ],
+  "npmScans": [
+    {
+      "project": ".",
+      "affectedPackages": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "uniqueAdvisories": [],
+      "production": {
+        "affectedPackages": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "uniqueAdvisories": []
+      }
+    },
+    {
+      "project": "integrations/deepseek-harness",
+      "affectedPackages": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "uniqueAdvisories": [],
+      "production": {
+        "affectedPackages": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "uniqueAdvisories": []
+      }
+    },
+    {
+      "project": "benchmarks/frontend",
+      "affectedPackages": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "uniqueAdvisories": [],
+      "production": {
+        "affectedPackages": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "uniqueAdvisories": []
+      }
+    },
+    {
+      "project": "benchmarks/frontend/other-formats",
+      "affectedPackages": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "uniqueAdvisories": [],
+      "production": {
+        "affectedPackages": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "uniqueAdvisories": []
+      }
+    }
+  ],
+  "rustSecScans": [
+    {
+      "lock": "benchmarks/rust-engines/Cargo.lock",
+      "vulnerabilities": [],
+      "unmaintained": [
+        {
+          "package": "cgmath",
+          "version": "0.18.0",
+          "advisory": "RUSTSEC-2026-0196",
+          "title": "`cgmath` is unmaintained"
+        },
+        {
+          "package": "chrono",
+          "version": "0.4.45",
+          "advisory": "RUSTSEC-2026-0543",
+          "title": "chrono is unmaintained"
+        },
+        {
+          "package": "proc-macro-error",
+          "version": "1.0.4",
+          "advisory": "RUSTSEC-2024-0370",
+          "title": "proc-macro-error is unmaintained"
+        }
+      ],
+      "unsound": [
+        {
+          "package": "cgmath",
+          "version": "0.18.0",
+          "advisory": "RUSTSEC-2026-0197",
+          "title": "`Matrix{2,3,4}::swap_columns` can trigger undefined behavior for identical indices"
+        }
+      ],
+      "yanked": []
+    },
+    {
+      "lock": "cli/Cargo.lock",
+      "vulnerabilities": [],
+      "unmaintained": [
+        {
+          "package": "unsafe-libyaml",
+          "version": "0.2.11",
+          "advisory": "RUSTSEC-2024-0449",
+          "title": "unsafe-libyaml is unmaintained"
+        }
+      ],
+      "unsound": [],
+      "yanked": []
+    },
+    {
+      "lock": "wasm/converter-core-rust/Cargo.lock",
+      "vulnerabilities": [],
+      "unmaintained": [
+        {
+          "package": "paste",
+          "version": "1.0.15",
+          "advisory": "RUSTSEC-2024-0436",
+          "title": "paste - no longer maintained"
+        },
+        {
+          "package": "ttf-parser",
+          "version": "0.25.1",
+          "advisory": "RUSTSEC-2026-0192",
+          "title": "`ttf-parser` is unmaintained"
+        }
+      ],
+      "unsound": [],
+      "yanked": []
+    },
+    {
+      "lock": "wasm/converter-image-rust/Cargo.lock",
+      "vulnerabilities": [],
+      "unmaintained": [],
+      "unsound": [],
+      "yanked": []
+    },
+    {
+      "lock": "wasm/converter-step-rust/Cargo.lock",
+      "vulnerabilities": [],
+      "unmaintained": [
+        {
+          "package": "cgmath",
+          "version": "0.18.0",
+          "advisory": "RUSTSEC-2026-0196",
+          "title": "`cgmath` is unmaintained"
+        },
+        {
+          "package": "chrono",
+          "version": "0.4.45",
+          "advisory": "RUSTSEC-2026-0543",
+          "title": "chrono is unmaintained"
+        },
+        {
+          "package": "proc-macro-error",
+          "version": "1.0.4",
+          "advisory": "RUSTSEC-2024-0370",
+          "title": "proc-macro-error is unmaintained"
+        }
+      ],
+      "unsound": [
+        {
+          "package": "cgmath",
+          "version": "0.18.0",
+          "advisory": "RUSTSEC-2026-0197",
+          "title": "`Matrix{2,3,4}::swap_columns` can trigger undefined behavior for identical indices"
+        }
+      ],
+      "yanked": []
+    }
+  ],
+  "reviewNotes": [
+    {
+      "package": "cgmath@0.18.0",
+      "advisory": "RUSTSEC-2026-0197",
+      "status": "affected-api-not-referenced",
+      "evidence": "公告涉及索引相同的 Matrix2/3/4::swap_columns 调用；STEP 适配器和固定版本 truck 源码中未找到该 API 的调用点。"
+    },
+    {
+      "package": "unsafe-libyaml@0.2.11",
+      "status": "yaml-output-only",
+      "evidence": "CLI 只调用 serde_yaml::to_writer 输出 YAML，没有在该路径解析用户提供的 YAML；该 crate 仍含未维护的 unsafe 实现。"
+    },
+    {
+      "package": "ttf-parser@0.25.1",
+      "status": "runtime-parser-maintenance-risk",
+      "evidence": "text-extraction 功能用它解析文档内嵌字体；RustSec 没有报告已知漏洞，但上游已停止维护。"
+    },
+    {
+      "packages": [
+        "paste",
+        "proc-macro-error"
+      ],
+      "status": "build-time-only",
+      "evidence": "cargo tree 显示它们通过过程宏构建依赖进入；目前没有已知运行时漏洞。"
+    },
+    {
+      "package": "chrono@0.4.45",
+      "status": "step-parser-maintenance-risk",
+      "evidence": "它经 truck-stepio 进入 STEP 解析依赖；RustSec 报告维护状态，没有报告已知漏洞。"
+    }
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "observedAt": "2026-11-24T07:49:19.385Z",
+  "browser": "159.0.8154.6",
+  "before": {
+    "jsSha256": "ae839d001b517f08540314c70d2f3454ad3848c2562703e7533724902e664cb4",
+    "groups": 8,
+    "brotliBytes": 3574169,
+    "gzipBytes": 3710836,
+    "decoderCompilesAfterPreview": {
+      "text.txt": 1,
+      "atlas.pdf": 2,
+      "sample.pages": 2,
+      "color.heic": 4,
+      "cube.stp": 2
+    }
+  },
+  "after": {
+    "jsSha256": "cd15f40418a2af625537eb54386044c7d4cdf354d008a2c569cb4efcd86e5202",
+    "groups": 8,
+    "brotliBytes": 3574273,
+    "gzipBytes": 3710865,
+    "decoderBytes": 20283,
+    "decoderSha256": "2c899b6e3e5dee43d7326348f5a411e2097ef900272132e28ec97df3de91c3f1",
+    "resources": 53,
+    "exactResourceGroupsAndHashes": true,
+    "decodedAssetsSha256": "dc6a94045372482b5fc7ba959726dec9a9be7ee3c9b05e710ed8a8d782ebd2ad"
+  },
+  "browserBenchmark": {
+    "singlePerGroup": {
+      "text.txt": {
+        "medianPreviewMs": 119.70000004768372,
+        "medianImportMs": 106.69999980926514,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 1,
+        "wasmBlobsAfterPreview": 0
+      },
+      "atlas.pdf": {
+        "medianPreviewMs": 179,
+        "medianImportMs": 105.59999990463257,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 2,
+        "wasmBlobsAfterPreview": 0
+      },
+      "sample.pages": {
+        "medianPreviewMs": 254.69999980926514,
+        "medianImportMs": 103.29999995231628,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 2,
+        "wasmBlobsAfterPreview": 0
+      },
+      "color.heic": {
+        "medianPreviewMs": 177.80000019073486,
+        "medianImportMs": 103.19999980926514,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 4,
+        "wasmBlobsAfterPreview": 2
+      },
+      "cube.stp": {
+        "medianPreviewMs": 162.80000019073486,
+        "medianImportMs": 103.89999985694885,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 2,
+        "wasmBlobsAfterPreview": 1
+      }
+    },
+    "singleSharedDecoder": {
+      "text.txt": {
+        "medianPreviewMs": 123,
+        "medianImportMs": 109,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 1,
+        "wasmBlobsAfterPreview": 0
+      },
+      "atlas.pdf": {
+        "medianPreviewMs": 179.5,
+        "medianImportMs": 105.79999995231628,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 1,
+        "wasmBlobsAfterPreview": 0
+      },
+      "sample.pages": {
+        "medianPreviewMs": 260.40000009536743,
+        "medianImportMs": 105.5,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 1,
+        "wasmBlobsAfterPreview": 0
+      },
+      "color.heic": {
+        "medianPreviewMs": 179.90000009536743,
+        "medianImportMs": 105.5,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 1,
+        "wasmBlobsAfterPreview": 2
+      },
+      "cube.stp": {
+        "medianPreviewMs": 166.70000004768372,
+        "medianImportMs": 105.79999995231628,
+        "decoderCompilesAfterImport": 1,
+        "decoderCompilesAfterPreview": 1,
+        "wasmBlobsAfterPreview": 1
+      }
+    }
+  },
+  "transportValidation": {
+    "browser": "159.0.8154.6",
+    "limit": 4000000,
+    "exactEncodings": true,
+    "es2020": true,
+    "offlineFileHtml": true,
+    "iworkCsp": "Existing protobuf fallback requires unsafe-eval; tested separately from strict-CSP formats.",
+    "cases": [
+      {
+        "encoding": "gzip",
+        "bytes": 3710865,
+        "samplesMs": [
+          108.90000009536743,
+          104.90000009536743,
+          107
+        ],
+        "medianImportMs": 107,
+        "cspWithoutJsEval": true,
+        "formats": [
+          "text",
+          "step",
+          "atlas.pdf",
+          "legacy.doc",
+          "sample.pages",
+          "sample.numbers",
+          "weekend.key",
+          "color.heic",
+          "camera.dng",
+          "atlas-again.pdf"
+        ],
+        "deferredWasm": true
+      },
+      {
+        "encoding": "br",
+        "bytes": 3574273,
+        "samplesMs": [
+          107.70000004768372,
+          109.60000014305115,
+          109.69999980926514
+        ],
+        "medianImportMs": 109.60000014305115,
+        "cspWithoutJsEval": true,
+        "formats": [
+          "text",
+          "step",
+          "atlas.pdf",
+          "legacy.doc",
+          "sample.pages",
+          "sample.numbers",
+          "weekend.key",
+          "color.heic",
+          "camera.dng",
+          "atlas-again.pdf"
+        ],
+        "deferredWasm": true
+      }
+    ]
+  },
+  "unitValidation": {
+    "packedAssetReaderAndWorkerTestsPassed": true,
+    "exactAssetsAndChecksumsPassed": true,
+    "invalidInputsRejected": 24,
+    "eachWasmGroupLazyAndUrlsCached": true,
+    "compiledDecoderSharedAcrossGroups": true
+  },
+  "identicalSidecars": [
+    "THIRD-PARTY-NOTICES.txt",
+    "assets/archive-worker-uiv_8EYe.js",
+    "archive/7zz.wasm"
+  ],
+  "limitations": [
+    "Wall-clock differences are within local measurement variation.",
+    "Safari, Firefox, public CDN paths and peak memory were not measured."
+  ],
+  "publication": "Current workspace build only; release and CDN files were not modified."
+}

@@ -1,0 +1,3127 @@
+{
+  "schema": "filens-bench-run-v1",
+  "date": "2026-11-19T02:48:17.059Z",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "corpusSHA256": "782bb15f9be9d6be35a37737661aaf140ab50c27fc653d05cab2f3244de9a5ee",
+  "binarySHA256": "712544ed0a42b2286b44abda41d6755efd1a65dcaed6ce0382864c1e3f81431e",
+  "binary": "<repo>/dist/filens",
+  "textWasmSHA256": "ef4a0a9d9134d505d4359b2249a589c0535d3e19b98360d8d1184f9e05d8a119",
+  "capacity": {
+    "capacity": {
+      "conversionPairs": {
+        "count": 325
+      },
+      "description": "Read, search and convert local documents using the shared frontend WASM engines; select original key excerpts without a language model. Semantic reasoning belongs to the caller.",
+      "details": "Filter: --op, --query (keywords or docx>?, ?>pdf), --from, --to. Select: --section/--fields. Details: --full. Empty filtered arrays mean no matches.",
+      "execution": {
+        "conversionOutput": "atomic-file",
+        "diskSpill": false,
+        "workspace": "memory",
+        "workspaceMaxBytes": 536870912
+      },
+      "formats": {
+        "count": 349
+      },
+      "ocr": {
+        "available": true,
+        "enabled": true,
+        "maxSideLen": 960,
+        "openmpThreads": 2,
+        "orientation": true,
+        "padding": 50,
+        "provider": "rapidocr-ncnn"
+      },
+      "operations": [
+        {
+          "name": "inspect",
+          "parameters": {
+            "optional": [],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "aliases": [
+            "extract"
+          ],
+          "name": "read",
+          "parameters": {
+            "optional": [
+              "ocr",
+              "ocrMinConfidence",
+              "slides",
+              "pages",
+              "media",
+              "layout",
+              "maxBytes",
+              "images",
+              "maxImages",
+              "imageNames"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "name": "understand",
+          "parameters": {
+            "optional": [
+              "ocr",
+              "ocrMinConfidence",
+              "slides",
+              "pages",
+              "media",
+              "maxBytes",
+              "images",
+              "maxImages",
+              "imageNames"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "name": "layout",
+          "parameters": {
+            "optional": [
+              "ocr",
+              "slides",
+              "pages",
+              "media",
+              "images",
+              "maxImages",
+              "imageNames"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "aliases": [
+            "prune",
+            "summary",
+            "summarise"
+          ],
+          "name": "summarize",
+          "parameters": {
+            "optional": [
+              "query",
+              "summaryChars",
+              "summaryRatio",
+              "ocr",
+              "slides",
+              "pages"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "name": "excerpt",
+          "parameters": {
+            "optional": [
+              "query",
+              "summaryChars",
+              "summaryRatio",
+              "ocr",
+              "slides",
+              "pages"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "name": "search",
+          "parameters": {
+            "optional": [
+              "searchMode",
+              "maxResults",
+              "maxFiles",
+              "maxDepth",
+              "includeHidden",
+              "ocr",
+              "ocrMinConfidence"
+            ],
+            "required": [
+              "input",
+              "query"
+            ]
+          }
+        },
+        {
+          "aliases": [
+            "capacity"
+          ],
+          "name": "capabilities",
+          "parameters": {
+            "optional": [
+              "sourceFormat",
+              "targetFormat",
+              "section",
+              "fields",
+              "full",
+              "forOp",
+              "query"
+            ],
+            "required": []
+          }
+        },
+        {
+          "name": "convert",
+          "parameters": {
+            "optional": [
+              "sourceFormat",
+              "output",
+              "force",
+              "options"
+            ],
+            "required": [
+              "input",
+              "targetFormat or output"
+            ]
+          }
+        },
+        {
+          "aliases": [
+            "duplicates",
+            "similar-images"
+          ],
+          "name": "similar",
+          "parameters": {
+            "optional": [
+              "similarityMode",
+              "threshold",
+              "maxResults",
+              "maxFiles",
+              "maxDepth",
+              "includeHidden"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "name": "duplicates",
+          "parameters": {
+            "optional": [
+              "maxResults",
+              "maxFiles",
+              "maxDepth",
+              "includeHidden"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        },
+        {
+          "name": "similar-images",
+          "parameters": {
+            "optional": [
+              "threshold",
+              "maxResults",
+              "maxFiles",
+              "maxDepth",
+              "includeHidden"
+            ],
+            "required": [
+              "input"
+            ]
+          }
+        }
+      ],
+      "outputFormats": [
+        "text",
+        "json",
+        "markdown",
+        "html",
+        "yaml",
+        "xml",
+        "csv",
+        "tsv"
+      ],
+      "profile": "full"
+    },
+    "ok": true,
+    "op": "capabilities",
+    "version": "filens-agent-v1"
+  },
+  "ocr": true,
+  "timeoutMs": 120000,
+  "repeats": 3,
+  "cachePolicy": "Fresh process per request; OS page caches remain enabled. No application cache eviction or OS-cold claim.",
+  "track": "tool-retrieval",
+  "ripgrep": "ripgrep 15.2.0 (rev e89fff89ac)\n\nfeatures:+pcre2\nsimd(compile):+NEON\nsimd(runtime):+NEON\n\nPCRE2 10.45 is available (JIT is available)",
+  "method": "Case-sensitive literal search, complete candidate recall/precision; no semantic ranking. Pre-extraction uses the same FiLens core. Setup includes extraction, writes and measurement artifacts; installation is excluded.",
+  "summary": {
+    "rg-raw": {
+      "attempts": 30,
+      "incomplete": 0,
+      "hit1": 0.2222222222222222,
+      "hit5": 0.2222222222222222,
+      "hit10": 0.2222222222222222,
+      "recall5": 0.2222222222222222,
+      "candidateRecall": 0.2222222222222222,
+      "candidatePrecision": 0.2222222222222222,
+      "mrr10": null,
+      "ndcg10": null,
+      "falsePositive": 0,
+      "evidenceHit": null,
+      "offsetsValid": null,
+      "correctEmptyRate": 1,
+      "hitRate": 0.2222222222222222,
+      "latency": {
+        "n": 30,
+        "p50Ms": 6.750416999988374,
+        "p95Ms": 7.929291000007652
+      },
+      "setupMs": 0,
+      "artifactBytes": 0,
+      "totalMeasuredMs": 202.61666800001512
+    },
+    "filens-exact": {
+      "attempts": 30,
+      "incomplete": 0,
+      "hit1": 1,
+      "hit5": 1,
+      "hit10": 1,
+      "recall5": 1,
+      "candidateRecall": 1,
+      "candidatePrecision": 1,
+      "mrr10": null,
+      "ndcg10": null,
+      "falsePositive": 0,
+      "evidenceHit": null,
+      "offsetsValid": null,
+      "correctEmptyRate": 1,
+      "hitRate": 1,
+      "latency": {
+        "n": 30,
+        "p50Ms": 3014.7162090000056,
+        "p95Ms": 3143.5669579999994
+      },
+      "setupMs": 0,
+      "artifactBytes": 0,
+      "totalMeasuredMs": 91175.79008400002
+    },
+    "extract-rg": {
+      "attempts": 30,
+      "incomplete": 0,
+      "hit1": 1,
+      "hit5": 1,
+      "hit10": 1,
+      "recall5": 1,
+      "candidateRecall": 1,
+      "candidatePrecision": 1,
+      "mrr10": null,
+      "ndcg10": null,
+      "falsePositive": 0,
+      "evidenceHit": null,
+      "offsetsValid": null,
+      "correctEmptyRate": 1,
+      "hitRate": 1,
+      "latency": {
+        "n": 30,
+        "p50Ms": 6.786000000000058,
+        "p95Ms": 8.718166999999085
+      },
+      "setupMs": 11326.004917,
+      "artifactBytes": 191012,
+      "totalMeasuredMs": 11534.387545000012
+    }
+  },
+  "preparations": [
+    {
+      "source": "f000.txt",
+      "elapsedMs": 194.99225,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f001.docx",
+      "elapsedMs": 198.52274999999997,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f002.docx",
+      "elapsedMs": 195.74862500000006,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f003.xlsx",
+      "elapsedMs": 201.830417,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f004.pptx",
+      "elapsedMs": 194.11524999999983,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f005.pdf",
+      "elapsedMs": 286.1551670000001,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f006.zip!/inner.zip!/f000.docx",
+      "elapsedMs": 255.32437499999992,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f007.txt",
+      "elapsedMs": 228.46420899999998,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f008.png",
+      "elapsedMs": 449.601709,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "f009.pdf",
+      "elapsedMs": 2775.849958,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00000.txt",
+      "elapsedMs": 194.8959589999995,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00001.txt",
+      "elapsedMs": 203.28754200000003,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00002.txt",
+      "elapsedMs": 193.64029200000004,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00003.txt",
+      "elapsedMs": 192.65779199999997,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00004.txt",
+      "elapsedMs": 224.86783400000058,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00005.txt",
+      "elapsedMs": 209.42349999999988,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00006.txt",
+      "elapsedMs": 204.98720799999955,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00007.txt",
+      "elapsedMs": 201.413458,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00008.txt",
+      "elapsedMs": 200.5335839999998,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00009.txt",
+      "elapsedMs": 203.6715839999997,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00010.txt",
+      "elapsedMs": 199.22675000000072,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00011.txt",
+      "elapsedMs": 203.1145000000006,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00012.txt",
+      "elapsedMs": 200.43433399999958,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00013.txt",
+      "elapsedMs": 195.24525000000085,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00014.txt",
+      "elapsedMs": 195.42354200000045,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00015.txt",
+      "elapsedMs": 195.0121249999993,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00016.txt",
+      "elapsedMs": 193.85475000000042,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00017.txt",
+      "elapsedMs": 193.32112499999857,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00018.txt",
+      "elapsedMs": 193.78362500000003,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00019.txt",
+      "elapsedMs": 192.20295799999985,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00020.txt",
+      "elapsedMs": 194.7610420000001,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00021.txt",
+      "elapsedMs": 198.43725000000086,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00022.txt",
+      "elapsedMs": 194.57458299999962,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00023.txt",
+      "elapsedMs": 195.9541250000002,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00024.txt",
+      "elapsedMs": 192.92170800000167,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00025.txt",
+      "elapsedMs": 192.86383399999977,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00026.txt",
+      "elapsedMs": 193.84633300000132,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00027.txt",
+      "elapsedMs": 192.7584999999999,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00028.txt",
+      "elapsedMs": 194.63054099999863,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00029.txt",
+      "elapsedMs": 193.12012500000128,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00030.txt",
+      "elapsedMs": 193.2273750000004,
+      "complete": true,
+      "exit": 0
+    },
+    {
+      "source": "d00031.txt",
+      "elapsedMs": 192.64799999999923,
+      "complete": true,
+      "exit": 0
+    }
+  ],
+  "observations": [
+    {
+      "condition": "rg-raw",
+      "taskId": "text-control",
+      "repeat": 0,
+      "elapsedMs": 6.310250000000451,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 11,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "text-control",
+      "repeat": 0,
+      "elapsedMs": 2973.044833,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 4302,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "text-control",
+      "repeat": 0,
+      "elapsedMs": 7.118833999998969,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "current-owner",
+      "repeat": 0,
+      "elapsedMs": 3014.8807920000017,
+      "complete": true,
+      "found": [
+        "f001.docx",
+        "f002.docx",
+        "f003.xlsx"
+      ],
+      "returnedBytes": 6501,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "current-owner",
+      "repeat": 0,
+      "elapsedMs": 5.697790999998688,
+      "complete": true,
+      "found": [
+        "f001.docx",
+        "f002.docx",
+        "f003.xlsx"
+      ],
+      "returnedBytes": 36,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "current-owner",
+      "repeat": 0,
+      "elapsedMs": 5.709333999999217,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "sheet-cell",
+      "repeat": 0,
+      "elapsedMs": 7.368124999997235,
+      "complete": true,
+      "found": [
+        "f003.xlsx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "sheet-cell",
+      "repeat": 0,
+      "elapsedMs": 7.81499999999869,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "sheet-cell",
+      "repeat": 0,
+      "elapsedMs": 2992.7993339999994,
+      "complete": true,
+      "found": [
+        "f003.xlsx"
+      ],
+      "returnedBytes": 4439,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "slide-gate",
+      "repeat": 0,
+      "elapsedMs": 6.740958999998838,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "slide-gate",
+      "repeat": 0,
+      "elapsedMs": 3018.2605829999993,
+      "complete": true,
+      "found": [
+        "f004.pptx"
+      ],
+      "returnedBytes": 4635,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "slide-gate",
+      "repeat": 0,
+      "elapsedMs": 6.742833000000246,
+      "complete": true,
+      "found": [
+        "f004.pptx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "pdf-date",
+      "repeat": 0,
+      "elapsedMs": 3013.1171250000007,
+      "complete": true,
+      "found": [
+        "f005.pdf"
+      ],
+      "returnedBytes": 4283,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "pdf-date",
+      "repeat": 0,
+      "elapsedMs": 7.19287500000064,
+      "complete": true,
+      "found": [
+        "f005.pdf"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "pdf-date",
+      "repeat": 0,
+      "elapsedMs": 5.847208999999566,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "nested-archive",
+      "repeat": 0,
+      "elapsedMs": 6.917625000001863,
+      "complete": true,
+      "found": [
+        "f006.zip!/inner.zip!/f000.docx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "nested-archive",
+      "repeat": 0,
+      "elapsedMs": 6.898750000000291,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "nested-archive",
+      "repeat": 0,
+      "elapsedMs": 3143.5669579999994,
+      "complete": true,
+      "found": [
+        "f006.zip!/inner.zip!/f000.docx"
+      ],
+      "returnedBytes": 4518,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "long-tail",
+      "repeat": 0,
+      "elapsedMs": 6.544750000000931,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 11,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "long-tail",
+      "repeat": 0,
+      "elapsedMs": 2973.144541999998,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 4575,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "long-tail",
+      "repeat": 0,
+      "elapsedMs": 6.301500000001397,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "absent-id",
+      "repeat": 0,
+      "elapsedMs": 3016.3944580000025,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 3546,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "absent-id",
+      "repeat": 0,
+      "elapsedMs": 7.0616250000020955,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "absent-id",
+      "repeat": 0,
+      "elapsedMs": 6.712249999996857,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "image-invoice",
+      "repeat": 0,
+      "elapsedMs": 6.945707999999286,
+      "complete": true,
+      "found": [
+        "f008.png",
+        "f009.pdf"
+      ],
+      "returnedBytes": 24,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "image-invoice",
+      "repeat": 0,
+      "elapsedMs": 6.9149580000012065,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "image-invoice",
+      "repeat": 0,
+      "elapsedMs": 3014.7162090000056,
+      "complete": true,
+      "found": [
+        "f008.png",
+        "f009.pdf"
+      ],
+      "returnedBytes": 7075,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "scan-second-page",
+      "repeat": 0,
+      "elapsedMs": 7.793624999998428,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "scan-second-page",
+      "repeat": 0,
+      "elapsedMs": 2964.9715419999993,
+      "complete": true,
+      "found": [
+        "f009.pdf"
+      ],
+      "returnedBytes": 4893,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "scan-second-page",
+      "repeat": 0,
+      "elapsedMs": 6.9537080000009155,
+      "complete": true,
+      "found": [
+        "f009.pdf"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "text-control",
+      "repeat": 1,
+      "elapsedMs": 2986.967582999998,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 4302,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "text-control",
+      "repeat": 1,
+      "elapsedMs": 6.786000000000058,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "text-control",
+      "repeat": 1,
+      "elapsedMs": 7.098040999997465,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 11,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "current-owner",
+      "repeat": 1,
+      "elapsedMs": 10.437959000002593,
+      "complete": true,
+      "found": [
+        "f001.docx",
+        "f002.docx",
+        "f003.xlsx"
+      ],
+      "returnedBytes": 36,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "current-owner",
+      "repeat": 1,
+      "elapsedMs": 9.024624999998196,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "current-owner",
+      "repeat": 1,
+      "elapsedMs": 3007.170750000005,
+      "complete": true,
+      "found": [
+        "f001.docx",
+        "f002.docx",
+        "f003.xlsx"
+      ],
+      "returnedBytes": 6501,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "sheet-cell",
+      "repeat": 1,
+      "elapsedMs": 6.921540999996068,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "sheet-cell",
+      "repeat": 1,
+      "elapsedMs": 2964.3856250000026,
+      "complete": true,
+      "found": [
+        "f003.xlsx"
+      ],
+      "returnedBytes": 4439,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "sheet-cell",
+      "repeat": 1,
+      "elapsedMs": 6.775000000001455,
+      "complete": true,
+      "found": [
+        "f003.xlsx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "slide-gate",
+      "repeat": 1,
+      "elapsedMs": 2975.814790999997,
+      "complete": true,
+      "found": [
+        "f004.pptx"
+      ],
+      "returnedBytes": 4635,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "slide-gate",
+      "repeat": 1,
+      "elapsedMs": 5.77470799999719,
+      "complete": true,
+      "found": [
+        "f004.pptx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "slide-gate",
+      "repeat": 1,
+      "elapsedMs": 7.016084000002593,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "pdf-date",
+      "repeat": 1,
+      "elapsedMs": 6.403083999997762,
+      "complete": true,
+      "found": [
+        "f005.pdf"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "pdf-date",
+      "repeat": 1,
+      "elapsedMs": 5.448083000002953,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "pdf-date",
+      "repeat": 1,
+      "elapsedMs": 2984.9967499999984,
+      "complete": true,
+      "found": [
+        "f005.pdf"
+      ],
+      "returnedBytes": 4283,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "nested-archive",
+      "repeat": 1,
+      "elapsedMs": 6.903667000005953,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "nested-archive",
+      "repeat": 1,
+      "elapsedMs": 3018.1697080000013,
+      "complete": true,
+      "found": [
+        "f006.zip!/inner.zip!/f000.docx"
+      ],
+      "returnedBytes": 4518,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "nested-archive",
+      "repeat": 1,
+      "elapsedMs": 6.589625000000524,
+      "complete": true,
+      "found": [
+        "f006.zip!/inner.zip!/f000.docx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "long-tail",
+      "repeat": 1,
+      "elapsedMs": 3123.982624999997,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 4575,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "long-tail",
+      "repeat": 1,
+      "elapsedMs": 6.8006250000034925,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "long-tail",
+      "repeat": 1,
+      "elapsedMs": 6.689209000003757,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 11,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "absent-id",
+      "repeat": 1,
+      "elapsedMs": 6.011167000004207,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "absent-id",
+      "repeat": 1,
+      "elapsedMs": 6.046624999995402,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "absent-id",
+      "repeat": 1,
+      "elapsedMs": 2966.5017080000034,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 3546,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "image-invoice",
+      "repeat": 1,
+      "elapsedMs": 6.4181250000110595,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "image-invoice",
+      "repeat": 1,
+      "elapsedMs": 2992.7888339999918,
+      "complete": true,
+      "found": [
+        "f008.png",
+        "f009.pdf"
+      ],
+      "returnedBytes": 7075,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "image-invoice",
+      "repeat": 1,
+      "elapsedMs": 6.442749999987427,
+      "complete": true,
+      "found": [
+        "f008.png",
+        "f009.pdf"
+      ],
+      "returnedBytes": 24,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "scan-second-page",
+      "repeat": 1,
+      "elapsedMs": 2947.504000000001,
+      "complete": true,
+      "found": [
+        "f009.pdf"
+      ],
+      "returnedBytes": 4893,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "scan-second-page",
+      "repeat": 1,
+      "elapsedMs": 6.326541999995243,
+      "complete": true,
+      "found": [
+        "f009.pdf"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "scan-second-page",
+      "repeat": 1,
+      "elapsedMs": 6.914875000002212,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "text-control",
+      "repeat": 2,
+      "elapsedMs": 6.457125000000815,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "text-control",
+      "repeat": 2,
+      "elapsedMs": 5.87537500000326,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 11,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "text-control",
+      "repeat": 2,
+      "elapsedMs": 2977.2600000000093,
+      "complete": true,
+      "found": [
+        "f000.txt"
+      ],
+      "returnedBytes": 4302,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "current-owner",
+      "repeat": 2,
+      "elapsedMs": 7.929291000007652,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "current-owner",
+      "repeat": 2,
+      "elapsedMs": 3137.0254589999968,
+      "complete": true,
+      "found": [
+        "f001.docx",
+        "f002.docx",
+        "f003.xlsx"
+      ],
+      "returnedBytes": 6501,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "current-owner",
+      "repeat": 2,
+      "elapsedMs": 8.718166999999085,
+      "complete": true,
+      "found": [
+        "f001.docx",
+        "f002.docx",
+        "f003.xlsx"
+      ],
+      "returnedBytes": 36,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "sheet-cell",
+      "repeat": 2,
+      "elapsedMs": 3218.113666999998,
+      "complete": true,
+      "found": [
+        "f003.xlsx"
+      ],
+      "returnedBytes": 4439,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "sheet-cell",
+      "repeat": 2,
+      "elapsedMs": 7.433334000001196,
+      "complete": true,
+      "found": [
+        "f003.xlsx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "sheet-cell",
+      "repeat": 2,
+      "elapsedMs": 7.24854200000118,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "slide-gate",
+      "repeat": 2,
+      "elapsedMs": 7.90720900001179,
+      "complete": true,
+      "found": [
+        "f004.pptx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "slide-gate",
+      "repeat": 2,
+      "elapsedMs": 6.010208000006969,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "slide-gate",
+      "repeat": 2,
+      "elapsedMs": 3107.7138330000016,
+      "complete": true,
+      "found": [
+        "f004.pptx"
+      ],
+      "returnedBytes": 4635,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "pdf-date",
+      "repeat": 2,
+      "elapsedMs": 6.750416999988374,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "pdf-date",
+      "repeat": 2,
+      "elapsedMs": 3101.162584000005,
+      "complete": true,
+      "found": [
+        "f005.pdf"
+      ],
+      "returnedBytes": 4283,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "pdf-date",
+      "repeat": 2,
+      "elapsedMs": 6.910083000009763,
+      "complete": true,
+      "found": [
+        "f005.pdf"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "nested-archive",
+      "repeat": 2,
+      "elapsedMs": 3112.3651249999966,
+      "complete": true,
+      "found": [
+        "f006.zip!/inner.zip!/f000.docx"
+      ],
+      "returnedBytes": 4518,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "nested-archive",
+      "repeat": 2,
+      "elapsedMs": 6.404999999998836,
+      "complete": true,
+      "found": [
+        "f006.zip!/inner.zip!/f000.docx"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "nested-archive",
+      "repeat": 2,
+      "elapsedMs": 6.7435829999885755,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "long-tail",
+      "repeat": 2,
+      "elapsedMs": 6.353166999993846,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "long-tail",
+      "repeat": 2,
+      "elapsedMs": 5.368459000004805,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 11,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "long-tail",
+      "repeat": 2,
+      "elapsedMs": 3131.958875000011,
+      "complete": true,
+      "found": [
+        "f007.txt"
+      ],
+      "returnedBytes": 4575,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "absent-id",
+      "repeat": 2,
+      "elapsedMs": 6.9137920000066515,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "absent-id",
+      "repeat": 2,
+      "elapsedMs": 3105.3453750000044,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 3546,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "absent-id",
+      "repeat": 2,
+      "elapsedMs": 8.345291999998153,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "empty": true,
+        "falsePositive": false
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "image-invoice",
+      "repeat": 2,
+      "elapsedMs": 3106.9086249999964,
+      "complete": true,
+      "found": [
+        "f008.png",
+        "f009.pdf"
+      ],
+      "returnedBytes": 7075,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "image-invoice",
+      "repeat": 2,
+      "elapsedMs": 6.406667000002926,
+      "complete": true,
+      "found": [
+        "f008.png",
+        "f009.pdf"
+      ],
+      "returnedBytes": 24,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "image-invoice",
+      "repeat": 2,
+      "elapsedMs": 6.751124999995227,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "extract-rg",
+      "taskId": "scan-second-page",
+      "repeat": 2,
+      "elapsedMs": 6.798500000004424,
+      "complete": true,
+      "found": [
+        "f009.pdf"
+      ],
+      "returnedBytes": 12,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "rg-raw",
+      "taskId": "scan-second-page",
+      "repeat": 2,
+      "elapsedMs": 7.257916000002297,
+      "complete": true,
+      "found": [],
+      "returnedBytes": 0,
+      "metrics": {
+        "hit1": 0,
+        "hit5": 0,
+        "hit10": 0,
+        "recall5": 0,
+        "candidateRecall": 0,
+        "candidatePrecision": 0,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    },
+    {
+      "condition": "filens-exact",
+      "taskId": "scan-second-page",
+      "repeat": 2,
+      "elapsedMs": 3084.7577909999964,
+      "complete": true,
+      "found": [
+        "f009.pdf"
+      ],
+      "returnedBytes": 4893,
+      "metrics": {
+        "hit1": 1,
+        "hit5": 1,
+        "hit10": 1,
+        "recall5": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "mrr10": null,
+        "ndcg10": null
+      }
+    }
+  ],
+  "frozenCorpus": {
+    "physicalFiles": [
+      {
+        "source": "f000.txt",
+        "bytes": 50,
+        "sha256": "46af7eebfb27f586ba23436e3f9a9c5e8a644eb16b680158079016bc217b80b3"
+      },
+      {
+        "source": "f001.docx",
+        "bytes": 931,
+        "sha256": "bb7c119581f94173f66e7ad3600fdfedf727ac77913ba023c6705389ed0ad4eb"
+      },
+      {
+        "source": "f002.docx",
+        "bytes": 933,
+        "sha256": "2f4db0ea9d973231c8dcf60ad075d20abbe63e9444fb9ae5bc7c423e64deb852"
+      },
+      {
+        "source": "f003.xlsx",
+        "bytes": 1458,
+        "sha256": "eb72a0f4d6eea9ceb34e8b019f05914b1eaac34a666a5050b984adfa00b9be18"
+      },
+      {
+        "source": "f004.pptx",
+        "bytes": 1587,
+        "sha256": "3e2ea3eb5cf7575edcea0a36dcd78d4098d1d8a8b756139b41aeb3e9e8395a28"
+      },
+      {
+        "source": "f005.pdf",
+        "bytes": 639,
+        "sha256": "0fa92b0b53cdc34e686812143ca3452cb2eddb443776d5c1a02f42de7bb0a371"
+      },
+      {
+        "source": "f006.zip",
+        "bytes": 910,
+        "sha256": "fd9e0081fcd861a0c67ce116f3633acf4441325d752bd4be5c4554121ba7266e"
+      },
+      {
+        "source": "f007.txt",
+        "bytes": 188040,
+        "sha256": "0fd301b870ffd6dcf23c4dd5de52a003ebe158ebf526c5c764aac2a3888b330f"
+      },
+      {
+        "source": "f008.png",
+        "bytes": 66161,
+        "sha256": "1cf45dbe429595ee24b83c1439e1dafbeacc29909a01f1931429602e21b92a04"
+      },
+      {
+        "source": "f009.pdf",
+        "bytes": 77482,
+        "sha256": "18da362e0f3c6dab0a5d574c171e83405920822e9f03e6474a1ef17c063091d7"
+      },
+      {
+        "source": "d00000.txt",
+        "bytes": 65,
+        "sha256": "b3ee0fd6b6f0875ad73e052b1a4b73fe5962cd8e85c3b87e20c800c546c89a06"
+      },
+      {
+        "source": "d00001.txt",
+        "bytes": 65,
+        "sha256": "49e312488f27226533c84b71cce37c92041662984fc9984f1b541b1a786285b4"
+      },
+      {
+        "source": "d00002.txt",
+        "bytes": 65,
+        "sha256": "878d7330cc0fe70f34a9dc1376f8b43d1b8168fbbdf0c0ecdcf5d4ccf6ec252f"
+      },
+      {
+        "source": "d00003.txt",
+        "bytes": 65,
+        "sha256": "eb92c391a541271b0ae8552e96c8d909f26412afa2403353e1ff2aa184b90759"
+      },
+      {
+        "source": "d00004.txt",
+        "bytes": 65,
+        "sha256": "2ca1c002036aa0115408494355c30faaa679e61166a4ed6aee07b1c3c075b1c0"
+      },
+      {
+        "source": "d00005.txt",
+        "bytes": 65,
+        "sha256": "237801b034bb4342b6bcd78c80e9555dd83e4e0245ecb7dbbfdb43ef36354b27"
+      },
+      {
+        "source": "d00006.txt",
+        "bytes": 65,
+        "sha256": "e6ec76cb6b463408e2bd7e0c162fb82c5289519629841a492d94b0cf5bdae1d3"
+      },
+      {
+        "source": "d00007.txt",
+        "bytes": 65,
+        "sha256": "02f188e072eaf8016e56afe1f05bcc727d66edacd70422e371e0444cf266668b"
+      },
+      {
+        "source": "d00008.txt",
+        "bytes": 65,
+        "sha256": "fa453b1bebb383dad593c80947fa69a05a5da9a7b029c947c147148e836bd374"
+      },
+      {
+        "source": "d00009.txt",
+        "bytes": 65,
+        "sha256": "1fc3479f1fd85accda9821cebec01670254e2ef5ed86263e552c31a78abc1a2f"
+      },
+      {
+        "source": "d00010.txt",
+        "bytes": 66,
+        "sha256": "f696f13aca7464e74dfb9dd8c7448aa1bf904bd520bc43772a028178fb514dcd"
+      },
+      {
+        "source": "d00011.txt",
+        "bytes": 66,
+        "sha256": "3bff8ee96752977f7907f8359865091d37d96b2b2539da979ef754f5cca6ebc6"
+      },
+      {
+        "source": "d00012.txt",
+        "bytes": 66,
+        "sha256": "a9172065e98675c2d424680c1008b0d6a86d9b0458a1fe826d48817241e0af90"
+      },
+      {
+        "source": "d00013.txt",
+        "bytes": 66,
+        "sha256": "7f07834cfb2fc6ea54e827cbe7760ea5be9be853345c2c46b618decd8ab59bd0"
+      },
+      {
+        "source": "d00014.txt",
+        "bytes": 66,
+        "sha256": "df65185d474c5c5a700e8a4e2413726ecaea8d974e64af6661c87f7aeea90a30"
+      },
+      {
+        "source": "d00015.txt",
+        "bytes": 66,
+        "sha256": "7be01347aa3d7eaa650bd0e94ce3b64a04c5118e07a7f9fc64994705d2693291"
+      },
+      {
+        "source": "d00016.txt",
+        "bytes": 66,
+        "sha256": "91db528931ba844e18d133a2c1dde829179e002655fc9bca707e863c994b3f5f"
+      },
+      {
+        "source": "d00017.txt",
+        "bytes": 66,
+        "sha256": "518f4e305deebd22e6dbe90e244b0bddcdeb0706271135f283936f5912264e66"
+      },
+      {
+        "source": "d00018.txt",
+        "bytes": 66,
+        "sha256": "5c77effa21e3a817694433f115a46c9f1a386c00da826e425fc50661ee7a694c"
+      },
+      {
+        "source": "d00019.txt",
+        "bytes": 66,
+        "sha256": "3fd7a3fcabf9eceda1c535b5021798e83521d770dc796f296acd450b5fe42441"
+      },
+      {
+        "source": "d00020.txt",
+        "bytes": 66,
+        "sha256": "9b5e515a17e27ded1d2dc2549888c9e61809ddf5c96f4af3099735d67bc9749a"
+      },
+      {
+        "source": "d00021.txt",
+        "bytes": 66,
+        "sha256": "1058feac5244171b41f099c2d9579f7591de5c8fc1e6350db6628481789d5bd1"
+      },
+      {
+        "source": "d00022.txt",
+        "bytes": 66,
+        "sha256": "de41e3bb17d06971ccec759a2eb2115be4cea482adb0fcb2dcb71b4dd285de77"
+      },
+      {
+        "source": "d00023.txt",
+        "bytes": 66,
+        "sha256": "56188284c8613ec1093296d53c8c80143059803182484ec9a45ec091a6a33854"
+      },
+      {
+        "source": "d00024.txt",
+        "bytes": 66,
+        "sha256": "d77a78dd0d8781d19808b3e183579c2de87ab9cabb4f1453c6557643a4bb2389"
+      },
+      {
+        "source": "d00025.txt",
+        "bytes": 66,
+        "sha256": "ad5bcc6918ce5efdf0c3190ad02c95c895edde3e0be3a0200f8047378a872e80"
+      },
+      {
+        "source": "d00026.txt",
+        "bytes": 66,
+        "sha256": "c4a0ebe190e3da13dd9e67569bb919334f46816ab3a978e6a261c5e32c2e84d9"
+      },
+      {
+        "source": "d00027.txt",
+        "bytes": 66,
+        "sha256": "e960913edd9c0562a03d0b26ef2ec7c9e586e3196d49688d00cb9372e913c3ef"
+      },
+      {
+        "source": "d00028.txt",
+        "bytes": 66,
+        "sha256": "4d8ba444200804e8d25d98b82e9ba6bf5e34c1f06baf084fcac5c63bed7c20f7"
+      },
+      {
+        "source": "d00029.txt",
+        "bytes": 66,
+        "sha256": "6b450e3566acff4cea1d25882fe9268c43bf554d51b4f9ca9b0aa646cefab738"
+      },
+      {
+        "source": "d00030.txt",
+        "bytes": 66,
+        "sha256": "6693cde32c0e1adce27a949033c48bd35a35d6898a39e781088120d2cdc2cd42"
+      },
+      {
+        "source": "d00031.txt",
+        "bytes": 66,
+        "sha256": "65f93eda8d442f8fe1cdd13877eacece318afb6dffc6bfb7515ad824a6820c27"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "text-control",
+        "family": "text",
+        "question": "TEXT2041 工单复核周期是多少天？",
+        "answerKeys": [
+          "days"
+        ],
+        "answers": {
+          "days": "17"
+        },
+        "evidence": [
+          {
+            "source": "f000.txt",
+            "anchor": "17"
+          }
+        ],
+        "retrieval": {
+          "query": "TEXT2041",
+          "relevant": [
+            "f000.txt"
+          ]
+        }
+      },
+      {
+        "id": "current-owner",
+        "family": "version",
+        "question": "AURORA2041 现行项目负责人是谁？忽略归档文件。",
+        "answerKeys": [
+          "owner"
+        ],
+        "answers": {
+          "owner": "林澈"
+        },
+        "evidence": [
+          {
+            "source": "f001.docx",
+            "anchor": "林澈"
+          }
+        ],
+        "retrieval": {
+          "query": "AURORA2041",
+          "relevant": [
+            "f001.docx",
+            "f002.docx",
+            "f003.xlsx"
+          ]
+        }
+      },
+      {
+        "id": "numeric-trap",
+        "family": "version",
+        "question": "AURORA2041 现行预算上限是多少元？不要采用旧预算。",
+        "answerKeys": [
+          "budget"
+        ],
+        "answers": {
+          "budget": "3582.70"
+        },
+        "evidence": [
+          {
+            "source": "f001.docx",
+            "anchor": "3582.70"
+          }
+        ]
+      },
+      {
+        "id": "sheet-cell",
+        "family": "spreadsheet",
+        "question": "AURORA2041 的 Hardware 费用是多少元？",
+        "answerKeys": [
+          "hardware"
+        ],
+        "answers": {
+          "hardware": "2100.20"
+        },
+        "evidence": [
+          {
+            "source": "f003.xlsx",
+            "anchor": "2100.20"
+          }
+        ],
+        "retrieval": {
+          "query": "2100.20",
+          "relevant": [
+            "f003.xlsx"
+          ]
+        }
+      },
+      {
+        "id": "slide-gate",
+        "family": "slides",
+        "question": "RELEASE2041 发布前必须完成哪两项工作？使用文件中的中文表述。",
+        "answerKeys": [
+          "review",
+          "drill"
+        ],
+        "answers": {
+          "review": "双人复核",
+          "drill": "离线恢复演练"
+        },
+        "evidence": [
+          {
+            "source": "f004.pptx",
+            "anchor": "双人复核"
+          },
+          {
+            "source": "f004.pptx",
+            "anchor": "离线恢复演练"
+          }
+        ],
+        "retrieval": {
+          "query": "RELEASE2041",
+          "relevant": [
+            "f004.pptx"
+          ]
+        }
+      },
+      {
+        "id": "pdf-date",
+        "family": "pdf",
+        "question": "MILESTONE2041 的验收日期是什么？使用 YYYY-MM-DD。",
+        "answerKeys": [
+          "date"
+        ],
+        "answers": {
+          "date": "2041-07-19"
+        },
+        "evidence": [
+          {
+            "source": "f005.pdf",
+            "anchor": "2041-07-19"
+          }
+        ],
+        "retrieval": {
+          "query": "MILESTONE2041",
+          "relevant": [
+            "f005.pdf"
+          ]
+        }
+      },
+      {
+        "id": "nested-archive",
+        "family": "archive",
+        "question": "ARCHIVE2041 的海运签收人是谁？给出压缩包内的完整成员路径。",
+        "answerKeys": [
+          "receiver"
+        ],
+        "answers": {
+          "receiver": "许闻"
+        },
+        "evidence": [
+          {
+            "source": "f006.zip!/inner.zip!/f000.docx",
+            "anchor": "许闻"
+          }
+        ],
+        "retrieval": {
+          "query": "ARCHIVE2041",
+          "relevant": [
+            "f006.zip!/inner.zip!/f000.docx"
+          ]
+        }
+      },
+      {
+        "id": "long-tail",
+        "family": "long-document",
+        "question": "TAIL2041 的尾部审批码是什么？",
+        "answerKeys": [
+          "code"
+        ],
+        "answers": {
+          "code": "VIOLET-83"
+        },
+        "evidence": [
+          {
+            "source": "f007.txt",
+            "anchor": "VIOLET-83"
+          }
+        ],
+        "retrieval": {
+          "query": "TAIL2041",
+          "relevant": [
+            "f007.txt"
+          ]
+        }
+      },
+      {
+        "id": "cross-file-sum",
+        "family": "multi-hop",
+        "question": "将 AURORA2041 的 Hardware 和 Service 费用相加，再与现行预算上限比较。给出合计及剩余预算，单位元。",
+        "answerKeys": [
+          "total",
+          "remaining"
+        ],
+        "answers": {
+          "total": "3582.70",
+          "remaining": "0.00"
+        },
+        "evidence": [
+          {
+            "source": "f003.xlsx",
+            "anchor": "2100.20"
+          },
+          {
+            "source": "f003.xlsx",
+            "anchor": "1482.50"
+          },
+          {
+            "source": "f001.docx",
+            "anchor": "3582.70"
+          }
+        ]
+      },
+      {
+        "id": "absent-topic",
+        "family": "unanswerable",
+        "question": "AURORA2041 现行负责人的电话号码是什么？找不到时明确返回 not_found。",
+        "answerKeys": [],
+        "answers": {},
+        "evidence": []
+      },
+      {
+        "id": "absent-id",
+        "family": "unanswerable",
+        "question": "UNKNOWN2099X 的批准人是谁？找不到时明确返回 not_found。",
+        "answerKeys": [],
+        "answers": {},
+        "evidence": [],
+        "retrieval": {
+          "query": "UNKNOWN2099X",
+          "relevant": []
+        }
+      },
+      {
+        "id": "image-invoice",
+        "family": "ocr-image",
+        "question": "采购单图片中 FILENS2026 的应付金额是多少元？",
+        "answerKeys": [
+          "amount"
+        ],
+        "answers": {
+          "amount": "12345.67"
+        },
+        "evidence": [
+          {
+            "source": "f008.png",
+            "anchor": "12345.67"
+          }
+        ],
+        "retrieval": {
+          "query": "FILENS2026",
+          "relevant": [
+            "f008.png",
+            "f009.pdf"
+          ]
+        }
+      },
+      {
+        "id": "scan-second-page",
+        "family": "ocr-pdf",
+        "question": "扫描 PDF 第二页的项目标识符是什么？",
+        "answerKeys": [
+          "identifier"
+        ],
+        "answers": {
+          "identifier": "BRIGHT2027"
+        },
+        "evidence": [
+          {
+            "source": "f009.pdf",
+            "anchor": "BRIGHT2027"
+          }
+        ],
+        "retrieval": {
+          "query": "BRIGHT2027",
+          "relevant": [
+            "f009.pdf"
+          ]
+        }
+      }
+    ],
+    "documents": [
+      {
+        "source": "f000.txt",
+        "bytes": 50,
+        "textSHA256": "46af7eebfb27f586ba23436e3f9a9c5e8a644eb16b680158079016bc217b80b3"
+      },
+      {
+        "source": "f001.docx",
+        "bytes": 122,
+        "textSHA256": "5b5f60e86ad827422939842865fa0407d2802762154ddc8b9c16950b5b9b1f6d"
+      },
+      {
+        "source": "f002.docx",
+        "bytes": 119,
+        "textSHA256": "479e79880d136b74a1eef579e5bad9dc583678ecd6434924e157763bd7dfe14f"
+      },
+      {
+        "source": "f003.xlsx",
+        "bytes": 78,
+        "textSHA256": "2415b04296ac4eba8fbfc6dee31c42ef5f5f46e419239ed75e983787c533f1ec"
+      },
+      {
+        "source": "f004.pptx",
+        "bytes": 130,
+        "textSHA256": "3ac32542b8f41feee6e4bef9740d22a5a538dbd3d493ac7e5a9000dffdf68a5a"
+      },
+      {
+        "source": "f005.pdf",
+        "bytes": 37,
+        "textSHA256": "56d56fee3c14d6753b435aafd3abfaee97ac199e55da5ed069e952b3db915d92"
+      },
+      {
+        "source": "f006.zip!/inner.zip!/f000.docx",
+        "bytes": 40,
+        "textSHA256": "f181530f78e05bc315728522cc405a42a5a2223a5e94437b930e867ef4ecff37"
+      },
+      {
+        "source": "f007.txt",
+        "bytes": 188040,
+        "textSHA256": "0fd301b870ffd6dcf23c4dd5de52a003ebe158ebf526c5c764aac2a3888b330f"
+      },
+      {
+        "source": "f008.png",
+        "bytes": 242,
+        "textSHA256": "75cddd401b2827043dbbbcf90e31a7bd68797387064236e6ec29b72153fe5cdf"
+      },
+      {
+        "source": "f009.pdf",
+        "bytes": 75,
+        "textSHA256": "7687fcbc1e48c78deaef573e96d84a280fd69dd7a33be47aa6a116261daf5972"
+      },
+      {
+        "source": "d00000.txt",
+        "bytes": 65,
+        "textSHA256": "b3ee0fd6b6f0875ad73e052b1a4b73fe5962cd8e85c3b87e20c800c546c89a06"
+      },
+      {
+        "source": "d00001.txt",
+        "bytes": 65,
+        "textSHA256": "49e312488f27226533c84b71cce37c92041662984fc9984f1b541b1a786285b4"
+      },
+      {
+        "source": "d00002.txt",
+        "bytes": 65,
+        "textSHA256": "878d7330cc0fe70f34a9dc1376f8b43d1b8168fbbdf0c0ecdcf5d4ccf6ec252f"
+      },
+      {
+        "source": "d00003.txt",
+        "bytes": 65,
+        "textSHA256": "eb92c391a541271b0ae8552e96c8d909f26412afa2403353e1ff2aa184b90759"
+      },
+      {
+        "source": "d00004.txt",
+        "bytes": 65,
+        "textSHA256": "2ca1c002036aa0115408494355c30faaa679e61166a4ed6aee07b1c3c075b1c0"
+      },
+      {
+        "source": "d00005.txt",
+        "bytes": 65,
+        "textSHA256": "237801b034bb4342b6bcd78c80e9555dd83e4e0245ecb7dbbfdb43ef36354b27"
+      },
+      {
+        "source": "d00006.txt",
+        "bytes": 65,
+        "textSHA256": "e6ec76cb6b463408e2bd7e0c162fb82c5289519629841a492d94b0cf5bdae1d3"
+      },
+      {
+        "source": "d00007.txt",
+        "bytes": 65,
+        "textSHA256": "02f188e072eaf8016e56afe1f05bcc727d66edacd70422e371e0444cf266668b"
+      },
+      {
+        "source": "d00008.txt",
+        "bytes": 65,
+        "textSHA256": "fa453b1bebb383dad593c80947fa69a05a5da9a7b029c947c147148e836bd374"
+      },
+      {
+        "source": "d00009.txt",
+        "bytes": 65,
+        "textSHA256": "1fc3479f1fd85accda9821cebec01670254e2ef5ed86263e552c31a78abc1a2f"
+      },
+      {
+        "source": "d00010.txt",
+        "bytes": 66,
+        "textSHA256": "f696f13aca7464e74dfb9dd8c7448aa1bf904bd520bc43772a028178fb514dcd"
+      },
+      {
+        "source": "d00011.txt",
+        "bytes": 66,
+        "textSHA256": "3bff8ee96752977f7907f8359865091d37d96b2b2539da979ef754f5cca6ebc6"
+      },
+      {
+        "source": "d00012.txt",
+        "bytes": 66,
+        "textSHA256": "a9172065e98675c2d424680c1008b0d6a86d9b0458a1fe826d48817241e0af90"
+      },
+      {
+        "source": "d00013.txt",
+        "bytes": 66,
+        "textSHA256": "7f07834cfb2fc6ea54e827cbe7760ea5be9be853345c2c46b618decd8ab59bd0"
+      },
+      {
+        "source": "d00014.txt",
+        "bytes": 66,
+        "textSHA256": "df65185d474c5c5a700e8a4e2413726ecaea8d974e64af6661c87f7aeea90a30"
+      },
+      {
+        "source": "d00015.txt",
+        "bytes": 66,
+        "textSHA256": "7be01347aa3d7eaa650bd0e94ce3b64a04c5118e07a7f9fc64994705d2693291"
+      },
+      {
+        "source": "d00016.txt",
+        "bytes": 66,
+        "textSHA256": "91db528931ba844e18d133a2c1dde829179e002655fc9bca707e863c994b3f5f"
+      },
+      {
+        "source": "d00017.txt",
+        "bytes": 66,
+        "textSHA256": "518f4e305deebd22e6dbe90e244b0bddcdeb0706271135f283936f5912264e66"
+      },
+      {
+        "source": "d00018.txt",
+        "bytes": 66,
+        "textSHA256": "5c77effa21e3a817694433f115a46c9f1a386c00da826e425fc50661ee7a694c"
+      },
+      {
+        "source": "d00019.txt",
+        "bytes": 66,
+        "textSHA256": "3fd7a3fcabf9eceda1c535b5021798e83521d770dc796f296acd450b5fe42441"
+      },
+      {
+        "source": "d00020.txt",
+        "bytes": 66,
+        "textSHA256": "9b5e515a17e27ded1d2dc2549888c9e61809ddf5c96f4af3099735d67bc9749a"
+      },
+      {
+        "source": "d00021.txt",
+        "bytes": 66,
+        "textSHA256": "1058feac5244171b41f099c2d9579f7591de5c8fc1e6350db6628481789d5bd1"
+      },
+      {
+        "source": "d00022.txt",
+        "bytes": 66,
+        "textSHA256": "de41e3bb17d06971ccec759a2eb2115be4cea482adb0fcb2dcb71b4dd285de77"
+      },
+      {
+        "source": "d00023.txt",
+        "bytes": 66,
+        "textSHA256": "56188284c8613ec1093296d53c8c80143059803182484ec9a45ec091a6a33854"
+      },
+      {
+        "source": "d00024.txt",
+        "bytes": 66,
+        "textSHA256": "d77a78dd0d8781d19808b3e183579c2de87ab9cabb4f1453c6557643a4bb2389"
+      },
+      {
+        "source": "d00025.txt",
+        "bytes": 66,
+        "textSHA256": "ad5bcc6918ce5efdf0c3190ad02c95c895edde3e0be3a0200f8047378a872e80"
+      },
+      {
+        "source": "d00026.txt",
+        "bytes": 66,
+        "textSHA256": "c4a0ebe190e3da13dd9e67569bb919334f46816ab3a978e6a261c5e32c2e84d9"
+      },
+      {
+        "source": "d00027.txt",
+        "bytes": 66,
+        "textSHA256": "e960913edd9c0562a03d0b26ef2ec7c9e586e3196d49688d00cb9372e913c3ef"
+      },
+      {
+        "source": "d00028.txt",
+        "bytes": 66,
+        "textSHA256": "4d8ba444200804e8d25d98b82e9ba6bf5e34c1f06baf084fcac5c63bed7c20f7"
+      },
+      {
+        "source": "d00029.txt",
+        "bytes": 66,
+        "textSHA256": "6b450e3566acff4cea1d25882fe9268c43bf554d51b4f9ca9b0aa646cefab738"
+      },
+      {
+        "source": "d00030.txt",
+        "bytes": 66,
+        "textSHA256": "6693cde32c0e1adce27a949033c48bd35a35d6898a39e781088120d2cdc2cd42"
+      },
+      {
+        "source": "d00031.txt",
+        "bytes": 66,
+        "textSHA256": "65f93eda8d442f8fe1cdd13877eacece318afb6dffc6bfb7515ad824a6820c27"
+      }
+    ]
+  },
+  "complexFileSummary": {
+    "rg-raw": {
+      "attempts": 24,
+      "answerableAttempts": 21,
+      "hitRate": 0,
+      "candidateRecall": 0,
+      "p50Ms": 6.898750000000291,
+      "p95Ms": 7.929291000007652
+    },
+    "filens-exact": {
+      "attempts": 24,
+      "answerableAttempts": 21,
+      "hitRate": 1,
+      "candidateRecall": 1,
+      "p50Ms": 3014.8807920000017,
+      "p95Ms": 3143.5669579999994
+    },
+    "extract-rg": {
+      "attempts": 24,
+      "answerableAttempts": 21,
+      "hitRate": 1,
+      "candidateRecall": 1,
+      "p50Ms": 6.798500000004424,
+      "p95Ms": 8.718166999999085
+    }
+  }
+}

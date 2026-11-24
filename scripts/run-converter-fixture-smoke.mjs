@@ -1,38 +1,24 @@
-import { spawn } from 'node:child_process';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import JSZip from 'jszip';
+import { runWasiConverterBatch } from './run-wasi-converter-batch.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const exampleDir = path.join(rootDir, 'examples', 'go-wazero-converter');
-const wasmPath = path.join(rootDir, 'wasm', 'converter-core', 'dist', 'converter-core.wasm');
+const exampleDir = path.join(rootDir, 'examples', 'converter');
+const coreWasmPath = path.join(rootDir, 'wasm', 'converter-core', 'dist', 'converter-core-full.wasm');
+const imageWasmPath = path.join(rootDir, 'wasm', 'converter-image', 'dist', 'converter-image.wasm');
+const imageManifestPath = path.join(rootDir, 'wasm', 'converter-image', 'manifest', 'conversions.json');
 const manifestPath = path.join(exampleDir, 'fixtures', 'manifest.json');
 const reportPath = path.join(exampleDir, 'tmp', 'dist-wasm-smoke-report.json');
-const relativeWasmPath = path.relative(exampleDir, wasmPath);
 
-await assertFile(wasmPath, 'converter-core.wasm is missing. Run `npm run build:wasm` first.');
-
-console.log(`Running converter-core dist WASM smoke -> ${path.relative(rootDir, reportPath)}`);
-
-const command = process.platform === 'win32' ? 'go.exe' : 'go';
-const exitCode = await run(command, [
-  'run',
-  './cmd/converter-batch',
-  '--wasm',
-  relativeWasmPath,
-  '--manifest',
-  './fixtures/manifest.json',
-  '--report',
-  './tmp/dist-wasm-smoke-report.json'
-]);
-
-if (exitCode !== 0) {
-  process.exit(exitCode);
-}
-
-const [manifest, report] = await Promise.all([readJSON(manifestPath), readJSON(reportPath)]);
+await assertFile(coreWasmPath, 'converter-core-full.wasm is missing. Run `npm run build:wasm` first.');
+await assertFile(imageWasmPath, 'converter-image.wasm is missing. Run `npm run build:wasm` first.');
+const manifest = await readJSON(manifestPath);
 const expectedTotal = Array.isArray(manifest.jobs) ? manifest.jobs.length : 0;
+console.log(`Running converter-core dist WASM smoke through Node WASI -> ${path.relative(rootDir, reportPath)}`);
+const report = await runWasiConverterBatch({ rootDir, baseDir: exampleDir, coreWasmPath, imageWasmPath, imageManifestPath,
+  jobs: manifest.jobs, defaults: manifest.defaults, reportPath });
 const failures = [];
 const contentExpectations = new Map([
   [
@@ -650,8 +636,11 @@ for (const item of report.results ?? []) {
   if (item.result?.ok !== true) {
     failures.push(`failed job: ${item.job?.sourceFormat} -> ${item.job?.targetFormat}`);
   }
-  if (item.result?.backend !== 'wasi') {
-    failures.push(`unexpected backend for ${item.job?.inputPath}: ${item.result?.backend ?? 'missing'}`);
+  if (item.runtime !== 'node-wasi') {
+    failures.push(`unexpected runtime for ${item.job?.inputPath}: ${item.runtime ?? 'missing'}`);
+  }
+  if (!item.result?.backend) {
+    failures.push(`missing conversion backend for ${item.job?.inputPath}`);
   }
   if (!item.result?.contentType) {
     failures.push(`missing contentType for ${item.job?.inputPath}`);
@@ -724,18 +713,6 @@ async function readZipTextEntry(filePath, entryName) {
     throw new Error(`missing ZIP entry ${entryName}`);
   }
   return entry.async('string');
-}
-
-function run(command, args) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      cwd: exampleDir,
-      env: process.env,
-      stdio: 'inherit'
-    });
-    child.on('error', reject);
-    child.on('exit', (code) => resolve(code ?? 1));
-  });
 }
 
 function fixtureKey(inputPath) {

@@ -5395,7 +5395,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/design/sample.ai",
+      "path": "examples/converter/fixtures/design/sample.ai",
       "bytes": 480,
       "sha256": "d1c4481b2d082ab26f27aedca1e25a85f327f97f4d2a233ad85db41f5b437b12",
       "previousSha256": "d1c4481b2d082ab26f27aedca1e25a85f327f97f4d2a233ad85db41f5b437b12",
@@ -5409,7 +5409,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/design/sample.eps",
+      "path": "examples/converter/fixtures/design/sample.eps",
       "bytes": 82,
       "sha256": "a5805255f95ceba34ce0deefb529d7601959e1fb88a8fdbdbe41e8e33098a7db",
       "previousSha256": "a5805255f95ceba34ce0deefb529d7601959e1fb88a8fdbdbe41e8e33098a7db",
@@ -5423,7 +5423,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/design/sample.ps",
+      "path": "examples/converter/fixtures/design/sample.ps",
       "bytes": 173,
       "sha256": "fc12c60d7f08fe156056b87ffc8b2be49313bb0c449c9dba97d5af996bf1bef0",
       "previousSha256": "fc12c60d7f08fe156056b87ffc8b2be49313bb0c449c9dba97d5af996bf1bef0",
@@ -5437,7 +5437,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/design/sample.psb",
+      "path": "examples/converter/fixtures/design/sample.psb",
       "bytes": 50,
       "sha256": "5f369ec5d7d45a739c0fa86009f746b9d3c4fe60c9d21b399ee9e1400090e450",
       "previousSha256": "5f369ec5d7d45a739c0fa86009f746b9d3c4fe60c9d21b399ee9e1400090e450",
@@ -5451,7 +5451,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/design/sample.psd",
+      "path": "examples/converter/fixtures/design/sample.psd",
       "bytes": 46,
       "sha256": "635c1885a27e24daeed336e616109c7ae54f583488bc7c6f247a63640fdf688a",
       "previousSha256": "635c1885a27e24daeed336e616109c7ae54f583488bc7c6f247a63640fdf688a",
@@ -5465,7 +5465,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.adb",
+      "path": "examples/converter/fixtures/doc/sample.adb",
       "bytes": 609,
       "sha256": "81d41c0ac2ed0a5859295455a71afb0f4147032b68031fca899cba1e5bd7c2f7",
       "previousSha256": "81d41c0ac2ed0a5859295455a71afb0f4147032b68031fca899cba1e5bd7c2f7",
@@ -5479,7 +5479,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.adoc",
+      "path": "examples/converter/fixtures/doc/sample.adoc",
       "bytes": 611,
       "sha256": "5d6d2d25bf8049d9e214e17e057f3003b41eaefc033df15dd834ee2978f5cc21",
       "previousSha256": "5d6d2d25bf8049d9e214e17e057f3003b41eaefc033df15dd834ee2978f5cc21",
@@ -5493,7 +5493,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ads",
+      "path": "examples/converter/fixtures/doc/sample.ads",
       "bytes": 609,
       "sha256": "069c83e4038354b31999332541b116c7bb828608c2d0a25115bb677cb3ceb01c",
       "previousSha256": "069c83e4038354b31999332541b116c7bb828608c2d0a25115bb677cb3ceb01c",
@@ -5507,7 +5507,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.asc",
+      "path": "examples/converter/fixtures/doc/sample.asc",
       "bytes": 609,
       "sha256": "163140322193dd54e46546f9d1af667192600df8b6c8e5ea44b4b0a34583abd4",
       "previousSha256": "163140322193dd54e46546f9d1af667192600df8b6c8e5ea44b4b0a34583abd4",
@@ -5521,7 +5521,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.asciidoc",
+      "path": "examples/converter/fixtures/doc/sample.asciidoc",
       "bytes": 619,
       "sha256": "5836c5f36f76f17d514b1b9c53247d4fa7aef8834f172728ced31c3614188644",
       "previousSha256": "5836c5f36f76f17d514b1b9c53247d4fa7aef8834f172728ced31c3614188644",
@@ -5535,7 +5535,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.asm",
+      "path": "examples/converter/fixtures/doc/sample.asm",
       "bytes": 609,
       "sha256": "03f0b65ca6e0e43adf77eb580f36e78642b22848f5a017fd1711b2e401b79bf1",
       "previousSha256": "03f0b65ca6e0e43adf77eb580f36e78642b22848f5a017fd1711b2e401b79bf1",
@@ -5549,7 +5549,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ass",
+      "path": "examples/converter/fixtures/doc/sample.ass",
       "bytes": 235,
       "sha256": "6015bf0c58249e8b4ee29c68b25b070c8781eb5ab21449fdf5f55147c193cb8c",
       "previousSha256": "6015bf0c58249e8b4ee29c68b25b070c8781eb5ab21449fdf5f55147c193cb8c",
@@ -5563,7 +5563,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.astro",
+      "path": "examples/converter/fixtures/doc/sample.astro",
       "bytes": 613,
       "sha256": "1b0c87f70c94555d64bd371da77d939f2c18ccbaac2f1e37a95d9e99495d2c1e",
       "previousSha256": "1b0c87f70c94555d64bd371da77d939f2c18ccbaac2f1e37a95d9e99495d2c1e",
@@ -5577,7 +5577,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.atom",
+      "path": "examples/converter/fixtures/doc/sample.atom",
       "bytes": 218,
       "sha256": "ec245d28e23b48f976cd563c4b9a7b90c5c244e0aebeb1032a0e8156b6234ec2",
       "previousSha256": "ec245d28e23b48f976cd563c4b9a7b90c5c244e0aebeb1032a0e8156b6234ec2",
@@ -5591,7 +5591,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.avsc",
+      "path": "examples/converter/fixtures/doc/sample.avsc",
       "bytes": 611,
       "sha256": "925b8e3065af0f23acde8587e9d92b24e7c25f8fab08b95e7f15ff4e1a040e10",
       "previousSha256": "925b8e3065af0f23acde8587e9d92b24e7c25f8fab08b95e7f15ff4e1a040e10",
@@ -5605,7 +5605,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.bash",
+      "path": "examples/converter/fixtures/doc/sample.bash",
       "bytes": 611,
       "sha256": "7c3248f5c516c4fc90c49cbc38871c7345dc96a085f091164145b3a0b16d8d97",
       "previousSha256": "7c3248f5c516c4fc90c49cbc38871c7345dc96a085f091164145b3a0b16d8d97",
@@ -5619,7 +5619,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.bat",
+      "path": "examples/converter/fixtures/doc/sample.bat",
       "bytes": 609,
       "sha256": "d81e9228bd3652cb548847acf3d5393bf87db7a6774862e6f78ab618827f8ec2",
       "previousSha256": "d81e9228bd3652cb548847acf3d5393bf87db7a6774862e6f78ab618827f8ec2",
@@ -5633,7 +5633,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.bib",
+      "path": "examples/converter/fixtures/doc/sample.bib",
       "bytes": 609,
       "sha256": "2d4e6f88e88c5536298fa720faae128d2279272cce82c474cab100ba5d6726da",
       "previousSha256": "2d4e6f88e88c5536298fa720faae128d2279272cce82c474cab100ba5d6726da",
@@ -5647,7 +5647,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.bicep",
+      "path": "examples/converter/fixtures/doc/sample.bicep",
       "bytes": 613,
       "sha256": "7ea8985c4e4c926055c68dffc71f99cfaa315ce30713034d9a3041e1a2ffccda",
       "previousSha256": "7ea8985c4e4c926055c68dffc71f99cfaa315ce30713034d9a3041e1a2ffccda",
@@ -5661,7 +5661,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.c",
+      "path": "examples/converter/fixtures/doc/sample.c",
       "bytes": 605,
       "sha256": "2e9aa759fca73c925de453ad7fa75e615e0b7969c9f07747ed42ea6f8270c4a8",
       "previousSha256": "2e9aa759fca73c925de453ad7fa75e615e0b7969c9f07747ed42ea6f8270c4a8",
@@ -5675,7 +5675,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cbl",
+      "path": "examples/converter/fixtures/doc/sample.cbl",
       "bytes": 609,
       "sha256": "f9907ecb8b2fd1001e304c7ffe84fb8dae033328fbc9bc364a7fb0496e5d1b55",
       "previousSha256": "f9907ecb8b2fd1001e304c7ffe84fb8dae033328fbc9bc364a7fb0496e5d1b55",
@@ -5689,7 +5689,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cc",
+      "path": "examples/converter/fixtures/doc/sample.cc",
       "bytes": 607,
       "sha256": "74d81a4df655db8e4ac9658412bc8a822eb87ee036c84601a630ec17f39935a9",
       "previousSha256": "74d81a4df655db8e4ac9658412bc8a822eb87ee036c84601a630ec17f39935a9",
@@ -5703,7 +5703,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cfg",
+      "path": "examples/converter/fixtures/doc/sample.cfg",
       "bytes": 609,
       "sha256": "ef6844ebacaa81db9b56e121a34432752445585ba5b6413325b9aab98806a07d",
       "previousSha256": "ef6844ebacaa81db9b56e121a34432752445585ba5b6413325b9aab98806a07d",
@@ -5717,7 +5717,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cjs",
+      "path": "examples/converter/fixtures/doc/sample.cjs",
       "bytes": 609,
       "sha256": "408c85c68c24f8b06fea1cfb5e92462e053fbe33d71daa31f27525df155f7bad",
       "previousSha256": "408c85c68c24f8b06fea1cfb5e92462e053fbe33d71daa31f27525df155f7bad",
@@ -5731,7 +5731,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.clj",
+      "path": "examples/converter/fixtures/doc/sample.clj",
       "bytes": 609,
       "sha256": "e1c1ea287d5658fa07d15ed51cf13dcc949f9096c6b1b8b4434680b208bd558b",
       "previousSha256": "e1c1ea287d5658fa07d15ed51cf13dcc949f9096c6b1b8b4434680b208bd558b",
@@ -5745,7 +5745,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cls",
+      "path": "examples/converter/fixtures/doc/sample.cls",
       "bytes": 609,
       "sha256": "a65ce8439315f3b7e5bb60e46eee87adeff6f89d33534f3386e7c16609275816",
       "previousSha256": "a65ce8439315f3b7e5bb60e46eee87adeff6f89d33534f3386e7c16609275816",
@@ -5759,7 +5759,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cmake",
+      "path": "examples/converter/fixtures/doc/sample.cmake",
       "bytes": 613,
       "sha256": "5d0e8742fd0738f6bc3372d8e7ec9f709c03773823cf565210184a09fe7a6acc",
       "previousSha256": "5d0e8742fd0738f6bc3372d8e7ec9f709c03773823cf565210184a09fe7a6acc",
@@ -5773,7 +5773,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cmd",
+      "path": "examples/converter/fixtures/doc/sample.cmd",
       "bytes": 609,
       "sha256": "68456e092c45340dcb76f37a99a9b97bff127663a00c1b4ab77305694cf2161a",
       "previousSha256": "68456e092c45340dcb76f37a99a9b97bff127663a00c1b4ab77305694cf2161a",
@@ -5787,7 +5787,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cnf",
+      "path": "examples/converter/fixtures/doc/sample.cnf",
       "bytes": 609,
       "sha256": "cb65b5057b305e42f59bbceb45ac901ecced0aa94ce97181e5f03f86605d8ba3",
       "previousSha256": "cb65b5057b305e42f59bbceb45ac901ecced0aa94ce97181e5f03f86605d8ba3",
@@ -5801,7 +5801,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cob",
+      "path": "examples/converter/fixtures/doc/sample.cob",
       "bytes": 609,
       "sha256": "20184106b7bf8bf97aeed236225f467c5c85803b7b23a211a16129bd963c2a8d",
       "previousSha256": "20184106b7bf8bf97aeed236225f467c5c85803b7b23a211a16129bd963c2a8d",
@@ -5815,7 +5815,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.conf",
+      "path": "examples/converter/fixtures/doc/sample.conf",
       "bytes": 611,
       "sha256": "4a3a4f7060c8fff66429c102e35231bb4df5c396f1d53242f3435929d236620f",
       "previousSha256": "4a3a4f7060c8fff66429c102e35231bb4df5c396f1d53242f3435929d236620f",
@@ -5829,7 +5829,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.config",
+      "path": "examples/converter/fixtures/doc/sample.config",
       "bytes": 615,
       "sha256": "ad400be0f9f024292d6533df5585fb71fb0fb58e280d6d29819b5b75d6c81cc1",
       "previousSha256": "ad400be0f9f024292d6533df5585fb71fb0fb58e280d6d29819b5b75d6c81cc1",
@@ -5843,7 +5843,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cpp",
+      "path": "examples/converter/fixtures/doc/sample.cpp",
       "bytes": 609,
       "sha256": "5041078f86572c516cfd3d2ddd6fc000224a753dbdaccd40b7fd6f25fb95cefa",
       "previousSha256": "5041078f86572c516cfd3d2ddd6fc000224a753dbdaccd40b7fd6f25fb95cefa",
@@ -5857,7 +5857,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cr",
+      "path": "examples/converter/fixtures/doc/sample.cr",
       "bytes": 607,
       "sha256": "97c1ede1db351628360c31be573596a947e03e16e129c21fa0e7343aed0a7b61",
       "previousSha256": "97c1ede1db351628360c31be573596a947e03e16e129c21fa0e7343aed0a7b61",
@@ -5871,7 +5871,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cs",
+      "path": "examples/converter/fixtures/doc/sample.cs",
       "bytes": 607,
       "sha256": "19c4d77fc331e23c893fe12732d21eb8fda94259a9fe8e22f720ff02ae54c775",
       "previousSha256": "19c4d77fc331e23c893fe12732d21eb8fda94259a9fe8e22f720ff02ae54c775",
@@ -5885,7 +5885,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cshtml",
+      "path": "examples/converter/fixtures/doc/sample.cshtml",
       "bytes": 615,
       "sha256": "209a508940ea9019dae8e5453ab4c65400a5bfbd1aee9279fbd789582764d5a6",
       "previousSha256": "209a508940ea9019dae8e5453ab4c65400a5bfbd1aee9279fbd789582764d5a6",
@@ -5899,7 +5899,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.csproj",
+      "path": "examples/converter/fixtures/doc/sample.csproj",
       "bytes": 615,
       "sha256": "af8998dad6e8489dd5628eb50b0317a3b6ea146a0ff7845cf106d04064278170",
       "previousSha256": "af8998dad6e8489dd5628eb50b0317a3b6ea146a0ff7845cf106d04064278170",
@@ -5913,7 +5913,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.css",
+      "path": "examples/converter/fixtures/doc/sample.css",
       "bytes": 609,
       "sha256": "fe79b0639f3ce4c4b39aacf8406a630730d2f1ddd54a60a18a628d2c0b5f0266",
       "previousSha256": "fe79b0639f3ce4c4b39aacf8406a630730d2f1ddd54a60a18a628d2c0b5f0266",
@@ -5927,7 +5927,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cts",
+      "path": "examples/converter/fixtures/doc/sample.cts",
       "bytes": 609,
       "sha256": "1fc740b78617be55f750079611331ecb17af48894ea0d1dbbe36f718091db728",
       "previousSha256": "1fc740b78617be55f750079611331ecb17af48894ea0d1dbbe36f718091db728",
@@ -5941,7 +5941,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cu",
+      "path": "examples/converter/fixtures/doc/sample.cu",
       "bytes": 607,
       "sha256": "034492ddf1ced63e575aa3148e8fbbe2fa4b6ec7c9cffe92c14bb7ec1c6fdbdd",
       "previousSha256": "034492ddf1ced63e575aa3148e8fbbe2fa4b6ec7c9cffe92c14bb7ec1c6fdbdd",
@@ -5955,7 +5955,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cue",
+      "path": "examples/converter/fixtures/doc/sample.cue",
       "bytes": 609,
       "sha256": "ab64776ea82e4bfcbbb03470e83cf82b65144df4f1d82f5617b1b62b09e5bc8a",
       "previousSha256": "ab64776ea82e4bfcbbb03470e83cf82b65144df4f1d82f5617b1b62b09e5bc8a",
@@ -5969,7 +5969,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cuh",
+      "path": "examples/converter/fixtures/doc/sample.cuh",
       "bytes": 609,
       "sha256": "8f6dc59903b32bfe7b471e3946b780483a2c303a48f8d8c0c8d54275bb284cda",
       "previousSha256": "8f6dc59903b32bfe7b471e3946b780483a2c303a48f8d8c0c8d54275bb284cda",
@@ -5983,7 +5983,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.cxx",
+      "path": "examples/converter/fixtures/doc/sample.cxx",
       "bytes": 609,
       "sha256": "8915a1120c55c2659f5c73a7690b072e9320711f47751c522e42e88cfbc967c9",
       "previousSha256": "8915a1120c55c2659f5c73a7690b072e9320711f47751c522e42e88cfbc967c9",
@@ -5997,7 +5997,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.d",
+      "path": "examples/converter/fixtures/doc/sample.d",
       "bytes": 605,
       "sha256": "fb1b605ed273cd776c8d9dc04d772ac032d6a810df8244274a5d21dc116da273",
       "previousSha256": "fb1b605ed273cd776c8d9dc04d772ac032d6a810df8244274a5d21dc116da273",
@@ -6011,7 +6011,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dart",
+      "path": "examples/converter/fixtures/doc/sample.dart",
       "bytes": 611,
       "sha256": "d9d3af88944ac87c443c5b3f87b64cb6c708af50b1d330d548ae83d07f91f98c",
       "previousSha256": "d9d3af88944ac87c443c5b3f87b64cb6c708af50b1d330d548ae83d07f91f98c",
@@ -6025,7 +6025,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dfxp",
+      "path": "examples/converter/fixtures/doc/sample.dfxp",
       "bytes": 185,
       "sha256": "cc98e37368b36706d99f77c111ec1562ee18b38cda9680d3fb00b07cc0156109",
       "previousSha256": "cc98e37368b36706d99f77c111ec1562ee18b38cda9680d3fb00b07cc0156109",
@@ -6039,7 +6039,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dhall",
+      "path": "examples/converter/fixtures/doc/sample.dhall",
       "bytes": 613,
       "sha256": "2dae9b18000de20fe840253ffea152ec4c04eb183412bd923c8472d29d484a1e",
       "previousSha256": "2dae9b18000de20fe840253ffea152ec4c04eb183412bd923c8472d29d484a1e",
@@ -6053,7 +6053,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.diff",
+      "path": "examples/converter/fixtures/doc/sample.diff",
       "bytes": 611,
       "sha256": "0d3807f3b92e26cd1d1e3b65843c9dd9f2448883d86b36ee5d06424f1e2242a9",
       "previousSha256": "0d3807f3b92e26cd1d1e3b65843c9dd9f2448883d86b36ee5d06424f1e2242a9",
@@ -6067,7 +6067,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.doc",
+      "path": "examples/converter/fixtures/doc/sample.doc",
       "bytes": 3072,
       "sha256": "769da56c532cad539b8662097e84c746ac3f6116075d98ddc1ae754f136b6b76",
       "previousSha256": "769da56c532cad539b8662097e84c746ac3f6116075d98ddc1ae754f136b6b76",
@@ -6081,7 +6081,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dockerfile",
+      "path": "examples/converter/fixtures/doc/sample.dockerfile",
       "bytes": 623,
       "sha256": "c7a7e51d99a807db5d834e97e3efdb4b367343b91d508211dd7d34566390ddb7",
       "previousSha256": "c7a7e51d99a807db5d834e97e3efdb4b367343b91d508211dd7d34566390ddb7",
@@ -6095,7 +6095,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dockerignore",
+      "path": "examples/converter/fixtures/doc/sample.dockerignore",
       "bytes": 51,
       "sha256": "da57e27ed87be5d57bb019496088d170c6e85366de11dd82e3d9c0ba5804c9c7",
       "previousSha256": "da57e27ed87be5d57bb019496088d170c6e85366de11dd82e3d9c0ba5804c9c7",
@@ -6109,7 +6109,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.docm",
+      "path": "examples/converter/fixtures/doc/sample.docm",
       "bytes": 1834,
       "sha256": "6a321c99e259ecc607a074e916c92bbe996e8954cc0e5a9f17c3e5cd97408869",
       "previousSha256": "6a321c99e259ecc607a074e916c92bbe996e8954cc0e5a9f17c3e5cd97408869",
@@ -6123,7 +6123,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.docx",
+      "path": "examples/converter/fixtures/doc/sample.docx",
       "bytes": 1860,
       "sha256": "0a990fa96d3b59b4325b61c22f338e16cc6a6349afbf858ca2d21b6ffef006e2",
       "previousSha256": "0a990fa96d3b59b4325b61c22f338e16cc6a6349afbf858ca2d21b6ffef006e2",
@@ -6137,7 +6137,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dot",
+      "path": "examples/converter/fixtures/doc/sample.dot",
       "bytes": 3072,
       "sha256": "afb9329604739b626c9553c980d57179aebf369e80356c966faf1acb8596a7b0",
       "previousSha256": "afb9329604739b626c9553c980d57179aebf369e80356c966faf1acb8596a7b0",
@@ -6151,7 +6151,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dotm",
+      "path": "examples/converter/fixtures/doc/sample.dotm",
       "bytes": 1857,
       "sha256": "bf7148ee911a85ec102cbf451e670fe19d103a3e19e56ac1d259e9ec78cc3de8",
       "previousSha256": "bf7148ee911a85ec102cbf451e670fe19d103a3e19e56ac1d259e9ec78cc3de8",
@@ -6165,7 +6165,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.dotx",
+      "path": "examples/converter/fixtures/doc/sample.dotx",
       "bytes": 1869,
       "sha256": "648dcb454852e7dd686ea22a05f51df17e3c77670b55cfe9c3538a7157154ac5",
       "previousSha256": "648dcb454852e7dd686ea22a05f51df17e3c77670b55cfe9c3538a7157154ac5",
@@ -6179,7 +6179,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.editorconfig",
+      "path": "examples/converter/fixtures/doc/sample.editorconfig",
       "bytes": 33,
       "sha256": "3b2c749c8a940905a08f727d8be9017c9568a12421c0aee7e37e9543b3751b1b",
       "previousSha256": "3b2c749c8a940905a08f727d8be9017c9568a12421c0aee7e37e9543b3751b1b",
@@ -6193,7 +6193,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ejs",
+      "path": "examples/converter/fixtures/doc/sample.ejs",
       "bytes": 609,
       "sha256": "2bfe356f8e96083a96584309ea9b9f94c233608d7847d6fb7a5355746cb762cb",
       "previousSha256": "2bfe356f8e96083a96584309ea9b9f94c233608d7847d6fb7a5355746cb762cb",
@@ -6207,7 +6207,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.elm",
+      "path": "examples/converter/fixtures/doc/sample.elm",
       "bytes": 609,
       "sha256": "44a4ee799425973b3d3e6f6c880e18bf142c570d90a39cfd4d269ea667a384f9",
       "previousSha256": "44a4ee799425973b3d3e6f6c880e18bf142c570d90a39cfd4d269ea667a384f9",
@@ -6221,7 +6221,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.eml",
+      "path": "examples/converter/fixtures/doc/sample.eml",
       "bytes": 489,
       "sha256": "c2895950a63d5ad1b8587717edd86f8203f3d466bb01e3954cc4d1806a82f68e",
       "previousSha256": "c2895950a63d5ad1b8587717edd86f8203f3d466bb01e3954cc4d1806a82f68e",
@@ -6235,7 +6235,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.env",
+      "path": "examples/converter/fixtures/doc/sample.env",
       "bytes": 41,
       "sha256": "887a93d6a332d997b6cb8a1e76fc3ce77936e350e063a330b0f314fb8f9dd1e6",
       "previousSha256": "887a93d6a332d997b6cb8a1e76fc3ce77936e350e063a330b0f314fb8f9dd1e6",
@@ -6249,7 +6249,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.epub",
+      "path": "examples/converter/fixtures/doc/sample.epub",
       "bytes": 1553,
       "sha256": "e44a308f0d52f96f90973dc29f5ecdaf62b6a4388f3404dd639eb7e407213e19",
       "previousSha256": "e44a308f0d52f96f90973dc29f5ecdaf62b6a4388f3404dd639eb7e407213e19",
@@ -6263,7 +6263,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.erb",
+      "path": "examples/converter/fixtures/doc/sample.erb",
       "bytes": 609,
       "sha256": "ab0eb936c3e471133d4ee615f33e3370086adc3d90b923c6eb6d1eb93ed99941",
       "previousSha256": "ab0eb936c3e471133d4ee615f33e3370086adc3d90b923c6eb6d1eb93ed99941",
@@ -6277,7 +6277,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.erl",
+      "path": "examples/converter/fixtures/doc/sample.erl",
       "bytes": 609,
       "sha256": "aadb8b519ce8067c6508e10be9536d8e67edd58dd869379655b706a84009afa8",
       "previousSha256": "aadb8b519ce8067c6508e10be9536d8e67edd58dd869379655b706a84009afa8",
@@ -6291,7 +6291,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ex",
+      "path": "examples/converter/fixtures/doc/sample.ex",
       "bytes": 607,
       "sha256": "0fb4c206ad7567109736bac3c0d114880220aa280693c699dff643668eccd7b3",
       "previousSha256": "0fb4c206ad7567109736bac3c0d114880220aa280693c699dff643668eccd7b3",
@@ -6305,7 +6305,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.f90",
+      "path": "examples/converter/fixtures/doc/sample.f90",
       "bytes": 609,
       "sha256": "a8f0b3353f2f344cdba88f0396f18a98473e0a07aff211582d6d5766600df291",
       "previousSha256": "a8f0b3353f2f344cdba88f0396f18a98473e0a07aff211582d6d5766600df291",
@@ -6319,7 +6319,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.f95",
+      "path": "examples/converter/fixtures/doc/sample.f95",
       "bytes": 609,
       "sha256": "65645f597abbf8f3ca3fae2daaa303e671c0f306c57ef3e7effe96c7d081d572",
       "previousSha256": "65645f597abbf8f3ca3fae2daaa303e671c0f306c57ef3e7effe96c7d081d572",
@@ -6333,7 +6333,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fb2",
+      "path": "examples/converter/fixtures/doc/sample.fb2",
       "bytes": 657,
       "sha256": "bad340aeea68e7cec9cd9b3fbda02e022e37ba832ec2a102c52045e6c5a4e6d2",
       "previousSha256": "bad340aeea68e7cec9cd9b3fbda02e022e37ba832ec2a102c52045e6c5a4e6d2",
@@ -6347,7 +6347,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fish",
+      "path": "examples/converter/fixtures/doc/sample.fish",
       "bytes": 611,
       "sha256": "6a78fa6fddb43b7710b10c0ba9cf7525f839d757a977a129633a94486b8d8df7",
       "previousSha256": "6a78fa6fddb43b7710b10c0ba9cf7525f839d757a977a129633a94486b8d8df7",
@@ -6361,7 +6361,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fodt",
+      "path": "examples/converter/fixtures/doc/sample.fodt",
       "bytes": 829,
       "sha256": "ccecf56f9f20af21800a5e8c4d996c86e78efdd9c6b59989dbffbb0c0a99c662",
       "previousSha256": "ccecf56f9f20af21800a5e8c4d996c86e78efdd9c6b59989dbffbb0c0a99c662",
@@ -6375,7 +6375,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.frag",
+      "path": "examples/converter/fixtures/doc/sample.frag",
       "bytes": 611,
       "sha256": "71e5a7c0cf5d9f02132974763b1e47ea1ed054ff7a1ec1e492357ddfc9947b30",
       "previousSha256": "71e5a7c0cf5d9f02132974763b1e47ea1ed054ff7a1ec1e492357ddfc9947b30",
@@ -6389,7 +6389,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fs",
+      "path": "examples/converter/fixtures/doc/sample.fs",
       "bytes": 607,
       "sha256": "cc956adff9f8abc762e36b6bdf56dc315a5f65853492a599dff0819f647572d8",
       "previousSha256": "cc956adff9f8abc762e36b6bdf56dc315a5f65853492a599dff0819f647572d8",
@@ -6403,7 +6403,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fsi",
+      "path": "examples/converter/fixtures/doc/sample.fsi",
       "bytes": 609,
       "sha256": "94706c8c2e341813042b3526d319177346c5f63bff0e608f144f0050aea17448",
       "previousSha256": "94706c8c2e341813042b3526d319177346c5f63bff0e608f144f0050aea17448",
@@ -6417,7 +6417,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fsproj",
+      "path": "examples/converter/fixtures/doc/sample.fsproj",
       "bytes": 615,
       "sha256": "135197a6fdeda22c3e7ed619496d7039688e617449a25c577c830455271a1254",
       "previousSha256": "135197a6fdeda22c3e7ed619496d7039688e617449a25c577c830455271a1254",
@@ -6431,7 +6431,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.fsx",
+      "path": "examples/converter/fixtures/doc/sample.fsx",
       "bytes": 609,
       "sha256": "0bca8859c4612b005ab35f56018ea5e625cba7c4eb1157896e4e8c5d4b208fe7",
       "previousSha256": "0bca8859c4612b005ab35f56018ea5e625cba7c4eb1157896e4e8c5d4b208fe7",
@@ -6445,7 +6445,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.gitattributes",
+      "path": "examples/converter/fixtures/doc/sample.gitattributes",
       "bytes": 629,
       "sha256": "019b26e7e71ee0d2125b3d8d476c433da74b093a1cd2db720a2bf306c6bd366d",
       "previousSha256": "019b26e7e71ee0d2125b3d8d476c433da74b093a1cd2db720a2bf306c6bd366d",
@@ -6459,7 +6459,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.gitignore",
+      "path": "examples/converter/fixtures/doc/sample.gitignore",
       "bytes": 40,
       "sha256": "ec84840d13ac6a603a1c4c4ad801e81e44b67c7b4a6b446593b0119bd18c4f7b",
       "previousSha256": "ec84840d13ac6a603a1c4c4ad801e81e44b67c7b4a6b446593b0119bd18c4f7b",
@@ -6473,7 +6473,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.gitmodules",
+      "path": "examples/converter/fixtures/doc/sample.gitmodules",
       "bytes": 101,
       "sha256": "7902ece8bae1f7f89c9bdbcba502158f4658b42da24081974536872d6cdb08b6",
       "previousSha256": "7902ece8bae1f7f89c9bdbcba502158f4658b42da24081974536872d6cdb08b6",
@@ -6487,7 +6487,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.glsl",
+      "path": "examples/converter/fixtures/doc/sample.glsl",
       "bytes": 611,
       "sha256": "0be9c26f2f3435ffef3620d5f7a17c46524da6b324d7ca1702a7e7078c335bcf",
       "previousSha256": "0be9c26f2f3435ffef3620d5f7a17c46524da6b324d7ca1702a7e7078c335bcf",
@@ -6501,7 +6501,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.go",
+      "path": "examples/converter/fixtures/doc/sample.go",
       "bytes": 607,
       "sha256": "b824840e56ece9ec5a29c1a899244ef7a9624916dfcd44249284be3f658f4e38",
       "previousSha256": "b824840e56ece9ec5a29c1a899244ef7a9624916dfcd44249284be3f658f4e38",
@@ -6515,7 +6515,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.gpx",
+      "path": "examples/converter/fixtures/doc/sample.gpx",
       "bytes": 207,
       "sha256": "dbc3a1ab9506b016a404d60be3cc48accee3238ff1b2b81e3324eb1815aa253c",
       "previousSha256": "dbc3a1ab9506b016a404d60be3cc48accee3238ff1b2b81e3324eb1815aa253c",
@@ -6529,7 +6529,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.gql",
+      "path": "examples/converter/fixtures/doc/sample.gql",
       "bytes": 609,
       "sha256": "72f51a8faec39a3939bf38912e5a3a2d69cf2f8af07e3857d332550bb8ba6c17",
       "previousSha256": "72f51a8faec39a3939bf38912e5a3a2d69cf2f8af07e3857d332550bb8ba6c17",
@@ -6543,7 +6543,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.gradle",
+      "path": "examples/converter/fixtures/doc/sample.gradle",
       "bytes": 615,
       "sha256": "0deec2cc241f0bc1a54bbaf03284ebe4adeebc9db09c77d0997926854499ee42",
       "previousSha256": "0deec2cc241f0bc1a54bbaf03284ebe4adeebc9db09c77d0997926854499ee42",
@@ -6557,7 +6557,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.graphql",
+      "path": "examples/converter/fixtures/doc/sample.graphql",
       "bytes": 617,
       "sha256": "ff8368ff722ff90086b661453137ed6d9474c83dcd7bcbe0c0e02670a409a4e7",
       "previousSha256": "ff8368ff722ff90086b661453137ed6d9474c83dcd7bcbe0c0e02670a409a4e7",
@@ -6571,7 +6571,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.groovy",
+      "path": "examples/converter/fixtures/doc/sample.groovy",
       "bytes": 615,
       "sha256": "44620671ba7a1ba082055615f667f99c3d9c3b8328615406b0e9807f5eae053a",
       "previousSha256": "44620671ba7a1ba082055615f667f99c3d9c3b8328615406b0e9807f5eae053a",
@@ -6585,7 +6585,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.h",
+      "path": "examples/converter/fixtures/doc/sample.h",
       "bytes": 605,
       "sha256": "5bfeaeff850756af02bd935d9e455cf9abe99dda0be496a1abdca0796bab3dd9",
       "previousSha256": "5bfeaeff850756af02bd935d9e455cf9abe99dda0be496a1abdca0796bab3dd9",
@@ -6599,7 +6599,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.haml",
+      "path": "examples/converter/fixtures/doc/sample.haml",
       "bytes": 611,
       "sha256": "03a39af2de4333d0198711be1292c4141addfed75a238e2949c472fa012bd2b5",
       "previousSha256": "03a39af2de4333d0198711be1292c4141addfed75a238e2949c472fa012bd2b5",
@@ -6613,7 +6613,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hbs",
+      "path": "examples/converter/fixtures/doc/sample.hbs",
       "bytes": 609,
       "sha256": "07d7f7827e1b4879b56a0614d1c1a1f51e9524ad1fea841af9d1ed7a93be2645",
       "previousSha256": "07d7f7827e1b4879b56a0614d1c1a1f51e9524ad1fea841af9d1ed7a93be2645",
@@ -6627,7 +6627,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hcl",
+      "path": "examples/converter/fixtures/doc/sample.hcl",
       "bytes": 609,
       "sha256": "f786594d165ee1e1d2280f43d947188fa95e877b79e50135adf945cdf23aac7b",
       "previousSha256": "f786594d165ee1e1d2280f43d947188fa95e877b79e50135adf945cdf23aac7b",
@@ -6641,7 +6641,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hh",
+      "path": "examples/converter/fixtures/doc/sample.hh",
       "bytes": 607,
       "sha256": "f01975c4bff5f8be9382b1a36f296c7fe61c68db0be3f93ad7e8b07a66fc9f2e",
       "previousSha256": "f01975c4bff5f8be9382b1a36f296c7fe61c68db0be3f93ad7e8b07a66fc9f2e",
@@ -6655,7 +6655,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hlsl",
+      "path": "examples/converter/fixtures/doc/sample.hlsl",
       "bytes": 611,
       "sha256": "0370d298b77b944c052210c35e086d2158dc2d39f7c127b0f062da3a97124b73",
       "previousSha256": "0370d298b77b944c052210c35e086d2158dc2d39f7c127b0f062da3a97124b73",
@@ -6669,7 +6669,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hpp",
+      "path": "examples/converter/fixtures/doc/sample.hpp",
       "bytes": 609,
       "sha256": "8e97af3059b0d8daeab5c98d6df03e208dec09434caa75d83372843b77b8e53c",
       "previousSha256": "8e97af3059b0d8daeab5c98d6df03e208dec09434caa75d83372843b77b8e53c",
@@ -6683,7 +6683,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hs",
+      "path": "examples/converter/fixtures/doc/sample.hs",
       "bytes": 607,
       "sha256": "d42457e46b237dfbd52b7a28533a787cfe09e6ed1ee0864d2d54f41c03b013ff",
       "previousSha256": "d42457e46b237dfbd52b7a28533a787cfe09e6ed1ee0864d2d54f41c03b013ff",
@@ -6697,7 +6697,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.htm",
+      "path": "examples/converter/fixtures/doc/sample.htm",
       "bytes": 349,
       "sha256": "cfdebb22d4a54a2e1f593fae37167312671294e8e98ce319c472f4a6bc105c59",
       "previousSha256": "cfdebb22d4a54a2e1f593fae37167312671294e8e98ce319c472f4a6bc105c59",
@@ -6711,7 +6711,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.html",
+      "path": "examples/converter/fixtures/doc/sample.html",
       "bytes": 350,
       "sha256": "1f9693dba3f4873e1f45213125ad9641509f4b5c0b0fb579d5bbc22c929cfcb1",
       "previousSha256": "1f9693dba3f4873e1f45213125ad9641509f4b5c0b0fb579d5bbc22c929cfcb1",
@@ -6725,7 +6725,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.hxx",
+      "path": "examples/converter/fixtures/doc/sample.hxx",
       "bytes": 609,
       "sha256": "002a53c94bc87de5a7adca9bd1fd7257a089c34a3759bb973b6084804e40668d",
       "previousSha256": "002a53c94bc87de5a7adca9bd1fd7257a089c34a3759bb973b6084804e40668d",
@@ -6739,7 +6739,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ics",
+      "path": "examples/converter/fixtures/doc/sample.ics",
       "bytes": 454,
       "sha256": "7fae839a83cbbf62f004aecdf0738841f3cc724fa30a67c55f8936d99da26e3e",
       "previousSha256": "7fae839a83cbbf62f004aecdf0738841f3cc724fa30a67c55f8936d99da26e3e",
@@ -6753,7 +6753,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ini",
+      "path": "examples/converter/fixtures/doc/sample.ini",
       "bytes": 609,
       "sha256": "217feda5c71c9aaa3cd6b180b9e62473b9246c70812b0dbe3c080bde6da2f1ea",
       "previousSha256": "217feda5c71c9aaa3cd6b180b9e62473b9246c70812b0dbe3c080bde6da2f1ea",
@@ -6767,7 +6767,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ino",
+      "path": "examples/converter/fixtures/doc/sample.ino",
       "bytes": 609,
       "sha256": "019b33c0829adf6b444e9ad5a5faeb0359419ffcc2bb91e2af18a856fdc20150",
       "previousSha256": "019b33c0829adf6b444e9ad5a5faeb0359419ffcc2bb91e2af18a856fdc20150",
@@ -6781,7 +6781,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ipynb",
+      "path": "examples/converter/fixtures/doc/sample.ipynb",
       "bytes": 1471,
       "sha256": "5eb730344e1a4f7c42f9c828dbb501327c6acb81539433f6934e04877fd38abe",
       "previousSha256": "5eb730344e1a4f7c42f9c828dbb501327c6acb81539433f6934e04877fd38abe",
@@ -6795,7 +6795,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.java",
+      "path": "examples/converter/fixtures/doc/sample.java",
       "bytes": 611,
       "sha256": "27a36cdcc33c68d84211d0ed8a3a0ca4fdd057ccf2f74b74b9d74b077887c200",
       "previousSha256": "27a36cdcc33c68d84211d0ed8a3a0ca4fdd057ccf2f74b74b9d74b077887c200",
@@ -6809,7 +6809,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.jinja",
+      "path": "examples/converter/fixtures/doc/sample.jinja",
       "bytes": 613,
       "sha256": "0932f6a6f1788b9d7790b7a4b4765cca23c522bc1a6df2888fc3dc46e949ac7f",
       "previousSha256": "0932f6a6f1788b9d7790b7a4b4765cca23c522bc1a6df2888fc3dc46e949ac7f",
@@ -6823,7 +6823,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.jl",
+      "path": "examples/converter/fixtures/doc/sample.jl",
       "bytes": 607,
       "sha256": "2b52112dee80f1080883d4d5139de82c1c66851acc97c63e2b5043beb1238e94",
       "previousSha256": "2b52112dee80f1080883d4d5139de82c1c66851acc97c63e2b5043beb1238e94",
@@ -6837,7 +6837,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.js",
+      "path": "examples/converter/fixtures/doc/sample.js",
       "bytes": 607,
       "sha256": "ccb5d496f803a9e2c1bc4cd4b4458ef060591523cb240359c90418cbce256bf8",
       "previousSha256": "ccb5d496f803a9e2c1bc4cd4b4458ef060591523cb240359c90418cbce256bf8",
@@ -6851,7 +6851,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.json5",
+      "path": "examples/converter/fixtures/doc/sample.json5",
       "bytes": 613,
       "sha256": "e05e8902e63a5fb148ce852ac2e342752602e4fbef309853f64b9185d4bad4f5",
       "previousSha256": "e05e8902e63a5fb148ce852ac2e342752602e4fbef309853f64b9185d4bad4f5",
@@ -6865,7 +6865,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.jsonc",
+      "path": "examples/converter/fixtures/doc/sample.jsonc",
       "bytes": 613,
       "sha256": "1d17f565a6b0f91aa678d9fcf1018e9f8a82996cea8dde5c4daac6b28378b00d",
       "previousSha256": "1d17f565a6b0f91aa678d9fcf1018e9f8a82996cea8dde5c4daac6b28378b00d",
@@ -6879,7 +6879,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.jsx",
+      "path": "examples/converter/fixtures/doc/sample.jsx",
       "bytes": 609,
       "sha256": "04b55bed9571a86fe2163d6164000243f77fe991cfb6933775ba124f4f64c94a",
       "previousSha256": "04b55bed9571a86fe2163d6164000243f77fe991cfb6933775ba124f4f64c94a",
@@ -6893,7 +6893,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.kml",
+      "path": "examples/converter/fixtures/doc/sample.kml",
       "bytes": 217,
       "sha256": "c3779ea138175e4dd4019055cb54ff41dabd1a35281ba596b1797256c72a30b4",
       "previousSha256": "c3779ea138175e4dd4019055cb54ff41dabd1a35281ba596b1797256c72a30b4",
@@ -6907,7 +6907,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.kt",
+      "path": "examples/converter/fixtures/doc/sample.kt",
       "bytes": 607,
       "sha256": "5d393abadfcfbb460009e3b93f064d70af66b768a225712c9a96e43d5c1fe2d3",
       "previousSha256": "5d393abadfcfbb460009e3b93f064d70af66b768a225712c9a96e43d5c1fe2d3",
@@ -6921,7 +6921,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.kts",
+      "path": "examples/converter/fixtures/doc/sample.kts",
       "bytes": 609,
       "sha256": "28e25d970c243784a8be17709bf30a48ff565ee7c3cfb0a91e53803b4a1f1e6a",
       "previousSha256": "28e25d970c243784a8be17709bf30a48ff565ee7c3cfb0a91e53803b4a1f1e6a",
@@ -6935,7 +6935,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.latex",
+      "path": "examples/converter/fixtures/doc/sample.latex",
       "bytes": 613,
       "sha256": "663b5dcd36e038270e674dacf842cc8817c2bc470051d9a741dc77cf37ef937a",
       "previousSha256": "663b5dcd36e038270e674dacf842cc8817c2bc470051d9a741dc77cf37ef937a",
@@ -6949,7 +6949,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.less",
+      "path": "examples/converter/fixtures/doc/sample.less",
       "bytes": 611,
       "sha256": "66a6c43bb4e9d732ea90eca2b7c2825f23427217807265c72b78891fa29614ad",
       "previousSha256": "66a6c43bb4e9d732ea90eca2b7c2825f23427217807265c72b78891fa29614ad",
@@ -6963,7 +6963,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.liquid",
+      "path": "examples/converter/fixtures/doc/sample.liquid",
       "bytes": 615,
       "sha256": "502680093495fdfb7c66f8251fab89e4249033a3a0afd488418be5a0062e21eb",
       "previousSha256": "502680093495fdfb7c66f8251fab89e4249033a3a0afd488418be5a0062e21eb",
@@ -6977,7 +6977,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.lisp",
+      "path": "examples/converter/fixtures/doc/sample.lisp",
       "bytes": 611,
       "sha256": "b084f93027f4e280e15fd9fbcc60a994532a5816193ba3ad39b75a7dd8d53c76",
       "previousSha256": "b084f93027f4e280e15fd9fbcc60a994532a5816193ba3ad39b75a7dd8d53c76",
@@ -6991,7 +6991,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.log",
+      "path": "examples/converter/fixtures/doc/sample.log",
       "bytes": 609,
       "sha256": "c18474ac9de4b180d7ef9bd4e35de0f28a36716e844f2b254c48a2423624b8e7",
       "previousSha256": "c18474ac9de4b180d7ef9bd4e35de0f28a36716e844f2b254c48a2423624b8e7",
@@ -7005,7 +7005,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ltx",
+      "path": "examples/converter/fixtures/doc/sample.ltx",
       "bytes": 609,
       "sha256": "eb29d8d13283f0f523d37256d6aab8c7feb5176b5dbd3fee4cb96c802a7a7f98",
       "previousSha256": "eb29d8d13283f0f523d37256d6aab8c7feb5176b5dbd3fee4cb96c802a7a7f98",
@@ -7019,7 +7019,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.lua",
+      "path": "examples/converter/fixtures/doc/sample.lua",
       "bytes": 609,
       "sha256": "4db875b67621d14d842ed8ef5fbee942365f86bd6a52bd405accf3af70a97827",
       "previousSha256": "4db875b67621d14d842ed8ef5fbee942365f86bd6a52bd405accf3af70a97827",
@@ -7033,7 +7033,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.m",
+      "path": "examples/converter/fixtures/doc/sample.m",
       "bytes": 605,
       "sha256": "4fb8f13212ba24dd01b227ff399a8b2b336c522e43883740547f7af94c69c04b",
       "previousSha256": "4fb8f13212ba24dd01b227ff399a8b2b336c522e43883740547f7af94c69c04b",
@@ -7047,7 +7047,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.make",
+      "path": "examples/converter/fixtures/doc/sample.make",
       "bytes": 611,
       "sha256": "3b574dc75f371d0009af6af62ebefdae7eab8b3087e867265c565a5589a097f2",
       "previousSha256": "3b574dc75f371d0009af6af62ebefdae7eab8b3087e867265c565a5589a097f2",
@@ -7061,7 +7061,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.man",
+      "path": "examples/converter/fixtures/doc/sample.man",
       "bytes": 609,
       "sha256": "bf7ad37316ef2d2da35e3202f537a3e9152b0f53fe7d3766c85f99dce4d94004",
       "previousSha256": "bf7ad37316ef2d2da35e3202f537a3e9152b0f53fe7d3766c85f99dce4d94004",
@@ -7075,7 +7075,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.markdown",
+      "path": "examples/converter/fixtures/doc/sample.markdown",
       "bytes": 646,
       "sha256": "1d917ac18234bc5f567a672fff63277d1e32bc51c3ea5f58fab9ff1aef2c8db1",
       "previousSha256": "1d917ac18234bc5f567a672fff63277d1e32bc51c3ea5f58fab9ff1aef2c8db1",
@@ -7089,7 +7089,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.matlab",
+      "path": "examples/converter/fixtures/doc/sample.matlab",
       "bytes": 615,
       "sha256": "2ce59ae132243f31efad36cc20c2e6df1a160bff7a688adf415e1f2b87569d22",
       "previousSha256": "2ce59ae132243f31efad36cc20c2e6df1a160bff7a688adf415e1f2b87569d22",
@@ -7103,7 +7103,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mbox",
+      "path": "examples/converter/fixtures/doc/sample.mbox",
       "bytes": 539,
       "sha256": "2ff0579a390229783ec9387c93879158b3e13a54a8a35aceaa9aa8b9c13c4587",
       "previousSha256": "2ff0579a390229783ec9387c93879158b3e13a54a8a35aceaa9aa8b9c13c4587",
@@ -7117,7 +7117,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.md",
+      "path": "examples/converter/fixtures/doc/sample.md",
       "bytes": 640,
       "sha256": "d89f90d55d9bccf1e0e580438a1315be364da3e762f7a6534dc66676578200f2",
       "previousSha256": "d89f90d55d9bccf1e0e580438a1315be364da3e762f7a6534dc66676578200f2",
@@ -7131,7 +7131,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mdown",
+      "path": "examples/converter/fixtures/doc/sample.mdown",
       "bytes": 643,
       "sha256": "80c1c1cae08ba579206dca9835920623551d36c367f55b10ca8a6dc49dc8ec19",
       "previousSha256": "80c1c1cae08ba579206dca9835920623551d36c367f55b10ca8a6dc49dc8ec19",
@@ -7145,7 +7145,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mdx",
+      "path": "examples/converter/fixtures/doc/sample.mdx",
       "bytes": 609,
       "sha256": "1c939caead0ed06282396dd8c507ed42005d6682ff108ea0ec5e048abfa33f5b",
       "previousSha256": "1c939caead0ed06282396dd8c507ed42005d6682ff108ea0ec5e048abfa33f5b",
@@ -7159,7 +7159,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mediawiki",
+      "path": "examples/converter/fixtures/doc/sample.mediawiki",
       "bytes": 621,
       "sha256": "559bfdc6ea472a73d1d7485190c15f854e60de54d1b65c025ea397cab7b65eb3",
       "previousSha256": "559bfdc6ea472a73d1d7485190c15f854e60de54d1b65c025ea397cab7b65eb3",
@@ -7173,7 +7173,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mermaid",
+      "path": "examples/converter/fixtures/doc/sample.mermaid",
       "bytes": 617,
       "sha256": "ede749fe71cb712df04817e9241526d220d3c35c3b5a1d1a24003bba4626dccb",
       "previousSha256": "ede749fe71cb712df04817e9241526d220d3c35c3b5a1d1a24003bba4626dccb",
@@ -7187,7 +7187,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mht",
+      "path": "examples/converter/fixtures/doc/sample.mht",
       "bytes": 519,
       "sha256": "7fafac9453cc60ff77f49d2dca448a26d7d3bf8f28880f8f47b7f39bb59f3f7c",
       "previousSha256": "7fafac9453cc60ff77f49d2dca448a26d7d3bf8f28880f8f47b7f39bb59f3f7c",
@@ -7201,7 +7201,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mhtml",
+      "path": "examples/converter/fixtures/doc/sample.mhtml",
       "bytes": 527,
       "sha256": "46e6760fa99755227654d59774975375dd47e20c162d9b95767e6d8b477039c9",
       "previousSha256": "46e6760fa99755227654d59774975375dd47e20c162d9b95767e6d8b477039c9",
@@ -7215,7 +7215,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mjs",
+      "path": "examples/converter/fixtures/doc/sample.mjs",
       "bytes": 609,
       "sha256": "f162983be4cd90016165c89d65db1bea4f10a23d60fcc4afb84d5f33a87e6bc2",
       "previousSha256": "f162983be4cd90016165c89d65db1bea4f10a23d60fcc4afb84d5f33a87e6bc2",
@@ -7229,7 +7229,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mk",
+      "path": "examples/converter/fixtures/doc/sample.mk",
       "bytes": 607,
       "sha256": "cdc0f41caef6e9bfe7b37f70caff87f243cf6ed227b9810737360d6f4908a118",
       "previousSha256": "cdc0f41caef6e9bfe7b37f70caff87f243cf6ed227b9810737360d6f4908a118",
@@ -7243,7 +7243,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mkd",
+      "path": "examples/converter/fixtures/doc/sample.mkd",
       "bytes": 641,
       "sha256": "eecea60a7dc90262c0a1674ea53317c99acc0f342b60869f2af94c0607358744",
       "previousSha256": "eecea60a7dc90262c0a1674ea53317c99acc0f342b60869f2af94c0607358744",
@@ -7257,7 +7257,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mkdn",
+      "path": "examples/converter/fixtures/doc/sample.mkdn",
       "bytes": 642,
       "sha256": "231bfe074a3cf642002beef6f29cbcb537b6e7a50b5ce00ebc69a79b0b9b59d2",
       "previousSha256": "231bfe074a3cf642002beef6f29cbcb537b6e7a50b5ce00ebc69a79b0b9b59d2",
@@ -7271,7 +7271,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ml",
+      "path": "examples/converter/fixtures/doc/sample.ml",
       "bytes": 607,
       "sha256": "59997dc087ea180b42ffa744544dac7f02219e088256294a9ae91ac45332c14e",
       "previousSha256": "59997dc087ea180b42ffa744544dac7f02219e088256294a9ae91ac45332c14e",
@@ -7285,7 +7285,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mli",
+      "path": "examples/converter/fixtures/doc/sample.mli",
       "bytes": 609,
       "sha256": "40fdb3b4eea8c6e0d09b8af71924856ac24148c8f4d79cf9a4067a73a898f888",
       "previousSha256": "40fdb3b4eea8c6e0d09b8af71924856ac24148c8f4d79cf9a4067a73a898f888",
@@ -7299,7 +7299,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mmd",
+      "path": "examples/converter/fixtures/doc/sample.mmd",
       "bytes": 609,
       "sha256": "c1e0ecd6fe9704262c59a1d06c71b85546c0b9f7e15223fb10221da6da544d52",
       "previousSha256": "c1e0ecd6fe9704262c59a1d06c71b85546c0b9f7e15223fb10221da6da544d52",
@@ -7313,7 +7313,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.move",
+      "path": "examples/converter/fixtures/doc/sample.move",
       "bytes": 611,
       "sha256": "4e3034114dd0b3bca409bafd3ae97c6567d737bbcce14d15a1dd0da00739c166",
       "previousSha256": "4e3034114dd0b3bca409bafd3ae97c6567d737bbcce14d15a1dd0da00739c166",
@@ -7327,7 +7327,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.msg",
+      "path": "examples/converter/fixtures/doc/sample.msg",
       "bytes": 3072,
       "sha256": "14976663a0eba852046ef34c8ab571df38917b417e2ffaba3431b2c26ca7932e",
       "previousSha256": "14976663a0eba852046ef34c8ab571df38917b417e2ffaba3431b2c26ca7932e",
@@ -7341,7 +7341,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mts",
+      "path": "examples/converter/fixtures/doc/sample.mts",
       "bytes": 609,
       "sha256": "cd73fee4d5204c05f6d3a4d5cf5dd034d47d994dd5223f8eb6569771c6b0b274",
       "previousSha256": "cd73fee4d5204c05f6d3a4d5cf5dd034d47d994dd5223f8eb6569771c6b0b274",
@@ -7355,7 +7355,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.mustache",
+      "path": "examples/converter/fixtures/doc/sample.mustache",
       "bytes": 619,
       "sha256": "06fb1c981be462ff0f8ec32baace181013858148542dc4fbd9e9762853e0b1f3",
       "previousSha256": "06fb1c981be462ff0f8ec32baace181013858148542dc4fbd9e9762853e0b1f3",
@@ -7369,7 +7369,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.nfo",
+      "path": "examples/converter/fixtures/doc/sample.nfo",
       "bytes": 609,
       "sha256": "a3130fb715b507a3a90aef3771597501c6a58e2451aa0c489fe61f9f1e9244fa",
       "previousSha256": "a3130fb715b507a3a90aef3771597501c6a58e2451aa0c489fe61f9f1e9244fa",
@@ -7383,7 +7383,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.nim",
+      "path": "examples/converter/fixtures/doc/sample.nim",
       "bytes": 609,
       "sha256": "2a1fdcffe4d0b34f21c6125fa943a51dd1567ef80c4e7882e4cc6b521979ead6",
       "previousSha256": "2a1fdcffe4d0b34f21c6125fa943a51dd1567ef80c4e7882e4cc6b521979ead6",
@@ -7397,7 +7397,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.nix",
+      "path": "examples/converter/fixtures/doc/sample.nix",
       "bytes": 609,
       "sha256": "d985ef6d54c6174195e5165ef460e467ddb19ddd9d5ece8278c5b3b395e23376",
       "previousSha256": "d985ef6d54c6174195e5165ef460e467ddb19ddd9d5ece8278c5b3b395e23376",
@@ -7411,7 +7411,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.npmrc",
+      "path": "examples/converter/fixtures/doc/sample.npmrc",
       "bytes": 613,
       "sha256": "d01a98d825dc9e58c65a8a4f52bbfda0194c3a616f25d77d354916b568e30362",
       "previousSha256": "d01a98d825dc9e58c65a8a4f52bbfda0194c3a616f25d77d354916b568e30362",
@@ -7425,7 +7425,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.odt",
+      "path": "examples/converter/fixtures/doc/sample.odt",
       "bytes": 1554,
       "sha256": "d7d6753d01d36374c2690305771e36987782f6521bb0cdfe9039fed665ba67f9",
       "previousSha256": "d7d6753d01d36374c2690305771e36987782f6521bb0cdfe9039fed665ba67f9",
@@ -7439,7 +7439,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.oft",
+      "path": "examples/converter/fixtures/doc/sample.oft",
       "bytes": 3072,
       "sha256": "2bf23b20ced6c38f27f982580223f899d005adf2e469eacc9621a5144465dae5",
       "previousSha256": "2bf23b20ced6c38f27f982580223f899d005adf2e469eacc9621a5144465dae5",
@@ -7453,7 +7453,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.org",
+      "path": "examples/converter/fixtures/doc/sample.org",
       "bytes": 609,
       "sha256": "4ed6623e02b9615881581e1683f0856fda6acd1a6727a456f0bf9b2ae2d890ae",
       "previousSha256": "4ed6623e02b9615881581e1683f0856fda6acd1a6727a456f0bf9b2ae2d890ae",
@@ -7467,7 +7467,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ott",
+      "path": "examples/converter/fixtures/doc/sample.ott",
       "bytes": 1572,
       "sha256": "70e34a3350c9ffe42ae6e20917eae5995717573dd5d937cbd42491f06f5db791",
       "previousSha256": "70e34a3350c9ffe42ae6e20917eae5995717573dd5d937cbd42491f06f5db791",
@@ -7481,7 +7481,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.pas",
+      "path": "examples/converter/fixtures/doc/sample.pas",
       "bytes": 609,
       "sha256": "ffc81a0b5d3dc7f6810b8d5f6e075df696ece8646e608c96cfe24ccdee5aacd0",
       "previousSha256": "ffc81a0b5d3dc7f6810b8d5f6e075df696ece8646e608c96cfe24ccdee5aacd0",
@@ -7495,7 +7495,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.patch",
+      "path": "examples/converter/fixtures/doc/sample.patch",
       "bytes": 613,
       "sha256": "d79a5d6d7a41afe48eab4d5b18516421b478c14dcde4047060651d4ff571e2d9",
       "previousSha256": "d79a5d6d7a41afe48eab4d5b18516421b478c14dcde4047060651d4ff571e2d9",
@@ -7509,7 +7509,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.php",
+      "path": "examples/converter/fixtures/doc/sample.php",
       "bytes": 609,
       "sha256": "3c0e3a549d8fa47338bd5675a0289e364865bf007095f52bdcb953d792d45dd0",
       "previousSha256": "3c0e3a549d8fa47338bd5675a0289e364865bf007095f52bdcb953d792d45dd0",
@@ -7523,7 +7523,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.pl",
+      "path": "examples/converter/fixtures/doc/sample.pl",
       "bytes": 607,
       "sha256": "bddfd803386fcf3ddcd2df906228427ed83aaad988ca55850844f03b4a50275f",
       "previousSha256": "bddfd803386fcf3ddcd2df906228427ed83aaad988ca55850844f03b4a50275f",
@@ -7537,7 +7537,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.plist",
+      "path": "examples/converter/fixtures/doc/sample.plist",
       "bytes": 243,
       "sha256": "9a2e8c1640f69f98f7143a5723b83e303964fa4349dbd61b7ecd8e6758eda532",
       "previousSha256": "9a2e8c1640f69f98f7143a5723b83e303964fa4349dbd61b7ecd8e6758eda532",
@@ -7551,7 +7551,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.pod",
+      "path": "examples/converter/fixtures/doc/sample.pod",
       "bytes": 609,
       "sha256": "0d37b56b20d09935b16a38b8381cc0cb411584b31b84fa3dd969cf2a771c7c00",
       "previousSha256": "0d37b56b20d09935b16a38b8381cc0cb411584b31b84fa3dd969cf2a771c7c00",
@@ -7565,7 +7565,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.pom",
+      "path": "examples/converter/fixtures/doc/sample.pom",
       "bytes": 221,
       "sha256": "1b5bab336ea218dd931e54fd12794f37e4d1860c3c9f37bee675c4d65d07a06f",
       "previousSha256": "1b5bab336ea218dd931e54fd12794f37e4d1860c3c9f37bee675c4d65d07a06f",
@@ -7579,7 +7579,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.prisma",
+      "path": "examples/converter/fixtures/doc/sample.prisma",
       "bytes": 615,
       "sha256": "8a144b2f8127883acfddd56738bc3fdabc75884a80c0c36d5a850949a91a69e2",
       "previousSha256": "8a144b2f8127883acfddd56738bc3fdabc75884a80c0c36d5a850949a91a69e2",
@@ -7593,7 +7593,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.properties",
+      "path": "examples/converter/fixtures/doc/sample.properties",
       "bytes": 623,
       "sha256": "2a4f376881c62a575240ebacbe04c22d5e2d32bd0134393ddcb2675e74102935",
       "previousSha256": "2a4f376881c62a575240ebacbe04c22d5e2d32bd0134393ddcb2675e74102935",
@@ -7607,7 +7607,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.props",
+      "path": "examples/converter/fixtures/doc/sample.props",
       "bytes": 613,
       "sha256": "a5b995671d97390cca7ec0f616ab7fdc906f17c02209ddea73c9fa2c68f27a30",
       "previousSha256": "a5b995671d97390cca7ec0f616ab7fdc906f17c02209ddea73c9fa2c68f27a30",
@@ -7621,7 +7621,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.proto",
+      "path": "examples/converter/fixtures/doc/sample.proto",
       "bytes": 613,
       "sha256": "4cc0c12fac53b54c9a7f42d49fb4d096556fce17b51bf98627f25ceb441c8e89",
       "previousSha256": "4cc0c12fac53b54c9a7f42d49fb4d096556fce17b51bf98627f25ceb441c8e89",
@@ -7635,7 +7635,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ps1",
+      "path": "examples/converter/fixtures/doc/sample.ps1",
       "bytes": 609,
       "sha256": "e44577c518a21b2e8b98195eb0b3db3cb8ff3cd65d75106f6b6b34af6fb37744",
       "previousSha256": "e44577c518a21b2e8b98195eb0b3db3cb8ff3cd65d75106f6b6b34af6fb37744",
@@ -7649,7 +7649,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.puml",
+      "path": "examples/converter/fixtures/doc/sample.puml",
       "bytes": 611,
       "sha256": "bf175e7800a0fa0d34c2b0c5267c20fd7612d8f7acb12dba967a0630619e07c2",
       "previousSha256": "bf175e7800a0fa0d34c2b0c5267c20fd7612d8f7acb12dba967a0630619e07c2",
@@ -7663,7 +7663,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.py",
+      "path": "examples/converter/fixtures/doc/sample.py",
       "bytes": 607,
       "sha256": "adf06435a22a83151b4ccd8bce73d421e4cbbc9702affbcca8613d5e33330b56",
       "previousSha256": "adf06435a22a83151b4ccd8bce73d421e4cbbc9702affbcca8613d5e33330b56",
@@ -7677,7 +7677,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.qmd",
+      "path": "examples/converter/fixtures/doc/sample.qmd",
       "bytes": 609,
       "sha256": "6f88cf2a9641bc78ead8c5fb54ff7465ac892fa1c7382d25bf5723d0454b5910",
       "previousSha256": "6f88cf2a9641bc78ead8c5fb54ff7465ac892fa1c7382d25bf5723d0454b5910",
@@ -7691,7 +7691,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.r",
+      "path": "examples/converter/fixtures/doc/sample.r",
       "bytes": 605,
       "sha256": "5aefea2258a813099a85f3ca7c89a12c9cc37bb15d08d870df41ee4dbbdeb991",
       "previousSha256": "5aefea2258a813099a85f3ca7c89a12c9cc37bb15d08d870df41ee4dbbdeb991",
@@ -7705,7 +7705,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.razor",
+      "path": "examples/converter/fixtures/doc/sample.razor",
       "bytes": 613,
       "sha256": "697d1a3f5b52346dc8d34b9dfbea02dd26cb17dbd249b4e0106235e012a45afc",
       "previousSha256": "697d1a3f5b52346dc8d34b9dfbea02dd26cb17dbd249b4e0106235e012a45afc",
@@ -7719,7 +7719,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rb",
+      "path": "examples/converter/fixtures/doc/sample.rb",
       "bytes": 607,
       "sha256": "aebfee741a0b938e20077c2150f96c82d0e23d0c2c2348bf33276ca82ed01473",
       "previousSha256": "aebfee741a0b938e20077c2150f96c82d0e23d0c2c2348bf33276ca82ed01473",
@@ -7733,7 +7733,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rego",
+      "path": "examples/converter/fixtures/doc/sample.rego",
       "bytes": 611,
       "sha256": "6ffa878484a6f8f8f26a13af0765efa30903fa5a080aabaadc592155672e7afc",
       "previousSha256": "6ffa878484a6f8f8f26a13af0765efa30903fa5a080aabaadc592155672e7afc",
@@ -7747,7 +7747,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rest",
+      "path": "examples/converter/fixtures/doc/sample.rest",
       "bytes": 611,
       "sha256": "175085e462490411b12a10452c84ebb28c05a3f17cbbee4e12e425adbb0a8700",
       "previousSha256": "175085e462490411b12a10452c84ebb28c05a3f17cbbee4e12e425adbb0a8700",
@@ -7761,7 +7761,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rkt",
+      "path": "examples/converter/fixtures/doc/sample.rkt",
       "bytes": 609,
       "sha256": "b6d632b482953b8551346a488b5e7e04ceab6730906a496ad8fe435b18e084b7",
       "previousSha256": "b6d632b482953b8551346a488b5e7e04ceab6730906a496ad8fe435b18e084b7",
@@ -7775,7 +7775,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rmd",
+      "path": "examples/converter/fixtures/doc/sample.rmd",
       "bytes": 609,
       "sha256": "7523d6d6787aad8709f2dfba2d984f745e12eb8e62b9a841559c5ecfa9b034d8",
       "previousSha256": "7523d6d6787aad8709f2dfba2d984f745e12eb8e62b9a841559c5ecfa9b034d8",
@@ -7789,7 +7789,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.roff",
+      "path": "examples/converter/fixtures/doc/sample.roff",
       "bytes": 611,
       "sha256": "3ba1a8f0a38fb25aa03e0c69eeb3e61ea1175b10b81e5ca2ac6e1a254958a0d7",
       "previousSha256": "3ba1a8f0a38fb25aa03e0c69eeb3e61ea1175b10b81e5ca2ac6e1a254958a0d7",
@@ -7803,7 +7803,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rs",
+      "path": "examples/converter/fixtures/doc/sample.rs",
       "bytes": 607,
       "sha256": "769afcdc19e3ead01368a51e7e7466d3da14b316483d85ba8cc73694eaf388be",
       "previousSha256": "769afcdc19e3ead01368a51e7e7466d3da14b316483d85ba8cc73694eaf388be",
@@ -7817,7 +7817,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rss",
+      "path": "examples/converter/fixtures/doc/sample.rss",
       "bytes": 225,
       "sha256": "23bd55c6572467da93cf7e113f155fa37cb61e5d662c0e1c788e4652ff9ad119",
       "previousSha256": "23bd55c6572467da93cf7e113f155fa37cb61e5d662c0e1c788e4652ff9ad119",
@@ -7831,7 +7831,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rst",
+      "path": "examples/converter/fixtures/doc/sample.rst",
       "bytes": 609,
       "sha256": "ab830eb9764061f3a8f7610c54a6c65037f13ae52ecd9bcd7a20259f8eebb384",
       "previousSha256": "ab830eb9764061f3a8f7610c54a6c65037f13ae52ecd9bcd7a20259f8eebb384",
@@ -7845,7 +7845,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.rtf",
+      "path": "examples/converter/fixtures/doc/sample.rtf",
       "bytes": 420,
       "sha256": "fcdf44efbc1d86180d29360991ebf46715e6e521b4b728e1774ae64e6301382e",
       "previousSha256": "fcdf44efbc1d86180d29360991ebf46715e6e521b4b728e1774ae64e6301382e",
@@ -7859,7 +7859,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.s",
+      "path": "examples/converter/fixtures/doc/sample.s",
       "bytes": 605,
       "sha256": "651814f3b676905b95a0c3bd4d46d0e272c1211092b543cc498dfd41793310f8",
       "previousSha256": "651814f3b676905b95a0c3bd4d46d0e272c1211092b543cc498dfd41793310f8",
@@ -7873,7 +7873,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sass",
+      "path": "examples/converter/fixtures/doc/sample.sass",
       "bytes": 611,
       "sha256": "ed1659ad69a965a73468942643ceff516cc66f3f754e9d19dd2ef9ca24179109",
       "previousSha256": "ed1659ad69a965a73468942643ceff516cc66f3f754e9d19dd2ef9ca24179109",
@@ -7887,7 +7887,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sbv",
+      "path": "examples/converter/fixtures/doc/sample.sbv",
       "bytes": 127,
       "sha256": "baeb0895bce834fca8858d52713439dd61dc17032b3de7a02b14f11052c7d1da",
       "previousSha256": "baeb0895bce834fca8858d52713439dd61dc17032b3de7a02b14f11052c7d1da",
@@ -7901,7 +7901,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.scala",
+      "path": "examples/converter/fixtures/doc/sample.scala",
       "bytes": 613,
       "sha256": "6f5996ea22775f5a0f01814bccdb571461ac2cc386f0f0173ae54d31ec135141",
       "previousSha256": "6f5996ea22775f5a0f01814bccdb571461ac2cc386f0f0173ae54d31ec135141",
@@ -7915,7 +7915,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.scm",
+      "path": "examples/converter/fixtures/doc/sample.scm",
       "bytes": 609,
       "sha256": "7b613f0fed4f18c9d1cefec2ab08de4203b3e9b68867d52813dd19c075d9fb7d",
       "previousSha256": "7b613f0fed4f18c9d1cefec2ab08de4203b3e9b68867d52813dd19c075d9fb7d",
@@ -7929,7 +7929,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.scss",
+      "path": "examples/converter/fixtures/doc/sample.scss",
       "bytes": 611,
       "sha256": "28e23f5df61460f4b3c805fc7ed08eb94e9f4e225130d6cb25630144a91bf9dc",
       "previousSha256": "28e23f5df61460f4b3c805fc7ed08eb94e9f4e225130d6cb25630144a91bf9dc",
@@ -7943,7 +7943,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sh",
+      "path": "examples/converter/fixtures/doc/sample.sh",
       "bytes": 607,
       "sha256": "1f224c66e6c48caa83aa35c7c6fcd234232f39dc19892653b32734b7a982767a",
       "previousSha256": "1f224c66e6c48caa83aa35c7c6fcd234232f39dc19892653b32734b7a982767a",
@@ -7957,7 +7957,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.shtml",
+      "path": "examples/converter/fixtures/doc/sample.shtml",
       "bytes": 351,
       "sha256": "c582f189746f4ed33e1df278dce6f0fa7ed3161dc89b236c09d9e678626d225f",
       "previousSha256": "c582f189746f4ed33e1df278dce6f0fa7ed3161dc89b236c09d9e678626d225f",
@@ -7971,7 +7971,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.slim",
+      "path": "examples/converter/fixtures/doc/sample.slim",
       "bytes": 611,
       "sha256": "eb64a6a603f8c55d86c59ae61329e3c23dfd06608679dff7540310708b0a4ad7",
       "previousSha256": "eb64a6a603f8c55d86c59ae61329e3c23dfd06608679dff7540310708b0a4ad7",
@@ -7985,7 +7985,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sln",
+      "path": "examples/converter/fixtures/doc/sample.sln",
       "bytes": 609,
       "sha256": "1bd27545c7572df50314f82e6e71c6e16e9ebe4dda70aa6d555b7269fa7152e4",
       "previousSha256": "1bd27545c7572df50314f82e6e71c6e16e9ebe4dda70aa6d555b7269fa7152e4",
@@ -7999,7 +7999,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sol",
+      "path": "examples/converter/fixtures/doc/sample.sol",
       "bytes": 609,
       "sha256": "81de3ea29801c33c7a78bf05de1c1ccf4670305428844c23a60d60cf9a3236ca",
       "previousSha256": "81de3ea29801c33c7a78bf05de1c1ccf4670305428844c23a60d60cf9a3236ca",
@@ -8013,7 +8013,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sql",
+      "path": "examples/converter/fixtures/doc/sample.sql",
       "bytes": 609,
       "sha256": "cc5a73cfbb23e40653c7b3ad047ec87c554f24605aff566f46fd232951aaedff",
       "previousSha256": "cc5a73cfbb23e40653c7b3ad047ec87c554f24605aff566f46fd232951aaedff",
@@ -8027,7 +8027,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.srt",
+      "path": "examples/converter/fixtures/doc/sample.srt",
       "bytes": 66,
       "sha256": "1bfe6ce906c221566c78fdec0bee382517b79157b64047f54784052524bfbb67",
       "previousSha256": "1bfe6ce906c221566c78fdec0bee382517b79157b64047f54784052524bfbb67",
@@ -8041,7 +8041,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ssa",
+      "path": "examples/converter/fixtures/doc/sample.ssa",
       "bytes": 239,
       "sha256": "96db358b49b2d232125ae51e111c7f5e0d6055a78dc5b77d09baea95f7d9fbef",
       "previousSha256": "96db358b49b2d232125ae51e111c7f5e0d6055a78dc5b77d09baea95f7d9fbef",
@@ -8055,7 +8055,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.stw",
+      "path": "examples/converter/fixtures/doc/sample.stw",
       "bytes": 1556,
       "sha256": "79ba5eb310e3c3bd4d46e415543cefde7489d65a7b5cf11c5d9884faf2433ea6",
       "previousSha256": "79ba5eb310e3c3bd4d46e415543cefde7489d65a7b5cf11c5d9884faf2433ea6",
@@ -8069,7 +8069,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sty",
+      "path": "examples/converter/fixtures/doc/sample.sty",
       "bytes": 609,
       "sha256": "f93ae5479fab789648ac26492c41897cfbe9a07288a66a218339e1ee1d941309",
       "previousSha256": "f93ae5479fab789648ac26492c41897cfbe9a07288a66a218339e1ee1d941309",
@@ -8083,7 +8083,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sv",
+      "path": "examples/converter/fixtures/doc/sample.sv",
       "bytes": 607,
       "sha256": "763395781f2d87b9c3e0fb7f92635c63353d6a5ea2ac2d2db76b11cbdb36ea05",
       "previousSha256": "763395781f2d87b9c3e0fb7f92635c63353d6a5ea2ac2d2db76b11cbdb36ea05",
@@ -8097,7 +8097,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.svelte",
+      "path": "examples/converter/fixtures/doc/sample.svelte",
       "bytes": 615,
       "sha256": "cecc53d354f957be156f9576bcfbce05fc62a0d5a4d5d340357cce907c641d59",
       "previousSha256": "cecc53d354f957be156f9576bcfbce05fc62a0d5a4d5d340357cce907c641d59",
@@ -8111,7 +8111,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.svh",
+      "path": "examples/converter/fixtures/doc/sample.svh",
       "bytes": 609,
       "sha256": "81f33bd3c914e46d49f3bdf973cd8de58ac117dd3705790b5b9a54aa9b705e17",
       "previousSha256": "81f33bd3c914e46d49f3bdf973cd8de58ac117dd3705790b5b9a54aa9b705e17",
@@ -8125,7 +8125,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.swift",
+      "path": "examples/converter/fixtures/doc/sample.swift",
       "bytes": 613,
       "sha256": "3298453645a4bf7a5732593d3db3016c66b69d33cb73573e3f84d0f7f12bba2a",
       "previousSha256": "3298453645a4bf7a5732593d3db3016c66b69d33cb73573e3f84d0f7f12bba2a",
@@ -8139,7 +8139,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.sxw",
+      "path": "examples/converter/fixtures/doc/sample.sxw",
       "bytes": 1538,
       "sha256": "d1df7f0096173a964f4b711676d3e8915bc638ca3d38bf280df407afe302f911",
       "previousSha256": "d1df7f0096173a964f4b711676d3e8915bc638ca3d38bf280df407afe302f911",
@@ -8153,7 +8153,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.targets",
+      "path": "examples/converter/fixtures/doc/sample.targets",
       "bytes": 617,
       "sha256": "3896048cb38caaf2d9584cf327c34c4d06b161c531cbd53bfe652466d2264543",
       "previousSha256": "3896048cb38caaf2d9584cf327c34c4d06b161c531cbd53bfe652466d2264543",
@@ -8167,7 +8167,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.tex",
+      "path": "examples/converter/fixtures/doc/sample.tex",
       "bytes": 609,
       "sha256": "004b81bc4983f26e9b53b718660c82716274b6d20e64cfbce35394d8bd3afab0",
       "previousSha256": "004b81bc4983f26e9b53b718660c82716274b6d20e64cfbce35394d8bd3afab0",
@@ -8181,7 +8181,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.text",
+      "path": "examples/converter/fixtures/doc/sample.text",
       "bytes": 611,
       "sha256": "679addb55034a10214b02d9b1d5b734dec09a3f119d68256b056531a9b915020",
       "previousSha256": "679addb55034a10214b02d9b1d5b734dec09a3f119d68256b056531a9b915020",
@@ -8195,7 +8195,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.textile",
+      "path": "examples/converter/fixtures/doc/sample.textile",
       "bytes": 617,
       "sha256": "2ec3e9006b4af1704f84199191d817b477507a325e091f463474259a17c520c3",
       "previousSha256": "2ec3e9006b4af1704f84199191d817b477507a325e091f463474259a17c520c3",
@@ -8209,7 +8209,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.tf",
+      "path": "examples/converter/fixtures/doc/sample.tf",
       "bytes": 607,
       "sha256": "cb2037e3f2007840e96a0e732324710e81593bb0a020e539e2fb0094044929c1",
       "previousSha256": "cb2037e3f2007840e96a0e732324710e81593bb0a020e539e2fb0094044929c1",
@@ -8223,7 +8223,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.tfvars",
+      "path": "examples/converter/fixtures/doc/sample.tfvars",
       "bytes": 615,
       "sha256": "53563919d7ade1d37d4f5bda2378a2be2a0a36293e778b980ffd6677e0390e33",
       "previousSha256": "53563919d7ade1d37d4f5bda2378a2be2a0a36293e778b980ffd6677e0390e33",
@@ -8237,7 +8237,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.toml",
+      "path": "examples/converter/fixtures/doc/sample.toml",
       "bytes": 611,
       "sha256": "694907ed527501dfe7e5e5d302ae51d43654ebfc39fd481384c82f027f77dd30",
       "previousSha256": "694907ed527501dfe7e5e5d302ae51d43654ebfc39fd481384c82f027f77dd30",
@@ -8251,7 +8251,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ts",
+      "path": "examples/converter/fixtures/doc/sample.ts",
       "bytes": 607,
       "sha256": "bc9d53511152be1bf71d033b0d3768f1b3ac5e589c52dc87923a0a4c0fa8bed7",
       "previousSha256": "bc9d53511152be1bf71d033b0d3768f1b3ac5e589c52dc87923a0a4c0fa8bed7",
@@ -8265,7 +8265,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.tsx",
+      "path": "examples/converter/fixtures/doc/sample.tsx",
       "bytes": 609,
       "sha256": "39b2b61e5717bf978dc8118ec2267e4c07e38694311555a42f71c50f7465595e",
       "previousSha256": "39b2b61e5717bf978dc8118ec2267e4c07e38694311555a42f71c50f7465595e",
@@ -8279,7 +8279,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.ttml",
+      "path": "examples/converter/fixtures/doc/sample.ttml",
       "bytes": 185,
       "sha256": "99d6f63fb87897d47c87459a61c90f2d7c6b9bef5708cdbc4c9cf4a0033ea32b",
       "previousSha256": "99d6f63fb87897d47c87459a61c90f2d7c6b9bef5708cdbc4c9cf4a0033ea32b",
@@ -8293,7 +8293,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.twig",
+      "path": "examples/converter/fixtures/doc/sample.twig",
       "bytes": 611,
       "sha256": "43197cf56ac02e9029c38af11c923f67a29651a6e77f2c9c873e52cd08873e01",
       "previousSha256": "43197cf56ac02e9029c38af11c923f67a29651a6e77f2c9c873e52cd08873e01",
@@ -8307,7 +8307,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.txt",
+      "path": "examples/converter/fixtures/doc/sample.txt",
       "bytes": 609,
       "sha256": "cb8f74ad8e6e3a37ffabe232d568f38dfa238313d171a4183db61e4c6c251fa7",
       "previousSha256": "cb8f74ad8e6e3a37ffabe232d568f38dfa238313d171a4183db61e4c6c251fa7",
@@ -8321,7 +8321,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vb",
+      "path": "examples/converter/fixtures/doc/sample.vb",
       "bytes": 607,
       "sha256": "f579e459e28b069fc2fe9bf65e97000df97f9cc9a7246137cc2ab6821cc1c74f",
       "previousSha256": "f579e459e28b069fc2fe9bf65e97000df97f9cc9a7246137cc2ab6821cc1c74f",
@@ -8335,7 +8335,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vbproj",
+      "path": "examples/converter/fixtures/doc/sample.vbproj",
       "bytes": 615,
       "sha256": "164b192f9b1ca37eaf984f52e63cabb81f07f0264ad53d05dc1d3e2f3bb980f2",
       "previousSha256": "164b192f9b1ca37eaf984f52e63cabb81f07f0264ad53d05dc1d3e2f3bb980f2",
@@ -8349,7 +8349,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vcf",
+      "path": "examples/converter/fixtures/doc/sample.vcf",
       "bytes": 449,
       "sha256": "8d3514cc0a93064c1832a75bdac0eb2cb26ee42065b98c6045bb214bbaec2b2d",
       "previousSha256": "8d3514cc0a93064c1832a75bdac0eb2cb26ee42065b98c6045bb214bbaec2b2d",
@@ -8363,7 +8363,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vert",
+      "path": "examples/converter/fixtures/doc/sample.vert",
       "bytes": 611,
       "sha256": "87c3574caeb45cdf61826e3b75911df1078382c7c24cb0e749f3f4f8527eb4fa",
       "previousSha256": "87c3574caeb45cdf61826e3b75911df1078382c7c24cb0e749f3f4f8527eb4fa",
@@ -8377,7 +8377,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vhd",
+      "path": "examples/converter/fixtures/doc/sample.vhd",
       "bytes": 609,
       "sha256": "b724a0385c3bf006802478de41fea9aeddbd3e0339fc8d8cfc0964d77139d6e7",
       "previousSha256": "b724a0385c3bf006802478de41fea9aeddbd3e0339fc8d8cfc0964d77139d6e7",
@@ -8391,7 +8391,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vhdl",
+      "path": "examples/converter/fixtures/doc/sample.vhdl",
       "bytes": 611,
       "sha256": "c191bcbb433cab0be4dac39d8b794232c613f745155d5e207237dc9dd127767a",
       "previousSha256": "c191bcbb433cab0be4dac39d8b794232c613f745155d5e207237dc9dd127767a",
@@ -8405,7 +8405,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vtt",
+      "path": "examples/converter/fixtures/doc/sample.vtt",
       "bytes": 184,
       "sha256": "067b9d2cb7d4176ab9abccb3accc34912eda6c6940c0e1058f7a9ab0937d47df",
       "previousSha256": "067b9d2cb7d4176ab9abccb3accc34912eda6c6940c0e1058f7a9ab0937d47df",
@@ -8419,7 +8419,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.vue",
+      "path": "examples/converter/fixtures/doc/sample.vue",
       "bytes": 609,
       "sha256": "6de76efaaa7094b38e47ab06ad5c581f1a73c86fed542b15d567093798063f71",
       "previousSha256": "6de76efaaa7094b38e47ab06ad5c581f1a73c86fed542b15d567093798063f71",
@@ -8433,7 +8433,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.wgsl",
+      "path": "examples/converter/fixtures/doc/sample.wgsl",
       "bytes": 611,
       "sha256": "ea59484176f25a46b1ca3754da9e39c8a70a8ba71b8614c780c45ca0b4dbd99f",
       "previousSha256": "ea59484176f25a46b1ca3754da9e39c8a70a8ba71b8614c780c45ca0b4dbd99f",
@@ -8447,7 +8447,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.wiki",
+      "path": "examples/converter/fixtures/doc/sample.wiki",
       "bytes": 611,
       "sha256": "634873e6927c4126194d8992f2cead0f52e6705d31403ce5318a8998975fc791",
       "previousSha256": "634873e6927c4126194d8992f2cead0f52e6705d31403ce5318a8998975fc791",
@@ -8461,7 +8461,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.wps",
+      "path": "examples/converter/fixtures/doc/sample.wps",
       "bytes": 3072,
       "sha256": "b8e71906c344cda1e4f521731683f3502ff78813caac41bdfa163a840c70174f",
       "previousSha256": "b8e71906c344cda1e4f521731683f3502ff78813caac41bdfa163a840c70174f",
@@ -8475,7 +8475,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.wpt",
+      "path": "examples/converter/fixtures/doc/sample.wpt",
       "bytes": 3072,
       "sha256": "f244feec8858521a67e9c7f531f45268bbf6e91af4e0ec3c8a83b69fac05aa5d",
       "previousSha256": "f244feec8858521a67e9c7f531f45268bbf6e91af4e0ec3c8a83b69fac05aa5d",
@@ -8489,7 +8489,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.wsdl",
+      "path": "examples/converter/fixtures/doc/sample.wsdl",
       "bytes": 235,
       "sha256": "6da982f632a84541ea4bec60c5605d2de33b8688717fc0955c7726890ac58be4",
       "previousSha256": "6da982f632a84541ea4bec60c5605d2de33b8688717fc0955c7726890ac58be4",
@@ -8503,7 +8503,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xht",
+      "path": "examples/converter/fixtures/doc/sample.xht",
       "bytes": 349,
       "sha256": "3b4c34faf6518947f213d381454cc0aaa68dd1a7a6e3d3bd34666383fa6f8a95",
       "previousSha256": "3b4c34faf6518947f213d381454cc0aaa68dd1a7a6e3d3bd34666383fa6f8a95",
@@ -8517,7 +8517,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xhtm",
+      "path": "examples/converter/fixtures/doc/sample.xhtm",
       "bytes": 350,
       "sha256": "1b79d4aaae228e28c4ca17345ab9515d6034b511f749478c46a6ce852539fd8f",
       "previousSha256": "1b79d4aaae228e28c4ca17345ab9515d6034b511f749478c46a6ce852539fd8f",
@@ -8531,7 +8531,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xhtml",
+      "path": "examples/converter/fixtures/doc/sample.xhtml",
       "bytes": 351,
       "sha256": "cc0ed9f9ac8760e0e8cb0a52bcea5d447602fcf31dbee9d7bdc547c74119e935",
       "previousSha256": "cc0ed9f9ac8760e0e8cb0a52bcea5d447602fcf31dbee9d7bdc547c74119e935",
@@ -8545,7 +8545,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xml",
+      "path": "examples/converter/fixtures/doc/sample.xml",
       "bytes": 136,
       "sha256": "9d2e6f5bc54fb7d5b7fd222ba7077b3cad123e39596a5eabf892ec75ca3118e5",
       "previousSha256": "9d2e6f5bc54fb7d5b7fd222ba7077b3cad123e39596a5eabf892ec75ca3118e5",
@@ -8559,7 +8559,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xsd",
+      "path": "examples/converter/fixtures/doc/sample.xsd",
       "bytes": 276,
       "sha256": "709669f61d34bf2bd9d7a8cbc8e7172f5ae71ffac23c49305f0fcc3f28f7279c",
       "previousSha256": "709669f61d34bf2bd9d7a8cbc8e7172f5ae71ffac23c49305f0fcc3f28f7279c",
@@ -8573,7 +8573,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xsl",
+      "path": "examples/converter/fixtures/doc/sample.xsl",
       "bytes": 209,
       "sha256": "359fae711c41e015f129d323794a409e4a142f0b95e4a045d7636119db40f464",
       "previousSha256": "359fae711c41e015f129d323794a409e4a142f0b95e4a045d7636119db40f464",
@@ -8587,7 +8587,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.xslt",
+      "path": "examples/converter/fixtures/doc/sample.xslt",
       "bytes": 209,
       "sha256": "359fae711c41e015f129d323794a409e4a142f0b95e4a045d7636119db40f464",
       "previousSha256": "359fae711c41e015f129d323794a409e4a142f0b95e4a045d7636119db40f464",
@@ -8601,7 +8601,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.yaml",
+      "path": "examples/converter/fixtures/doc/sample.yaml",
       "bytes": 611,
       "sha256": "11c9ac2f2c7bcdb2efc8dd928d701cf9ebdaad4abaa4bcdfc57b1fa7823de602",
       "previousSha256": "11c9ac2f2c7bcdb2efc8dd928d701cf9ebdaad4abaa4bcdfc57b1fa7823de602",
@@ -8615,7 +8615,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.yarnrc",
+      "path": "examples/converter/fixtures/doc/sample.yarnrc",
       "bytes": 615,
       "sha256": "c437302b69097940737eeb2c6c281083d19a4463d1cda3c9725bec268bb1a420",
       "previousSha256": "c437302b69097940737eeb2c6c281083d19a4463d1cda3c9725bec268bb1a420",
@@ -8629,7 +8629,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.yml",
+      "path": "examples/converter/fixtures/doc/sample.yml",
       "bytes": 609,
       "sha256": "79e3ba60a30a9ff6f9c05baeb6e3462b4ec287e12bf5f0e0f6891374ef8d798c",
       "previousSha256": "79e3ba60a30a9ff6f9c05baeb6e3462b4ec287e12bf5f0e0f6891374ef8d798c",
@@ -8643,7 +8643,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.zig",
+      "path": "examples/converter/fixtures/doc/sample.zig",
       "bytes": 609,
       "sha256": "ae20a56bb7fdafdc8ba03c113c48bae3763859e10962910dc462a3da88ec1e7a",
       "previousSha256": "ae20a56bb7fdafdc8ba03c113c48bae3763859e10962910dc462a3da88ec1e7a",
@@ -8657,7 +8657,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/doc/sample.zsh",
+      "path": "examples/converter/fixtures/doc/sample.zsh",
       "bytes": 609,
       "sha256": "4e1761950fb97fd21de265c66ae58f2d25e3771d41ac6e4ef6196602d96bbead",
       "previousSha256": "4e1761950fb97fd21de265c66ae58f2d25e3771d41ac6e4ef6196602d96bbead",
@@ -8671,7 +8671,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.cur",
+      "path": "examples/converter/fixtures/graphics/sample.cur",
       "bytes": 521,
       "sha256": "488b7e90125c8762074257ccd99409d3c1062a8106a235866471a19028d9cd84",
       "previousSha256": "488b7e90125c8762074257ccd99409d3c1062a8106a235866471a19028d9cd84",
@@ -8685,7 +8685,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.dds",
+      "path": "examples/converter/fixtures/graphics/sample.dds",
       "bytes": 262272,
       "sha256": "79582bacd0a7a3e04cfedfc50f3da33bb10f177389111e5dab1244cbcae03e8d",
       "previousSha256": "79582bacd0a7a3e04cfedfc50f3da33bb10f177389111e5dab1244cbcae03e8d",
@@ -8699,7 +8699,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.dib",
+      "path": "examples/converter/fixtures/graphics/sample.dib",
       "bytes": 1620040,
       "sha256": "24a3ed0bc955555f54156b3a3eb1a044e8c528684d694fa8dc6ca46333c2ebac",
       "previousSha256": "24a3ed0bc955555f54156b3a3eb1a044e8c528684d694fa8dc6ca46333c2ebac",
@@ -8713,7 +8713,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.dwg",
+      "path": "examples/converter/fixtures/graphics/sample.dwg",
       "bytes": 16140,
       "sha256": "a9115e01fba5ca234baa2c0df404a235092a9dc5f908044bc20fc76a1d366538",
       "previousSha256": "a9115e01fba5ca234baa2c0df404a235092a9dc5f908044bc20fc76a1d366538",
@@ -8727,7 +8727,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.exr",
+      "path": "examples/converter/fixtures/graphics/sample.exr",
       "bytes": 3249913,
       "sha256": "24512da5a891e4550d6edb2756e22bd89d129e922f9158c1ef1cf7d47380b0d3",
       "previousSha256": "24512da5a891e4550d6edb2756e22bd89d129e922f9158c1ef1cf7d47380b0d3",
@@ -8741,7 +8741,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.ff",
+      "path": "examples/converter/fixtures/graphics/sample.ff",
       "bytes": 4320016,
       "sha256": "a8a4880c906a75bb0271e869ad1778eeaf24d2a9171b66d6d9b19702c4b0f169",
       "previousSha256": "a8a4880c906a75bb0271e869ad1778eeaf24d2a9171b66d6d9b19702c4b0f169",
@@ -8755,7 +8755,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.hdr",
+      "path": "examples/converter/fixtures/graphics/sample.hdr",
       "bytes": 131121,
       "sha256": "e6306c438f6e3316642a175c629a202aefff7727e131572f6eb271221af07689",
       "previousSha256": "e6306c438f6e3316642a175c629a202aefff7727e131572f6eb271221af07689",
@@ -8769,7 +8769,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.jxl",
+      "path": "examples/converter/fixtures/graphics/sample.jxl",
       "bytes": 42093,
       "sha256": "6e86d7a6c7eab6ca206c9784791102107e78cca7af2496b1ebb12d434492a5fa",
       "previousSha256": "6e86d7a6c7eab6ca206c9784791102107e78cca7af2496b1ebb12d434492a5fa",
@@ -8783,7 +8783,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.pbm",
+      "path": "examples/converter/fixtures/graphics/sample.pbm",
       "bytes": 67811,
       "sha256": "f609b714d7a703af863eebaf5849d097ef3b62c60a052e047808ae2c9fc36144",
       "previousSha256": "f609b714d7a703af863eebaf5849d097ef3b62c60a052e047808ae2c9fc36144",
@@ -8797,7 +8797,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.pcx",
+      "path": "examples/converter/fixtures/graphics/sample.pcx",
       "bytes": 219976,
       "sha256": "b632e515aa83cf7f68446f8b14ad09e2b17c7286bee4c3664247163777f0aed7",
       "previousSha256": "b632e515aa83cf7f68446f8b14ad09e2b17c7286bee4c3664247163777f0aed7",
@@ -8811,7 +8811,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.pgm",
+      "path": "examples/converter/fixtures/graphics/sample.pgm",
       "bytes": 540015,
       "sha256": "76829ba2fb7186a7516fb1e14af30eeb0de49a5595e5bc4eec7a22069d6b8f7e",
       "previousSha256": "76829ba2fb7186a7516fb1e14af30eeb0de49a5595e5bc4eec7a22069d6b8f7e",
@@ -8825,7 +8825,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.pnm",
+      "path": "examples/converter/fixtures/graphics/sample.pnm",
       "bytes": 1620015,
       "sha256": "3168dd559db2561d7e1a0ab9b21b8d1914cb1b6450784e94a4ebe1b9ec331596",
       "previousSha256": "3168dd559db2561d7e1a0ab9b21b8d1914cb1b6450784e94a4ebe1b9ec331596",
@@ -8839,7 +8839,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.qoi",
+      "path": "examples/converter/fixtures/graphics/sample.qoi",
       "bytes": 98617,
       "sha256": "7a1e9b8c434c75afc70e163bb9f34710426df8a8aa1d0d6f1d84163d7c147c94",
       "previousSha256": "7a1e9b8c434c75afc70e163bb9f34710426df8a8aa1d0d6f1d84163d7c147c94",
@@ -8853,7 +8853,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.tga",
+      "path": "examples/converter/fixtures/graphics/sample.tga",
       "bytes": 130687,
       "sha256": "d2e6c34ec3b5d9f9ed87139dc26eba822a44753b499ad705d90e5aad8f1f373b",
       "previousSha256": "d2e6c34ec3b5d9f9ed87139dc26eba822a44753b499ad705d90e5aad8f1f373b",
@@ -8867,7 +8867,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.tif",
+      "path": "examples/converter/fixtures/graphics/sample.tif",
       "bytes": 619084,
       "sha256": "f32e524039576bb84ab194f60ed411e2a220a23eecaa336c1791d97af7aae62a",
       "previousSha256": "f32e524039576bb84ab194f60ed411e2a220a23eecaa336c1791d97af7aae62a",
@@ -8881,7 +8881,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/graphics/sample.tiff",
+      "path": "examples/converter/fixtures/graphics/sample.tiff",
       "bytes": 93424,
       "sha256": "421ea3becd398fd119f17280b12534d69eebee3884635400b78a73c2258812a2",
       "previousSha256": "421ea3becd398fd119f17280b12534d69eebee3884635400b78a73c2258812a2",
@@ -8895,7 +8895,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.apk",
+      "path": "examples/converter/fixtures/icons/sample.apk",
       "bytes": 353,
       "sha256": "f07085fe52166db858911fb4dae356767ba1da281bf1b49d9dbe73dc4cb597f9",
       "previousSha256": "f07085fe52166db858911fb4dae356767ba1da281bf1b49d9dbe73dc4cb597f9",
@@ -8909,7 +8909,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.dll",
+      "path": "examples/converter/fixtures/icons/sample.dll",
       "bytes": 836,
       "sha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
       "previousSha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
@@ -8923,7 +8923,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.exe",
+      "path": "examples/converter/fixtures/icons/sample.exe",
       "bytes": 836,
       "sha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
       "previousSha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
@@ -8937,7 +8937,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.ico",
+      "path": "examples/converter/fixtures/icons/sample.ico",
       "bytes": 90,
       "sha256": "e4aaad9c36b2ed66bf3516c6d82e26d1f1520d8d831bdab0ea563125d469d530",
       "previousSha256": "e4aaad9c36b2ed66bf3516c6d82e26d1f1520d8d831bdab0ea563125d469d530",
@@ -8951,7 +8951,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.ipa",
+      "path": "examples/converter/fixtures/icons/sample.ipa",
       "bytes": 477,
       "sha256": "f851190e899740f08cafdba5a311cc773f84e6df025d6eeedac5dd2ccb3d6be9",
       "previousSha256": "f851190e899740f08cafdba5a311cc773f84e6df025d6eeedac5dd2ccb3d6be9",
@@ -8965,7 +8965,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.mui",
+      "path": "examples/converter/fixtures/icons/sample.mui",
       "bytes": 836,
       "sha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
       "previousSha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
@@ -8979,7 +8979,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/icons/sample.mun",
+      "path": "examples/converter/fixtures/icons/sample.mun",
       "bytes": 836,
       "sha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
       "previousSha256": "be5b74f0c236478ff023c2a8af98da36453b090e9e4b8dcce018b073851778a6",
@@ -8993,7 +8993,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/image/sample.icns",
+      "path": "examples/converter/fixtures/image/sample.icns",
       "bytes": 84,
       "sha256": "7acfb17e2036bc6514dc810fc44c60060d36162f15ce7ccaea2d610d628cdad2",
       "previousSha256": "7acfb17e2036bc6514dc810fc44c60060d36162f15ce7ccaea2d610d628cdad2",
@@ -9007,7 +9007,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/image/sample.png",
+      "path": "examples/converter/fixtures/image/sample.png",
       "bytes": 128,
       "sha256": "5187c1d103ee1995167148872001612017b23c136d969679603d9b83a4a00408",
       "previousSha256": "5187c1d103ee1995167148872001612017b23c136d969679603d9b83a4a00408",
@@ -9021,7 +9021,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/image/sample.ppm",
+      "path": "examples/converter/fixtures/image/sample.ppm",
       "bytes": 44,
       "sha256": "fe5de45c490030b59d0a9e8739424b3355365345bfca7dc5ea82ed5940ef4408",
       "previousSha256": "fe5de45c490030b59d0a9e8739424b3355365345bfca7dc5ea82ed5940ef4408",
@@ -9035,7 +9035,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/image/sample.webp",
+      "path": "examples/converter/fixtures/image/sample.webp",
       "bytes": 160,
       "sha256": "7e948a2727e23f8e987cc0db9798596d5bd58fc72090180b57a6b0ca027f071b",
       "previousSha256": "7e948a2727e23f8e987cc0db9798596d5bd58fc72090180b57a6b0ca027f071b",
@@ -9049,7 +9049,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.dps",
+      "path": "examples/converter/fixtures/ppt/sample.dps",
       "bytes": 2048,
       "sha256": "cca131363dd39f5d2dc08f787f0470c058d5c8cbd9e3c7ea39f7e6a5377da963",
       "previousSha256": "cca131363dd39f5d2dc08f787f0470c058d5c8cbd9e3c7ea39f7e6a5377da963",
@@ -9063,7 +9063,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.dpt",
+      "path": "examples/converter/fixtures/ppt/sample.dpt",
       "bytes": 2048,
       "sha256": "0ec266e3ac14914799acb3ba12057d6783f862766054b7d362925635259ec558",
       "previousSha256": "0ec266e3ac14914799acb3ba12057d6783f862766054b7d362925635259ec558",
@@ -9077,7 +9077,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.fodg",
+      "path": "examples/converter/fixtures/ppt/sample.fodg",
       "bytes": 850,
       "sha256": "d6c2bdae90c3dfed13622e0528b728f43e48ed24263e47075257ccd19395fc0b",
       "previousSha256": "d6c2bdae90c3dfed13622e0528b728f43e48ed24263e47075257ccd19395fc0b",
@@ -9091,7 +9091,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.fodp",
+      "path": "examples/converter/fixtures/ppt/sample.fodp",
       "bytes": 842,
       "sha256": "a145b58b01356e876b22d93b5a0d4263723a0f4ef5f03f98d5874b3b083fafa6",
       "previousSha256": "a145b58b01356e876b22d93b5a0d4263723a0f4ef5f03f98d5874b3b083fafa6",
@@ -9105,7 +9105,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.odg",
+      "path": "examples/converter/fixtures/ppt/sample.odg",
       "bytes": 1583,
       "sha256": "a448ba5435046f988d74236c32904e6625183f19a9c046694af94a02164009f1",
       "previousSha256": "a448ba5435046f988d74236c32904e6625183f19a9c046694af94a02164009f1",
@@ -9119,7 +9119,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.odp",
+      "path": "examples/converter/fixtures/ppt/sample.odp",
       "bytes": 1583,
       "sha256": "6902de144bc2bdfb84a6b1483ec13bcf0202bc09c5d207c898428c0a44591b24",
       "previousSha256": "6902de144bc2bdfb84a6b1483ec13bcf0202bc09c5d207c898428c0a44591b24",
@@ -9133,7 +9133,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.otg",
+      "path": "examples/converter/fixtures/ppt/sample.otg",
       "bytes": 1610,
       "sha256": "9d737e669127e0201bd116e2b037c9032c62fddc882ae0a0a09ae38d2a4f4abb",
       "previousSha256": "9d737e669127e0201bd116e2b037c9032c62fddc882ae0a0a09ae38d2a4f4abb",
@@ -9147,7 +9147,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.otp",
+      "path": "examples/converter/fixtures/ppt/sample.otp",
       "bytes": 1601,
       "sha256": "ce5f6c21b04f8290e180b8c5def5c45013daf80642d11fa90abe478057d08a22",
       "previousSha256": "ce5f6c21b04f8290e180b8c5def5c45013daf80642d11fa90abe478057d08a22",
@@ -9161,7 +9161,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.pot",
+      "path": "examples/converter/fixtures/ppt/sample.pot",
       "bytes": 2048,
       "sha256": "6f3f583dd92070533c88a85dd6d43aeddde9115aa4a8833e0fe0679f98fe6b4b",
       "previousSha256": "6f3f583dd92070533c88a85dd6d43aeddde9115aa4a8833e0fe0679f98fe6b4b",
@@ -9175,7 +9175,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.potm",
+      "path": "examples/converter/fixtures/ppt/sample.potm",
       "bytes": 2673,
       "sha256": "1bee2bc6ca41ef19ef9e2b3165d079f021a6b927f78943506491394027ccaed6",
       "previousSha256": "1bee2bc6ca41ef19ef9e2b3165d079f021a6b927f78943506491394027ccaed6",
@@ -9189,7 +9189,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.potx",
+      "path": "examples/converter/fixtures/ppt/sample.potx",
       "bytes": 2685,
       "sha256": "957fa0155d0dc21b57cb6f79705b6ddca0e0f22f33f7c8a3286bd305039f2368",
       "previousSha256": "957fa0155d0dc21b57cb6f79705b6ddca0e0f22f33f7c8a3286bd305039f2368",
@@ -9203,7 +9203,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.pps",
+      "path": "examples/converter/fixtures/ppt/sample.pps",
       "bytes": 2048,
       "sha256": "ce75bb809c0ac4422370a9fc83eac6708f48cf5a0738a8c72d3c5fba66a6b262",
       "previousSha256": "ce75bb809c0ac4422370a9fc83eac6708f48cf5a0738a8c72d3c5fba66a6b262",
@@ -9217,7 +9217,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.ppsm",
+      "path": "examples/converter/fixtures/ppt/sample.ppsm",
       "bytes": 2675,
       "sha256": "3434f2ad6865154fbd75454e38851a678e30fea95400dbe5722866ec4c14d19c",
       "previousSha256": "3434f2ad6865154fbd75454e38851a678e30fea95400dbe5722866ec4c14d19c",
@@ -9231,7 +9231,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.ppsx",
+      "path": "examples/converter/fixtures/ppt/sample.ppsx",
       "bytes": 2687,
       "sha256": "09bb7d53f2cee90328a3758bee672fbd47886369294b70fd363e88b302a677fc",
       "previousSha256": "09bb7d53f2cee90328a3758bee672fbd47886369294b70fd363e88b302a677fc",
@@ -9245,7 +9245,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.ppt",
+      "path": "examples/converter/fixtures/ppt/sample.ppt",
       "bytes": 2048,
       "sha256": "1418112a7f39246f591e8b8b1e21eb0082e5ca72efdd74bb52613edc861ed360",
       "previousSha256": "1418112a7f39246f591e8b8b1e21eb0082e5ca72efdd74bb52613edc861ed360",
@@ -9259,7 +9259,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.pptm",
+      "path": "examples/converter/fixtures/ppt/sample.pptm",
       "bytes": 2681,
       "sha256": "7d3df4bec9124f4f9a94af79b7d6661c480dd82c098c8fadd0ab09e6ce4a1e45",
       "previousSha256": "7d3df4bec9124f4f9a94af79b7d6661c480dd82c098c8fadd0ab09e6ce4a1e45",
@@ -9273,7 +9273,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.pptx",
+      "path": "examples/converter/fixtures/ppt/sample.pptx",
       "bytes": 2693,
       "sha256": "48e37a130bbd66ddd36b4aee745daf890570d32cd4062e67909f284c6bed4d72",
       "previousSha256": "48e37a130bbd66ddd36b4aee745daf890570d32cd4062e67909f284c6bed4d72",
@@ -9287,7 +9287,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.std",
+      "path": "examples/converter/fixtures/ppt/sample.std",
       "bytes": 1575,
       "sha256": "b2c1b54079d6d14899f1c6b007b4e97f1f9315f49de82042efe06e8eeecc8371",
       "previousSha256": "b2c1b54079d6d14899f1c6b007b4e97f1f9315f49de82042efe06e8eeecc8371",
@@ -9301,7 +9301,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.sti",
+      "path": "examples/converter/fixtures/ppt/sample.sti",
       "bytes": 1564,
       "sha256": "db8238f2a09b35847ef23e2ce18ec35ef8622697d4db05311d310afc997b3787",
       "previousSha256": "db8238f2a09b35847ef23e2ce18ec35ef8622697d4db05311d310afc997b3787",
@@ -9315,7 +9315,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.sxd",
+      "path": "examples/converter/fixtures/ppt/sample.sxd",
       "bytes": 1557,
       "sha256": "e6e887c86b22e778a888cccee9655a17e1676c8d93ff4ba455cdaa2e2a60fb12",
       "previousSha256": "e6e887c86b22e778a888cccee9655a17e1676c8d93ff4ba455cdaa2e2a60fb12",
@@ -9329,7 +9329,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/ppt/sample.sxi",
+      "path": "examples/converter/fixtures/ppt/sample.sxi",
       "bytes": 1550,
       "sha256": "0767f0c65212184497ba2655722ba7d3a68414d5bce7bd588be83c6dbcd006a6",
       "previousSha256": "0767f0c65212184497ba2655722ba7d3a68414d5bce7bd588be83c6dbcd006a6",
@@ -9343,7 +9343,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.3fr",
+      "path": "examples/converter/fixtures/raw/sample.3fr",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9357,7 +9357,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.arw",
+      "path": "examples/converter/fixtures/raw/sample.arw",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9371,7 +9371,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.cr2",
+      "path": "examples/converter/fixtures/raw/sample.cr2",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9385,7 +9385,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.cr3",
+      "path": "examples/converter/fixtures/raw/sample.cr3",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9399,7 +9399,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.dng",
+      "path": "examples/converter/fixtures/raw/sample.dng",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9413,7 +9413,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.erf",
+      "path": "examples/converter/fixtures/raw/sample.erf",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9427,7 +9427,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.iiq",
+      "path": "examples/converter/fixtures/raw/sample.iiq",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9441,7 +9441,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.kdc",
+      "path": "examples/converter/fixtures/raw/sample.kdc",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9455,7 +9455,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.mef",
+      "path": "examples/converter/fixtures/raw/sample.mef",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9469,7 +9469,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.mos",
+      "path": "examples/converter/fixtures/raw/sample.mos",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9483,7 +9483,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.mrw",
+      "path": "examples/converter/fixtures/raw/sample.mrw",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9497,7 +9497,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.nef",
+      "path": "examples/converter/fixtures/raw/sample.nef",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9511,7 +9511,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.nrw",
+      "path": "examples/converter/fixtures/raw/sample.nrw",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9525,7 +9525,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.orf",
+      "path": "examples/converter/fixtures/raw/sample.orf",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9539,7 +9539,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.pef",
+      "path": "examples/converter/fixtures/raw/sample.pef",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9553,7 +9553,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.raf",
+      "path": "examples/converter/fixtures/raw/sample.raf",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9567,7 +9567,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.rw2",
+      "path": "examples/converter/fixtures/raw/sample.rw2",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9581,7 +9581,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.rwl",
+      "path": "examples/converter/fixtures/raw/sample.rwl",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9595,7 +9595,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.sr2",
+      "path": "examples/converter/fixtures/raw/sample.sr2",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9609,7 +9609,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.srf",
+      "path": "examples/converter/fixtures/raw/sample.srf",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9623,7 +9623,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.srw",
+      "path": "examples/converter/fixtures/raw/sample.srw",
       "bytes": 710,
       "sha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
       "previousSha256": "9249e61f2fb65d485a7061675c7d6bda9509e5e8afe68cbf909d7d02bf0c9e4c",
@@ -9637,7 +9637,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/raw/sample.x3f",
+      "path": "examples/converter/fixtures/raw/sample.x3f",
       "bytes": 18297,
       "sha256": "f07e98d0447ad82fe93cafcd1a9402e05cdcf0eafc9a29694734e52714989cb9",
       "previousSha256": "f07e98d0447ad82fe93cafcd1a9402e05cdcf0eafc9a29694734e52714989cb9",
@@ -9651,7 +9651,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/45690.docm",
+      "path": "examples/converter/fixtures/real/apache-poi/45690.docm",
       "bytes": 49596,
       "sha256": "fb55e9c737e015195fe33f076fabdaca91e44fbdb602e46b6a8d04572ed479f6",
       "previousSha256": "fb55e9c737e015195fe33f076fabdaca91e44fbdb602e46b6a8d04572ed479f6",
@@ -9665,7 +9665,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/Simple.xls",
+      "path": "examples/converter/fixtures/real/apache-poi/Simple.xls",
       "bytes": 13824,
       "sha256": "2b5ec8298bacffdca61c50f6f7607da0a4e63cf76fa011c62f203e6a66bc072a",
       "previousSha256": "2b5ec8298bacffdca61c50f6f7607da0a4e63cf76fa011c62f203e6a66bc072a",
@@ -9679,7 +9679,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/SimpleMacro.docm",
+      "path": "examples/converter/fixtures/real/apache-poi/SimpleMacro.docm",
       "bytes": 15517,
       "sha256": "fd591958fcf5322f72c0a740e9606309c949254bda4c3d9bd966481ddf220563",
       "previousSha256": "fd591958fcf5322f72c0a740e9606309c949254bda4c3d9bd966481ddf220563",
@@ -9693,7 +9693,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/SimpleMacro.xlsm",
+      "path": "examples/converter/fixtures/real/apache-poi/SimpleMacro.xlsm",
       "bytes": 13796,
       "sha256": "f76c986f4ebc25c2cc57c088b2511a1269f4bd61d6223a2ab58db351da348ba6",
       "previousSha256": "f76c986f4ebc25c2cc57c088b2511a1269f4bd61d6223a2ab58db351da348ba6",
@@ -9707,7 +9707,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/SimpleWithFormula.xls",
+      "path": "examples/converter/fixtures/real/apache-poi/SimpleWithFormula.xls",
       "bytes": 13824,
       "sha256": "73a99975b9ad250669bd49ffe2223ed50df8324775acfbc612740d38827913c9",
       "previousSha256": "73a99975b9ad250669bd49ffe2223ed50df8324775acfbc612740d38827913c9",
@@ -9721,7 +9721,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/chinese-provinces.xls",
+      "path": "examples/converter/fixtures/real/apache-poi/chinese-provinces.xls",
       "bytes": 4096,
       "sha256": "0c4f1a10e9586ecda6b64a1f435ff8d8cd0a57d7e430e2f264a0d44e4c66d711",
       "previousSha256": "0c4f1a10e9586ecda6b64a1f435ff8d8cd0a57d7e430e2f264a0d44e4c66d711",
@@ -9735,7 +9735,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/hyperlink.doc",
+      "path": "examples/converter/fixtures/real/apache-poi/hyperlink.doc",
       "bytes": 9728,
       "sha256": "090c1e410cf91552c91e50585031900c48c659fbb9efe54bf12a35137b86b7e6",
       "previousSha256": "090c1e410cf91552c91e50585031900c48c659fbb9efe54bf12a35137b86b7e6",
@@ -9749,7 +9749,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/table-merges.doc",
+      "path": "examples/converter/fixtures/real/apache-poi/table-merges.doc",
       "bytes": 11264,
       "sha256": "bceea684bbf492fae57da88a133c3fd7ea9abd8355a89c6b9f31b9b0e2d68d3e",
       "previousSha256": "bceea684bbf492fae57da88a133c3fd7ea9abd8355a89c6b9f31b9b0e2d68d3e",
@@ -9763,7 +9763,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/real/apache-poi/testNames.xlsm",
+      "path": "examples/converter/fixtures/real/apache-poi/testNames.xlsm",
       "bytes": 13290,
       "sha256": "2283c7bbffb916e9764b3dd0338a48f2a8b1685e6acc0e93482c3433578fd85f",
       "previousSha256": "2283c7bbffb916e9764b3dd0338a48f2a8b1685e6acc0e93482c3433578fd85f",
@@ -9777,7 +9777,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/SOLVSAMP.XLS",
+      "path": "examples/converter/fixtures/xls/SOLVSAMP.XLS",
       "bytes": 59392,
       "sha256": "f45117f0990e71bc2dd8de70e5e9c8d1dcc5d250197770c25b84dbf9821db74b",
       "previousSha256": "f45117f0990e71bc2dd8de70e5e9c8d1dcc5d250197770c25b84dbf9821db74b",
@@ -9791,7 +9791,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.csv",
+      "path": "examples/converter/fixtures/xls/sample.csv",
       "bytes": 308,
       "sha256": "fa54ae212e19b14342c8ecafce87f9bf06ed9ffcd96c2c5a293c038b2e13f578",
       "previousSha256": "fa54ae212e19b14342c8ecafce87f9bf06ed9ffcd96c2c5a293c038b2e13f578",
@@ -9805,7 +9805,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.dbf",
+      "path": "examples/converter/fixtures/xls/sample.dbf",
       "bytes": 288,
       "sha256": "2ddb8af76e97011f61026d6e99e632fba50b320f05733dc094004ee8a0b9dfa0",
       "previousSha256": "2ddb8af76e97011f61026d6e99e632fba50b320f05733dc094004ee8a0b9dfa0",
@@ -9819,7 +9819,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.dif",
+      "path": "examples/converter/fixtures/xls/sample.dif",
       "bytes": 228,
       "sha256": "6408385ec28319feea369a966379419aadb45e5c4b8462f28336ae7e4e07280e",
       "previousSha256": "6408385ec28319feea369a966379419aadb45e5c4b8462f28336ae7e4e07280e",
@@ -9833,7 +9833,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.et",
+      "path": "examples/converter/fixtures/xls/sample.et",
       "bytes": 2048,
       "sha256": "69cb153f024337d9f461101b25717a45910d79a149c9d45a771d74c45bb0a148",
       "previousSha256": "69cb153f024337d9f461101b25717a45910d79a149c9d45a771d74c45bb0a148",
@@ -9847,7 +9847,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.ett",
+      "path": "examples/converter/fixtures/xls/sample.ett",
       "bytes": 2048,
       "sha256": "e4e6b0f10a14aba254c456d59662b338e5d0ed26fdfb824f30093c149f1f91ea",
       "previousSha256": "e4e6b0f10a14aba254c456d59662b338e5d0ed26fdfb824f30093c149f1f91ea",
@@ -9861,7 +9861,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.fods",
+      "path": "examples/converter/fixtures/xls/sample.fods",
       "bytes": 1699,
       "sha256": "12b6e68a4966b133943756ec75d77be774ab723472183c728d78230d8caef6ef",
       "previousSha256": "12b6e68a4966b133943756ec75d77be774ab723472183c728d78230d8caef6ef",
@@ -9875,7 +9875,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.json",
+      "path": "examples/converter/fixtures/xls/sample.json",
       "bytes": 190,
       "sha256": "9faca195d604617623c0d9cea6e4107cdceb03c97b15bac7f41eebf2c4c59546",
       "previousSha256": "9faca195d604617623c0d9cea6e4107cdceb03c97b15bac7f41eebf2c4c59546",
@@ -9889,7 +9889,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.jsonl",
+      "path": "examples/converter/fixtures/xls/sample.jsonl",
       "bytes": 182,
       "sha256": "0577b790f60bde8137a0926703d465de3d8f9d99dd31330a4739bed73797d48d",
       "previousSha256": "0577b790f60bde8137a0926703d465de3d8f9d99dd31330a4739bed73797d48d",
@@ -9903,7 +9903,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.jsonlines",
+      "path": "examples/converter/fixtures/xls/sample.jsonlines",
       "bytes": 194,
       "sha256": "a39b9c0ad1cdc60e8fe5637fae47afd62f77476e8c796191f93cbb9dc31c1b98",
       "previousSha256": "a39b9c0ad1cdc60e8fe5637fae47afd62f77476e8c796191f93cbb9dc31c1b98",
@@ -9917,7 +9917,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.ldjson",
+      "path": "examples/converter/fixtures/xls/sample.ldjson",
       "bytes": 185,
       "sha256": "6886f48e2c244fbadaa0114bdfaefcfd01bd43c27738d94ae9b3b1fe1c9425ab",
       "previousSha256": "6886f48e2c244fbadaa0114bdfaefcfd01bd43c27738d94ae9b3b1fe1c9425ab",
@@ -9931,7 +9931,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.ndjson",
+      "path": "examples/converter/fixtures/xls/sample.ndjson",
       "bytes": 185,
       "sha256": "0aec4041f12255fcddb8ae3b6d608be01c5a675d2cfc7d487e698d7d4fd72c9d",
       "previousSha256": "0aec4041f12255fcddb8ae3b6d608be01c5a675d2cfc7d487e698d7d4fd72c9d",
@@ -9945,7 +9945,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.ods",
+      "path": "examples/converter/fixtures/xls/sample.ods",
       "bytes": 2438,
       "sha256": "522b8aa525c4ba838cca67528fd55970457c0764829e8f2e46c4c48c4c214bd7",
       "previousSha256": "522b8aa525c4ba838cca67528fd55970457c0764829e8f2e46c4c48c4c214bd7",
@@ -9959,7 +9959,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.ots",
+      "path": "examples/converter/fixtures/xls/sample.ots",
       "bytes": 2456,
       "sha256": "6e87cc5d5580dfede333559bd549dccaac5e162fef34a2028eae4f70052b87fb",
       "previousSha256": "6e87cc5d5580dfede333559bd549dccaac5e162fef34a2028eae4f70052b87fb",
@@ -9973,7 +9973,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.psv",
+      "path": "examples/converter/fixtures/xls/sample.psv",
       "bytes": 119,
       "sha256": "fef807b03d9d9c88596d30c7456e6132c655244703e3f040b3875d03e1ebbd5f",
       "previousSha256": "fef807b03d9d9c88596d30c7456e6132c655244703e3f040b3875d03e1ebbd5f",
@@ -9987,7 +9987,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.slk",
+      "path": "examples/converter/fixtures/xls/sample.slk",
       "bytes": 169,
       "sha256": "3f4ca74af739b8fa3e838a9ed29f81bcc8c2ccd4ddeb1626559c7856519d5e0a",
       "previousSha256": "3f4ca74af739b8fa3e838a9ed29f81bcc8c2ccd4ddeb1626559c7856519d5e0a",
@@ -10001,7 +10001,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.stc",
+      "path": "examples/converter/fixtures/xls/sample.stc",
       "bytes": 2440,
       "sha256": "b417693b66f503f6988694432f656eca47eb5392bead1a1ca91a2d6824850e74",
       "previousSha256": "b417693b66f503f6988694432f656eca47eb5392bead1a1ca91a2d6824850e74",
@@ -10015,7 +10015,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.sxc",
+      "path": "examples/converter/fixtures/xls/sample.sxc",
       "bytes": 2413,
       "sha256": "2319146a2f0b28b48db049634bb382e9e73f8995cf5b1b560b5816546cae4078",
       "previousSha256": "2319146a2f0b28b48db049634bb382e9e73f8995cf5b1b560b5816546cae4078",
@@ -10029,7 +10029,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.tab",
+      "path": "examples/converter/fixtures/xls/sample.tab",
       "bytes": 114,
       "sha256": "a1cfe68aed07bf82df763a1b2dae74165e9b2efd90543267f94ed1b6938312a6",
       "previousSha256": "a1cfe68aed07bf82df763a1b2dae74165e9b2efd90543267f94ed1b6938312a6",
@@ -10043,7 +10043,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.tsv",
+      "path": "examples/converter/fixtures/xls/sample.tsv",
       "bytes": 116,
       "sha256": "3482d3fc152e7ad97c05244959f019a5d406b3e4b7331d94444a2fbf07971295",
       "previousSha256": "3482d3fc152e7ad97c05244959f019a5d406b3e4b7331d94444a2fbf07971295",
@@ -10057,7 +10057,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.xls",
+      "path": "examples/converter/fixtures/xls/sample.xls",
       "bytes": 2048,
       "sha256": "da46fd70b53df1780547ac690b90c93ff6557fcd4ef0d6fa55bd67b5e8bd9e8f",
       "previousSha256": "da46fd70b53df1780547ac690b90c93ff6557fcd4ef0d6fa55bd67b5e8bd9e8f",
@@ -10071,7 +10071,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.xlsm",
+      "path": "examples/converter/fixtures/xls/sample.xlsm",
       "bytes": 3474,
       "sha256": "d0e9e0f8000d469464f89c9a478d0862d7848e18a4f6e049da94918ab08b226a",
       "previousSha256": "d0e9e0f8000d469464f89c9a478d0862d7848e18a4f6e049da94918ab08b226a",
@@ -10085,7 +10085,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.xlsx",
+      "path": "examples/converter/fixtures/xls/sample.xlsx",
       "bytes": 3496,
       "sha256": "d5cb8f0ba0c0834271425140262898162c7690ae3ef6ca8db3da0949ae198464",
       "previousSha256": "d5cb8f0ba0c0834271425140262898162c7690ae3ef6ca8db3da0949ae198464",
@@ -10099,7 +10099,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.xlt",
+      "path": "examples/converter/fixtures/xls/sample.xlt",
       "bytes": 2048,
       "sha256": "44d9fa34441801c945291c441a9028a3bce64a8cf6a2707d31cd00b35fad35ba",
       "previousSha256": "44d9fa34441801c945291c441a9028a3bce64a8cf6a2707d31cd00b35fad35ba",
@@ -10113,7 +10113,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.xltm",
+      "path": "examples/converter/fixtures/xls/sample.xltm",
       "bytes": 3492,
       "sha256": "d026f8085b62fca5c266cad73d48ec9906c70f74941c4cc2341d94b61ad1d915",
       "previousSha256": "d026f8085b62fca5c266cad73d48ec9906c70f74941c4cc2341d94b61ad1d915",
@@ -10127,7 +10127,7 @@
       }
     },
     {
-      "path": "examples/go-wazero-converter/fixtures/xls/sample.xltx",
+      "path": "examples/converter/fixtures/xls/sample.xltx",
       "bytes": 3508,
       "sha256": "e2c963822b272a86814f9ccd775af06f709366bd75b9e1ca98e8a8991f76d27a",
       "previousSha256": "e2c963822b272a86814f9ccd775af06f709366bd75b9e1ca98e8a8991f76d27a",

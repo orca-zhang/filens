@@ -13,14 +13,14 @@ test('browses APK and IPA archives and previews Windows resource icons locally',
   await page.getByRole('button', { name: 'Archive', exact: true }).click();
   for (const [extension, entry] of [['apk', 'AndroidManifest.xml'], ['ipa', 'Payload/']]) {
     await expect(page.getByRole('button', { name: extension.toUpperCase(), exact: true })).toHaveCount(1);
-    await input.setInputFiles(path.resolve(`examples/go-wazero-converter/fixtures/icons/sample.${extension}`));
+    await input.setInputFiles(path.resolve(`examples/converter/fixtures/icons/sample.${extension}`));
     await expect(page.locator('.wb-preview-title strong')).toHaveText(`sample.${extension}`);
     await expect(page.locator('.archivev-table')).toContainText(entry);
     await expect(page.locator('img.pptxv-native-image')).toHaveCount(0);
     await expect(page.locator('.wb-note.is-error')).toHaveCount(0);
   }
   for (const extension of ['exe', 'dll', 'mui', 'mun', 'ico']) {
-    await input.setInputFiles(path.resolve(`examples/go-wazero-converter/fixtures/icons/sample.${extension}`));
+    await input.setInputFiles(path.resolve(`examples/converter/fixtures/icons/sample.${extension}`));
     await expect(page.locator('.wb-preview-title strong')).toHaveText(`sample.${extension}`);
     const image = page.locator('img.pptxv-native-image');
     await expect(image).toBeVisible();

@@ -3,7 +3,13 @@
   <h1>探微 · filens</h1>
   <p><strong>给 Agent 的 CLI，也是一套纯前端复杂格式预览工具。</strong></p>
   <p>本地读取、搜索、OCR、转换与预览，文件无需上传。</p>
-  <p><a href="README.md">English</a> · 简体中文 · <a href="LICENSE">MIT</a></p>
+  <p>
+    <a href="docs/performance-comparison.zh-CN.md"><img src="docs/assets/readme/highlight-pptx.zh-CN.svg" alt="PPTX：唯一真开源的前端原生预览库，体验更好" width="260" /></a>
+    <a href="packages/iwork/README.md"><img src="docs/assets/readme/highlight-iwork.zh-CN.svg" alt="iWork 15：率先支持协议解析，唯一 iWork 纯前端预览库" width="260" /></a>
+    <a href="docs/performance-comparison.zh-CN.md#x5-原片解析厂商标定接缝更自然"><img src="docs/assets/readme/highlight-panorama.zh-CN.svg" alt="Panorama：厂商畸变标定参数，纯前端实时全景照片与视频" width="260" /></a>
+  </p>
+  <p><sub>据我们所知，截至 2026-11-24 · <a href="docs/project-overview.zh-CN.md#filens-的独特能力">能力与实测</a></sub></p>
+  <p><a href="README.md">English</a> · 简体中文 · <a href="LICENSE">MIT</a> · <a href="https://filens.cc/bench/">FiLens-Bench</a></p>
 </div>
 
 ![真实 CLI 演示：OCR 坐标、关键摘录、嵌套压缩包搜索与读取、重复文件、相似图片、CSV 转 XLSX、离线 HTML 表格和 STEP 预览](docs/assets/agent-cli/terminal-demo.zh-CN.gif)
@@ -21,7 +27,7 @@
 | 大概多大 | **Lite 6.90–7.17 MiB（<10 MB） · Full 31.26–33.80 MiB** 离线下载；Full 含预览资源、OCR 运行时与模型，Lite 的预览资源另行下载。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.93–2.20 MiB**。上表 CLI 体积为 **v0.6.7 完整离线压缩包下载量**，Full 内置预览 **0.3.7**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.7 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.7 源码构建的主运行时按分包合计 **4.16 MB Brotli**，单 JS 版预压缩产物为 **3.40 MB Brotli / 3.54 MB gzip / 6.69 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.93–2.20 MiB**。上表 CLI 体积为 **v0.6.7 完整离线压缩包下载量**，Full 内置预览 **0.3.7**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.7 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.7 源码构建的主运行时按分包合计 **4.19 MB Brotli**，单 JS 版预压缩产物为 **3.57 MB Brotli / 3.71 MB gzip / 6.93 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 格式清单已于 2026-11-06 核对：CLI **349** 个扩展名；预览 **450** 个源文件扩展名（内部另有 `cad-json`，共 **451** 个路由项）。[版本、数量与完整扩展名](docs/release-v0.6.6-format-counts.json)。
 
@@ -33,9 +39,9 @@
 
 **把这句话发给你的 Agent：**
 
-> 帮我安装 filens，去 https://github.com/orca-zhang/filens 找 skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。
+> 帮我安装 filens，读取 https://filens.cc/SKILL.md，按里面的说明配置 CLI 和 Skill。离线安装包：https://filens.cc/downloads/。
 
-[Skill 使用说明](skills/filens/SKILL.md) · 手动安装可从 [v0.6.7 Release](https://github.com/orca-zhang/filens/releases/tag/v0.6.7) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
+[Skill 使用说明](https://filens.cc/SKILL.md) · 手动安装可从[官网下载页](https://filens.cc/downloads/) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
 
 ```sh
 filens '读取 "report.pdf"，以 JSON 输出'
@@ -75,11 +81,12 @@ filens preview report.pdf --mode serve
   <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 离线下载 · macOS arm64 · CLI 0.5.7；Full 含预览 0.3.7 和 OCR 模型，Lite 另配预览资源；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
-- [安装、协议与打包](docs/agent-cli.md) · [Agent skill](skills/filens/SKILL.md)
+- [安装、协议与打包](docs/agent-cli.md) · [Agent skill](https://filens.cc/SKILL.md)
 - [输出格式与布局信息](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 条实测案例与自然语言边界](docs/agent-cli-examples.zh-CN.md)
 - [跨格式搜索](docs/agent-cli-search.zh-CN.md)、[嵌套压缩包](docs/agent-cli-search-archives.zh-CN.md)与[无模型关键原文摘录](docs/agent-cli-pruning.zh-CN.md)
 - [重复文件与相似图片](docs/agent-cli-similarity.md) · [Windows 安装与验证状态](docs/agent-cli-windows.zh-CN.md)
 - [搜索覆盖](docs/agent-cli-search-formats.zh-CN.md)、[检索基准](docs/agent-cli-search-benchmark.zh-CN.md)与[启动成本](docs/agent-cli-search-native.zh-CN.md)
+- [FiLens-Bench 独立评测站](https://filens.cc/bench/)：比较各 agent 正常安装 FiLens 前后的复杂文件查询质量、耗时和 token 用量；[方法与复现](benchmarks/filens-bench/README.zh-CN.md)。
 
 CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大边长 960、OpenMP 线程 2），Lite 可用 `filens setup-ocr` 补齐。用 `capacity` 查看当前安装版本的操作与转换组合。自然语言只识别有限意图；选择页码或幻灯片请显式使用 `--pages` / `--slides`，尚不支持按问题筛选字段。Windows / Linux 原生执行仍待实机验证。
 
@@ -123,7 +130,7 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ### 浏览器集成：单文件与按需分包
 
-**预览 0.3.7：** 分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从 [v0.6.7 Release](https://github.com/orca-zhang/filens/releases/tag/v0.6.7) 下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
+**预览 0.3.7：** 分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从[官网下载页](https://filens.cc/downloads/)下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
 
 npm：[filens-preview@0.3.7](https://www.npmjs.com/package/filens-preview/v/0.3.7)，下载 **16.22 MiB** / 安装 **31.88 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
 
@@ -278,7 +285,7 @@ npm run build:wasm
 npm run dev --workspace @filens/demo
 ```
 
-打开[本地演示站](http://localhost:5173/modules/filens/?lang=zh)（需先本地部署，否则请打开 [Vercel 在线演示](https://filens-six.vercel.app/?lang=zh)），选择样例或拖入文件。部署见 [Vercel 指南](docs/deploy-vercel.md)。
+打开[在线演示](https://filens.cc/?lang=zh)或[本地演示站](http://localhost:5173/modules/filens/?lang=zh)（需先本地部署），选择样例或拖入文件。部署见 [Vercel 指南](docs/deploy-vercel.md)。
 
 ## 在 ZimaOS 上安装
 
@@ -346,7 +353,7 @@ ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`
 | 架构与 WASM 边界 | [项目概览](docs/project-overview.zh-CN.md) |
 | 前端基准与原始数据 | [性能对比](docs/performance-comparison.zh-CN.md) |
 | macOS 原生 OCR 与 RapidOCR | [实测对比](docs/macos-ocr-benchmark.zh-CN.md) |
-| CLI 与后端接入 | [Agent CLI](docs/agent-cli.md) · [Go + wazero 薄壳](examples/go-wazero-converter/README.md) |
+| CLI 与转换 | [Rust Agent CLI](docs/agent-cli.md) · [WASM 转换核心](wasm/converter-core-rust/README.md) |
 
 欢迎用日常文件测试并[提交可复现问题](https://github.com/orca-zhang/filens/issues/new/choose)。[路线图](docs/roadmap.md) · [MIT 许可](LICENSE) · [第三方声明](packaging/agent-third-party.md)。
 

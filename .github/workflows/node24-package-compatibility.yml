@@ -1,0 +1,33 @@
+name: Node 24 package compatibility
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packages/core/**'
+      - 'packages/vue/**'
+      - 'packages/xlsx/**'
+      - 'scripts/package-declarations.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/node24-package-compatibility.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  declarations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:core
+      - run: npm run build:xlsx
+      - run: npm run build:vue
+      - run: node node_modules/vitest/vitest.mjs run packages/xlsx/test/package-declarations.spec.ts
+      - name: Check the published XLSX API under NodeNext and TypeScript 7
+        run: npx --yes --package=typescript@7.0.2 tsc --ignoreConfig --noEmit --strict --skipLibCheck false --target ES2022 --module NodeNext --moduleResolution NodeNext packages/xlsx/test/fixtures/node-next-public-api.mts

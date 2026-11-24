@@ -352,10 +352,11 @@
         "enum": [
           "bm25",
           "exact",
-          "files"
+          "files",
+          "glob"
         ],
         "default": "bm25",
-        "description": "BM25/lexical ranking, case-sensitive literal matching, or filename-only ranking. No embedding retrieval."
+        "description": "BM25/lexical ranking, case-sensitive literal matching, filename-only ranking, or case-sensitive filename globs (*, ?, **). No embedding retrieval."
       },
       "maxResults": {
         "type": "integer",
@@ -538,8 +539,13 @@
     "modes": [
       "bm25",
       "exact",
-      "files"
+      "files",
+      "glob"
     ],
+    "glob": {
+      "syntax": "* and ? match within one path segment; ** as a whole segment matches zero or more directories. Patterns without / match basenames at any depth; otherwise match the whole relative path using / on every platform. Case sensitive; other characters are literal.",
+      "pruning": "Impossible directory subtrees are skipped during discovery; nonmatching files do not consume maxFiles. Candidate archives are retained for member-name discovery. scan.prunedDirectories counts directories skipped by the pattern."
+    },
     "exactCaseSensitive": true,
     "defaults": {
       "maxResults": 10,

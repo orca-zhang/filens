@@ -1,0 +1,126 @@
+{
+  "date": "2026-11-24T03:55:13.135Z",
+  "results": [
+    {
+      "mode": "split",
+      "fixture": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+      "crossOrigin": true,
+      "state": "ready",
+      "error": null,
+      "text": "Prev\nNext\n1 / 3\n-\n100%\n+\nFit\nWidth\nHeight\nRotate\nFull"
+    },
+    {
+      "mode": "all-in-one",
+      "fixture": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+      "crossOrigin": true,
+      "state": "ready",
+      "error": null,
+      "text": "Prev\nNext\n1 / 3\n-\n100%\n+\nFit\nWidth\nHeight\nRotate\nFull"
+    },
+    {
+      "mode": "all-in-one",
+      "fixture": "apps/demo/public/samples/a.pages",
+      "crossOrigin": true,
+      "state": "ready",
+      "error": null,
+      "text": "Prev\nNext\n1 / 3\nWarnings: 5\n-\n181%\n+\nFit\nWidth\nHeight\nRotate\nFull\n\nRepresentative Import Fixture for Apple Pages\n\nThis document is intentionally ordinary: it is meant to be opened in Apple Pages and s"
+    }
+  ],
+  "artifactParity": {
+    "package": "filens-preview@0.3.7",
+    "files": 69,
+    "method": "Every npm dist/split and dist/all-in-one file compared byte-for-byte with staged release ZIP output."
+  },
+  "staging": "node --test scripts/stage-site-downloads.test.mjs: pass; includes sidecar equality, download links, checksums, and path traversal rejection.",
+  "production": {
+    "date": "2026-11-24T04:20:48.079Z",
+    "base": "https://filens.cc",
+    "checks": [
+      {
+        "file": "cdn/filens.js",
+        "status": 200,
+        "bytes": 61,
+        "sha256": "e16a1562e96a561f6ce87e7147ab4f2e5b3b67ce124ae6eb9d4a6663a389a648",
+        "cacheControl": "public, max-age=300",
+        "contentType": "application/javascript; charset=utf-8",
+        "cors": "*"
+      },
+      {
+        "file": "cdn/filens-preview@0.3.7/all-in-one/filens.js",
+        "status": 200,
+        "bytes": 6694186,
+        "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentType": "application/javascript; charset=utf-8",
+        "cors": "*"
+      },
+      {
+        "file": "cdn/filens-preview@0.3.7/split/filens.js",
+        "status": 200,
+        "bytes": 56507,
+        "sha256": "21f67c4dedb04a06000838fb8f4c708a27a63c8081d8c158ac3a4c5e60ee4653",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentType": "application/javascript; charset=utf-8",
+        "cors": "*"
+      },
+      {
+        "file": "cdn/filens-preview@0.3.7/all-in-one/archive/7zz.wasm",
+        "status": 200,
+        "bytes": 1116075,
+        "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentType": "application/wasm",
+        "cors": "*"
+      },
+      {
+        "file": "cdn/filens-preview@0.3.7/split/assets/archive-worker-B6HC1WMX.js",
+        "status": 200,
+        "bytes": 52720,
+        "sha256": "5a2cd678bdd39a379add16c60b614e921405049e5816886775c8c6c7c7b7ce7a",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentType": "application/javascript; charset=utf-8",
+        "cors": "*"
+      },
+      {
+        "file": "cdn/filens-preview@0.3.7/split/chunks/compression-CLhefix_.js",
+        "status": 200,
+        "bytes": 12546,
+        "sha256": "30f268b178294bb7305c72c4744e96528ffadaff81f03f7683fb7b723a077730",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentType": "application/javascript; charset=utf-8",
+        "cors": "*"
+      }
+    ],
+    "browser": {
+      "date": "2026-11-24T04:20:51.695Z",
+      "results": [
+        {
+          "mode": "split",
+          "fixture": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+          "crossOrigin": true,
+          "state": "ready",
+          "error": null,
+          "text": "Prev\nNext\n1 / 3\n-\n100%\n+\nFit\nWidth\nHeight\nRotate\nFull"
+        },
+        {
+          "mode": "all-in-one",
+          "fixture": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+          "crossOrigin": true,
+          "state": "ready",
+          "error": null,
+          "text": "Prev\nNext\n1 / 3\n-\n100%\n+\nFit\nWidth\nHeight\nRotate\nFull"
+        },
+        {
+          "mode": "all-in-one",
+          "fixture": "apps/demo/public/samples/a.pages",
+          "crossOrigin": true,
+          "state": "ready",
+          "error": null,
+          "text": "Prev\nNext\n1 / 3\nWarnings: 5\n-\n181%\n+\nFit\nWidth\nHeight\nRotate\nFull\n\nRepresentative Import Fixture for Apple Pages\n\nThis document is intentionally ordinary: it is meant to be opened in Apple Pages and s"
+        }
+      ]
+    },
+    "commit": "076acfbd2dad36ec13f72814c55b443f970b5599"
+  },
+  "pullRequest": "https://github.com/orca-zhang/filens/pull/16"
+}

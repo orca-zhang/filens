@@ -8,7 +8,7 @@ The preview toolbar starts hidden. Use the toolbar button in the preview header 
 
 The homepage, examples, and local-file preview do not require NAS authentication. Bundled examples use the configured frontend base path; external media and panorama examples use the public `/external-samples/` proxy routes. No example reads NAS storage or redirects to a host login page. Vite development/preview, `scripts/serve-static.py`, and the Vercel deployment provide these proxies; other static hosts need equivalent routes for external examples.
 
-The “通过链接打开” button opens a keyboard-accessible URL dialog, with focus returned to its trigger after opening a file or dismissing the dialog. Its input defaults to the project's public presentation at `https://filens-six.vercel.app/samples/filens-field-notes.pptx`.
+The “通过链接打开” button opens a keyboard-accessible URL dialog, with focus returned to its trigger after opening a file or dismissing the dialog. Its input defaults to the project's public presentation at `https://filens.cc/samples/filens-field-notes.pptx`.
 
 Each recording regenerates `apps/demo/src/home-media.json` with a content hash. The homepage uses that version for the video, poster, and captions so replacing the recording also refreshes cached media.
 
@@ -28,6 +28,8 @@ The following project pages were reviewed for their presentation patterns:
 The page opens on a near-black background with a dimensional file-and-lens illustration, quiet warm accents, and an invitation to unfold a file. Clicking plays a finite sequence of actual preview captures: a presentation, a 3D model, and a panorama. The sequence supports pause, replay, and direct scene selection. It pauses when the tab is hidden and stops after the last scene. With reduced motion enabled, scenes change only on request and transitions are disabled.
 
 The scroll narrative follows three chapters: see the content behind different extensions, keep local files on your device, and explore more formats through real samples. Headings and selected visuals gently enter as they reach the viewport; content remains visible without the animation API. The switchable preview captures, keyboard-operable tabs, local-file picker, and workbench entry points use the existing preview behavior.
+
+Immediately after the hero, `#highlights` introduces the three defining capabilities: truly open-source frontend-native PPTX previews, iWork 15 protocol parsing and pure frontend previews, and DJI / Insta360 distortion calibration with real-time browser panorama video. Each has a working sample action and implementation or measurement link. Uniqueness statements carry a November 24, 2026 knowledge date; the PSV comparison refers to the tested X5 original's seams. The Agent setup block and footer link to the separate [FiLens-Bench results site](https://filens.cc/bench/), with an English edition at `/bench/en.html` and downloadable versioned summaries.
 
 The format samples lead into a compact video walkthrough and a playground invitation. The ZimaOS recommendation appears last in the main content, immediately before the footer. It uses the official ZimaOS logo, states its deep integration with FiLens, and highlights unified file management, RAW / Live Photos / panorama viewing, data ownership and encrypted remote access, storage and backup, and the 800+ app ecosystem. Its product link follows the selected Chinese or English locale. Format support and developer documentation remain one click away. Both READMEs also place the ZimaOS banner at the end, after Star History.
 

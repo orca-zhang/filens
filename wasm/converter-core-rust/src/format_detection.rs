@@ -519,6 +519,7 @@ fn zip_format<R: Read + Seek>(source: &mut R) -> Option<&'static str> {
     if archive.len() > 4096 {
         return None;
     }
+    archive.validate_header_consistency().ok()?;
     let mimetype = read_zip_part(&mut archive, "mimetype");
     if let Some(value) = mimetype
         .as_deref()

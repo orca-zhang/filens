@@ -52,14 +52,14 @@ async function testPureWasi(root, manifestPath) {
   const report = await summarizeCandidate('pure-wasi', { rootDir: root, manifestPath });
   assert.equal(report.candidatePath, 'pure-wasi');
   assert.equal(report.wasmFiles.length, 1);
-  assert.equal(report.gates.wazeroEligible, true);
+  assert.equal(report.gates.wasiEligible, true);
   assert.equal(report.gates.browserAdapterCandidate, false);
   assert.equal(report.gates.blocked, false);
   assert.deepEqual(report.gates.blockedReasons, []);
   assert.equal(report.allowedDefaultConversions.length, 3);
 
   const markdown = renderMarkdown(report);
-  assert.match(markdown, /wazero eligible: yes/);
+  assert.match(markdown, /WASI eligible: yes/);
   assert.match(markdown, /doc -> docx/);
 }
 
@@ -67,7 +67,7 @@ async function testEmscripten(root, manifestPath) {
   const report = await summarizeCandidate('emscripten', { rootDir: root, manifestPath });
   assert.equal(report.wasmFiles.length, 1);
   assert.equal(report.jsGlueHints.length, 1);
-  assert.equal(report.gates.wazeroEligible, false);
+  assert.equal(report.gates.wasiEligible, false);
   assert.equal(report.gates.browserAdapterCandidate, true);
   assert.equal(report.gates.blocked, true);
   assert(
@@ -79,7 +79,7 @@ async function testEmscripten(root, manifestPath) {
 async function testNoWasm(root, manifestPath) {
   const report = await summarizeCandidate('no-wasm', { rootDir: root, manifestPath });
   assert.equal(report.wasmFiles.length, 0);
-  assert.equal(report.gates.wazeroEligible, false);
+  assert.equal(report.gates.wasiEligible, false);
   assert.equal(report.gates.browserAdapterCandidate, false);
   assert.equal(report.gates.blocked, true);
   assert(
