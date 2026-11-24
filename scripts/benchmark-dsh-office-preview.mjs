@@ -29,6 +29,9 @@ for (const [source, name] of cases) {
 }
 const baselineIndex = process.argv.indexOf('--baseline-home');
 const baselineHome = baselineIndex >= 0 ? path.resolve(process.argv[baselineIndex + 1]) : undefined;
+const builtinIndex = process.argv.indexOf('--builtin-home');
+const builtinHome = builtinIndex >= 0 ? path.resolve(process.argv[builtinIndex + 1]) : undefined;
+if (builtinHome) assert.notEqual(builtinHome, path.resolve(process.env.HOME, '.dsh'), 'Use an isolated builtin profile.');
 const roundsIndex = process.argv.indexOf('--rounds');
 const rounds = roundsIndex >= 0 ? Number(process.argv[roundsIndex + 1]) : 3;
 assert.ok(Number.isSafeInteger(rounds) && rounds >= 1 && rounds <= 10);
@@ -40,7 +43,7 @@ if (baselineHome) {
   const baseline = JSON.parse(await readFile(path.join(baselineHome, 'profiles/desktop/node_modules/dsh-filens/package.json'), 'utf8'));
   renderers.push({ renderer: 'previous', home: baselineHome, plugin: `dsh-filens@${baseline.version}` });
 }
-renderers.push({ renderer: 'builtin', home, plugin: pdfOnly ? 'DSH built-in PDF' : 'DSH built-in Office-to-PDF' });
+renderers.push({ renderer: 'builtin', home: builtinHome ?? home, plugin: pdfOnly ? 'DSH built-in PDF' : 'DSH built-in Office-to-PDF' });
 const rendererIndex = process.argv.indexOf('--renderer');
 if (rendererIndex >= 0) {
   const selected = renderers.filter(item => item.renderer === process.argv[rendererIndex + 1]);
@@ -65,14 +68,17 @@ for (let round = 0; round < rounds; round++) {
       const toggle = page.getByRole('switch', { name: '启用 FiLens 文档工具与预览', exact: true }).first();
       if (await toggle.getAttribute('aria-checked') !== String(enabled)) {
         await toggle.click();
-        await page.getByText(enabled ? '2 运行中' : '2 已停用', { exact: false }).waitFor();
+        await page.waitForFunction(enabled => Boolean(window.__DSH_DEMO_CTX__?.documentPreviews?.getSnapshot()
+          .some(item => item.id === 'dsh-filens')) === enabled, enabled);
       }
     };
     try {
       environments.push(await app.evaluate(({ app }, data) => ({ ...data, dsh: app.getVersion(), platform: process.platform, arch: process.arch, electron: process.versions.electron }), { renderer, plugin, round: round + roundOffset + 1 }));
-      await setEnabled(renderer !== 'builtin');
+      if (!builtinHome) await setEnabled(renderer !== 'builtin');
       await page.reload();
       await page.waitForFunction(() => window.__DSH_DEMO_CTX__?.get('workspaces'));
+      assert.equal(await page.evaluate(() => window.__DSH_DEMO_CTX__.documentPreviews.getSnapshot()
+        .some(item => item.id === 'dsh-filens')), renderer !== 'builtin', 'Use the requested real renderer.');
       const sessionId = await prepareWorkspace(page, directory);
       const ready = async () => {
         if (renderer !== 'builtin') {
@@ -104,7 +110,7 @@ for (let round = 0; round < rounds; round++) {
         observations.push({ renderer, plugin, round: round + roundOffset + 1, name, firstMs: samplesMs[0], cachedMedianMs: warm[1], samplesMs });
         console.log(JSON.stringify(observations.at(-1)));
       }
-      if (renderer === 'builtin') await setEnabled(true);
+      if (renderer === 'builtin' && !builtinHome) await setEnabled(true);
     } finally { await app.close(); }
   }
 }

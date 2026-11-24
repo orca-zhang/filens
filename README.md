@@ -33,9 +33,9 @@ Verified November 24, 2026: CLI **349** extensions; preview **450** source-file 
 
 ## FiLens-Bench
 
-FiLens-Bench compares each agent harness using native tools versus a normal FiLens CLI installation on a 13-task synthetic corpus covering Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. The latest snapshot uses FiLens CLI **0.5.7**: quality rose in **7/7** pairs, recorded p50/batch time fell in **7/7**, and tokens fell in **4/4** pairs with complete usage. Models vary across harnesses, so comparisons are within each pair.
+FiLens-Bench compares each agent harness using native tools versus a normal FiLens CLI installation on a 13-task synthetic corpus covering Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. The latest snapshot uses FiLens CLI **0.5.7**: quality rose in **8/8** pairs, recorded p50/batch time fell in **8/8**, and tokens fell in **5/5** pairs with complete usage. Models vary across harnesses, so comparisons are within each pair.
 
-[![FiLens-Bench results across seven agent harnesses](benchmarks/filens-bench/readme-summary.en.svg)](https://filens.cc/bench/en.html)
+[![FiLens-Bench results across eight agent harnesses](benchmarks/filens-bench/readme-summary.en.svg)](https://filens.cc/bench/en.html)
 
 [Official results site](https://filens.cc/bench/en.html) · [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Protocol and reproduction](benchmarks/filens-bench/README.zh-CN.md)
 
@@ -86,7 +86,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 offline downloads · macOS arm64 · CLI 0.5.7; Full includes preview 0.3.7 and OCR models; Lite adds preview assets separately; <a href="https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 3.74 MiB · Lite 10.87 MiB · Full 34.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.8 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
 CLI 0.5.7 native executables measure **0.93–2.20 MiB**. Offline archives remain at v0.6.7; Full includes preview **0.3.7**, OCR runtime and models. [Download and extracted sizes](https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json). npm component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. [Platform measurements](docs/agent-cli-npm-release.json). 1 MiB = 1,048,576 bytes.

@@ -4,8 +4,9 @@ import path from 'node:path';
 import { executableName, platformPackageName } from './agent-platforms.mjs';
 
 // Executable bytes only: document WASM and optional OCR/preview resources are
-// separately measured. Keep every supported native CLI close to 2 MiB.
-export const CLI_BINARY_LIMIT = Math.floor(2.2 * 1048576);
+// separately measured. Native search uses speed optimization (about 3.74 MiB
+// on macOS); the remaining dependencies still use size optimization.
+export const CLI_BINARY_LIMIT = 4 * 1048576;
 export const PREVIEW_PACKAGE_LIMIT = 40 * 1048576;
 export const LITE_ARCHIVE_LIMIT = 10_000_000;
 
@@ -25,7 +26,7 @@ export function checkAgentReleaseLimits(release, directory) {
     assert.equal(result.status, 0, `Cannot inspect ${platform} executable`);
     const bytes = result.stdout.length;
     assert.ok(bytes > 0 && bytes <= CLI_BINARY_LIMIT,
-      `${platform} CLI exceeds the 2.2 MiB executable budget (${bytes} bytes)`);
+      `${platform} CLI exceeds the 4 MiB executable budget (${bytes} bytes)`);
     return { platform, bytes };
   });
   const preview = release.packages.find(pkg => pkg.name === 'filens-preview');

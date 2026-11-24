@@ -1,0 +1,37 @@
+{
+  "observedAt": "2026-11-24T15:13:11.429813+00:00",
+  "registry": "https://registry.npmjs.org/",
+  "status": "published-and-public-install-verified",
+  "sourceCommit": "3cc614f43f15362287924f7bdee6a0a719789c3d",
+  "packages": [
+    {
+      "name": "@filens/core",
+      "version": "0.1.5",
+      "file": "filens-core-0.1.5.tgz",
+      "bytes": 150155,
+      "unpackedBytes": 621204,
+      "sha256": "1afcf0af7c9408e4ce6bf473f0c4f4a3d3895f68b8748dfad527d6a581db9261",
+      "integrity": "sha512-Vr8BOxUwId6nIAvkuiVVYDTbHvQE131BCYPvg70pTwkYISK2WxRrXdQRhNzUllIo6SvE2BYbCIHpBBbFqGeJvA==",
+      "latest": "0.1.5",
+      "publishedAt": "2026-11-24T15:09:42.379Z",
+      "tarball": "https://registry.npmjs.org/@filens/core/-/core-0.1.5.tgz",
+      "verified": true
+    },
+    {
+      "name": "@filens/xlsx",
+      "version": "0.1.3",
+      "file": "filens-xlsx-0.1.3.tgz",
+      "bytes": 14933,
+      "unpackedBytes": 46523,
+      "sha256": "c05d438257375d5fd34f4116e2f644f9507bdb72a329891e505246b638716895",
+      "integrity": "sha512-SZzBGu/KIBnpTwsszT1i1YPxDDnwevy7JXbp3cdzxedeR7c15/Wyx1anBN0HheKQGN+i1/kS35rY18YNiqmbWw==",
+      "latest": "0.1.3",
+      "publishedAt": "2026-11-24T15:07:40.687Z",
+      "tarball": "https://registry.npmjs.org/@filens/xlsx/-/xlsx-0.1.3.tgz",
+      "verified": true
+    }
+  ],
+  "validation": "xlsx-npm-registry-validation.json",
+  "issue": "https://github.com/orca-zhang/filens/issues/1",
+  "fixPR": "https://github.com/orca-zhang/filens/pull/34"
+}

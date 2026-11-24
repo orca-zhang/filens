@@ -21,7 +21,7 @@ export async function stageSiteDownloads(rootDir) {
   await writeFile(path.join(downloads, 'filens-skill.zip'), await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));
   const release = `https://github.com/orca-zhang/filens/releases/download/${manifest.tag}`;
   const cliAssets = previous.assets.filter(asset => asset.file.startsWith(`filens-${cliVersion}-`) || asset.file.startsWith('dsh-filens-'));
-  const releaseAssets = [...cliAssets, ...manifest.assets];
+  const releaseAssets = [...new Map([...cliAssets, ...manifest.assets].map(asset => [asset.file, asset])).values()];
   const rows = releaseAssets.map(asset => {
     const optional = asset.kind === 'browser-precompressed-sidecars'
       ? ' · 可选静态托管压缩文件 / optional static-host sidecars'

@@ -39,7 +39,7 @@ function publish(key, value) {
 const subscribe = listener => { listeners.add(listener); return () => listeners.delete(listener); };
 
 function runtimeBase() {
-  if (globalThis.location?.protocol === 'http:' || globalThis.location?.protocol === 'https:') return document.baseURI;
+  if (['http:', 'https:', 'dsh-app:'].includes(globalThis.location?.protocol)) return document.baseURI;
   return globalThis.__FILENS_DSH_PREVIEW_ORIGIN__ ?? globalThis.__DSH_TRANSPORT__?.streamBaseUrl;
 }
 

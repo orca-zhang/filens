@@ -1,8 +1,8 @@
 {
-  "observedAt": "2026-11-23T12:58:56.047Z",
+  "observedAt": "2026-11-24T15:18:24.452Z",
   "platform": "darwin-arm64",
-  "requests": 50,
-  "ocr": false,
+  "requests": 54,
+  "ocr": true,
   "result": "passed",
   "formats": [
     "zip",
@@ -212,6 +212,22 @@
     },
     {
       "case": "encrypted leaf filename remains visible",
+      "exit": 0
+    },
+    {
+      "case": "OCR from nested ZIP and TAR.GZ",
+      "exit": 0
+    },
+    {
+      "case": "read nested OCR member and validate offsets",
+      "exit": 0
+    },
+    {
+      "case": "read nested OCR member and validate offsets",
+      "exit": 0
+    },
+    {
+      "case": "intentional native-only archive search completes without OCR",
       "exit": 0
     }
   ],

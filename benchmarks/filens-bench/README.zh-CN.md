@@ -21,7 +21,7 @@ node benchmarks/filens-bench/publish.mjs dist/filens-bench-site
 
 ## 当前收敛成绩
 
-![FiLens CLI 0.5.7 在七个 harness 的配对成绩](readme-summary.svg)
+![FiLens CLI 0.5.7 在八个 harness 的配对成绩](readme-summary.svg)
 
 各组质量、带证据成功率、p50 耗时和 token 实测值见[中英文公开成绩表](published/converged-2026-11-24/README.md#当前成绩)。公开快照的中英文分组图和机器可读数据也在同一目录；逐题评分、p95 和逐次账单保留在本地完整档案中。
 
@@ -31,7 +31,7 @@ node benchmarks/filens-bench/publish.mjs dist/filens-bench-site
 
 当前主表各组记录的 FiLens CLI 均为同一发布版本 `0.5.7`。`v6`、`v8`、`v18` 等是**各 harness 的 Skill/安装适配候选编号**，不是不同的 CLI 发布版。不同 harness 要沿用各自默认的 Skill 安装位置、工具发现方式和调用约定；因此 CLI 版本相同，但适配说明不一定逐字相同。运行记录没有为每个 harness 一致保存 CLI 构建 SHA-256，所以目前能确认的是版本号一致，不能从归档证明二进制字节级完全相同。
 
-当前快照使用同一份 13 题合成种子集：11 道复杂文件题计入主质量分，2 道纯文本题作为控制题。除 WorkBuddy 的单轮 13 题 batch 外，各 CLI harness 每组每题运行三次。DSH 使用 DeepSeek-V4.1-Flash，WorkBuddy 使用 Hy4 flash，其余主表记录使用 GPT-6.1-Sol。因此应先读同一 harness 内的 `stock → FiLens` 差值；跨 harness 的数字不构成严格排名。
+当前快照使用同一份 13 题合成种子集：11 道复杂文件题计入主质量分，2 道纯文本题作为控制题。除 WorkBuddy 的单轮 13 题 batch 和 Blue 每题每条件单次测量外，其余 CLI harness 每组每题运行三次。DSH 使用 DeepSeek-V4.1-Flash，WorkBuddy 使用 Hy4 flash，其余主表记录使用 GPT-6.1-Sol。因此应先读同一 harness 内的 `stock → FiLens` 差值；跨 harness 的数字不构成严格排名。
 
 当前收敛结果和限制：
 

@@ -10,13 +10,14 @@
 
 ### 当前成绩
 
-各组均使用 FiLens CLI **0.5.7**；DSH 插件为 `dsh-filens@0.1.10`。模型在每个配对组内固定：Codex、Claude、Zcode、OpenClaw、OpenCode 使用 GPT-6.1-Sol；DSH 使用 DeepSeek-V4.1-Flash；WorkBuddy 使用 Hy4 flash。质量分统计 11 道复杂题；token 为保存观测的输入与输出总量。
+各组均使用 FiLens CLI **0.5.7**；DSH 插件为 `dsh-filens@0.1.10`。模型在每个配对组内固定：Codex、Claude、Zcode、OpenClaw、OpenCode 和 ZimaOS-Blue 使用 GPT-6.1-Sol；DSH 使用 DeepSeek-V4.1-Flash；WorkBuddy 使用 Hy4 flash。质量分统计 11 道复杂题；token 为保存观测的输入与输出总量。
 
 题集为 13 道合成题：11 道计分复杂题覆盖 DOCX 版本冲突、XLSX 单元格与跨文件求和、PPTX 发布门槛、PDF 日期、嵌套 ZIP、两种无答案拒答，以及 PNG/扫描 PDF OCR；另有两道 TXT 控制题，检查工单周期和长文尾部代码。
 
 | Harness / 版本 | 质量分（原生 → FiLens） | 带证据成功 | p50 / 单批耗时（秒） | Token 总量¹（输入 + 输出） |
 | --- | ---: | ---: | ---: | ---: |
 | WorkBuddy Desktop · `5.11.3.43806934` · v18 | 98.18 → **100.00** | 9/11 → **11/11** | 57.773 → **54.073** | 540,952 → **144,341** |
+| ZimaOS-Blue · `0.11.0` · v9 | 97.8 → **100.0** | 72.7% → **100%** | 35.6 → **20.8** | 878,162 → **558,557** |
 | Codex CLI · `0.169.0-alpha.11.1` · v6 | 96.7 → **100.0** | 84.8% → **100%** | 33.0 → **24.0** | 2,313,628* → 1,753,149* |
 | DSH · `0.2.2-rc.1` · local v8 | 96.1 → **100.0** | 84.8% → **100%** | 18.2 → **9.2** | 3,716,055 → **2,095,331** |
 | OpenClaw CLI · `2026.11.6` · v25 | 95.2 → **100.0** | 81.8% → **100%** | 44.9 → **29.0** | 4,606,139 → **2,449,195** |
@@ -24,7 +25,7 @@
 | Claude Code · `2.1.41` · v5 R1 | 66.7 → **81.8** | 51.5% → **81.8%** | 37.6 → **22.8** | 6,990,001* → 4,045,783* |
 | Zcode · `0.17.1-2` · v24 | 50.0 → **100.0** | 30.3% → **100%** | 85.3 → **23.0** | 1,127,085* → 1,982,136* |
 
-质量分 7/7 提高，记录的耗时 7/7 缩短；用量完整的 4 组 token 均下降。¹ CLI 每条件运行 13 题三轮，token 为三轮合计，p50 按复杂题统计；WorkBuddy 每条件仅一轮 13 题 batch，耗时和 token 是整批总量，属于探索性结果。`*` 表示用量不完整，不能据此计算完整 token 节省：Codex 有一条请求未保存，Claude 每个条件有 6 次超时无用量，Zcode 原生组有 19 次无用量。金额未计价；完整 caveat 和数据见 `baselines.json`。
+质量分 8/8 提高，记录的耗时 8/8 缩短；用量完整的 5 组 token 均下降。¹ CLI 每条件运行 13 题三轮，token 为三轮合计，p50 按复杂题统计；WorkBuddy 每条件一轮 13 题 batch，Blue 每题每条件一次，均为单轮结果。`*` 表示用量不完整，不能据此计算完整 token 节省：Codex 有一条请求未保存，Claude 每个条件有 6 次超时无用量，Zcode 原生组有 19 次无用量。金额未计价；完整 caveat 和数据见 `baselines.json`。
 
 <details>
 <summary>题集清单（13 题）</summary>
@@ -69,13 +70,14 @@ Compare each harness's native environment with its normal FiLens installation, k
 
 ### Results
 
-Every row uses FiLens CLI **0.5.7**; the DSH plugin is `dsh-filens@0.1.10`. Models are fixed within each pair: GPT-6.1-Sol for Codex, Claude, Zcode, OpenClaw and OpenCode; DeepSeek-V4.1-Flash for DSH; Hy4 flash for WorkBuddy. Quality is scored on 11 complex tasks; token totals sum input and output across saved attempts.
+Every row uses FiLens CLI **0.5.7**; the DSH plugin is `dsh-filens@0.1.10`. Models are fixed within each pair: GPT-6.1-Sol for Codex, Claude, Zcode, OpenClaw, OpenCode and ZimaOS-Blue; DeepSeek-V4.1-Flash for DSH; Hy4 flash for WorkBuddy. Quality is scored on 11 complex tasks; token totals sum input and output across saved attempts.
 
 The 13-task synthetic set has 11 scored complex tasks covering DOCX version conflicts, XLSX cell lookup and cross-file sums, PPTX release gates, PDF dates, nested ZIP retrieval, two unanswerable lookups, and OCR on a PNG invoice and scanned PDF. Two TXT controls test a ticket interval and a code at the end of a long document.
 
 | Harness / version | Quality (stock → FiLens) | Evidence success | p50 / batch time (s) | Token total¹ (input + output) |
 | --- | ---: | ---: | ---: | ---: |
 | WorkBuddy Desktop · `5.11.3.43806934` · v18 | 98.18 → **100.00** | 9/11 → **11/11** | 57.773 → **54.073** | 540,952 → **144,341** |
+| ZimaOS-Blue · `0.11.0` · v9 | 97.8 → **100.0** | 72.7% → **100%** | 35.6 → **20.8** | 878,162 → **558,557** |
 | Codex CLI · `0.169.0-alpha.11.1` · v6 | 96.7 → **100.0** | 84.8% → **100%** | 33.0 → **24.0** | 2,313,628* → 1,753,149* |
 | DSH · `0.2.2-rc.1` · local v8 | 96.1 → **100.0** | 84.8% → **100%** | 18.2 → **9.2** | 3,716,055 → **2,095,331** |
 | OpenClaw CLI · `2026.11.6` · v25 | 95.2 → **100.0** | 81.8% → **100%** | 44.9 → **29.0** | 4,606,139 → **2,449,195** |
@@ -83,7 +85,7 @@ The 13-task synthetic set has 11 scored complex tasks covering DOCX version conf
 | Claude Code · `2.1.41` · v5 R1 | 66.7 → **81.8** | 51.5% → **81.8%** | 37.6 → **22.8** | 6,990,001* → 4,045,783* |
 | Zcode · `0.17.1-2` · v24 | 50.0 → **100.0** | 30.3% → **100%** | 85.3 → **23.0** | 1,127,085* → 1,982,136* |
 
-Quality improved in 7/7 pairs and measured time fell in 7/7; tokens fell in all 4 pairs with complete usage. ¹ CLI token totals aggregate three 13-task runs per condition; p50 covers complex tasks. WorkBuddy is one exploratory 13-task batch per condition, so its time and tokens are batch totals. `*` marks incomplete usage and cannot support a complete token-savings claim: Codex has one unsaved request, Claude has six timed-out requests per condition without usage, and Zcode stock is missing usage for 19 attempts. Monetary amounts are not priced. See `baselines.json` for all caveats.
+Quality improved in 8/8 pairs and measured time fell in 8/8; tokens fell in all 5 pairs with complete usage. ¹ CLI token totals aggregate three 13-task runs per condition; p50 covers complex tasks. WorkBuddy is one 13-task batch per condition; Blue has one attempt per task and condition. `*` marks incomplete usage and cannot support a complete token-savings claim: Codex has one unsaved request, Claude has six timed-out requests per condition without usage, and Zcode stock is missing usage for 19 attempts. Monetary amounts are not priced. See `baselines.json` for all caveats.
 
 <details>
 <summary>Test-set inventory (13 tasks)</summary>

@@ -12,7 +12,8 @@ test('stages external package links without copying release artifacts to the sit
     const manifest = { tag: 'v1.0.0', components: { cli: '1', preview: '1', mobileSdk: '1' }, assets: [
       { file: 'filens-test.zip', kind: 'cli-lite', bytes: 1234, sha256: 'a'.repeat(64) },
       { file: 'preview.zip', kind: 'browser-all-in-one', bytes: 2345, sha256: 'b'.repeat(64) },
-      { file: 'preview-precompressed.zip', kind: 'browser-precompressed-sidecars', bytes: 3456, sha256: 'c'.repeat(64) }
+      { file: 'preview-precompressed.zip', kind: 'browser-precompressed-sidecars', bytes: 3456, sha256: 'c'.repeat(64) },
+      { file: 'filens-1-macos-arm64-lite.tar.gz', kind: 'cli-lite', bytes: 2000, sha256: 'd'.repeat(64) }
     ] };
     await mkdir(path.join(root, 'docs'));
     await mkdir(path.join(root, 'skills/filens/references'), { recursive: true });
@@ -31,7 +32,9 @@ test('stages external package links without copying release artifacts to the sit
     }));
     await writeFile(path.join(root, 'docs/release-v0.6.7-publication.json'), JSON.stringify({ assets: [
       { file: 'filens-1-macos-arm64-lite.tar.gz', bytes: 2000,
-        publicUrl: 'https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-1-macos-arm64-lite.tar.gz' }
+        publicUrl: 'https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-1-macos-arm64-lite.tar.gz' },
+      { file: 'filens-1-linux-x64-lite.tar.gz', bytes: 2100,
+        publicUrl: 'https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-1-linux-x64-lite.tar.gz' }
     ] }));
     await writeFile(path.join(root, 'skills/filens/SKILL.md'), '# FiLens\n[Read](references/reading.md)\n');
     await writeFile(path.join(root, 'skills/filens/references/reading.md'), 'Reading reference\n');
@@ -45,7 +48,10 @@ test('stages external package links without copying release artifacts to the sit
     assert.match(html, /npm install filens-preview@1/);
     assert.doesNotMatch(html, /filens-preview-split@1/);
     assert.match(html, /registry\.npmmirror\.com\/filens-preview/);
-    assert.match(html, /releases\/download\/v0\.6\.7\/filens-1-macos-arm64-lite\.tar\.gz/);
+    assert.match(html, /releases\/download\/v1\.0\.0\/filens-1-macos-arm64-lite\.tar\.gz/);
+    assert.equal(html.match(/>filens-1-macos-arm64-lite\.tar\.gz<\/a>/g)?.length, 1);
+    assert.doesNotMatch(html, /releases\/download\/v0\.6\.7\/filens-1-macos-arm64-lite\.tar\.gz/);
+    assert.match(html, /releases\/download\/v0\.6\.7\/filens-1-linux-x64-lite\.tar\.gz/);
     assert.match(html, /optional static-host sidecars/);
     assert.doesNotMatch(html, /filens\.cc\/cdn/);
     await assert.rejects(readFile(path.join(output, 'v1.0.0/filens-test.zip')), { code: 'ENOENT' });

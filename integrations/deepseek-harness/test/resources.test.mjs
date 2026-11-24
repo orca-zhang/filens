@@ -12,7 +12,10 @@ test('static resources serve enumerated code only, with CSP and proper HEAD', as
   assert.match(html.headers.get('content-security-policy'), /connect-src 'self' data: blob:/);
   assert.equal(html.headers.get('access-control-allow-origin'), '*');
   assert.match(await html.text(), /createPreview/);
-  const css = await Preview.runtimeResource(new Request(`${url}style.css`));
+  const stylesheets = Object.keys(runtime.files).filter(file => file.endsWith('.css'));
+  assert.equal(stylesheets.length, 1);
+  const css = await Preview.runtimeResource(new Request(`${url}${stylesheets[0]}`));
+  assert.equal(css.status, 200);
   assert.match(css.headers.get('content-type'), /^text\/css/);
   await css.body.cancel();
   const head = await Preview.runtimeResource(new Request(`${url}filens.js`, { method: 'HEAD' }));
@@ -37,7 +40,7 @@ test('static resources serve enumerated code only, with CSP and proper HEAD', as
 test('Host route and startup injection are removed with the Preview plugin', async () => {
   const ctx = new Context();
   let registered = 0;
-  await ctx.provide('webServer', { register: route => { assert.equal(route.kind, 'prefix'); registered++; return () => { registered--; }; }, getOrigin: () => 'http://127.0.0.1:3000' });
+  await ctx.provide('webServer', { register: route => { assert.equal(route.kind, 'prefix'); assert.equal(route.auth, 'anonymous'); registered++; return () => { registered--; }; }, getOrigin: () => 'http://127.0.0.1:3000' });
   const plugin = ctx.plugin(Preview);
   await plugin;
   const table = [];

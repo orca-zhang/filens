@@ -1,6 +1,6 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Local previews for 450 file formats with a session file workspace, including Office, PDF, iWork, CAD/3D, RAW and 360\u00b0 media.",
   "type": "module",
   "license": "MIT",
@@ -21,7 +21,7 @@
   ],
   "engines": {
     "node": ">=24.9.0",
-    "dsh": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1"
+    "dsh": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1 || 0.2.2-rc.5 || 0.2.3-alpha.2"
   },
   "main": "./lib/preview-host.js",
   "exports": {
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "~3.18.6-alpha.2",
-    "filens-cli": "0.5.7",
+    "filens-cli": "0.5.8",
     "@filens/dsh-workspace": "file:./workspace"
   },
   "bundledDependencies": [
@@ -66,9 +66,9 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5 || ~4.0.6-alpha.2 || ~4.1.0",
-    "@deepseek-ai/dsh-sandbox": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1",
-    "@deepseek-ai/dsh-tools": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1"
+    "@deepseek-ai/dsh-sandbox": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1 || 0.2.2-rc.5 || 0.2.3-alpha.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1 || 0.2.2-rc.5 || 0.2.3-alpha.2",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.5 || 0.2.2-alpha.3 || 0.2.2-rc.1 || 0.2.2-rc.5 || 0.2.3-alpha.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.1.0",

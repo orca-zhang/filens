@@ -33,9 +33,9 @@
 
 ## FiLens-Bench
 
-FiLens-Bench 用 13 道合成题比较各 agent harness 在原生工具与正常安装 FiLens CLI 后的复杂文件查询表现，覆盖 Office、PDF、嵌套压缩包、扫描件、跨文件问题和无答案题。当前快照使用 FiLens CLI **0.5.7**：**7/7** 组质量分提高、**7/7** 组记录耗时缩短；用量完整的 **4/4** 组 token 总量下降。各 harness 使用的模型不同，应比较同一 harness 内的配对结果。
+FiLens-Bench 用 13 道合成题比较各 agent harness 在原生工具与正常安装 FiLens CLI 后的复杂文件查询表现，覆盖 Office、PDF、嵌套压缩包、扫描件、跨文件问题和无答案题。当前快照使用 FiLens CLI **0.5.7**：**8/8** 组质量分提高、**8/8** 组记录耗时缩短；用量完整的 **5/5** 组 token 总量下降。各 harness 使用的模型不同，应比较同一 harness 内的配对结果。
 
-[![FiLens-Bench 七个 agent harness 的成绩](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/)
+[![FiLens-Bench 八个 agent harness 的成绩](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/)
 
 [官方评测站](https://filens.cc/bench/) · [当前中英文成绩表](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [评测方法与复现](benchmarks/filens-bench/README.zh-CN.md)
 
@@ -86,10 +86,10 @@ filens preview report.pdf --mode serve
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 离线下载 · macOS arm64 · CLI 0.5.7；Full 含预览 0.3.7 和 OCR 模型，Lite 另配预览资源；<a href="https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 3.74 MiB · Lite 10.87 MiB · Full 34.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.8 · macOS arm64 · Lite/Full 为基础组件体积，离线预览资源另计；Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
-CLI 0.5.7 原生可执行文件为 **0.93–2.20 MiB**。离线包沿用 v0.6.7，Full 内置预览 **0.3.7**、OCR 运行时与模型；[下载与解压体积](https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json)。npm 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源；[各平台实测](docs/agent-cli-npm-release.json)。1 MiB = 1,048,576 字节。
+CLI 0.5.7 原生可执行文件为 **1.03–3.74 MiB**。离线包沿用 v0.6.7，Full 内置预览 **0.3.7**、OCR 运行时与模型；[下载与解压体积](https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json)。npm 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源；[各平台实测](docs/agent-cli-npm-release.json)。1 MiB = 1,048,576 字节。
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](https://filens.cc/skills/filens/SKILL.md)
 - [输出格式与布局信息](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 条实测案例与自然语言边界](docs/agent-cli-examples.zh-CN.md)

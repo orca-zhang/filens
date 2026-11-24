@@ -35,6 +35,7 @@ try {
       return ['ready', 'error'].includes([...document.querySelectorAll('.filens-dsh')].at(-1)?.dataset.phase);
     }, null, { timeout: 65000 });
     assert.equal(await page.locator('.filens-dsh').last().getAttribute('data-phase'), 'ready', await page.locator('.filens-dsh-state[role=alert]').allTextContents());
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     assert.equal(await page.locator('[data-action^=fit-]:visible').count(), 0, 'DSH omits manual fit buttons');
     const viewer = page;
     assert.equal(await page.locator('iframe[title="FiLens preview"]').count(), 0);
@@ -64,7 +65,7 @@ try {
     }
     if (name.endsWith('.step')) {
       assert.equal(await viewer.locator('.filens-dsh-view .pptxv-toolbar').count(), 0);
-      const canvas = viewer.locator('canvas').first();
+      const canvas = viewer.locator('.filens-dsh-view canvas').first();
       assert.equal(Math.round((await canvas.boundingBox()).height), Math.round(bounds.height));
       const actions = page.locator('.filens-dsh-actions');
       const toggle = actions.locator('.pptxv-model-tools-toggle');

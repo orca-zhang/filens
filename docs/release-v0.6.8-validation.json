@@ -2,7 +2,7 @@
   "tag": "v0.6.8",
   "previousRelease": "v0.6.7",
   "observedAt": "2026-11-24",
-  "scope": "Browser preview npm packages and iOS/Android source SDK archives. CLI, DSH and native device artifacts are not rebuilt in this release.",
+  "scope": "Browser preview npm packages and iOS/Android source SDK archives are updated. CLI 0.5.7 and DSH 0.1.10 archives are retained byte-for-byte from v0.6.7; native binaries are not rebuilt.",
   "node": "24.22.3",
   "typescriptNodeNext": "7.0.2",
   "passed": true,
@@ -15,7 +15,8 @@
     "No external requests in installed-package browser tests",
     "Node 24 and TypeScript 7 NodeNext preview API fixture",
     "22 Chromium/WebKit mobile browser bridge checks",
-    "npm tarball privacy, release archive integrity and generated SHA-256 manifest"
+    "npm tarball privacy, release archive integrity and generated SHA-256 manifest",
+    "All eight CLI offline archives and DSH tarball match published v0.6.7 byte counts and SHA-256 hashes"
   ],
   "reports": {
     "previewNpm": "preview-npm-validation.json",
@@ -27,5 +28,13 @@
   "notRun": [
     "CLI and DSH rebuilds",
     "Native iOS and Android device tests"
-  ]
+  ],
+  "carriedForward": {
+    "sourceRelease": "v0.6.7",
+    "cli": "0.5.7",
+    "dsh": "0.1.10",
+    "embeddedPreview": "0.3.7",
+    "assets": 9,
+    "nativeExecutionRepeated": false
+  }
 }

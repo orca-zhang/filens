@@ -47,7 +47,7 @@ export function apply(ctx) { applyRuntime(ctx); }
 export function applyRuntime(ctx, basePath = runtime.basePath) {
   // rc.5 and alpha.3 share this Node handler contract; only alpha.3 also has
   // the newer resource handler contract.
-  ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: basePath.slice(0, -1), async handler(req, res) {
+  ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: basePath.slice(0, -1), auth: 'anonymous', async handler(req, res) {
     const controller = new AbortController();
     const close = () => { if (!res.writableFinished) controller.abort(); };
     res.once('close', close);
