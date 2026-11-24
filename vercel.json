@@ -13,7 +13,8 @@
         "Access-Control-Expose-Headers": "Content-Length, Content-Encoding, ETag, X-Vercel-Cache",
         "Cross-Origin-Resource-Policy": "cross-origin",
         "X-Content-Type-Options": "nosniff",
-        "Cache-Control": "public, max-age=300"
+        "Cache-Control": "public, max-age=300",
+        "Vary": "Accept-Encoding"
       },
       "continue": true
     },
@@ -21,6 +22,58 @@
       "src": "/cdn/filens-preview@([^/]+)/(.*)",
       "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
       "continue": true
+    },
+    {
+      "src": "/cdn/filens-preview@([^/]+)/all-in-one/filens\\.js",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "has": [
+        {
+          "type": "header",
+          "key": "accept-encoding",
+          "value": "(?:[^,]*,[\\t ]*)*[\\t ]*br[\\t ]*(?:;[\\t ]*q=1(?:\\.0{0,3})?[\\t ]*)?(?:,.*)?"
+        }
+      ],
+      "missing": [
+        {
+          "type": "header",
+          "key": "range"
+        }
+      ],
+      "headers": {
+        "Content-Encoding": "br",
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Vary": "Accept-Encoding"
+      },
+      "dest": "/cdn/filens-preview@$1/all-in-one/filens.js.br"
+    },
+    {
+      "src": "/cdn/filens-preview@([^/]+)/all-in-one/filens\\.js",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "has": [
+        {
+          "type": "header",
+          "key": "accept-encoding",
+          "value": "(?:[^,]*,[\\t ]*)*[\\t ]*gzip[\\t ]*(?:;[\\t ]*q=1(?:\\.0{0,3})?[\\t ]*)?(?:,.*)?"
+        }
+      ],
+      "missing": [
+        {
+          "type": "header",
+          "key": "range"
+        }
+      ],
+      "headers": {
+        "Content-Encoding": "gzip",
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Vary": "Accept-Encoding"
+      },
+      "dest": "/cdn/filens-preview@$1/all-in-one/filens.js.gz"
     },
     {
       "src": "/SKILL.md",

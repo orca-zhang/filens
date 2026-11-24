@@ -29,3 +29,23 @@ node scripts/benchmark-js-cdn.mjs
 ```
 
 测试交替请求 filens.cc 与 jsDelivr 的相同版本、相同内容：split 入口、单文件入口和归档 WASM。每项先记录首次请求，再各测 7 次；每次建立新连接，允许 CDN 缓存，启用 HTTP/2 和压缩，不使用浏览器本地缓存。报告保留状态、内容哈希、传输字节、首字节耗时、总耗时、缓存与节点响应头。首次请求的边缘缓存状态以响应头为准，不将它等同于全球冷缓存。结果只代表执行机器当时的网络路径。
+
+## 分发优化
+
+单文件版的标准 `filens.js` 地址按 `Accept-Encoding` 分发发布包自带的 `.br` / `.gz` 文件，解压后的 JS 与 npm 发布版一致。响应提供正确的 JavaScript 类型、`Content-Encoding` 和 `Vary: Accept-Encoding`。不带编码质量参数或明确 `q=1` 时走预压缩文件；其他质量权重及 Range 请求交由平台处理，避免发送客户端禁用的编码。
+
+发布包的 Brotli 为 **3,401,548 bytes**，gzip 为 **3,540,936 bytes**。优化前动态 Brotli 实测 **3,594,725 bytes**，gzip **3,603,891 bytes**；分别减少约 **5.4% / 1.7%**。
+
+生产集成直接使用上面的固定版本 URL，可省去便捷入口的转导出模块请求。需要在用户操作后打开预览的应用，可提前建立连接：
+
+```html
+<link rel="preconnect" href="https://filens.cc" crossorigin>
+```
+
+`.github/workflows/warm-js-cdn.yml` 在主分支 Vercel 部署成功后预热 JS、分块、Worker 与 WASM，也支持在主分支手动运行。脚本以 4 个并发请求读取完整响应，并核对解压后大小，不需要部署密钥或安装 npm 依赖。本地可执行：
+
+```sh
+node scripts/warm-js-cdn.mjs
+```
+
+预热只覆盖执行节点所访问的 CDN 边缘，不保证全球节点驻留。按需版继续使用独立入口；现有跨域 Worker 限制见上文。
