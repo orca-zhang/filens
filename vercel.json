@@ -6,6 +6,23 @@
   "outputDirectory": "apps/demo/dist",
   "routes": [
     {
+      "src": "/cdn/(.*)",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Timing-Allow-Origin": "*",
+        "Access-Control-Expose-Headers": "Content-Length, Content-Encoding, ETag, X-Vercel-Cache",
+        "Cross-Origin-Resource-Policy": "cross-origin",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "public, max-age=300"
+      },
+      "continue": true
+    },
+    {
+      "src": "/cdn/filens-preview@([^/]+)/(.*)",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
+      "continue": true
+    },
+    {
       "src": "/SKILL.md",
       "status": 308,
       "headers": { "Location": "/skills/filens/SKILL.md" }

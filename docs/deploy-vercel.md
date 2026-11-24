@@ -84,6 +84,8 @@ Use the commands above to validate the Vercel build locally and run the homepage
 
 The site serves the Skill and its references, a complete Skill ZIP, and the published release packages directly over HTTPS. The Vercel build stages packages after the frontend build and checks their sizes and SHA-256 hashes against `docs/preview-release-sizes.json`. Packages come from the personal GitHub repository or the local release cache. Update the manifest and versioned documentation links for future releases; binary archives stay out of Git.
 
+JavaScript CDN 入口为 `https://filens.cc/cdn/filens.js`；固定版本、跨域使用示例及与 jsDelivr 的测速命令见 [JavaScript CDN](js-cdn.md)。CDN 与官网下载共用经过 SHA-256 校验的发布文件。
+
 ## Output directory error / 找不到输出目录
 
 如果出现 `No Output Directory named "dist" found`，先确认 Vercel 部署的分支和提交已包含根目录的 `vercel.json`、`scripts/build-vercel.mjs` 及对应的 `package.json` 改动。本地尚未提交或推送的配置不会被 Git 集成部署读取。
