@@ -1,53 +1,38 @@
 # JavaScript CDN
 
-FiLens 的发布版预览引擎通过官网静态 CDN 提供，不经过转换服务器或第三方 CDN 代理。
+FiLens no longer serves preview package bytes from `filens.cc`. The old `/cdn/` paths are removed. Use the versioned npm package through jsDelivr:
 
 ```html
 <div id="preview" style="height: 80vh"></div>
 <script type="module">
-  import { createPreview } from 'https://filens.cc/cdn/filens-preview@0.3.7/all-in-one/filens.js';
+  import { createPreview } from 'https://cdn.jsdelivr.net/npm/filens-preview@0.3.7/dist/split/filens.js';
   createPreview('#preview', { src: new File(['Hello FiLens'], 'hello.txt') });
 </script>
 ```
 
-| 入口 | 用途 |
+| Entry | Use |
 | --- | --- |
-| `https://filens.cc/cdn/filens.js` | 当前版本单文件版的 ESM 转导出入口，缓存 5 分钟 |
-| `https://filens.cc/cdn/filens-preview@0.3.7/all-in-one/filens.js` | 固定版本单文件版，适合跨域嵌入 |
-| `https://filens.cc/cdn/filens-preview@0.3.7/split/filens.js` | 固定版本按需加载版，首次加载更小 |
+| `https://cdn.jsdelivr.net/npm/filens-preview@0.3.7/dist/split/filens.js` | Recommended: loads the modules needed by the selected format |
+| `https://cdn.jsdelivr.net/npm/filens-preview@0.3.7/dist/all-in-one/filens.js` | One main JS file; useful when a simple single-file runtime matters |
+| `https://registry.npmjs.org/filens-preview/-/filens-preview-0.3.7.tgz` | Complete npm package from npmjs |
+| `https://registry.npmmirror.com/filens-preview/-/filens-preview-0.3.7.tgz` | Complete npm package from the npmmirror registry |
 
-使用 `type="module"` 或动态 `import()`；这些入口不创建全局变量。生产集成推荐固定版本地址，浏览器可缓存一年。所有 CDN 文件允许跨域读取，并提供 `Timing-Allow-Origin` 以便浏览器测量加载耗时。引擎、WASM、Worker 和许可证均从 SHA-256 校验后的已发布 ZIP 原样提取，与 jsDelivr 的同版本 npm 文件对比。
+Pin a version in production. The `filens-preview` package root exports the split build; `filens-preview/all-in-one` exports the single-file build for bundlers. For direct browser imports use the full jsDelivr URL. jsDelivr sends the package with CORS enabled and serves its files from its own edge network.
 
-跨域文件来源仍需允许 CORS。发布版 split 的 iWork Worker 和两种构建的 RAR/7z Worker 要求页面与引擎同源；跨域嵌入这些格式时，可使用官网同源预览页或将完整运行目录部署到应用同源地址。单文件版的普通文档不受这一 Worker 限制。
+## Transfer and startup
 
-CDN 随 `npm run build:vercel` 发布。版本来自 `docs/preview-release-sizes.json` 的 `components.preview`；升级时需保留仍在使用的旧版 CDN 文件及其发布清单，避免固定版本链接失效。
+In the local Chromium comparison, the split entry rendered text in **25.9 ms** after about **125 KB Brotli** across six requests. The single-file entry took **123.0 ms** and transferred **3.57 MB Brotli**. These are seven-run measurements of the current workspace source, not a promise for every device or CDN edge. The npm version stays immutable; publishing the newer workspace build requires a new package version.
 
-性能对比：
+jsDelivr also negotiates Brotli for WASM. At the observed HKG edge, its 0.3.7 responses reported `Content-Encoding: br`: `libheif.wasm` **1,457,990 → 446,532 bytes**, `converter-image.wasm` **1,492,779 → 455,415 bytes**, and `pdf.worker.min.mjs` **1,078,612 → 298,037 bytes**. The two HEIF WASM files together drop from **2.95 MB to 902 KB** (about **69% less transfer**). This is based on response headers, not a browser timing run; CDN edge compression is doing useful work without storing `.br` copies in FiLens.
 
-```sh
-node scripts/benchmark-js-cdn.mjs
-```
+The split build transfers only the modules needed by a format. It also creates more requests. Its iWork and archive workers need the page and package to share an origin, so self-host the npm package's `dist/split` directory when those formats must work from an arbitrary application origin. The all-in-one entry embeds its ordinary worker sources and avoids that restriction for common document previews.
 
-测试交替请求 filens.cc 与 jsDelivr 的相同版本、相同内容：split 入口、单文件入口和归档 WASM。每项先记录首次请求，再各测 7 次；每次建立新连接，允许 CDN 缓存，启用 HTTP/2 和压缩，不使用浏览器本地缓存。报告保留状态、内容哈希、传输字节、首字节耗时、总耗时、缓存与节点响应头。首次请求的边缘缓存状态以响应头为准，不将它等同于全球冷缓存。结果只代表执行机器当时的网络路径。
+## China and overseas downloads
 
-## 分发优化
+The downloads page shows explicit provider choices instead of guessing a visitor's country. International users can use jsDelivr for browser ESM, npmjs for npm installation, and GitHub Releases for ZIP archives. In mainland China, use `registry.npmmirror.com` for npm installation or its package tarballs. For browser ESM from that package, install it and serve `node_modules/filens-preview/dist/split` from the application origin; the npm registry is not a browser module CDN.
 
-单文件版的标准 `filens.js` 地址按 `Accept-Encoding` 分发发布包自带的 `.br` / `.gz` 文件，解压后的 JS 与 npm 发布版一致。响应提供正确的 JavaScript 类型、`Content-Encoding` 和 `Vary: Accept-Encoding`。不带编码质量参数或明确 `q=1` 时走预压缩文件；其他质量权重及 Range 请求交由平台处理，避免发送客户端禁用的编码。
+GitHub Release ZIPs are linked directly, and old `https://filens.cc/downloads/v…` links redirect to GitHub. jsDelivr's GitHub endpoint serves files committed to the repository; it does not mirror binary assets attached to GitHub Releases. The preview runtime is available on jsDelivr because it is published to npm. We have not verified a reliable mainland mirror for the desktop and mobile release ZIPs, so the page does not route those files through an unverified proxy.
 
-发布包的 Brotli 为 **3,401,548 bytes**，gzip 为 **3,540,936 bytes**。优化前动态 Brotli 实测 **3,594,725 bytes**，gzip **3,603,891 bytes**；分别减少约 **5.4% / 1.7%**。
+The Vercel build now stages only the downloads index and the small Skill ZIP. It no longer fetches Release archives, extracts preview ZIPs, or writes a `/cdn/` asset tree. The old filens.cc CDN measurement is retained as history in [the original report](js-cdn-benchmark.json); it is not a current endpoint comparison.
 
-生产集成直接使用上面的固定版本 URL，可省去便捷入口的转导出模块请求。需要在用户操作后打开预览的应用，可提前建立连接：
-
-```html
-<link rel="preconnect" href="https://filens.cc" crossorigin>
-```
-
-`.github/workflows/warm-js-cdn.yml` 在主分支 Vercel 部署成功后预热 JS、分块、Worker 与 WASM，也支持在主分支手动运行。脚本以 4 个并发请求读取完整响应，并核对解压后大小，不需要部署密钥或安装 npm 依赖。本地可执行：
-
-```sh
-node scripts/warm-js-cdn.mjs
-```
-
-预热只覆盖执行节点所访问的 CDN 边缘，不保证全球节点驻留。按需版继续使用独立入口；现有跨域 Worker 限制见上文。
-
-Vercel 动态压缩对仅含 `br;q=0` 等禁用编码的请求会继续选择 Brotli。`vercel.json` 和项目路由 `CDN disabled encoding fallback` 对这类允许 identity 的请求显式使用 identity，防止平台再次压缩。该项目路由已单独发布，适用于当前部署及后续部署。
+Compare current public npm CDNs from your own network path with `node scripts/benchmark-js-cdn.mjs`; it records jsDelivr and unpkg timings and hashes in `docs/js-cdn-provider-benchmark.json`. A single runner cannot establish mainland-China or global performance, so the downloads page keeps explicit registry choices.

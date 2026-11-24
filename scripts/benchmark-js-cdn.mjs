@@ -9,8 +9,8 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { components: { preview: version } } = JSON.parse(await readFile(path.join(root, 'docs/preview-release-sizes.json'), 'utf8'));
 const origins = {
-  filens: `https://filens.cc/cdn/filens-preview@${version}`,
-  jsDelivr: `https://cdn.jsdelivr.net/npm/filens-preview@${version}/dist`
+  jsDelivr: `https://cdn.jsdelivr.net/npm/filens-preview@${version}/dist`,
+  unpkg: `https://unpkg.com/filens-preview@${version}/dist`
 };
 const files = ['split/filens.js', 'all-in-one/filens.js', 'all-in-one/archive/7zz.wasm'];
 const median = values => {
@@ -72,7 +72,7 @@ try {
         medianTotalMs: valid.length ? median(valid.map(sample => sample.totalMs)) : null });
     }
   }
-  const output = path.join(root, 'docs/js-cdn-benchmark.json');
+  const output = path.join(root, 'docs/js-cdn-provider-benchmark.json');
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
   console.table(report.summary);
   console.log(`Saved ${output}`);
