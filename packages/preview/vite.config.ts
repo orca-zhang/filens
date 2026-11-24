@@ -7,7 +7,7 @@ import { sharedCompression } from '../../scripts/shared-compression';
 import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 import { optionalEngineChunk } from '../../scripts/optional-engine-chunks';
-import { packedPreviewAssets } from '../../scripts/preview-asset-packing.mjs';
+import { deferredPreviewWorkers, packedPreviewAssets } from '../../scripts/preview-asset-packing.mjs';
 
 const root = path.resolve(__dirname, '../..');
 const single = process.env.FILENS_PREVIEW_BUILD === 'all-in-one';
@@ -52,8 +52,8 @@ function embeddedAssets() {
         // Compress before base64 to avoid its large transfer and parse overhead.
         // The shared WASM loader inflates lazily, retaining offline HTML support.
         return file.endsWith('.wasm')
-          ? `export default ${JSON.stringify(`data:application/wasm+gzip;base64,${gzipSync(bytes, { level: 9 }).toString('base64')}`)};`
-          : `export default URL.createObjectURL(new Blob([${JSON.stringify(bytes.toString())}], {type:${JSON.stringify(mime)}}));`;
+          ? `export default () => ${JSON.stringify(`data:application/wasm+gzip;base64,${gzipSync(bytes, { level: 9 }).toString('base64')}`)};`
+          : `let url; export default () => url ??= URL.createObjectURL(new Blob([${JSON.stringify(bytes.toString())}], {type:${JSON.stringify(mime)}}));`;
       }
       const reference = this.emitFile({ type: 'asset', name: path.basename(file), source: bytes });
       return `export default import.meta.ROLLUP_FILE_URL_${reference};`;
@@ -130,7 +130,7 @@ function minifiedRuntime() {
 export default defineConfig({
   base: './',
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
-  plugins: [archiveEngineAssets(), sharedCompression(), xmlParserOnly(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(), ...(single ? [packedPreviewAssets()] : [])],
+  plugins: [archiveEngineAssets(), sharedCompression(), xmlParserOnly(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(), ...(single ? [deferredPreviewWorkers(), packedPreviewAssets()] : [])],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
   build: {

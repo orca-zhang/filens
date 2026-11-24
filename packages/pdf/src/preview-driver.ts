@@ -155,7 +155,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       await previous;
       if (signal?.aborted) throw abortError();
       if (generation !== this.loadGeneration) return;
-      const [input, pdfjs, { default: pdfWorkerUrl }] = await Promise.all([
+      const [input, pdfjs, { default: workerSource }] = await Promise.all([
         toPdfSource(source),
         import('pdfjs-dist'),
         import('pdfjs-dist/build/pdf.worker.min.mjs?url')
@@ -167,6 +167,8 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       if (signal?.aborted) throw abortError();
       if (generation !== this.loadGeneration) return;
       this.contentKey = contentKey;
+      const workerUrl = workerSource as string | (() => string);
+      const pdfWorkerUrl = typeof workerUrl === 'function' ? workerUrl() : workerUrl;
       pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
       if (typeof location !== 'undefined' && location.protocol === 'file:') {
         // WebKit can silently hang on a module worker importing another blob

@@ -79,8 +79,6 @@ await mkdir(path.join(root, 'dist/preview'), { recursive: true });
 await cp(path.join(directory, 'dist/split'), path.join(root, 'dist/preview'), { recursive: true });
 // Keep archive assets external even beside the HTML-compatible main runtime.
 await cp(path.join(directory, 'dist/all-in-one/filens.js'), path.join(root, 'dist/preview/filens-all-in-one.js'));
-await cp(path.join(directory, 'dist/all-in-one/filens.js.gz'), path.join(root, 'dist/preview/filens-all-in-one.js.gz'));
-await cp(path.join(directory, 'dist/all-in-one/filens.js.br'), path.join(root, 'dist/preview/filens-all-in-one.js.br'));
 await cp(path.join(directory, 'dist/all-in-one/asset-packing.json'), path.join(root, 'dist/preview/asset-packing.json'));
 await cp(path.join(directory, 'dist/all-in-one/assets'), path.join(root, 'dist/preview/assets'), { recursive: true });
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));

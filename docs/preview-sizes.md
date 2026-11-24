@@ -1,14 +1,14 @@
 # Preview 0.3.7 runtime and package sizes
 
-Source runtimes measured 2026-11-13; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
+Source runtimes measured 2026-11-24; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
 
 | Runtime | Raw MB | gzip MB | Brotli MB |
 | --- | ---: | ---: | ---: |
-| Split main runtime | 15.88 | 5.33 | 4.16 |
-| All-in-one main JS (precompressed) | 6.69 | 3.54 | 3.40 |
+| Split main runtime | 15.92 | 5.35 | 4.17 |
+| All-in-one main JS (precompressed) | 6.89 | 3.69 | 3.56 |
 | Optional archive WASM + worker (either build) | 1.17 | 0.46 | 0.36 |
-| Split with archive assets | 17.04 | 5.79 | 4.52 |
-| All-in-one with archive assets | 7.86 | 4.00 | 3.76 |
+| Split with archive assets | 17.09 | 5.81 | 4.53 |
+| All-in-one with archive assets | 8.06 | 4.15 | 3.92 |
 
 [Exact runtime bytes](preview-build-sizes.json).
 
