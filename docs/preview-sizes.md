@@ -1,4 +1,4 @@
-# Preview 0.3.7 runtime and package sizes
+# Preview 0.3.8 runtime and package sizes
 
 Source runtimes measured 2026-11-24; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.
 
@@ -16,18 +16,26 @@ Source runtimes measured 2026-11-24; these include current checkout changes and 
 
 | Package | Compressed download | Installed file bytes |
 | --- | ---: | ---: |
-| filens-preview 0.3.7 | 16.22 MiB | 31.88 MiB |
+| filens-preview 0.3.8 | 9.76 MiB | 25.50 MiB |
 
 This local npm pack receipt does not establish registry publication. The npm package includes **both** complete runtime directories, archive assets, types, documentation and license notices. MiB = 1,048,576 bytes; excludes the npm cache and filesystem allocation overhead. [Exact package bytes and SHA-256](preview-package-sizes.json).
 
-## Published mobile source SDKs 0.1.7
+## Split-only npm pack artifact
 
-These release snapshots are measured separately from the current source build above. Each SDK includes the complete offline split runtime 0.3.7; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
+| Package | Compressed download | Installed file bytes |
+| --- | ---: | ---: |
+| filens-preview-split 0.3.8 | 5.64 MiB | 17.03 MiB |
+
+This package omits the all-in-one build. It is a local npm pack receipt; registry publication is recorded separately. [Exact package bytes and SHA-256](preview-split-package-sizes.json).
+
+## Published mobile source SDKs 0.1.8
+
+These release snapshots are measured separately from the current source build above. Each SDK includes the complete offline split runtime 0.3.8; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
 
 | SDK | ZIP download | Extracted file bytes |
 | --- | ---: | ---: |
-| iOS / Swift Package | 5.64 MiB | 17.02 MiB |
-| Android / Java Library | 5.65 MiB | 17.02 MiB |
+| iOS / Swift Package | 5.66 MiB | 17.07 MiB |
+| Android / Java Library | 5.66 MiB | 17.06 MiB |
 
 Excludes build tools, build caches and filesystem allocation overhead. [Exact SDK bytes and SHA-256](mobile-sdk-sizes.json).
 

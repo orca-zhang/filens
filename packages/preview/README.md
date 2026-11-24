@@ -27,6 +27,8 @@ processing, and never calls `mediaConverter` for video in this mode.
 
 ```sh
 npm install filens-preview
+# Smaller package with only the lazy-loaded split runtime:
+npm install filens-preview-split
 ```
 
 ```js
@@ -36,6 +38,7 @@ import { createPreview } from 'filens-preview';
 
 The npm package includes both runtime directories, TypeScript declarations and third-party notices.
 Deploy `node_modules/filens-preview/dist/split/` or `dist/all-in-one/` for direct browser use.
+The split-only package contains the same split runtime and declarations without the all-in-one build; it is the smaller option when your app only uses lazy-loaded modules. Both packages include archive sidecars and third-party notices.
 
 The split build registers lightweight format routes first, then imports the
 matching renderer when a file opens: PDF, DOCX, XLSX/CSV, PPTX, iWork, CAD, 3D,
@@ -114,8 +117,9 @@ share the existing JSZip/fflate dependencies. The extraction-only engine uses
 WASM module between fresh per-operation workers. iWork uses the ordinary ZIP
 reader without duplicating the ZIP encryption library. The totals in the table
 include the optional archive assets and exclude notices.
-The npm package contains both directories, including notices, types and
-documentation. Packed and installed bytes are recorded for each release.
+`filens-preview` contains both directories; `filens-preview-split` contains only
+the split directory. Both include notices and declarations. Packed and
+installed bytes are recorded in the [release size report](../../docs/preview-sizes.md).
 [Package measurements](https://github.com/orca-zhang/filens/blob/main/docs/preview-package-sizes.json).
 
 Both directories contain an `index.html` with a local file picker. Serve either

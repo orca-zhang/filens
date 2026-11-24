@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-11-24T11:27:39.280Z",
+  "name": "filens-preview-split",
+  "version": "0.3.8",
+  "source": "offline npm tarball",
+  "platform": "darwin-arm64",
+  "passed": true,
+  "checks": [
+    "Standalone installation without runtime dependencies",
+    "MIT license and third-party notices",
+    "TypeScript NodeNext consumer import of the split-only export",
+    "Native audio, HEIF decoding and unsupported codec handling",
+    "6 PDF/iWork/RAW/STEP/HEIF/RAR previews after production Vite bundling",
+    "No external requests during installed-package browser tests"
+  ],
+  "mediaBrowser": "chromium"
+}
