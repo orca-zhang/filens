@@ -49,3 +49,5 @@ node scripts/warm-js-cdn.mjs
 ```
 
 预热只覆盖执行节点所访问的 CDN 边缘，不保证全球节点驻留。按需版继续使用独立入口；现有跨域 Worker 限制见上文。
+
+Vercel 动态压缩对仅含 `br;q=0` 等禁用编码的请求会继续选择 Brotli。`vercel.json` 和项目路由 `CDN disabled encoding fallback` 对这类允许 identity 的请求显式使用 identity，防止平台再次压缩。该项目路由已单独发布，适用于当前部署及后续部署。

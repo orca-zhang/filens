@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
 const { routes } = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
-const compressed = routes.filter(route => route.headers?.['Content-Encoding']);
+const compressed = routes.filter(route => ['br', 'gzip'].includes(route.headers?.['Content-Encoding']));
 
 test('precompressed JS respects encoding exclusions, quality values and range requests', () => {
   const choose = (encoding, headers = {}, method = 'GET') => compressed.find(route =>
@@ -33,5 +33,6 @@ test('normalizes disabled codings to identity before platform compression', () =
   for (const value of ['br;q=0', 'br;q=0, gzip;q=0', 'identity, br;q=0, gzip;q=0']) assert.ok(matches(value), value);
   for (const value of ['br, gzip', 'br;q=0, gzip', 'br;q=0, gzip;q=0.5', 'br;q=0, identity;q=0']) assert.ok(!matches(value), value);
   assert.equal(guard.transforms[0].args, 'identity');
+  assert.equal(guard.headers['Content-Encoding'], 'identity');
   assert.equal(guard.continue, true);
 });
