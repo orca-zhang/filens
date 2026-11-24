@@ -182,7 +182,7 @@ In the profile's `cordis.patch.yml`:
 - id: filens-tools
   config:
     timeoutMs: 120000
-    maxBytes: 131072
+    maxBytes: 262144
     displayChars: 60000
     ocr: true
     # Optional executable and fixed arguments, in the shell execution world:

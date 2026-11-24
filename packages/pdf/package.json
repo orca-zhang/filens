@@ -44,7 +44,7 @@
     "@filens/core": "file:../core"
   },
   "dependencies": {
-    "pdfjs-dist": "^5.4.624"
+    "pdfjs-dist": "5.4.624"
   },
   "license": "MIT",
   "repository": {

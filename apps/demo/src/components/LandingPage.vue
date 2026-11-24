@@ -16,6 +16,7 @@ const revealAnimations = new Set<Animation>();
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 const demoAsset = (file: string) => `${asset(`home/${file}`)}?v=${demoMedia.version}`;
 const repo = 'https://github.com/orca-zhang/filens';
+const benchUrl = computed(() => `https://filens.cc/bench/${isEnglish.value ? 'en.html' : ''}`);
 const skillUrl = 'https://filens.cc/skills/filens/SKILL.md';
 const skillInstallPrompt = computed(() => t(
   `帮我安装 filens，读取 ${skillUrl}，按里面的说明配置 CLI 和 Skill。离线安装包：https://filens.cc/downloads/。`,
@@ -276,8 +277,8 @@ function applyLocale(): void {
     ?.setAttribute(
       'content',
       t(
-        '探微（filens）在浏览器中预览 Office、iWork、PDF、CAD / STEP、3D、RAW 和全景，本地文件无需上传。按需加载，WASM 转换支持浏览器内运行及 CLI / HTTP 服务调用。',
-        'Preview Office, iWork, PDF, CAD / STEP, 3D, RAW, and panoramas in your browser. Local files stay on your device. Modules load on demand; WASM conversion runs in the browser or through CLI / HTTP tools.'
+        '探微（filens）：450 种格式纯前端预览，349 种格式 Agent CLI。原生 PPTX、iWork 15 协议解析、DJI / Insta360 厂商标定与实时全景视频。本地文件无需上传。',
+        'filens: browser previews for 450 formats and an Agent CLI for 349. Native PPTX, iWork 15 parsing, and calibrated DJI / Insta360 panoramas and video. Local files stay on your device.'
       )
     );
 }
@@ -342,6 +343,8 @@ async function playDemo(): Promise<void> {
         <span>{{ t('探微', 'filens') }}<span v-if="isEnglish" class="brand-period">.</span></span>
       </a>
       <nav class="site-nav" :aria-label="t('主导航', 'Main navigation')">
+        <a href="#highlights">{{ t('独特能力', 'Why filens') }}</a>
+        <a href="#benchmark">{{ t('Agent 测评', 'Agent benchmarks') }}</a>
         <a href="#formats">{{ t('预览效果', 'Previews') }}</a>
         <a href="#more-formats">{{ t('常见格式', 'Formats') }}</a>
         <a href="#demo">{{ t('视频演示', 'Watch demo') }}</a>
@@ -381,11 +384,11 @@ async function playDemo(): Promise<void> {
         <p class="hero-description">
           {{
             t(
-              '文档里的想法，照片里的远方，模型里的想象。',
-              'Ideas in a document. Places in a photo. Possibilities in a model.'
+              '原生 PPTX、iWork 15、相机全景原片，在浏览器里直接打开。',
+              'Native PPTX. iWork 15. Camera panoramas. Right in your browser.'
             )
           }}<br />
-          {{ t('支持 402 种格式，在浏览器里打开。本地文件，无需上传。', 'Preview 402 file formats in your browser. Local files stay with you.') }}
+          {{ t('支持 450 种格式，在浏览器里打开。本地文件，无需上传。', 'Preview 450 file formats in your browser. Local files stay with you.') }}
         </p>
         <div class="hero-actions">
           <label class="button button-dark upload-button"
@@ -403,17 +406,49 @@ async function playDemo(): Promise<void> {
           </button>
         </div>
         <p class="hero-footnote"><span class="live-dot"></span>{{ t('开源 · 浏览器内运行 · 即开即看', 'OPEN SOURCE · IN YOUR BROWSER · READY TO EXPLORE') }}</p>
-        <a class="scroll-cue" href="#formats">{{ t('往下，看见更多', 'There’s more below') }}<span aria-hidden="true">↓</span></a>
+        <a class="scroll-cue" href="#highlights">{{ t('往下，看见独特之处', 'Discover what makes filens different') }}<span aria-hidden="true">↓</span></a>
+      </section>
+
+      <section id="highlights" class="highlights-section section-width" aria-labelledby="highlights-title">
+        <div class="chapter-heading">
+          <p class="eyebrow">{{ t('FILENS 的独特能力', 'ONLY WITH FILENS') }}</p>
+          <h2 id="highlights-title">{{ t('三项独特能力，一个浏览器。', 'Three distinctive capabilities. One browser.') }}</h2>
+          <p>{{ t('据我们所知，截至 2026-11-24。解析与渲染代码真正开源，文件在本地直接打开。', 'To our knowledge, as of November 24, 2026. Truly open-source parsing and rendering, with local files opened directly.') }}</p>
+        </div>
+        <div class="principle-grid">
+          <article class="principle">
+            <p class="principle-proof"><strong>PPTX</strong><span>{{ t('真正开源 · 前端原生', 'TRULY OPEN SOURCE · FRONTEND NATIVE') }}</span></p>
+            <h2>{{ t('唯一真开源的前端原生 PPTX 预览库', 'The only truly open-source, frontend-native PPTX viewer') }}</h2>
+            <p>{{ t('直接解析文字、形状、表格和图片，原生呈现，体验更好。MIT 开源完整实现，首屏速度与兼容性有真实样例实测。', 'Parse and display text, shapes, tables and images directly for a better viewing experience. The full implementation is MIT licensed, with preview speed and coverage measured on real files.') }}</p>
+            <button class="text-link" type="button" @click="emit('preview', 'pptx')">{{ t('体验原生 PPTX', 'Try native PPTX') }} ↗</button>
+            <a :href="`${repo}/blob/main/docs/performance-comparison${isEnglish ? '' : '.zh-CN'}.md`" target="_blank" rel="noopener noreferrer">{{ t('查看体验实测', 'See preview measurements') }} ↗</a>
+          </article>
+          <article class="principle">
+            <p class="principle-proof"><strong>iWork 15</strong><span>KEYNOTE · PAGES · NUMBERS</span></p>
+            <h2>{{ t('率先支持 iWork 15，唯一纯前端预览库', 'The first iWork 15 parser. The only pure frontend iWork viewer.') }}</h2>
+            <p>{{ t('直接解析 iWork 15 协议，在浏览器内呈现幻灯片、页面和表格。无需苹果设备，无需上传 iCloud，也无需转换服务。', 'Parse the iWork 15 protocol and display slides, pages and spreadsheets in the browser, without Apple hardware, iCloud uploads or a conversion service.') }}</p>
+            <button class="text-link" type="button" @click="emit('preview', 'key')">{{ t('体验 iWork 预览', 'Try iWork previews') }} ↗</button>
+            <a :href="`${repo}/tree/main/packages/iwork`" target="_blank" rel="noopener noreferrer">{{ t('查看协议与实现', 'Explore the parser and viewer') }} ↗</a>
+          </article>
+          <article class="principle">
+            <p class="principle-proof"><strong>Panorama</strong><span>{{ t('厂商标定 · 实时全景视频', 'CAMERA CALIBRATION · REAL-TIME 360° VIDEO') }}</span></p>
+            <h2>{{ t('厂商畸变标定，实时全景照片与视频', 'Camera calibration for real-time panorama photos and video') }}</h2>
+            <p>{{ t('读取 DJI、Insta360 原片内的官方畸变标定参数，支持纯前端实时渲染全景视频。X5 原片实测接缝观感明显优于专业全景库 PSV 的通用双鱼眼投影。', 'Read official distortion calibration embedded in DJI and Insta360 originals and render panorama video in real time, entirely in the browser. Tested X5 seams look visibly better than specialist PSV’s generic dual-fisheye projection.') }}</p>
+            <button class="text-link" type="button" @click="emit('preview', 'insv')">{{ t('体验相机全景原片', 'Try camera panorama originals') }} ↗</button>
+            <a :href="`${repo}/blob/main/docs/performance-comparison${isEnglish ? '' : '.zh-CN'}.md`" target="_blank" rel="noopener noreferrer">{{ t('查看 PSV 画面对比', 'See the PSV visual comparison') }} ↗</a>
+          </article>
+        </div>
       </section>
 
       <section id="skill" class="skill-install-section section-width" aria-labelledby="skill-install-title">
         <div class="skill-install-copy">
           <p class="eyebrow">FILENS FOR AGENTS</p>
           <h2 id="skill-install-title">{{ t('一句话，让 Agent 装好 FiLens', 'Ask your agent to install FiLens') }}</h2>
-          <p>{{ t('Agent CLI 支持 334 种文件格式（按扩展名统计），让 Agent 在本地读取、搜索、OCR 与转换你的文件。', 'The Agent CLI supports 334 file formats (counted by extension), with local file reading, search, OCR, and conversion for your agent.') }}</p>
+          <p>{{ t('Agent CLI 支持 349 种文件格式（按扩展名统计），让 Agent 在本地读取、搜索、OCR 与转换你的文件。', 'The Agent CLI supports 349 file formats (counted by extension), with local file reading, search, OCR, and conversion for your agent.') }}</p>
           <a class="text-link" :href="`${asset('')}?view=agent`" @click.prevent="emit('agent')">
             {{ t('查看能力与安装选项', 'Explore capabilities and setup') }} <span aria-hidden="true">↗</span>
           </a>
+          <a class="text-link bench-link" :href="benchUrl">{{ t('FiLens-Bench：独立成绩与结果下载', 'FiLens-Bench: results and snapshot downloads') }} ↗</a>
         </div>
         <div class="skill-install-terminal">
           <div class="skill-install-terminal-heading"><WorkbenchIcon name="terminal" /><span>Codex · Claude Code · Cursor · OpenCode</span></div>
@@ -431,6 +466,35 @@ async function playDemo(): Promise<void> {
                 ? t('已复制，粘贴给你的 Agent 即可。', 'Copied. Paste it into your agent chat.')
                 : t('把这句话发给你的 Agent，让它完成安装。', 'Send this to your agent to complete setup.') }}
           </p>
+        </div>
+      </section>
+
+      <section id="benchmark" class="benchmark-section section-width" aria-labelledby="benchmark-title">
+        <div class="chapter-heading">
+          <p class="eyebrow">FILENS-BENCH · 2026-11-24 · CLI 0.5.7</p>
+          <h2 id="benchmark-title">{{ t('让 Agent 读得更准，也更快。', 'Help your agent read more accurately, and faster.') }}</h2>
+          <p>{{ t('13 道合成题，覆盖 Office、PDF、嵌套压缩包与扫描件。比较同一 Agent 正常安装 FiLens 前后的表现。', '13 synthetic tasks covering Office, PDFs, nested archives and scans. Compare each agent before and after a normal FiLens installation.') }}</p>
+        </div>
+        <div class="principle-grid">
+          <article class="principle">
+            <p class="principle-proof"><strong>7/7</strong><span>{{ t('组质量分提高', 'pairs improved in quality') }}</span></p>
+            <h2>{{ t('回答更准确，证据更完整', 'More accurate answers and better evidence') }}</h2>
+            <p>{{ t('质量分综合字段准确率与证据 F1，统计 11 道复杂文件题。', 'Quality combines field accuracy and evidence F1 across 11 complex-file tasks.') }}</p>
+          </article>
+          <article class="principle">
+            <p class="principle-proof"><strong>7/7</strong><span>{{ t('组记录耗时缩短', 'pairs finished faster') }}</span></p>
+            <h2>{{ t('从提问到回答，用时更少', 'Less time from question to answer') }}</h2>
+            <p>{{ t('CLI 比较复杂题 p50；WorkBuddy 比较单批总耗时。', 'CLI pairs compare complex-task p50; WorkBuddy compares whole-batch time.') }}</p>
+          </article>
+          <article class="principle">
+            <p class="principle-proof"><strong>4/4</strong><span>{{ t('组完整用量的 token 下降', 'complete-usage pairs used fewer tokens') }}</span></p>
+            <h2>{{ t('减少处理文件的 token 用量', 'Fewer tokens spent on file tasks') }}</h2>
+            <p>{{ t('仅统计用量完整的四组；缺失记录不按零计。', 'Only the four pairs with complete usage are counted; missing records are never zero.') }}</p>
+          </article>
+        </div>
+        <p class="principles-note">{{ t('小型合成题集快照。各组模型不同，请比较同一 harness 内的配对变化；WorkBuddy 为单批探索性结果。', 'A small synthetic snapshot. Models differ across harnesses; compare within each pair. WorkBuddy is an exploratory single-batch result.') }}</p>
+        <div class="benchmark-actions">
+          <a class="button button-outline" :href="benchUrl">{{ t('查看七组成绩、方法与下载', 'See all seven pairs, methods and downloads') }} ↗</a>
         </div>
       </section>
 
@@ -520,12 +584,12 @@ async function playDemo(): Promise<void> {
             <p class="principle-proof"><strong>WASM</strong><span>{{ t('文件转换', 'file conversion') }}</span></p>
             <h2>{{ t('WASM 转换，灵活部署', 'WASM conversion, flexible deployment') }}</h2>
             <p>{{ t('转换模块可在浏览器中直接运行，也可通过 CLI 或 HTTP 服务独立使用。文件解析与转换由 WASM 完成，服务端负责请求和文件管理。', 'Run the conversion module directly in the browser or use it independently through CLI tools or HTTP services. WASM handles file parsing and conversion; the server manages requests and files.') }}</p>
-            <a :href="`${repo}/tree/main/examples/go-wazero-converter`" target="_blank" rel="noopener noreferrer">
-              {{ t('查看 CLI / HTTP 转换工具', 'Explore CLI / HTTP converters') }} <span aria-hidden="true">↗</span>
+            <a :href="`${repo}/blob/main/docs/agent-cli.md#file-conversion-and-agent-skill`" target="_blank" rel="noopener noreferrer">
+              {{ t('查看 Rust CLI 转换命令', 'Explore Rust CLI conversion') }} <span aria-hidden="true">↗</span>
             </a>
           </article>
           <article class="principle">
-            <p class="principle-proof"><strong>≈<!-- bundle-size:converter-core -->334.3<!-- /bundle-size --><span class="proof-unit"> KiB</span></strong><span>{{ t('文档转换 WASM · Brotli', 'document conversion WASM · Brotli') }}</span></p>
+            <p class="principle-proof"><strong>≈<!-- bundle-size:converter-core -->347.3<!-- /bundle-size --><span class="proof-unit"> KiB</span></strong><span>{{ t('文档转换 WASM · Brotli', 'document conversion WASM · Brotli') }}</span></p>
             <h2>{{ t('高性能，极致小巧', 'Fast, tiny, loaded on demand') }}</h2>
             <p>{{ t('按格式分包、按需加载，配合 Worker 解析与页面虚拟化，减少下载与渲染负担。', 'Format-based bundles and lazy loading, with worker parsing and page virtualization to reduce download and rendering work.') }}</p>
             <a :href="`${repo}/blob/main/docs/bundle-sizes.md`" target="_blank" rel="noopener noreferrer">
@@ -543,7 +607,7 @@ async function playDemo(): Promise<void> {
             <h2 id="formats-title">{{ t('更多文件，也能打开。', 'More files. More possibilities.') }}</h2>
           </div>
           <p>
-            {{ t('覆盖 402 种格式，按扩展名统计，包含直接预览与本地转换后预览。从传统文档到相机原片、CAD 实体，选一类，打开真实样例。', '402 formats, counted by extension, including direct previews and previews after local conversion. From legacy documents to camera originals and CAD solids, pick a category to try a real sample.') }}
+            {{ t('覆盖 450 种格式，按扩展名统计，包含直接预览与本地转换后预览。从传统文档到相机原片、CAD 实体，选一类，打开真实样例。', '450 formats, counted by extension, including direct previews and previews after local conversion. From legacy documents to camera originals and CAD solids, pick a category to try a real sample.') }}
           </p>
         </div>
         <ul class="format-family-grid">
@@ -672,6 +736,7 @@ async function playDemo(): Promise<void> {
         <p>{{ t('纯前端文件预览。开源、高性能、极致小巧。', 'Pure frontend file previews. Open source, fast, and compact.') }}</p>
       </div>
       <nav :aria-label="t('页脚导航', 'Footer navigation')">
+        <a :href="benchUrl">FiLens-Bench ↗</a>
         <a :href="repo" target="_blank" rel="noopener noreferrer">GitHub ↗</a
         ><a :href="supportMatrixUrl" target="_blank" rel="noopener noreferrer">{{
           t('格式支持', 'Format support')

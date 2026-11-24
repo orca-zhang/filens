@@ -143,11 +143,11 @@ async function main() {
   }
 
   // Converter fixtures - include exactly what's in the official manifest
-  const converterManifestPath = path.resolve(rootDir, 'examples/go-wazero-converter/fixtures/manifest.json');
+  const converterManifestPath = path.resolve(rootDir, 'examples/converter/fixtures/manifest.json');
   const converterManifestRaw = await fs.readFile(converterManifestPath, 'utf8');
   const converterManifest = JSON.parse(converterManifestRaw);
   for (const job of converterManifest.jobs ?? []) {
-    const inputPath = String(job.inputPath || '').replace(/^\.\//, 'examples/go-wazero-converter/');
+    const inputPath = String(job.inputPath || '').replace(/^\.\//, 'examples/converter/');
     if (!inputPath) continue;
     samples.push(sampleEntry({
       id: uniqueId(`convert_${job.sourceFormat}_${path.basename(inputPath).replace(/\W+/g, '_')}`, ids),
@@ -172,7 +172,7 @@ async function main() {
     ['SimpleMacro.xlsm', 'xlsm', 'xlsx'],
     ['testNames.xlsm', 'xlsm', 'xlsx']
   ]) {
-    const relPath = `examples/go-wazero-converter/fixtures/real/apache-poi/${name}`;
+    const relPath = `examples/converter/fixtures/real/apache-poi/${name}`;
     samples.push(sampleEntry({
       id: uniqueId(makeId('apache-poi', relPath), ids),
       kind: 'convert',

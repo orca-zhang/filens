@@ -6,7 +6,7 @@ import { createWasmConverterClient, createWasmCoreRunner } from '../src';
 const root = new URL('../../../', import.meta.url);
 const imageBytes = () => readFile(new URL('wasm/converter-image/dist/converter-image.wasm', root));
 const source = () => readFile(new URL('apps/demo/public/samples/raw/pentax-k-r.dng', root));
-const x3fSource = () => readFile(new URL('examples/go-wazero-converter/fixtures/raw/sample.x3f', root));
+const x3fSource = () => readFile(new URL('examples/converter/fixtures/raw/sample.x3f', root));
 const context = { descriptor: { source: new Uint8Array() } };
 
 describe('direct image core preview', () => {
@@ -54,7 +54,7 @@ describe('direct image core preview', () => {
   });
 
   it.each(['image', 'document'])('rejects false JPEG starts in RAW bytes with the %s core', async (core) => {
-    const fixture = await readFile(new URL('examples/go-wazero-converter/fixtures/raw/sample.nef', root));
+    const fixture = await readFile(new URL('examples/converter/fixtures/raw/sample.nef', root));
     const jpeg = fixture.subarray(fixture.indexOf(Buffer.from([0xff, 0xd8])), fixture.lastIndexOf(Buffer.from([0xff, 0xd9])) + 2);
     const image = core === 'image' ? await WebAssembly.compile(await imageBytes()) : undefined;
     const wasm = image ?? await WebAssembly.compile(await readFile(new URL('wasm/converter-core/dist/converter-core.wasm', root)));

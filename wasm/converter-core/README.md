@@ -1,12 +1,10 @@
 # Conversion manifest
 
-This directory retains the public conversion manifest and a thin Go policy adapter used by the wazero host.
+This directory retains the public conversion manifest shared by the Rust WASM core and TypeScript clients.
 
 All parsing, conversion, and OpenXML generation live in `../converter-core-rust`.
 
 - `manifest/conversions.json`: shared source-to-target policy
-- `manifest/manifest.go`: Go host adapter for validation and capability reporting
-- `go.mod`: module boundary required by the Go host replacement
 
 EPS/PS and legacy PostScript AI use the on-demand `converter-postscript.wasm`
 module, built from the same Rust core and WASI protocol. It emits vector PDF,
@@ -32,8 +30,7 @@ saved in that format by newer CAD applications).
 The module uses the `graphics-preview` feature and is loaded only when needed.
 Browser hosts configure `createWasmConverterClient({ wasm, graphicsWasm: rasterWasm, cadWasm })`.
 `converter-graphics.wasm` remains a compatible combined CAD/raster engine for
-existing hosts configured with `graphicsWasm`. The
-Go shell follows `requiredModule: "graphics"` and invokes the adjacent module.
+existing hosts configured with `graphicsWasm`.
 The combined `converter-core-full.wasm` includes it. TIFF shows only the first
 image, DDS only the first surface, JPEG XL only the first frame, and CUR only
 the largest image without its hotspot. OpenEXR uses the default image and color

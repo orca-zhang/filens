@@ -1,9 +1,9 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
+import { packageDeclarations } from '../../scripts/package-declarations';
 
 export default defineConfig({
-  plugins: [dts({ compilerOptions: { declarationMap: false }, insertTypesEntry: true })],
+  plugins: [packageDeclarations({ compilerOptions: { declarationMap: false }, insertTypesEntry: true })],
   build: {
     cssCodeSplit: false,
     lib: {

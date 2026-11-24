@@ -29,7 +29,7 @@ for(const flavor of ['full','lite']){
   const fixtures=path.join(directory,'test-fixtures');await mkdir(fixtures,{recursive:true});
   for(const file of ['scan.png','scan-transparent.png','scan-exif.jpg','scan-rotated.png','scan.pdf'])await copyFile(path.join(root,'converter/rapidocr/testdata',file),path.join(fixtures,file));
   await copyFile(path.join(root,'docs/assets/agent-cli/invoice-zh.png'),path.join(fixtures,'invoice-zh.png'));
-  await copyFile(path.join(root,'examples/go-wazero-converter/fixtures/raw/sample.dng'),path.join(fixtures,'sample.dng'));
+  await copyFile(path.join(root,'examples/converter/fixtures/raw/sample.dng'),path.join(fixtures,'sample.dng'));
   const w='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
   const rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
   await writeFile(path.join(fixtures,'embedded.docx'),zipSync({

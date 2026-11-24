@@ -14,6 +14,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(root);
 const registry = process.argv.includes('--registry');
 const release = JSON.parse(await readFile('dist/workspace-npm/release.json', 'utf8'));
+// Media's existing generic typed arrays need TS 5.7; older compilers check XLSX.
+const compatibilityCompilers = [
+  { version: '5.0.4', file: 'xlsx.mts' },
+  { version: '5.4.5', file: 'xlsx.mts' },
+  { version: '5.7.3', file: 'index.mts' },
+  { version: '5.8.3', file: 'index.mts' }
+];
 const work = await realpath(await mkdtemp(path.join(os.tmpdir(), 'filens-modules-public-')));
 const env = { ...process.env, npm_config_registry: 'https://registry.npmjs.org/',
   npm_config_userconfig: path.join(work, '.npmrc'), npm_config_cache: path.join(work, 'npm-cache') };
@@ -25,18 +32,106 @@ const run = (command, args) => {
 let browser, server;
 try {
   await writeFile(path.join(work, 'package.json'), JSON.stringify({ name: 'filens-modules-consumer', private: true, type: 'module' }));
-  const npm = npmInvocation(['install', '--ignore-scripts', '--no-audit', '--no-fund', ...release.packages.map(pkg => registry ? `${pkg.name}@${pkg.version}` : path.join(root, 'dist/workspace-npm', pkg.file))]);
+  const npm = npmInvocation(['install', '--ignore-scripts', '--no-audit', '--no-fund',
+    ...release.packages.map(pkg => registry ? `${pkg.name}@${pkg.version}` : path.join(root, 'dist/workspace-npm', pkg.file)),
+    ...compatibilityCompilers.map(({ version }) => `typescript-${version}@npm:typescript@${version}`)]);
   run(npm.command, npm.args);
+  const typeImports = [];
   for (const pkg of release.packages) {
     const metadata = JSON.parse(await readFile(path.join(work, 'node_modules', pkg.name, 'package.json'), 'utf8'));
     assert.equal(metadata.version, pkg.version); assert.equal(metadata.license, 'MIT');
+    for (const [subpath, entry] of Object.entries(metadata.exports)) {
+      if (entry.types) typeImports.push(`import type * as Module${typeImports.length} from '${pkg.name}${subpath.slice(1)}';`);
+    }
   }
-  await writeFile(path.join(work, 'index.ts'), release.packages.map((pkg, index) => `import type * as Module${index} from '${pkg.name}';`).join('\n'));
-  await writeFile(path.join(work, 'tsconfig.json'), JSON.stringify({ compilerOptions: {
-    target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', lib: ['ES2022', 'DOM', 'DOM.Iterable'],
-    strict: true, noEmit: true, types: [], skipLibCheck: false
-  }, include: ['index.ts'] }));
-  run(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json']);
+  await writeFile(path.join(work, 'xlsx.mts'), `
+    import { createXlsxPreviewDriver, createSheetTable as rootTable, loadXlsxWorkbook } from '@filens/xlsx';
+    import type { ParsedWorkbook, ParsedSheet } from '@filens/xlsx';
+    import { createSheetTable } from '@filens/xlsx/table';
+    import type { ParsedSheet as TableSheet } from '@filens/xlsx/table';
+    import { createXlsxPreviewRoutes } from '@filens/xlsx/routes';
+    import type { PreviewDriver, WorkbookPreviewState } from '@filens/core';
+    import type { PreviewDriver as RuntimeDriver } from '@filens/core/preview-runtime';
+    type IsAny<T> = 0 extends (1 & T) ? true : false;
+    type AssertTyped<T extends false> = T;
+    type Session = ReturnType<ReturnType<typeof createXlsxPreviewDriver>['createSession']>;
+    export type WorkbookIsTyped = AssertTyped<IsAny<ParsedWorkbook>>;
+    export type SheetIsTyped = AssertTyped<IsAny<ParsedSheet>>;
+    export type CellIsTyped = AssertTyped<IsAny<ParsedSheet['rows'][number]['cells'][number]>>;
+    export type FactoryIsTyped = AssertTyped<IsAny<typeof createXlsxPreviewDriver>>;
+    export type DriverIsTyped = AssertTyped<IsAny<ReturnType<typeof createXlsxPreviewDriver>>>;
+    export type SessionIsTyped = AssertTyped<IsAny<Session>>;
+    export type StateIsTyped = AssertTyped<IsAny<ReturnType<Session['getState']>>>;
+    export type ParserResultIsTyped = AssertTyped<IsAny<Awaited<ReturnType<typeof loadXlsxWorkbook>>>>;
+    export type TableSheetIsTyped = AssertTyped<IsAny<Parameters<typeof createSheetTable>[0]>>;
+    export type TableResultIsTyped = AssertTyped<IsAny<ReturnType<typeof createSheetTable>>>;
+    export type RouteIsTyped = AssertTyped<IsAny<ReturnType<typeof createXlsxPreviewRoutes>[number]>>;
+    export const sheet: ParsedSheet = { id: '1', name: 'Sheet1', rows: [], columnCount: 1, rowCount: 1 };
+    export const sameSheet: TableSheet = sheet;
+    export const driver: PreviewDriver<WorkbookPreviewState> = createXlsxPreviewDriver();
+    export const runtimeDriver: RuntimeDriver<WorkbookPreviewState> = driver;
+    export const tableFromRoot: typeof createSheetTable = rootTable;
+    export const tableFromSubpath: typeof rootTable = createSheetTable;
+    export const table: HTMLTableElement = createSheetTable(sheet, 1);
+    export const firstSheet = (workbook: ParsedWorkbook): ParsedSheet | undefined => workbook.sheets[0];
+    // @ts-expect-error The driver factory must retain its function type, never any.
+    export const probe: symbol = createXlsxPreviewDriver;
+    // @ts-expect-error The table subpath must retain its sheet parameter type.
+    createSheetTable({});
+    // @ts-expect-error Row counts remain numbers.
+    createSheetTable(sheet, '1');
+    // @ts-expect-error Sheet properties must retain their types.
+    export const invalidCount: string = sheet.rowCount;
+    // @ts-expect-error Route factories take route arrays, never format strings.
+    createXlsxPreviewRoutes('xlsx');
+  `);
+  await writeFile(path.join(work, 'index.mts'), `${typeImports.join('\n')}
+    import './xlsx.mjs';
+    import { Preview, createVueDefaultPreviewDrivers, createVueDefaultPreviewRoutes } from '@filens/vue';
+    type IsAny<T> = 0 extends (1 & T) ? true : false;
+    type AssertTyped<T extends false> = T;
+    export type ComponentIsTyped = AssertTyped<IsAny<typeof Preview>>;
+    export type PropsAreTyped = AssertTyped<IsAny<InstanceType<typeof Preview>['$props']>>;
+    export type VueDriverIsTyped = AssertTyped<IsAny<ReturnType<typeof createVueDefaultPreviewDrivers>[number]>>;
+    export type VueRouteIsTyped = AssertTyped<IsAny<ReturnType<typeof createVueDefaultPreviewRoutes>[number]>>;
+    // @ts-expect-error Public Vue helpers must retain their options type.
+    createVueDefaultPreviewRoutes('xlsx');
+  `);
+  const compilers = [
+    { version: JSON.parse(await readFile(path.join(root, 'node_modules/typescript/package.json'), 'utf8')).version,
+      file: 'index.mts', binary: path.join(root, 'node_modules/typescript/bin/tsc') },
+    ...compatibilityCompilers.map(compiler => ({ ...compiler, binary: path.join(work, `node_modules/typescript-${compiler.version}/bin/tsc`) }))
+  ];
+  for (const compiler of compilers) {
+    for (const [module, moduleResolution] of [['ESNext', 'Bundler'], ['Node16', 'Node16'], ['NodeNext', 'NodeNext']]) {
+      for (const skipLibCheck of [false, true]) {
+        await writeFile(path.join(work, 'tsconfig.json'), JSON.stringify({ compilerOptions: {
+          target: 'ES2022', module, moduleResolution, lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+          strict: true, noEmit: true, types: [], skipLibCheck
+        }, files: [compiler.file] }));
+        run(process.execPath, [compiler.binary, '-p', 'tsconfig.json']);
+        console.log(`Public declarations: TS ${compiler.version}, ${compiler.file}, ${moduleResolution}, skipLibCheck ${skipLibCheck}`);
+      }
+    }
+  }
+  await writeFile(path.join(work, 'repro.mts'), `
+    import { ParsedWorkbook, ParsedSheet, createXlsxPreviewDriver } from '@filens/xlsx';
+    export const probe: symbol = createXlsxPreviewDriver;
+  `);
+  for (const mode of ['Node16', 'NodeNext']) {
+    for (const skipLibCheck of [false, true]) {
+      await writeFile(path.join(work, 'tsconfig.json'), JSON.stringify({ compilerOptions: {
+        module: mode, moduleResolution: mode, strict: true, noEmit: true, types: [], skipLibCheck,
+        lib: ['ES2022', 'DOM', 'DOM.Iterable']
+      }, files: ['repro.mts'] }));
+      const result = spawnSync(process.execPath, [compilers[0].binary, '-p', 'tsconfig.json'], { cwd: work, env, encoding: 'utf8', timeout: 60000 });
+      if (result.error) throw result.error;
+      assert.equal(result.status, 2, result.stderr);
+      assert.deepEqual([...result.stdout.matchAll(/error TS(\d+):/g)].map(match => Number(match[1])), [2322], result.stdout);
+      assert.match(result.stdout, /PreviewDriver<WorkbookPreviewState>/);
+      console.log(`Original issue repro: ${mode}, skipLibCheck ${skipLibCheck}, expected TS2322 only`);
+    }
+  }
   await writeFile(path.join(work, 'index.html'), '<html><style>html,body,#host{height:100%;margin:0}</style><input id="file" type="file"><div id="host"></div><script type="module" src="/main.js"></script></html>');
   await writeFile(path.join(work, 'main.js'), `
     import {createApp,h} from 'vue';
@@ -80,7 +175,11 @@ try {
     command: `node scripts/test-workspace-npm.mjs${registry ? ' --registry' : ''}`,
     source: registry ? 'public npm registry with fresh cache; isolated consumer without workspace links' : 'staged tarballs with isolated consumer and fresh npm cache',
     packages: release.packages.map(pkg => ({ name: pkg.name, version: pkg.version })), passed: true,
-    checks: [`All ${release.packages.length} modules installed with MIT licenses`, 'Strict public declarations, skipLibCheck false',
+    typescript: compilers.map(({ version, file }) => ({ version, scope: file === 'xlsx.mts' ? 'xlsx' : 'all packages' })),
+    checks: [`All ${release.packages.length} modules installed with MIT licenses`, 'All typed exports under Bundler, Node16 and NodeNext, skipLibCheck false and true',
+      'TypeScript 5.0/5.4 XLSX compatibility and TypeScript 5.7/5.8/current full package compatibility',
+      'XLSX parser, driver, session, state, cells, table and routes retain types; Vue component, props and helpers retain types',
+      'Root/subpath types remain assignable; invalid inputs rejected; original issue produces TS2322 only',
       'Production Vite build of public Vue component and text/books dependencies', 'EPUB and CBZ rendered in Chromium with external requests blocked'] }, null, 2) + '\n');
   console.log(`All ${release.packages.length} modules from ${registry ? 'the public registry' : 'staged tarballs'} passed installation, types and production browser consumer checks.`);
 } finally {

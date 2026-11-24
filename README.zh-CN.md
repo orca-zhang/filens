@@ -3,7 +3,13 @@
   <h1>探微 · filens</h1>
   <p><strong>给 Agent 的 CLI，也是一套纯前端复杂格式预览工具。</strong></p>
   <p>本地读取、搜索、OCR、转换与预览，文件无需上传。</p>
-  <p><a href="README.md">English</a> · 简体中文 · <a href="LICENSE">MIT</a></p>
+  <p>
+    <a href="docs/performance-comparison.zh-CN.md"><img src="docs/assets/readme/highlight-pptx.zh-CN.svg" alt="PPTX：唯一真开源的前端原生预览库，体验更好" width="220" /></a>
+    <a href="packages/iwork/README.md"><img src="docs/assets/readme/highlight-iwork.zh-CN.svg" alt="iWork 15：率先支持协议解析，唯一 iWork 纯前端预览库" width="220" /></a>
+    <a href="docs/performance-comparison.zh-CN.md#x5-原片解析厂商标定接缝更自然"><img src="docs/assets/readme/highlight-panorama.zh-CN.svg" alt="Panorama：厂商畸变标定参数，纯前端实时全景照片与视频" width="220" /></a>
+  </p>
+  <p><sub>据我们所知，截至 2026-11-24 · <a href="docs/project-overview.zh-CN.md#filens-的独特能力">能力与实测</a></sub></p>
+  <p><a href="README.md">English</a> · 简体中文 · <a href="LICENSE">MIT</a> · <a href="https://filens.cc/bench/">FiLens-Bench</a></p>
 </div>
 
 ![真实 CLI 演示：OCR 坐标、关键摘录、嵌套压缩包搜索与读取、重复文件、相似图片、CSV 转 XLSX、离线 HTML 表格和 STEP 预览](docs/assets/agent-cli/terminal-demo.zh-CN.gif)
@@ -18,12 +24,20 @@
 | --- | --- | --- |
 | 用来做什么 | 向 Agent 提供文档原文、搜索结果、OCR 与可定位证据，也可打开浏览器预览。 | 在应用中预览 Office、iWork、PDF、CAD / 3D、RAW、全景、压缩包等大量复杂格式。 |
 | 支持格式（按扩展名） | **349 种**。 | **450 种**，含直接预览与本地 WASM 转换后预览。 |
-| 大概多大 | **Lite 6.90–7.17 MiB（<10 MB） · Full 31.26–33.80 MiB** 离线下载；Full 含预览资源、OCR 运行时与模型，Lite 的预览资源另行下载。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
+| 下载体积 | **Lite 6.90–7.17 MiB · Full 31.26–33.80 MiB** | **npm 分包版 5.64 MiB · 完整版 9.76 MiB**；格式模块按需加载。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.93–2.20 MiB**。上表 CLI 体积为 **v0.6.7 完整离线压缩包下载量**，Full 内置预览 **0.3.7**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.7 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.8 源码构建的主运行时按分包合计 **4.17 MB Brotli**，单 JS 版预压缩产物为 **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+体积均为压缩下载量：Full 自带离线预览与 OCR，Lite 按需补充。[CLI 各平台](docs/release-v0.6.7.md#downloads) · [预览包与运行时](docs/preview-sizes.md)。
 
-格式清单已于 2026-11-06 核对：CLI **349** 个扩展名；预览 **450** 个源文件扩展名（内部另有 `cad-json`，共 **451** 个路由项）。[版本、数量与完整扩展名](docs/release-v0.6.6-format-counts.json)。
+格式清单已于 2026-11-24 核对：CLI **349** 个扩展名；预览 **450** 个源文件扩展名（内部另有 `cad-json`，共 **451** 个路由项）。[已发布扩展名清单](docs/release-v0.6.6-format-counts.json)。
+
+## FiLens-Bench
+
+FiLens-Bench 用 13 道合成题比较各 agent harness 在原生工具与正常安装 FiLens CLI 后的复杂文件查询表现，覆盖 Office、PDF、嵌套压缩包、扫描件、跨文件问题和无答案题。当前快照使用 FiLens CLI **0.5.7**：**7/7** 组质量分提高、**7/7** 组记录耗时缩短；用量完整的 **4/4** 组 token 总量下降。各 harness 使用的模型不同，应比较同一 harness 内的配对结果。
+
+[![FiLens-Bench 七个 agent harness 的成绩](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/)
+
+[官方评测站](https://filens.cc/bench/) · [当前中英文成绩表](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [评测方法与复现](benchmarks/filens-bench/README.zh-CN.md)
 
 ## Agent CLI
 
@@ -72,14 +86,17 @@ filens preview report.pdf --mode serve
 <summary>CLI 精确体积、能力与更多示例</summary>
 
 <!-- agent-cli-size:zh:start -->
-  <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 离线下载 · macOS arm64 · CLI 0.5.7；Full 含预览 0.3.7 和 OCR 模型，Lite 另配预览资源；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
+  <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 离线下载 · macOS arm64 · CLI 0.5.7；Full 含预览 0.3.7 和 OCR 模型，Lite 另配预览资源；<a href="https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
+
+CLI 0.5.7 原生可执行文件为 **0.93–2.20 MiB**。离线包沿用 v0.6.7，Full 内置预览 **0.3.7**、OCR 运行时与模型；[下载与解压体积](https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json)。npm 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源；[各平台实测](docs/agent-cli-npm-release.json)。1 MiB = 1,048,576 字节。
 
 - [安装、协议与打包](docs/agent-cli.md) · [Agent skill](https://filens.cc/skills/filens/SKILL.md)
 - [输出格式与布局信息](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 条实测案例与自然语言边界](docs/agent-cli-examples.zh-CN.md)
 - [跨格式搜索](docs/agent-cli-search.zh-CN.md)、[嵌套压缩包](docs/agent-cli-search-archives.zh-CN.md)与[无模型关键原文摘录](docs/agent-cli-pruning.zh-CN.md)
 - [重复文件与相似图片](docs/agent-cli-similarity.md) · [Windows 安装与验证状态](docs/agent-cli-windows.zh-CN.md)
 - [搜索覆盖](docs/agent-cli-search-formats.zh-CN.md)、[检索基准](docs/agent-cli-search-benchmark.zh-CN.md)与[启动成本](docs/agent-cli-search-native.zh-CN.md)
+- [FiLens-Bench 独立评测站](https://filens.cc/bench/)：比较各 agent 正常安装 FiLens 前后的复杂文件查询质量、耗时和 token 用量；[当前中英文成绩表](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [方法与复现](benchmarks/filens-bench/README.zh-CN.md)。
 
 CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大边长 960、OpenMP 线程 2），Lite 可用 `filens setup-ocr` 补齐。用 `capacity` 查看当前安装版本的操作与转换组合。自然语言只识别有限意图；选择页码或幻灯片请显式使用 `--pages` / `--slides`，尚不支持按问题筛选字段。Windows / Linux 原生执行仍待实机验证。
 
@@ -106,7 +123,7 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 在「插件 → 添加插件」中填写 [`dsh-filens@0.1.10`](https://www.npmjs.com/package/dsh-filens)，点击「安装 → 立即启用」，即可原生预览 **450 种格式**，并使用本地读取、OCR、搜索和转换。[安装与使用](integrations/deepseek-harness/README.zh-CN.md) · [3D / 全景演示](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [性能实测](#性能与文档)。
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.10：下载 5.81 MiB / 解包 17.58 MiB**，包含内置工作台。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/dsh-plugin-package.json)。
+**DSH 0.1.10：下载 5.81 MiB / 解包 17.58 MiB**，包含内置工作台。CLI/OCR 依赖与 DSH 缓存另计。[包体积与正式包记录](docs/release-v0.6.7-npm-publication.json)。
 <!-- dsh-package-metrics:end -->
 
 **0.1.10 演示：** 已在真实 DSH Desktop 0.2.2-rc.1 中使用中文界面与中文字幕重新录制，构建与公开包一致。[发布说明、录制来源与素材](docs/releases/dsh-filens-0.1.8/README.md) · [旧版公开包安装演示](docs/assets/dsh-plugin/README.md)。
@@ -157,7 +174,7 @@ npm install filens-preview-split
 
 ### iOS / Android SDK
 
-**SDK 0.1.8 / 预览 0.3.8：** iOS 与 Android 源码 SDK 均内含分包运行时和离线资源，见[精确体积](docs/mobile-sdk-sizes.json)。
+**SDK 0.1.8 / 预览 0.3.8：** iOS 与 Android 源码 SDK 下载均为 **5.66 MiB**，解压约 **17.1 MiB**，内含分包运行时和离线资源。[精确体积](docs/mobile-sdk-sizes.json)。
 提供 Swift Package 与 Android Library 源码 SDK，封装同一份
 前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md) · [运行时与 SDK 体积](docs/preview-sizes.md)。
 
@@ -179,11 +196,13 @@ npm install filens-preview-split
 <details>
 <summary>展开查看分包精确体积与加载成本</summary>
 
+预览 0.3.8 源码构建的主运行时按分包合计 **4.17 MB Brotli**，单 JS 版预压缩产物为 **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。 [独立预览构建实测](docs/preview-build-sizes.json)。
+
 <!-- bundle-sizes:zh:start -->
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| 转换核心 WASM（Office 加密检测） | 927.9 KiB | 414.3 KiB | **334.3 KiB** |
-| 图像 / RAW 核心 WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
+| 转换核心 WASM（Office 加密检测） | 969.1 KiB | 432.0 KiB | **347.3 KiB** |
+| 图像 / RAW WASM（部署资源合计） | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
 | 媒体 / 全景预览 | 465.1 KiB | 128.8 KiB | **108.3 KiB** |
 | STEP truck WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
@@ -194,25 +213,25 @@ npm install filens-preview-split
 
 | 分包 / 核心 | 原始 | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Office 解密 WASM（可选） | 370.6 KiB | 160.3 KiB | **127.4 KiB** |
-| DWG 读取 WASM（按需） | 886.8 KiB | 432.4 KiB | **351.8 KiB** |
-| 光栅图像预览 WASM（按需） | 1747.7 KiB | 717.4 KiB | **537.7 KiB** |
-| PostScript WASM（可选） | 2429.4 KiB | 745.6 KiB | **516.0 KiB** |
+| Office 解密 WASM（可选） | 370.6 KiB | 160.3 KiB | **127.6 KiB** |
+| DWG 读取 WASM（按需） | 921.8 KiB | 449.2 KiB | **364.4 KiB** |
+| 光栅图像预览 WASM（按需） | 1748.0 KiB | 718.0 KiB | **538.0 KiB** |
+| PostScript WASM（可选） | 2428.8 KiB | 745.4 KiB | **515.6 KiB** |
 | HEIC / HEIF 解码 WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
-| 演示站入口 | 241.8 KiB | 69.5 KiB | **58.1 KiB** |
-| Agent CLI 演示界面 | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
-| 共享第三方依赖 | 813.1 KiB | 229.7 KiB | **192.1 KiB** |
-| PPTX / 核心运行时 | 385.3 KiB | 108.2 KiB | **91.8 KiB** |
+| 演示站入口 | 249.5 KiB | 72.2 KiB | **60.2 KiB** |
+| Agent CLI 演示界面 | 25.6 KiB | 9.8 KiB | **8.0 KiB** |
+| 共享第三方依赖 | 854.2 KiB | 244.0 KiB | **204.0 KiB** |
+| PPTX / 核心运行时 | 386.8 KiB | 108.3 KiB | **91.7 KiB** |
 | Vue 预览容器 | 247.2 KiB | 66.0 KiB | **52.5 KiB** |
-| DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
+| DOCX / XLSX / PDF | 51.8 KiB | 16.1 KiB | **14.5 KiB** |
 | DOCX 按需引擎 | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
-| Office 附件 | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
-| 共享 XML 兼容层 | 27.2 KiB | 8.9 KiB | **8.0 KiB** |
-| 共享 ZIP 兼容层 | 41.5 KiB | 12.7 KiB | **11.6 KiB** |
-| 加密 ZIP 支持 | 99.1 KiB | 37.0 KiB | **32.3 KiB** |
-| PDF 按需引擎 | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
+| Office 附件 | 31.5 KiB | 12.1 KiB | **11.0 KiB** |
+| 共享 XML 兼容层 | 29.9 KiB | 10.0 KiB | **9.0 KiB** |
+| 共享 ZIP 兼容层 | 43.1 KiB | 13.2 KiB | **11.9 KiB** |
+| 加密 ZIP 支持 | 99.1 KiB | 37.0 KiB | **32.4 KiB** |
+| PDF 按需引擎 | 435.2 KiB | 128.1 KiB | **106.8 KiB** |
 | iWork 预览 | 40.5 KiB | 12.1 KiB | **10.8 KiB** |
-| CAD / 思维导图 / 流程图 | 100.6 KiB | 28.4 KiB | **24.4 KiB** |
+| CAD / 思维导图 / 流程图 | 101.1 KiB | 28.6 KiB | **24.5 KiB** |
 | 3D 预览 | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
 | glTF / GLB 模型加载器 | 42.7 KiB | 12.6 KiB | **11.2 KiB** |
 | FBX 模型加载器 | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
@@ -221,17 +240,17 @@ npm install filens-preview-split
 | 3DS 模型加载器 | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
 | LDraw 模型加载器 | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
 | USDZ 模型加载器 | 8.5 KiB | 2.6 KiB | **2.4 KiB** |
-| VRML 模型加载器 | 178.0 KiB | 46.4 KiB | **39.8 KiB** |
-| 媒体解码加载器 | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
+| VRML 模型加载器 | 178.1 KiB | 46.4 KiB | **39.7 KiB** |
+| 媒体解码加载器 | 108.2 KiB | 35.2 KiB | **31.3 KiB** |
 | 压缩包预览 | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
 | RAR / 7z 解压 WASM（可选） | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
-| 压缩包 Worker（可选） | 51.5 KiB | 18.2 KiB | **16.3 KiB** |
+| 压缩包 Worker（可选） | 51.6 KiB | 18.2 KiB | **16.3 KiB** |
 | 文本 / 电子书 | 18.1 KiB | 6.9 KiB | **6.1 KiB** |
-| iWork Worker | 884.9 KiB | 183.4 KiB | **153.3 KiB** |
+| iWork Worker | 901.0 KiB | 188.5 KiB | **157.5 KiB** |
 | PDF Worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | STEP truck 加载器 | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-本次构建的入口、预加载 JS 与 CSS 合计 **461.8 KiB Brotli**（原始 1946.8 KiB / gzip 548.9 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
+本次构建的入口、预加载 JS 与 CSS 合计 **476.1 KiB Brotli**（原始 1998.6 KiB / gzip 566.6 KiB），另计图片、视频和示例文件。模块会共享依赖；上述体积不代表每种格式的独立总下载量。
 
 </details>
 
@@ -356,7 +375,7 @@ ZimaOS 上运行 `filens preview report.pdf --output report-preview.html --json`
 | 架构与 WASM 边界 | [项目概览](docs/project-overview.zh-CN.md) |
 | 前端基准与原始数据 | [性能对比](docs/performance-comparison.zh-CN.md) |
 | macOS 原生 OCR 与 RapidOCR | [实测对比](docs/macos-ocr-benchmark.zh-CN.md) |
-| CLI 与后端接入 | [Agent CLI](docs/agent-cli.md) · [Go + wazero 薄壳](examples/go-wazero-converter/README.md) |
+| CLI 与转换 | [Rust Agent CLI](docs/agent-cli.md) · [WASM 转换核心](wasm/converter-core-rust/README.md) |
 
 欢迎用日常文件测试并[提交可复现问题](https://github.com/orca-zhang/filens/issues/new/choose)。[路线图](docs/roadmap.md) · [MIT 许可](LICENSE) · [第三方声明](packaging/agent-third-party.md)。
 

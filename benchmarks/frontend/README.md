@@ -18,7 +18,9 @@ node scripts/benchmark-frontends.mjs --iterations 7 --output tmp/performance-sot
 node scripts/summarize-frontend-benchmark.mjs --input tmp/performance-sota/reproduced/results.json --output tmp/performance-sota/reproduced/analysis.json
 ```
 
-Run timing checks without other builds or tests in progress. The preparer installs this directory's dependency lock into ignored `tmp/performance-sota`, downloads the official SheetJS 0.20.3 tarball with SHA-256 verification, and fetches POI fixtures using verified Git blobs. The npm `xlsx` dependency is not used for measurement: the official SheetJS 0.20.3 browser build is used. `vue-office` is bundled against the repository's Vue 3 runtime.
+Run timing checks without other builds or tests in progress. The preparer installs this directory's dependency lock into ignored `tmp/performance-sota`, downloads the official SheetJS 0.20.3 tarball with SHA-256 verification, and fetches POI fixtures using verified Git blobs. The unused npm `xlsx` dependency has been removed; measurements use the checksum-pinned official SheetJS 0.20.3 browser build.
+
+The current dependency lock includes security updates to transitive ECharts, UUID and Vue dependencies. Historical reports describe their archived runtimes; a new run with this lock requires a new content review and must not be presented as the unchanged historical environment. `vue-office` is bundled against the repository's Vue 3 runtime.
 
 The harness supports `--family`, `--sample`, `--engine`, `--iterations`, `--cpu-rate`, `--profile` and `--review-content`. Families are `pptx-model`, `pptx-view`, `numbers-model`, `iwork-view`, `raw-view` and `panorama-view`. Profiles and first-run screenshots are saved alongside `results.json`. Pixel hashes and interaction checks run after the timer. `--review-content` additionally saves every Numbers cell, checks visible PPTX pages after zooming, scrolling and navigation, and verifies iWork archive values and every lazily loaded Numbers sheet against a direct full parse.
 

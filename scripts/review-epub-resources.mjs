@@ -29,7 +29,7 @@ async function capture(lib, source, format = 'epub') {
   return { book, resources };
 }
 const samples = [
-  { name: 'sample.epub', bytes: new Uint8Array(fs.readFileSync(path.join(root, 'examples/go-wazero-converter/fixtures/doc/sample.epub'))) },
+  { name: 'sample.epub', bytes: new Uint8Array(fs.readFileSync(path.join(root, 'examples/converter/fixtures/doc/sample.epub'))) },
   { name: '40-chapters.epub', bytes: await createBookFixture() },
   { name: '200-assets.epub', bytes: await createAssetBookFixture(200) },
   { name: '1000-assets.epub', bytes: await createAssetBookFixture(1000) },

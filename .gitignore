@@ -12,10 +12,9 @@ test-results/
 tmp/
 tmp-screens/
 converter/testdata/*
-examples/go-wazero-converter/tmp/
-examples/go-wazero-converter/batch-report.json
+benchmarks/filens-bench/results/*
 *.log
-!examples/go-wazero-converter/fixtures/**/*.log
+!examples/converter/fixtures/**/*.log
 !apps/demo/public/samples/text/*.log
 *.insv
 *.osv

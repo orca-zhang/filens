@@ -2,6 +2,8 @@
 
 Interactive panorama image and video previews, with calibrated real-time stitching for supported Insta360 INSV and DJI OSV sources.
 
+Possibly the best support for **DJI and Insta360 photo/video distortion parameters**: read official calibration embedded in camera originals and render panorama video in real time, entirely in the browser. In the tested X5 original, seams look visibly better than Photo Sphere Viewer (PSV)'s generic dual-fisheye projection. See the [visual comparison and measurement scope](../../docs/performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams); camera, calibration and browser codec support still determine which originals can be previewed.
+
 ```ts
 import { createPanoramaPreviewDriver, createWasmPanoramaProcessor } from '@filens/panorama';
 import '@filens/panorama/style.css';

@@ -57,22 +57,20 @@
     "build:xlsx": "npm run build --workspace @filens/xlsx",
     "build:demo": "npm run build --workspace @filens/demo",
     "build:vercel": "node ./scripts/build-vercel.mjs",
-    "test": "npm run build && npm run test:policy && npm run test:workspaces && npm run test:go && npm run test:wasm-smoke",
+    "test": "npm run build && npm run test:policy && npm run test:workspaces && npm run test:wasm-smoke",
     "test:workspaces": "npm run test --workspaces --if-present",
     "test:categories": "node ./scripts/check-category-packages.mjs",
     "test:fonts:browser": "npm run build:core && npm run build:xlsx && node packages/core/test/font-loading.browser.mjs",
-    "test:go": "node ./scripts/run-go-tests.mjs wasm/converter-core examples/go-wazero-converter",
     "test:wasm": "cargo test --manifest-path wasm/converter-core-rust/Cargo.toml && cargo test --manifest-path wasm/converter-image-rust/Cargo.toml && cargo test --manifest-path wasm/converter-image-rust/vendor/rawloader/Cargo.toml --lib",
     "test:occt-wasm": "node ./scripts/test-occt-wasm.mjs",
-    "test:go-wazero": "node ./scripts/run-go-tests.mjs examples/go-wazero-converter",
     "test:wasm-smoke": "npm run fixtures:converter:check && node ./scripts/run-converter-fixture-smoke.mjs",
     "report:occt-wasm": "node ./scripts/report-occt-wasm.mjs",
     "report:converter-size-impact": "node ./scripts/report-converter-size-impact.mjs",
     "report:wasm-sizes": "node ./scripts/report-wasm-sizes.mjs",
     "report:bundle-sizes": "node ./scripts/report-bundle-sizes.mjs",
-    "test:unit": "npm run build:wasm && npm run test:policy && npm run test:unit --workspaces --if-present && npm run test:go && npm run test:wasm-smoke",
+    "test:unit": "npm run build:wasm && npm run test:policy && npm run test:unit --workspaces --if-present && npm run test:wasm-smoke",
     "test:e2e": "playwright test",
-    "test:policy": "npm run verify:conversion-policy && npm run test:audit-x2t-candidate",
+    "test:policy": "npm run verify:conversion-policy && npm run test:audit-x2t-candidate && npm run test:security",
     "fixtures": "node ./scripts/generate-fixtures.mjs",
     "fixtures:converter": "node ./scripts/generate-converter-fixtures.mjs",
     "fixtures:converter:check": "node ./scripts/generate-converter-fixtures.mjs --check",
@@ -111,6 +109,9 @@
     "test:agent:search": "node ./scripts/test-agent-search.mjs",
     "test:agent:archives": "node ./scripts/test-agent-search-archives.mjs --ocr",
     "benchmark:agent:search": "node --test scripts/search-benchmark-metrics.test.mjs && node ./scripts/benchmark-agent-search.mjs && node ./scripts/write-search-benchmark-docs.mjs",
+    "bench:filens": "node benchmarks/filens-bench/bench.mjs",
+    "build:bench": "node benchmarks/filens-bench/publish.mjs",
+    "test:bench:filens": "node --test benchmarks/filens-bench/bench.test.mjs benchmarks/filens-bench/publish.test.mjs",
     "test:agent:similarity": "node ./scripts/test-agent-similarity.mjs",
     "build:preview": "node ./scripts/build-preview.mjs",
     "build:sdk:mobile": "node ./scripts/build-mobile-sdk.mjs",
@@ -127,7 +128,8 @@
     "test:sdk:mobile": "node ./scripts/test-mobile-sdk.mjs",
     "build:agent:preview": "node ./scripts/build-agent-cli.mjs --with-preview",
     "benchmark:ocr:macos": "node ./scripts/benchmark-macos-ocr.mjs",
-    "test:preview": "node ./scripts/test-preview.mjs && node ./scripts/test-preview-html.mjs",
+    "test:preview": "npm run test:preview:assets && node ./scripts/test-preview.mjs && node ./scripts/test-preview-html.mjs",
+    "test:preview:assets": "node --test scripts/packed-asset-reader.test.mjs && node ./scripts/test-packed-preview-assets.mjs",
     "test:preview:html": "node ./scripts/test-preview-html.mjs",
     "test:preview:archives": "node ./scripts/test-archive-assets.mjs",
     "package:preview:npm": "node ./scripts/package-preview-npm.mjs",
@@ -140,7 +142,9 @@
     "test:media:browser": "node scripts/test-browser-media.mjs",
     "test:media:standalone": "node scripts/test-browser-media-standalone.mjs",
     "bench:media:browser": "node scripts/test-browser-media.mjs --bench",
-    "test:media:package": "node scripts/test-media-engine-package.mjs"
+    "test:media:package": "node scripts/test-media-engine-package.mjs",
+    "report:security": "node ./scripts/report-security.mjs",
+    "test:security": "node --test scripts/report-security.test.mjs scripts/picomatch-hotfix.test.mjs"
   },
   "devDependencies": {
     "@gfx/zopfli": "1.0.15",
@@ -154,12 +158,30 @@
     "binaryen": "131.0.0",
     "jsdom": "^25.0.1",
     "lzma": "2.3.2",
-    "protobufjs-cli": "^1.1.3",
+    "protobufjs-cli": "^1.3.3",
     "terser": "5.44.1",
     "typescript": "^5.8.3",
     "vite": "^6.4.6",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.1.12",
-    "vue": "^3.5.17"
+    "vue": "^3.5.17",
+    "semver": "^7.7.4",
+    "pdfjs-dist": "5.4.624",
+    "picomatch": "file:vendor/picomatch"
+  },
+  "overrides": {
+    "picomatch": "$picomatch",
+    "js-beautify": {
+      "glob": "^14.0.2"
+    },
+    "@microsoft/api-extractor": {
+      "minimatch": "^11.0.9"
+    },
+    "@vue/language-core": {
+      "minimatch": "^11.0.9"
+    },
+    "editorconfig": {
+      "minimatch": "^11.0.9"
+    }
   }
 }

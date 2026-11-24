@@ -1,0 +1,12 @@
+{
+  "id": "dsh-shared-model",
+  "harness": "dsh",
+  "harnessVersion": "REPLACE_WITH_DSH_VERSION",
+  "provider": "REPLACE_WITH_CONFIGURED_DSH_PROVIDER_ROUTE",
+  "model": "REPLACE_WITH_SHARED_MODEL_ID",
+  "reasoningEffort": "medium",
+  "commands": {
+    "stock": ["/EXPERIMENT/native/run-dsh-adapter"],
+    "filens": ["/EXPERIMENT/with-filens/run-dsh-adapter"]
+  }
+}

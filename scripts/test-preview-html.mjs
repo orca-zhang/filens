@@ -105,7 +105,7 @@ try {
     'apps/demo/public/samples/sample-nested-archives.zip',
     'packages/archive/test/fixtures/rar5-encrypted.rar',
     'packages/model3d/test/fixtures/occt/cube.stp',
-    'examples/go-wazero-converter/fixtures/icons/sample.apk',
+    'examples/converter/fixtures/icons/sample.apk',
     'packages/converter-client/test/fixtures/password/agile.docx',
     'packages/converter-client/test/fixtures/password/agile.xlsx',
     'packages/converter-client/test/fixtures/password/agile.pptx'

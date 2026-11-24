@@ -15,6 +15,7 @@ mod ocr_image;
 mod ocr_scores;
 mod odf_sheet;
 mod pdf_unicode;
+mod path_glob;
 mod provenance;
 mod prune;
 mod raster;
@@ -306,16 +307,18 @@ fn image(bytes: &[u8], extension: &str) -> Result<(), ConvertError> {
     });
     // The same preprocessing applies to standalone images, PDF renders and
     // embedded document images before invoking an injected OCR provider.
-    let prepared = match ocr_image::prepare(bytes) {
-        Ok(bytes) => bytes,
+    let (prepared, max_side_len) = match ocr_image::prepare(bytes) {
+        Ok(prepared) => prepared,
         Err(error) => {
             provenance::ocr_result("failed", 0, 0, Some(&error.message));
             partial("ocr_failed", provenance::scoped(&error.message));
             return Ok(());
         }
     };
-    fs::write(&path, &prepared).map_err(|e| io_error(format!("write OCR image: {e}")))?;
-    let result = host(json!({"operation":"ocr", "path":path,"layout":true}));
+    fs::write(&path, prepared.as_ref()).map_err(|e| io_error(format!("write OCR image: {e}")))?;
+    let result = host(json!({
+        "operation":"ocr", "path":path,"layout":true,"maxSideLen":max_side_len
+    }));
     let _ = fs::remove_file(path);
     match result {
         Ok(result) => {

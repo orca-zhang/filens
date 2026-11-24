@@ -120,7 +120,7 @@ Status: delivered and expanded beyond the original Office-only plan.
 - [x] Optional WASM/HTTP/mock adapters outside native renderers, with shared errors, cancellation, lazy module loading, and retry behavior.
 - [x] Manifest-approved legacy Office/WPS, OpenDocument/legacy OpenOffice, templates/shows, macro-stripped OpenXML, readable text, and table-like inputs normalize to preview targets.
 - [x] Image/RAW/icon decoding, PSD/PSB composites, AI/EPS/PS vector PDF, and DWG drawing models use frontend WASM paths.
-- [x] Split and combined WASM builds; backend Go/wazero invokes the same conversion implementation.
+- [x] Split and combined WASM builds; the Rust CLI invokes the same WASI conversion implementation.
 - [ ] Improve source-content/layout preservation without treating valid OpenXML output as proof of visual fidelity.
 
 Exact allowed pairs and default precedence follow the [support matrix](support-matrix.md#conversion-support) and manifests, rather than a second extension list in this roadmap. Office add-ins and unlisted pairs remain outside the default policy.
@@ -178,7 +178,7 @@ Evidence: [iWork package](../packages/iwork/README.md), [iWork tests](../package
 
 Status: browser/host contracts delivered; credential handling work remains.
 
-- [x] Shared `password_required` / `password_invalid` errors, host-controlled password callbacks, Vue password UI/retry/cancel behavior, and Go CLI/HTTP error mapping.
+- [x] Shared `password_required` / `password_invalid` errors, host-controlled password callbacks, Vue password UI/retry/cancel behavior, and Rust CLI error mapping.
 - [x] Conversion credentials can arrive through structured stdin JSON/options instead of process arguments; preview state does not expose passwords.
 - [ ] Add hidden CLI prompts or secret-provider hooks and broaden credential/decrypted-buffer lifetime audits and best-effort clearing.
 - [ ] Expand fixtures distinguishing unsupported encryption, damaged metadata, signatures, DRM, and enterprise rights management.
@@ -189,7 +189,7 @@ Status: common Office schemes delivered; broader variant validation remains.
 
 - [x] Frontend WASM decryption for Agile/Standard encrypted OpenXML, legacy DOC/XLS/PPT RC4 CryptoAPI, and legacy XLS XOR fixtures.
 - [x] Decrypt before existing normalization; split `officeWasm` loads only when required, while combined cores work without an addon.
-- [x] Go hosts forward credentials to the same WASM core; missing/wrong passwords, Unicode passwords, damaged ciphertext, addon failure/retry, and cancellation have regression checks.
+- [x] The Rust host forwards credentials to the same WASM core; missing/wrong passwords, Unicode passwords, damaged ciphertext, addon failure/retry, and cancellation have regression checks.
 - [ ] Expand WPS-specific/other encryption variants and empty-password, damaged-metadata, large-file, and repeated-open fixtures before widening compatibility claims.
 
 ### E2: PDF and Additional Containers

@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-24T05:28:37.462Z",
+  "url": "https://filens.cc/cdn/filens-preview@0.3.7/all-in-one/filens.js",
+  "cases": [
+    {
+      "accept": "br, gzip",
+      "encoding": "br",
+      "encodedBytes": 3401548,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "gzip",
+      "encoding": "gzip",
+      "encodedBytes": 3540936,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "identity",
+      "encoding": null,
+      "encodedBytes": 6694186,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "br;q=0, gzip",
+      "encoding": "gzip",
+      "encodedBytes": 3540936,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "gzip;q=0, br",
+      "encoding": "br",
+      "encodedBytes": 3401548,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "br;q=0, gzip;q=0",
+      "encoding": "identity",
+      "encodedBytes": 6694186,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "br;q=0",
+      "encoding": "identity",
+      "encodedBytes": 6694186,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "identity, br;q=0, gzip;q=0",
+      "encoding": "identity",
+      "encodedBytes": 6694186,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "br;q=0.5, gzip;q=1",
+      "encoding": "gzip",
+      "encodedBytes": 3540936,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    },
+    {
+      "accept": "br;q=0.9, gzip;q=0.5",
+      "encoding": "br",
+      "encodedBytes": 3594725,
+      "decodedBytes": 6694186,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "cache": "HIT",
+      "vary": "Accept-Encoding"
+    }
+  ],
+  "range": "identity bytes=0-127: HTTP 206, exact bytes"
+}

@@ -52,7 +52,7 @@ const cases = [
     'apps/demo/public/samples/a.pages',
     'apps/demo/public/samples/pepper-carrot.epub',
     'apps/demo/public/samples/sample-video.mp4',
-    'examples/go-wazero-converter/fixtures/icons/sample.apk',
+    'examples/converter/fixtures/icons/sample.apk',
     'packages/archive/test/fixtures/rar5-encrypted-filenames.rar'
   ].map(file => ({ name: path.basename(file), file }))
 ];

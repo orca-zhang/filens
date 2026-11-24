@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const fixturesDir = path.join(rootDir, 'examples', 'go-wazero-converter', 'fixtures');
+const fixturesDir = path.join(rootDir, 'examples', 'converter', 'fixtures');
 const conversionManifestPath = path.join(rootDir, 'wasm', 'converter-core', 'manifest', 'conversions.json');
 const checkOnly = process.argv.includes('--check');
 
@@ -1258,10 +1258,9 @@ function buildStoreZip(files) {
     const localView = new DataView(local.buffer);
     localView.setUint32(0, 0x04034b50, true);
     localView.setUint16(4, 20, true);
-    localView.setUint16(10, 0, true);
-    localView.setUint16(12, 0x21, true);
-    localView.setUint16(14, 0x5021, true);
-    localView.setUint32(16, crc, true);
+    localView.setUint16(10, 0x21, true);
+    localView.setUint16(12, 0x5021, true);
+    localView.setUint32(14, crc, true);
     localView.setUint32(18, content.byteLength, true);
     localView.setUint32(22, content.byteLength, true);
     localView.setUint16(26, nameBytes.byteLength, true);

@@ -322,7 +322,7 @@ fn raw_preview_bytes<'a>(
 }
 
 // The browser can call the same conversion core directly without copying a
-// large RAW through a virtual filesystem. CLI/wazero keep their WASI entrypoint.
+// large RAW through a virtual filesystem. WASI hosts keep their standard entrypoint.
 // Allocations are owned by the caller until filens_image_free(ptr, len).
 #[cfg(target_arch = "wasm32")]
 #[unsafe(no_mangle)]
@@ -1232,7 +1232,7 @@ mod tests {
 
     #[test]
     fn x3f_develops_the_sensor_instead_of_enlarging_a_small_embedded_preview() {
-        let bytes = include_bytes!("../../../examples/go-wazero-converter/fixtures/raw/sample.x3f");
+        let bytes = include_bytes!("../../../examples/converter/fixtures/raw/sample.x3f");
         assert_eq!(
             jpeg_bounds(best_embedded_jpeg(bytes).unwrap(), 0).map(|(_, w, h)| (w, h)),
             Some((2, 2))
@@ -1295,7 +1295,7 @@ mod tests {
 
     #[test]
     fn corrupt_x3f_offsets_lengths_and_dimensions_return_errors() {
-        let bytes = include_bytes!("../../../examples/go-wazero-converter/fixtures/raw/sample.x3f");
+        let bytes = include_bytes!("../../../examples/converter/fixtures/raw/sample.x3f");
         let directory = u32::from_le_bytes(bytes[bytes.len() - 4..].try_into().unwrap()) as usize;
         let image =
             u32::from_le_bytes(bytes[directory + 24..directory + 28].try_into().unwrap()) as usize;

@@ -42,7 +42,7 @@ beforeEach(() => {
     static revokeObjectURL = vi.fn();
   });
 });
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { vi.mocked(core.openZipArchive).mockReset(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('KMZ archive selection, selective images and lifetime', () => {
   it('preserves complete texture-free geometry through synchronous and asynchronous APIs', async () => {

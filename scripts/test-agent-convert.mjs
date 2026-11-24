@@ -10,7 +10,7 @@ import { unzipSync, strFromU8 } from 'fflate';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const work = await mkdtemp(path.join(os.tmpdir(),'filens-convert-test-'));
 const binary = process.env.FILENS_AGENT_BINARY || path.join(root,'dist/agent-lite',executableName(`${process.platform}-${process.arch}`));
-const fixtures = path.join(root,'examples/go-wazero-converter/fixtures');
+const fixtures = path.join(root,'examples/converter/fixtures');
 let checks = 0;
 function invoke(args,input='',expected=0) {
   const result = spawnSync(binary,args,{cwd:work,input,encoding:'utf8',timeout:120000,maxBuffer:16<<20});

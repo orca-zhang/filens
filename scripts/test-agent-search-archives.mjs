@@ -94,6 +94,10 @@ try {
   assert.deepEqual(parallel.search.results,all.search.results);
   const named = json('nested filenames without content or OCR',['search',outer,'--query','nested report','--search-mode','files','--no-ocr','--json']);
   assert.ok(named.search.results.some(h=>h.path.endsWith('!/nested report.docx')));
+  const globbed = json('glob retains candidate archives and matches nested member names', ['search', corpus, '--query', '资料 bundle.zip!/**/*.docx', '--search-mode', 'glob', '--no-ocr', '--json']);
+  assert.equal(globbed.search.matchedFiles, 1);
+  assert.ok(globbed.search.results[0].path.endsWith('!/附件.zip!/nested report.docx'));
+  assert.deepEqual(globbed.search.results[0].excerpts, []);
   assert.ok(named.search.results.every(h=>h.excerpts.length===0));
   assert.ok(search('include hidden members',outer,'ARCHIVE2026',['--include-hidden']).search.results.some(h=>h.path.endsWith('!/.secret.txt')));
   assert.ok(!all.search.results.some(h=>h.path.includes('node_modules')||h.path.includes('.secret')));

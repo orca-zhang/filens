@@ -1,0 +1,12 @@
+{
+  "id": "openclaw-codex-gpt",
+  "harness": "openclaw",
+  "harnessVersion": "2026.11.6",
+  "provider": "codex-local",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "high",
+  "commands": {
+    "stock": ["node", "/absolute/path/to/benchmarks/filens-bench/openclaw-adapter.mjs"],
+    "filens": ["node", "/absolute/path/to/benchmarks/filens-bench/openclaw-adapter.mjs"]
+  }
+}

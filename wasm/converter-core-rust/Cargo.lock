@@ -246,9 +246,9 @@ dependencies = [
 
 [[package]]
 name = "calamine"
-version = "0.37.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9ca341b94bc4b29e08970b1a03914fad2dfe177e2ecb67fcd6de9046004aafb"
+checksum = "f431b67cba6122a1f7d26b7adafc71bbdf07026095fe811f5efc025d8748e1d8"
 dependencies = [
  "atoi_simd",
  "byteorder",
@@ -1331,9 +1331,9 @@ dependencies = [
 
 [[package]]
 name = "msoffice-crypto"
-version = "0.1.0-rc.13"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1845bc29c1547df0a47b2ab3f2bf0a3001b4ed4501e509878f592cc4fee7ec22"
+checksum = "162e26fc7e9c21c1f7776de3e6d157cf06503fe4f897f26fb0b54f37b7e2f7c1"
 dependencies = [
  "aes",
  "base64",
@@ -1665,9 +1665,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "secure-gate"
-version = "0.9.0-rc.17"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0eb6dee38c7f22d2ed83355f29744042e44fa3b18da4a16da222d1d0523b02b5"
+checksum = "5db1026e7e1438a8b66f8c1e9dd21ce4d09800f328e4e421c5edd99d12967b5c"
 dependencies = [
  "base16ct",
  "base32ct",

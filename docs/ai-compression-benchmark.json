@@ -1,0 +1,185 @@
+{
+  "date": "2026-11-24T05:16:48.968Z",
+  "sourceSha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+  "assets": 52,
+  "decodedBytes": 11616955,
+  "scope": "Fixed published SDK input. Structural byte histograms/K-means + LZMA versus a trained one-byte-context softmax model compiled to CDFs and arithmetic coding. Whole-JS transport includes model, decoder, Base64 and unchanged application code. Local Chromium import measurements include HTTP transfer, parsing, asset restoration and module initialization; not WAN latency.",
+  "variants": [
+    {
+      "name": "published-baseline",
+      "codec": "published solid LZMA",
+      "rawBytes": 6694186,
+      "brotliBytes": 3401548,
+      "gzipBytes": 3581640,
+      "sha256": "fe841d1d8a8284fe322c226be507206afa2a23ecc65e7b67db44b58a64f6a0ad",
+      "browserImportMs": [
+        293.90000009536743,
+        277.2999999523163,
+        279.7000000476837
+      ],
+      "medianBrowserImportMs": 279.7000000476837,
+      "browserValidation": {
+        "text": true,
+        "stepTriangles": 12,
+        "trials": 3
+      }
+    },
+    {
+      "name": "native-original-pb2",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6691092,
+      "brotliBytes": 3399308,
+      "gzipBytes": 3578925,
+      "sha256": "77fcbd064f59cac3313f4de5f1af50c6553785680ff33833e717a5e51f5cc15b",
+      "payloadBytes": 2689342,
+      "encodeMs": 2763.3788341190666
+    },
+    {
+      "name": "native-original-pb0",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6677432,
+      "brotliBytes": 3389241,
+      "gzipBytes": 3569070,
+      "sha256": "c1b5f0baee8aae734f2788632ce0d3a89c6e1532eb7951202ca4c00053df4661",
+      "payloadBytes": 2679099,
+      "encodeMs": 2789.096958003938
+    },
+    {
+      "name": "kind-size-pb2",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6691580,
+      "brotliBytes": 3399371,
+      "gzipBytes": 3579419,
+      "sha256": "fe557304439c93ac5b4216f0e0a4eadd5305b9763bac401c634c8938ec03b00f",
+      "payloadBytes": 2689564,
+      "encodeMs": 2740.748916985467
+    },
+    {
+      "name": "kmeans-neighbors-pb2",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6690176,
+      "brotliBytes": 3398637,
+      "gzipBytes": 3578003,
+      "sha256": "46089b133bb46db52787414f7b3faa113fb9eb14afb342d76eab3e43bb6f34a3",
+      "payloadBytes": 2688512,
+      "encodeMs": 2748.063791077584
+    },
+    {
+      "name": "kmeans-neighbors-pb0",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6675676,
+      "brotliBytes": 3387847,
+      "gzipBytes": 3567650,
+      "sha256": "8fa5ba392cf8f115fcf3250878af08c0db84a507d35e3e7f53b79b59a26303d6",
+      "payloadBytes": 2677637,
+      "encodeMs": 2758.134374860674,
+      "browserImportMs": [
+        282.09999990463257,
+        276.5,
+        277.19999980926514
+      ],
+      "medianBrowserImportMs": 277.19999980926514,
+      "browserValidation": {
+        "text": true,
+        "stepTriangles": 12,
+        "trials": 3
+      }
+    },
+    {
+      "name": "size-descending-pb2",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6690584,
+      "brotliBytes": 3398804,
+      "gzipBytes": 3578364,
+      "sha256": "2b55b91ee15004639cd8940db04e881b5a7f964a381927316760feb53bfa64ce",
+      "payloadBytes": 2688819,
+      "encodeMs": 2769.139250041917
+    },
+    {
+      "name": "reverse-pb2",
+      "codec": "native LZMA + lossless asset permutation",
+      "rawBytes": 6696176,
+      "brotliBytes": 3402833,
+      "gzipBytes": 3582979,
+      "sha256": "0090af46dd2a9c6b15ab0f5efe57de43763752de49ba3d23f54315ea8dee9929",
+      "payloadBytes": 2693011,
+      "encodeMs": 2824.008542113006
+    },
+    {
+      "name": "learned-byte-context",
+      "codec": "trained softmax + arithmetic coding",
+      "rawBytes": 12425025,
+      "brotliBytes": 7694711,
+      "gzipBytes": 7896690,
+      "sha256": "eaccca3c50e078fa7e3f2d61b6a7063445c5a878afd15e13716fac0b08e8fe21",
+      "payloadBytes": 6877209,
+      "modelBytes": 131584,
+      "encodeMs": 771.249125,
+      "browserImportMs": [
+        882.4000000953674,
+        872.6999998092651,
+        873
+      ],
+      "medianBrowserImportMs": 873,
+      "browserValidation": {
+        "text": true,
+        "stepTriangles": 12,
+        "trials": 3
+      }
+    }
+  ],
+  "learnedModel": {
+    "architecture": "trainable 256-context x 256-byte softmax; one preceding byte; 120 Adam steps",
+    "trainingMs": 54.369417019188404,
+    "trainingBitsPerByte": 4.73391258390786,
+    "quantizedBitsPerByte": 4.735980054300392,
+    "floatWeightsBytes": 262144,
+    "deployedModelBytes": 131584,
+    "deployment": "quantized CDF table replaces float logits; no PyTorch runtime is shipped",
+    "payloadBytes": 6877209,
+    "nodeEncodeMs": 771.249125,
+    "nodeDecodeMs": 940.5554579999998,
+    "exactRoundTrip": true
+  },
+  "browser": "159.0.8154.6",
+  "bestStructural": {
+    "name": "kmeans-neighbors-pb0",
+    "brotliBytes": 3387847,
+    "savingsPercent": 0.40278720159174775
+  },
+  "nodeAssetRestoration": {
+    "best": {
+      "samplesMs": [
+        276.03433400000006,
+        283.4627499999999,
+        235.94729199999983
+      ],
+      "medianMs": 276.03433400000006
+    },
+    "baseline": {
+      "samplesMs": [
+        284.99354199999993,
+        231.13812500000017,
+        279.47316599999976
+      ],
+      "medianMs": 279.47316599999976
+    },
+    "learned": {
+      "samplesMs": [
+        1358.5079580000001,
+        1329.9461660000002,
+        998.2088329999997
+      ],
+      "medianMs": 1329.9461660000002
+    }
+  },
+  "exactValidation": {
+    "variants": [
+      "baseline",
+      "best",
+      "learned"
+    ],
+    "assets": 52,
+    "allBytes": true
+  }
+}

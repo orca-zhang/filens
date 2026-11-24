@@ -29,7 +29,7 @@ const query = (text, extra = [], expected = 0) => json(['search', corpus, '--que
 const cap = json(['capacity', '--full', '--json', '--no-ocr']);
 assert.ok(cap.capacity.operations.some(o => o.name === 'search'));
 assert.equal(cap.capacity.search.semantic, false);
-assert.equal(cap.capacity.search.discovery.backend, { darwin: 'fts', win32: 'ntfs' }[process.platform] || 'read-dir');
+assert.equal(cap.capacity.search.discovery.backend, { darwin: 'getattrlistbulk', win32: 'ntfs' }[process.platform] || 'read-dir');
 assert.equal(cap.capacity.search.discovery.hdrwEmbedded, false);
 const budget = '会议记录\n预算不得超过12345.67元；新增开销必须由负责人审批。\n风险：极小字体可能漏字，请核对原图。\n';
 await writeFile(path.join(corpus, 'budget.txt'), budget);
@@ -59,9 +59,12 @@ await writeFile(path.join(corpus, 'milestone.docx'), zipSync({
   'word/document.xml': strToU8(source),
 }));
 const cold = query('预算');
-assert.ok(['fts', 'ntfs', 'read-dir'].includes(cold.search.scan.backend));
+assert.ok(['getattrlistbulk', 'fts', 'ntfs', 'read-dir'].includes(cold.search.scan.backend));
 if (process.env.FILENS_WALKER === 'read-dir') assert.equal(cold.search.scan.backend, 'read-dir');
 assert.equal(cold.search.complete, true);
+for (const name of ['discoveryMs', 'extractionMs', 'assemblyMs', 'rankingMs']) {
+  assert.ok(Number.isFinite(cold.search.scan[name]) && cold.search.scan[name] >= 0);
+}
 assert.equal(cold.search.semantic, false);
 assert.ok(cold.search.results.some(r => r.path.endsWith('budget.txt')));
 assert.deepEqual(cold.search.scope.extensions, cap.capacity.formats.filter(f => f.textExtraction || f.archiveSearch).map(f => f.format));
@@ -95,6 +98,17 @@ const names = query('opaque', ['--search-mode', 'files']);
 assert.equal(names.search.matchedFiles, 1);
 assert.equal(names.search.results[0].sha256, null);
 assert.deepEqual(names.search.results[0].excerpts, []);
+const glob = query('nested/*.txt', ['--search-mode', 'glob', '--max-files', '1']);
+assert.equal(glob.search.method, 'filename-glob');
+assert.equal(glob.search.matchedFiles, 1);
+assert.equal(glob.search.complete, true);
+assert.ok(glob.search.results[0].path.replaceAll('\\', '/').endsWith('nested/note.txt'));
+assert.deepEqual(glob.search.results[0].excerpts, []);
+assert.equal(glob.search.scan.execution.extractionBatches, 0);
+assert.equal(query('*.bin', ['--search-mode', 'glob']).search.matchedFiles, 1);
+assert.ok(query('**/*.txt', ['--search-mode', 'glob']).search.matchedFiles > 1);
+const globRequest = json(['-'], 0, JSON.stringify({ op: 'search', input: corpus, query: 'nested/n?te.txt', searchMode: 'glob' }));
+assert.deepEqual(globRequest.search.results, glob.search.results);
 const literal = query('must pass Windows testing.', ['--search-mode', 'exact']);
 assert.equal(literal.search.matchedFiles, 1);
 assert.equal(query('MUST PASS Windows testing.', ['--search-mode', 'exact']).search.matchedFiles, 0);
@@ -130,6 +144,7 @@ for (const request of [
   { op: 'search', input: corpus },
   { op: 'search', input: corpus, query: 'budget', maxResults: 0 },
   { op: 'search', input: corpus, query: 'budget', searchMode: 'semantic' },
+  { op: 'search', input: corpus, query: '../*.txt', searchMode: 'glob' },
   { op: 'search', input: corpus, query: 'budget', summaryChars: 100 },
   { op: 'search', input: corpus, query: 'budget', cache: true },
 ]) assert.equal(json(['-', '--no-ocr'], 2, JSON.stringify(request)).ok, false);
@@ -154,6 +169,71 @@ assert.equal(pure.search.scan.execution.sharedTextModules, 0);
 assert.equal(pure.search.scan.execution.nativeFiles, 80);
 assert.equal(pure.search.scan.execution.ranking, 'native-rust');
 assert.deepEqual(pure.search.results, parallel.search.results);
+// OCR capability must not serialize document extraction when OCR is disabled.
+const officePool = path.join(directory, 'office-parallel');
+await mkdir(officePool);
+for (let i = 0; i < 8; i++) await copyFile(path.join(corpus, 'milestone.docx'), path.join(officePool, `${i}.docx`));
+const officeArgs = ['search', officePool, '--query', 'milestone', '--no-ocr', '--json'];
+const officeSerial = JSON.parse(run(officeArgs, 0, undefined, { FILENS_SEARCH_JOBS: '1' }));
+const officeParallel = JSON.parse(run(officeArgs, 0, undefined, { FILENS_SEARCH_JOBS: '4' }));
+const officeAutomatic = JSON.parse(run(officeArgs));
+assert.equal(officeAutomatic.search.scan.execution.workers, 1);
+assert.equal(officeParallel.search.scan.execution.workers, 4);
+assert.equal(officeParallel.search.scan.execution.sharedTextModules, 1);
+assert.deepEqual(officeSerial.search.results, officeParallel.search.results);
+assert.deepEqual(officeSerial.content, officeParallel.content);
+// The 32 MiB corpus limit must stop serial extraction and retain the same
+// path-ordered coverage under parallel completion.
+const bounded = path.join(directory, 'bounded');
+await mkdir(bounded);
+const boundedText = 'BUDGET782\n' + 'x'.repeat((512 << 10) - 'BUDGET782\n'.length);
+for (let i = 0; i < 256; i++) await writeFile(path.join(bounded, `${String(i).padStart(3, '0')}.txt`), boundedText);
+const boundedArgs = ['search', bounded, '--query', 'BUDGET782', '--search-mode', 'exact', '--no-ocr', '--json'];
+const boundedSerial = JSON.parse(run(boundedArgs, 3, undefined, { FILENS_SEARCH_JOBS: '1', FILENS_TEXT_WASM: undefined }));
+const boundedParallel = JSON.parse(run(boundedArgs, 3, undefined, { FILENS_SEARCH_JOBS: '4', FILENS_TEXT_WASM: undefined }));
+assert.equal(boundedSerial.search.indexedFiles, 64);
+assert.equal(boundedSerial.search.scan.textBytes, 32 << 20);
+assert.equal(boundedSerial.search.scan.execution.nativeFiles, 65);
+assert.equal(boundedParallel.search.indexedFiles, 64);
+assert.equal(boundedParallel.search.scan.execution.nativeFiles, 65);
+const boundedEight = JSON.parse(run(boundedArgs, 3, undefined, { FILENS_SEARCH_JOBS: '8', FILENS_TEXT_WASM: undefined }));
+assert.equal(boundedEight.search.scan.execution.nativeFiles, 65);
+assert.deepEqual(boundedEight.search.results, boundedSerial.search.results);
+assert.deepEqual(boundedEight.content, boundedSerial.content);
+assert.deepEqual(boundedSerial.search.results, boundedParallel.search.results);
+assert.deepEqual(boundedSerial.content, boundedParallel.content);
+await rm(bounded, { recursive: true });
+// A crossing archive must retain the members that still fit after earlier files.
+const mixedBudget = path.join(directory, 'mixed-budget');
+await mkdir(mixedBudget);
+await writeFile(path.join(mixedBudget, 'a.txt'), 'MIXED782\n' + 'x'.repeat((30 << 20) - 9));
+const memberText = 'MIXED782\n' + 'x'.repeat((1 << 20) - 9);
+await writeFile(path.join(mixedBudget, 'b.zip'), zipSync(Object.fromEntries(
+  Array.from({ length: 4 }, (_, i) => [`${i}.txt`, strToU8(memberText)]),
+)));
+await writeFile(path.join(mixedBudget, 'z.txt'), 'MIXED782');
+const mixedArgs = ['search', mixedBudget, '--query', 'MIXED782', '--search-mode', 'exact', '--max-bytes', String(32 << 20), '--no-ocr', '--json'];
+const mixedSerial = JSON.parse(run(mixedArgs, 3, undefined, { FILENS_SEARCH_JOBS: '1' }));
+const mixedParallel = JSON.parse(run(mixedArgs, 3, undefined, { FILENS_SEARCH_JOBS: '4' }));
+assert.equal(mixedSerial.search.indexedFiles, 3);
+assert.equal(mixedSerial.search.scan.textBytes, 32 << 20);
+assert.equal(mixedSerial.search.scan.archives.files, 2);
+assert.deepEqual(mixedParallel.search.results, mixedSerial.search.results);
+assert.deepEqual(mixedParallel.content, mixedSerial.content);
+await rm(mixedBudget, { recursive: true });
+// Worker runtimes must remain usable across multiple ordered WASM windows.
+const wasmWindows = path.join(directory, 'wasm-windows');
+await mkdir(wasmWindows);
+for (let i = 0; i < 12; i++) await writeFile(path.join(wasmWindows, `${i}.txt`), boundedText);
+const windowsArgs = ['search', wasmWindows, '--query', 'BUDGET782', '--search-mode', 'exact', '--layout', '--no-ocr', '--json'];
+const windowsSerial = JSON.parse(run(windowsArgs, 0, undefined, { FILENS_SEARCH_JOBS: '1' }));
+const windowsParallel = JSON.parse(run(windowsArgs, 0, undefined, { FILENS_SEARCH_JOBS: '4' }));
+assert.equal(windowsParallel.search.scan.execution.workers, 4);
+assert.equal(windowsParallel.search.scan.execution.sharedTextModules, 1);
+assert.ok(windowsParallel.search.scan.execution.extractionBatches > 4);
+assert.deepEqual(windowsParallel.search.results, windowsSerial.search.results);
+assert.deepEqual(windowsParallel.content, windowsSerial.content);
+await rm(wasmWindows, { recursive: true });
 const standalone = path.join(directory, 'standalone');
 const encodings = path.join(directory, 'encodings');
 await mkdir(standalone, { recursive: true });
@@ -170,6 +250,9 @@ assert.ok(standaloneResult.search.results.every(hit => hit.excerpts[0].text === 
 const standaloneNames = JSON.parse(run(['search', encodings, '--query', 'latin', '--search-mode', 'files', '--json'], 0, undefined, { FILENS_TEXT_WASM: undefined }, standaloneBinary));
 assert.equal(standaloneNames.search.matchedFiles, 1);
 assert.equal(standaloneNames.search.scan.execution.sharedTextModules, 0);
+const standaloneGlob = JSON.parse(run(['search', encodings, '--query', 'l?tin.*', '--search-mode', 'glob', '--json'], 0, undefined, { FILENS_TEXT_WASM: undefined }, standaloneBinary));
+assert.equal(standaloneGlob.search.matchedFiles, 1);
+assert.equal(standaloneGlob.search.scan.execution.sharedTextModules, 0);
 await assert.rejects(access(cache), { code: 'ENOENT' });
 if (process.argv.includes('--ocr')) {
   await unlink(path.join(corpus, 'broken.docx'));

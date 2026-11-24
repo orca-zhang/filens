@@ -13,11 +13,11 @@ filens capacity --full --op read --json
 
 The default capacity response is compact: `formats` and `conversionPairs` contain counts. Use `--full` for their lists and request schema, or filters such as `--op read`, `--query 'pptx read'`, `--from doc --to docx`. Check `capacity.ocr.available` when OCR is needed. Reading support does not imply conversion support. Reading, scans and conversion are local; initial npm installation, preview setup and explicit OCR setup may download dependencies.
 
-Use JSON when structured metadata, completeness details or layout are needed:
+Routine reads use the CLI's compact text output by default. Add JSON only when structured metadata, completeness details or layout are needed:
 
 ```sh
-filens understand '/path/meeting notes.docx' --json
-filens read '/path/report.pdf' --json
+filens understand '/path/meeting notes.docx'
+filens read '/path/report.pdf'
 filens layout '/path/invoice.png' --json
 ```
 
@@ -31,7 +31,7 @@ Pipe that object to `filens` or `filens -`. Natural-language Chinese/English rea
 
 ## Interpret results and cite evidence
 
-JSON stdout contains one `filens-agent-v1` response, including failures. Keep stdout separate from stderr and inspect the exit status:
+When JSON is requested, stdout contains one `filens-agent-v1` response, including failures. Keep stdout separate from stderr and inspect the exit status:
 
 | Exit | Meaning | Agent action |
 | --- | --- | --- |
@@ -60,6 +60,6 @@ Use `--format markdown|html|csv|tsv` for user-requested exports, or `yaml|xml` f
 
 ## Extract key excerpts without a model
 
-Check `capacity.operations` for `summarize`; older published builds do not provide it. Use `filens summarize report.pdf --query 'budget risk' --summary-chars 1000 --json`, or pipe `{"op":"summarize","input":"report.pdf","query":"budget risk","summaryChars":1000,"summaryRatio":0.3}`. `prune` is an alias. Query is optional. Defaults retain at most 30% and 2000 Unicode characters, including separators; this is a budget, not a promise to retain all important facts.
+Check `capacity.operations` for `summarize`; older published builds do not provide it. For a narrow question in a long file inside a corpus, prefer `filens search` on the corpus because its excerpt keeps surrounding lines. Use `filens summarize report.pdf --query 'budget risk' --summary-chars 1000` only when the returned excerpt contains the needed fact and citation. `prune` is an alias. Query is optional. Defaults retain at most 30% and 2000 Unicode characters, including separators; this is a budget, not a promise to retain all important facts.
 
 Inspect `content.summary.sourceComplete`, `omitted`, `sampled` and each excerpt's `clipped`. Scores are ranking weights, not confidence. Query matching is lexical; an empty match does not prove the topic is absent. `content.text` contains original excerpts in source order. Each summary excerpt maps output `startByte/endByte` to `sourceStartByte/sourceEndByte` in the full text returned by `read`. Preserve these distinctions when citing. Optional layout offsets are remapped to selected text; `boundsScope` identifies geometry belonging to the original source block. Read the full document if the task needs broader context or exact completeness.

@@ -347,7 +347,7 @@ const staticSamples: DemoSource[] = [
     kind: 'xlsx',
     label: 'XLS Solver Workbook -> XLSX',
     name: 'SOLVSAMP.XLS',
-    source: new URL('../../../examples/go-wazero-converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
+    source: new URL('../../../examples/converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
     contentType: 'application/vnd.ms-excel',
     mode: 'sample'
   },
@@ -363,7 +363,7 @@ const staticSamples: DemoSource[] = [
     kind: 'xlsx',
     label: 'XLT Solver Template -> XLSX',
     name: 'finance-model.xlt',
-    source: new URL('../../../examples/go-wazero-converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
+    source: new URL('../../../examples/converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
     contentType: 'application/vnd.ms-excel',
     mode: 'sample'
   },
@@ -387,7 +387,7 @@ const staticSamples: DemoSource[] = [
     kind: 'xlsx',
     label: 'ET Compatibility -> XLSX',
     name: 'finance-model.et',
-    source: new URL('../../../examples/go-wazero-converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
+    source: new URL('../../../examples/converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
     contentType: 'application/vnd.ms-excel',
     mode: 'sample'
   },
@@ -395,7 +395,7 @@ const staticSamples: DemoSource[] = [
     kind: 'xlsx',
     label: 'ETT Solver Template -> XLSX',
     name: 'finance-model.ett',
-    source: new URL('../../../examples/go-wazero-converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
+    source: new URL('../../../examples/converter/fixtures/xls/SOLVSAMP.XLS', import.meta.url).href,
     contentType: 'application/vnd.ms-excel',
     mode: 'sample'
   },

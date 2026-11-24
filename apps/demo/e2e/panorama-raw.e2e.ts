@@ -54,7 +54,7 @@ test('previews an ordinary camera DNG as a flat image', async ({ page }) => {
 
 for (const archived of [false, true]) {
   test(`previews ${archived ? 'archived' : 'standalone'} RAW with a false JPEG start`, async ({ page }) => {
-    const fixture = readFileSync('examples/go-wazero-converter/fixtures/raw/sample.nef');
+    const fixture = readFileSync('examples/converter/fixtures/raw/sample.nef');
     const jpeg = fixture.subarray(fixture.indexOf(Buffer.from([0xff, 0xd8])), fixture.lastIndexOf(Buffer.from([0xff, 0xd9])) + 2);
     // Older scanning incorrectly returned this prefix together with the JPEG.
     const raw = Buffer.concat([Buffer.from([0xff, 0xd8, 0x42, 0, 2]), jpeg]);

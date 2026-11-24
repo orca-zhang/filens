@@ -179,14 +179,14 @@ export async function summarizeCandidate(candidatePath, options = {}) {
   const totalWasmBytes = wasm.reduce((sum, item) => sum + item.bytes, 0);
   const hasWASI = wasm.some((item) => item.importsWASI && item.hasStart);
   const hasEmscripten = wasm.some((item) => item.mentionsEmscripten) || jsHints.length > 0;
-  const wazeroEligible = hasWASI && !hasEmscripten;
+  const wasiEligible = hasWASI && !hasEmscripten;
   const browserAdapterCandidate = hasEmscripten && wasm.length > 0;
   const blockedReasons = [];
 
   if (!wasm.length) blockedReasons.push('no valid .wasm files found');
   if (!licenseFiles.length) blockedReasons.push('no license file found in candidate directory');
-  if (!wazeroEligible) blockedReasons.push('candidate is not a clear pure WASI _start module for wazero');
-  if (browserAdapterCandidate) blockedReasons.push('candidate appears to need JavaScript/Emscripten glue; keep it out of Go/wazero wrapper');
+  if (!wasiEligible) blockedReasons.push('candidate is not a pure WASI _start module');
+  if (browserAdapterCandidate) blockedReasons.push('candidate appears to need JavaScript/Emscripten glue; keep it out of the WASI-only backend path');
 
   return {
     candidatePath: displayPath(resolved, baseDir),
@@ -201,7 +201,7 @@ export async function summarizeCandidate(candidatePath, options = {}) {
     allowedDefaultConversions: manifest,
     gates: {
       boundaryGate: true,
-      wazeroEligible,
+      wasiEligible,
       browserAdapterCandidate,
       blocked: blockedReasons.length > 0,
       blockedReasons
@@ -222,7 +222,7 @@ export function renderMarkdown(report) {
   lines.push(`- files scanned: ${report.fileCount}`);
   lines.push(`- wasm files: ${report.wasmFiles.length}`);
   lines.push(`- total wasm bytes: ${report.totalWasmBytes}`);
-  lines.push(`- wazero eligible: ${report.gates.wazeroEligible ? 'yes' : 'no'}`);
+  lines.push(`- WASI eligible: ${report.gates.wasiEligible ? 'yes' : 'no'}`);
   lines.push(`- browser adapter candidate: ${report.gates.browserAdapterCandidate ? 'yes' : 'no'}`);
   lines.push(`- blocked: ${report.gates.blocked ? 'yes' : 'no'}`);
   lines.push('');

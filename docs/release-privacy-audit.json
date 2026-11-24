@@ -86,7 +86,7 @@
     "font/PDF algorithms remain in shared Rust/WASM core",
     "private PDF reports separated from public reports",
     "Rust source path remapping",
-    "Go CLI and all OCR wrappers use -trimpath",
+    "Rust CLI path remapping and OCR wrapper source-path redaction",
     "OCR wrappers rebuilt from SHA-256-pinned public source",
     "privacy gates inspect actual archive contents before any publish preflight network operation",
     "obsolete archives moved to ignored local quarantine"

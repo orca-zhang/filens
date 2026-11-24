@@ -1,11 +1,13 @@
 import { describe, expect, it, vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { getDocument } from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import { webcrypto } from 'node:crypto';
 import { createPdfPreviewDriver, createPdfPreviewRoutes } from '../src';
 import { pdfPageCache } from '../src/page-cache';
 
 const destroy = vi.fn(async () => undefined);
 const render = vi.fn(() => ({ promise: Promise.resolve() }));
+const workerSource = vi.hoisted(() => ({ value: 'pdf-worker.mjs' as string | (() => string) }));
+vi.mock('pdfjs-dist/build/pdf.worker.min.mjs?url', () => ({ get default() { return workerSource.value; } }));
 
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {},
@@ -28,6 +30,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  workerSource.value = 'pdf-worker.mjs';
   // These lifecycle tests mock PDF.js drawing; actual pixels are checked in Chromium.
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 });
@@ -38,6 +41,20 @@ afterAll(() => {
 });
 
 describe('PDF preview driver', () => {
+  it('resolves a deferred worker URL only when loading a PDF and supports reopening it', async () => {
+    const resolve = vi.fn(() => 'blob:http://localhost/pdf-worker');
+    workerSource.value = resolve;
+    const session = createPdfPreviewDriver().createSession(document.createElement('div'));
+    try {
+      expect(resolve).not.toHaveBeenCalled();
+      for (let index = 0; index < 2; index++) {
+        await session.load(new Uint8Array([37, 80]), { descriptor: { source: new Uint8Array(), name: 'sample.pdf' } });
+        expect(GlobalWorkerOptions.workerSrc).toBe('blob:http://localhost/pdf-worker');
+      }
+      expect(resolve).toHaveBeenCalledTimes(2);
+    } finally { session.destroy(); }
+  });
+
   it('reuses only matching painted pixels after validating each new document and releasing each worker', async () => {
     vi.stubGlobal('crypto', webcrypto);
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as never);

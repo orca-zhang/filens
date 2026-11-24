@@ -5,7 +5,7 @@ import { createWasmConverterClient } from '../src';
 import { pngPixels } from './helpers/png-rgba';
 
 const module = WebAssembly.compile(await readFile(new URL('../../../wasm/converter-core/dist/converter-core.wasm', import.meta.url)));
-const root = new URL('../../../examples/go-wazero-converter/fixtures/icons/', import.meta.url);
+const root = new URL('../../../examples/converter/fixtures/icons/', import.meta.url);
 describe('shared application icon WASM conversion', () => {
   it.skipIf(!process.env.FILENS_ALPHA_ICO || !process.env.FILENS_ALPHA_ICO_RGBA)('user ICO retains every alpha and visible RGB sample', async () => {
     const source = new Uint8Array(await readFile(process.env.FILENS_ALPHA_ICO!));

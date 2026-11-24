@@ -39,7 +39,7 @@ const files = [
 ];
 // Also exercise the actual embedded STEP engine, rather than a mocked loader.
 files.push(path.join(root, 'packages/model3d/test/fixtures/occt/cube.stp'));
-for (const ext of ['apk', 'ipa', 'exe', 'dll', 'mui', 'mun', 'ico']) files.push(path.join(root, `examples/go-wazero-converter/fixtures/icons/sample.${ext}`));
+for (const ext of ['apk', 'ipa', 'exe', 'dll', 'mui', 'mun', 'ico']) files.push(path.join(root, `examples/converter/fixtures/icons/sample.${ext}`));
 for (const ext of ['docx', 'xlsx', 'pptx']) files.push(path.join(root, `packages/converter-client/test/fixtures/password/agile.${ext}`));
 const localeFiles = await readdir(path.join(root, 'packages/vue/src/locales'));
 const locales = await Promise.all(localeFiles.filter(name => name.endsWith('.json')).map(async name => ({ locale: name.slice(0, -5), fit: JSON.parse(await readFile(path.join(root, 'packages/vue/src/locales', name), 'utf8')).Fit })));
@@ -127,7 +127,7 @@ try {
           // Mobile app packages expose their ZIP contents in the current UI.
           const entry = page.locator('tr.archivev-row').filter({ hasText: file.endsWith('.apk') ? 'AndroidManifest.xml' : 'Payload/' });
           await entry.waitFor();
-        } else if (path.dirname(file) === path.join(root, 'examples/go-wazero-converter/fixtures/icons')) {
+        } else if (path.dirname(file) === path.join(root, 'examples/converter/fixtures/icons')) {
           const icon = page.locator('img.pptxv-native-image');
           await icon.waitFor();
           assert.equal(await icon.evaluate(img => img.naturalWidth), 1, `${mode}: ${file}`);

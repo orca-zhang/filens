@@ -184,7 +184,6 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 可选图形核心 | `graphicsWasm` 可配置 `converter-raster.wasm` 处理位图，或配置 `converter-graphics.wasm` 同时处理 DWG 与位图；`converter-core-full.wasm` 已包含两者实现。 | [图形检查](../packages/converter-client/test/graphics-preview.spec.ts) |
 | 可选 PostScript 核心 | `postscriptWasm` 提供 `converter-postscript.wasm`，用于 EPS/PS 和非 PDF 兼容 AI。 | [设计稿预览限制](design-preview.md) |
 | HTTP 适配器 | 调用配置的转换服务。 | [适配器 API](#路由与数据源加载) |
-| Go/wazero 宿主 | 包装同一 WASM 核心的薄壳：CLI/HTTP、校验、临时文件、结果与错误映射、OpenXML 输出校验。 | [Go/wazero 示例](../examples/go-wazero-converter/README.md) |
 
 <sub>浏览器 WASI 输出按需扩容，读取与文件长度只暴露有效字节；支持覆盖、追加和稀疏写入，排他创建不会覆盖已有文件。扩容会保留备用容量，不表示峰值内存下降。[检查记录](../benchmarks/frontend/2026-10-24/converter-io-review.json)。</sub>
 
@@ -197,11 +196,11 @@ filens 在现代浏览器中提供只读文件预览。当前完整预览宿主�
 | 头部与文本像素 | ASCII 空白、LF/CRLF 头部、头部注释及 P3 采样间注释。二进制像素中的空白与 `#` 保留为像素数据。 |
 | 采样值 | `maxval` 1–255 输出 8 位 PNG；256–65535 输出 16 位 PNG。采样值按 255/65535 范围缩放并取整。 |
 | 预览操作 | 转换后的 PNG 使用图片驱动的缩放、适应、平移、旋转和全屏功能。浏览器显示可能降低 16 位精度。 |
-| 运行时 | 浏览器 `createWasmConverterClient({ wasm })` 与 Go/wazero 复用 `converter-core.wasm`。HTTP 集成需配置支持此转换对的服务。 |
+| 运行时 | 浏览器 `createWasmConverterClient({ wasm })` 与 Rust Agent CLI 复用同一 Rust/WASI 转换实现。HTTP 集成需配置支持此转换对的服务。 |
 | 资源限制 | 输入 ≤256 MiB；解码 RGB ≤128 MiB（8 位每像素 3 字节、16 位每像素 6 字节）。这是缓冲区限制，不是整体峰值内存承诺。 |
 | 图像流与元数据 | 只转换首张图片；不提供动画、透明通道、注释元数据导出或额外色彩配置转换。 |
 | 解码验证 | [Rust 测试](../wasm/converter-core-rust/src/ppm.rs)覆盖注释、maxval 缩放、16 位采样、二进制分隔字节、损坏输入和超大尺寸。 |
-| 集成验证 | [WASM 客户端测试](../packages/converter-client/test/converter-client.spec.ts)覆盖 P3/P6、PNG 尺寸与位深、错误输入；[浏览器回归](../apps/demo/e2e/ppm.e2e.ts)检查内置样例及上传 P3/P6/16 位图片的像素。[批处理样例](../examples/go-wazero-converter/fixtures/image/sample.ppm)覆盖 Go/wazero 宿主。 |
+| 集成验证 | [WASM 客户端测试](../packages/converter-client/test/converter-client.spec.ts)覆盖 P3/P6、PNG 尺寸与位深、错误输入；[浏览器回归](../apps/demo/e2e/ppm.e2e.ts)检查内置样例及上传 P3/P6/16 位图片的像素；[Rust CLI 转换检查](../scripts/test-agent-convert.mjs)验证共享 WASM 核心。 |
 
 ### 相机 RAW 转换
 

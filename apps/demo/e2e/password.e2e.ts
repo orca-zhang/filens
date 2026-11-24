@@ -8,7 +8,7 @@ test('previews an unencrypted legacy Office document without downloading the dec
   const officeRequests: string[] = [];
   page.on('request', request => { if (request.url().includes('converter-office.wasm')) officeRequests.push(request.url()); });
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles(path.resolve('examples/go-wazero-converter/fixtures/doc/sample.doc'));
+  await page.locator('input[type=file]').setInputFiles(path.resolve('examples/converter/fixtures/doc/sample.doc'));
   await expect(page.locator('section.docx').first()).toBeVisible();
   expect(officeRequests).toHaveLength(0);
 });

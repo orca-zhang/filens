@@ -181,7 +181,7 @@ DSH 默认搜索返回 5 个文件、查重 / 相似图片返回 20 组、摘录
 - id: filens-tools
   config:
     timeoutMs: 120000
-    maxBytes: 131072
+    maxBytes: 262144
     displayChars: 60000
     ocr: true
     # 可选：shell 执行环境中的可执行文件与固定参数

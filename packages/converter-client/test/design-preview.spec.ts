@@ -16,7 +16,7 @@ beforeAll(async () => {
 
 describe('native design previews in the shared WASM core', () => {
   it.each(['psd', 'psb'])('decodes real %s channel data to PNG', async format => {
-    const source = await readFile(new URL(`examples/go-wazero-converter/fixtures/design/sample.${format}`, root));
+    const source = await readFile(new URL(`examples/converter/fixtures/design/sample.${format}`, root));
     const result = await client.convert({ source, sourceFormat: format, targetFormat: 'png' }, context);
     const png = Buffer.from(result.source as Uint8Array);
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));

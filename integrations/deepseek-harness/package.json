@@ -1,7 +1,7 @@
 {
   "name": "dsh-filens",
   "version": "0.1.10",
-  "description": "Local previews for 450 file formats with a session file workspace, including Office, PDF, iWork, CAD/3D, RAW and 360° media.",
+  "description": "Local previews for 450 file formats with a session file workspace, including Office, PDF, iWork, CAD/3D, RAW and 360\u00b0 media.",
   "type": "module",
   "license": "MIT",
   "author": "FiLens contributors",
@@ -83,7 +83,8 @@
     "esbuild": "^0.25.0",
     "playwright": "1.59.1",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "picomatch": "file:../../vendor/picomatch"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -98,5 +99,12 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "overrides": {
+    "picomatch": "$picomatch",
+    "undici": "^8.12.2",
+    "@modelcontextprotocol/client": "^2.3.0",
+    "fflate": "^0.8.3",
+    "zod": "^4.6.7"
   }
 }

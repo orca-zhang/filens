@@ -1,6 +1,6 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
-import dts from 'vite-plugin-dts';
+import { packageDeclarations } from '../../scripts/package-declarations';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 
 export default defineConfig({
@@ -8,6 +8,7 @@ export default defineConfig({
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
   build: {
     lib: {
+      cssFileName: 'style',
       entry: { index: './src/index.ts', routes: './src/routes.ts' },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`
@@ -24,7 +25,7 @@ export default defineConfig({
   },
   plugins: [
     archiveEngineAssets(),
-    dts({
+    packageDeclarations({
       include: ['src/**/*.ts'],
       outDir: 'dist',
       entryRoot: 'src',

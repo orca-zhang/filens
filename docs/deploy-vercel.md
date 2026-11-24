@@ -18,6 +18,8 @@
 
 部署后的 `/` 是产品首页；`/?lang=zh` 和 `/?lang=en` 可分别分享中文和英文版本。`/?view=preview` 打开预览工作台。
 
+`/bench/` 是 FiLens-Bench 独立评测页，`/bench/en.html` 为英文版，包含成绩、方法、图表和结果包下载。它从版本管理中的 `benchmarks/filens-bench/published/` 生成，不依赖被忽略的本地运行档案；也可用 `npm run build:bench` 单独构建。[更新快照与发布](../benchmarks/filens-bench/README.zh-CN.md#独立构建与发布)。
+
 直接传入文件地址即可跳转预览，无需先打开工作台：
 
 ```text
@@ -63,6 +65,8 @@ The production site is **https://filens.cc**, hosted by the `filens` Vercel proj
 Connect `filens.cc` to **Production** under **Settings → Domains** in Vercel. In Cloudflare, add a `CNAME` record for `@` pointing to `04715ba45e98b4ab.vercel-dns-017.com`, with proxy status **DNS only** and TTL **Auto**. Use the DNS target shown by Vercel if configuring this again. Vercel automatically issues and renews the HTTPS certificate and redirects HTTP requests to HTTPS with status 308, preserving paths and query parameters.
 
 The product homepage lives at `/`. Share `/?lang=zh` for Chinese or `/?lang=en` for English; `/?view=preview` opens the workbench.
+
+`/bench/` is the dedicated FiLens-Bench results site; `/bench/en.html` is its English edition. It includes scores, methodology, charts and snapshot downloads, generated from the versioned `benchmarks/filens-bench/published/` directory rather than ignored local run archives. Use `npm run build:bench` to build it independently.
 
 Pass `?url=` to open a file directly, for example `https://filens.cc/?url=https%3A%2F%2Fexample.com%2Freport.pdf`. Encode the complete file URL with `encodeURIComponent(fileUrl)` or `URL.searchParams.set` to preserve query parameters and signatures. HTTP(S) URLs and paths relative to the site are supported. Add `&name=report.pdf` when the download URL has no extension, and optionally `&lang=zh` or `&lang=en`.
 

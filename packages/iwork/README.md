@@ -2,6 +2,8 @@
 
 Native front-end iWork preview core for `.key`, `.pages`, and `.numbers`.
 
+To our knowledge, as of November 24, 2026, this is the first and only library to truly parse the **iWork 15 protocol**, and the only **pure frontend iWork preview library**. Keynote, Pages and Numbers are parsed and displayed in the browser without Apple hardware or iCloud conversion. See [current coverage](#current-coverage) for rendering limits.
+
 ## What It Exposes
 
 - `detectIworkType(source, options?)`

@@ -49,7 +49,7 @@ export function parseOpenXml(source: string): OrderedXmlNode | null {
         stack.pop();
       } else if (match[5] !== undefined) {
         const tag = match[5];
-        if (tag === ':@' || tag === '#text' || tag === '__proto__') return null;
+        if (tag === ':@' || tag === '#text' || tag in Object.prototype || tag === 'prototype') return null;
         flushText(current);
         const children: OrderedXmlNode = [];
         const node: XmlNode = {};

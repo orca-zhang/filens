@@ -43,9 +43,9 @@ const measuredSize = file => {
     brotli: brotliCompressSync(b, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }).length };
 };
 const result = { date: new Date().toISOString(), cpu: os.cpus()[0].model, totalMemory: os.totalmem(), platform: `${os.platform()} ${os.release()} ${os.arch()}`, iterations, profiled: profile,
-  versions: { 'dxf-parser': '1.1.2', 'occt-import-js': '0.0.23', sheetjs: '0.20.3', papaparse: '5.7.0', 'zip.js': '2.24.0', fflate: '0.8.2', x2t: 'v9.3.2+3' },
+  versions: { 'dxf-parser': '1.1.2', 'occt-import-js': '0.0.23', sheetjs: '0.20.3', papaparse: '5.7.0', 'zip.js': '2.24.0', fflate: JSON.parse(fs.readFileSync(path.join(work, 'node_modules/fflate/package.json'))).version, x2t: 'v9.3.2+3' },
   method: 'Fresh Chromium context per invocation, shared browser, alternating engine order. Byte/text inputs and libraries loaded first. STEP and x2t WASM are precompiled; runtime instantiation/initialization is recorded separately. filens conversion includes fresh WASI instantiation. No fonts are added to x2t. zip.js runs without workers, checksum validation disabled for both ZIP paths. No rendering/FPS or Office visual-fidelity claim. Data/geometry signatures and output validation occur after timing.',
-  artifacts: ['scripts/benchmark-other-formats.mjs', 'scripts/prepare-other-format-benchmark.mjs', 'benchmarks/frontend/other-formats/package-lock.json',
+  artifacts: ['scripts/benchmark-other-formats.mjs', 'scripts/prepare-other-format-benchmark.mjs', 'benchmarks/frontend/other-formats/package-lock.json', 'tmp/performance-other/package-lock.json',
     ...['core', 'cad', 'xlsx', 'archive', 'converter-client'].map(n => `packages/${n}/dist/index.js`), 'packages/model3d/vendor/occt-import-js/occt-import-js.wasm',
     'tmp/performance-other/node_modules/occt-import-js/dist/occt-import-js.wasm', 'wasm/converter-core/dist/converter-core.wasm', 'tmp/performance-other/x2t/x2t.wasm', 'tmp/performance-other/x2t/x2t.js'].map(measuredSize),
   samples, engineering: Boolean(cadBaseline || archiveBaseline || workbookBaseline), runs: [] };

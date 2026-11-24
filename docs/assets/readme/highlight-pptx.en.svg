@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="152" viewBox="0 -5 220 152" role="img" aria-labelledby="title desc" lang="en">
+  <title id="title">PPTX</title>
+  <desc id="desc">Truly open. Truly native.. The only open-source native. PPTX viewer. A better experience.. MIT · FRONTEND NATIVE</desc>
+  <defs><clipPath id="card"><rect x=".5" y=".5" width="219" height="141" rx="12"/></clipPath></defs>
+  <g clip-path="url(#card)">
+    <rect width="220" height="142" fill="#fff7ed"/>
+    <circle cx="222" cy="-8" r="55" fill="none" stroke="#f7d5b5" stroke-width="12" opacity=".5"/>
+    <circle cx="222" cy="-8" r="32" fill="none" stroke="#f7d5b5" stroke-width="1.5"/>
+  </g>
+  <rect x=".5" y=".5" width="219" height="141" rx="12" fill="none" stroke="#f2d6bf"/>
+  <g transform="translate(16 14) scale(.78)" fill="none" stroke="#a64017" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="2" width="22" height="16" rx="3"/><path d="M8 24h8m-4-6v6M6 13l4-4 3 3 4-6"/></g>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <text x="46" y="32" fill="#a64017" font-size="18" font-weight="700" letter-spacing="-.6">PPTX</text>
+    <text x="16" y="64" fill="#1c2935" font-size="14" font-weight="650">Truly open. Truly native.</text>
+    <text x="16" y="86" fill="#52616a" font-size="11">The only open-source native</text>
+    <text x="16" y="103" fill="#52616a" font-size="11">PPTX viewer. A better experience.</text>
+    <path d="M16 115h188" stroke="#f2d6bf"/>
+    <text x="16" y="134" fill="#a64017" font-size="9.5" font-weight="600" letter-spacing=".3">MIT · FRONTEND NATIVE</text>
+  </g>
+</svg>

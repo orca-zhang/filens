@@ -3,7 +3,13 @@
   <h1>filens</h1>
   <p><strong>An Agent CLI. A pure frontend viewer for complex file formats.</strong></p>
   <p>Read, search, OCR, convert and preview local files. Files stay on your device.</p>
-  <p>English · <a href="README.zh-CN.md">简体中文</a> · <a href="LICENSE">MIT</a></p>
+  <p>
+    <a href="docs/performance-comparison.md"><img src="docs/assets/readme/highlight-pptx.en.svg" alt="PPTX: the only truly open-source frontend-native viewer, with a better viewing experience" width="220" /></a>
+    <a href="packages/iwork/README.md"><img src="docs/assets/readme/highlight-iwork.en.svg" alt="iWork 15: the first protocol parser and the only pure frontend iWork viewer" width="220" /></a>
+    <a href="docs/performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams"><img src="docs/assets/readme/highlight-panorama.en.svg" alt="Panorama: camera distortion calibration and real-time panorama photos and video in the browser" width="220" /></a>
+  </p>
+  <p><sub>To our knowledge, as of November 24, 2026 · <a href="docs/project-overview.md#what-makes-filens-different">Capabilities and measurements</a></sub></p>
+  <p>English · <a href="README.zh-CN.md">简体中文</a> · <a href="LICENSE">MIT</a> · <a href="https://filens.cc/bench/en.html">FiLens-Bench</a></p>
 </div>
 
 ![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicate files, similar images, CSV-to-XLSX conversion, offline HTML workbook and STEP previews](docs/assets/agent-cli/terminal-demo.gif)
@@ -18,12 +24,20 @@
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
 | Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
-| Approximate size | **Lite 6.90–7.17 MiB (<10 MB) · Full 31.26–33.80 MiB** offline downloads; Full includes preview assets, OCR runtime and models. Lite adds OCR/preview assets separately. | **A few KB to hundreds of KB per compressed chunk**; shared dependencies, workers and WASM add to the total. An **all-in-one JS file** is also available. |
+| Download size | **Lite 6.90–7.17 MiB · Full 31.26–33.80 MiB** | **Split-only npm 5.64 MiB · dual-build npm 9.76 MiB**; format modules load on demand. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-The native executable is **0.93–2.20 MiB**. The CLI sizes above measure complete **v0.6.7 offline archive downloads**. Full includes preview **0.3.7**, OCR runtime and models; Lite retains reading, search and conversion with OCR/preview assets optional. Lite archives must stay strictly below **10,000,000 bytes (10 MB)**; packaging fails at or above that limit. See [archive and extracted sizes](docs/preview-release-sizes.json) (1 MiB = 1,048,576 bytes). npm CLI 0.5.7 component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. Frontend chunk figures describe compressed build artifacts. Preview 0.3.8 source-build main runtimes: **4.17 MB Brotli** summed across split files, or **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [CLI measurements](docs/agent-cli-npm-release.json) · [Standalone measurements](docs/preview-build-sizes.json).
+Sizes are compressed downloads. Full includes offline preview and OCR; Lite adds them as needed. [CLI platforms](docs/release-v0.6.7.md#downloads) · [Preview packages and runtimes](docs/preview-sizes.md).
 
-Verified November 6, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Versions, counts and complete extension list](docs/release-v0.6.6-format-counts.json).
+Verified November 24, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Published extension inventory](docs/release-v0.6.6-format-counts.json).
+
+## FiLens-Bench
+
+FiLens-Bench compares each agent harness using native tools versus a normal FiLens CLI installation on a 13-task synthetic corpus covering Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. The latest snapshot uses FiLens CLI **0.5.7**: quality rose in **7/7** pairs, recorded p50/batch time fell in **7/7**, and tokens fell in **4/4** pairs with complete usage. Models vary across harnesses, so comparisons are within each pair.
+
+[![FiLens-Bench results across seven agent harnesses](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/en.html)
+
+[Official results site](https://filens.cc/bench/en.html) · [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Protocol and reproduction](benchmarks/filens-bench/README.zh-CN.md)
 
 ## Agent CLI
 
@@ -72,16 +86,19 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 <summary>CLI sizes, capabilities and further examples</summary>
 
 <!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 offline downloads · macOS arm64 · CLI 0.5.7; Full includes preview 0.3.7 and OCR models; Lite adds preview assets separately; <a href="docs/preview-release-sizes.json">all platform sizes</a></sub></p>
+  <p><strong>CLI executable 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 offline downloads · macOS arm64 · CLI 0.5.7; Full includes preview 0.3.7 and OCR models; Lite adds preview assets separately; <a href="https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
+
+CLI 0.5.7 native executables measure **0.93–2.20 MiB**. Offline archives remain at v0.6.7; Full includes preview **0.3.7**, OCR runtime and models. [Download and extracted sizes](https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json). npm component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. [Platform measurements](docs/agent-cli-npm-release.json). 1 MiB = 1,048,576 bytes.
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](https://filens.cc/skills/filens/SKILL.md)
 - [Output formats and layouts](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 observed examples and limits](docs/agent-cli-examples.zh-CN.md)
 - [Search](docs/agent-cli-search.zh-CN.md), [nested archives](docs/agent-cli-search-archives.zh-CN.md) and [model-free key excerpts](docs/agent-cli-pruning.zh-CN.md)
 - [Duplicates and similar images](docs/agent-cli-similarity.md) · [Windows setup and validation status](docs/agent-cli-windows.zh-CN.md)
 - [Search coverage](docs/agent-cli-search-formats.zh-CN.md), [retrieval benchmarks](docs/agent-cli-search-benchmark.zh-CN.md) and [startup costs](docs/agent-cli-search-native.zh-CN.md)
+- [FiLens-Bench dedicated results site](https://filens.cc/bench/en.html): compare complex-file quality, latency and token usage before and after normal FiLens installation. [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Methodology and reproduction](benchmarks/filens-bench/README.zh-CN.md).
 
-The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; use explicit `--pages` / `--slides` for selection. Field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
+The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960 by default, up to 1600 for transparent scans, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; use explicit `--pages` / `--slides` for selection. Field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
 
 **macOS OCR comparison:** Apple Vision is faster on the tested warm image calls, but loses tiny text and can be less accurate on blurred input; fresh-process latency is also higher. It cannot yet replace RapidOCR across this project's requirements. [Measurements, capability gaps and reproduction](docs/macos-ocr-benchmark.zh-CN.md).
 
@@ -106,7 +123,7 @@ Recorded November 5, 2026 on Apple M4 Pro/macOS and DSH Desktop 0.2.1-rc.5: nine
 Install [`dsh-filens@0.1.10`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.10: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
+**DSH 0.1.10: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/release-v0.6.7-npm-publication.json).
 <!-- dsh-package-metrics:end -->
 
 **0.1.10 demos:** refreshed in DSH Desktop 0.2.2-rc.1 with English UI and captions, using a build matching the published package. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
@@ -151,7 +168,7 @@ Deploy the extracted runtime directory and import its `filens.js` over HTTP(S). 
 
 ### iOS / Android SDKs
 
-**SDK 0.1.8 / preview 0.3.8:** iOS and Android source SDKs include the split runtime and offline assets. See [exact sizes](docs/mobile-sdk-sizes.json).
+**SDK 0.1.8 / preview 0.3.8:** iOS and Android source SDKs are **5.66 MiB** compressed and about **17.1 MiB** extracted, including the split runtime and offline assets. [Exact sizes](docs/mobile-sdk-sizes.json).
 Source SDKs are available as a local Swift Package and an Android
 Library, sharing the offline frontend and WASM runtime. See the
 [mobile SDK integration guide](sdk/README.md) and
@@ -175,11 +192,13 @@ Library, sharing the offline frontend and WASM runtime. See the
 <details>
 <summary>Detailed bundle sizes and loading costs</summary>
 
+Preview 0.3.8 source-build main runtimes: **4.17 MB Brotli** summed across split files, or **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [Standalone measurements](docs/preview-build-sizes.json).
+
 <!-- bundle-sizes:en:start -->
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM (Office detection) | 927.9 KiB | 414.3 KiB | **334.3 KiB** |
-| Image / RAW core WASM | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
+| Conversion core WASM (Office detection) | 969.1 KiB | 432.0 KiB | **347.3 KiB** |
+| Image / RAW WASM (deployed assets) | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
 | Media / panorama preview | 465.1 KiB | 128.8 KiB | **108.3 KiB** |
 | truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
 
@@ -190,25 +209,25 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 
 | Module / core | Raw | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Office decryption WASM (optional) | 370.6 KiB | 160.3 KiB | **127.4 KiB** |
-| DWG reader WASM (on demand) | 886.8 KiB | 432.4 KiB | **351.8 KiB** |
-| Raster preview WASM (on demand) | 1747.7 KiB | 717.4 KiB | **537.7 KiB** |
-| PostScript WASM (optional) | 2429.4 KiB | 745.6 KiB | **516.0 KiB** |
+| Office decryption WASM (optional) | 370.6 KiB | 160.3 KiB | **127.6 KiB** |
+| DWG reader WASM (on demand) | 921.8 KiB | 449.2 KiB | **364.4 KiB** |
+| Raster preview WASM (on demand) | 1748.0 KiB | 718.0 KiB | **538.0 KiB** |
+| PostScript WASM (optional) | 2428.8 KiB | 745.4 KiB | **515.6 KiB** |
 | HEIC / HEIF decoder WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
-| Demo entry | 241.8 KiB | 69.5 KiB | **58.1 KiB** |
-| Agent CLI demo UI | 34.9 KiB | 13.5 KiB | **11.1 KiB** |
-| Shared vendor dependencies | 813.1 KiB | 229.7 KiB | **192.1 KiB** |
-| PPTX / core runtime | 385.3 KiB | 108.2 KiB | **91.8 KiB** |
+| Demo entry | 249.5 KiB | 72.2 KiB | **60.2 KiB** |
+| Agent CLI demo UI | 25.6 KiB | 9.8 KiB | **8.0 KiB** |
+| Shared vendor dependencies | 854.2 KiB | 244.0 KiB | **204.0 KiB** |
+| PPTX / core runtime | 386.8 KiB | 108.3 KiB | **91.7 KiB** |
 | Vue preview host | 247.2 KiB | 66.0 KiB | **52.5 KiB** |
-| DOCX / XLSX / PDF | 51.7 KiB | 16.0 KiB | **14.4 KiB** |
+| DOCX / XLSX / PDF | 51.8 KiB | 16.1 KiB | **14.5 KiB** |
 | On-demand DOCX engine | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
-| Office attachments | 31.4 KiB | 12.1 KiB | **11.0 KiB** |
-| Shared XML compatibility | 27.2 KiB | 8.9 KiB | **8.0 KiB** |
-| Shared ZIP compatibility | 41.5 KiB | 12.7 KiB | **11.6 KiB** |
-| Encrypted ZIP support | 99.1 KiB | 37.0 KiB | **32.3 KiB** |
-| On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.9 KiB** |
+| Office attachments | 31.5 KiB | 12.1 KiB | **11.0 KiB** |
+| Shared XML compatibility | 29.9 KiB | 10.0 KiB | **9.0 KiB** |
+| Shared ZIP compatibility | 43.1 KiB | 13.2 KiB | **11.9 KiB** |
+| Encrypted ZIP support | 99.1 KiB | 37.0 KiB | **32.4 KiB** |
+| On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.8 KiB** |
 | iWork preview | 40.5 KiB | 12.1 KiB | **10.8 KiB** |
-| CAD / mind maps / diagrams | 100.6 KiB | 28.4 KiB | **24.4 KiB** |
+| CAD / mind maps / diagrams | 101.1 KiB | 28.6 KiB | **24.5 KiB** |
 | 3D preview | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
 | glTF / GLB model loader | 42.7 KiB | 12.6 KiB | **11.2 KiB** |
 | FBX model loader | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
@@ -217,17 +236,17 @@ Document, image / RAW, and STEP WASM modules load independently on demand. Media
 | 3DS model loader | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
 | LDraw model loader | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
 | USDZ model loader | 8.5 KiB | 2.6 KiB | **2.4 KiB** |
-| VRML model loader | 178.0 KiB | 46.4 KiB | **39.8 KiB** |
-| Media decoder loader | 143.1 KiB | 52.5 KiB | **45.5 KiB** |
+| VRML model loader | 178.1 KiB | 46.4 KiB | **39.7 KiB** |
+| Media decoder loader | 108.2 KiB | 35.2 KiB | **31.3 KiB** |
 | Archive preview | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
 | RAR / 7z extraction WASM (optional) | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
-| Archive worker (optional) | 51.5 KiB | 18.2 KiB | **16.3 KiB** |
+| Archive worker (optional) | 51.6 KiB | 18.2 KiB | **16.3 KiB** |
 | Text / ebooks | 18.1 KiB | 6.9 KiB | **6.1 KiB** |
-| iWork worker | 884.9 KiB | 183.4 KiB | **153.3 KiB** |
+| iWork worker | 901.0 KiB | 188.5 KiB | **157.5 KiB** |
 | PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
 | truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
 
-Entry, preloaded JS, and CSS total **461.8 KiB Brotli** (1946.8 KiB raw / 548.9 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Entry, preloaded JS, and CSS total **476.1 KiB Brotli** (1998.6 KiB raw / 566.6 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
 
 </details>
 
@@ -357,7 +376,7 @@ All dates are in 2026. RAW inputs have no embedded JPEG; preview resolution/tone
 | Architecture and WASM boundaries | [Project overview](docs/project-overview.md) |
 | Frontend benchmarks and raw data | [Performance comparison](docs/performance-comparison.md) |
 | macOS native OCR vs RapidOCR | [Measured comparison](docs/macos-ocr-benchmark.zh-CN.md) |
-| CLI and backend integration | [Agent CLI](docs/agent-cli.md) · [Go + wazero host](examples/go-wazero-converter/README.md) |
+| CLI and conversion | [Rust Agent CLI](docs/agent-cli.md) · [WASM conversion core](wasm/converter-core-rust/README.md) |
 
 Try your files and [report a reproducible issue](https://github.com/orca-zhang/filens/issues/new/choose). [Roadmap](docs/roadmap.md) · [MIT license](LICENSE) · [Third-party notices](packaging/agent-third-party.md).
 

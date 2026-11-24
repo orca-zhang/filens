@@ -61,9 +61,9 @@ This checks that every manifest entry points to a non-empty file, sample ids and
 npm run verify:real-samples
 ```
 
-## Run conversion smoke (WASM via Go/wazero)
+## Run conversion smoke (Rust WASI core)
 
-This runs the manifest-backed OpenXML conversion matrix through `converter-core.wasm` and writes:
+This runs the manifest-backed OpenXML conversion matrix through the combined `converter-core-full.wasm` and optional `converter-image.wasm` with Node's WASI runtime and writes:
 
 - `tmp/real-samples/conversion-report.json`
 - `tmp/real-samples/converted/`
@@ -142,7 +142,7 @@ node ./scripts/update-expectations-from-strict-report.mjs tmp/real-samples/previ
 
 ## End-to-end: convert then preview
 
-This runs the manifest-backed conversion batch (Go/wazero + `converter-core.wasm`), stages the converted OpenXML outputs, then runs both preview smoke and strict preview smoke against those outputs.
+This runs the manifest-backed conversion batch with the combined WASI cores, stages the converted OpenXML outputs, then runs both preview smoke and strict preview smoke against those outputs.
 
 Artifacts:
 
@@ -166,6 +166,6 @@ node ./scripts/stage-real-samples.mjs tmp/real-samples/real-samples-manifest.jso
 ## Notes
 
 - These samples come from vendored upstream sources under `tmp/real-samples/_sources/` plus the repo's own fixture directories.
-- Real `doc`/`docm`/`xls`/`xlsm` conversion samples from Apache POI are checked in under `examples/go-wazero-converter/fixtures/real/apache-poi/`; provenance, license, and formula-coverage details live beside the files.
+- Real `doc`/`docm`/`xls`/`xlsm` conversion samples from Apache POI are checked in under `examples/converter/fixtures/real/apache-poi/`; provenance, license, and formula-coverage details live beside the files.
 - `wps`/`et`/`dps` currently use controlled fixtures because no redistributable real sample source has been adopted yet.
 - Some upstream corpora (for example, EPUB 3 samples) are stored as unpacked sources and are not staged as `.epub` files by default.

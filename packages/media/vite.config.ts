@@ -1,11 +1,11 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import { readFileSync, readdirSync } from 'node:fs';
-import dts from 'vite-plugin-dts';
+import { packageDeclarations } from '../../scripts/package-declarations';
 
 export default defineConfig({
   test: { environment: 'jsdom', globals: true },
-  plugins: [dts({ compilerOptions: { declarationMap: false }, insertTypesEntry: true }), { name: 'media-engine-license', generateBundle() {
+  plugins: [packageDeclarations({ copyDtsFiles: true, compilerOptions: { declarationMap: false }, insertTypesEntry: true }), { name: 'media-engine-license', generateBundle() {
     const directory = new URL('./src/engine-snapshot/types/', import.meta.url);
     for (const name of readdirSync(directory, { recursive: true }).map(String).filter(name => /\.d\.(ts|mts)$/.test(name)))
       this.emitFile({ type: 'asset', fileName: `engine-snapshot/types/${name}`,

@@ -22,14 +22,22 @@ npm run build:agent:lite
 | `bm25`，默认 | 全文分块后按词项相关性排序，精确短语增加权重。中文使用字和相邻双字特征，英文按词；数字和型号作为完整词项匹配，含数字的查询词要求全部匹配，比较多个型号时宜分别检索。并不理解所有同义词或推导问题答案。 |
 | `exact` | 区分大小写的原文字符串匹配，也匹配相对路径；不解释正则表达式。全文查找，匹配可跨越普通分块边界。 |
 | `files` | 仅对相对文件路径做 BM25 排序，包含不支持读取的扩展名；不读取正文，不调用 OCR，不提供正文证据或内容哈希。 |
+| `glob` | 区分大小写的文件路径通配符匹配，按路径排序；在目录发现阶段剪掉不可能命中的子树，并过滤无关文件。与 `files` 一样只搜索名称，支持包内成员路径。 |
 
 ```sh
 filens search ./documents --query FILENS2026 --search-mode exact --format markdown
 filens search ./documents --query invoice --search-mode files --format csv
+filens search ./documents --query 'reports/2026/**/*.pdf' --search-mode glob
 filens search ./documents --query '预算' --layout --no-cache --json
 ```
 
 搜索始终索引完整提取文本，不使用 `prune` 摘录充当唯一索引。文件解析、全文分块、BM25 与证据/导出都在共享前端 WASM 核心中；宿主负责目录和临时文件、运行时及错误映射。扫描页和文档内嵌图片复用已有 RapidOCR 回调；Lite 遇到需要 OCR 的文件时需安装 OCR，否则记录不完整内容与错误。
+
+`glob` 的 `*` 匹配单段路径内的任意字符，`?` 匹配一个 Unicode 字符；独立路径段 `**` 匹配零层或多层目录。不含 `/` 的模式（如 `*.pdf`）匹配任意深度的文件名；含 `/` 时匹配完整相对路径，Windows 也用 `/`。其余字符均按字面匹配，不解释正则、字符组或花括号。模式需加引号，避免被 shell 提前展开。
+
+例如 `reports/2026/*.pdf` 会跳过其他目录、年份及更深子目录；`reports/2026/**/*.pdf` 会继续搜索该年份的子目录。规则在遍历前编译，无关文件不占用 `maxFiles`，`search.scan.prunedDirectories` 显示剪掉的目录数。`*.pdf` 仍需枚举各目录；可能包含命中成员的压缩包仍需展开目录，不读取成员正文或运行 OCR。可以用 `'资料.zip!/**/*.pdf'` 限定包内成员。搜索仍受隐藏目录、深度、枚举上限及压缩包展开限制约束。
+
+2026-11-23 本机 macOS arm64 的 release CLI 实测：96 个目录、12,288 个文件，仅 `d042/needle.bin` 命中。比较 `needle*.bin` 与 `d042/needle*.bin`，结果相同，访问条目从 12,384 降至 224，剪掉 95 个目录（减少约 98.2% 的条目访问）。每种后端预热 3 轮，再交替测量 9 轮；含进程启动的热缓存中位耗时，`getattrlistbulk` 为 18.84 → 5.08 ms，FTS 为 21.98 → 5.40 ms，`read-dir` 为 28.04 → 5.18 ms。样本不含压缩包，不加载 WASM、不读取正文；这些数字说明目录约束的收益，不代表冷盘或任意模式的延迟。
 
 ## 原文与布局
 
@@ -47,7 +55,7 @@ JSON 的 `search.results` 按文件去重排序，每个文件最多返回三个
 
 ## 遍历与范围
 
-macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不跟随目录符号链接，也不修改进程工作目录。Windows 在 NTFS 上通过目录句柄调用 `GetFileInformationByHandleEx(FileFullDirectoryInfo)`，以 64 KiB 缓冲批量获取名称、属性和文件大小，避免逐文件查询元数据；非 NTFS 或 API 不支持时自动回退 Rust `read_dir`。Linux 使用 `read_dir`。所有平台均不嵌入 hdrw、不需要管理员权限、不访问裸盘。Windows 跳过 reparse point（包括 junction 和符号链接），文档解析继续留在共享核心。
+macOS 默认调用 `getattrlistbulk`，以 16 KiB 缓冲批量获取名称、类型和文件大小；API 或所需属性不支持时从头回退系统 FTS。两条路径均不跟随目录符号链接，也不修改进程工作目录。Windows 在 NTFS 上通过目录句柄调用 `GetFileInformationByHandleEx(FileFullDirectoryInfo)`，以 64 KiB 缓冲批量获取名称、属性和文件大小，避免逐文件查询元数据；非 NTFS 或 API 不支持时自动回退 Rust `read_dir`。Linux 使用 `read_dir`。所有平台均不嵌入 hdrw、不需要管理员权限、不访问裸盘。Windows 跳过 reparse point（包括 junction 和符号链接），文档解析继续留在共享核心。
 
 默认范围为最多 2000 个支持的文件、深度 32、最多返回 10 个文件；可用 `--max-files`（最大 20000）、`--max-depth`（最大 256）、`--max-results`（最大 100）调整。普通隐藏名称默认排除，可用 `--include-hidden`；`.git`、`node_modules`、`target`、`dist` 始终排除，显式作为搜索根目录时可以读取根下其他内容。当前不解释 `.gitignore`。
 
@@ -63,7 +71,11 @@ macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不
 
 文件名、常见纯文本/代码文件解码和 BM25/精确排名直接编译共享前端核心的 Rust 源码，这些普通搜索不加载正文 WASM；目录发现也不再加载 WASM。其他文档格式或 `--layout` 按需使用共享 WASM 解析器，每批最多 256 个文件；多个工作线程共享已加载模块。所有解析与排名算法仍留在 `wasm/converter-core-rust/src/text/`，CLI 只调度调用，不增加格式解析器。显式 `--wasm` / `FILENS_TEXT_WASM` 时按指定模块提取和排名。
 
-默认对元数据总大小不超过 8 MiB 或少于 32 个文件使用单线程，较大工作量最多四个工作线程；高级调优可用 `FILENS_SEARCH_JOBS=1..8`，少于 32 个文件仍串行。OCR 保留一个通道，OpenMP=2；PDFium 和 RapidOCR 仅在实际回调时初始化。WASI 协议使用请求结束后清理的临时目录，不是可复用的磁盘索引。`scan.execution` 报告实际工作线程数、原生文件数、加载的正文 WASM 模块数和批次数。
+默认对元数据总大小不超过 8 MiB 或少于 32 个文件使用单线程，较大工作量最多四个工作线程；高级调优可用 `FILENS_SEARCH_JOBS=1..8` 显式指定，包括少于 32 个文件的请求。启用 OCR 时为可能需要 OCR 的格式保留一个通道，关闭 OCR 后这些格式也可并行；OpenMP=2，PDFium 和 RapidOCR 仅在实际回调时初始化。
+
+并行提取按连续路径窗口推进，每个窗口按输入元数据估算最多 4 MiB，并受剩余语料预算和工作线程数约束；单个较大的文件可以独占一个窗口。窗口内完成并合并结果后才继续发放后续路径，工作线程复用各自的运行时并共享 WASM 模块。达到语料预算后停止后续窗口，并保留跨越预算的压缩包结果，以组装仍能容纳的成员前缀。32 MiB 是最终语料上限，并非进程内存上限；压缩文档的膨胀、并行结果及单个较大的文件仍会占用额外内存。WASI 协议使用请求结束后清理的临时目录，不是可复用的磁盘索引。`scan.execution` 报告实际工作线程数、原生文件数、加载的正文 WASM 模块数和批次数；`scan.discoveryMs`、`extractionMs`、`assemblyMs`、`rankingMs` 分别报告发现、提取、语料组装和排名耗时。
+
+CLI release 对包含共享原生检索核心的 `filens-cli` 包使用速度优化，其余依赖继续使用体积优化。当前构建、预算调度的[配对测试与资源观测](agent-cli-search-resources.zh-CN.md)同时报告运行时间、读取文件数、进程内存和二进制体积。
 
 当前原生 Rust 与不同线程数 rg 的对照见[原生搜索实测](agent-cli-search-native.zh-CN.md)，此前仅延迟加载 WASM 的阶段见[启动实测](agent-cli-search-startup.zh-CN.md)。所有采样都使用新进程、无应用缓存；macOS 清理磁盘缓存被权限拒绝，因此不声称测得物理冷盘。
 
@@ -71,7 +83,7 @@ macOS 调用系统 FTS，使用 SDK 常量 `FTS_PHYSICAL | FTS_NOCHDIR`，既不
 
 [词项检索质量与边界](agent-cli-search-benchmark.zh-CN.md)对比 FiLens、ripgrep 和 git grep，覆盖文件命中、同义/跨语言边界、无答案误报、原文偏移、100–2000 文件规模、历史缓存更新和原始文档处理成本。多格式支持优先看[本轮功能实测](agent-cli-search-formats.zh-CN.md)；合成语料成绩不能替代真实用户任务或向量产品的对照。
 
-目录发现直接编译原生 Rust/系统 API，不再需要私有源码或预编译目录 WASM。`capacity --full --json` 的 `capacity.search.discovery` 报告平台默认后端及 NTFS 能力；`search.scan.backend` / `similarity.scan.backend` 报告实际使用的 `fts`、`ntfs` 或 `read-dir`。NTFS API 不支持时从头回退，不重复累计条目。可设置 `FILENS_WALKER=read-dir` 强制基线遍历，用于正确性和性能比较。Windows 对照基准见[Windows 构建与测试](agent-cli-windows.zh-CN.md)。
+目录发现直接编译原生 Rust/系统 API，不再需要私有源码或预编译目录 WASM。`capacity --full --json` 的 `capacity.search.discovery` 报告平台默认后端及批量枚举能力；`search.scan.backend` / `similarity.scan.backend` 报告实际使用的 `getattrlistbulk`、`fts`、`ntfs` 或 `read-dir`。批量 API 不支持时从头回退，不重复累计条目。可设置 `FILENS_WALKER=read-dir` 强制基线遍历，macOS 还可设为 `fts`，用于正确性和性能比较。Windows 对照基准见[Windows 构建与测试](agent-cli-windows.zh-CN.md)。
 
 ```sh
 npm run test:agent:search

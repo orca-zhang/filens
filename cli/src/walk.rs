@@ -1,9 +1,12 @@
 //! OS directory/metadata plumbing. Document parsing stays in the shared core.
 use anyhow::{Result, ensure};
+use crate::native_search::path_glob::PathGlob;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{collections::HashSet, ffi::OsString, io, path::Path};
 
+#[cfg(target_os = "macos")]
+mod macos;
 #[cfg(any(windows, test))]
 mod ntfs;
 #[cfg(windows)]
@@ -28,6 +31,8 @@ pub struct Scan {
     pub error_count: usize,
     pub visited: usize,
     pub skipped: usize,
+    #[serde(default)]
+    pub pruned_directories: usize,
     pub truncated: bool,
 }
 impl Scan {
@@ -40,7 +45,7 @@ impl Scan {
 }
 fn default_backend() -> &'static str {
     if cfg!(target_os = "macos") {
-        "fts"
+        "getattrlistbulk"
     } else if cfg!(windows) {
         "ntfs"
     } else {
@@ -50,6 +55,8 @@ fn default_backend() -> &'static str {
 pub fn capacity() -> Value {
     json!({"backend":default_backend(),"hdrwEmbedded":false,
         "rawDevices":false,"followSymlinks":false,
+        "getattrlistbulk":{"available":cfg!(target_os="macos"),
+            "directoryBufferBytes":16384,"fallback":"fts"},
         "ntfs":{"available":cfg!(windows),"requiresAdmin":false,
             "directoryBufferBytes":65536,"fallback":"read-dir"}})
 }
@@ -67,7 +74,12 @@ fn scan_with_backend(root: &Path, config: &Value, backend: &str) -> Result<Scan>
     let mut result = match backend {
         "read-dir" => portable(root, options)?,
         #[cfg(target_os = "macos")]
-        "fts" => native(root, config)?,
+        "fts" => native(root, options)?,
+        #[cfg(target_os = "macos")]
+        "getattrlistbulk" => match macos::scan(root, options) {
+            Err(error) if error.kind() == io::ErrorKind::Unsupported => native(root, serde_json::from_value(config.clone())?)?,
+            result => result?,
+        },
         #[cfg(windows)]
         "ntfs" => windows::scan(root, options)?,
         _ => anyhow::bail!("directory walker {backend:?} is unavailable on this platform"),
@@ -85,6 +97,8 @@ struct WalkOptions {
     include_hidden: bool,
     extensions: HashSet<String>,
     exclude: HashSet<String>,
+    #[serde(default)]
+    glob: Option<String>,
 }
 #[derive(Clone, Copy, PartialEq)]
 enum Kind {
@@ -100,16 +114,20 @@ struct NativeEntry {
 struct Walker {
     options: WalkOptions,
     result: Scan,
+    glob: Option<PathGlob>,
 }
 impl Walker {
-    fn new(options: WalkOptions, backend: &str) -> Self {
-        Self {
+    fn new(options: WalkOptions, backend: &str) -> io::Result<Self> {
+        let glob = options.glob.as_deref().map(PathGlob::new).transpose()
+            .map_err(|error| io::Error::new(io::ErrorKind::InvalidInput, error))?;
+        Ok(Self {
             options,
+            glob,
             result: Scan {
                 backend: backend.into(),
                 ..Default::default()
             },
-        }
+        })
     }
     // Same callback actions as the FTS adapter: continue, prune, stop.
     fn visit(&mut self, relative: &Path, entry: &NativeEntry) -> i32 {
@@ -129,6 +147,24 @@ impl Walker {
         {
             self.result.skipped += 1;
             return 1;
+        }
+        if let Some(glob) = &self.glob {
+            let path = relative_name(relative);
+            if entry.kind == Kind::Directory && !glob.could_match_descendant(&path) {
+                self.result.skipped += 1;
+                self.result.pruned_directories += 1;
+                return 1;
+            }
+            if entry.kind == Kind::File && !glob.is_match(&path) {
+                let extension = relative.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+                // Archive members add a virtual `!/` path component.
+                if !crate::text_catalog::is_archive(&extension)
+                    || !glob.could_match_descendant(&format!("{path}!"))
+                {
+                    self.result.skipped += 1;
+                    return 0;
+                }
+            }
         }
         if entry.kind != Kind::File {
             return 0;
@@ -211,7 +247,7 @@ fn native_or_portable<I: Iterator<Item = io::Result<NativeEntry>>>(
     backend: &str,
     open: &impl Fn(&Path) -> io::Result<I>,
 ) -> io::Result<Scan> {
-    let mut walker = Walker::new(options, backend);
+    let mut walker = Walker::new(options, backend)?;
     match descend(root, Path::new(""), &mut walker, open) {
         Ok(_) => Ok(walker.result),
         Err(error) if error.kind() == io::ErrorKind::Unsupported => portable(root, walker.options),
@@ -219,7 +255,7 @@ fn native_or_portable<I: Iterator<Item = io::Result<NativeEntry>>>(
     }
 }
 fn portable(root: &Path, options: WalkOptions) -> io::Result<Scan> {
-    let mut walker = Walker::new(options, "read-dir");
+    let mut walker = Walker::new(options, "read-dir")?;
     descend(root, Path::new(""), &mut walker, &|path| {
         Ok(std::fs::read_dir(path)?.map(|entry| {
             let entry = entry?;
@@ -266,6 +302,8 @@ mod tests {
         if default_backend() != "read-dir" {
             backends.push(default_backend());
         }
+        #[cfg(target_os = "macos")]
+        backends.push("fts");
         backends
     }
     fn paths(scan: &Scan) -> Vec<&str> {
@@ -353,6 +391,45 @@ mod tests {
         }
     }
     #[test]
+    fn glob_prunes_subtrees_and_filters_before_the_file_limit() {
+        let root = tempfile::tempdir().unwrap();
+        for directory in ["reports/2026", "reports/2025", "unrelated/a/b"] {
+            std::fs::create_dir_all(root.path().join(directory)).unwrap();
+            for i in 0..32 {
+                std::fs::write(root.path().join(directory).join(format!("{i:02}.bin")), b"x").unwrap();
+            }
+        }
+        std::fs::write(root.path().join("reports/2026/合同.pdf"), b"x").unwrap();
+        std::fs::write(root.path().join("reports/2026/资料.zip"), b"x").unwrap();
+        for backend in backends() {
+            let mut options = config();
+            options["extensions"] = json!(["*"]);
+            let full = scan_with_backend(root.path(), &options, backend).unwrap();
+            options["glob"] = json!("reports/2026/*.pdf");
+            options["maxFiles"] = json!(1);
+            let result = scan_with_backend(root.path(), &options, backend).unwrap();
+            assert_eq!(paths(&result), ["reports/2026/合同.pdf"], "{backend}");
+            assert_eq!(result.pruned_directories, 2);
+            assert!(result.visited < full.visited / 2);
+            assert!(!result.truncated);
+            for pattern in ["*.pdf", "reports/**/合同?.pdf", "**/202?/*", "**/*"] {
+                options["glob"] = json!(pattern);
+                options["maxFiles"] = json!(2000);
+                let result = scan_with_backend(root.path(), &options, backend).unwrap();
+                let glob = PathGlob::new(pattern).unwrap();
+                let expected: Vec<_> = full.entries.iter().filter(|e| glob.is_match(&e.path)).map(|e| e.path.as_str()).collect();
+                let actual: Vec<_> = result.entries.iter().filter(|e| glob.is_match(&e.path)).map(|e| e.path.as_str()).collect();
+                assert_eq!(actual, expected, "{backend}: {pattern}");
+                assert!(!result.truncated);
+            }
+            options["glob"] = json!("reports/2026/资料.zip!/**/*.pdf");
+            let result = scan_with_backend(root.path(), &options, backend).unwrap();
+            assert_eq!(paths(&result), ["reports/2026/资料.zip"]);
+            options["glob"] = json!("../*");
+            assert!(scan_with_backend(root.path(), &options, backend).is_err());
+        }
+    }
+    #[test]
     fn many_entries_match_portable_scan_across_native_batches() {
         let root = tempfile::tempdir().unwrap();
         for i in 0..512 {
@@ -366,6 +443,7 @@ mod tests {
         let expected = scan_with_backend(root.path(), &config(), "read-dir").unwrap();
         for backend in backends() {
             let result = scan_with_backend(root.path(), &config(), backend).unwrap();
+            assert_eq!(result.backend, backend);
             assert_eq!(result.error_count, 0);
             assert_eq!(result.entries.len(), 512);
             assert_eq!(paths(&result), paths(&expected));
@@ -375,6 +453,32 @@ mod tests {
             );
             assert_eq!(result.visited, expected.visited);
         }
+    }
+    #[test]
+    #[cfg(unix)]
+    fn sparse_file_sizes_above_u32_match_all_walkers() {
+        let root = tempfile::tempdir().unwrap();
+        let file = std::fs::File::create(root.path().join("large.txt")).unwrap();
+        file.set_len((5 << 30) + 17).unwrap();
+        for backend in backends() {
+            let result = scan_with_backend(root.path(), &config(), backend).unwrap();
+            assert_eq!(paths(&result), ["large.txt"], "{backend}");
+            assert_eq!(result.entries[0].bytes, (5 << 30) + 17);
+            assert_eq!(result.error_count, 0, "{backend}");
+            assert!(!result.truncated);
+        }
+    }
+    #[test]
+    #[cfg(unix)]
+    fn invalid_unicode_is_reported_without_changing_the_filename() {
+        use std::os::unix::ffi::OsStringExt;
+        let name = OsString::from_vec(b"bad-\xff.txt".to_vec());
+        let mut walker = Walker::new(serde_json::from_value(config()).unwrap(), "test").unwrap();
+        assert_eq!(walker.visit(Path::new(&name), &NativeEntry {
+            name: name.clone(), kind: Kind::File, bytes: 1,
+        }), 1);
+        assert_eq!(walker.result.error_count, 1);
+        assert!(walker.result.entries.is_empty());
     }
     #[test]
     fn unsupported_native_api_restarts_without_duplicate_entries_or_counters() {
@@ -474,17 +578,14 @@ mod tests {
 }
 
 #[cfg(target_os = "macos")]
-fn native(root: &Path, config: &Value) -> Result<Scan> {
+fn native(root: &Path, options: WalkOptions) -> Result<Scan> {
     use std::{
         ffi::{CStr, CString},
         os::unix::ffi::OsStrExt,
     };
     struct Context<'a> {
         root: &'a Path,
-        config: &'a Value,
-        extensions: HashSet<String>,
-        excluded: HashSet<String>,
-        result: Scan,
+        walker: Walker,
     }
     unsafe extern "C" {
         fn filens_fts_walk(
@@ -508,18 +609,18 @@ fn native(root: &Path, config: &Value) -> Result<Scan> {
     ) -> libc::c_int {
         let c = unsafe { &mut *(context as *mut Context<'_>) };
         let Ok(path) = unsafe { CStr::from_ptr(path) }.to_str() else {
-            c.result
+            c.walker.result
                 .issue("<non-UTF-8>".into(), "Filename is not valid UTF-8".into());
             return 0;
         };
         let Ok(relative) = Path::new(path).strip_prefix(c.root) else {
-            c.result
+            c.walker.result
                 .issue(".".into(), "FTS returned a path outside the root".into());
             return 2;
         };
         let relative = relative.to_str().unwrap();
         if error != 0 {
-            c.result.issue(
+            c.walker.result.issue(
                 relative.into(),
                 std::io::Error::from_raw_os_error(error).to_string(),
             );
@@ -528,59 +629,16 @@ fn native(root: &Path, config: &Value) -> Result<Scan> {
         if relative.is_empty() {
             return 0;
         }
-        c.result.visited += 1;
-        if c.result.visited > c.config["maxEntries"].as_u64().unwrap() as usize {
-            c.result.truncated = true;
-            return 2;
-        }
-        let name = Path::new(relative).file_name().unwrap().to_str().unwrap();
-        let depth = Path::new(relative).components().count();
-        if depth > c.config["maxDepth"].as_u64().unwrap() as usize
-            || (!c.config["includeHidden"].as_bool().unwrap() && name.starts_with('.'))
-            || c.excluded.contains(name)
-        {
-            c.result.skipped += 1;
-            return i32::from(kind == 1);
-        }
-        if kind != 2 {
-            return 0;
-        }
-        let ext = Path::new(name)
-            .extension()
-            .and_then(|s| s.to_str())
-            .unwrap_or("")
-            .to_lowercase();
-        if !c.extensions.contains("*") && !c.extensions.contains(&ext) {
-            c.result.skipped += 1;
-            return 0;
-        }
-        if c.result.entries.len() >= c.config["maxFiles"].as_u64().unwrap() as usize {
-            c.result.truncated = true;
-            return 2;
-        }
-        c.result.entries.push(Entry {
-            path: relative.into(),
+        let relative = Path::new(relative);
+        c.walker.visit(relative, &NativeEntry {
+            name: relative.file_name().unwrap().into(),
+            kind: match kind { 1 => Kind::Directory, 2 => Kind::File, _ => Kind::Other },
             bytes: bytes.max(0) as u64,
-        });
-        0
+        })
     }
-    let set = |key: &str| {
-        config[key]
-            .as_array()
-            .unwrap()
-            .iter()
-            .filter_map(|v| v.as_str().map(String::from))
-            .collect()
-    };
     let mut context = Context {
         root,
-        config,
-        extensions: set("extensions"),
-        excluded: set("exclude"),
-        result: Scan {
-            backend: "fts".into(),
-            ..Default::default()
-        },
+        walker: Walker::new(options, "fts")?,
     };
     let root_string = CString::new(root.as_os_str().as_bytes())?;
     let error = unsafe {
@@ -591,10 +649,10 @@ fn native(root: &Path, config: &Value) -> Result<Scan> {
         )
     };
     if error != 0 {
-        context.result.issue(
+        context.walker.result.issue(
             ".".into(),
             std::io::Error::from_raw_os_error(error).to_string(),
         );
     }
-    Ok(context.result)
+    Ok(context.walker.result)
 }

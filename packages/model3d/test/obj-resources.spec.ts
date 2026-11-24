@@ -152,7 +152,7 @@ describe('native OBJ materials and managed texture lifetime', () => {
     const pending = loadObjObjectWithWarnings(obj(), { signal: controller.signal, resourceResolver: ({ relation }) => relation === 'material'
       ? encode(`${mtl}map_Kd first.png\nnorm second.png`) : ++calls === 1 ? new Blob(['image']) : held.promise });
     const checked = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
-    await settle(); expect(calls).toBe(2); expect(blobs.size).toBe(1); controller.abort(); await checked;
+    await vi.waitFor(() => expect(calls).toBe(2)); expect(blobs.size).toBe(1); controller.abort(); await checked;
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1); held.resolve(new Blob(['late'])); await settle();
     expect(blobs.size).toBe(1); expect(loads).toHaveLength(0);
   });

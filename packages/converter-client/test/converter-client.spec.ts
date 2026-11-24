@@ -783,7 +783,7 @@ describe('converter client adapters', () => {
     async () => {
       const [wasm, input] = await Promise.all([
         readFile(path.join(repoRoot, 'wasm/converter-core/dist/converter-core.wasm')),
-        readFile(path.join(repoRoot, 'examples/go-wazero-converter/fixtures/doc/sample.rtf'))
+        readFile(path.join(repoRoot, 'examples/converter/fixtures/doc/sample.rtf'))
       ]);
       const wasmUrl = '/assets/converter-core.wasm';
       const fetchMock = vi.fn(async (url: RequestInfo | URL) => {

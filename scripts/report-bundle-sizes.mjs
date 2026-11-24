@@ -7,7 +7,7 @@ const dist = path.join(root, 'apps/demo/dist');
 const labels = {
   'converter-core': ['转换核心 WASM（Office 加密检测）', 'Conversion core WASM (Office detection)'],
   'converter-office': ['Office 解密 WASM（可选）', 'Office decryption WASM (optional)'],
-  'converter-image': ['图像 / RAW 核心 WASM', 'Image / RAW core WASM'],
+  'converter-image': ['图像 / RAW WASM（部署资源合计）', 'Image / RAW WASM (deployed assets)'],
   'converter-cad': ['DWG 读取 WASM（按需）', 'DWG reader WASM (on demand)'],
   'converter-raster': ['光栅图像预览 WASM（按需）', 'Raster preview WASM (on demand)'],
   'converter-postscript': ['PostScript WASM（可选）', 'PostScript WASM (optional)'],

@@ -326,7 +326,7 @@ fn execute(
     if o.request.operation == "inspect" {
         return inspect::execute(o, response, engine);
     }
-    if o.request.operation == "search" && o.request.search_mode == "files" {
+    if o.request.operation == "search" && matches!(o.request.search_mode.as_str(), "files" | "glob") {
         // Filename search needs neither document capabilities nor extraction/OCR.
         return search::execute(o, response, &mut engine, work, &json!([]));
     }

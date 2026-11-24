@@ -50,7 +50,7 @@ async function main() {
   }
   report.steps.push({ step: 'check_manifest', ok: true });
 
-  // Step 2: Run conversions (Go/wazero + converter-core.wasm)
+  // Step 2: Run conversions through the Rust converter-core WASI module.
   const conversionsScript = path.resolve(rootDir, 'scripts/run-real-sample-conversions.mjs');
   const conversionCode = await run(process.platform === 'win32' ? 'node.exe' : 'node', [conversionsScript], {
     cwd: rootDir,
@@ -73,8 +73,8 @@ async function main() {
   for (const item of conversionReport.results ?? []) {
     const outPath = item?.job?.outputPath;
     if (!outPath) continue;
-    // outputPath is relative to examples/go-wazero-converter.
-    const abs = path.resolve(rootDir, 'examples/go-wazero-converter', outPath);
+    // outputPath is relative to the repository root.
+    const abs = path.resolve(rootDir, outPath);
     const rel = path.relative(rootDir, abs).replace(/\\/g, '/');
     const ext = path.extname(rel).slice(1).toLowerCase();
     const id = path.basename(rel, path.extname(rel));

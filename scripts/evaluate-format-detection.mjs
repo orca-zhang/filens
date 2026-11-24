@@ -94,10 +94,10 @@ try {
   const { listPreviewFormats, inferExtensionFromName, resolveFormatRoute } = await import(pathToFileURL(path.join(temp, 'js/formats.mjs')));
   const { createWasmCoreRunner } = await import(pathToFileURL(path.join(temp, 'js/host.mjs')));
   const supported = new Set(listPreviewFormats().map(row => row.extension));
-  const jobs = JSON.parse(await readFile(path.join(root, 'examples/go-wazero-converter/fixtures/manifest.json'))).jobs;
-  const declared = new Map(jobs.map(job => [path.posix.normalize(`examples/go-wazero-converter/${job.inputPath}`), job.sourceFormat]));
+  const jobs = JSON.parse(await readFile(path.join(root, 'examples/converter/fixtures/manifest.json'))).jobs;
+  const declared = new Map(jobs.map(job => [path.posix.normalize(`examples/converter/${job.inputPath}`), job.sourceFormat]));
   const samples = [];
-  for (const directory of ['apps/demo/public/samples', 'examples/go-wazero-converter/fixtures']) {
+  for (const directory of ['apps/demo/public/samples', 'examples/converter/fixtures']) {
     for (const file of await walk(directory)) {
       const base = path.basename(file);
       if (/^(README|SOURCES|LICENSE|NOTICE)(\.|$)/i.test(base) || /LICENSE/i.test(base) || ['manifest.json', 'formats.json'].includes(base)) continue;

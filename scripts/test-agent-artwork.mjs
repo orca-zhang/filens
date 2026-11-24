@@ -27,7 +27,7 @@ try {
     assert.equal(entry?.ocr, true, format);
     const directory = ['psd', 'psb', 'ai', 'eps', 'ps'].includes(format) ? 'design'
       : format === 'ico' ? 'icons' : format === 'icns' ? 'image' : 'graphics';
-    const input = path.join(root, 'examples/go-wazero-converter/fixtures', directory, `sample.${format}`);
+    const input = path.join(root, 'examples/converter/fixtures', directory, `sample.${format}`);
     const response = run(['read', input, '--json', '--ocr', 'always']);
     assert.equal(response.ok, true, format);
     assert.equal(response.content.complete, true, `${format}: ${JSON.stringify(response.content)}`);
