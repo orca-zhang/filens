@@ -11,7 +11,8 @@ test('stages external package links without copying release artifacts to the sit
   try {
     const manifest = { tag: 'v1.0.0', components: { cli: '1', preview: '1', mobileSdk: '1' }, assets: [
       { file: 'filens-test.zip', kind: 'cli-lite', bytes: 1234, sha256: 'a'.repeat(64) },
-      { file: 'preview.zip', kind: 'browser-all-in-one', bytes: 2345, sha256: 'b'.repeat(64) }
+      { file: 'preview.zip', kind: 'browser-all-in-one', bytes: 2345, sha256: 'b'.repeat(64) },
+      { file: 'preview-precompressed.zip', kind: 'browser-precompressed-sidecars', bytes: 3456, sha256: 'c'.repeat(64) }
     ] };
     await mkdir(path.join(root, 'docs'));
     await mkdir(path.join(root, 'skills/filens/references'), { recursive: true });
@@ -26,6 +27,7 @@ test('stages external package links without copying release artifacts to the sit
     assert.match(html, /github\.com\/orca-zhang\/filens\/releases\/download\/v1\.0\.0\/filens-test\.zip/);
     assert.match(html, /cdn\.jsdelivr\.net\/npm\/filens-preview@1\/dist\/split\/filens\.js/);
     assert.match(html, /registry\.npmmirror\.com\/filens-preview/);
+    assert.match(html, /optional static-host sidecars/);
     assert.doesNotMatch(html, /filens\.cc\/cdn/);
     await assert.rejects(readFile(path.join(output, 'v1.0.0/filens-test.zip')), { code: 'ENOENT' });
     await assert.rejects(readFile(path.join(root, 'apps/demo/dist/cdn/filens.js')), { code: 'ENOENT' });

@@ -18,7 +18,10 @@ export async function stageSiteDownloads(rootDir) {
     const npm = asset.kind === 'npm-package' && asset.name
       ? ` · <a href="https://registry.npmjs.org/${asset.name}/-/${asset.file}">npmjs</a> · <a href="https://registry.npmmirror.com/${asset.name}/-/${asset.file}">npmmirror</a>`
       : '';
-    return `<tr><td><a href="${release}/${asset.file}" download>${asset.file}</a>${npm}</td><td>${(asset.bytes / 1048576).toFixed(2)} MiB</td></tr>`;
+    const optional = asset.kind === 'browser-precompressed-sidecars'
+      ? ' · 可选静态托管压缩文件 / optional static-host sidecars'
+      : '';
+    return `<tr><td><a href="${release}/${asset.file}" download>${asset.file}</a>${optional}${npm}</td><td>${(asset.bytes / 1048576).toFixed(2)} MiB</td></tr>`;
   }).join('\n');
   const previewNpm = `https://registry.npmjs.org/filens-preview/-/filens-preview-${manifest.components.preview}.tgz`;
   const previewMirror = `https://registry.npmmirror.com/filens-preview/-/filens-preview-${manifest.components.preview}.tgz`;

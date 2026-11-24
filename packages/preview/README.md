@@ -73,11 +73,13 @@ The all-in-one build includes ready-to-serve `filens.js.gz` (Zopfli) and
 your server to serve them for `filens.js` with the matching `Content-Encoding`
 and JavaScript content type; for example, use `gzip_static on` in nginx.
 Ordinary dynamic gzip of the JS is about 4.02 MB; use the supplied gzip file to
-meet the 4 MB transfer budget. The GitHub Release ZIP includes these sidecars;
-the already published 0.3.7 npm tarball keeps its existing contents, while new
-npm tarballs omit the sidecars to avoid duplicating the precompressed JS.
-CDNs such as jsDelivr negotiate compression automatically. For self-hosted npm
-installs, enable dynamic compression or use the GitHub ZIP.
+meet the 4 MB transfer budget. The default GitHub all-in-one ZIP omits both
+sidecars to reduce its download size; the same release provides an optional
+`filens-preview-<version>-all-in-one-precompressed.zip` to overlay beside
+`filens.js` for static hosting. The already published 0.3.7 npm tarball keeps
+its existing contents, while new npm tarballs omit the sidecars. CDNs such as
+jsDelivr negotiate compression automatically. For self-hosted npm installs,
+enable dynamic compression or download the optional sidecar ZIP.
 Optional archive assets and notices are separate.
 
 The merged runtime packs static WASM separately from long strings. Resources of

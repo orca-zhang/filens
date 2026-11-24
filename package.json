@@ -116,6 +116,7 @@
     "build:sdk:mobile": "node ./scripts/build-mobile-sdk.mjs",
     "package:sdk:mobile": "npm run build:sdk:mobile && node ./scripts/package-mobile-sdk.mjs",
     "package:release:preview": "node ./scripts/package-preview-release.mjs",
+    "test:preview:release": "node --test scripts/test-preview-release-archives.mjs",
     "package:release:cli": "node ./scripts/package-agent-release.mjs",
     "package:modules:npm": "node ./scripts/package-workspace-npm.mjs",
     "publish:modules:npm": "node ./scripts/publish-agent-npm.mjs --modules",
