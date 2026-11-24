@@ -39,7 +39,7 @@ All parsing and conversion algorithms live in the shared Rust/WASM conversion co
 
 ### 3. An Agent-facing CLI
 
-The Agent CLI now reads documents, discovers capabilities and supplies structured evidence to a calling Agent. Chinese/English intents support plain text or JSON output, with commands and flags as optional entry points. Lite ships the CLI and WASM; Full includes native RapidOCR NCNN (no Python, max side 960, OpenMP threads = 2) and model downloads with concurrent mirror speed probes:
+The Agent CLI now reads documents, discovers capabilities and supplies structured evidence to a calling Agent. Chinese/English intents support plain text or JSON output, with commands and flags as optional entry points. Lite ships the CLI and WASM; Full includes native RapidOCR NCNN (no Python, max side 960 by default and up to 1600 for transparent scans, OpenMP threads = 2) and model downloads with concurrent mirror speed probes:
 
 ```bash
 filens 'what can you do as json'

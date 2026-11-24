@@ -54,5 +54,5 @@ export async function setupOCR(bundle, options = {}) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await setupOCR(path.join(root, 'dist', ...(process.argv.includes('--lite') ? ['agent-lite'] : [])), { sourceCount: requestedSourceCount(process.argv), force: process.argv.includes('--refresh') });
-  console.log('Native RapidOCR NCNN is ready: no Python, max side 960, OpenMP threads 2.');
+  console.log('Native RapidOCR NCNN is ready: no Python, max side 960 (1600 for transparent scans), OpenMP threads 2.');
 }

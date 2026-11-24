@@ -109,11 +109,16 @@ impl Native {
         let deadline = request["deadline"]
             .as_u64()
             .unwrap_or_else(|| now_ms() + 30000);
+        let max_side_len = request["maxSideLen"].as_u64().unwrap_or(960);
+        ensure!(
+            matches!(max_side_len, 960 | 1600),
+            "unsupported OCR max side length"
+        );
         let response = call(
             self.infer,
             json!({
                 "handle_id":self.handle,"model_class":"ocr","bundle_id":"rapidocr-ncnn","task":"ocr","thread_limit":2,"deadline_unix_milli":deadline,
-                "input":{"image_base64":base64::engine::general_purpose::STANDARD.encode(image),"params":{"padding":50,"max_side_len":960,"box_score_thresh":0.3,"box_thresh":0.3,"unclip_ratio":1.6,"run_det":true,"run_cls":true,"run_rec":true,"do_angle":true,"most_angle":false}}
+                "input":{"image_base64":base64::engine::general_purpose::STANDARD.encode(image),"params":{"padding":50,"max_side_len":max_side_len,"box_score_thresh":0.3,"box_thresh":0.3,"unclip_ratio":1.6,"run_det":true,"run_cls":true,"run_rec":true,"do_angle":true,"most_angle":false}}
             }),
         )?;
         let output = &response["output"];

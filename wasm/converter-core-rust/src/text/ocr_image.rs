@@ -3,9 +3,9 @@
 use super::*;
 use std::{borrow::Cow, io::Cursor};
 
-pub(super) fn prepare(bytes: &[u8]) -> Result<Cow<'_, [u8]>, ConvertError> {
+pub(super) fn prepare(bytes: &[u8]) -> Result<(Cow<'_, [u8]>, u32), ConvertError> {
     if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
-        return Ok(Cow::Borrowed(bytes));
+        return Ok((Cow::Borrowed(bytes), 960));
     }
     let mut decoder = png::Decoder::new(Cursor::new(bytes));
     decoder.set_limits(png::Limits { bytes: 256 << 20 });
@@ -27,7 +27,7 @@ pub(super) fn prepare(bytes: &[u8]) -> Result<Cow<'_, [u8]>, ConvertError> {
         png::ColorType::Rgba | png::ColorType::GrayscaleAlpha
     ) || info.trns.is_some();
     if !alpha {
-        return Ok(Cow::Borrowed(bytes));
+        return Ok((Cow::Borrowed(bytes), 960));
     }
     let size = reader
         .output_buffer_size()
@@ -40,7 +40,7 @@ pub(super) fn prepare(bytes: &[u8]) -> Result<Cow<'_, [u8]>, ConvertError> {
     let channels = match frame.color_type {
         png::ColorType::Rgba => 4,
         png::ColorType::GrayscaleAlpha => 2,
-        _ => return Ok(Cow::Borrowed(bytes)),
+        _ => return Ok((Cow::Borrowed(bytes), 960)),
     };
     let mut rgb = Vec::with_capacity(frame.width as usize * frame.height as usize * 3);
     for pixel in decoded[..frame.buffer_size()].chunks_exact(channels) {
@@ -61,7 +61,8 @@ pub(super) fn prepare(bytes: &[u8]) -> Result<Cow<'_, [u8]>, ConvertError> {
             .write_image_data(&rgb)
             .map_err(|e| parse_error(e.to_string()))?;
     }
-    Ok(Cow::Owned(output))
+    // Transparent scans often contain thin text; preserve more pixels after compositing.
+    Ok((Cow::Owned(output), 1600))
 }
 
 #[cfg(test)]
@@ -81,7 +82,8 @@ mod tests {
                 .write_image_data(&[0, 0, 0, 0, 0, 0, 0, 255, 0, 100, 200, 128])
                 .unwrap();
         }
-        let output = prepare(&input).unwrap();
+        let (output, max_side_len) = prepare(&input).unwrap();
+        assert_eq!(max_side_len, 1600);
         let mut reader = png::Decoder::new(Cursor::new(output.as_ref()))
             .read_info()
             .unwrap();

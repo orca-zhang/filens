@@ -34,4 +34,4 @@ const health = JSON.parse(await run(executable, ['capacity', '--full', '--json',
 if (!health.ok || (!lite && (!health.capacity?.ocr?.available || health.capacity.ocr.openmpThreads !== 2))) {
   throw new Error(`Agent bundle health check failed: ${JSON.stringify(health.error ?? health.capacity?.ocr)}`);
 }
-console.log(`Built ${path.relative(root, executable)} (Rust, ${((await stat(executable)).size/1048576).toFixed(2)} MiB): ${health.capacity.formats.length} input formats, ${lite ? 'OCR is optional (no OCR dependencies)' : 'native RapidOCR NCNN ready, OpenMP threads=2, max side=960'}.`);
+console.log(`Built ${path.relative(root, executable)} (Rust, ${((await stat(executable)).size/1048576).toFixed(2)} MiB): ${health.capacity.formats.length} input formats, ${lite ? 'OCR is optional (no OCR dependencies)' : 'native RapidOCR NCNN ready, OpenMP threads=2, max side=960 (1600 for transparent scans)'}.`);
