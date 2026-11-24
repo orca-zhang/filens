@@ -1,18 +1,19 @@
 # Selected performance workloads
 
-Updated 2026-11-05. This selection contains 12 scenarios across DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload keeps its latest recorded result against a named baseline; browser dates and stage boundaries are stated below. Larger synthetic parser cases retain the existing thresholds (100,000 cells or 16 MiB expanded, baseline median at least 100 ms and speed ratio at least 2×). Tiny examples and marginal gains remain in the full reports. No universal state-of-the-art or rendering-fidelity claim is made.
+DSH retested 2026-11-24; other workloads retain their stated measurement dates. This selection contains 12 scenarios across DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload keeps its latest recorded result against a named baseline; browser dates and stage boundaries are stated below. Larger synthetic parser cases retain the existing thresholds (100,000 cells or 16 MiB expanded, baseline median at least 100 ms and speed ratio at least 2×). Tiny examples and marginal gains remain in the full reports. No universal state-of-the-art or rendering-fidelity claim is made.
 
 ## Complete sidebar previews
 
-| Sample · first / cached median (ms) | FiLens 0.1.3 | DSH built in | First-open speedup |
+| Sample · first / cached median (ms) | FiLens 0.1.11 | DSH built in | First-open speedup |
 | --- | ---: | ---: | ---: |
-| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
-| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
-| PDF | **190 / 77** | 329 / 110 | **1.73×** |
+| PPTX | **126 / 92** | 1325 / 111 | **10.52×** |
+| DOCX | **108 / 92** | 1312 / 112 | **12.15×** |
+| PDF | **200 / 108** | 343 / 108 | **1.72×** |
 
-These retained Office measurements use nine paired rounds per format on Apple M4 Pro, macOS arm64 and DSH Desktop 0.2.1-rc.5. PPTX is 659,484 bytes; DOCX is 601,507 bytes. First is first per file/process; application startup is excluded and OS/persistent caches are retained. DOCX follows PPTX and may reuse initialized host code. The built-in path converts Office to PDF; FiLens renders directly. Ratios compare matched medians, not added percentage improvements. [All Office samples and scope](assets/dsh-plugin/performance-retest.zh-CN.md).
+Measured 2026-11-24 on Apple M4 Pro/macOS with **DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**: nine paired rounds per format, through actual render readiness plus two frames, excluding app startup and retaining OS/persistent caches. Office and PDF use separate runs; DOCX follows PPTX. Cached PDF opens are equal at **108 ms (1.00×)**. [Complete samples and method](assets/dsh-plugin/performance-0.1.11.md).
 
-PDF uses a separate nine-round paired run after first-page pixel reuse, on the same machine and DSH version with a 689,455-byte sample. Cached opens are **1.43×** faster than built in (**110 → 77 ms**, **30.0%** less time); first opens are **1.73×** faster. Each renderer starts a fresh process per round and opens/closes the file four times: first medians use nine opens and cached medians pool the next 27. Timing includes document reading, validation and rendering to ready plus two animation frames; application startup is excluded and OS/persistent caches remain. Each open still validates the PDF and closing releases its worker. [PDF samples, ranges and method](assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+Version 0.1.12 adds Cordis 4.2 peer compatibility; its renderer and workspace code match the measured 0.1.11 files byte-for-byte.
+
 
 Workbook/iWork/STEP reopen behavior and lower-gain/control cases remain in the [model report](assets/dsh-plugin/model-reopen-optimization.zh-CN.md).
 

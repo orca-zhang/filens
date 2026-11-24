@@ -2,7 +2,7 @@
   "tag": "v0.6.8",
   "previousRelease": "v0.6.7",
   "observedAt": "2026-11-24",
-  "scope": "Browser preview npm packages and iOS/Android source SDK archives are updated. CLI 0.5.7 and DSH 0.1.10 archives are retained byte-for-byte from v0.6.7; native binaries are not rebuilt.",
+  "scope": "Updated CLI 0.5.8, DSH 0.1.12, browser preview 0.3.8, mobile source SDKs 0.1.8, XLSX 0.1.3 and core 0.1.5. Linux/Windows CLI binaries are cross-built; physical mobile testing is not repeated.",
   "node": "24.22.3",
   "typescriptNodeNext": "7.0.2",
   "passed": true,
@@ -16,25 +16,31 @@
     "Node 24 and TypeScript 7 NodeNext preview API fixture",
     "22 Chromium/WebKit mobile browser bridge checks",
     "npm tarball privacy, release archive integrity and generated SHA-256 manifest",
-    "All eight CLI offline archives and DSH tarball match published v0.6.7 byte counts and SHA-256 hashes"
+    "CLI: 65 Rust unit tests, 8 E2E groups, 19 compact/error checks, 60 search checks and 54 archive/OCR checks",
+    "Full/Lite npm tarball installs and direct macOS execution",
+    "17 offline HTML checks from the new Full native bundle",
+    "DSH: 34 Node tests, six real Desktop formats on 0.2.3-alpha.2 and 0.2.2-rc.1",
+    "Latest DSH: 9 paired rounds per format, 36 fresh processes and 216 successful opens; all current performance tables updated",
+    "All eight rebuilt native CLI archives match size limits and SHA-256 hashes",
+    "Public XLSX/core npm installation: 12 type checks and 8 original issue checks under TypeScript 5.9.3 and 7.0.2",
+    "DSH 0.1.12 isolated install resolves Cordis 4.2/latest Desktop peers without force; Host, Tools and bundled workspace imports pass; all 59 runtime files match hashes"
   ],
   "reports": {
     "previewNpm": "preview-npm-validation.json",
     "previewSplitNpm": "preview-split-npm-validation.json",
     "previewSizes": "preview-sizes.md",
     "mobileSdkSizes": "mobile-sdk-sizes.json",
-    "releaseSizes": "preview-release-sizes.json"
+    "releaseSizes": "preview-release-sizes.json",
+    "xlsx": "xlsx-npm-registry-validation.json",
+    "dsh": "dsh-0.1.12-desktop-validation.json",
+    "dshLegacy": "dsh-0.1.11-legacy-desktop-validation.json",
+    "dshPerformance": "assets/dsh-plugin/performance-0.1.11.json",
+    "cliNpm": "agent-cli-npm-release.json",
+    "dshInstall": "dsh-0.1.12-install-validation.json",
+    "runtimeEquivalence": "dsh-0.1.12-runtime-equivalence.json"
   },
   "notRun": [
     "CLI and DSH rebuilds",
     "Native iOS and Android device tests"
-  ],
-  "carriedForward": {
-    "sourceRelease": "v0.6.7",
-    "cli": "0.5.7",
-    "dsh": "0.1.10",
-    "embeddedPreview": "0.3.7",
-    "assets": 9,
-    "nativeExecutionRepeated": false
-  }
+  ]
 }

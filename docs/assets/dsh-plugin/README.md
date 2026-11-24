@@ -1,5 +1,7 @@
 # DSH Desktop installation, Office and PDF preview
 
+**Latest rendering comparison:** dsh-filens **0.1.11** on DSH Desktop **0.2.3-alpha.2**, measured 2026-11-24: PPTX **10.52×**, DOCX **12.15×**, PDF **1.72×** first opens; cached PDF **1.00×**. [All samples and method](performance-0.1.11.md). Earlier recordings and tables below retain their original versions.
+
 [Animated WebP](install-and-preview.webp?v=branding-20261114) · [GIF](install-and-preview.gif?v=branding-20261114) · [Full MP4](install-and-preview.mp4?v=branding-20261114) · [Recording evidence](demo-recording.json) · [Office timings](office-preview-benchmark.json) · [PDF timings](pdf-preview-benchmark.json)
 
 Branding refreshed on **2026-11-14**: recorded preview labels now display only **FiLens**, including the 0.1.2 archive and companion screenshots. Media hashes are updated in each recording report; the original hashes are retained in its branding-refresh evidence. These historical clips retain their recorded interactions, captions, timing and package versions. [Current 0.1.10 recordings](../dsh-release/README.md).
@@ -28,7 +30,7 @@ The companion gallery was re-recorded on **2026-11-05** in the installed **DSH D
 
 The copied photo and video keep their original JPEG/WebM bytes, with `.pano` / `.360v` filenames selecting FiLens's spherical routes. Ordinary `.jpg` / `.webm` files open in the normal image/video viewer. This recording does not demonstrate automatic panorama detection.
 
-中文：画廊已于 2026-11-05 使用公开版 **dsh-filens@0.1.6** 在隔离配置中重新录制，76 个已安装文件均与发布包一致。演示太空机器人、行星齿轮箱、银河全景照片与 NASA 黑洞全景视频，包含地址栏模型工具、视图 / 剖切、全景缩放，以及**播放器底部进度条拖动和播放控件**的真实操作；录制时验证地址栏不含播放控件、进度条位于画面底部且可见。照片、视频仅使用 `.pano` / `.360v` 扩展名选择球面预览，原始字节不变。
+中文：画廊已于 2026-11-05 使用公开版 **dsh-filens@0.1.6** 在隔离配置中重新录制，76 个已安装文件均与发布包一致。演示太空机器人、行星齿轮箱、银河全景照片与 NASA 黑洞全景视频，包含地址栏模型工具、视图 / 剖切、全景缩放，以及**播放器底部进度条拖动和播放控件** 的真实操作；录制时验证地址栏不含播放控件、进度条位于画面底部且可见。照片、视频仅使用 `.pano` / `.360v` 扩展名选择球面预览，原始字节不变。
 
 | Sample | Source and license |
 | --- | --- |

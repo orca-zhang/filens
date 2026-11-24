@@ -1,0 +1,894 @@
+{
+  "measuredAt": "2026-11-24T15:41:14.747Z",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "cores": 12,
+    "memoryBytes": 25769803776,
+    "osRelease": "25.6.0",
+    "node": "24.22.3"
+  },
+  "plugin": "dsh-filens@0.1.11",
+  "rounds": 9,
+  "runtimeBuilds": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "entrySHA256": "883e3762295f4764437a8f10cbd5f32e8ca008a2f61cfe53a1dfccc5aa07d690"
+    }
+  ],
+  "environments": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 1,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 1,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 2,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 2,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 3,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 3,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 4,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 4,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 5,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 5,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 6,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 6,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 7,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 7,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 8,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 8,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 9,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 9,
+      "dsh": "0.2.3-alpha.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "electron": "44.11.5"
+    }
+  ],
+  "documents": [
+    {
+      "name": "Field Notes.pptx",
+      "bytes": 659484,
+      "sha256": "1d19a97f7eb03bdbc6b32b52307cb4ebff4e7436554dde4155883d2b56aed7a1"
+    },
+    {
+      "name": "Aurora Guide.docx",
+      "bytes": 601507,
+      "sha256": "3dd79b9a3ad29476dd80d91e79553c52706b2cdfa916771641ec43454f9763a1"
+    }
+  ],
+  "method": "A fresh DSH process per renderer in each round, rotating renderer order between rounds. In the same workspace, open PPTX then DOCX, four times each, closing the document tab between opens. Timing starts immediately before sidebar.openResource and ends after ready content and two animation frames. Builtin uses the actual Office-to-PDF service and PDF canvas; Plugin timings wait for their actual ready content (a direct DOM viewer or an iframe in older packages). No model calls.",
+  "cache": "First is the median of the first opening of each file in each fresh process; the engine may be warm for DOCX after PPTX. Cached median pools the next three opens per process. OS filesystem and persistent application caches are not cleared. Timing includes document reads, conversion/parsing and frontend rendering, not application startup.",
+  "limits": "Two small authored files on one macOS arm64 machine. This measures latency, not fidelity; results are not a guarantee for other files or platforms. The edited walkthrough GIF is not benchmark evidence.",
+  "results": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "name": "Field Notes.pptx",
+      "firstMs": 126,
+      "cachedMedianMs": 92,
+      "freshProcessSamplesMs": [
+        139,
+        148,
+        116,
+        127,
+        126,
+        131,
+        125,
+        113,
+        115
+      ],
+      "cachedSamplesMs": [
+        108,
+        90,
+        92,
+        108,
+        91,
+        93,
+        94,
+        90,
+        91,
+        93,
+        90,
+        91,
+        93,
+        91,
+        92,
+        91,
+        91,
+        92,
+        93,
+        90,
+        92,
+        92,
+        91,
+        89,
+        93,
+        91,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "name": "Aurora Guide.docx",
+      "firstMs": 108,
+      "cachedMedianMs": 92,
+      "freshProcessSamplesMs": [
+        108,
+        109,
+        108,
+        108,
+        108,
+        126,
+        109,
+        108,
+        107
+      ],
+      "cachedSamplesMs": [
+        91,
+        92,
+        92,
+        92,
+        92,
+        92,
+        92,
+        92,
+        92,
+        91,
+        92,
+        92,
+        91,
+        93,
+        90,
+        108,
+        92,
+        107,
+        92,
+        92,
+        92,
+        91,
+        93,
+        92,
+        91,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "name": "Field Notes.pptx",
+      "firstMs": 1325,
+      "cachedMedianMs": 111,
+      "freshProcessSamplesMs": [
+        1326,
+        1329,
+        1339,
+        1325,
+        1317,
+        1323,
+        1322,
+        1318,
+        1328
+      ],
+      "cachedSamplesMs": [
+        111,
+        107,
+        108,
+        111,
+        107,
+        109,
+        110,
+        122,
+        111,
+        192,
+        194,
+        193,
+        123,
+        110,
+        108,
+        109,
+        108,
+        107,
+        208,
+        194,
+        192,
+        111,
+        108,
+        108,
+        191,
+        112,
+        190
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "name": "Aurora Guide.docx",
+      "firstMs": 1312,
+      "cachedMedianMs": 112,
+      "freshProcessSamplesMs": [
+        1321,
+        1323,
+        1304,
+        1311,
+        1323,
+        1305,
+        1311,
+        1321,
+        1312
+      ],
+      "cachedSamplesMs": [
+        219,
+        111,
+        108,
+        218,
+        112,
+        108,
+        109,
+        109,
+        108,
+        219,
+        210,
+        112,
+        114,
+        108,
+        108,
+        222,
+        111,
+        108,
+        219,
+        112,
+        108,
+        220,
+        209,
+        111,
+        220,
+        210,
+        210
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 1,
+      "name": "Field Notes.pptx",
+      "firstMs": 139,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        139,
+        108,
+        90,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 1,
+      "name": "Aurora Guide.docx",
+      "firstMs": 108,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        108,
+        91,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 1,
+      "name": "Field Notes.pptx",
+      "firstMs": 1326,
+      "cachedMedianMs": 108,
+      "samplesMs": [
+        1326,
+        111,
+        107,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 1,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1321,
+      "cachedMedianMs": 111,
+      "samplesMs": [
+        1321,
+        219,
+        111,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 2,
+      "name": "Field Notes.pptx",
+      "firstMs": 1329,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        1329,
+        111,
+        107,
+        109
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 2,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1323,
+      "cachedMedianMs": 112,
+      "samplesMs": [
+        1323,
+        218,
+        112,
+        108
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 2,
+      "name": "Field Notes.pptx",
+      "firstMs": 148,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        148,
+        108,
+        91,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 2,
+      "name": "Aurora Guide.docx",
+      "firstMs": 109,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        109,
+        92,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 3,
+      "name": "Field Notes.pptx",
+      "firstMs": 116,
+      "cachedMedianMs": 91,
+      "samplesMs": [
+        116,
+        94,
+        90,
+        91
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 3,
+      "name": "Aurora Guide.docx",
+      "firstMs": 108,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        108,
+        92,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 3,
+      "name": "Field Notes.pptx",
+      "firstMs": 1339,
+      "cachedMedianMs": 111,
+      "samplesMs": [
+        1339,
+        110,
+        122,
+        111
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 3,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1304,
+      "cachedMedianMs": 109,
+      "samplesMs": [
+        1304,
+        109,
+        109,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 4,
+      "name": "Field Notes.pptx",
+      "firstMs": 1325,
+      "cachedMedianMs": 193,
+      "samplesMs": [
+        1325,
+        192,
+        194,
+        193
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 4,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1311,
+      "cachedMedianMs": 210,
+      "samplesMs": [
+        1311,
+        219,
+        210,
+        112
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 4,
+      "name": "Field Notes.pptx",
+      "firstMs": 127,
+      "cachedMedianMs": 91,
+      "samplesMs": [
+        127,
+        93,
+        90,
+        91
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 4,
+      "name": "Aurora Guide.docx",
+      "firstMs": 108,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        108,
+        91,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 5,
+      "name": "Field Notes.pptx",
+      "firstMs": 126,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        126,
+        93,
+        91,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 5,
+      "name": "Aurora Guide.docx",
+      "firstMs": 108,
+      "cachedMedianMs": 91,
+      "samplesMs": [
+        108,
+        91,
+        93,
+        90
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 5,
+      "name": "Field Notes.pptx",
+      "firstMs": 1317,
+      "cachedMedianMs": 110,
+      "samplesMs": [
+        1317,
+        123,
+        110,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 5,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1323,
+      "cachedMedianMs": 108,
+      "samplesMs": [
+        1323,
+        114,
+        108,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 6,
+      "name": "Field Notes.pptx",
+      "firstMs": 1323,
+      "cachedMedianMs": 108,
+      "samplesMs": [
+        1323,
+        109,
+        108,
+        107
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 6,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1305,
+      "cachedMedianMs": 111,
+      "samplesMs": [
+        1305,
+        222,
+        111,
+        108
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 6,
+      "name": "Field Notes.pptx",
+      "firstMs": 131,
+      "cachedMedianMs": 91,
+      "samplesMs": [
+        131,
+        91,
+        91,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 6,
+      "name": "Aurora Guide.docx",
+      "firstMs": 126,
+      "cachedMedianMs": 107,
+      "samplesMs": [
+        126,
+        108,
+        92,
+        107
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 7,
+      "name": "Field Notes.pptx",
+      "firstMs": 125,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        125,
+        93,
+        90,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 7,
+      "name": "Aurora Guide.docx",
+      "firstMs": 109,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        109,
+        92,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 7,
+      "name": "Field Notes.pptx",
+      "firstMs": 1322,
+      "cachedMedianMs": 194,
+      "samplesMs": [
+        1322,
+        208,
+        194,
+        192
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 7,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1311,
+      "cachedMedianMs": 112,
+      "samplesMs": [
+        1311,
+        219,
+        112,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 8,
+      "name": "Field Notes.pptx",
+      "firstMs": 1318,
+      "cachedMedianMs": 108,
+      "samplesMs": [
+        1318,
+        111,
+        108,
+        108
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 8,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1321,
+      "cachedMedianMs": 209,
+      "samplesMs": [
+        1321,
+        220,
+        209,
+        111
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 8,
+      "name": "Field Notes.pptx",
+      "firstMs": 113,
+      "cachedMedianMs": 91,
+      "samplesMs": [
+        113,
+        92,
+        91,
+        89
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 8,
+      "name": "Aurora Guide.docx",
+      "firstMs": 108,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        108,
+        91,
+        93,
+        92
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 9,
+      "name": "Field Notes.pptx",
+      "firstMs": 115,
+      "cachedMedianMs": 93,
+      "samplesMs": [
+        115,
+        93,
+        91,
+        93
+      ]
+    },
+    {
+      "renderer": "filens",
+      "plugin": "dsh-filens@0.1.11",
+      "round": 9,
+      "name": "Aurora Guide.docx",
+      "firstMs": 107,
+      "cachedMedianMs": 92,
+      "samplesMs": [
+        107,
+        91,
+        92,
+        92
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 9,
+      "name": "Field Notes.pptx",
+      "firstMs": 1328,
+      "cachedMedianMs": 190,
+      "samplesMs": [
+        1328,
+        191,
+        112,
+        190
+      ]
+    },
+    {
+      "renderer": "builtin",
+      "plugin": "DSH built-in Office-to-PDF",
+      "round": 9,
+      "name": "Aurora Guide.docx",
+      "firstMs": 1312,
+      "cachedMedianMs": 210,
+      "samplesMs": [
+        1312,
+        220,
+        210,
+        210
+      ]
+    }
+  ]
+}

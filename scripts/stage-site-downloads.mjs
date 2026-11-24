@@ -20,7 +20,8 @@ export async function stageSiteDownloads(rootDir) {
   }
   await writeFile(path.join(downloads, 'filens-skill.zip'), await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));
   const release = `https://github.com/orca-zhang/filens/releases/download/${manifest.tag}`;
-  const cliAssets = previous.assets.filter(asset => asset.file.startsWith(`filens-${cliVersion}-`) || asset.file.startsWith('dsh-filens-'));
+  const cliAssets = previous.assets.filter(asset => asset.file.startsWith(`filens-${cliVersion}-`)
+    || (manifest.components.dsh ? asset.file === `dsh-filens-${manifest.components.dsh}.tgz` : asset.file.startsWith('dsh-filens-')));
   const releaseAssets = [...new Map([...cliAssets, ...manifest.assets].map(asset => [asset.file, asset])).values()];
   const rows = releaseAssets.map(asset => {
     const optional = asset.kind === 'browser-precompressed-sidecars'
@@ -39,7 +40,7 @@ export async function stageSiteDownloads(rootDir) {
 <title>FiLens 下载 / Downloads</title>
 <style>body{font:16px/1.6 system-ui,sans-serif;max-width:960px;margin:48px auto;padding:0 20px;background:#101014;color:#eee}a{color:#a5c8ff}h1{margin-bottom:0}nav{display:flex;gap:24px;flex-wrap:wrap}table{width:100%;border-collapse:collapse;margin:24px 0}td,th{padding:12px 8px;border-bottom:1px solid #383840;text-align:left}td:first-child{overflow-wrap:anywhere}td:last-child{white-space:nowrap}</style>
 <nav><a href="/">FiLens</a><a href="/?view=agent">Agent 安装指南 / Setup</a><a href="https://github.com/orca-zhang/filens">GitHub</a></nav>
-<h1>下载 / Downloads</h1><p>${manifest.tag} · CLI ${cliVersion} · Preview ${manifest.components.preview} · SDK ${manifest.components.mobileSdk}</p>
+<h1>下载 / Downloads</h1><p>${manifest.tag} · CLI ${cliVersion} · Preview ${manifest.components.preview} · SDK ${manifest.components.mobileSdk}${manifest.components.dsh ? ` · DSH ${manifest.components.dsh}` : ''}</p>
 <p>预览 npm 包（国际 npmjs / 中国大陆 npmmirror）：</p><ul>${npmPackages}</ul>
 <p>CDN 备用入口 / CDN fallback: <a href="${jsdelivr}/split/filens.js">按需分包 / Split</a> · <a href="${jsdelivr}/all-in-one/filens.js">单文件 / All-in-one</a>。首选从下方 GitHub Release 下载或安装 npm 包。</p>
 <p>CLI npm：<code>npm install -g filens-cli@${cliVersion}</code> / <code>npm install -g filens-cli-lite@${cliVersion}</code>；中国大陆可添加 <code>--registry=https://registry.npmmirror.com</code>。</p>

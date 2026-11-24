@@ -1,6 +1,6 @@
 {
   "name": "@filens/dsh-workspace",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "description": "Session file collection, previews and source navigation for DSH.",
   "license": "MIT",

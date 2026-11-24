@@ -16,7 +16,7 @@
 
 [![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp?v=branding-20261114)](apps/demo/public/home/filens-demo.mp4)
 
-**Latest release: [v0.6.8](https://github.com/orca-zhang/filens/releases/tag/v0.6.8)** · CLI **0.5.7** · preview **0.3.8** · mobile SDKs **0.1.8** · DSH **0.1.10**.
+**Latest release: [v0.6.8](https://github.com/orca-zhang/filens/releases/tag/v0.6.8)** · CLI **0.5.8** · preview **0.3.8** · mobile SDKs **0.1.8** · DSH **0.1.12**.
 
 [▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
 
@@ -24,10 +24,10 @@
 | --- | --- | --- |
 | Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
 | Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
-| Download size | **Lite 6.90–7.17 MiB · Full 31.26–33.80 MiB** | **Split-only npm 5.64 MiB · dual-build npm 9.76 MiB**; format modules load on demand. |
+| Download size | **Lite 7.09–7.72 MiB · Full 24.87–27.48 MiB** | **Split-only npm 5.64 MiB · dual-build npm 9.76 MiB**; format modules load on demand. |
 | Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
 
-Sizes are compressed downloads. Full includes offline preview and OCR; Lite adds them as needed. [CLI platforms](docs/release-v0.6.7.md#downloads) · [Preview packages and runtimes](docs/preview-sizes.md).
+Sizes are compressed downloads. Full includes offline preview and OCR; Lite adds them as needed. [CLI platforms](docs/release-v0.6.8.md#downloads) · [Preview packages and runtimes](docs/preview-sizes.md).
 
 Verified November 24, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Published extension inventory](docs/release-v0.6.6-format-counts.json).
 
@@ -65,7 +65,7 @@ filens capacity --json
 
 ### Offline browser previews
 
-**CLI 0.5.7:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.7 Full bundles include preview 0.3.7. With Lite, download and extract [the all-in-one runtime ZIP](https://filens.cc/downloads/v0.6.7/filens-preview-0.3.7-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.7-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.7 pins preview 0.3.7; DSH 0.1.10 embeds preview 0.3.7; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+**CLI 0.5.8:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.8 Full bundles include preview 0.3.8. With Lite, download and extract [the all-in-one runtime ZIP](https://filens.cc/downloads/v0.6.8/filens-preview-0.3.8-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.8-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.8 pins preview 0.3.8; DSH 0.1.11 embeds preview 0.3.8; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
 
 ```sh
 # Export a portable offline preview; existing files are never overwritten
@@ -89,7 +89,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
   <p><strong>CLI executable 3.74 MiB · Lite 10.87 MiB · Full 34.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.8 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
 <!-- agent-cli-size:en:end -->
 
-CLI 0.5.7 native executables measure **0.93–2.20 MiB**. Offline archives remain at v0.6.7; Full includes preview **0.3.7**, OCR runtime and models. [Download and extracted sizes](https://github.com/orca-zhang/filens/blob/v0.6.7/docs/preview-release-sizes.json). npm component installations measure **8.00–9.27 MiB Lite / 31.43–37.06 MiB Full**, excluding Node.js, caches and preview assets. [Platform measurements](docs/agent-cli-npm-release.json). 1 MiB = 1,048,576 bytes.
+CLI 0.5.8 native executables measure **1.03–3.74 MiB**. The v0.6.8 Full archives include preview **0.3.8**, OCR runtime and models. [Download and extracted sizes](docs/preview-release-sizes.json). npm component installations measure **8.17–10.87 MiB Lite / 31.19–36.90 MiB Full**, excluding Node.js, caches and preview assets. [Platform measurements](docs/agent-cli-npm-release.json). 1 MiB = 1,048,576 bytes.
 
 - [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](https://filens.cc/skills/filens/SKILL.md)
 - [Output formats and layouts](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 observed examples and limits](docs/agent-cli-examples.zh-CN.md)
@@ -110,20 +110,22 @@ The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR N
 
 ### DeepSeek Harness
 
-**Faster first previews than DSH built in: PPTX 13.56× · DOCX 16.46× · PDF 1.73×.**
+**Faster first previews than DSH built in: PPTX 10.52× · DOCX 12.15× · PDF 1.72×.**
 
-| Typical file | DSH built in · first open | FiLens 0.1.3 · first open | Speedup |
+| Typical file | DSH built in · first open | FiLens 0.1.11 · first open | Speedup |
 | --- | ---: | ---: | ---: |
-| PPTX presentation | 1,830 ms | **135 ms** | **13.56×** |
-| DOCX document | 1,827 ms | **111 ms** | **16.46×** |
-| PDF document | 329 ms | **190 ms** | **1.73×** |
+| PPTX presentation | 1,325 ms | **126 ms** | **10.52×** |
+| DOCX document | 1,312 ms | **108 ms** | **12.15×** |
+| PDF document | 343 ms | **200 ms** | **1.72×** |
 
-Recorded November 5, 2026 on Apple M4 Pro/macOS and DSH Desktop 0.2.1-rc.5: nine paired rounds per format, medians through render readiness, excluding application startup. Office and PDF use separate runs; these are retained FiLens 0.1.3 measurements. PDF cached opens also improve from **110 to 77 ms (1.43×)**. [Office samples and method](docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [PDF samples and method](docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md).
+Measured 2026-11-24 on Apple M4 Pro/macOS with **DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**: nine paired rounds per format, through actual render readiness plus two frames, excluding app startup and retaining OS/persistent caches. Office and PDF use separate runs; DOCX follows PPTX. Cached PDF opens are equal at **108 ms (1.00×)**. [Complete samples and method](docs/assets/dsh-plugin/performance-0.1.11.md).
 
-Install [`dsh-filens@0.1.10`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
+Version 0.1.12 adds Cordis 4.2 peer compatibility; its renderer and workspace code match the measured 0.1.11 files byte-for-byte.
+
+Install [`dsh-filens@0.1.12`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
 
 <!-- dsh-package-metrics:start -->
-**DSH 0.1.10: 5.81 MiB download / 17.58 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/release-v0.6.7-npm-publication.json).
+**DSH 0.1.12: 5.75 MiB download / 17.39 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
 <!-- dsh-package-metrics:end -->
 
 **0.1.10 demos:** refreshed in DSH Desktop 0.2.2-rc.1 with English UI and captions, using a build matching the published package. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
@@ -330,17 +332,17 @@ HEIF decoder source versions, rebuild steps, and Apple-edited 10-bit color regre
 <details>
 <summary>Show SOTA benchmark results</summary>
 
-Updated November 5, 2026. **12 measured scenarios** cover DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload shows its latest recorded FiLens result against the named baseline; measurement dates and stages are stated. Tiny examples and marginal gains remain in the full reports.
+DSH retested 2026-11-24; other workloads retain their stated dates. **12 measured scenarios** cover DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload shows its latest recorded FiLens result against the named baseline; measurement dates and stages are stated. Tiny examples and marginal gains remain in the full reports.
 
 **Complete DSH sidebar previews**
 
-| Sample · first / cached median (ms) | FiLens 0.1.3 | DSH built in | First-open speedup |
+| Sample · first / cached median (ms) | FiLens 0.1.11 | DSH built in | First-open speedup |
 | --- | ---: | ---: | ---: |
-| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
-| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
-| PDF | **190 / 77** | 329 / 110 | **1.73×** |
+| PPTX | **126 / 92** | 1325 / 111 | **10.52×** |
+| DOCX | **108 / 92** | 1312 / 112 | **12.15×** |
+| PDF | **200 / 108** | 343 / 108 | **1.72×** |
 
-Ratios in this table describe first opens. PDF cached opens improve **1.43×** (110 → 77 ms). Office and PDF use separate nine-round paired measurements.
+Measured 2026-11-24 on Apple M4 Pro/macOS with **DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**: nine paired rounds per format, through actual render readiness plus two frames, excluding app startup and retaining OS/persistent caches. Office and PDF use separate runs; DOCX follows PPTX. Cached PDF opens are equal at **108 ms (1.00×)**. [Complete samples and method](docs/assets/dsh-plugin/performance-0.1.11.md).
 
 **Large-input parsing against specialized libraries**
 

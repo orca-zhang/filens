@@ -114,6 +114,7 @@ try {
     await page.screenshot({ path: path.join(artifacts, name + '.png') });
   }
   await page.screenshot({ path: path.join(artifacts, 'installed.png') });
-  await writeFile(path.join(artifacts, 'report.json'), JSON.stringify({ environment, url: page.url(), registrations, results, nativeFullscreenTested: process.env.DSH_TEST_FULLSCREEN !== '0', errors }, null, 2) + '\n');
+  const plugin = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8')).version;
+  await writeFile(path.join(artifacts, 'report.json'), JSON.stringify({ plugin, environment, url: page.url(), registrations, results, nativeFullscreenTested: process.env.DSH_TEST_FULLSCREEN !== '0', errors }, null, 2) + '\n');
   assert.deepEqual(errors, []);
 } finally { await app.close(); }

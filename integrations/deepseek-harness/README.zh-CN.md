@@ -11,33 +11,34 @@
 
 原生侧栏预览直接嵌入 DSH 的现有文件预览区，由 FiLens 在本地解析与渲染，无需另起预览服务。DOCX/PPTX 可直接呈现，无需先经 LibreOffice 转为 PDF；3D 与全景保留旋转、缩放、环视和播放交互。
 
-**0.1.7 新增：**新增第三个可独立启停的「文件工作台」插件，在主内容区打开文件画廊与阅读画布。逐页读取会话历史，汇集支持格式的本地文件引用和附件，保留每次引用的来源，并可返回所在消息或对应提问。支持本机多文件选择、拖入、实时缩略图、分类、按会话筛选和搜索，与侧栏共用预览内核。「刷新会话文件」可重新汇集；本机选择的文件在刷新应用后需重新选择，已删除或无权读取的文件无法预览。开发者信息仅放在底部角落。打开文件后，右侧「相关文件」按同一消息、同一提问、同目录和同会话推荐最多 6 项，标明关联原因，点击即可切换预览；推荐只使用已有引用信息。会话折叠为与单文件同列宽的群组卡片，封面展示最多四个文件的真实缩略图或类型封面；无缩略图时使用折角文件封面。会话使用短标题，悬停可查看完整标题，不显示会话 ID。会话临时杂项默认隐藏，可一键显示；系统临时目录中的正常生成结果和手动选择的文件仍保留。阅读页左侧文件列表为 144–160px。群组缩略图铺满封面，标题区只保留短会话名和文件数。文件详情参考 ZimaOS Photos，使用固定文件名标题、独立滚动的正文、三列相关文件缩略图，窄窗口改为底部信息卡；读取后显示真实文件大小，区分会话引用时间与本机修改时间。[真实 DSH 截图、验证范围与复现方法](../../docs/assets/dsh-workspace/README.md)。
+**0.1.7 新增：** 新增第三个可独立启停的「文件工作台」插件，在主内容区打开文件画廊与阅读画布。逐页读取会话历史，汇集支持格式的本地文件引用和附件，保留每次引用的来源，并可返回所在消息或对应提问。支持本机多文件选择、拖入、实时缩略图、分类、按会话筛选和搜索，与侧栏共用预览内核。「刷新会话文件」可重新汇集；本机选择的文件在刷新应用后需重新选择，已删除或无权读取的文件无法预览。开发者信息仅放在底部角落。打开文件后，右侧「相关文件」按同一消息、同一提问、同目录和同会话推荐最多 6 项，标明关联原因，点击即可切换预览；推荐只使用已有引用信息。会话折叠为与单文件同列宽的群组卡片，封面展示最多四个文件的真实缩略图或类型封面；无缩略图时使用折角文件封面。会话使用短标题，悬停可查看完整标题，不显示会话 ID。会话临时杂项默认隐藏，可一键显示；系统临时目录中的正常生成结果和手动选择的文件仍保留。阅读页左侧文件列表为 144–160px。群组缩略图铺满封面，标题区只保留短会话名和文件数。文件详情参考 ZimaOS Photos，使用固定文件名标题、独立滚动的正文、三列相关文件缩略图，窄窗口改为底部信息卡；读取后显示真实文件大小，区分会话引用时间与本机修改时间。[真实 DSH 截图、验证范围与复现方法](../../docs/assets/dsh-workspace/README.md)。
 
-**`dsh-filens@0.1.11` 支持 450 个源文件扩展名**（含内部 `cad-json` 共 451 个路由项）。数量按扩展名去重，包含直接预览与本地 WASM 转换后预览；源码构建使用当前共享清单，准确数量以该构建的 `lib/support.json` 为准。格式覆盖与保真度边界见[支持矩阵](../../docs/support-matrix.zh-CN.md)和[验证记录](VALIDATION.md)。
+**`dsh-filens@0.1.12` 支持 450 个源文件扩展名**（含内部 `cad-json` 共 451 个路由项）。数量按扩展名去重，包含直接预览与本地 WASM 转换后预览；源码构建使用当前共享清单，准确数量以该构建的 `lib/support.json` 为准。格式覆盖与保真度边界见[支持矩阵](../../docs/support-matrix.zh-CN.md)和[验证记录](VALIDATION.md)。
 
-**0.1.11：**更新共享预览内核至 0.3.8、CLI 至 0.5.8，包含 HEIF 资源按需加载修复、目录搜索与透明扫描件 OCR 优化；适配 DSH Desktop 0.2.3-alpha.2 的同源资源访问，保留 0.2.2-rc.1 兼容。
+**0.1.12：** 更新共享预览内核至 0.3.8、CLI 至 0.5.8，包含 HEIF 资源按需加载修复、目录搜索与透明扫描件 OCR 优化；适配 DSH Desktop 0.2.3-alpha.2 的同源资源访问，保留 0.2.2-rc.1 兼容，并补齐最新 Desktop 所需的 Cordis 4.2 peer 声明。
 
-**0.1.10：**预览水印与文件工作台页脚统一仅显示 `FiLens`。扫描时通过 DSH 元数据检查路径和附件；确认已不存在的文件不进入卡片、数量、导航或相关文件。刷新会重新检查；扫描后删除的文件在打开时确认不存在也会移除。权限和连接错误仍保留；检查不会读取完整文件或解析内容。
+**0.1.10：** 预览水印与文件工作台页脚统一仅显示 `FiLens`。扫描时通过 DSH 元数据检查路径和附件；确认已不存在的文件不进入卡片、数量、导航或相关文件。刷新会重新检查；扫描后删除的文件在打开时确认不存在也会移除。权限和连接错误仍保留；检查不会读取完整文件或解析内容。
 
 适配层使用 `filens-cli@0.5.8` 和共享预览内核 0.3.8，不增加格式解析或转换算法。
 
-实测版本：macOS arm64 上的 DSH **桌面版/Web 0.2.1-rc.5**、**Web 0.2.2-alpha.3**、**桌面版/Web 0.2.2-rc.1**，Node 24。其他 DSH 版本尚未验证。
+本轮实测 macOS arm64 上的 **DSH Desktop 0.2.3-alpha.2** 和 **Desktop 0.2.2-rc.1**，Node 24。更早的 Desktop/Web 0.2.1-rc.5、Web 0.2.2-alpha.3 验证保留在历史记录中。
 
-**0.1.10 中文录制：**已在真实 DSH Desktop 0.2.2-rc.1 中使用中文界面、单语字幕和合成会话重新录制，构建与公开包一致。[发布说明与录制来源](../../docs/releases/dsh-filens-0.1.8/README.md)。
+**0.1.10 中文录制：** 已在真实 DSH Desktop 0.2.2-rc.1 中使用中文界面、单语字幕和合成会话重新录制，构建与公开包一致。[发布说明与录制来源](../../docs/releases/dsh-filens-0.1.8/README.md)。
 
 ![中文 DSH 中的 Word、Excel 预览与 PPT 全屏演示](../../docs/assets/dsh-release/office-preview.zh-CN.gif?v=branding-20261114)
 
 点击 DSH 工作区文件列表中的 Office 文件，即可使用 FiLens 侧栏预览。Excel 可直接切换工作表；PPT 点击「全屏」后，点击画面，用 **Page Down / Page Up** 演示翻页，**Esc** 返回。DOCX/PPTX 直接渲染，省去 LibreOffice 转 PDF 的步骤。
 
-| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.3 | DSH 内置 | 首开提速 |
+| 样例 · 首开 / 缓存中位数（ms） | FiLens 0.1.11 | DSH 内置 | 首开提速 |
 | --- | ---: | ---: | ---: |
-| PPTX | **135 / 81** | 1830 / 124 | **13.56×** |
-| DOCX | **111 / 94** | 1827 / 112 | **16.46×** |
-| PDF | **190 / 77** | 329 / 110 | **1.73×** |
+| PPTX | **126 / 92** | 1325 / 111 | **10.52×** |
+| DOCX | **108 / 92** | 1312 / 112 | **12.15×** |
+| PDF | **200 / 108** | 343 / 108 | **1.72×** |
 
-同机 9 轮配对实测；提速倍数 = 同轮内置中位数 ÷ FiLens 中位数，表中倍数仅指**首开**。首开为进程内该文件首次打开，保留系统与持久缓存；内置 Office 转 PDF，FiLens 直接渲染。[范围与方法](../../docs/assets/dsh-plugin/performance-retest.zh-CN.md) · [新版演示 MP4](../../docs/assets/dsh-release/office-preview.zh-CN.mp4?v=branding-20261114) · [新版演示 GIF](../../docs/assets/dsh-release/office-preview.zh-CN.gif?v=branding-20261114)。
+2026-11-24，Apple M4 Pro / macOS，**DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**，每种格式配对测量 9 轮，取实际渲染就绪加两帧的中位数，不含应用启动，保留系统与持久缓存。Office 与 PDF 分轮测量；DOCX 在 PPTX 后打开。PDF 缓存打开均为 **108 ms（1.00×）**。[全部样本与方法](../../docs/assets/dsh-plugin/performance-0.1.11.md)。
 
-PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内置提速 **1.43×**（**110 → 77 ms**，耗时减少 **30.0%**）。样例为 689,455 字节，每次仍加载并校验文档，关闭时释放 worker。[PDF 全部样本、波动与方法](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
+0.1.12 仅补齐 Cordis 4.2 兼容声明，渲染与工作台代码和本次实测的 0.1.11 逐文件 SHA-256 相同。
+
 
 以下是同一输入上的完整解析调用，**不含界面渲染**，与上表的侧栏耗时分别计量。每组交替运行、预热 2 轮、测量 9 轮；逐格核对单元格值或逐条目核对完整文本，未将小样例和低收益结果列入精选表。
 
@@ -50,7 +51,7 @@ PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内�
 
 解析范围与各库完整能力不同，速度比不代表保真度或所有文件上的综合排名。[原始样本与复现](../../docs/featured-performance.md)。
 
-**DSH 0.1.6：**所有格式在地址栏旁统一显示缩小、缩放比例、放大和全屏。去掉翻页、旋转与适应按钮，保留键盘翻页；工作表、压缩包与附件控件收进工具菜单；音视频进度条和播放控件保留在播放器下方，CAD 图层和 3D 属性保留独立入口。各格式驱动首次使用时加载，模块与 WASM 随后复用。入口 JS 请求合计 **351.5 KiB**，TXT 首开运行时请求合计 **456.8 KiB**，不含文档与 DSH 本身。[0.1.6 运行时实测](../../docs/assets/dsh-plugin/format-loading-current.json)。历史安装演示使用公开版 0.1.3，历史 3D / 全景演示使用公开版 0.1.6；上方单语演示使用 FiLens DSH 0.1.10、预览内核 0.3.7 和 CLI 0.5.7。PDF 重复打开复用已校验的首张像素，最多 4 张 / 16 MiB，30 秒空闲后过期；每次仍加载并校验文档，关闭时释放 Worker，密码与打印路径不复用。[PDF 计时与边界](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
+**DSH 0.1.6：** 所有格式在地址栏旁统一显示缩小、缩放比例、放大和全屏。去掉翻页、旋转与适应按钮，保留键盘翻页；工作表、压缩包与附件控件收进工具菜单；音视频进度条和播放控件保留在播放器下方，CAD 图层和 3D 属性保留独立入口。各格式驱动首次使用时加载，模块与 WASM 随后复用。入口 JS 请求合计 **351.5 KiB**，TXT 首开运行时请求合计 **456.8 KiB**，不含文档与 DSH 本身。[0.1.6 运行时实测](../../docs/assets/dsh-plugin/format-loading-current.json)。历史安装演示使用公开版 0.1.3，历史 3D / 全景演示使用公开版 0.1.6；上方单语演示使用 FiLens DSH 0.1.10、预览内核 0.3.7 和 CLI 0.5.7。PDF 重复打开复用已校验的首张像素，最多 4 张 / 16 MiB，30 秒空闲后过期；每次仍加载并校验文档，关闭时释放 Worker，密码与打印路径不复用。[PDF 计时与边界](../../docs/assets/dsh-plugin/pdf-reopen-optimization.zh-CN.md)。
 
 0.1.3 同样支持 XLSX、iWork 解析模型与 STEP 网格的短期复用，共享 4 条 / 64 MiB 估算预算 / 30 秒空闲过期。[完整测量、成本和边界](../../docs/assets/dsh-plugin/model-reopen-optimization.zh-CN.md)。
 
@@ -61,19 +62,19 @@ PDF 使用首张像素复用后的独立 9 轮配对实测：缓存打开较内�
 同一个侧栏也支持交互式 3D 和 360° 全景：拖拽旋转或环视，滚轮缩放。球面照片、视频样例分别用 `.pano` / `.360v` 文件名选择全景预览，保留原始文件字节；普通 `.jpg` / `.webm` 使用常规图片、视频预览。[画廊 MP4、素材与录制说明](../../docs/assets/dsh-plugin/README.md#3d-and-360-gallery)。
 
 <!-- dsh-package-metrics:start -->
-正式包 0.1.10：下载 **5.81 MiB**，解包 **17.58 MiB**，含内置工作台。CLI/OCR、DSH 依赖和缓存另计。[完整包记录](../../docs/dsh-plugin-package.json)。
+正式包 0.1.12：下载 **5.75 MiB**，解包 **17.39 MiB**，含内置工作台。CLI/OCR、DSH 依赖和缓存另计。[完整包记录](../../docs/dsh-plugin-package.json)。
 <!-- dsh-package-metrics:end -->
 
-0.1.6 的地址栏控件与打包运行时见[验证记录](../../docs/dsh-compact-controls-validation.json)。侧栏延迟表保留其实际测量的 0.1.3 快照。
+0.1.6 的地址栏控件与打包运行时见[验证记录](../../docs/dsh-compact-controls-validation.json)。侧栏延迟表使用 0.1.11 / DSH Desktop 0.2.3-alpha.2 的最新复测。
 
 只需安装 `dsh-filens` 一个包，文件工作台内置，并保留独立于预览和工具的开关。0.1.10 同步更新 DSH 与 peer 兼容声明，支持 RC.1 / Cordis 4.1。
 
 ## 安装与构建
 
-npm 包为 [`dsh-filens@0.1.11`](https://www.npmjs.com/package/dsh-filens)。桌面版可直接在界面中安装：
+npm 包为 [`dsh-filens@0.1.12`](https://www.npmjs.com/package/dsh-filens)。桌面版可直接在界面中安装：
 
 1. 打开「插件」页面，点击「添加插件」。
-2. 填写 `dsh-filens`；需要固定版本时填写 `dsh-filens@0.1.11`，然后点击「安装」。
+2. 填写 `dsh-filens`；需要固定版本时填写 `dsh-filens@0.1.12`，然后点击「安装」。
 3. 安装完成后点击「立即启用」。插件一起提供 FiLens 工具、FiLens 预览和文件工作台三个入口，可以分别启停；录制所用桌面版本支持立即生效。
 
 使用默认安装源即可，无需修改安装源。
@@ -81,9 +82,9 @@ npm 包为 [`dsh-filens@0.1.11`](https://www.npmjs.com/package/dsh-filens)。桌
 命令行可安装到指定 profile；桌面版使用命令行安装前先完全退出应用，安装后重新打开：
 
 ```sh
-dsh plugin --profile desktop add dsh-filens@0.1.11
+dsh plugin --profile desktop add dsh-filens@0.1.12
 # Web profile：
-dsh plugin --profile web add dsh-filens@0.1.11
+dsh plugin --profile web add dsh-filens@0.1.12
 ```
 
 插件内含 Client、预览 WASM、压缩包 Worker 和许可文件，CLI/OCR 通过 npm 平台依赖安装；无需编译或单独下载模型。安装时保留可选依赖。支持 macOS arm64、Linux x64/arm64 和 Windows x64；本次原生执行验证在 macOS arm64 完成，Linux/Windows 为交叉构建。
@@ -101,20 +102,20 @@ npm run package:dsh:npm
 Web 安装到相应 profile：
 
 ```sh
-dsh plugin --profile web add /绝对路径/dsh-filens-0.1.11.tgz
+dsh plugin --profile web add /绝对路径/dsh-filens-0.1.12.tgz
 dsh web
 ```
 
 桌面版先打开一次以初始化 profile，再完全退出，然后执行：
 
 ```sh
-dsh plugin --profile desktop add /绝对路径/dsh-filens-0.1.11.tgz
+dsh plugin --profile desktop add /绝对路径/dsh-filens-0.1.12.tgz
 ```
 
 如果 macOS 终端提示 `dsh: command not found`，可直接使用上面的桌面界面，或运行应用自带的 CLI：
 
 ```sh
-"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile desktop add dsh-filens@0.1.11
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile desktop add dsh-filens@0.1.12
 ```
 
 安装后重新打开应用。DSH 会从自己的运行时提供共享依赖，因此包管理器可能打印 peer 警告；实际加载和调用结果见验证记录。
@@ -194,7 +195,7 @@ DSH 默认搜索返回 5 个文件、查重 / 相似图片返回 20 组、摘录
 
 任一入口都可设为 `disabled: true`，也可在 DSH 插件界面操作。纯工具/headless profile 应关闭 `filens-preview`，预览需要 Web/桌面端和 `webServer`。卸载工具入口会取消正在执行的调用并注销七个工具；卸载预览入口会删除客户端注册、资源路由和启动注入，关闭预览会释放 DOM 控件与 Worker。
 
-默认命令使用 DSH Host 的 Node/Electron 可执行文件及随包 CLI launcher。远程 shell 或容器需要在**实际执行环境内**安装 CLI，并配置 `command: [filens]`；Host 安装路径未必存在于远端。依赖 DSH 的 Bash 兼容 `shell` provider，不支持只有 PowerShell 的组合。默认 CLI 的预构建平台为 macOS arm64、Linux x64/arm64、Windows x64；这里继承 CLI 的平台范围，没有逐个平台实测。
+默认命令使用 DSH Host 的 Node/Electron 可执行文件及随包 CLI launcher。远程 shell 或容器需要在**实际执行环境内** 安装 CLI，并配置 `command: [filens]`；Host 安装路径未必存在于远端。依赖 DSH 的 Bash 兼容 `shell` provider，不支持只有 PowerShell 的组合。默认 CLI 的预构建平台为 macOS arm64、Linux x64/arm64、Windows x64；这里继承 CLI 的平台范围，没有逐个平台实测。
 
 命令经过 `ctx.shell`、Session 工作目录、`shellEnv` 和有效沙箱策略；提权使用 DSH 的 approval 服务。插件不自行授予文件权限。原生可执行文件、OCR 引擎与模型通过 npm 平台可选依赖分发，安装时不要使用 `--omit=optional`。Full CLI 自带模型，普通读取不下载模型。OCR 不可用时先调用 `filens_capacity`；可用 `ocr: false` 关闭。
 
@@ -216,9 +217,9 @@ DSH 可通过现有 `command` 配置传入固定参数，例如 `command: [filen
 
 ## 资源和数据流
 
-Host 的 `/_filens/<digest>/` 只服务构建时枚举的库资源，没有文档路径参数。DSH 通过自己的 Session 文件服务读取文件。**0.1.3 构建**只导入一次共享分包运行时，直接挂载到侧栏 DOM；传入字节的**副本**，避免 Worker 转移 DSH 保留的原始数据。0.1.6 将共享查看器的所有格式控件放入 DSH 现有地址栏操作区。**0.1.2** 使用预览 iframe；上方安装演示使用 **0.1.3**。
+Host 的 `/_filens/<digest>/` 只服务构建时枚举的库资源，没有文档路径参数。DSH 通过自己的 Session 文件服务读取文件。**0.1.3 构建** 只导入一次共享分包运行时，直接挂载到侧栏 DOM；传入字节的**副本**，避免 Worker 转移 DSH 保留的原始数据。0.1.6 将共享查看器的所有格式控件放入 DSH 现有地址栏操作区。**0.1.2** 使用预览 iframe；上方安装演示使用 **0.1.3**。
 
-预览撑满侧栏，界面颜色、字体与语言跟随 DSH；切换外观保留当前文档和页码。0.1.6 在地址栏旁统一显示**缩小 / 缩放比例 / 放大 / 全屏**，去掉翻页、旋转与“适合窗口 / 宽度 / 高度”按钮。PPTX 仍可用 Page Down / Page Up 或方向键翻页；文本、Word、压缩包和媒体在驱动缺少原生能力时使用共享视图缩放与全屏。缩放比例固定为 4 个字符宽；工作表、压缩包与附件控件收进**工具**菜单，音视频进度条、播放、音量和倍速保留在播放器下方；CAD 图层和 3D 属性面板保留独立入口。窄地址栏可横向滚动，键盘聚焦会将对应控件滚入可见范围。进入全屏时控件移入全屏预览，退出后返回地址栏；各标签页独立，关闭时清理。Word 页面自动适应侧栏宽度，调整宽度时保留阅读位置。3D 文件在窄侧栏也会自动完整取景；直接拖拽旋转、滚轮缩放，双击复位。地址栏中的模型工具入口在下方打开默认收起的浮层，按「视图 / 结构 / 工具」切换；模型树、材质、测量、剖切和截图按需展开，浮层不挤压画布，支持键盘切换与 Esc 关闭。加载时显示文件名，失败后可展开详情并重试；文件切换会忽略前一个文件的延迟回报。
+预览撑满侧栏，界面颜色、字体与语言跟随 DSH；切换外观保留当前文档和页码。0.1.6 在地址栏旁统一显示**缩小 / 缩放比例 / 放大 / 全屏**，去掉翻页、旋转与“适合窗口 / 宽度 / 高度”按钮。PPTX 仍可用 Page Down / Page Up 或方向键翻页；文本、Word、压缩包和媒体在驱动缺少原生能力时使用共享视图缩放与全屏。缩放比例固定为 4 个字符宽；工作表、压缩包与附件控件收进**工具** 菜单，音视频进度条、播放、音量和倍速保留在播放器下方；CAD 图层和 3D 属性面板保留独立入口。窄地址栏可横向滚动，键盘聚焦会将对应控件滚入可见范围。进入全屏时控件移入全屏预览，退出后返回地址栏；各标签页独立，关闭时清理。Word 页面自动适应侧栏宽度，调整宽度时保留阅读位置。3D 文件在窄侧栏也会自动完整取景；直接拖拽旋转、滚轮缩放，双击复位。地址栏中的模型工具入口在下方打开默认收起的浮层，按「视图 / 结构 / 工具」切换；模型树、材质、测量、剖切和截图按需展开，浮层不挤压画布，支持键盘切换与 Esc 关闭。加载时显示文件名，失败后可展开详情并重试；文件切换会忽略前一个文件的延迟回报。
 
 随包包含压缩包 WASM 和 Worker。静态资源按内容哈希寻址，允许桌面版跨源读取模块与 WASM，路由仍不提供任何文档数据。直接挂载的运行时遵循 DSH 应用策略；Worker 保持独立执行上下文，各格式驱动保留所需的文档隔离。预览保留 FiLens 的密码处理及格式限制。DSH 一次提供一个所选文件，依赖其他分卷文件的压缩包未纳入本次验证；原生媒体编解码器和字体也会影响效果。
 

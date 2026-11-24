@@ -1,71 +1,81 @@
-# v0.6.8 — Smaller previews and complete downloads
+# v0.6.8 — Smaller previews, updated CLI and DSH
 
-Released 2026-11-24. CLI **0.5.7** · browser preview **0.3.8** · iOS and Android source SDKs **0.1.8** · DSH plugin and bundled File workspace **0.1.10**.
+CLI **0.5.8** · preview **0.3.8** · iOS/Android source SDKs **0.1.8** · DSH plugin and File workspace **0.1.12** · XLSX **0.1.3** · core **0.1.5**.
 
-This release includes the complete CLI Full/Lite downloads for macOS arm64, Linux x64/arm64 and Windows x64, plus the DSH plugin. CLI and DSH archives are carried forward byte-for-byte from v0.6.7 and retain preview **0.3.7**; the standalone browser runtime and mobile source SDKs use preview **0.3.8**.
+Browser/SDK release: **2026-11-24**; CLI/DSH component refresh: **2026-11-25**.
 
-Preview 0.3.8 fixes deferred HEIF resources in offline workers and emits declarations that work with NodeNext consumers. Startup work is reduced by grouping packed assets, sharing the compiled decoder, and creating workers and restoring WASM only when needed. The npm packages no longer include the optional precompressed all-in-one sidecars: `filens-preview@0.3.8` is **9.76 MiB** packed, down from **16.22 MiB** in 0.3.7. The split-only `filens-preview-split@0.3.8` package is **5.64 MiB**, 42% smaller than the dual-entry package. Both include the same split runtime; the split-only package omits the all-in-one build.
+CLI and DSH are rebuilt and updated to use preview **0.3.8**. Full offline CLI downloads are now **24.87–27.48 MiB**, down from **31.26–33.80 MiB**; Lite downloads are **7.09–7.72 MiB**. All eight platform/profile bundles and the DSH plugin are available below.
+
+本次同步更新 CLI、DSH 和内置预览内核，补齐 macOS、Linux、Windows 的 Full/Lite 离线包和 DSH 插件下载。Full 包缩至 **24.87–27.48 MiB**，Lite 为 **7.09–7.72 MiB**；渲染对比统一使用最新复测结果，包括下降的倍数，ZimaOS 展示与安装入口也已恢复。
+
+## Changes
+
+- **Preview 0.3.8:** fixes deferred HEIF resources in offline workers; groups packed resources, shares the compiled decoder, and creates workers/restores WASM when needed. `filens-preview` is **9.76 MiB** packed, down from **16.22 MiB**; split-only `filens-preview-split` is **5.64 MiB**.
+- **CLI 0.5.8:** faster directory discovery and glob subtree pruning, bounded document-extraction windows, and better preservation of fine text in transparent-scan OCR. Full bundles embed preview 0.3.8 and omit optional precompressed JS sidecars. Native-search speed optimization increases the macOS executable to **3.74 MiB**, so Lite is slightly larger; every Lite archive remains below **10,000,000 bytes**.
+- **DSH 0.1.12:** embeds preview 0.3.8, pins CLI 0.5.8 and retains File workspace in the same plugin. Fixes bundled runtime loading through the Desktop application origin in DSH **0.2.3-alpha.2**, with **0.2.2-rc.1** also tested. The peer range includes **Cordis 4.2**; an isolated latest-library installation passes without forced dependency resolution. Plugin download: **5.75 MiB**, excluding CLI/OCR dependencies and DSH caches.
+- **TypeScript declarations:** publishes `@filens/xlsx@0.1.3` and `@filens/core@0.1.5` with explicit ESM relative paths for Node16/NodeNext. XLSX requires core `^0.1.5`; exported types remain available and the driver factory retains its function type. [Fix #34](https://github.com/orca-zhang/filens/pull/34).
+- **Mobile source SDKs 0.1.8:** retain the complete offline preview 0.3.8 runtime. ZIPs contain source projects, not compiled AAR/XCFramework binaries.
 
 ## Downloads
 
 | Artifact | Download size |
 | --- | ---: |
-| [Browser runtime: split](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-split.zip) | 5.63 MiB |
-| [Browser runtime: all-in-one](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one.zip) | 4.13 MiB |
-| [Optional precompressed sidecars](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one-precompressed.zip) | 6.92 MiB |
-| [iOS source SDK](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-ios-sdk-0.1.8.zip) | 5.66 MiB |
-| [Android source SDK](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-android-sdk-0.1.8.zip) | 5.66 MiB |
-| [filens-0.5.7-macos-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-macos-arm64-lite.tar.gz) | 7.17 MiB |
-| [filens-0.5.7-macos-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-macos-arm64-full.tar.gz) | 31.91 MiB |
-| [filens-0.5.7-linux-x64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-linux-x64-lite.tar.gz) | 7.01 MiB |
-| [filens-0.5.7-linux-x64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-linux-x64-full.tar.gz) | 33.58 MiB |
-| [filens-0.5.7-linux-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-linux-arm64-lite.tar.gz) | 6.90 MiB |
-| [filens-0.5.7-linux-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-linux-arm64-full.tar.gz) | 31.26 MiB |
-| [filens-0.5.7-windows-x64-lite.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-windows-x64-lite.zip) | 6.96 MiB |
-| [filens-0.5.7-windows-x64-full.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.7-windows-x64-full.zip) | 33.80 MiB |
-| [dsh-filens-0.1.10.tgz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/dsh-filens-0.1.10.tgz) | 5.81 MiB |
-| [Checksums](https://github.com/orca-zhang/filens/releases/download/v0.6.8/SHA256SUMS) | SHA-256 |
+| [filens-0.5.8-macos-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-macos-arm64-lite.tar.gz) | 7.72 MiB |
+| [filens-0.5.8-macos-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-macos-arm64-full.tar.gz) | 25.99 MiB |
+| [filens-0.5.8-linux-x64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-x64-lite.tar.gz) | 7.24 MiB |
+| [filens-0.5.8-linux-x64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-x64-full.tar.gz) | 27.23 MiB |
+| [filens-0.5.8-linux-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-arm64-lite.tar.gz) | 7.09 MiB |
+| [filens-0.5.8-linux-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-linux-arm64-full.tar.gz) | 24.87 MiB |
+| [filens-0.5.8-windows-x64-lite.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-windows-x64-lite.zip) | 7.18 MiB |
+| [filens-0.5.8-windows-x64-full.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-0.5.8-windows-x64-full.zip) | 27.48 MiB |
+| [dsh-filens-0.1.12.tgz](https://github.com/orca-zhang/filens/releases/download/v0.6.8/dsh-filens-0.1.12.tgz) | 5.75 MiB |
+| [filens-preview-0.3.8-split.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-split.zip) | 5.63 MiB |
+| [filens-preview-0.3.8-all-in-one-precompressed.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one-precompressed.zip) | 6.92 MiB |
+| [filens-preview-0.3.8-all-in-one.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one.zip) | 4.13 MiB |
+| [filens-ios-sdk-0.1.8.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-ios-sdk-0.1.8.zip) | 5.66 MiB |
+| [filens-android-sdk-0.1.8.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-android-sdk-0.1.8.zip) | 5.66 MiB |
 
-Exact byte counts and hashes are in [the release size report](preview-release-sizes.json). These mobile SDK archives contain source projects and offline assets, not compiled AAR or XCFramework binaries.
+**14 package downloads + source manifest + checksums (16 assets).** [SHA256SUMS](https://github.com/orca-zhang/filens/releases/download/v0.6.8/SHA256SUMS) · [Source and validation manifest](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-release-v0.6.8.json) · [Exact sizes](preview-release-sizes.json).
 
 ## Install
 
 ```sh
-# Agent CLI: Full includes OCR and offline preview; Lite adds them as needed
-npm install -g filens-cli@0.5.7
-# Or: npm install -g filens-cli-lite@0.5.7
+npm install -g filens-cli@0.5.8
+# Or Lite: npm install -g filens-cli-lite@0.5.8
 
-# DeepSeek Harness: sidebar preview, document tools and File workspace
-dsh plugin --profile desktop add dsh-filens@0.1.10
+dsh plugin --profile desktop add dsh-filens@0.1.12
 
-# Includes split and all-in-one entries
 npm install filens-preview@0.3.8
+# Split runtime only: npm install filens-preview-split@0.3.8
 
-# Split runtime only; smaller install for apps using lazy-loaded modules
-npm install filens-preview-split@0.3.8
+npm install @filens/xlsx@0.1.3 @filens/core@0.1.5
 ```
 
-The CLI reads, searches, OCRs and converts local documents, and exports portable offline HTML previews. Extract the entire Full or Lite archive when installing without npm; Node.js is not required. DSH also accepts the downloadable `dsh-filens-0.1.10.tgz` through its plugin installer; File workspace is included in that same plugin.
+For native installation without Node.js or npm, extract the entire CLI archive. Full includes OCR and offline previews; Lite adds those resources as needed. DSH also accepts the downloadable `dsh-filens-0.1.12.tgz` through its plugin installer. File workspace retains its independent switch.
 
-For mainland China, use the npm mirror when the release is available there:
+For mainland China, add `--registry=https://registry.npmmirror.com` when the version is available there. See the [English README](../README.md), [中文 README](../README.zh-CN.md), [preview integration](../packages/preview/README.md) and [DSH setup](../integrations/deepseek-harness/README.md).
 
-```sh
-npm install filens-preview-split@0.3.8 --registry=https://registry.npmmirror.com
-```
+## Latest DSH rendering comparison
 
-See the [English README](../README.md#browser-integration-single-file-or-split-modules), [简体中文 README](../README.zh-CN.md#浏览器集成单文件与按需分包) and [standalone integration guide](../packages/preview/README.md).
+Measured **2026-11-24**, Apple M4 Pro/macOS, **DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**. Nine paired rounds per format, 36 fresh processes and 216 successful opens. Medians include reading, parsing/conversion and rendering to ready plus two frames, excluding app startup; OS/persistent caches remain. Office and PDF use separate runs; DOCX follows PPTX.
+
+| Format · first / cached median (ms) | FiLens 0.1.11 | DSH built in | First-open speedup |
+| --- | ---: | ---: | ---: |
+| PPTX | **126 / 92** | 1325 / 111 | **10.52×** |
+| DOCX | **108 / 92** | 1312 / 112 | **12.15×** |
+| PDF | **200 / 108** | 343 / 108 | **1.72×** |
+
+Cached PDF opens are equal at **108 ms (1.00×)**. The released **0.1.12** renderer/workspace payload matches all **73** measured 0.1.11 files byte-for-byte; the follow-up fixes peer declarations and documentation. [Runtime equivalence](dsh-0.1.12-runtime-equivalence.json). Current tables use these results even where the relative speedup is lower than the historical figures. Three authored files on one machine measure latency, not fidelity or performance for every document. [Complete observations, versions and method](assets/dsh-plugin/performance-0.1.11.md).
 
 ## Validation
 
-- Built and packed both npm artifacts with Node.js **24.22.3**; isolated offline installs passed NodeNext declarations and license / notice checks.
-- Chromium rendered PDF, iWork, RAW, STEP, HEIF and encrypted RAR previews from each installed npm entry after production Vite bundling. Browser tests blocked external requests.
-- Chromium media checks passed for native WAV playback, HEIF reference pixels and explicit unsupported MOV codec behavior.
-- The preview API passed a Node.js 24 / TypeScript 7.0.2 NodeNext check.
-- The mobile browser bridge passed 22 Chromium and WebKit checks across text, CSV, HTML, DOCX, PDF, Pages, EPUB, video, APK and encrypted RAR.
-- Release ZIP integrity, asset hashes and npm tarball privacy checks passed.
-- All eight CLI archives and the DSH archive match the published v0.6.7 SHA-256 hashes; their contents and embedded preview versions are unchanged.
+- XLSX/core: **600 unit tests passed**; isolated tarball and fresh public-registry installs pass **12 type checks and 8 original-issue checks** with TypeScript **5.9.3 / 7.0.2**, Bundler/Node16/NodeNext and both skipLibCheck settings. The original invalid assignment reports only the expected TS2322; production Vite/Chromium XLSX rendering also passes.
+- CLI: **65 Rust unit tests**, **8 end-to-end groups**, **19 compact-bundle/error/cancellation checks**, **60 search checks** and **54 archive/OCR checks** pass. Full/Lite npm tarball installation and direct native execution pass on macOS arm64.
+- The actual new Full offline CLI bundle exports **17 Chromium offline HTML cases** successfully, including Office, PDF, iWork, RAW, STEP, archives and encrypted inputs.
+- DSH: **34 Node tests** and six real sidebar formats pass in Desktop **0.2.3-alpha.2** and **0.2.2-rc.1**. Earlier browser checks cover 16 isolated format-loading paths and 12 complete previews; nine-round current Desktop timings are linked above.
+- All eight native archives pass integrity/size checks. npm and release artifacts pass license, notice and privacy checks; SHA-256 records exact release bytes. Existing preview/mobile validation includes 22 Chromium/WebKit bridge checks.
 
-CLI binaries, CLI npm launchers and the DSH plugin were not rebuilt for this release. Their prior validation remains documented in [v0.6.7](release-v0.6.7.md#validation). Native Linux/Windows execution and physical iOS/Android device tests were not repeated.
+Linux/Windows executables are cross-built; native execution on those platforms, native Desktop fullscreen and physical iOS/Android devices were not retested. [Validation records](release-v0.6.8-validation.json).
 
 ## Use FiLens on ZimaOS
 
@@ -80,4 +90,4 @@ sudo zpkg install filens
 sudo zpkg upgrade filens
 ```
 
-[ZimaOS integration, preview export and OCR setup](https://github.com/orca-zhang/filens/tree/main/packaging/zimaos). The ModStore package remains **0.5.1** and uses its own component versions; this release does not update the store entry.
+[ZimaOS integration, preview export and OCR setup](https://github.com/orca-zhang/filens/tree/main/packaging/zimaos). The ModStore package remains **0.5.1** and uses its own CLI/preview versions; this release does not update the store entry.

@@ -1,0 +1,64 @@
+{
+  "measuredAt": "2026-11-24T15:42:21.682Z",
+  "dateAsiaShanghai": "2026-11-24",
+  "plugin": "0.1.11",
+  "dsh": "0.2.3-alpha.2",
+  "electron": "44.11.5",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "cores": 12,
+    "memoryBytes": 25769803776,
+    "osRelease": "25.6.0",
+    "node": "24.22.3"
+  },
+  "roundsPerFormat": 9,
+  "processes": 36,
+  "timedOpens": 216,
+  "status": "complete",
+  "results": [
+    {
+      "format": "PPTX",
+      "filensFirstMs": 126,
+      "builtinFirstMs": 1325,
+      "firstSpeedup": 10.515873015873016,
+      "filensCachedMs": 92,
+      "builtinCachedMs": 111,
+      "cachedSpeedup": 1.2065217391304348
+    },
+    {
+      "format": "DOCX",
+      "filensFirstMs": 108,
+      "builtinFirstMs": 1312,
+      "firstSpeedup": 12.148148148148149,
+      "filensCachedMs": 92,
+      "builtinCachedMs": 112,
+      "cachedSpeedup": 1.2173913043478262
+    },
+    {
+      "format": "PDF",
+      "filensFirstMs": 200,
+      "builtinFirstMs": 343,
+      "firstSpeedup": 1.715,
+      "filensCachedMs": 108,
+      "builtinCachedMs": 108,
+      "cachedSpeedup": 1.0
+    }
+  ],
+  "profiles": "Separate isolated profiles with the same package; Tools and File workspace disabled equally; assert actual FiLens registration enabled only in the FiLens condition",
+  "cache": "OS and persistent application caches retained; first per file/process; DOCX follows PPTX; PDF uses separate fresh processes",
+  "rawReports": [
+    {
+      "file": "office-preview-0.1.11-dsh-0.2.3-alpha.2.json",
+      "sha256": "fc51d27bcfdbb6d8f846a2ec2e8785eb40703255009acace7491370703d5950e"
+    },
+    {
+      "file": "pdf-preview-0.1.11-dsh-0.2.3-alpha.2.json",
+      "sha256": "6501bbda6c22f587a1989713286b85f0ed4b1c476b23f3e584305d3574aa8d7c"
+    }
+  ],
+  "appliesToVersions": [
+    "0.1.11",
+    "0.1.12"
+  ],
+  "runtimeEquivalence": "../../dsh-0.1.12-runtime-equivalence.json"
+}

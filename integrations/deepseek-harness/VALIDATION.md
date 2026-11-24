@@ -1,5 +1,13 @@
 # DSH integration validation
 
+## 0.1.12 — Preview 0.3.8, CLI 0.5.8 and current Desktop
+
+Validated on 2026-11-24 with Node 24 and macOS arm64. Six real sidebar formats (PDF, DOCX, PPTX, Keynote, STEP and ZIP) pass in both **DSH Desktop 0.2.3-alpha.2** and **0.2.2-rc.1**. The client loads its bundled runtime through the Desktop application origin; only enumerated static assets are exposed by the host route.
+
+The Cordis peer range includes **4.2.0-alpha.1**. An isolated tarball installation with the latest Desktop libraries passes peer resolution and Host/Tools/workspace Node imports without force or legacy-peer-deps. The release embeds preview **0.3.8** and pins CLI **0.5.8**, including deferred HEIF resources, directory-search improvements and transparent-scan OCR. File workspace remains bundled with its independent switch. Native fullscreen and Linux/Windows Desktop execution were not retested.
+
+[Latest nine-round rendering comparison](../../docs/assets/dsh-plugin/performance-0.1.11.md): **10.52× PPTX**, **12.15× DOCX**, **1.72× PDF** first opens; PDF cached opens are equal at **108 ms / 1.00×**. The 73 renderer/workspace files in 0.1.12 match the measured 0.1.11 payload byte-for-byte. All 216 timed opens and the full environment are recorded; older measurements below retain their original versions.
+
 ## 0.1.9 — DSH 0.2.2-rc.1 and one-package installation
 
 Validated on **2026-11-06**, macOS arm64, installed **DSH Desktop 0.2.2-rc.1** / Cordis **4.1.0** and Node **24.11.0**. The engine declaration and matching DSH/Cordis peer declarations now admit RC.1 while retaining the previously validated rc.5/alpha.3 versions.

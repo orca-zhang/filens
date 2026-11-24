@@ -1,11 +1,11 @@
 {
   "name": "dsh-filens",
-  "version": "0.1.11",
-  "file": "dsh-filens-0.1.11.tgz",
-  "bytes": 6028595,
-  "unpackedBytes": 18235939,
-  "sha256": "dc94863c721a32bf90c112756f78170042b4c636421357812df42a8ebb688924",
-  "integrity": "sha512-lTfpxUgqySJweiSpeZG+qtcSKNEGvVHqKZTHTfdAOUPgb+JkTaVzNE8ZUO8iwR5suWSQvBH8yOxdApmqHIZTmw==",
+  "version": "0.1.12",
+  "file": "dsh-filens-0.1.12.tgz",
+  "bytes": 6028769,
+  "unpackedBytes": 18237489,
+  "sha256": "2c6001ef3fe7d35f29886786cac3ea4b61b07984bba5eeac9c369525f3fff0b1",
+  "integrity": "sha512-QdeNUqPP7rA3Arvot83EEhkehHdfFyCbUVbdY5aYtbEQVk/7uZq6wptVuWNhoDbl7uHLR2wwSV+IJnIXuPhoLw==",
   "privacyChecked": true,
   "cliVersion": "0.5.8",
   "previewVersion": "0.3.8",
@@ -15,12 +15,12 @@
   "packages": [
     {
       "name": "dsh-filens",
-      "version": "0.1.11",
-      "file": "dsh-filens-0.1.11.tgz",
-      "bytes": 6028595,
-      "unpackedBytes": 18235939,
-      "sha256": "dc94863c721a32bf90c112756f78170042b4c636421357812df42a8ebb688924",
-      "integrity": "sha512-lTfpxUgqySJweiSpeZG+qtcSKNEGvVHqKZTHTfdAOUPgb+JkTaVzNE8ZUO8iwR5suWSQvBH8yOxdApmqHIZTmw==",
+      "version": "0.1.12",
+      "file": "dsh-filens-0.1.12.tgz",
+      "bytes": 6028769,
+      "unpackedBytes": 18237489,
+      "sha256": "2c6001ef3fe7d35f29886786cac3ea4b61b07984bba5eeac9c369525f3fff0b1",
+      "integrity": "sha512-QdeNUqPP7rA3Arvot83EEhkehHdfFyCbUVbdY5aYtbEQVk/7uZq6wptVuWNhoDbl7uHLR2wwSV+IJnIXuPhoLw==",
       "privacyChecked": true
     }
   ]
