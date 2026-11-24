@@ -31,6 +31,14 @@
 
 格式清单已于 2026-11-06 核对：CLI **349** 个扩展名；预览 **450** 个源文件扩展名（内部另有 `cad-json`，共 **451** 个路由项）。[版本、数量与完整扩展名](docs/release-v0.6.6-format-counts.json)。
 
+## FiLens-Bench
+
+FiLens-Bench 用 13 道合成题比较各 agent harness 在原生工具与正常安装 FiLens CLI 后的复杂文件查询表现，覆盖 Office、PDF、嵌套压缩包、扫描件、跨文件问题和无答案题。当前快照使用 FiLens CLI **0.5.7**：**7/7** 组质量分提高、**7/7** 组记录耗时缩短；用量完整的 **4/4** 组 token 总量下降。各 harness 使用的模型不同，应比较同一 harness 内的配对结果。
+
+[![FiLens-Bench 七个 agent harness 的成绩](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/)
+
+[官方评测站](https://filens.cc/bench/) · [当前中英文成绩表](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [评测方法与复现](benchmarks/filens-bench/README.zh-CN.md)
+
 ## Agent CLI
 
 **支持 349 种文件格式（按扩展名统计）**，在本地读取 PDF、Office、表格、扫描件和图片；搜索目录与嵌套压缩包、提取关键原文、查找重复文件与相似图片。输出 text、JSON、Markdown、HTML、YAML、XML、CSV 或 TSV，保留可用的页码坐标与文档结构。具体能力以 `filens capacity --json` 为准，提取保真度因格式而异。改写总结、翻译和问答由调用它的 Agent 完成。
@@ -86,7 +94,7 @@ filens preview report.pdf --mode serve
 - [跨格式搜索](docs/agent-cli-search.zh-CN.md)、[嵌套压缩包](docs/agent-cli-search-archives.zh-CN.md)与[无模型关键原文摘录](docs/agent-cli-pruning.zh-CN.md)
 - [重复文件与相似图片](docs/agent-cli-similarity.md) · [Windows 安装与验证状态](docs/agent-cli-windows.zh-CN.md)
 - [搜索覆盖](docs/agent-cli-search-formats.zh-CN.md)、[检索基准](docs/agent-cli-search-benchmark.zh-CN.md)与[启动成本](docs/agent-cli-search-native.zh-CN.md)
-- [FiLens-Bench 独立评测站](https://filens.cc/bench/)：比较各 agent 正常安装 FiLens 前后的复杂文件查询质量、耗时和 token 用量；[方法与复现](benchmarks/filens-bench/README.zh-CN.md)。
+- [FiLens-Bench 独立评测站](https://filens.cc/bench/)：比较各 agent 正常安装 FiLens 前后的复杂文件查询质量、耗时和 token 用量；[当前中英文成绩表](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [方法与复现](benchmarks/filens-bench/README.zh-CN.md)。
 
 CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大边长 960、OpenMP 线程 2），Lite 可用 `filens setup-ocr` 补齐。用 `capacity` 查看当前安装版本的操作与转换组合。自然语言只识别有限意图；选择页码或幻灯片请显式使用 `--pages` / `--slides`，尚不支持按问题筛选字段。Windows / Linux 原生执行仍待实机验证。
 

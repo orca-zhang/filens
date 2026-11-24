@@ -21,9 +21,9 @@ node benchmarks/filens-bench/publish.mjs dist/filens-bench-site
 
 ## 当前收敛成绩
 
-![FiLens CLI 0.5.7 在七个 harness 的配对成绩](results/2026-11-24/converged-scorecard/readme-summary.svg)
+![FiLens CLI 0.5.7 在七个 harness 的配对成绩](readme-summary.svg)
 
-质量雷达、p95、逐题评分与逐次账单见[完整成绩单](results/2026-11-24/converged-scorecard/README.zh-CN.md)。
+各组质量、带证据成功率、p50 耗时和 token 实测值见[中英文公开成绩表](published/converged-2026-11-24/README.md#当前成绩)。公开快照的分组图、雷达图和机器可读数据也在同一目录；逐题评分、p95 和逐次账单保留在本地完整档案中。
 
 ## 如何读成绩
 

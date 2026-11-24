@@ -31,6 +31,14 @@ The native executable is **0.93–2.20 MiB**. The CLI sizes above measure comple
 
 Verified November 6, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Versions, counts and complete extension list](docs/release-v0.6.6-format-counts.json).
 
+## FiLens-Bench
+
+FiLens-Bench compares each agent harness using native tools versus a normal FiLens CLI installation on a 13-task synthetic corpus covering Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. The latest snapshot uses FiLens CLI **0.5.7**: quality rose in **7/7** pairs, recorded p50/batch time fell in **7/7**, and tokens fell in **4/4** pairs with complete usage. Models vary across harnesses, so comparisons are within each pair.
+
+[![FiLens-Bench results across seven agent harnesses](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/en.html)
+
+[Official results site](https://filens.cc/bench/en.html) · [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Protocol and reproduction](benchmarks/filens-bench/README.zh-CN.md)
+
 ## Agent CLI
 
 **Supports 349 file formats (counted by extension).** Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Check `filens capacity --json` for your installation's capabilities; extraction fidelity varies by format. Paraphrasing, translation and question answering belong to the calling Agent.
@@ -86,7 +94,7 @@ The HTML checks browser capabilities and blocks external resource requests. It c
 - [Search](docs/agent-cli-search.zh-CN.md), [nested archives](docs/agent-cli-search-archives.zh-CN.md) and [model-free key excerpts](docs/agent-cli-pruning.zh-CN.md)
 - [Duplicates and similar images](docs/agent-cli-similarity.md) · [Windows setup and validation status](docs/agent-cli-windows.zh-CN.md)
 - [Search coverage](docs/agent-cli-search-formats.zh-CN.md), [retrieval benchmarks](docs/agent-cli-search-benchmark.zh-CN.md) and [startup costs](docs/agent-cli-search-native.zh-CN.md)
-- [FiLens-Bench dedicated results site](https://filens.cc/bench/en.html): compare complex-file quality, latency and token usage before and after each agent's normal FiLens installation. [Methodology and reproduction](benchmarks/filens-bench/README.zh-CN.md).
+- [FiLens-Bench dedicated results site](https://filens.cc/bench/en.html): compare complex-file quality, latency and token usage before and after normal FiLens installation. [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Methodology and reproduction](benchmarks/filens-bench/README.zh-CN.md).
 
 The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; use explicit `--pages` / `--slides` for selection. Field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
 
