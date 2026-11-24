@@ -102,7 +102,7 @@ const glob = query('nested/*.txt', ['--search-mode', 'glob', '--max-files', '1']
 assert.equal(glob.search.method, 'filename-glob');
 assert.equal(glob.search.matchedFiles, 1);
 assert.equal(glob.search.complete, true);
-assert.ok(glob.search.results[0].path.endsWith('nested/note.txt'));
+assert.ok(glob.search.results[0].path.replaceAll('\\', '/').endsWith('nested/note.txt'));
 assert.deepEqual(glob.search.results[0].excerpts, []);
 assert.equal(glob.search.scan.execution.extractionBatches, 0);
 assert.equal(query('*.bin', ['--search-mode', 'glob']).search.matchedFiles, 1);
