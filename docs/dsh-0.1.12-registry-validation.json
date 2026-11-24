@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-11-24T16:16:34.001Z",
+  "package": "dsh-filens",
+  "version": "0.1.12",
+  "source": "public npm registry, fresh cache, isolated consumer, no force/legacy-peer-deps",
+  "node": "24.22.3",
+  "integrity": "sha512-QdeNUqPP7rA3Arvot83EEhkehHdfFyCbUVbdY5aYtbEQVk/7uZq6wptVuWNhoDbl7uHLR2wwSV+IJnIXuPhoLw==",
+  "tarball": "https://registry.npmjs.org/dsh-filens/-/dsh-filens-0.1.12.tgz",
+  "cordis": "4.2.0-alpha.1",
+  "dshLibraries": "0.2.3-alpha.2",
+  "cli": "0.5.8",
+  "preview": "0.3.8",
+  "runtimeFiles": 59,
+  "checks": [
+    "npm peer resolution with latest Desktop libraries",
+    "Host, Tools and bundled workspace Node imports",
+    "All installed preview runtime files match SHA-256 manifest",
+    "Public tarball integrity matches published release artifact"
+  ],
+  "passed": true
+}
