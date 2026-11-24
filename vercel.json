@@ -33,7 +33,7 @@
         {
           "type": "header",
           "key": "accept-encoding",
-          "value": "(?:[^,]*,[\\t ]*)*[\\t ]*br[\\t ]*(?:;[\\t ]*q=1(?:\\.0{0,3})?[\\t ]*)?(?:,.*)?"
+          "value": "^(?:(?:[^,]*,[\\t ]*)*[\\t ]*br[\\t ]*(?:;[\\t ]*q=1(?:\\.0{0,3})?[\\t ]*)?(?:,.*)?)$"
         }
       ],
       "missing": [
@@ -59,7 +59,7 @@
         {
           "type": "header",
           "key": "accept-encoding",
-          "value": "(?:[^,]*,[\\t ]*)*[\\t ]*gzip[\\t ]*(?:;[\\t ]*q=1(?:\\.0{0,3})?[\\t ]*)?(?:,.*)?"
+          "value": "^(?:(?:[^,]*,[\\t ]*)*[\\t ]*gzip[\\t ]*(?:;[\\t ]*q=1(?:\\.0{0,3})?[\\t ]*)?(?:,.*)?)$"
         }
       ],
       "missing": [
@@ -74,6 +74,36 @@
         "Vary": "Accept-Encoding"
       },
       "dest": "/cdn/filens-preview@$1/all-in-one/filens.js.gz"
+    },
+    {
+      "src": "/cdn/filens-preview@([^/]+)/all-in-one/filens\\.js",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "has": [
+        {
+          "type": "header",
+          "key": "accept-encoding",
+          "value": "^[\\t ]*(?:(?:br|gzip)[\\t ]*;[\\t ]*q=0(?:\\.0{0,3})?|identity(?:[\\t ]*;[\\t ]*q=1(?:\\.0{0,3})?)?)[\\t ]*(?:,[\\t ]*(?:(?:br|gzip)[\\t ]*;[\\t ]*q=0(?:\\.0{0,3})?|identity(?:[\\t ]*;[\\t ]*q=1(?:\\.0{0,3})?)?)[\\t ]*)*$"
+        },
+        {
+          "type": "header",
+          "key": "accept-encoding",
+          "value": "^(?:[^,]*,[\\t ]*)*[\\t ]*br[\\t ]*;[\\t ]*q=0(?:\\.0{0,3})?[\\t ]*(?:,.*)?$"
+        }
+      ],
+      "transforms": [
+        {
+          "type": "request.headers",
+          "op": "set",
+          "target": {
+            "key": "accept-encoding"
+          },
+          "args": "identity"
+        }
+      ],
+      "continue": true
     },
     {
       "src": "/SKILL.md",
