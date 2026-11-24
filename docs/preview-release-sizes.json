@@ -1,122 +1,47 @@
 {
-  "date": "2026-11-13",
-  "tag": "v0.6.7",
-  "previousRelease": "v0.6.6",
+  "date": "2026-11-24",
+  "tag": "v0.6.8",
+  "previousRelease": "v0.6.7",
   "components": {
-    "preview": "0.3.7",
-    "mobileSdk": "0.1.7",
-    "cli": "0.5.7"
+    "preview": "0.3.8",
+    "mobileSdk": "0.1.8"
   },
   "scope": "Exact GitHub Release downloads and extracted file bytes. Mobile artifacts are source SDKs with offline assets, not AAR/XCFramework binaries. MiB = 1048576 bytes.",
   "assets": [
     {
-      "file": "filens-preview-0.3.7-split.zip",
+      "file": "filens-preview-0.3.8-split.zip",
       "kind": "browser-split",
-      "bytes": 5889821,
-      "unpackedBytes": 17800683,
-      "sha256": "01d5b79fab19b77768ba2efbe0afc45671661e04352c0f0f3a1fda12ecb3ccec"
+      "bytes": 5906766,
+      "unpackedBytes": 17849230,
+      "sha256": "679d49bd68085450a019a89dedeefd15945931326f948ea75c9c4ffdf1951a78"
     },
     {
-      "file": "filens-preview-0.3.7-all-in-one.zip",
+      "file": "filens-preview-0.3.8-all-in-one-precompressed.zip",
+      "kind": "browser-precompressed-sidecars",
+      "bytes": 7254188,
+      "unpackedBytes": 7253457,
+      "sha256": "bb517188d65fcc5f8efe634102b5844d5d008800e16792b68267b11db7eb3521"
+    },
+    {
+      "file": "filens-preview-0.3.8-all-in-one.zip",
       "kind": "browser-all-in-one",
-      "bytes": 11122660,
-      "unpackedBytes": 15610561,
-      "sha256": "72724d4bc09d01d40fc870769b67edbafd410ec10413c5e99d2dba8e90115690"
+      "bytes": 4332799,
+      "unpackedBytes": 8865102,
+      "sha256": "3dad49c056f17dc3a63c2df1e64e86575b15245f6cec3257d24e04c60c1299fa"
     },
     {
-      "file": "filens-ios-sdk-0.1.7.zip",
+      "file": "filens-ios-sdk-0.1.8.zip",
       "kind": "source-sdk-ios",
-      "bytes": 5916616,
-      "unpackedBytes": 17845968,
-      "sha256": "fb4bd1b7018351d61955d499861ae6871491c2f644c11c84e34279baec680ac7"
+      "bytes": 5933561,
+      "unpackedBytes": 17894515,
+      "sha256": "77d6d91c667cee811349e657fbaf3ae5198505d9fba7f994e2f515b79e7a51ee"
     },
     {
-      "file": "filens-android-sdk-0.1.7.zip",
+      "file": "filens-android-sdk-0.1.8.zip",
       "kind": "source-sdk-android",
-      "bytes": 5919487,
-      "unpackedBytes": 17841810,
-      "sha256": "dcc31b726d8164250b5713a6ae44de99f1f0ad9291a4af5490a80ce369c0c23b"
-    },
-    {
-      "file": "filens-0.5.7-macos-arm64-lite.tar.gz",
-      "kind": "cli-lite",
-      "bytes": 7518239,
-      "unpackedBytes": 9669388,
-      "sha256": "d73b18754fb7c6968aeda418c1c2b8871e7a9d97f6fb93f976b01c7bee6bbed5",
-      "platform": "darwin-arm64",
-      "binaryBytes": 2306336
-    },
-    {
-      "file": "filens-0.5.7-macos-arm64-full.tar.gz",
-      "kind": "cli-full",
-      "bytes": 33461606,
-      "unpackedBytes": 49608249,
-      "sha256": "79c40239b2c6d66d784db62efa816ed1496e625eb6630b2b949e63991b2a306c",
-      "platform": "darwin-arm64",
-      "binaryBytes": 2306336
-    },
-    {
-      "file": "filens-0.5.7-linux-x64-lite.tar.gz",
-      "kind": "cli-lite",
-      "bytes": 7352078,
-      "unpackedBytes": 8446457,
-      "sha256": "0f58f99fc2af8f9f96a4ae7d242c1c5b4eab4cafcd7c24b1c3bbb3a8a0a1a01a",
-      "platform": "linux-x64",
-      "binaryBytes": 1083408
-    },
-    {
-      "file": "filens-0.5.7-linux-x64-full.tar.gz",
-      "kind": "cli-full",
-      "bytes": 35209822,
-      "unpackedBytes": 54402651,
-      "sha256": "45542cd0c6a259d7146b1ff06a2462eddc355ab6a907cbf36e6c3a9fe0d2a0b8",
-      "platform": "linux-x64",
-      "binaryBytes": 1085728
-    },
-    {
-      "file": "filens-0.5.7-linux-arm64-lite.tar.gz",
-      "kind": "cli-lite",
-      "bytes": 7239327,
-      "unpackedBytes": 8334147,
-      "sha256": "2dca7064a9a8a3630af1930b9e7203f622ddfa94d896621c540fcbb7f5d6b871",
-      "platform": "linux-arm64",
-      "binaryBytes": 971096
-    },
-    {
-      "file": "filens-0.5.7-linux-arm64-full.tar.gz",
-      "kind": "cli-full",
-      "bytes": 32779869,
-      "unpackedBytes": 48491549,
-      "sha256": "18923d66ae04f4d1015af160a8b1c77a0000054308559aa26a571a7c9dc907a9",
-      "platform": "linux-arm64",
-      "binaryBytes": 969604
-    },
-    {
-      "file": "filens-0.5.7-windows-x64-lite.zip",
-      "kind": "cli-lite",
-      "bytes": 7295513,
-      "unpackedBytes": 8362473,
-      "sha256": "6a346e0221efa5b928463f7401a97995b5588ee2321d5fe3362815e4b6fb41fa",
-      "platform": "win32-x64",
-      "binaryBytes": 999424
-    },
-    {
-      "file": "filens-0.5.7-windows-x64-full.zip",
-      "kind": "cli-full",
-      "bytes": 35439648,
-      "unpackedBytes": 54130123,
-      "sha256": "e7b379f09c9f49a3b4559803e85226335c0c3bd0510e8d3ce2e690e358ce0a8d",
-      "platform": "win32-x64",
-      "binaryBytes": 999936
-    },
-    {
-      "file": "dsh-filens-0.1.10.tgz",
-      "kind": "npm-package",
-      "bytes": 6097078,
-      "unpackedBytes": 18434530,
-      "sha256": "740d800948bb4fc15a776e890846b80c5a2d3c014a4a36c4279a12056e4934fd",
-      "name": "dsh-filens",
-      "version": "0.1.10"
+      "bytes": 5936431,
+      "unpackedBytes": 17890357,
+      "sha256": "2b70ca6c30ff331f23606ab90ddf638b7933e1c3a4a83d53b07d0e8cd45c0f83"
     }
   ]
 }

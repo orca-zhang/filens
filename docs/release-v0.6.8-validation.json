@@ -1,0 +1,31 @@
+{
+  "tag": "v0.6.8",
+  "previousRelease": "v0.6.7",
+  "observedAt": "2026-11-24",
+  "scope": "Browser preview npm packages and iOS/Android source SDK archives. CLI, DSH and native device artifacts are not rebuilt in this release.",
+  "node": "24.22.3",
+  "typescriptNodeNext": "7.0.2",
+  "passed": true,
+  "checks": [
+    "Node 24 production preview build, npm pack and mobile SDK package generation",
+    "Offline isolated installation of filens-preview@0.3.8 and NodeNext public type checks",
+    "Offline isolated installation of filens-preview-split@0.3.8 and NodeNext public type checks",
+    "Chromium media checks for native WAV, HEIF reference pixels and unsupported MOV codec handling",
+    "Six PDF/iWork/RAW/STEP/HEIF/encrypted-RAR previews from each npm package after production Vite bundling",
+    "No external requests in installed-package browser tests",
+    "Node 24 and TypeScript 7 NodeNext preview API fixture",
+    "22 Chromium/WebKit mobile browser bridge checks",
+    "npm tarball privacy, release archive integrity and generated SHA-256 manifest"
+  ],
+  "reports": {
+    "previewNpm": "preview-npm-validation.json",
+    "previewSplitNpm": "preview-split-npm-validation.json",
+    "previewSizes": "preview-sizes.md",
+    "mobileSdkSizes": "mobile-sdk-sizes.json",
+    "releaseSizes": "preview-release-sizes.json"
+  },
+  "notRun": [
+    "CLI and DSH rebuilds",
+    "Native iOS and Android device tests"
+  ]
+}

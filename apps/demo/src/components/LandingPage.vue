@@ -17,7 +17,7 @@ const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 const demoAsset = (file: string) => `${asset(`home/${file}`)}?v=${demoMedia.version}`;
 const repo = 'https://github.com/orca-zhang/filens';
 const benchUrl = computed(() => `https://filens.cc/bench/${isEnglish.value ? 'en.html' : ''}`);
-const skillUrl = 'https://filens.cc/SKILL.md';
+const skillUrl = 'https://filens.cc/skills/filens/SKILL.md';
 const skillInstallPrompt = computed(() => t(
   `帮我安装 filens，读取 ${skillUrl}，按里面的说明配置 CLI 和 Skill。离线安装包：https://filens.cc/downloads/。`,
   `Install filens for me. Read ${skillUrl} and follow it to set up the CLI and skill. Offline packages: https://filens.cc/downloads/.`

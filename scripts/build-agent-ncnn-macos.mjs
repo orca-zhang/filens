@@ -2,7 +2,7 @@
 // never need CMake, a compiler, Homebrew, or a Python interpreter.
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, copyFile, cp, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,6 +45,30 @@ function run(command, args, signal) {
     child.on('error', reject);
     child.on('exit', code => code === 0 ? resolve() : reject(new Error(`${command} exited with ${code}`)));
   });
+}
+
+async function stageZigToolchain(root) {
+  const configured = process.env.FILENS_ZIG ?? 'zig';
+  const hasPath = path.isAbsolute(configured) || configured.includes('/') || configured.includes('\\');
+  const names = process.platform === 'win32' && !configured.toLowerCase().endsWith('.exe') ? [configured, `${configured}.exe`] : [configured];
+  const candidates = hasPath ? [configured] : (process.env.PATH ?? '').split(path.delimiter).filter(Boolean).flatMap(directory => names.map(name => path.join(directory, name)));
+  let binary;
+  for (const candidate of candidates) {
+    try { await access(candidate); binary = await realpath(candidate); break; } catch { /* Try the next PATH entry. */ }
+  }
+  if (!binary) return { command:configured, cleanup:async () => {} };
+
+  // Zig embeds its libc-header paths in C objects. Build from a staged copy
+  // outside RUNNER_TEMP so release artifacts do not expose the runner home.
+  const stagingRoot = await mkdtemp(path.join(process.platform === 'win32' ? root : os.tmpdir(), 'filens-zig-'));
+  const install = path.join(stagingRoot, path.basename(path.dirname(binary)));
+  try {
+    await cp(path.dirname(binary), install, { recursive:true });
+    return { command:path.join(install, path.basename(binary)), cleanup:() => rm(stagingRoot, { recursive:true, force:true }) };
+  } catch (error) {
+    await rm(stagingRoot, { recursive:true, force:true });
+    throw error;
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -110,15 +134,32 @@ export async function buildOCRWrapper(destination, { signal, sourceCount = 3, pl
       await writeFile(source,text.replace(calls,'nativeDlopen($1)').replace(registration,'registerWindowsNativeSymbol(target, handle, symbol)').replace('\n\t"github.com/ebitengine/purego"',''));
       await writeFile(path.join(work,'tools/ncnn_runtime_wrapper/native_loader_windows.go'),windowsLoader);
     }
-    await new Promise((resolve, reject) => {
-      const child = spawn('go', ['build','-trimpath','-buildmode=c-shared','-ldflags',`-s -w -X main.ncnnRuntimeVersion=${manifest.version}`,'-o',library,'./tools/ncnn_runtime_wrapper'], {
-        cwd:work, stdio:'inherit', signal,
-        env:{...process.env,CGO_ENABLED:'1',GOOS:windows?'windows':darwin?'darwin':'linux',GOARCH:architecture,
-          ...(darwin ? {MACOSX_DEPLOYMENT_TARGET:'12.0',CGO_CFLAGS:'-mmacosx-version-min=12.0',CGO_LDFLAGS:'-mmacosx-version-min=12.0'}
-            : {CC:`${process.env.FILENS_ZIG ?? 'zig'} cc -target ${windows ? 'x86_64-windows-gnu' : `${architecture === 'amd64' ? 'x86_64' : 'aarch64'}-linux-gnu.2.17`}`})}
+    // Go's -trimpath does not rewrite paths embedded by the C compiler.
+    const pathMappings = [[root, '/filens-source'], [work, '/ocr-wrapper-source'], [os.homedir(), '/toolchain-cache'],
+      ['/home', '/build-home'], ['/Users', '/build-home'], ['C:/Users', '/build-home']];
+    // Apply the mappings to macros and debug records too; compiler/toolchain
+    // versions do not all treat -ffile-prefix-map identically.
+    const cgoPathFlags = pathMappings.flatMap(([from, to]) => {
+      from = from.replaceAll('\\', '/');
+      return [`-ffile-prefix-map=${from}=${to}`, `-fdebug-prefix-map=${from}=${to}`, `-fmacro-prefix-map=${from}=${to}`];
+    }).join(' ');
+    const cgoCflags = [process.env.CGO_CFLAGS, cgoPathFlags, '-g0', '-fno-sanitize=all', windows && '-Wno-unused-command-line-argument', darwin && '-mmacosx-version-min=12.0'].filter(Boolean).join(' ');
+    const stripDebug = darwin ? '-Wl,-S' : '-Wl,--strip-debug';
+    const sanitizerRuntime = !darwin && !windows ? '-fsanitize=undefined' : '';
+    const externalFlags = [sanitizerRuntime, stripDebug].filter(Boolean).join(' ');
+    const ldflags = `-s -w -X main.ncnnRuntimeVersion=${manifest.version} -extldflags "${externalFlags}"`;
+    const stagedZig = darwin ? null : await stageZigToolchain(root);
+    try {
+      await new Promise((resolve, reject) => {
+        const child = spawn('go', ['build','-trimpath','-buildmode=c-shared','-ldflags',ldflags,'-o',library,'./tools/ncnn_runtime_wrapper'], {
+          cwd:work, stdio:'inherit', signal,
+          env:{...process.env,CGO_ENABLED:'1',GOOS:windows?'windows':darwin?'darwin':'linux',GOARCH:architecture,CGO_CFLAGS:cgoCflags,
+            ...(darwin ? {MACOSX_DEPLOYMENT_TARGET:'12.0',CGO_LDFLAGS:'-mmacosx-version-min=12.0'}
+              : {CC:`${stagedZig.command} cc -target ${windows ? 'x86_64-windows-gnu' : `${architecture === 'amd64' ? 'x86_64' : 'aarch64'}-linux-gnu.2.17`}`})}
+        });
+        child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error(`Build OCR wrapper exited with ${code}`)));
       });
-      child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error(`Build OCR wrapper exited with ${code}`)));
-    });
+    } finally { await stagedZig?.cleanup(); }
     if (darwin) await run('codesign',['--force','--sign','-',library],signal);
     await rm(path.join(destination,'libzima_ncnn_runtime_v7.h'),{force:true});
     if (windows) await rm(path.join(destination,'zima_ncnn_runtime_v7.h'),{force:true});

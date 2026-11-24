@@ -27,8 +27,16 @@ export function privacyIssues(bytes) {
 
 function assertBytes(bytes, name) {
   const issues = privacyIssues(bytes);
-  // Never echo the matched path, token, or source contents.
-  if (issues.length) throw new Error(`Release privacy check rejected ${name}: ${issues.join(', ')}`);
+  // Preserve the user's home directory privacy while making the remaining
+  // path useful for diagnosing build-path leaks in release artifacts.
+  const value = bytes.toString('latin1');
+  const match = issues.includes('personal build path')
+    ? value.match(/(?:\/(?:Users|home)\/[^/\s\0]+\/[^\s\0"'<>]{0,160}|[A-Za-z]:[\\/]Users[\\/][^\\/\s\0]+[\\/][^\s\0"'<>]{0,160})/)
+    : null;
+  const hint = match
+    ? ` (redacted path: ${match[0].replace(/(\/(?:Users|home)\/)[^/]+/, '$1<redacted>').replace(/^([A-Za-z]:[\\/]Users[\\/])[^\\/]+/, '$1<redacted>')})`
+    : '';
+  if (issues.length) throw new Error(`Release privacy check rejected ${name}: ${issues.join(', ')}${hint}`);
 }
 
 function assertFileName(name) {

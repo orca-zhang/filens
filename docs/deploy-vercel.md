@@ -81,14 +81,14 @@ Use the commands above to validate the Vercel build locally and run the homepage
 ## Skill and downloads / Skill 与安装包
 
 - `https://filens.cc/skills/filens/SKILL.md`：Skill 原文，其 `references/` 文件随站点一起部署；`https://filens.cc/SKILL.md` 跳转到该地址。
-- `https://filens.cc/downloads/`：下载索引页；安装包链接直接指向 GitHub Releases，npm 包可选择 npmjs 或 npmmirror。
-- `https://filens.cc/downloads/v0.6.7/`：旧版固定路径会跳转到对应 GitHub Release，不在 Vercel 输出包体。
+- `https://filens.cc/downloads/`：官网下载页，包含 Skill ZIP、各平台 Full / Lite CLI、浏览器预览、移动端源码 SDK 与 DSH 插件。
+- `https://filens.cc/downloads/v0.6.7/`：固定版本文件目录；下载页提供 `SHA256SUMS` 与 `release.json`。
 
-`build:vercel` 在前端构建完成后运行 `stage-site-downloads.mjs`，只生成下载索引和 Skill ZIP。安装包链接直达 GitHub Releases 或 npm registry，构建不再获取或复制 Release 二进制。升级下载版本时更新该清单及安装文档中的固定版本链接，不将安装包二进制提交到 Git。
+`build:vercel` 在前端构建完成后运行 `stage-site-downloads.mjs`，只生成下载索引和 Skill ZIP；安装包链接直接指向 GitHub Releases 或 npm registry，不下载、解压或部署包体。旧 `/cdn` 地址返回 410，旧版 `/downloads/v…` 地址跳转到 GitHub。升级下载版本时更新清单及安装文档中的固定版本链接。
 
-The site serves the Skill and its references, a complete Skill ZIP and a downloads index. Package links go directly to GitHub Releases or the npm registry; versioned legacy paths redirect to GitHub. The Vercel build no longer fetches or copies release binaries into the site's output. Update the manifest and versioned documentation links for future releases; binary archives stay out of Git.
+The site serves the Skill and its references, a complete Skill ZIP, and links to the published release packages. The Vercel build stages no package bytes; it writes only the downloads index and Skill ZIP. Package links point directly to GitHub Releases or npm registries. Old `/cdn/*` URLs return 410, and old `/downloads/v…` links redirect to GitHub.
 
-预览 JS 不再从 `filens.cc/cdn/` 提供；浏览器 ESM 使用固定版本的 jsDelivr npm URL。国内 npm 镜像和 Worker 来源限制见 [JavaScript CDN](js-cdn.md)。
+预览 JS 不再从 `filens.cc` 提供；浏览器 ESM 使用固定版本的 jsDelivr npm URL。国内 npm 镜像和 Worker 来源限制见 [JavaScript CDN](js-cdn.md)。
 
 ## Output directory error / 找不到输出目录
 

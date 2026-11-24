@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { packPreviewAssets } from './preview-asset-packing.mjs';
 import { createPackedAssetReader } from '../packages/preview/src/packed-assets.mjs';
 
-const directory = await mkdtemp(path.resolve('tmp/packed-assets-test-'));
+const directory = await mkdtemp(path.join(os.tmpdir(), 'filens-packed-assets-test-'));
 const wasm = Buffer.from([0, 97, 115, 109, 1, 0, 0, 0]);
 const wasmUrl = `data:application/wasm+gzip;base64,${gzipSync(wasm).toString('base64')}`;
 const wasmTwo = Buffer.from([0, 97, 115, 109, 1, 0, 0, 0, 0, 2, 1, 120]);

@@ -16,7 +16,7 @@ const id = useId();
 let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
 const repo = 'https://github.com/orca-zhang/filens';
 const skillUrl = `${import.meta.env.BASE_URL}skills/filens/SKILL.md`;
-const publicSkillUrl = 'https://filens.cc/SKILL.md';
+const publicSkillUrl = 'https://filens.cc/skills/filens/SKILL.md';
 const installCommand = computed(() => [
   'npx --yes skills add orca-zhang/filens --skill filens',
   target.value === 'auto' ? '' : `--agent ${target.value}`,
@@ -115,7 +115,7 @@ onUnmounted(() => clearTimeout(feedbackTimer));
 
       <section v-show="audience === 'agent'" :id="`${id}-agent-content`" class="agent-skill" :aria-labelledby="`${id}-agent`">
         <header class="agent-skill-heading"><div><h3>SKILL.md</h3><p>{{ t('与发布包共用的 Skill 原文，包含调用约定、证据定位与错误处理。', 'The same skill source shipped in the release, covering invocation, evidence references, and error handling.') }}</p></div><div class="agent-skill-actions"><button type="button" class="wb-button" @click="copy(skillMarkdown, 'skill')"><WorkbenchIcon :name="copied === 'skill' ? 'check' : 'copy'" />{{ copied === 'skill' ? t('已复制', 'Copied') : t('复制 SKILL.md', 'Copy SKILL.md') }}</button><a class="wb-button" :href="skillUrl" download="SKILL.md"><WorkbenchIcon name="download" />{{ t('下载 SKILL.md', 'Download SKILL.md') }}</a></div></header>
-        <p class="agent-skill-link">{{ t('可直接交给 Agent 的地址：', 'Share this URL with your Agent: ') }}<a :href="publicSkillUrl" target="_blank" rel="noopener noreferrer">{{ publicSkillUrl }} ↗</a></p>
+        <p class="agent-skill-link">{{ t('可直接交给 Agent 的地址：', 'Share this URL with your Agent: ') }}<a :href="skillUrl" target="_blank" rel="noopener noreferrer">skills/filens/SKILL.md ↗</a></p>
         <pre tabindex="0" :aria-label="t('SKILL.md 原文', 'SKILL.md source')"><code>{{ skillMarkdown }}</code></pre>
       </section>
 

@@ -12,21 +12,21 @@ CLI 0.5.7 is rebuilt for macOS arm64, Linux x64/arm64 and Windows x64 so exporte
 
 | File | Download size |
 | --- | ---: |
-| [filens-preview-0.3.7-split.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-preview-0.3.7-split.zip) | 5.62 MiB |
-| [filens-preview-0.3.7-all-in-one.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-preview-0.3.7-all-in-one.zip) | 10.61 MiB |
-| [filens-ios-sdk-0.1.7.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-ios-sdk-0.1.7.zip) | 5.64 MiB |
-| [filens-android-sdk-0.1.7.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-android-sdk-0.1.7.zip) | 5.65 MiB |
-| [filens-0.5.7-macos-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-macos-arm64-lite.tar.gz) | 7.17 MiB |
-| [filens-0.5.7-macos-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-macos-arm64-full.tar.gz) | 31.91 MiB |
-| [filens-0.5.7-linux-x64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-x64-lite.tar.gz) | 7.01 MiB |
-| [filens-0.5.7-linux-x64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-x64-full.tar.gz) | 33.58 MiB |
-| [filens-0.5.7-linux-arm64-lite.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-arm64-lite.tar.gz) | 6.90 MiB |
-| [filens-0.5.7-linux-arm64-full.tar.gz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-linux-arm64-full.tar.gz) | 31.26 MiB |
-| [filens-0.5.7-windows-x64-lite.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-windows-x64-lite.zip) | 6.96 MiB |
-| [filens-0.5.7-windows-x64-full.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-0.5.7-windows-x64-full.zip) | 33.80 MiB |
-| [dsh-filens-0.1.10.tgz](https://github.com/orca-zhang/filens/releases/download/v0.6.7/dsh-filens-0.1.10.tgz) | 5.81 MiB |
+| [filens-preview-0.3.7-split.zip](https://filens.cc/downloads/v0.6.7/filens-preview-0.3.7-split.zip) | 5.62 MiB |
+| [filens-preview-0.3.7-all-in-one.zip](https://filens.cc/downloads/v0.6.7/filens-preview-0.3.7-all-in-one.zip) | 10.61 MiB |
+| [filens-ios-sdk-0.1.7.zip](https://filens.cc/downloads/v0.6.7/filens-ios-sdk-0.1.7.zip) | 5.64 MiB |
+| [filens-android-sdk-0.1.7.zip](https://filens.cc/downloads/v0.6.7/filens-android-sdk-0.1.7.zip) | 5.65 MiB |
+| [filens-0.5.7-macos-arm64-lite.tar.gz](https://filens.cc/downloads/v0.6.7/filens-0.5.7-macos-arm64-lite.tar.gz) | 7.17 MiB |
+| [filens-0.5.7-macos-arm64-full.tar.gz](https://filens.cc/downloads/v0.6.7/filens-0.5.7-macos-arm64-full.tar.gz) | 31.91 MiB |
+| [filens-0.5.7-linux-x64-lite.tar.gz](https://filens.cc/downloads/v0.6.7/filens-0.5.7-linux-x64-lite.tar.gz) | 7.01 MiB |
+| [filens-0.5.7-linux-x64-full.tar.gz](https://filens.cc/downloads/v0.6.7/filens-0.5.7-linux-x64-full.tar.gz) | 33.58 MiB |
+| [filens-0.5.7-linux-arm64-lite.tar.gz](https://filens.cc/downloads/v0.6.7/filens-0.5.7-linux-arm64-lite.tar.gz) | 6.90 MiB |
+| [filens-0.5.7-linux-arm64-full.tar.gz](https://filens.cc/downloads/v0.6.7/filens-0.5.7-linux-arm64-full.tar.gz) | 31.26 MiB |
+| [filens-0.5.7-windows-x64-lite.zip](https://filens.cc/downloads/v0.6.7/filens-0.5.7-windows-x64-lite.zip) | 6.96 MiB |
+| [filens-0.5.7-windows-x64-full.zip](https://filens.cc/downloads/v0.6.7/filens-0.5.7-windows-x64-full.zip) | 33.80 MiB |
+| [dsh-filens-0.1.10.tgz](https://filens.cc/downloads/v0.6.7/dsh-filens-0.1.10.tgz) | 5.81 MiB |
 
-[SHA256SUMS](https://github.com/orca-zhang/filens/releases/download/v0.6.7/SHA256SUMS) · [Source and validation manifest](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-release-v0.6.7.json).
+[SHA256SUMS](https://filens.cc/downloads/v0.6.7/SHA256SUMS) · [Source and validation manifest](https://filens.cc/downloads/v0.6.7/filens-release-v0.6.7.json).
 
 ## Installation
 

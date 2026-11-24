@@ -8,6 +8,8 @@ import { createWavFixture } from '../packages/core/test/fixtures/native-media.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const assetRoot = process.env.FILENS_PREVIEW_TEST_DIR || path.join(root, 'packages/preview/dist');
+const modes = process.env.FILENS_PREVIEW_TEST_MODES?.split(',') ?? ['split', 'all-in-one'];
+assert.ok(modes.length && modes.every(mode => ['split', 'all-in-one'].includes(mode)), 'Invalid preview test modes');
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, 'http://localhost');
@@ -42,7 +44,7 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await chromium.launch({ headless: true, ...(process.env.FILENS_MEDIA_TEST_BROWSER ? {channel:process.env.FILENS_MEDIA_TEST_BROWSER} : {}) });
 try {
-  for (const mode of ['split', 'all-in-one']) {
+  for (const mode of modes) {
     const page = await browser.newPage();
     const errors = [], requests = [];
     page.on('pageerror', error => errors.push(error.message));

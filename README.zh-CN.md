@@ -18,7 +18,7 @@
 
 [▶ 观看 30 秒演示](apps/demo/public/home/filens-demo.mp4) · [预览动图](docs/assets/readme/demo.gif) · [完整格式与限制](docs/support-matrix.zh-CN.md)
 
-**最新版本：[v0.6.7](https://github.com/orca-zhang/filens/releases/tag/v0.6.7)** · CLI **0.5.7** · 预览 **0.3.7** · 移动端 SDK **0.1.7** · DSH **0.1.10**。
+**最新版本：[v0.6.8](https://github.com/orca-zhang/filens/releases/tag/v0.6.8)** · CLI **0.5.7** · 预览 **0.3.8** · 移动端 SDK **0.1.8** · DSH **0.1.10**。
 
 | | Agent CLI | 纯前端预览 |
 | --- | --- | --- |
@@ -27,7 +27,7 @@
 | 大概多大 | **Lite 6.90–7.17 MiB（<10 MB） · Full 31.26–33.80 MiB** 离线下载；Full 含预览资源、OCR 运行时与模型，Lite 的预览资源另行下载。 | **压缩后单个分包几 KB 到几百 KB**，共享依赖、Worker、WASM 另计；也提供 **all-in-one 单 JS 文件**。 |
 | 从这里开始 | [安装与使用 CLI](#agent-cli) | [预览与接入](#纯前端预览) |
 
-原生可执行文件为 **0.93–2.20 MiB**。上表 CLI 体积为 **v0.6.7 完整离线压缩包下载量**，Full 内置预览 **0.3.7**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.7 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.7 源码构建的主运行时按分包合计 **4.19 MB Brotli**，单 JS 版预压缩产物为 **3.57 MB Brotli / 3.71 MB gzip / 6.93 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
+原生可执行文件为 **0.93–2.20 MiB**。上表 CLI 体积为 **v0.6.7 完整离线压缩包下载量**，Full 内置预览 **0.3.7**、OCR 运行时与模型；Lite 保留读取、搜索和转换，OCR 与预览资源按需补充。Lite 压缩包硬性限制为 **小于 10,000,000 字节（10 MB）**，达到或超过上限就打包失败。完整下载与解压体积见[离线包体积](docs/preview-release-sizes.json)（1 MiB = 1,048,576 字节）。npm CLI 0.5.7 基础组件安装体积为 **Lite 8.00–9.27 MiB / Full 31.43–37.06 MiB**，不含 Node.js、缓存和预览资源。前端分包说的是压缩产物。预览 0.3.8 源码构建的主运行时按分包合计 **4.17 MB Brotli**，单 JS 版预压缩产物为 **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持，HEIC/HEIF 使用小型解码器兜底。[CLI 各平台实测](docs/agent-cli-npm-release.json) · [独立预览构建实测](docs/preview-build-sizes.json)。
 
 格式清单已于 2026-11-06 核对：CLI **349** 个扩展名；预览 **450** 个源文件扩展名（内部另有 `cad-json`，共 **451** 个路由项）。[版本、数量与完整扩展名](docs/release-v0.6.6-format-counts.json)。
 
@@ -47,9 +47,9 @@ FiLens-Bench 用 13 道合成题比较各 agent harness 在原生工具与正常
 
 **把这句话发给你的 Agent：**
 
-> 帮我安装 filens，读取 https://filens.cc/SKILL.md，按里面的说明配置 CLI 和 Skill。离线安装包：https://filens.cc/downloads/。
+> 帮我安装 filens，读取 https://filens.cc/skills/filens/SKILL.md，按里面的说明配置 CLI 和 Skill。离线安装包：https://filens.cc/downloads/。
 
-[Skill 使用说明](https://filens.cc/SKILL.md) · 手动安装可从[官网下载页](https://filens.cc/downloads/) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
+[Skill 使用说明](https://filens.cc/skills/filens/SKILL.md) · 手动安装可从[官网下载页](https://filens.cc/downloads/) 下载对应平台的离线包并完整解压。Full 自带离线预览、OCR 与模型；Lite 的 OCR 与预览资源按需补充。两者运行均无需 Node.js 或 npm。
 
 ```sh
 filens '读取 "report.pdf"，以 JSON 输出'
@@ -65,7 +65,7 @@ filens capacity --json
 
 ### 离线浏览器预览
 
-**CLI 0.5.7：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.7 Full 包内置预览 0.3.7，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://github.com/orca-zhang/filens/releases/download/v0.6.7/filens-preview-0.3.7-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.7-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.7 固定使用预览 0.3.7；DSH 0.1.10 内置预览 0.3.7；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
+**CLI 0.5.7：**`filens preview report.pdf` 生成包含原文件、预览引擎和许可说明的独立 HTML，本地打开后即退出，无需服务器，无需上传文件。v0.6.7 Full 包内置预览 0.3.7，解压后即可使用。Lite 需另行下载并解压 [all-in-one 运行时 ZIP](https://filens.cc/downloads/v0.6.7/filens-preview-0.3.7-all-in-one.zip)，通过 `--assets /path/to/filens-preview-0.3.7-all-in-one` 或 `FILENS_PREVIEW_DIR` 指定；将运行时内容放入可执行文件旁的 `preview/` 目录也可自动识别。npm CLI 0.5.7 固定使用预览 0.3.7；DSH 0.1.10 内置预览 0.3.7；npm 安装可运行 `filens setup-preview` 提前准备资源。预览包包含单文件和分包构建，与 CLI 分开计量：[包体积实测](docs/preview-package-sizes.json)。
 
 ```sh
 # 导出可携带的离线预览，不覆盖已有文件
@@ -89,7 +89,7 @@ filens preview report.pdf --mode serve
   <p><strong>CLI 可执行文件 2.20 MiB · Lite 7.17 MiB · Full 31.91 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.6.7 离线下载 · macOS arm64 · CLI 0.5.7；Full 含预览 0.3.7 和 OCR 模型，Lite 另配预览资源；<a href="docs/preview-release-sizes.json">各平台完整数据</a></sub></p>
 <!-- agent-cli-size:zh:end -->
 
-- [安装、协议与打包](docs/agent-cli.md) · [Agent skill](https://filens.cc/SKILL.md)
+- [安装、协议与打包](docs/agent-cli.md) · [Agent skill](https://filens.cc/skills/filens/SKILL.md)
 - [输出格式与布局信息](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 条实测案例与自然语言边界](docs/agent-cli-examples.zh-CN.md)
 - [跨格式搜索](docs/agent-cli-search.zh-CN.md)、[嵌套压缩包](docs/agent-cli-search-archives.zh-CN.md)与[无模型关键原文摘录](docs/agent-cli-pruning.zh-CN.md)
 - [重复文件与相似图片](docs/agent-cli-similarity.md) · [Windows 安装与验证状态](docs/agent-cli-windows.zh-CN.md)
@@ -138,11 +138,21 @@ CLI 使用 Rust，转换复用前端核心。Full 内置 RapidOCR NCNN（最大�
 
 ### 浏览器集成：单文件与按需分包
 
-**预览 0.3.7：** 分包 ZIP **5.62 MiB**，单 JS 版 ZIP **10.61 MiB**。从[官网下载页](https://filens.cc/downloads/)下载浏览器预览 ZIP。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
+**预览 0.3.8：** 分包 ZIP 和 npm 包体积见[发布记录](docs/release-v0.6.8.md)。浏览器运行时从 [GitHub Release](https://github.com/orca-zhang/filens/releases/tag/v0.6.8) 下载。分包版部署整个解压目录；单 JS 版同样保留压缩包引擎配套资源，按需启用 RAR / 7z。
 
-npm：[filens-preview@0.3.7](https://www.npmjs.com/package/filens-preview/v/0.3.7)，下载 **16.22 MiB** / 安装 **31.88 MiB**，包含两种构建。[公开注册表验证](docs/preview-npm-registry-validation.json)。
+npm：[filens-preview@0.3.8](https://www.npmjs.com/package/filens-preview/v/0.3.8)，包含两种构建，下载 **9.76 MiB** / 安装 **25.50 MiB**；[filens-preview-split@0.3.8](https://www.npmjs.com/package/filens-preview-split/v/0.3.8) 只含按需分包构建，下载 **5.64 MiB** / 安装 **17.03 MiB**，包体积减少 **42%**。[包体积实测](docs/preview-sizes.md)。
 
-两种构建使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。
+国际网络直接使用 npm 默认注册表；中国大陆可使用 npmmirror：
+
+```sh
+npm install filens-preview-split@0.3.8 --registry=https://registry.npmmirror.com
+```
+
+两种构建和两个 npm 包使用同一 API，均包含 Vue、样式和转换引擎，宿主应用不需要安装 Vue。只使用按需分包版时可安装更小的包：
+
+```sh
+npm install filens-preview-split
+```
 
 ```html
 <div id="preview" style="height: 80vh"></div>
@@ -162,7 +172,7 @@ npm：[filens-preview@0.3.7](https://www.npmjs.com/package/filens-preview/v/0.3.
 
 ### iOS / Android SDK
 
-**SDK 0.1.7 / 预览 0.3.7：** iOS ZIP **5.64 MiB**，Android ZIP **5.65 MiB**。
+**SDK 0.1.8 / 预览 0.3.8：** iOS 与 Android 源码 SDK 均内含分包运行时和离线资源，见[精确体积](docs/mobile-sdk-sizes.json)。
 提供 Swift Package 与 Android Library 源码 SDK，封装同一份
 前端与 WASM，支持离线文件预览、渲染 / 错误回调和资源释放。[构建与接入](sdk/README.zh-CN.md) · [运行时与 SDK 体积](docs/preview-sizes.md)。
 

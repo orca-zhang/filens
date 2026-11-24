@@ -38,7 +38,8 @@ test('copies installation commands, a matching Agent prompt and the original ski
   await page.getByRole('button', { name: '复制给 Agent 安装', exact: true }).click();
   const defaultPrompt = await page.evaluate(() => navigator.clipboard.readText());
   expect(defaultPrompt).toContain('帮我安装 filens');
-  expect(defaultPrompt).toContain('https://filens.cc/SKILL.md');
+  expect(defaultPrompt).toContain('https://filens.cc/skills/filens/SKILL.md');
+  expect(defaultPrompt).toContain('skills/filens/SKILL.md');
   expect(defaultPrompt).toContain('Full 版 CLI');
   await expect(page.locator('.agent-feedback')).toHaveText('安装提示已复制，粘贴给你的 Agent 即可。');
   await page.getByRole('combobox', { name: '目标 Agent', exact: true }).selectOption('codex');
@@ -55,7 +56,8 @@ test('copies installation commands, a matching Agent prompt and the original ski
   expect(prompt).toContain('装到当前项目');
   expect(prompt).not.toContain('npx');
   expect(prompt).toContain('filens capacity --json');
-  expect(prompt).toContain('https://filens.cc/SKILL.md');
+  expect(prompt).toContain('https://filens.cc/skills/filens/SKILL.md');
+  expect(prompt).toContain('skills/filens/SKILL.md');
   await page.getByRole('button', { name: '复制跨文件搜索命令', exact: true }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('filens search "./documents" --query "预算 风险" --json');
   await page.getByRole('button', { name: '给 Agent 看 SKILL.md 原文', exact: true }).click();
