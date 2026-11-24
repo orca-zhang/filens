@@ -2,7 +2,7 @@
 
 FiLens-Bench 比较 agent harness 在原生环境和按常规方式安装 FiLens CLI 后，处理复杂本地文件问题的效果。
 
-**独立发布入口：[filens.cc/bench/](https://filens.cc/bench/)** · [English](https://filens.cc/bench/en.html) · [仓库内公开快照](published/converged-2026-11-24/README.md)。评测站单独展示配对成绩、分组柱状图、质量雷达图、方法和限制，并提供 JSON、ZIP 结果包与 SHA-256 校验。公开包不包含原始问题/回答、trace 或逐次账单。
+**独立发布入口：[filens.cc/bench/](https://filens.cc/bench/)** · [English](https://filens.cc/bench/en.html) · [仓库内公开快照](published/converged-2026-11-24/README.md)。评测站单独展示配对成绩、中英文分组柱状图、方法和限制，并提供 JSON、ZIP 结果包与 SHA-256 校验。公开包不包含原始问题/回答、trace 或逐次账单。
 
 `published/` 是纳入版本管理的公开汇总快照；`results/` 是被 Git 忽略的本地完整运行档案。下文的 `results/` 链接仅供持有本地档案的人查阅，不作为公开下载入口。
 
@@ -15,15 +15,15 @@ npm run build:bench
 node benchmarks/filens-bench/publish.mjs dist/filens-bench-site
 ```
 
-默认输出为 `apps/demo/dist/bench/`，包含中英文入口、固定版本 `snapshots/converged-2026-11-24/`、JSON、SVG、ZIP 与 `SHA256SUMS`。`build:vercel` 自动附带该目录，部署后通过 `/bench/` 访问；无需额外域名或服务。
+默认输出为 `apps/demo/dist/bench/`，包含中英文入口、固定版本 `snapshots/converged-2026-11-24/`、JSON、中英文分组柱状图、ZIP 与 `SHA256SUMS`。英文页加载英文 SVG；`build:vercel` 自动附带该目录，部署后通过 `/bench/` 访问。
 
-更新成绩时，在 `published/converged-YYYY-MM-DD/` 中准备经过核对的 `baselines.json`、`summary.svg`、`quality-radar.svg` 和 `README.md`，更新 `published/latest.json`，运行 `npm run test:bench:filens` 与 `npm run build:bench`。旧公开快照继续随站点发布，固定版本地址保留。构建只读取这四类公开文件，不读取本地 `results/`。
+更新成绩时，在 `published/converged-YYYY-MM-DD/` 中准备经过核对的 `baselines.json`、`summary.svg`、`summary.en.svg` 和 `README.md`，更新 `published/latest.json`，运行 `npm run test:bench:filens` 与 `npm run build:bench`。旧公开快照继续随站点发布，固定版本地址保留。构建仅读取这些公开文件，不读取本地 `results/`。
 
 ## 当前收敛成绩
 
 ![FiLens CLI 0.5.7 在七个 harness 的配对成绩](readme-summary.svg)
 
-各组质量、带证据成功率、p50 耗时和 token 实测值见[中英文公开成绩表](published/converged-2026-11-24/README.md#当前成绩)。公开快照的分组图、雷达图和机器可读数据也在同一目录；逐题评分、p95 和逐次账单保留在本地完整档案中。
+各组质量、带证据成功率、p50 耗时和 token 实测值见[中英文公开成绩表](published/converged-2026-11-24/README.md#当前成绩)。公开快照的中英文分组图和机器可读数据也在同一目录；逐题评分、p95 和逐次账单保留在本地完整档案中。
 
 ## 如何读成绩
 

@@ -35,7 +35,7 @@ Verified November 24, 2026: CLI **349** extensions; preview **450** source-file 
 
 FiLens-Bench compares each agent harness using native tools versus a normal FiLens CLI installation on a 13-task synthetic corpus covering Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. The latest snapshot uses FiLens CLI **0.5.7**: quality rose in **7/7** pairs, recorded p50/batch time fell in **7/7**, and tokens fell in **4/4** pairs with complete usage. Models vary across harnesses, so comparisons are within each pair.
 
-[![FiLens-Bench results across seven agent harnesses](benchmarks/filens-bench/readme-summary.svg)](https://filens.cc/bench/en.html)
+[![FiLens-Bench results across seven agent harnesses](benchmarks/filens-bench/readme-summary.en.svg)](https://filens.cc/bench/en.html)
 
 [Official results site](https://filens.cc/bench/en.html) · [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Protocol and reproduction](benchmarks/filens-bench/README.zh-CN.md)
 

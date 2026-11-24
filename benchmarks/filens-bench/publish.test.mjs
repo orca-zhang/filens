@@ -37,7 +37,10 @@ test('publishes standalone bilingual results and a verifiable summary archive wi
       const doc = dom.window.document;
       assert.equal(doc.documentElement.lang, lang);
       assert.equal(doc.querySelectorAll('tbody tr').length, data.baselines.length);
-      assert.equal(doc.querySelector('tbody th').firstChild.textContent, data.baselines[0].harness);
+      const highestNative = [...data.baselines].sort((a, b) =>
+        b.metrics.complexQuality.stock - a.metrics.complexQuality.stock ||
+        b.metrics.complexQuality.filens - a.metrics.complexQuality.filens)[0];
+      assert.equal(doc.querySelector('tbody th').firstChild.textContent, highestNative.harness);
       assert.equal(doc.querySelector('tbody img'), null);
       assert.match(doc.querySelector('tbody tr td:last-child').textContent, /— →/);
       assert.equal(doc.querySelectorAll('script').length, 0);
@@ -51,7 +54,7 @@ test('publishes standalone bilingual results and a verifiable summary archive wi
 
     const zipName = `filens-bench-${snapshot}.zip`;
     const zip = await JSZip.loadAsync(await readFile(path.join(version, zipName)));
-    assert.deepEqual(Object.keys(zip.files).sort(), ['README.md', 'baselines.json', 'quality-radar.svg', 'summary.svg']);
+    assert.deepEqual(Object.keys(zip.files).sort(), ['README.md', 'baselines.json', 'summary.en.svg', 'summary.svg']);
     assert.deepEqual(JSON.parse(await zip.file('baselines.json').async('string')), data);
     const sums = (await readFile(path.join(version, 'SHA256SUMS'), 'utf8')).trim().split('\n');
     assert.equal(sums.length, 5);

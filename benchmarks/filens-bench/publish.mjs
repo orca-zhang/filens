@@ -7,14 +7,18 @@ import JSZip from 'jszip';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const snapshotPattern = /^converged-\d{4}-\d{2}-\d{2}$/;
-const publicFiles = ['baselines.json', 'summary.svg', 'quality-radar.svg', 'README.md'];
+const publicFiles = ['baselines.json', 'summary.svg', 'summary.en.svg', 'README.md'];
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const number = (value, digits = 1) => value == null ? '—' : value.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 function page(data, prefix, english) {
   const t = (zh, en) => english ? en : zh;
+  const summaryChart = english ? 'summary.en.svg' : 'summary.svg';
+  const ordered = [...data.baselines].sort((a, b) =>
+    b.metrics.complexQuality.stock - a.metrics.complexQuality.stock ||
+    b.metrics.complexQuality.filens - a.metrics.complexQuality.filens);
   const pair = (values, digits = 1, suffix = '') => `${escape(number(values?.stock, digits))}${suffix} → <strong>${escape(number(values?.filens, digits))}${suffix}</strong>`;
-  const rows = data.baselines.map(row => {
+  const rows = ordered.map(row => {
     const m = row.metrics, latency = m.complexElapsedSeconds;
     const tokens = m.allTaskTokens ?? m.allTaskTokensKnownSubtotal;
     const evidence = m.evidenceSuccessRate
@@ -27,7 +31,7 @@ function page(data, prefix, english) {
 <td>${latency ? `${pair({ stock: latency.stockP95, filens: latency.filensP95 })} s` : '—'}</td>
 <td>${pair(tokens, 0)}${m.allTaskTokensKnownSubtotal ? `<small>${t('已知小计；存在未知用量', 'Known subtotals; usage is missing')}</small>` : ''}</td></tr>`;
   }).join('\n');
-  const details = data.baselines.map(row => `<article><h3>${escape(row.harness)} · ${escape(row.harnessVersion)}</h3><p>${escape(row.protocol)}</p>${row.caveats.map(note => `<p>${escape(note)}</p>`).join('')}</article>`).join('\n');
+  const details = ordered.map(row => `<article><h3>${escape(row.harness)} · ${escape(row.harnessVersion)}</h3><p>${escape(row.protocol)}</p>${row.caveats.map(note => `<p>${escape(note)}</p>`).join('')}</article>`).join('\n');
   const zip = `filens-bench-${data.snapshot}.zip`;
   return `<!doctype html>
 <html lang="${english ? 'en' : 'zh-CN'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -41,13 +45,13 @@ function page(data, prefix, english) {
 <p>${t('在同一 Agent 环境中，比较正常安装 FiLens 前后的回答质量、证据、耗时与 token 用量。', 'Compare answer quality, evidence, latency and token usage before and after a normal FiLens installation, within the same agent environment.')}</p>
 <p class="muted">${data.baselines.length} harnesses · ${data.dataset.complexTasks} ${t('道复杂文件题', 'complex-file tasks')} + ${data.dataset.textControlTasks} ${t('道文本控制题', 'text controls')} · CLI ${escape(data.dataset.filensCliVersion)} · ${escape(data.snapshot)}</p>
 <div class="actions"><a class="button primary" href="${prefix}${zip}" download>${t('下载公开结果包', 'Download public results')}</a><a class="button" href="${prefix}baselines.json">JSON</a><a class="button" href="https://github.com/orca-zhang/filens/tree/main/benchmarks/filens-bench">${t('协议与复现代码', 'Protocol and reproduction code')} ↗</a></div>
-<p class="muted">${t('当前为 v0.1 合成种子集。请比较同一 harness 内的变化；不同模型、适配方式与 WorkBuddy 单批结果不构成跨平台严格排名。', 'This is the v0.1 synthetic seed corpus. Compare changes within each harness; different models, adaptations and the WorkBuddy single batch do not form a strict cross-platform ranking.')}</p></header>
+<p class="muted">${t('当前为 v0.1 合成种子集；表格和图表按原生质量分降序。不同模型、适配方式与 WorkBuddy 单批结果只适合描述性参考，请重点比较同一 harness 内变化。', 'This is the v0.1 synthetic seed corpus. The table and chart are sorted by native quality, descending. Models, adaptations and the WorkBuddy single batch differ, so use these results descriptively and focus on paired changes within each harness.')}</p></header>
 <section aria-labelledby="scores"><h2 id="scores">${t('配对成绩', 'Paired results')}</h2>
 <div class="table-scroll" role="region" aria-label="${t('配对成绩，可横向滚动', 'Paired results, scroll horizontally')}" tabindex="0"><table><caption>${t('原生环境 → 安装 FiLens；质量与证据越高越好，耗时越低越好。', 'Stock → FiLens; higher quality and evidence scores are better, lower latency is better.')}</caption>
 <thead><tr><th scope="col">Harness</th><th scope="col">${t('模型 / 推理', 'Model / reasoning')}</th><th scope="col">${t('复杂题质量 / 100', 'Complex quality / 100')}</th><th scope="col">${t('带证据成功', 'Evidence success')}</th><th scope="col">p50 / ${t('整批', 'batch')}</th><th scope="col">p95</th><th scope="col">${t('全题 token', 'All-task tokens')}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <details><summary>${t('逐组运行范围、版本与限制', 'Per-harness protocols, versions and caveats')}</summary>${details}</details>
-<figure><a href="${prefix}summary.svg"><img src="${prefix}summary.svg" width="1600" height="1110" alt="${t('七个 harness 原生组与 FiLens 组的质量、耗时与 token 分组柱状图', 'Grouped charts of stock and FiLens quality, latency and tokens across seven harnesses')}"></a><figcaption>${t('点击查看原始图表。缺失用量按未知处理。', 'Open the original chart. Missing usage remains unknown.')}</figcaption></figure>
-<figure><a href="${prefix}quality-radar.svg"><img src="${prefix}quality-radar.svg" loading="lazy" alt="${t('七个 harness 的复杂文件题质量雷达图', 'Complex-file quality radar across seven harnesses')}"></a></figure></section>
+<figure><a href="${prefix}${summaryChart}"><img src="${prefix}${summaryChart}" width="1600" height="1110" alt="${t('七个 harness 原生组与 FiLens 组的质量、耗时与 token 分组柱状图', 'Grouped charts of stock and FiLens quality, latency and tokens across seven harnesses')}"></a><figcaption>${t('点击查看原始图表。缺失用量按未知处理。', 'Open the original chart. Missing usage remains unknown.')}</figcaption></figure>
+</section>
 <section id="method"><h2>${t('评测方法与范围', 'Methodology and scope')}</h2>
 <p>${t('两组固定相同问题、模型、语料与设置，Agent 自主选择工具。CLI harness 每题每组重复三次；WorkBuddy 为每组一轮 13 题同批对话。失败和超时保留。', 'Each pair uses the same questions, model, corpus and settings, with autonomous tool choice. CLI harnesses repeat every task three times per condition; WorkBuddy uses one 13-task batch per condition. Failures and timeouts remain included.')}</p>
 <p><code>Quality = 100 × (0.70 × ${t('字段准确率', 'field accuracy')} + 0.30 × ${t('证据 F1', 'evidence F1')})</code></p>
@@ -56,8 +60,8 @@ function page(data, prefix, english) {
 <p>${t('Codex 有未保存请求；Claude 和 Zcode 存在未知 token 用量，不能据此计算完整节省率。Claude 同日复跑有明显波动。WorkBuddy 仅是单批探索性结果。详见逐组限制和 JSON。', 'Codex has an unsaved request. Claude and Zcode have missing token usage, so complete savings cannot be calculated. Claude shows material same-day rerun variance. WorkBuddy is exploratory single-batch evidence. See per-harness caveats and the JSON.')}</p>
 <p><a href="${prefix}README.md">${t('完整中英文方法说明', 'Full bilingual methodology')}</a></p></section>
 <section id="downloads"><h2>${t('公开快照与下载', 'Public snapshot downloads')}</h2>
-<p>${t('结果包包含汇总成绩 JSON、两张图表、评测方法与限制；不含原始问题/回答、调用轨迹或逐次账单。完整运行档案保留在开发环境，公开汇总包不等于完整原始审计记录。', 'The package contains aggregate JSON results, two charts, methodology and limitations. Raw prompts/answers, traces and itemized ledgers are not included. Full run archives remain in the development environment; this summary is not a complete raw audit record.')}</p>
-<div class="actions"><a href="${prefix}${zip}" download>ZIP ↓</a><a href="${prefix}baselines.json">JSON</a><a href="${prefix}summary.svg">SVG</a><a href="${prefix}quality-radar.svg">Radar SVG</a><a href="${prefix}SHA256SUMS">SHA256SUMS</a></div>
+<p>${t('结果包包含汇总成绩 JSON、中英文分组柱状图、评测方法与限制；不含原始问题/回答、调用轨迹或逐次账单。完整运行档案保留在开发环境，公开汇总包不等于完整原始审计记录。', 'The package contains aggregate JSON results, bilingual grouped bar charts, methodology and limitations. Raw prompts/answers, traces and itemized ledgers are not included. Full run archives remain in the development environment; this summary is not a complete raw audit record.')}</p>
+<div class="actions"><a href="${prefix}${zip}" download>ZIP ↓</a><a href="${prefix}baselines.json">JSON</a><a href="${prefix}${summaryChart}">SVG</a><a href="${prefix}SHA256SUMS">SHA256SUMS</a></div>
 <p>${t('固定版本地址', 'Permanent snapshot')}: <a href="${prefix}${english ? 'en.html' : 'index.html'}">${escape(data.snapshot)}</a></p></section></main>
 <footer>FiLens-Bench · <a href="/">filens</a> · <a href="https://github.com/orca-zhang/filens">GitHub</a></footer></body></html>\n`;
 }

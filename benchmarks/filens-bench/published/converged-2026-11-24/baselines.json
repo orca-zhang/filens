@@ -13,10 +13,9 @@
   },
   "publicationArtifacts": {
     "summaryChart": "summary.svg",
-    "qualityRadar": "quality-radar.svg",
     "cliArtifactIdentity": "All runs report version 0.5.7; a common binary SHA-256 and source revision were not captured consistently.",
     "methodology": "README.md",
-    "scope": "Aggregate results, charts, methodology and per-harness limitations. Raw prompts, answers, traces and ledgers are not included in this public summary package."
+    "scope": "Aggregate results, bilingual grouped bar chart, methodology and per-harness limitations. Raw prompts, answers, traces and ledgers are not included in this public summary package."
   },
   "comparisonPolicy": {
     "versionNumbersAreGlobal": false,
