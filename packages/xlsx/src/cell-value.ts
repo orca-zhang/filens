@@ -1,241 +1,177 @@
-import type { ParsedCell, ParsedSheet } from './types';
+import type { ParsedCell, ParsedDefinedName, ParsedMerge, ParsedSheet, ParsedWorkbook } from './types';
 import { WorksheetCellIndex } from './cell-index';
-import { parseCellRef } from './columns';
+import { FormulaError, FormulaReader, type FormulaOperand, type Scalar } from './formula-reader';
+import { excelDateSerial } from './number-formats';
+import { resolveSharedFormula } from './shared-formulas';
+
+const MAX_DEPENDENCY_DEPTH = 64;
+const MAX_NAME_EXPANSIONS = 1024;
+const cellIndexes = new WeakMap<ParsedSheet, WorksheetCellIndex>();
+const formulaWorkbooks = new WeakMap<ParsedSheet, FormulaWorkbook>();
+class DependencyLimit extends Error {}
+
+interface FormulaWorkbook {
+  sheets: Map<string, ParsedSheet>;
+  names: Map<string | undefined, Map<string, ParsedDefinedName | null>>;
+}
+
+interface Calculation {
+  active: Set<ParsedCell | ParsedDefinedName | string>;
+  remainingNames: number;
+}
+
+type CellPosition = Pick<ParsedCell, 'row' | 'column'>;
+
+/** Associate sibling sheets and name scopes without adding graph edges to the public model. */
+export function registerWorkbookFormulas({ sheets, definedNames }: ParsedWorkbook): void {
+  if (sheets.length < 2 && !definedNames?.length) return;
+  const workbook: FormulaWorkbook = { sheets: new Map(sheets.map(sheet => [sheet.name.toLowerCase(), sheet])), names: new Map() };
+  for (const name of definedNames ?? []) {
+    const scope = name.sheet?.toLowerCase(), key = name.name.toLowerCase();
+    let names = workbook.names.get(scope);
+    if (!names) { names = new Map(); workbook.names.set(scope, names); }
+    names.set(key, names.has(key) ? null : name);
+  }
+  for (const sheet of sheets) formulaWorkbooks.set(sheet, workbook);
+}
 
 export function resolveCellValue(sheet: ParsedSheet, cell: ParsedCell, resolving?: Set<string>): string {
-  if (!cell.formula || !cell.needsCalculation) {
-    return cell.value;
-  }
-  resolving ??= new Set<string>();
-  if (resolving.has(cell.ref)) {
-    return `=${cell.formula}`;
-  }
-
-  resolving.add(cell.ref);
-  try {
-    const readNumber = (cell: ParsedCell | undefined) => readFormulaCellNumber(sheet, cell, resolving);
-    const result = new FormulaReader(cell.formula,
-      (row, column) => readNumber(formulaCellIndex(sheet).get(row, column)),
-      (firstRow, lastRow, firstColumn, lastColumn, visit) => {
-        formulaCellIndex(sheet).forEachInRange(firstRow, lastRow, firstColumn, lastColumn,
-          cell => visit(readNumber(cell)));
-      }).read();
-    cell.value = String(result);
-  } catch {
-    // ponytail: unsupported Excel functions stay visible as formulas; add a full engine only when preview parity requires it.
-    cell.value = `=${cell.formula}`;
-  } finally {
-    resolving.delete(cell.ref);
-    cell.needsCalculation = false;
-  }
+  if (!cell.needsCalculation) return cell.value;
+  const formula = cell.formula ?? resolveSharedFormula(sheet, cell);
+  if (!formula) return cell.value;
+  if (resolving?.has(cell.ref)) return '=' + formula;
+  evaluateCell(sheet, cell, formula, { active: resolving ?? new Set(), remainingNames: MAX_NAME_EXPANSIONS }, true);
   return cell.value;
 }
 
-const formulaCellIndexes = new WeakMap<ParsedSheet, WorksheetCellIndex>();
-
-function formulaCellIndex(sheet: ParsedSheet): WorksheetCellIndex {
-  let cells = formulaCellIndexes.get(sheet);
-  if (!cells) {
-    cells = new WorksheetCellIndex(sheet);
-    formulaCellIndexes.set(sheet, cells);
-  }
-  return cells;
-}
-
-function readFormulaCellNumber(sheet: ParsedSheet, cell: ParsedCell | undefined, resolving: Set<string>): number {
-  if (!cell) {
-    return 0;
-  }
-  const value = (cell.needsCalculation ? resolveCellValue(sheet, cell, resolving) : cell.value).trim();
-  if (value === '') {
-    return 0;
-  }
-  const number = Number(value);
-  if (Number.isFinite(number)) {
-    return number;
-  }
-  const boolean = value.toUpperCase();
-  if (boolean === 'TRUE') {
-    return 1;
-  }
-  if (boolean === 'FALSE') {
-    return 0;
-  }
-  throw new Error('Formula reference is not numeric.');
-}
-
-class FormulaReader {
-  private readonly tokens: string[];
-  private index = 0;
-
-  constructor(formula: string, private readonly readCell: (row: number, column: number) => number,
-    private readonly visitCells: (firstRow: number, lastRow: number, firstColumn: number, lastColumn: number,
-      visit: (value: number) => void) => void) {
-    this.tokens = tokenizeFormula(formula.replace(/^=/, '').trim());
-  }
-
-  read(): number {
-    const value = this.readExpression();
-    if (this.index !== this.tokens.length || value === undefined || !Number.isFinite(value)) {
-      throw new Error('Unsupported formula.');
-    }
-    return value;
-  }
-
-  private readExpression(): FormulaValue {
-    let value = this.readTerm();
-    while (this.peek() === '+' || this.peek() === '-') {
-      const operator = this.take();
-      const right = this.readTerm();
-      value = operator === '+' ? scalar(value) + scalar(right) : scalar(value) - scalar(right);
-    }
-    return value;
-  }
-
-  private readTerm(): FormulaValue {
-    let value = this.readPower();
-    while (this.peek() === '*' || this.peek() === '/') {
-      const operator = this.take();
-      const right = this.readPower();
-      value = operator === '*' ? scalar(value) * scalar(right) : scalar(value) / scalar(right);
-    }
-    return value;
-  }
-
-  private readPower(): FormulaValue {
-    let value = this.readUnary();
-    if (this.peek() === '^') {
-      this.take();
-      value = scalar(value) ** scalar(this.readPower());
-    }
-    return value;
-  }
-
-  private readUnary(): FormulaValue {
-    if (this.peek() === '+' || this.peek() === '-') {
-      return (this.take() === '-' ? -1 : 1) * scalar(this.readUnary());
-    }
-    return this.readPrimary();
-  }
-
-  private readPrimary(): FormulaValue {
-    const token = this.take();
-    if (token === '(') {
-      const value = this.readExpression();
-      this.expect(')');
-      return value;
-    }
-    if (/^(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?$/i.test(token)) {
-      return Number(token);
-    }
-    if (/^\$?[A-Z]+\$?\d+$/i.test(token)) {
-      if (this.peek() !== ':') {
-        const position = parseCellRef(token.replace(/\$/g, ''));
-        return this.readCell(position.row, position.column);
-      }
-      this.take();
-      // Outside a complete SUM argument, a range is not a scalar. Still read
-      // its values now so dependency evaluation and errors keep their order.
-      this.readRange(token, this.take(), () => {});
-      return undefined;
-    }
-    if (/^[A-Z][A-Z0-9_.]*$/i.test(token)) {
-      if (token.toUpperCase() === 'TRUE') {
-        return 1;
-      }
-      if (token.toUpperCase() === 'FALSE') {
-        return 0;
-      }
-      if (token.toUpperCase() !== 'SUM') {
-        throw new Error('Unsupported function.');
-      }
-      this.expect('(');
-      let sum = 0;
-      if (this.peek() !== ')') {
-        do {
-          const range = this.sumRangeArgument();
-          if (range) {
-            // Add each cell to the existing accumulator. Summing a range
-            // separately would change floating point order across arguments.
-            this.readRange(range[0], range[1], value => { sum += value; });
-          } else {
-            sum += scalar(this.readExpression());
-          }
-        } while (this.peek() === ',' && Boolean(this.take()));
-      }
-      this.expect(')');
-      return sum;
-    }
-    throw new Error('Unsupported formula token.');
-  }
-
-  /** Recognize only a complete range argument, with optional parentheses.
-   * Range arithmetic and malformed expressions retain the general parser's
-   * eager evaluation and error behavior. Lookahead does not read any cells. */
-  private sumRangeArgument(): [string, string] | undefined {
-    let at = this.index, parentheses = 0;
-    while (this.tokens[at] === '(') { at++; parentheses++; }
-    const first = this.tokens[at], last = this.tokens[at + 2];
-    if (this.tokens[at + 1] !== ':' || !/^\$?[A-Z]+\$?\d+$/i.test(first ?? '') ||
-      !/^\$?[A-Z]+\$?\d+$/i.test(last ?? '')) return undefined;
-    at += 3;
-    while (parentheses-- > 0) if (this.tokens[at++] !== ')') return undefined;
-    if (this.tokens[at] !== ',' && this.tokens[at] !== ')') return undefined;
-    this.index = at;
-    return [first, last];
-  }
-
-  private readRange(firstRef: string, lastRef: string, visit: (value: number) => void): void {
-    if (!/^\$?[A-Z]+\$?\d+$/i.test(lastRef)) {
-      throw new Error('Invalid range.');
-    }
-    const first = parseCellRef(firstRef.replace(/\$/g, ''));
-    const last = parseCellRef(lastRef.replace(/\$/g, ''));
-    this.visitCells(Math.min(first.row, last.row), Math.max(first.row, last.row),
-      Math.min(first.column, last.column), Math.max(first.column, last.column), visit);
-  }
-
-  private peek(): string {
-    return this.tokens[this.index] ?? '';
-  }
-
-  private take(): string {
-    const token = this.tokens[this.index];
-    if (!token) {
-      throw new Error('Unexpected end of formula.');
-    }
-    this.index += 1;
-    return token;
-  }
-
-  private expect(token: string): void {
-    if (this.take() !== token) {
-      throw new Error(`Expected ${token}.`);
-    }
+export function evaluateWorksheetFormula(sheet: ParsedSheet, formula: string, position: CellPosition): Scalar | undefined {
+  try {
+    return formulaReader(sheet, formula, { active: new Set(), remainingNames: MAX_NAME_EXPANSIONS }, sheet, position).read();
+  } catch {
+    return undefined;
   }
 }
 
-type FormulaValue = number | undefined;
-
-function scalar(value: FormulaValue): number {
-  if (value === undefined) {
-    throw new Error('Range cannot be used as a scalar.');
-  }
-  return value;
+export function forEachWorksheetRangeCell(sheet: ParsedSheet, range: ParsedMerge, visit: (cell: ParsedCell) => void): void {
+  formulaIndex(sheet).forEachInRange(range.firstRow, range.lastRow, range.firstColumn, range.lastColumn, visit);
 }
 
-function tokenizeFormula(formula: string): string[] {
-  const tokens: string[] = [];
-  const pattern = /\s*((?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?|\$?[A-Z]+\$?\d+|[A-Z][A-Z0-9_.]*|[()+\-*/^,:])/iy;
-  let offset = 0;
-  while (offset < formula.length) {
-    pattern.lastIndex = offset;
-    const match = pattern.exec(formula);
-    if (!match) {
-      throw new Error('Unsupported formula token.');
+function evaluateCell(sheet: ParsedSheet, cell: ParsedCell, formula: string, calculation: Calculation, root = false): void {
+  calculation.active.add(cell);
+  let cacheResult = true;
+  try {
+    const value = formulaReader(sheet, formula, calculation, sheet, cell).read();
+    if (typeof value === 'boolean') {
+      cell.valueType = 'boolean';
+      cell.value = value ? 'TRUE' : 'FALSE';
+    } else if (typeof value === 'string') {
+      cell.valueType = 'text';
+      cell.value = value;
+    } else {
+      delete cell.valueType;
+      cell.value = String(value ?? 0);
     }
-    tokens.push(match[1] ?? '');
-    offset = pattern.lastIndex;
+  } catch (error) {
+    if (error instanceof DependencyLimit && !root) {
+      cacheResult = false;
+      throw error;
+    }
+    if (error instanceof FormulaError) {
+      cell.value = error.message;
+      cell.valueType = 'error';
+    } else {
+      cell.value = '=' + formula.replace(/^=/, '');
+      delete cell.valueType;
+    }
+  } finally {
+    calculation.active.delete(cell);
+    if (cacheResult) cell.needsCalculation = false;
   }
-  return tokens;
+}
+
+function formulaReader(sheet: ParsedSheet, formula: string, calculation: Calculation, caller: ParsedSheet,
+  cell: CellPosition, definition = false): FormulaReader {
+  return new FormulaReader(formula, ref => {
+    const target = referenceSheet(sheet, ref.sheet);
+    return readValue(target, formulaIndex(target).get(ref.firstRow, ref.firstColumn), calculation);
+  }, (ref, visit) => {
+    const target = referenceSheet(sheet, ref.sheet);
+    formulaIndex(target).forEachInRange(ref.firstRow, ref.lastRow, ref.firstColumn, ref.lastColumn, dependency => {
+      let value: Scalar | FormulaError;
+      try { value = readValue(target, dependency, calculation); }
+      catch (error) {
+        if (!(error instanceof FormulaError)) throw error;
+        value = error;
+      }
+      visit(value);
+    });
+  }, (name, qualifier) => readDefinedName(sheet, name, qualifier, calculation, caller, cell),
+  definition ? { sheet: sheet.name, currentSheet: caller.name, row: cell.row, column: cell.column } : undefined);
+}
+
+function readDefinedName(sheet: ParsedSheet, name: string, qualifier: string | null | undefined, calculation: Calculation,
+  caller: ParsedSheet, cell: CellPosition): FormulaOperand | undefined {
+  const workbook = formulaWorkbooks.get(sheet);
+  if (!workbook?.names.size) return undefined;
+  const key = name.toLowerCase();
+  const scope = qualifier?.toLowerCase() ?? sheet.name.toLowerCase();
+  const local = workbook.names.get(scope)?.get(key);
+  const definition = qualifier === null || (local === undefined && qualifier === undefined) ? workbook.names.get(undefined)?.get(key) : local;
+  if (definition === undefined) return undefined;
+  if (!definition) throw new Error('Ambiguous defined name.');
+  if (calculation.active.has(definition)) throw new Error('Circular defined name.');
+  if (calculation.active.size >= MAX_DEPENDENCY_DEPTH || calculation.remainingNames-- <= 0) {
+    throw new DependencyLimit('Defined names exceed the preview calculation limit.');
+  }
+  const target = referenceSheet(sheet, definition.sheet);
+  calculation.active.add(definition);
+  try { return formulaReader(target, definition.formula, calculation, caller, cell, true).readDefinition(); }
+  finally { calculation.active.delete(definition); }
+}
+
+function referenceSheet(sheet: ParsedSheet, name?: string): ParsedSheet {
+  if (!name || name.toLowerCase() === sheet.name.toLowerCase()) return sheet;
+  const target = formulaWorkbooks.get(sheet)?.sheets.get(name.toLowerCase());
+  if (!target) throw new FormulaError('#REF!');
+  return target;
+}
+
+function formulaIndex(sheet: ParsedSheet): WorksheetCellIndex {
+  let index = cellIndexes.get(sheet);
+  if (!index) {
+    index = new WorksheetCellIndex(sheet);
+    cellIndexes.set(sheet, index);
+  }
+  return index;
+}
+
+function readValue(sheet: ParsedSheet, cell: ParsedCell | undefined, calculation: Calculation): Scalar {
+  if (!cell) return null;
+  if (cell.needsCalculation) {
+    if (calculation.active.has(cell) || calculation.active.has(cell.ref)) throw new Error('Circular formula reference.');
+    if (calculation.active.size >= MAX_DEPENDENCY_DEPTH) throw new DependencyLimit('Formula dependencies exceed the preview limit.');
+    const formula = cell.formula ?? resolveSharedFormula(sheet, cell);
+    if (formula) evaluateCell(sheet, cell, formula, calculation);
+  }
+  return readCellScalar(sheet, cell);
+}
+
+export function readCellScalar(sheet: ParsedSheet, cell?: ParsedCell): Scalar {
+  if (!cell) return null;
+  if (cell.valueType) {
+    switch (cell.valueType) {
+      case 'error': throw new FormulaError(cell.value);
+      case 'text': return cell.value;
+      case 'date': return excelDateSerial(cell.value, sheet.date1904) ?? cell.value;
+      case 'boolean': return cell.value === 'TRUE';
+    }
+  }
+  const value = cell.value.trim();
+  if (!value) return null;
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) return numeric;
+  // Public callers can still supply untyped sheets with the previous boolean representation.
+  if (/^true$/i.test(value)) return 1;
+  if (/^false$/i.test(value)) return 0;
+  throw new Error('Unrecognized formula value.');
 }

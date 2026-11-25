@@ -611,6 +611,13 @@
   overflow: auto;
 }
 
+.pptxv-generic-shell:has(.pptxv-text-container),
+.pptxv-generic-shell:has(.pptxv-text-container) .pptxv-main-view,
+.pptxv-generic-shell:has(.xlsxv-preview),
+.pptxv-generic-shell:has(.xlsxv-preview) .pptxv-main-view {
+  min-height: 0;
+}
+
 /* The host's compact toolbar keeps format-specific controls in one disclosure. */
 .pptxv-compact-controls .pptxv-main-view {
   zoom: var(--pptxv-surface-scale, 1);

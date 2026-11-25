@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "此影片不支援子母畫面",
   "Subtitles": "字幕",
   "Subtitles off": "關閉字幕",
-  "Subtitles {number}": "字幕 {number}"
+  "Subtitles {number}": "字幕 {number}",
+  "Find in document": "在文件中尋找",
+  "Previous match": "上一個相符項目",
+  "Next match": "下一個相符項目",
+  "Search incomplete": "搜尋未完成",
+  "Wrap lines": "自動換行"
 }

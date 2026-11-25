@@ -68,7 +68,7 @@ filens 直接读取 PPTX 中的页面、文字、图片、表格、主题、形�
 
 解析器和渲染器均以 MIT 协议开源，首屏速度与兼容性有[真实样例实测](performance-comparison.zh-CN.md)。动画、复杂图表、嵌入对象和少见形状仍在持续补齐。
 
-### 2. 唯一率先真正支持 iWork 15 协议解析，也是唯一的 iWork 纯前端预览库
+### 2. 唯一开源的 iWork 预览库，支持纯前端原生渲染
 
 Keynote、Pages、Numbers 一直缺少成熟的跨平台开源预览方案。常见做法是调用 macOS/iOS 原生组件，或上传到 iCloud 在线转换。ONLYOFFICE 最近加入了相关转换，但对新版本 iWork 文件的兼容性和保真仍有限。
 

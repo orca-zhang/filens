@@ -35,24 +35,32 @@ for locale, copy in COPY.items():
       xmlns:xlink="http://www.w3.org/1999/xlink" width="640" height="128" viewBox="0 0 640 128">
       <defs>
         <linearGradient id="background" x2="1" y2="1">
-          <stop stop-color="#eef3f8"/>
-          <stop offset="1" stop-color="#f8fafc"/>
+          <stop stop-color="#e4f9ff"/>
+          <stop offset=".52" stop-color="#f0ecff"/>
+          <stop offset="1" stop-color="#ffe8f5"/>
+        </linearGradient>
+        <linearGradient id="prism">
+          <stop stop-color="#8ceaff"/>
+          <stop offset=".42" stop-color="#aebfff"/>
+          <stop offset=".72" stop-color="#d6acff"/>
+          <stop offset="1" stop-color="#ffb6e7"/>
         </linearGradient>
       </defs>
       <rect x="0.5" y="0.5" width="639" height="127" rx="12"
-        fill="url(#background)" stroke="#d9e1e9"/>
+        fill="url(#background)" stroke="#c6c9f0"/>
+      <path d="M13 1.5H627" stroke="url(#prism)" stroke-width="2" stroke-linecap="round"/>
       <image x="22" y="32" width="64" height="64"
         xlink:href="data:image/png;base64,{LOGO}"/>
       <g font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif">
-        <text x="108" y="44" fill="#243448" font-size="24" font-weight="700">ZimaOS</text>
-        <text x="207" y="43" fill="#526782" font-size="14">{text['tagline']}</text>
-        <text x="108" y="71" fill="#243448" font-size="15" font-weight="600">{text['integration']}</text>
-        <text x="108" y="96" fill="#58697a" font-size="12">{text['features']}</text>
-        <rect x="512" y="46" width="106" height="36" rx="7" fill="#243448"/>
-        <text x="559" y="69" fill="#ffffff" font-size="13" font-weight="600"
+        <text x="108" y="44" fill="#1d2047" font-size="24" font-weight="700">ZimaOS</text>
+        <text x="207" y="43" fill="#4e5175" font-size="14">{text['tagline']}</text>
+        <text x="108" y="71" fill="#6041b4" font-size="15" font-weight="600">{text['integration']}</text>
+        <text x="108" y="96" fill="#4e5175" font-size="12">{text['features']}</text>
+        <rect x="512" y="46" width="106" height="36" rx="9" fill="url(#prism)"/>
+        <text x="559" y="69" fill="#1d2047" font-size="13" font-weight="600"
           text-anchor="middle">{text['cta']}</text>
       </g>
-      <path d="M594 68l7-7m-7 0h7v7" fill="none" stroke="#ffffff"
+      <path d="M594 68l7-7m-7 0h7v7" fill="none" stroke="#1d2047"
         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>'''
     target = OUTPUT / f'zimaos-banner.{locale}.png'

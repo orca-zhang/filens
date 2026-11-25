@@ -21,17 +21,6 @@ const table = [
     ['Split with archive assets', split.total], ['All-in-one with archive assets', single.total]]
     .map(([label, sizes]) => `| ${label} | ${mb(sizes.raw)} | ${mb(sizes.gzip)} | ${mb(sizes.brotli)} |`)
 ].join('\n');
-for (const [file, language] of [['README.md', 'en'], ['README.zh-CN.md', 'zh']]) {
-  let source = await readFile(path.join(root, file), 'utf8');
-  const text = language === 'zh'
-    ? `预览 ${version} 源码构建的主运行时按分包合计 **${mb(split.main.brotli)} MB Brotli**，单 JS 版预压缩产物为 **${mb(single.main.brotli)} MB Brotli / ${mb(single.main.gzip)} MB gzip / ${mb(single.main.raw)} MB 原始体积**；可选压缩包引擎及 Worker 在两种构建中均另计 **${mb(split.archive.brotli)} MB Brotli / ${mb(split.archive.gzip)} MB gzip / ${mb(split.archive.raw)} MB 原始体积**。主运行时已包含 Vue、样式、文档 / 图片 / STEP WASM 与相关 Worker。媒体优先使用浏览器原生支持`
-    : `Preview ${version} source-build main runtimes: **${mb(split.main.brotli)} MB Brotli** summed across split files, or **${mb(single.main.brotli)} MB Brotli / ${mb(single.main.gzip)} MB gzip / ${mb(single.main.raw)} MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **${mb(split.archive.brotli)} MB Brotli / ${mb(split.archive.gzip)} MB gzip / ${mb(split.archive.raw)} MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs`;
-  const pattern = language === 'zh' ? /预览 \d+\.\d+\.\d+ (?:源码构建的)?(?:主)?运行时.*?媒体优先使用浏览器原生支持/
-    : /Preview \d+\.\d+\.\d+ (?:source-build )?(?:main runtimes|runtime):.*?Media uses browser codecs/;
-  if (!pattern.test(source)) throw new Error(`Missing preview size summary: ${file}`);
-  source = source.replace(pattern, text);
-  await writeFile(path.join(root, file), source);
-}
 const previewPath = path.join(root, 'packages/preview/README.md');
 let preview = await readFile(previewPath, 'utf8');
 const start = '<!-- preview-runtime-sizes:start -->', end = '<!-- preview-runtime-sizes:end -->';
@@ -59,4 +48,4 @@ try {
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
 report += '\nCLI measurements are recorded separately in [the npm artifact report](agent-cli-npm-release.json).\n\nRefresh source runtime measurements: `npm run build:preview && npm run report:preview-sizes`. Package and SDK rows use the existing release receipts; measure new release archives separately when preparing a new version.\n';
 await writeFile(path.join(root, 'docs/preview-sizes.md'), report);
-console.log(`Updated preview ${version} size summaries and docs/preview-sizes.md`);
+console.log(`Updated preview ${version} runtime table and docs/preview-sizes.md`);

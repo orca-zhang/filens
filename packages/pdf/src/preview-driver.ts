@@ -2,6 +2,7 @@
 
 import {
   PreviewPasswordError,
+  PreviewFindControls,
   bindPreviewTouchGestures,
   classifyPreviewFont,
   PREVIEW_CONTAINER_LIMITS,
@@ -20,8 +21,9 @@ import {
   type PreviewSession,
   type PreviewSource
 } from '@filens/core';
-import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist';
+import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask, TextLayer } from 'pdfjs-dist';
 import { pdfContentKey, pdfPageCache, pdfPageKey } from './page-cache';
+import { PDF_SEARCH_MATCH_LIMIT, findPdfText, highlightPdfText, indexPdfText, type PdfTextMatch } from './search';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -35,6 +37,10 @@ interface PageSlot {
   page?: PDFPageProxy;
   canvas?: HTMLCanvasElement;
   task?: RenderTask;
+  textLayer?: TextLayer;
+  textElement?: HTMLDivElement;
+  textOffsets?: number[];
+  highlighted?: boolean;
 }
 
 export { PDF_FORMAT_ROUTES, createPdfPreviewRoutes } from './routes';
@@ -48,6 +54,11 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     warnings: new Set()
   };
   private readonly root: HTMLDivElement;
+  private readonly container: HTMLDivElement;
+  private readonly findControls: PreviewFindControls;
+  private searchGeneration = 0;
+  private matches: PdfTextMatch[] = [];
+  private readonly pageMatches = new Map<number, PdfTextMatch[]>();
   private document: PDFDocumentProxy | null = null;
   private loadingTask: PDFDocumentLoadingTask | null = null;
   private pages: PageSlot[] = [];
@@ -65,14 +76,18 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private unbindTouch = () => {};
   private readonly containerContext;
   private state: PagedPreviewState;
-  private readonly inspectedFontPages = new Set<number>();
+  private textLayerConstructor?: typeof TextLayer;
   private readonly fonts = new Map<string, PreviewFontDiagnostic>();
 
   constructor(private readonly host: HTMLElement, private readonly options: PreviewOptions = {}) {
     this.containerContext = options.containerContext ?? createPreviewContainerContext();
     this.root = document.createElement('div');
     this.root.className = 'pdfv-preview';
-    this.host.replaceChildren(this.root);
+    this.root.tabIndex = 0;
+    this.container = document.createElement('div');
+    this.container.className = 'pdfv-container';
+    this.container.append(this.root);
+    this.host.replaceChildren(this.container);
     this.virtual = options.virtual !== false;
     this.root.addEventListener('scroll', this.scheduleRender, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
@@ -92,13 +107,100 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         fit: true,
         print: !this.virtual,
         download: true,
-        fullscreen: true
+        fullscreen: true,
+        search: true
       },
       pageIndex: 0,
       pageCount: 0,
       scale: options.initialScale ?? 1,
       fit: options.fit ?? 'contain'
     };
+    this.findControls = new PreviewFindControls(this.root, {
+      state: () => this.state.search,
+      find: query => this.find(query), reset: query => this.resetSearch(query), next: backward => this.findNext(backward),
+      translate: message => this.options.translate?.(message) ?? message
+    });
+    this.findControls.element.classList.add('pdfv-search-controls');
+    this.container.append(this.findControls.element);
+  }
+
+  refreshTranslations(): void { this.findControls.refreshTranslations(); }
+
+  private updateSearchControls(): void { this.findControls.update(); }
+
+  private resetSearch(query = '', notify = true): number {
+    this.findControls.cancelPending();
+    const generation = ++this.searchGeneration;
+    this.matches = [];
+    this.pageMatches.clear();
+    this.state.search = { query, searching: false, total: 0, activeIndex: -1, pagesScanned: 0, pageCount: this.document?.numPages ?? 0, truncated: false };
+    for (const slot of this.activePages) this.highlightPage(slot);
+    this.updateSearchControls();
+    if (notify) this.emit('statechange', this.getState());
+    return generation;
+  }
+
+  async find(query: string): Promise<void> {
+    this.findControls.setQuery(query);
+    const generation = this.resetSearch(query), pdf = this.document;
+    if (generation !== this.searchGeneration || !pdf || !query.trim()) return;
+    const search = this.state.search!;
+    const current = () => generation === this.searchGeneration && pdf === this.document;
+    search.searching = true;
+    this.updateSearchControls(); this.emit('statechange', this.getState());
+    for (let index = 0; index < pdf.numPages; index++) {
+      if (!current()) return;
+      try {
+        const page = await pdf.getPage(index + 1);
+        if (!current()) return;
+        const content = await page.getTextContent();
+        if (!current()) return;
+        const remaining = PDF_SEARCH_MATCH_LIMIT - this.matches.length;
+        const found = findPdfText(indexPdfText(content.items).text, query, index, remaining + 1);
+        const kept = found.slice(0, remaining);
+        if (kept.length) {
+          this.pageMatches.set(index, kept); this.matches.push(...kept);
+          search.total = this.matches.length;
+          if (search.activeIndex < 0) { search.activeIndex = 0; this.goToPage(this.matches[0].pageIndex); }
+          const slot = this.pages[index];
+          if (slot) this.highlightPage(slot);
+        }
+        search.truncated = found.length > remaining;
+      } catch (error) {
+        if (!current()) return;
+        search.error = `PDF page ${index + 1}: ${error instanceof Error ? error.message : String(error)}`;
+      }
+      if (!current()) return;
+      search.pagesScanned = index + 1;
+      this.updateSearchControls(); this.emit('statechange', this.getState());
+      if (search.truncated) break;
+      // Yield between cached pages so typing/cancellation can interrupt a long search.
+      if ((index + 1) % 8 === 0) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (current()) { search.searching = false; this.updateSearchControls(); this.emit('statechange', this.getState()); }
+  }
+
+  findNext(backward = false): void {
+    const search = this.state.search;
+    if (!search || !this.matches.length) return;
+    search.activeIndex = (search.activeIndex + (backward ? -1 : 1) + this.matches.length) % this.matches.length;
+    this.goToPage(this.matches[search.activeIndex].pageIndex);
+    for (const slot of this.activePages) this.highlightPage(slot);
+    this.updateSearchControls(); this.emit('statechange', this.getState());
+  }
+
+  private highlightPage(slot: PageSlot): void {
+    if (!slot.textLayer || !slot.textOffsets || slot.textElement?.dataset.rendered !== 'true') return;
+    const matches = this.pageMatches.get(slot.index) ?? [];
+    if (!matches.length && !slot.highlighted) return;
+    highlightPdfText(slot.textLayer, slot.textOffsets, matches, this.matches[this.state.search?.activeIndex ?? -1]);
+    slot.highlighted = matches.length > 0;
+    const active = slot.textElement.querySelector<HTMLElement>('.pdfv-search-match.is-active');
+    if (active) {
+      const root = this.root.getBoundingClientRect(), rect = active.getBoundingClientRect();
+      if (rect.top < root.top || rect.bottom > root.bottom) this.root.scrollTop += rect.top - root.top - this.root.clientHeight / 2;
+      if (rect.left < root.left || rect.right > root.right) this.root.scrollLeft += (rect.left + rect.right - root.left - root.right) / 2;
+    }
   }
 
   async getAttachments(): Promise<PreviewAttachment[]> {
@@ -187,6 +289,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       if (generation !== this.loadGeneration) return;
 
       this.document = pdf;
+      this.textLayerConstructor = pdfjs.TextLayer;
       this.state.pageCount = pdf.numPages;
       this.root.setAttribute('role', 'document');
       this.root.setAttribute('aria-label', context.descriptor.name ?? 'PDF preview');
@@ -242,19 +345,20 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   }
 
   destroy(): void {
+    this.findControls.destroy();
     this.unbindTouch();
     this.loadGeneration += 1;
     this.removeAbortListener?.();
     this.root.removeEventListener('scroll', this.scheduleRender);
     this.resizeObserver?.disconnect();
     void this.releaseDocument().catch(() => undefined);
-    if (this.root.parentElement === this.host) {
+    if (this.container.parentElement === this.host) {
       this.host.replaceChildren();
     }
   }
 
   getState(): PagedPreviewState {
-    return { ...this.state, fonts: this.state.fonts?.map(font => ({ ...font, classification: font.classification ? { ...font.classification } : undefined })), warnings: this.state.warnings.slice(), capabilities: { ...this.state.capabilities } };
+    return { ...this.state, search: this.state.search ? { ...this.state.search } : undefined, fonts: this.state.fonts?.map(font => ({ ...font, classification: font.classification ? { ...font.classification } : undefined })), warnings: this.state.warnings.slice(), capabilities: { ...this.state.capabilities } };
   }
 
   goToPage(index: number): void {
@@ -439,7 +543,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const cacheKey = index === 0 ? pdfPageKey(this.contentKey, viewport, canvas) : undefined;
     if (cacheKey && pdfPageCache.read(cacheKey, canvas)) {
       canvas.dataset.rendered = 'true';
-      void this.inspectPageFonts(page, index, generation);
+      void this.renderPageText(page, slot, canvas, viewport, generation, epoch);
       return;
     }
     const task = page.render({ canvas, viewport: page.getViewport({ scale: scale * outputScale }), background: '#ffffff' });
@@ -449,7 +553,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       if (slot.canvas === canvas) {
         if (cacheKey) pdfPageCache.write(cacheKey, canvas);
         canvas.dataset.rendered = 'true';
-        void this.inspectPageFonts(page, index, generation);
+        void this.renderPageText(page, slot, canvas, viewport, generation, epoch);
       }
     } catch (error) {
       if (slot.canvas === canvas) this.clearCanvas(slot);
@@ -459,6 +563,12 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
 
   private clearCanvas(slot: PageSlot): void {
     this.activePages.delete(slot);
+    slot.textLayer?.cancel();
+    slot.textLayer = undefined;
+    slot.textElement?.remove();
+    slot.textElement = undefined;
+    slot.textOffsets = undefined;
+    slot.highlighted = false;
     slot.task?.cancel();
     slot.task = undefined;
     if (slot.canvas) {
@@ -468,35 +578,62 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     }
   }
 
-  private async inspectPageFonts(page: PDFPageProxy, index: number, generation: number): Promise<void> {
-    if (generation !== this.loadGeneration || this.inspectedFontPages.has(index)) return;
-    this.inspectedFontPages.add(index);
+  private async renderPageText(page: PDFPageProxy, slot: PageSlot, canvas: HTMLCanvasElement,
+    viewport: ReturnType<PDFPageProxy['getViewport']>, generation: number, epoch: number): Promise<void> {
+    const current = () => generation === this.loadGeneration && epoch === this.renderGeneration && slot.canvas === canvas;
+    let text;
     try {
-      const text = await page.getTextContent?.();
-      if (!text || generation !== this.loadGeneration) return;
-      let changed = false;
-      for (const [fontId, style] of Object.entries(text.styles)) {
-        if (this.fonts.has(fontId)) continue;
-        // Public PDF.js text styles identify renderer CSS families, not original
-        // BaseFont names, embedded provenance, or the actual font used per glyph.
-        this.fonts.set(fontId, {
-          fontId, fontFamily: style.fontFamily, status: 'unknown', source: 'unknown',
-          classification: classifyPreviewFont(style.fontFamily)
-        });
-        changed = true;
-      }
-      if (changed) {
-        this.state.fonts = [...this.fonts.values()];
-        this.emit('statechange', this.getState());
-      }
+      // The selection layer and font inventory share one extraction per painted page.
+      text = await page.getTextContent?.();
     } catch {
-      // Optional diagnostics must not fail a page whose canvas already rendered.
-      if (generation !== this.loadGeneration) return;
-      const warning = `Font metadata is unavailable for PDF page ${index + 1}.`;
-      this.state.warnings = [...new Set([...this.state.warnings, warning])];
-      this.emit('warnings', this.state.warnings);
+      if (current()) this.warn(`Font metadata is unavailable for PDF page ${slot.index + 1}.`);
+      return;
+    }
+    if (!text || !current()) return;
+    let changed = false;
+    for (const [fontId, style] of Object.entries(text.styles)) {
+      if (this.fonts.has(fontId)) continue;
+      // Public text styles do not establish original font names or embedded provenance.
+      this.fonts.set(fontId, {
+        fontId, fontFamily: style.fontFamily, status: 'unknown', source: 'unknown',
+        classification: classifyPreviewFont(style.fontFamily)
+      });
+      changed = true;
+    }
+    if (changed) {
+      this.state.fonts = [...this.fonts.values()];
       this.emit('statechange', this.getState());
     }
+    if (!current() || !this.textLayerConstructor || !text.items?.length) return;
+    const element = document.createElement('div');
+    element.className = 'pdfv-text-layer';
+    element.style.setProperty('--total-scale-factor', String(viewport.scale));
+    slot.textElement = element;
+    slot.element.append(element);
+    try {
+      const layer = new this.textLayerConstructor({ textContentSource: text, container: element, viewport });
+      slot.textLayer = layer;
+      await layer.render();
+      if (current()) {
+        slot.textOffsets = indexPdfText(text.items).offsets;
+        element.dataset.rendered = 'true';
+        this.highlightPage(slot);
+      }
+    } catch {
+      element.remove();
+      if (current()) {
+        slot.textLayer?.cancel();
+        slot.textLayer = undefined;
+        slot.textElement = undefined;
+        this.warn(`Text selection is unavailable for PDF page ${slot.index + 1}.`);
+      }
+    }
+  }
+
+  private warn(warning: string): void {
+    this.state.warnings = [...new Set([...this.state.warnings, warning])];
+    this.emit('warnings', this.state.warnings);
+    this.emit('statechange', this.getState());
   }
 
   private releaseDocument(): Promise<void> {
@@ -506,7 +643,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.renderGeneration++;
     for (const slot of this.activePages) this.clearCanvas(slot);
     this.pages = [];
-    this.inspectedFontPages.clear();
+    this.textLayerConstructor = undefined;
     this.fonts.clear();
     this.state.fonts = [];
     this.rendering = null;
@@ -516,6 +653,8 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.loadingTask = null;
     this.document = null;
     this.contentKey = undefined;
+    this.findControls.close();
+    this.resetSearch('', false);
     return task ? task.destroy() : pdf?.destroy() ?? Promise.resolve();
   }
 }

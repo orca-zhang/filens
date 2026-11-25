@@ -141,15 +141,17 @@ function entryReader(read: () => Promise<Uint8Array>, size: number | undefined, 
   let loaded: Promise<Uint8Array> | undefined;
   return async (_password, readSignal = signal) => {
     readSignal?.throwIfAborted();
+    const cacheable = size !== undefined && size <= cache.remaining;
     const result = loaded ?? Promise.resolve().then(() => {
-      readSignal?.throwIfAborted();
+      // Shared cache fills follow archive lifetime; cancelling one reader must not fail its peers.
+      (cacheable ? signal : readSignal)?.throwIfAborted();
       return read();
     });
     // Keep repeat reads fast without retaining the entire expanded archive.
-    if (!loaded && size !== undefined && size <= cache.remaining) {
-      cache.remaining -= size;
+    if (!loaded && cacheable) {
+      cache.remaining -= size!;
       loaded = result;
-      void result.catch(() => { if (loaded === result) { loaded = undefined; cache.remaining += size; } });
+      void result.catch(() => { if (loaded === result) { loaded = undefined; cache.remaining += size!; } });
     }
     const data = await result;
     readSignal?.throwIfAborted();

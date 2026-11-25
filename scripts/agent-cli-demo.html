@@ -8,6 +8,22 @@
 .track{width:40px}.archive-card,.conversion-card,.browser-card{padding:22px}.archive-tree{margin:18px 0;border:1px solid #365747;background:#14281f;border-radius:9px;padding:15px 18px;font:13px/2.1 ui-monospace,monospace;color:#aedac5}.archive-tree .nested{padding-left:19px;border-left:1px solid #3e6b53;margin-left:4px}.archive-tree .match{color:#cbf6df;background:#23523a;padding:4px 8px;border-radius:4px;margin:5px 0}.archive-evidence{border-left:2px solid #7de1c5;padding:10px 13px;color:#c5dfd1;font-size:12px;line-height:1.7}.archive-evidence strong{display:block;color:#94f6d8;font-size:10px;margin-bottom:7px}.conversion-formats{display:flex;gap:18px;align-items:center;margin:14px 0}.format-tag{font:700 20px ui-monospace,monospace;padding:12px 22px;background:#173d2b;border:1px solid #47725c;border-radius:9px;color:#b2edcb}.convert-arrow{color:#94f6d8;font-size:27px}.csv-source{font:11px/1.65 ui-monospace,"PingFang SC",monospace;color:#afd0bf;background:#0d1a15;border:1px solid #2d4539;border-radius:7px;padding:13px 15px;margin:15px 0;white-space:pre;overflow:hidden}.conversion-card .search-note{margin-top:12px}.browser-card .search-title{font-size:23px;margin:10px 0 17px}.browser-window{border:1px solid #436354;border-radius:9px;overflow:hidden;background:#fff}.browser-address{height:29px;background:#e4ebe4;color:#466255;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font:10px ui-monospace,monospace}.browser-window img{display:block;width:100%;height:264px;object-fit:contain;background:#fff}.browser-window.model img{background:#111827}.browser-card .search-note{margin-top:13px;font-size:11px;line-height:1.65}.command{font-size:15px}.cap-visual{padding-top:24px}.cap-title{margin-bottom:17px}.cap-note{margin-top:18px;padding-top:17px}
 </style>
 <style>.browser-card{padding:20px}.browser-window img{height:236px}</style>
+<style>
+:root{--prism:linear-gradient(100deg,#75eaff 0%,#9ab6ff 40%,#c3a1ff 67%,#f9a4e5 88%,#ffd09d 100%)}
+body{background:radial-gradient(ellipse at 8% 0%,#165a845c,transparent 48%),radial-gradient(ellipse at 91% 28%,#9c318855,transparent 48%),radial-gradient(ellipse at 53% 100%,#5134a64e,transparent 57%),#0b0c21}
+body:before{background-image:radial-gradient(#adc9ff20 .8px,transparent .8px)}
+.mark{border:0;box-shadow:none;background:url(../apps/demo/public/brand/filens-icon-180.png) center/contain no-repeat;font-size:0}
+.hero h1 span{background:var(--prism);background-clip:text;color:transparent}
+.badge,.terminal,.side,.install{border-color:#aea8fe58}
+.badge,.status,.prompt,.chapter strong{color:#9ce5ff}
+.terminal{background:#10152ced}.chrome{background:#1a203a;border-color:#3b4169}
+.dot{background:#66dcfa}.dot:nth-child(2){background:#b4a1ff}.dot:nth-child(3){background:#f69acb}
+.side{background:linear-gradient(135deg,#191d3a,#261b40)}
+.side-head,.side-foot{border-color:#8586da36}
+.side-foot,.geometry-note,.fine{color:#a5aed2}
+.status:before,.cursor{background:#a7ceff;box-shadow:0 0 12px #9395ff88}
+.track{background:#343a62}.track i{background:var(--prism)}.install{background:#1b2442}
+</style>
 <div class="top"><div class="brand"><div class="mark">f</div>filens</div><div class="badge" id="badge"></div></div>
 <div class="hero"><h1 id="hero-title"></h1><p id="hero-description"></p></div>
 <div class="workspace"><div class="terminal"><div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="name">filens — ~/documents</span><span class="platform">native · WASM</span></div><div class="terminal-body"><div class="location">~/documents</div><div class="command"><span class="prompt">❯</span><span id="command"></span><i id="cursor" class="cursor"></i></div><div class="output-label" id="output-label"></div><pre id="output" class="output"></pre></div></div><div class="side"><div class="side-head"><span id="side-title"></span><span class="status" id="status">OFFLINE</span></div><div class="right-content" id="right"></div><div class="side-foot"><span id="side-foot"></span><span id="side-count"></span></div></div></div>

@@ -1,8 +1,8 @@
 # v0.6.8 — Smaller previews, updated CLI and DSH
 
-CLI **0.5.8** · preview **0.3.8** · iOS/Android source SDKs **0.1.8** · DSH plugin and File workspace **0.1.12** · XLSX **0.1.3** · core **0.1.5**.
+CLI **0.5.8** · preview **0.3.8** · iOS/Android source SDKs **0.1.9** · DSH plugin and File workspace **0.1.12** · XLSX **0.1.3** · core **0.1.5**.
 
-Browser/SDK release: **2026-11-24**; CLI/DSH component refresh: **2026-11-25**.
+Browser/SDK release: **2026-11-24**; CLI/DSH and mobile SDK refresh: **2026-11-25**.
 
 CLI and DSH are rebuilt and updated to use preview **0.3.8**. Full offline CLI downloads are now **24.87–27.48 MiB**, down from **31.26–33.80 MiB**; Lite downloads are **7.09–7.72 MiB**. All eight platform/profile bundles and the DSH plugin are available below.
 
@@ -14,7 +14,9 @@ CLI and DSH are rebuilt and updated to use preview **0.3.8**. Full offline CLI d
 - **CLI 0.5.8:** faster directory discovery and glob subtree pruning, bounded document-extraction windows, and better preservation of fine text in transparent-scan OCR. Full bundles embed preview 0.3.8 and omit optional precompressed JS sidecars. Native-search speed optimization increases the macOS executable to **3.74 MiB**, so Lite is slightly larger; every Lite archive remains below **10,000,000 bytes**.
 - **DSH 0.1.12:** embeds preview 0.3.8, pins CLI 0.5.8 and retains File workspace in the same plugin. Fixes bundled runtime loading through the Desktop application origin in DSH **0.2.3-alpha.2**, with **0.2.2-rc.1** also tested. The peer range includes **Cordis 4.2**; an isolated latest-library installation passes without forced dependency resolution. Plugin download: **5.75 MiB**, excluding CLI/OCR dependencies and DSH caches.
 - **TypeScript declarations:** publishes `@filens/xlsx@0.1.3` and `@filens/core@0.1.5` with explicit ESM relative paths for Node16/NodeNext. XLSX requires core `^0.1.5`; exported types remain available and the driver factory retains its function type. [Fix #34](https://github.com/orca-zhang/filens/pull/34).
-- **Mobile source SDKs 0.1.8:** retain the complete offline preview 0.3.8 runtime. ZIPs contain source projects, not compiled AAR/XCFramework binaries.
+- **Mobile source SDKs 0.1.9:** each complete offline ZIP is below **3 MiB** (iOS **2.969 MiB**, Android **2.973 MiB**, down from 5.66 MiB). All offline formats are retained. Run bundled `node prepare-runtime.mjs` once on the developer computer before integration; requires **Node.js 18+ and a C++17 compiler**. The app uses streamed Brotli assets, lazy workers/modules and a compact complete WASM core. Strong decompression runs only on the developer computer. Native startup checks, stream handling and missing-decoder fallback are hardened. Full required notices remain compressed. These are source projects, not precompiled AAR/XCFramework binaries; ZIP size is distinct from installed app size.
+
+移动端 SDK 已更新为 **0.1.9**：两个平台各一个完整离线 ZIP，均小于 **3 MiB**。接入前在开发机执行一次包内的 `node prepare-runtime.mjs`（需要 Node.js 18+ 和 C++17 编译器）；手机端保持流式读取，保留全部离线格式与完整压缩许可正文。
 
 ## Downloads
 
@@ -32,10 +34,10 @@ CLI and DSH are rebuilt and updated to use preview **0.3.8**. Full offline CLI d
 | [filens-preview-0.3.8-split.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-split.zip) | 5.63 MiB |
 | [filens-preview-0.3.8-all-in-one-precompressed.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one-precompressed.zip) | 6.92 MiB |
 | [filens-preview-0.3.8-all-in-one.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-preview-0.3.8-all-in-one.zip) | 4.13 MiB |
-| [filens-ios-sdk-0.1.8.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-ios-sdk-0.1.8.zip) | 5.66 MiB |
-| [filens-android-sdk-0.1.8.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-android-sdk-0.1.8.zip) | 5.66 MiB |
+| [filens-ios-sdk-0.1.9.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-ios-sdk-0.1.9.zip) | 2.969 MiB |
+| [filens-android-sdk-0.1.9.zip](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-android-sdk-0.1.9.zip) | 2.973 MiB |
 
-**14 package downloads + source manifest + checksums (16 assets).** [SHA256SUMS](https://github.com/orca-zhang/filens/releases/download/v0.6.8/SHA256SUMS) · [Source and validation manifest](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-release-v0.6.8.json) · [Exact sizes](preview-release-sizes.json).
+**16 package downloads + source manifest + checksums (18 assets).** Legacy SDK 0.1.8 assets remain available for existing URLs. [SHA256SUMS](https://github.com/orca-zhang/filens/releases/download/v0.6.8/SHA256SUMS) · [Source and validation manifest](https://github.com/orca-zhang/filens/releases/download/v0.6.8/filens-release-v0.6.8.json) · [Exact sizes](preview-release-sizes.json).
 
 ## Install
 
@@ -73,7 +75,7 @@ Cached PDF opens are equal at **108 ms (1.00×)**. The released **0.1.12** rende
 - CLI: **65 Rust unit tests**, **8 end-to-end groups**, **19 compact-bundle/error/cancellation checks**, **60 search checks** and **54 archive/OCR checks** pass. Full/Lite npm tarball installation and direct native execution pass on macOS arm64.
 - The actual new Full offline CLI bundle exports **17 Chromium offline HTML cases** successfully, including Office, PDF, iWork, RAW, STEP, archives and encrypted inputs.
 - DSH: **34 Node tests** and six real sidebar formats pass in Desktop **0.2.3-alpha.2** and **0.2.2-rc.1**. Earlier browser checks cover 16 isolated format-loading paths and 12 complete previews; nine-round current Desktop timings are linked above.
-- All eight native archives pass integrity/size checks. npm and release artifacts pass license, notice and privacy checks; SHA-256 records exact release bytes. Existing preview/mobile validation includes 22 Chromium/WebKit bridge checks.
+- All eight native archives pass integrity/size checks. npm and release artifacts pass license, notice and privacy checks; SHA-256 records exact release bytes. Mobile 0.1.9 adds 34 Chromium/WebKit checks on restored final assets, 44 HEIF pixel checks, 328 conversion fixtures and native streaming/fallback checks. Both final ZIPs restore all 60 assets exactly. Full Gradle AAR / IPA builds and physical-device tests were not run; host preparation was exercised on macOS, with Windows/Linux compiler paths untested.
 
 Linux/Windows executables are cross-built; native execution on those platforms, native Desktop fullscreen and physical iOS/Android devices were not retested. [Validation records](release-v0.6.8-validation.json).
 

@@ -779,7 +779,31 @@ describe('Preview', () => {
     expect(wrapper.text()).toContain('text');
     expect(wrapper.find('pre.pptxv-native-text').text()).toBe('hello from generic preview');
 
+    await wrapper.vm.find('generic');
+    expect(wrapper.find('mark.is-active').text()).toBe('generic');
+    wrapper.vm.setWrap(false);
+    expect(wrapper.vm.getState()).toMatchObject({ wrap: false, search: { total: 1 } });
+    await wrapper.setProps({ locale: 'zh_CN' });
+    expect(wrapper.find('.pptxv-text-controls > button').text()).toBe('自动换行');
+
     wrapper.unmount();
+  });
+
+  it('defaults to text windows and reloads explicit virtualization overrides', async () => {
+    const text = 'row\n'.repeat(1200);
+    const wrapper = mount(Preview, { attachTo: document.body, props: { src: new TextEncoder().encode(text), name: 'large.ts' } });
+    try {
+      await waitFor(() => expect(wrapper.emitted('rendered')).toBeTruthy());
+      expect(wrapper.find('.pptxv-text-window').exists()).toBe(true);
+      expect(wrapper.findAll('.pptxv-text-line').length).toBeLessThanOrEqual(512);
+      await wrapper.setProps({ virtual: false });
+      await waitFor(() => expect(wrapper.find('pre').exists() && wrapper.find('pre').element.textContent === text).toBe(true));
+      expect(wrapper.find('pre').element.textContent === text).toBe(true);
+      expect(wrapper.find('.pptxv-text-window').exists()).toBe(false);
+      await wrapper.setProps({ virtual: true });
+      await waitFor(() => expect(wrapper.find('.pptxv-text-window').exists()).toBe(true));
+      expect(wrapper.findAll('.pptxv-text-line').length).toBeLessThanOrEqual(512);
+    } finally { wrapper.unmount(); }
   });
 
   it('rotates images through the generic preview toolbar', async () => {

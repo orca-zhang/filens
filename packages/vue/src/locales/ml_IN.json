@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "ഈ വീഡിയോയിൽ പിക്ചർ ഇൻ പിക്ചർ ലഭ്യമല്ല",
   "Subtitles": "സബ്ടൈറ്റിലുകൾ",
   "Subtitles off": "സബ്ടൈറ്റിലുകൾ ഓഫാക്കുക",
-  "Subtitles {number}": "സബ്ടൈറ്റിലുകൾ {number}"
+  "Subtitles {number}": "സബ്ടൈറ്റിലുകൾ {number}",
+  "Find in document": "രേഖയിൽ കണ്ടെത്തുക",
+  "Previous match": "മുമ്പത്തെ പൊരുത്തം",
+  "Next match": "അടുത്ത പൊരുത്തം",
+  "Search incomplete": "തിരയൽ അപൂർണ്ണമാണ്",
+  "Wrap lines": "വരികൾ മടക്കുക"
 }

@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-25",
+  "command": "npm run build:iwork && node scripts/benchmark-numbers-merge-memory.mjs",
+  "scope": "Synthetic serialized Numbers ZIP/Snappy/IWA archives with three stored cells. The built frontend parser runs in Node under a 128 MiB V8 old-space cap. Schema initialization is warmed; retained heap deltas follow explicit GC. RSS values are snapshots, not peaks. Results do not establish browser/device limits, dense archive costs, or a total-memory bound.",
+  "environment": {
+    "node": "v20.20.2",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "oldSpaceLimitMiB": 128
+  },
+  "artifacts": {
+    "packages/iwork/src/parser/table.ts": "7f15b41d3e89d285685b729d5da822506d736a2309f0238431664164637ab787",
+    "packages/iwork/dist/index.js": "1860b2cf4aa41e905e9a00c62b93f825bbd17238df0009a66c739aec8e69e8d5",
+    "packages/iwork/test/fixtures/numbers-archive.mjs": "61b021c288ee86edaa777a47f502e63f777ef2c8ec340129a7a46c764096c150",
+    "scripts/benchmark-numbers-merge-memory.mjs": "7a808b85a2622e5867eea5aa51d53dda8f1a0a00450fc8f4185ba64c2ccadc52"
+  },
+  "cases": [
+    {
+      "rows": 1000,
+      "columns": 64,
+      "emptyAnchor": false,
+      "mergedPositions": 63936,
+      "inputZipBytes": 538,
+      "inputSha256": "56e2b246ef7ec827b5341e6e089790365aba7d0dfe609a736d8f40d516040843",
+      "parsedCells": 3,
+      "elapsedMs": 0.9679160000000024,
+      "retainedHeapDeltaBytes": 123080,
+      "heapAfterBytes": 30112192,
+      "rssAfterBytes": 126418944
+    },
+    {
+      "rows": 100000,
+      "columns": 1024,
+      "emptyAnchor": false,
+      "mergedPositions": 102398976,
+      "inputZipBytes": 566,
+      "inputSha256": "0fd76ee03e82ebd7d00c524fc35ea36cdb9302f4333f8cc6f3058edfc8d63524",
+      "parsedCells": 3,
+      "elapsedMs": 4.429417000000001,
+      "retainedHeapDeltaBytes": 871888,
+      "heapAfterBytes": 30984992,
+      "rssAfterBytes": 128286720
+    },
+    {
+      "rows": 100000,
+      "columns": 1024,
+      "emptyAnchor": true,
+      "mergedPositions": 102398976,
+      "inputZipBytes": 551,
+      "inputSha256": "1366495f08200152a56648a60bd8bef4b9ee4966d577e3156d37dbfab018e8a9",
+      "parsedCells": 3,
+      "elapsedMs": 3.4448340000000144,
+      "retainedHeapDeltaBytes": 866704,
+      "heapAfterBytes": 31048824,
+      "rssAfterBytes": 128532480
+    },
+    {
+      "rows": 1000000,
+      "columns": 1024,
+      "emptyAnchor": false,
+      "mergedPositions": 1023998976,
+      "inputZipBytes": 557,
+      "inputSha256": "0826a5353881cac2b221148217e4d58d1a8a20b1aa59c049067c34ad972df6d4",
+      "parsedCells": 3,
+      "elapsedMs": 26.165999999999997,
+      "retainedHeapDeltaBytes": 8124784,
+      "heapAfterBytes": 38362600,
+      "rssAfterBytes": 143130624
+    }
+  ]
+}

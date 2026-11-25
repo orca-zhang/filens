@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { minify } from 'terser';
 import { sharedCompression } from '../../scripts/shared-compression';
 import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
@@ -11,6 +12,7 @@ import { deferredPreviewWorkers, packedPreviewAssets } from '../../scripts/previ
 
 const root = path.resolve(__dirname, '../..');
 const single = process.env.FILENS_PREVIEW_BUILD === 'all-in-one';
+const mobile = process.env.FILENS_PREVIEW_BUILD === 'mobile';
 // Embedded application hosts share a DOM and may serve modules across origins.
 // Keep CSS separate for host-owned lifetime and use Blob workers in that case.
 const embeddedHost = process.env.FILENS_PREVIEW_BUILD === 'embedded';
@@ -36,17 +38,41 @@ function embeddedAssets() {
     name: 'filens-preview-assets', enforce: 'pre' as const,
     async load(id: string) {
       if (!id.endsWith('?url')) return;
-      const file = id.slice(0, -4);
+      const file = path.normalize(id.slice(0, -4));
       if (!/\.(wasm|mjs)$/.test(file)) return;
-      // A single file downloads every embedded engine anyway. Use the combined
-      // core there to avoid shipping duplicate WASI/CFB code with the decryptor.
+      // Offline mobile bundles and single-file builds share one complete core
+      // to avoid shipping duplicate WASI/CFB and conversion code.
       const converterDir = path.join(root, 'wasm/converter-core/dist');
-      if (single && ['converter-office.wasm', 'converter-postscript.wasm', 'converter-graphics.wasm', 'converter-cad.wasm', 'converter-raster.wasm'].some(name => file === path.join(converterDir, name))) {
+      if ((single || mobile) && ['converter-office.wasm', 'converter-postscript.wasm', 'converter-graphics.wasm', 'converter-cad.wasm', 'converter-raster.wasm'].some(name => file === path.join(converterDir, name))) {
         return 'export default undefined;';
       }
-      const asset = single && file === path.join(converterDir, 'converter-core.wasm')
+      let asset = single && file === path.join(converterDir, 'converter-core.wasm')
         ? path.join(converterDir, 'converter-core-full.wasm') : file;
-      const bytes = await readFile(asset);
+      if (mobile && file === path.join(converterDir, 'converter-core.wasm')) asset = path.join(converterDir, 'converter-core-mobile.wasm');
+      if (mobile && file === path.join(root, 'wasm/converter-image/dist/converter-image.wasm')) asset = path.join(root, 'wasm/converter-image/dist/converter-image-mobile.wasm');
+      let bytes = await readFile(asset);
+      if (mobile && file.endsWith(path.join('vendor', 'libheif', 'libheif.wasm'))) {
+        const { default: binaryen } = await import('binaryen');
+        const api = await readFile(path.join(root, 'packages/converter-client/src/heif-decoder.ts'), 'utf8');
+        const glue = await readFile(path.join(root, 'packages/converter-client/vendor/libheif/libheif.js'), 'utf8');
+        const required = new Set([...api.matchAll(/\b(_heif_\w+)\(/g)].map(match => match[1]));
+        const mappings = [...glue.matchAll(/Module\["(_(?:heif|de265)_\w+)"\]=wasmExports\["([^"]+)"\]/g)];
+        if (required.size < 20 || [...required].some(name => !mappings.some(match => match[1] === name))) {
+          throw new Error('HEIF C ABI changed; verify mobile export pruning.');
+        }
+        const module = binaryen.readBinary(bytes);
+        try {
+          for (const [, name, symbol] of mappings) if (!required.has(name)) module.removeExport(symbol);
+          // Preserve the decoder's baseline features for older mobile WebViews.
+          module.setFeatures(binaryen.Features.MutableGlobals | binaryen.Features.SignExt);
+          module.runPasses(['remove-unused-module-elements', 'remove-unused-types', 'vacuum']);
+          if (!module.validate()) throw new Error('Invalid mobile HEIF decoder');
+          bytes = Buffer.from(module.emitBinary());
+        } finally { module.dispose(); }
+      }
+      if (mobile && file.endsWith('.mjs')) bytes = Buffer.from((await minify(bytes.toString(), {
+        module: true, ecma: 2020, compress: { passes: 3 }, mangle: true, format: { comments: /@license|@preserve|^!/ }
+      })).code!);
       if (single) {
         const mime = file.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
         // Compress before base64 to avoid its large transfer and parse overhead.
@@ -121,7 +147,10 @@ function minifiedRuntime() {
     name: 'filens-preview-minify',
     // Vite preserves ES library whitespace for downstream tree shaking. This
     // complete runtime is ready to serve; compact it after Vite's own transform.
-    renderChunk: { order: 'post' as const, handler(code: string, chunk: { fileName: string }) {
+    renderChunk: { order: 'post' as const, async handler(code: string, chunk: { fileName: string }) {
+      if (mobile) return { code: (await minify(code, {
+        module: true, ecma: 2020, compress: { passes: 3 }, mangle: true, format: { comments: /@license|@preserve|^!/ }
+      })).code!, map: null };
       return transformWithEsbuild(code, chunk.fileName, { loader: 'js', minifyWhitespace: true, legalComments: 'eof' });
     } }
   };
@@ -129,12 +158,17 @@ function minifiedRuntime() {
 
 export default defineConfig({
   base: './',
-  worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
+  worker: { plugins: () => [archiveEngineAssets(), ...(mobile ? [{
+    name: 'filens-mobile-worker-minify',
+    async renderChunk(code: string) { return { code: (await minify(code, {
+      module: false, ecma: 2020, compress: { passes: 3 }, mangle: true, format: { comments: /@license|@preserve|^!/ }
+    })).code!, map: null }; }
+  }] : [])], rollupOptions: { output: { inlineDynamicImports: true } } },
   plugins: [archiveEngineAssets(), sharedCompression(), xmlParserOnly(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(), ...(single ? [deferredPreviewWorkers(), packedPreviewAssets()] : [])],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
   build: {
-    outDir: `dist/${single ? 'all-in-one' : 'split'}`,
+    outDir: `dist/${mobile ? 'mobile' : single ? 'all-in-one' : 'split'}`,
     lib: { entry: './src/index.ts', formats: ['es'], fileName: () => 'filens.js' },
     minify: 'esbuild', cssCodeSplit: false,
     rollupOptions: { output: single ? { inlineDynamicImports: true } : {

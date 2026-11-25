@@ -426,8 +426,8 @@ async function playDemo(): Promise<void> {
           </article>
           <article class="principle">
             <p class="principle-proof"><strong>iWork 15</strong><span>KEYNOTE · PAGES · NUMBERS</span></p>
-            <h2>{{ t('率先支持 iWork 15，唯一纯前端预览库', 'The first iWork 15 parser. The only pure frontend iWork viewer.') }}</h2>
-            <p>{{ t('直接解析 iWork 15 协议，在浏览器内呈现幻灯片、页面和表格。无需苹果设备，无需上传 iCloud，也无需转换服务。', 'Parse the iWork 15 protocol and display slides, pages and spreadsheets in the browser, without Apple hardware, iCloud uploads or a conversion service.') }}</p>
+            <h2>{{ t('唯一开源的 iWork 预览库，支持纯前端原生渲染', 'The only open-source iWork preview library, with pure frontend native rendering') }}</h2>
+            <p>{{ t('率先支持 iWork 15 协议解析，在浏览器内原生渲染幻灯片、页面和表格。无需苹果设备，无需上传 iCloud，也无需转换服务。', 'The first iWork 15 parser, rendering slides, pages and spreadsheets natively in the browser, without Apple hardware, iCloud uploads or a conversion service.') }}</p>
             <button class="text-link" type="button" @click="emit('preview', 'key')">{{ t('体验 iWork 预览', 'Try iWork previews') }} ↗</button>
             <a :href="`${repo}/tree/main/packages/iwork`" target="_blank" rel="noopener noreferrer">{{ t('查看协议与实现', 'Explore the parser and viewer') }} ↗</a>
           </article>

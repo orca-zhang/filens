@@ -72,6 +72,7 @@ public final class FilensPreviewView extends FrameLayout {
     private Listener listener;
     private boolean destroyed;
     private final boolean bridgeAvailable;
+    private boolean assetsValidated; // Accessed only on the single IO executor.
 
     @SuppressLint("SetJavaScriptEnabled")
     public FilensPreviewView(Context context) {
@@ -156,8 +157,10 @@ public final class FilensPreviewView extends FrameLayout {
         io.execute(() -> {
             File copy = null;
             try {
-                // Fail explicitly when the generated runtime has not been staged.
-                try (InputStream ignored = getContext().getAssets().open("filens/mobile.html")) { }
+                if (!assetsValidated) {
+                    RuntimeAssets.validate(getContext().getAssets()::open);
+                    assetsValidated = true;
+                }
                 copy = File.createTempFile("filens-", ".input", getContext().getCacheDir());
                 try (InputStream input = getContext().getContentResolver().openInputStream(uri);
                      FileOutputStream output = new FileOutputStream(copy)) {
@@ -184,7 +187,8 @@ public final class FilensPreviewView extends FrameLayout {
                 });
             } catch (Exception error) {
                 if (copy != null) copy.delete();
-                main.post(() -> { if (id.equals(requestId) && !destroyed) report("io_error", error.getMessage()); });
+                String code = error instanceof RuntimeAssets.MissingAssetException ? "engine_unavailable" : "io_error";
+                main.post(() -> { if (id.equals(requestId) && !destroyed) report(code, error.getMessage()); });
             }
         });
     }
@@ -233,7 +237,7 @@ public final class FilensPreviewView extends FrameLayout {
         if (relative.equals("source.json")) return response("application/json", new ByteArrayInputStream(current.metadata));
         // The selected source is exposed only by document(), never by arbitrary URI/path resolution.
         if (relative.equals("document")) return empty(404, "Not Found");
-        try { return response(mime(relative), getContext().getAssets().open("filens/" + relative)); }
+        try { return response(mime(relative), RuntimeAssets.open(getContext().getAssets()::open, "filens/" + relative)); }
         catch (IOException error) { return empty(404, "Not Found"); }
     }
 
@@ -300,6 +304,7 @@ public final class FilensPreviewView extends FrameLayout {
         if (path.endsWith(".wasm")) return "application/wasm";
         if (path.endsWith(".css")) return "text/css";
         if (path.endsWith(".json")) return "application/json";
+        if (path.endsWith(".txt")) return "text/plain";
         return "application/octet-stream";
     }
     private void report(String code, String message) {

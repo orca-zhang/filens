@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Slika u slici nije dostupna za ovaj videozapis",
   "Subtitles": "Podnapisi",
   "Subtitles off": "Isključi podnapise",
-  "Subtitles {number}": "Podnapisi {number}"
+  "Subtitles {number}": "Podnapisi {number}",
+  "Find in document": "Pronađi u dokumentu",
+  "Previous match": "Prethodno podudaranje",
+  "Next match": "Sljedeće podudaranje",
+  "Search incomplete": "Pretraživanje nije dovršeno",
+  "Wrap lines": "Prelamanje redaka"
 }

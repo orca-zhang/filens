@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "A kép a képben nem érhető el ehhez a videóhoz",
   "Subtitles": "Feliratok",
   "Subtitles off": "Feliratok kikapcsolása",
-  "Subtitles {number}": "Feliratok {number}"
+  "Subtitles {number}": "Feliratok {number}",
+  "Find in document": "Keresés a dokumentumban",
+  "Previous match": "Előző találat",
+  "Next match": "Következő találat",
+  "Search incomplete": "A keresés nem teljes",
+  "Wrap lines": "Sortördelés"
 }

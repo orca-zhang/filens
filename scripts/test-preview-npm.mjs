@@ -44,7 +44,8 @@ import { createPreview, type BrowserPreview } from 'filens-preview-split';
 const viewer: BrowserPreview = createPreview('#preview', {
   src: new File(['test'], 'test.txt'), onError: error => console.error(error.message)
 });
-viewer.update({src: new Uint8Array([65]), name:'updated.txt'});
+viewer.update({virtual: false, src: new Uint8Array([65]), name:'updated.txt'});
+void viewer.find('document'); viewer.findNext(true); viewer.setWrap(true);
 viewer.destroy();
 ` : `
 import { createPreview, type BrowserPreview } from 'filens-preview';
@@ -52,7 +53,8 @@ import { createPreview as single } from 'filens-preview/all-in-one';
 const viewer: BrowserPreview = createPreview('#preview', {
   src: new File(['test'], 'test.txt'), onError: error => console.error(error.message)
 });
-viewer.update({src: new Uint8Array([65]), name:'updated.txt'});
+viewer.update({virtual: false, src: new Uint8Array([65]), name:'updated.txt'});
+void viewer.find('document'); viewer.findNext(true); viewer.setWrap(true);
 viewer.destroy();
 single(document.body, {src: {source: new Blob(['test']), name:'sample.txt'}}).destroy();
 `;

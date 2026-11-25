@@ -57,11 +57,12 @@ filens '理解 "report.pages"，以 JSON 输出'
 
 ## filens 的独特能力
 
-据我们所知，截至 **2026-11-24**，最核心的三项亮点是：
+据我们所知，截至 **2026-11-24**，最核心的四项亮点是：
 
-1. **全球唯一真正开源的前端原生 PPTX 预览库，体验更好。** MIT 开源解析与渲染代码，直接通过 HTML/SVG 呈现文本、图片、形状、表格及已支持的图表，无需上传或转换服务。[真实样例的首屏与兼容性实测](performance-comparison.zh-CN.md)。
-2. **唯一率先真正支持 iWork 15 协议解析的库，也是唯一的 iWork 纯前端预览库。** Keynote、Pages、Numbers 直接在浏览器内解码和呈现，无需苹果设备或 iCloud。早期协议研究与代码基础来自 [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork)，项目保留贡献说明并继续扩展新协议与渲染能力。[iWork 实现与支持范围](../packages/iwork/README.md)。
-3. **Panorama：可能是目前对全景照片和视频畸变参数支持最好的库。** 读取 DJI、Insta360 原片内的官方标定参数，支持纯前端实时渲染全景视频；X5 原片实测接缝观感明显优于专业全景库 PSV 的通用双鱼眼投影。[画面对比与实测范围](performance-comparison.zh-CN.md#x5-原片解析厂商标定接缝更自然) · [实时渲染实现](panorama-rendering-implementation.md)。
+1. **AI：面向能力，自然表达。** 直接告诉 Agent 想完成的任务，由它选择和组合读取、搜索、OCR、转换与预览等文件能力。[自然语言任务示例](agent-cli.zh-CN.md#面向能力自然表达)。
+2. **全球唯一真正开源的前端原生 PPTX 预览库，体验更好。** MIT 开源解析与渲染代码，直接通过 HTML/SVG 呈现文本、图片、形状、表格及已支持的图表，无需上传或转换服务。[真实样例的首屏与兼容性实测](performance-comparison.zh-CN.md)。
+3. **唯一开源的 iWork 预览库，支持纯前端原生渲染。** 率先支持 iWork 15 协议解析，Keynote、Pages、Numbers 直接在浏览器内解码和呈现，无需苹果设备或 iCloud。早期协议研究与代码基础来自 [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork)，项目保留贡献说明并继续扩展新协议与渲染能力。[iWork 实现与支持范围](../packages/iwork/README.md)。
+4. **Panorama：可能是目前对全景照片和视频畸变参数支持最好的库。** 读取 DJI、Insta360 原片内的官方标定参数，支持纯前端实时渲染全景视频；X5 原片实测接缝观感明显优于专业全景库 PSV 的通用双鱼眼投影。[画面对比与实测范围](performance-comparison.zh-CN.md#x5-原片解析厂商标定接缝更自然) · [实时渲染实现](panorama-rendering-implementation.md)。
 
 其他能力包括：
 

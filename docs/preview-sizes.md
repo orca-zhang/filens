@@ -28,16 +28,25 @@ This local npm pack receipt does not establish registry publication. The npm pac
 
 This package omits the all-in-one build. It is a local npm pack receipt; registry publication is recorded separately. [Exact package bytes and SHA-256](preview-split-package-sizes.json).
 
-## Published mobile source SDKs 0.1.8
+## Published mobile source SDKs 0.1.9
 
-These release snapshots are measured separately from the current source build above. Each SDK includes the complete offline split runtime 0.3.8; these are source SDK ZIPs rather than precompiled AAR/XCFramework files.
+Each single ZIP retains all offline formats from preview 0.3.8 and stays below **3 MiB**.
+These are source SDKs, rather than precompiled AAR/XCFramework files.
 
-| SDK | ZIP download | Extracted file bytes |
+| SDK | ZIP transfer | Extracted file bytes before preparation |
 | --- | ---: | ---: |
-| iOS / Swift Package | 5.66 MiB | 17.07 MiB |
-| Android / Java Library | 5.66 MiB | 17.06 MiB |
+| iOS / Swift Package | 2.969 MiB | 3.083 MiB |
+| Android / Java Library | 2.973 MiB | 3.082 MiB |
 
-Excludes build tools, build caches and filesystem allocation overhead. [Exact SDK bytes and SHA-256](mobile-sdk-sizes.json).
+Run the included `node prepare-runtime.mjs` once on the developer computer before
+integration (Node.js 18+ and C++17 compiler required). All data and decoder source
+are bundled; preparation works offline. Prepared app assets total
+**3.74 MiB** and stream as Brotli. Strong decompression never runs on
+the phone. ZIP transfer size is distinct from prepared or installed application size.
+Full required third-party notices are retained compressed.
+
+Excludes build tools, build caches and filesystem allocation overhead.
+[Exact SDK bytes and SHA-256](mobile-sdk-sizes.json) · [Integration](../sdk/README.md).
 
 CLI measurements are recorded separately in [the npm artifact report](agent-cli-npm-release.json).
 

@@ -2,7 +2,7 @@
   "tag": "v0.6.8",
   "previousRelease": "v0.6.7",
   "observedAt": "2026-11-24",
-  "scope": "Updated CLI 0.5.8, DSH 0.1.12, browser preview 0.3.8, mobile source SDKs 0.1.8, XLSX 0.1.3 and core 0.1.5. Linux/Windows CLI binaries are cross-built; physical mobile testing is not repeated.",
+  "scope": "Updated CLI 0.5.8, DSH 0.1.12, browser preview 0.3.8, mobile source SDKs 0.1.8, XLSX 0.1.3 and core 0.1.5. Linux/Windows CLI binaries are cross-built; physical mobile testing is not repeated. Mobile source SDKs refreshed to 0.1.9 on 2026-11-25.",
   "node": "24.22.3",
   "typescriptNodeNext": "7.0.2",
   "passed": true,
@@ -23,7 +23,8 @@
     "Latest DSH: 9 paired rounds per format, 36 fresh processes and 216 successful opens; all current performance tables updated",
     "All eight rebuilt native CLI archives match size limits and SHA-256 hashes",
     "Public XLSX/core npm installation: 12 type checks and 8 original issue checks under TypeScript 5.9.3 and 7.0.2",
-    "DSH 0.1.12 isolated install resolves Cordis 4.2/latest Desktop peers without force; Host, Tools and bundled workspace imports pass; all 59 runtime files match hashes"
+    "DSH 0.1.12 isolated install resolves Cordis 4.2/latest Desktop peers without force; Host, Tools and bundled workspace imports pass; all 59 runtime files match hashes",
+    "Mobile SDK 0.1.9: both complete ZIPs <3 MiB; 60 exact offline assets per SDK, 34 browser checks, 44 HEIF pixel checks, 328 conversion fixtures and native streaming/fallback checks"
   ],
   "reports": {
     "previewNpm": "preview-npm-validation.json",
@@ -37,10 +38,14 @@
     "dshPerformance": "assets/dsh-plugin/performance-0.1.11.json",
     "cliNpm": "agent-cli-npm-release.json",
     "dshInstall": "dsh-0.1.12-install-validation.json",
-    "runtimeEquivalence": "dsh-0.1.12-runtime-equivalence.json"
+    "runtimeEquivalence": "dsh-0.1.12-runtime-equivalence.json",
+    "mobileSdkValidation": "mobile-sdk-validation.json"
   },
   "notRun": [
     "CLI and DSH rebuilds",
-    "Native iOS and Android device tests"
+    "Native iOS and Android device tests",
+    "Full Gradle AAR / IPA builds and physical-device tests",
+    "Standard swift test: local SwiftPM PackageDescription manifest linker failure; direct Swift/HTTP harness used",
+    "Windows/Linux host preparation compiler paths"
   ]
 }

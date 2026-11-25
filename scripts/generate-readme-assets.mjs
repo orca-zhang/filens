@@ -12,18 +12,18 @@ const output = path.join(root, 'docs/assets/readme');
 const overviewOnly = process.argv.includes('--overview-only');
 await mkdir(output, { recursive: true });
 const previews = [
-  ['PPTX', 'presentation', '#db6946', 'P'],
-  ['DOCX', 'document', '#4277c6', 'W'],
-  ['XLSX', 'spreadsheet', '#328460', 'X'],
-  ['PDF', 'pdf', '#b96d60', 'F'],
-  ['KEYNOTE', 'iwork', '#478dca', 'K'],
-  ['CAD', 'cad', '#9173b8', 'D'],
-  ['3D', 'model', '#8572b6', '3'],
-  ['360°', 'panorama', '#ba8850', '°'],
-  ['VIDEO', 'video', '#438575', '▶'],
-  ['MUSIC', 'music', '#b46f89', '♪'],
-  ['ARCHIVE', 'archive', '#ab8546', 'Z'],
-  ['EBOOK', 'ebook', '#5b7ea7', 'E']
+  ['PPTX', 'presentation', '#a6eeff', 'P'],
+  ['DOCX', 'document', '#b6d7ff', 'W'],
+  ['XLSX', 'spreadsheet', '#d8ccff', 'X'],
+  ['PDF', 'pdf', '#ffcaed', 'F'],
+  ['KEYNOTE', 'iwork', '#a5dcff', 'K'],
+  ['CAD', 'cad', '#c0ceff', 'D'],
+  ['3D', 'model', '#e2c8ff', '3'],
+  ['360°', 'panorama', '#fed0d9', '°'],
+  ['VIDEO', 'video', '#aceaff', '▶'],
+  ['MUSIC', 'music', '#c6d4ff', '♪'],
+  ['ARCHIVE', 'archive', '#e6c8ff', 'Z'],
+  ['EBOOK', 'ebook', '#ffd7be', 'E']
 ];
 const assets = await Promise.all(previews.map(async ([label, file, color, icon]) => ({
   label, color, icon,
@@ -38,8 +38,24 @@ try {
     canvas.width = 1680;
     canvas.height = 24 + Math.ceil(assets.length / 4) * 316;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#f4f3ed';
+    const background = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    background.addColorStop(0, '#dcf6ff');
+    background.addColorStop(.48, '#eae8ff');
+    background.addColorStop(.8, '#f9e0f5');
+    background.addColorStop(1, '#ffeae1');
+    ctx.fillStyle = background;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const glow = ctx.createRadialGradient(180, 0, 0, 180, 0, 950);
+    glow.addColorStop(0, '#ffffffdc');
+    glow.addColorStop(1, '#ffffff00');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#6b64b720';
+    for (let x = 11; x < canvas.width; x += 22) {
+      for (let y = 11; y < canvas.height; y += 22) {
+        ctx.beginPath(); ctx.arc(x, y, .8, 0, Math.PI * 2); ctx.fill();
+      }
+    }
     for (const [index, asset] of assets.entries()) {
       const x = 24 + (index % 4) * 414;
       const y = 24 + Math.floor(index / 4) * 316;
@@ -47,24 +63,26 @@ try {
       image.src = asset.src;
       await image.decode();
       ctx.save();
-      ctx.shadowColor = '#18352b15';
+      ctx.shadowColor = '#4d43a42b';
       ctx.shadowBlur = 14;
       ctx.shadowOffsetY = 4;
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#ffffffed';
+      ctx.strokeStyle = '#ffffff';
       ctx.beginPath();
       ctx.roundRect(x, y, 390, 292, 14);
       ctx.fill();
+      ctx.stroke();
       ctx.restore();
       ctx.fillStyle = asset.color;
       ctx.beginPath();
       ctx.roundRect(x + 18, y + 14, 30, 32, 6);
       ctx.fill();
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#292b55';
       ctx.font = 'bold 20px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(asset.icon, x + 33, y + 38);
       ctx.textAlign = 'left';
-      ctx.fillStyle = '#2e4538';
+      ctx.fillStyle = '#292b55';
       ctx.font = '600 18px system-ui, sans-serif';
       ctx.fillText(asset.label, x + 60, y + 37);
       ctx.save();

@@ -166,6 +166,13 @@ interface TextMeasurementScope {
 // release it so later renders see current fonts and the current document.
 let textMeasurementScope: TextMeasurementScope | undefined;
 
+/** Share font probes only within one synchronous render batch. */
+export function withTextMeasurementScope<T>(render: () => T): T {
+  const previousScope = textMeasurementScope;
+  textMeasurementScope = {};
+  try { return render(); } finally { textMeasurementScope = previousScope; }
+}
+
 function getTextMeasurementContext(): CanvasRenderingContext2D | null {
   if (textMeasurementScope?.context !== undefined) return textMeasurementScope.context;
   const canvas = document.createElement('canvas');
@@ -181,9 +188,7 @@ export function renderSlideToElement(
   presentation: ParsedPresentation,
   options: RenderSlideOptions = {}
 ): HTMLElement {
-  const previousScope = textMeasurementScope;
-  textMeasurementScope = {};
-  try {
+  return withTextMeasurementScope(() => {
     const registry = options.mediaRegistry ?? new MediaRegistry(presentation);
     const root = document.createElement('div');
     root.className = ['pptxv-slide', options.thumbnail ? 'pptxv-slide--thumbnail' : '', options.className ?? '']
@@ -199,9 +204,7 @@ export function renderSlideToElement(
     }
 
     return root;
-  } finally {
-    textMeasurementScope = previousScope;
-  }
+  });
 }
 
 function renderItem(item: SlideItem, registry: MediaResolver): HTMLElement {
@@ -861,17 +864,28 @@ function renderTableCell(cell: TableCell, registry: MediaResolver): HTMLTableCel
   td.colSpan = cell.colSpan;
   td.style.position = 'relative';
   td.style.overflow = 'hidden';
-  td.style.verticalAlign = verticalAlignToTableCell(cell.textFrame.verticalAlign);
-  applyElementFillStyles(td, cell.fill, registry);
-  applyTableCellBorderStyles(td, cell);
-  const textFrame = renderTextFrame(cell.textFrame, '#111827');
+  const textFrame = renderTableCellContent(td, cell, registry);
   textFrame.style.position = 'absolute';
   textFrame.style.inset = '0';
+  return td;
+}
+
+/** Render shared cell styling and rich text; the host controls sizing and positioning. */
+export function renderTableCellContent(td: HTMLTableCellElement, cell: TableCell, registry: MediaResolver): HTMLElement {
+  td.style.verticalAlign = verticalAlignToTableCell(cell.textFrame.verticalAlign);
+  applyTableCellPaint(td, cell, registry);
+  const textFrame = renderTextFrame(cell.textFrame, '#111827');
   if (cell.fill.type === 'picture') {
     textFrame.style.zIndex = '1';
   }
   td.appendChild(textFrame);
-  return td;
+  return textFrame;
+}
+
+/** Paint a table cell without creating any text DOM. */
+export function applyTableCellPaint(td: HTMLTableCellElement, cell: Partial<Pick<TableCell, 'fill' | 'borders'>>, registry?: MediaResolver): void {
+  if (cell.fill) applyElementFillStyles(td, cell.fill, registry);
+  applyTableCellBorderStyles(td, cell.borders);
 }
 
 interface ChartPlotBounds {
@@ -1406,7 +1420,7 @@ function applyItemShadowStyles(element: HTMLElement, shadow: ShadowStyle | undef
   element.style.filter = `drop-shadow(${Number(shadow.offsetX.toFixed(3))}px ${Number(shadow.offsetY.toFixed(3))}px ${Number(shadow.blur.toFixed(3))}px ${colorWithAlpha(shadow.color, shadow.alpha)})`;
 }
 
-function applyElementFillStyles(element: HTMLElement, fill: FillStyle, registry: MediaResolver): void {
+function applyElementFillStyles(element: HTMLElement, fill: FillStyle, registry?: MediaResolver): void {
   element.style.background = '';
   element.style.backgroundColor = '';
   element.style.backgroundImage = '';
@@ -1420,7 +1434,7 @@ function applyElementFillStyles(element: HTMLElement, fill: FillStyle, registry:
     element.style.background = fillToCss(fill);
   }
 
-  if (fill.type !== 'picture') {
+  if (fill.type !== 'picture' || !registry) {
     return;
   }
 
@@ -3399,16 +3413,16 @@ function createSvgPatternFill(
   };
 }
 
-function applyTableCellBorderStyles(cellElement: HTMLTableCellElement, cell: TableCell): void {
-  if (!cell.borders) {
+function applyTableCellBorderStyles(cellElement: HTMLTableCellElement, borders: TableCell['borders']): void {
+  if (!borders) {
     return;
   }
 
   const borderMap = [
-    ['top', cell.borders.top],
-    ['right', cell.borders.right],
-    ['bottom', cell.borders.bottom],
-    ['left', cell.borders.left]
+    ['top', borders.top],
+    ['right', borders.right],
+    ['bottom', borders.bottom],
+    ['left', borders.left]
   ] as const;
 
   for (const [side, border] of borderMap) {
@@ -3561,6 +3575,9 @@ function applyLinkAttributes(
   anchor: HTMLAnchorElement,
   target: Pick<SlideItem, 'href' | 'slideIndex' | 'navigationAction'> | Pick<TextFrame['paragraphs'][number]['runs'][number], 'href' | 'slideIndex' | 'navigationAction'>
 ): void {
+  if (target.href && /^(?:javascript|vbscript|data):/i.test(target.href.replace(/[\u0000-\u0020\u007f]/g, ''))) {
+    anchor.removeAttribute('href'); anchor.setAttribute('aria-disabled', 'true'); return;
+  }
   anchor.href = target.href ?? (target.slideIndex != null ? `#slide-${target.slideIndex + 1}` : `#action-${target.navigationAction ?? 'link'}`);
   if (target.href) {
     anchor.target = '_blank';

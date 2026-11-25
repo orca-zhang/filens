@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createTextPreviewDriver, resolveFormatRoute, type PreviewLoadContext, type PreviewSource } from '../src/preview';
+import { createTextPreviewDriver, resolveFormatRoute, type PreviewLoadContext, type PreviewOptions, type PreviewSource } from '../src/preview';
 
 const context = (source: PreviewSource, name = 'notes.txt', signal?: AbortSignal): PreviewLoadContext => ({
   descriptor: { source, name }, route: resolveFormatRoute({ name }) ?? undefined, signal
@@ -13,12 +13,12 @@ const deferred = <T>() => {
 const delayedBlob = () => {
   const pending = deferred<string>();
   const blob = new Blob();
-  Object.defineProperty(blob, 'text', { value: () => pending.promise });
+  Object.defineProperty(blob, 'arrayBuffer', { value: () => pending.promise.then(text => new TextEncoder().encode(text).buffer) });
   return { ...pending, blob };
 };
-const makeSession = () => {
+const makeSession = (options: PreviewOptions = {}) => {
   const host = document.createElement('div'); document.body.append(host);
-  return { host, session: createTextPreviewDriver().createSession(host) };
+  return { host, session: createTextPreviewDriver().createSession(host, options) };
 };
 afterEach(() => { vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
@@ -36,8 +36,8 @@ describe('native text preview', () => {
     session.destroy();
   });
 
-  it('opens more lines than the browser argument limit and retains all content and numbers', async () => {
-    const { host, session } = makeSession();
+  it('retains all content and numbers beyond the browser argument limit when virtualization is disabled', async () => {
+    const { host, session } = makeSession({ virtual: false });
     const text = 'const value = 1;\n'.repeat(200_000);
     const source = new TextEncoder().encode(text);
     await session.load(source, context(source, 'large.js'));

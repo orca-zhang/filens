@@ -8,8 +8,15 @@ ESM PPTX parsing and preview core for browser applications.
 - `createViewer(container, options)`
 - `loadPptx(source)`
 - `renderSlideToElement(slide, presentation, options)`
+- `renderTableCellContent(td, cell, mediaRegistry)`
+- `applyTableCellPaint(td, { fill, borders }, mediaRegistry?)`
+- `withTextMeasurementScope(render)`
 
-The package also exports the core runtime types.
+The package also exports the core runtime types. `renderTableCellContent()` applies
+cell fills/borders and appends a rich text frame; its returned element lets the
+host control sizing and positioning. Wrap a synchronous batch of cells in
+`withTextMeasurementScope()` to reuse font probes within that batch. Later
+batches recheck font availability, including after fonts load or are removed.
 
 Workers can import `openZipArchive` and the `ZipEntry` type from
 `@filens/core/zip`. This entry loads ZIP parsing without viewer code or CSS.

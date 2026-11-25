@@ -1,5 +1,6 @@
-import { bindPreviewTouchGestures, MediaRegistry, previewContentKey, previewModelCache, type TableItem } from '@filens/core';
-import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE, type ParsedSheet } from '@filens/xlsx/table';
+import { bindPreviewTouchGestures, MediaRegistry, previewContentKey, previewModelCache, renderTableCellContent, type TableCell, type TableItem } from '@filens/core';
+import type { ParsedCell } from '@filens/xlsx';
+import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE, COLUMN_BATCH_SIZE, SheetRowWindow, type ParsedSheet, type SheetCellRenderer, type SheetRowMeasurements } from '@filens/xlsx/table';
 import type {
   IworkFitMode,
   IworkViewerEventMap,
@@ -48,6 +49,8 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
   const mountedPages = new Map<number, HTMLElement>();
   const visiblePages = new Set<number>();
   const sheetLoads = new Map<number, Promise<void>>();
+  const rowWindows = new Set<SheetRowWindow>();
+  let rowMeasurements = new WeakMap<TableItem, SheetRowMeasurements>();
   let refreshedRows: number[] | undefined;
   let scrollFrame = 0;
   let unbindTouch = () => {};
@@ -67,6 +70,11 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     warnings: state.warnings.slice()
   });
 
+  const clearRowWindows = () => {
+    for (const view of rowWindows) view.destroy();
+    rowWindows.clear();
+  };
+
   const stopLoad = () => {
     unbindTouch();
     unbindTouch = () => {};
@@ -81,6 +89,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     resizeObserver = null;
     if (scrollFrame && typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(scrollFrame);
     scrollFrame = 0;
+    clearRowWindows(); rowMeasurements = new WeakMap();
     stage.replaceChildren();
     stage.classList.remove('iworkv-numbers-stage');
     pageShells = [];
@@ -100,6 +109,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
   const render = () => {
     renderController?.abort();
     renderController = new AbortController();
+    clearRowWindows();
     stage.innerHTML = '';
     stage.classList.toggle('iworkv-numbers-stage', state.document?.kind === 'numbers');
     pageShells = [];
@@ -162,12 +172,11 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     const tables = document.createElement('div');
     tables.className = 'iworkv-numbers-tables';
     const activeSheet = state.document.sheets[state.currentSheet];
-    const renderedTables = (activeSheet?.tables ?? []).map(({ item }, index) => {
-      const sheet = numbersTableToSheet(item, index);
+    const renderedTables: { sheet: ParsedSheet; table: HTMLTableElement; body: HTMLTableSectionElement; renderCell: SheetCellRenderer }[] = [];
+    (activeSheet?.tables ?? []).forEach(({ item }, index) => {
+      const { sheet, renderCell } = numbersTableToSheet(item, index, mediaRegistry);
       const section = document.createElement('section');
       section.className = 'iworkv-numbers-table';
-      // Keep offscreen tables searchable and mounted, but defer their layout.
-      // Estimate the initial height from the grid's 26px rows until measured.
       section.style.containIntrinsicBlockSize = `auto ${(Math.min(Math.max(sheet.rowCount, 1), ROW_BATCH_SIZE) + 1) * 26}px`;
       if ((activeSheet?.tables.length ?? 0) > 1) {
         const title = document.createElement('h3');
@@ -175,11 +184,18 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
         title.textContent = `Table ${index + 1}`;
         section.appendChild(title);
       }
-      const table = createSheetTable(sheet, Math.min(Math.max(sheet.rowCount, 1), refreshedRows?.[index] ?? ROW_BATCH_SIZE));
-      decorateNumbersCells(table, item, mediaRegistry);
-      section.appendChild(table);
       tables.appendChild(section);
-      return { sheet, item, table, body: table.tBodies[0] };
+      const windowed = options.virtual !== false && (sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE);
+      if (windowed) {
+        section.classList.add('is-windowed');
+        const measurements = rowMeasurements.get(item) ?? { heights: new Map<number, number>() };
+        rowMeasurements.set(item, measurements);
+        rowWindows.add(new SheetRowWindow(sheet, grid, section, { renderCell, measurements }));
+      } else {
+        const table = createSheetTable(sheet, Math.min(Math.max(sheet.rowCount, 1), refreshedRows?.[index] ?? ROW_BATCH_SIZE), renderCell);
+        section.appendChild(table);
+        renderedTables.push({ sheet, table, body: table.tBodies[0], renderCell });
+      }
     });
     const floatingItems = activeSheet?.canvas.slide.items.filter((item) => item.kind !== 'table') ?? [];
     if (activeSheet && floatingItems.length) {
@@ -206,17 +222,17 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       if (grid.scrollHeight - grid.scrollTop - grid.clientHeight > grid.clientHeight * 2) {
         return;
       }
-      for (const { sheet, item, table, body } of renderedTables) {
+      for (const { sheet, body, renderCell } of renderedTables) {
         const renderedRows = body.rows.length;
         if (renderedRows < sheet.rowCount) {
-          appendSheetRows(body, sheet, renderedRows + 1, Math.min(renderedRows + ROW_BATCH_SIZE, sheet.rowCount));
-          decorateNumbersCells(table, item, mediaRegistry);
+          appendSheetRows(body, sheet, renderedRows + 1, Math.min(renderedRows + ROW_BATCH_SIZE, sheet.rowCount), renderCell);
         }
       }
     }, { passive: true, signal: renderController!.signal });
 
     preview.replaceChildren(tabs, grid);
     stage.appendChild(preview);
+    for (const view of rowWindows) view.refresh();
   };
 
   const syncMountedPages = () => {
@@ -551,6 +567,9 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       container.scrollTop = top; container.scrollLeft = left;
       const nextGrid = stage.querySelector<HTMLElement>('.xlsxv-grid');
       if (nextGrid) { nextGrid.scrollTop = gridTop; nextGrid.scrollLeft = gridLeft; }
+      for (const view of rowWindows) view.refresh();
+      // The initial left-column window can briefly clamp the old horizontal offset.
+      if (nextGrid) nextGrid.scrollLeft = gridLeft;
       emit('rendered', getState());
     },
     destroy() {
@@ -615,7 +634,9 @@ function waitForLoad<T>(task: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
-function numbersTableToSheet(table: TableItem, index: number): ParsedSheet {
+function numbersTableToSheet(table: TableItem, index: number, registry: MediaRegistry | null): { sheet: ParsedSheet; renderCell: SheetCellRenderer } {
+  const sources = new WeakMap<ParsedCell, TableCell>();
+  const merges: NonNullable<ParsedSheet['merges']> = [];
   const rows = new Map<number, ParsedSheet['rows'][number]>();
   for (const cell of table.cells) {
     if (cell.isMergedContinuation) {
@@ -623,44 +644,47 @@ function numbersTableToSheet(table: TableItem, index: number): ParsedSheet {
     }
     const rowIndex = cell.row + 1;
     const row = rows.get(rowIndex) ?? { index: rowIndex, cells: [] };
-    row.cells.push({
+    const entry: ParsedCell = {
       ref: `${rowIndex}:${cell.column + 1}`,
       row: rowIndex,
       column: cell.column + 1,
       value: cell.textFrame.paragraphs
         .map((paragraph) => paragraph.runs.map((run) => run.text).join(''))
         .join('\n')
-    });
+    };
+    row.cells.push(entry); sources.set(entry, cell);
     rows.set(rowIndex, row);
+    if (cell.rowSpan > 1 || cell.colSpan > 1) merges.push({ firstRow: rowIndex, lastRow: cell.row + cell.rowSpan,
+      firstColumn: cell.column + 1, lastColumn: cell.column + cell.colSpan });
   }
-  return {
+  return { sheet: {
     id: table.id,
     name: `Table ${index + 1}`,
     rows: [...rows.values()].sort((left, right) => left.index - right.index),
     columnCount: Math.max(table.columns.length, 1),
-    rowCount: Math.max(table.rows.length, 1)
-  };
-}
-
-function decorateNumbersCells(table: HTMLTableElement, item: TableItem, registry: MediaRegistry | null): void {
-  if (!registry) {
-    return;
-  }
-  for (const cell of item.cells) {
-    if (cell.isMergedContinuation || cell.fill.type !== 'picture' || !cell.fill.mediaId) {
-      continue;
-    }
-    const element = table.tBodies[0]?.rows[cell.row]?.cells[cell.column + 1];
-    if (!element || element.querySelector('.iworkv-cell-image')) {
-      continue;
-    }
-    const image = document.createElement('img');
-    image.className = 'iworkv-cell-image';
-    image.src = registry.getUrl(cell.fill.mediaId);
-    image.alt = '';
-    image.loading = 'lazy';
-    element.prepend(image);
-  }
+    rowCount: Math.max(table.rows.length, 1),
+    rowHeights: table.rows,
+    columnWidths: table.columns,
+    merges
+  }, renderCell: (element, cell) => {
+    const source = sources.get(cell);
+    if (!source || !registry) return;
+    element.replaceChildren(); element.classList.add('iworkv-rich-cell'); element.style.padding = '0';
+    element.style.setProperty('--xlsxv-merge-padding-left', '0px');
+    element.style.setProperty('--xlsxv-merge-padding-inline', '0px');
+    element.style.setProperty('--xlsxv-merge-padding-block', '0px');
+    const frame = source.textFrame;
+    const text = renderTableCellContent(element, { ...source,
+      fill: source.fill.type === 'picture' ? { type: 'none' } : source.fill,
+      textFrame: { ...frame, verticalAlign: frame.verticalAlign ?? 'top', padding: frame.padding ?? { top: 4, right: 8, bottom: 4, left: 8 },
+        paragraphs: frame.paragraphs.map(paragraph => paragraph.runs.some(run => run.fontSize != null) ? paragraph
+          : { ...paragraph, runs: paragraph.runs.map(run => ({ ...run, fontSize: 12 })) }) }
+    }, registry);
+    if (source.fill.type === 'gradient') element.style.backgroundRepeat = 'no-repeat';
+    if (source.fill.type !== 'picture' || !source.fill.mediaId) return;
+    const image = document.createElement('img'); image.className = 'iworkv-cell-image';
+    image.src = registry.getUrl(source.fill.mediaId); image.alt = ''; image.loading = 'lazy'; text.prepend(image);
+  } };
 }
 
 function resolveSourceName(source: unknown): string | undefined {

@@ -100,6 +100,18 @@ describe('Shared ZIP reader', () => {
     await expect(independent.text()).resolves.toBe('hello');
   });
 
+  it.each(['shared.txt', '目录/shared.txt'])('keeps a shared cache fill usable when one concurrent read of %s is cancelled', async name => {
+    const zip = new JSZip(); zip.file(name, 'shared content');
+    const entry = (await openZipArchive(await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' }))).get(name)!;
+    const controller = new AbortController();
+    const cancelled = entry.bytes(undefined, controller.signal).then(() => 'read', error => error.name);
+    const current = entry.text().then(value => value, error => error.name);
+    controller.abort();
+    expect(await cancelled).toBe('AbortError');
+    expect(await current).toBe('shared content');
+    await expect(entry.text()).resolves.toBe('shared content');
+  });
+
   it.each(['plain.txt', '目录/hello.txt'])('enforces size limits without inflating %s', async name => {
     const zip = new JSZip();
     zip.file(name, 'hello');

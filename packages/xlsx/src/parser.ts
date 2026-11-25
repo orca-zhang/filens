@@ -1,9 +1,18 @@
 import type { XMLParser } from 'fast-xml-parser';
-import { openZipArchive, officeFontTraits, fontTraitsFromPanose, type PreviewFontReference, type ZipEntry, type PreviewLoadContext, type PreviewSource } from '@filens/core';
-import type { ParsedCell, ParsedRow, ParsedSheet, ParsedWorkbook } from './types';
+import { openZipArchive, type PreviewFontReference, type ZipEntry, type PreviewLoadContext, type PreviewSource } from '@filens/core';
+import type { ParsedCell, ParsedCellStyle, ParsedColumnStyle, ParsedColumnWidthSource, ParsedConditionalStyle, ParsedDefinedName, ParsedMerge, ParsedRichText, ParsedRow, ParsedSheet, ParsedWorkbook } from './types';
 import { readSimpleWorksheet } from './simple-worksheet';
+import { xlsxColumnWidths } from './xlsx-column-widths';
+import { colorReader, readDifferentialStyles, readFontReference, readStyleAppearance } from './style-appearance';
+import { readConditionalRules } from './conditional-rules';
+import { columnStyleLookup } from './column-styles';
+import { readPath, toArray } from './xml-values';
+import { registerWorkbookFormulas } from './cell-value';
+import { formulaName, MAX_FORMULA_LENGTH } from './formula-reader';
+import { SharedFormulaReader } from './shared-formulas';
+import { createRichTextReader, readTextValue } from './rich-text';
 export { resolveCellValue } from './cell-value';
-import { columnIndexToName, parseCellRef } from './columns';
+import { columnIndexToName, parseCellRef, parseSheetRange } from './columns';
 
 const MAX_XML_ENTITY_EXPANSIONS = 100_000;
 
@@ -16,6 +25,8 @@ function loadXmlParser(): Promise<XMLParser> {
     parseTagValue: false,
     parseAttributeValue: false,
     trimValues: false,
+    // This parser also gates XML numeric character references behind htmlEntities.
+    htmlEntities: true,
     processEntities: {
       enabled: true,
       maxEntitySize: 10_000,
@@ -55,16 +66,20 @@ export async function loadXlsxWorkbook(source: PreviewSource, context?: PreviewL
   const relsXml = await readRequiredText(zip, 'xl/_rels/workbook.xml.rels', context?.signal);
   const parser = await loadXmlParser();
   checkAborted(context?.signal);
-  const sharedStrings = await readSharedStrings(zip, parser, context?.signal);
-  checkAborted(context?.signal);
   const workbook = parser.parse(workbookXml) as Record<string, unknown>;
+  const date1904 = ['1', 'true'].includes(String(readPath(workbook, ['workbook', 'workbookPr', 'date1904'])));
   const relationships = readRelationships(relsXml, parser);
-  const fontStyles = await readFontStyles(zip, relationships, parser, context?.signal);
+  const workbookStyles = await readWorkbookStyles(zip, relationships, parser, context?.signal);
+  const readRichText = createRichTextReader(workbookStyles.theme, workbookStyles.color, workbookStyles.fonts);
+  const sharedPath = resolveWorkbookTarget(relationships.find(rel => rel.type?.endsWith('/sharedStrings'))?.target ?? 'sharedStrings.xml');
+  const sharedStrings = await readSharedStrings(zip.get(sharedPath), parser, readRichText, context?.signal);
+  const hasRichSharedStrings = sharedStrings.some(value => typeof value !== 'string');
   const sheets = readWorkbookSheets(workbook);
 
   const parsedSheets: ParsedSheet[] = [];
   for (const sheet of sheets) {
     checkAborted(context?.signal);
+    if (!sheet.relationshipId) continue;
     const relationship = relationships.find((entry) => entry.id === sheet.relationshipId);
     if (!relationship) {
       warnings.push(`Missing relationship for sheet ${sheet.name}.`);
@@ -83,15 +98,25 @@ export async function loadXlsxWorkbook(source: PreviewSource, context?: PreviewL
       id: sheet.sheetId,
       name: sheet.name,
       sharedStrings,
-      fontStyles: fontStyles.styles
+      hasRichSharedStrings,
+      readRichText,
+      styles: workbookStyles.styles,
+      differentialStyles: workbookStyles.differentialStyles,
+      columnWidthFont: workbookStyles.columnWidthFont,
+      date1904,
+      warnings
     }, parser));
   }
 
-  return {
+  const definedNames = readDefinedNames(workbook, sheets, warnings);
+  const parsed = {
     sheets: parsedSheets,
     warnings,
-    fonts: fontStyles.fonts
+    fonts: workbookStyles.fonts,
+    ...(definedNames.length ? { definedNames } : {})
   };
+  registerWorkbookFormulas(parsed);
+  return parsed;
 }
 
 export async function loadCsvWorkbook(source: PreviewSource, context?: PreviewLoadContext): Promise<ParsedWorkbook> {
@@ -278,9 +303,9 @@ async function readRequiredText(zip: Map<string, ZipEntry>, path: string, signal
   return text;
 }
 
-async function readSharedStrings(zip: Map<string, ZipEntry>, parser: XMLParser, signal?: AbortSignal): Promise<string[]> {
+async function readSharedStrings(file: ZipEntry | undefined, parser: XMLParser,
+  readRichText: ReturnType<typeof createRichTextReader>, signal?: AbortSignal): Promise<(string | ParsedRichText)[]> {
   checkAborted(signal);
-  const file = zip.get('xl/sharedStrings.xml');
   if (!file) {
     return [];
   }
@@ -288,31 +313,7 @@ async function readSharedStrings(zip: Map<string, ZipEntry>, parser: XMLParser, 
   checkAborted(signal);
   const document = parser.parse(xml) as Record<string, unknown>;
   const items = toArray(readPath(document, ['sst', 'si']));
-  return items.map(readSharedStringItem);
-}
-
-function readSharedStringItem(item: unknown): string {
-  const text = readPath(item, ['t']);
-  if (text != null) {
-    return readTextValue(text);
-  }
-
-  const runs = toArray(readPath(item, ['r']));
-  if (runs.length) {
-    return runs
-      .map((run) => {
-        return readTextValue(readPath(run, ['t']));
-      })
-      .join('');
-  }
-
-  return '';
-}
-
-function readTextValue(node: unknown): string {
-  if (typeof node === 'string') return node;
-  const text = readPath(node, ['#text']);
-  return typeof text === 'string' ? text : '';
+  return items.map(readRichText);
 }
 
 function readRelationships(xml: string, parser: XMLParser): RelationshipRef[] {
@@ -332,68 +333,65 @@ function readWorkbookSheets(workbook: Record<string, unknown>): WorkbookSheetRef
       name: String(readPath(sheet, ['name']) ?? 'Sheet'),
       sheetId: String(readPath(sheet, ['sheetId']) ?? readPath(sheet, ['name']) ?? 'sheet'),
       relationshipId: String(readPath(sheet, ['r:id']) ?? '')
-    }))
-    .filter((sheet) => sheet.relationshipId);
+    }));
 }
 
-async function readFontStyles(zip: Map<string, ZipEntry>, relationships: RelationshipRef[], parser: XMLParser, signal?: AbortSignal): Promise<{
-  fonts: PreviewFontReference[]; styles: Array<PreviewFontReference | undefined>;
+function readDefinedNames(workbook: unknown, sheets: readonly WorkbookSheetRef[], warnings: string[]): ParsedDefinedName[] {
+  const names: ParsedDefinedName[] = [];
+  const keys = new Set<string>();
+  let invalid = 0, duplicates = 0;
+  for (const entry of toArray(readPath(workbook, ['workbook', 'definedNames', 'definedName']))) {
+    const name = readPath(entry, ['name']), ordinal = readPath(entry, ['localSheetId']);
+    const formula = readTextValue(entry).trim();
+    const sheet = typeof ordinal === 'string' && /^\d+$/.test(ordinal) ? sheets[Number(ordinal)]?.name : undefined;
+    if (typeof name !== 'string' || name.length > 255 || !formulaName.test(name) || !formula
+      || formula.length > MAX_FORMULA_LENGTH || (ordinal !== undefined && sheet === undefined)) {
+      invalid++;
+      continue;
+    }
+    const key = JSON.stringify([sheet?.toLowerCase(), name.toLowerCase()]);
+    if (keys.has(key)) duplicates++;
+    else keys.add(key);
+    names.push({ name, formula, ...(sheet !== undefined ? { sheet } : {}) });
+  }
+  if (invalid) warnings.push(`Ignored ${invalid} invalid XLSX defined name entries.`);
+  if (duplicates) warnings.push(`Found ${duplicates} duplicate XLSX defined name entries.`);
+  return names;
+}
+
+async function readWorkbookStyles(zip: Map<string, ZipEntry>, relationships: RelationshipRef[], parser: XMLParser, signal?: AbortSignal): Promise<{
+  fonts: PreviewFontReference[]; styles: ParsedCellStyle[];
+  differentialStyles: ParsedConditionalStyle[];
+  columnWidthFont?: Pick<ParsedColumnWidthSource, 'font' | 'fontSize'>;
+  theme: unknown; color: ReturnType<typeof colorReader>;
 }> {
   const stylePath = resolveWorkbookTarget(relationships.find(rel => rel.type?.endsWith('/styles'))?.target ?? 'styles.xml');
   const xml = await zip.get(stylePath)?.text();
   checkAborted(signal);
-  if (!xml) return { fonts: [], styles: [] };
-  const styles = parser.parse(xml) as Record<string, unknown>;
   const themePath = resolveWorkbookTarget(relationships.find(rel => rel.type?.endsWith('/theme'))?.target ?? 'theme/theme1.xml');
   const themeXml = await zip.get(themePath)?.text();
   checkAborted(signal);
   const theme = themeXml ? parser.parse(themeXml) : undefined;
-  const fonts: PreviewFontReference[] = toArray(readPath(styles, ['styleSheet', 'fonts', 'font'])).map(font => {
-    const scheme = readPath(font, ['scheme', 'val']);
-    const latin = scheme === 'major' || scheme === 'minor'
-      ? readLocalPath(theme, ['theme', 'themeElements', 'fontScheme', `${scheme}Font`, 'latin']) : undefined;
-    const themeFamily = readLocalPath(latin, ['typeface']);
-    const themed = typeof themeFamily === 'string' && themeFamily.trim() ? themeFamily : undefined;
-    const fontFamily = String(themed ?? readPath(font, ['name', 'val']) ?? '').trim();
-    const pitchFamily = Number(readLocalPath(latin, ['pitchFamily']));
-    const validPitch = Number.isInteger(pitchFamily) && pitchFamily >= 0 && pitchFamily <= 255;
-    const pitch = validPitch && (pitchFamily & 3) === 1 ? 'fixed' : validPitch && (pitchFamily & 3) === 2 ? 'variable' : undefined;
-    const themeTraits = validPitch ? officeFontTraits(pitchFamily >> 4) : {};
-    const panose = readLocalPath(latin, ['panose']);
-    const bold = readPath(font, ['b']);
-    const weight = bold !== undefined && !['0', 'false'].includes(String(readPath(bold, ['val']) ?? bold)) ? 700 : 400;
-    return {
-      fontFamily: fontFamily || undefined,
-      // Saved family metadata describes the saved face, not a changed theme face.
-      traits: {
-        ...(themed ? { ...themeTraits, ...fontTraitsFromPanose(typeof panose === 'string' ? panose : undefined),
-          ...officeFontTraits(undefined, pitch) }
-          : officeFontTraits(readPath(font, ['family', 'val']) as string | undefined)),
-        weight
-      }
-    };
-  });
+  const styles = xml ? parser.parse(xml) as Record<string, unknown> : undefined;
+  const styleSheet = readPath(styles, ['styleSheet']);
+  const color = colorReader(styleSheet, theme);
+  if (!xml) return { fonts: [], styles: [], differentialStyles: [], theme, color };
+  const fontEntries = toArray(readPath(styles, ['styleSheet', 'fonts', 'font']));
+  const fonts = fontEntries.map(font => readFontReference(font, theme));
   const bases = toArray(readPath(styles, ['styleSheet', 'cellStyleXfs', 'xf']));
   const cells = toArray(readPath(styles, ['styleSheet', 'cellXfs', 'xf']));
+  const normal = toArray(readPath(styles, ['styleSheet', 'cellStyles', 'cellStyle']))
+    .find(style => String(readPath(style, ['builtinId'])) === '0' || readPath(style, ['name']) === 'Normal');
+  const normalFontId = Number(readPath(bases[Number(readPath(normal, ['xfId']) ?? 0)], ['fontId']) ?? 0);
+  const normalSize = Number(readPath(fontEntries[normalFontId], ['sz', 'val']));
   return {
     fonts,
-    styles: cells.map(cell => {
-      const base = bases[Number(readPath(cell, ['xfId']) ?? 0)];
-      const inherit = ['0', 'false'].includes(String(readPath(cell, ['applyFont'])));
-      const fontId = inherit ? readPath(base, ['fontId']) : readPath(cell, ['fontId']) ?? readPath(base, ['fontId']);
-      return fonts[Number(fontId ?? 0)];
-    })
+    theme,
+    color,
+    columnWidthFont: { font: fonts[normalFontId], fontSize: Number.isFinite(normalSize) && normalSize > 0 ? normalSize : 11 },
+    styles: readStyleAppearance(styleSheet, color, fontEntries, fonts, bases, cells),
+    differentialStyles: readDifferentialStyles(styleSheet, color)
   };
-}
-
-function readLocalPath(value: unknown, segments: string[]): unknown {
-  for (const segment of segments) {
-    if (!value || typeof value !== 'object') return undefined;
-    const record = value as Record<string, unknown>;
-    const key = Object.keys(record).find(key => key.split(':').pop() === segment);
-    value = key ? record[key] : undefined;
-  }
-  return value;
 }
 
 function readWorksheet(
@@ -401,27 +399,66 @@ function readWorksheet(
   options: {
     id: string;
     name: string;
-    sharedStrings: string[];
-    fontStyles?: ParsedCell['font'][];
+    sharedStrings: (string | ParsedRichText)[];
+    hasRichSharedStrings: boolean;
+    readRichText: ReturnType<typeof createRichTextReader>;
+    styles: ParsedCellStyle[];
+    differentialStyles: ParsedConditionalStyle[];
+    columnWidthFont?: Pick<ParsedColumnWidthSource, 'font' | 'fontSize'>;
+    date1904: boolean;
+    warnings: string[];
   },
   parser: XMLParser
 ): ParsedSheet {
-  let columnStyle: ((column: number) => number) | undefined;
-  if (options.fontStyles?.length && /<cols\b/.test(xml) && !xml.includes('<!')) {
+  let metadata: unknown;
+  const hasColumnMetadata = /<(?:cols|sheetFormatPr)\b/.test(xml);
+  if (hasColumnMetadata && !xml.includes('<!')) {
     const dataStart = /<sheetData\b/.exec(xml)?.index;
-    if (dataStart !== undefined && xml.lastIndexOf('<cols') < dataStart) {
+    if (dataStart !== undefined && xml.lastIndexOf('<cols') < dataStart && xml.lastIndexOf('<sheetFormatPr') < dataStart) {
       // Parse only metadata with the existing XML parser, without creating an
       // intermediate XML object tree for every numeric/shared-string cell.
-      const metadata = parser.parse(xml.slice(0, dataStart) + '</worksheet>');
-      if (readPath(metadata, ['worksheet']) !== undefined) columnStyle = readColumnStyles(metadata);
+      metadata = parser.parse(xml.slice(0, dataStart) + '</worksheet>');
     }
   }
-  const simple = readSimpleWorksheet(xml, columnStyle ? { ...options, columnStyle } : options);
-  if (simple) return simple;
-  const document = parser.parse(xml) as Record<string, unknown>;
+  let columnStyles = options.styles.length ? readColumnStyles(metadata) : [];
+  let columnStyle = columnStyleLookup(columnStyles);
+  const simple = hasColumnMetadata && !metadata ? undefined : readSimpleWorksheet(xml, { ...options, columnStyle });
+  // Keep worksheet metadata in its source structure while leaving fast-path rows out of the XML tree.
+  const dataStart = simple ? /<sheetData\b/.exec(xml)!.index : 0;
+  const dataEnd = simple ? xml.indexOf('</sheetData>', dataStart) + '</sheetData>'.length : 0;
+  const document = parser.parse(simple ? xml.slice(0, dataStart) + xml.slice(dataEnd) : xml) as Record<string, unknown>;
+  const merges = readMergedRanges(document, options.warnings, options.name);
+  const conditionalRules = readConditionalRules(document, options.differentialStyles, options.warnings, options.name);
+  const columnWidthSource = readColumnWidthSource(simple ? metadata : document, options);
+  if (!simple && options.styles.length) {
+    columnStyles = readColumnStyles(document);
+    columnStyle = columnStyleLookup(columnStyles);
+  }
+  const variableHeight = options.styles.some(style => style.wrap || style.borders || (style.fontSize ?? 0) * 1.3 + 9 > 26)
+    || conditionalRules.some(rule => rule.style?.borders);
+  const finish = (sheet: ParsedSheet): ParsedSheet => {
+    if (merges.length) {
+      sheet.merges = merges;
+      for (const range of merges) {
+        sheet.rowCount = Math.max(sheet.rowCount, range.lastRow);
+        sheet.columnCount = Math.max(sheet.columnCount, range.lastColumn);
+      }
+    }
+    sheet.columnCount = Math.min(sheet.columnCount, 16_384);
+    sheet.rowCount = Math.min(sheet.rowCount, 1_048_576);
+    sheet.columnWidthSource = columnWidthSource;
+    sheet.columnWidths = xlsxColumnWidths(sheet.columnCount, columnWidthSource);
+    if (options.date1904) sheet.date1904 = true;
+    if (conditionalRules.length) sheet.conditionalRules = conditionalRules;
+    const measureRows = variableHeight || ((options.hasRichSharedStrings || !simple && /<rPr\b/.test(xml))
+      && sheet.rows.some(row => row.cells.some(cell => cell.richText)));
+    if (options.styles.length || measureRows) sheet.cellStyles = { formats: options.styles, columns: columnStyles, variableHeight: measureRows };
+    return sheet;
+  };
+  if (simple) return finish(simple);
   const rowEntries = toArray(readPath(document, ['worksheet', 'sheetData', 'row']));
   const rows: ParsedRow[] = [];
-  columnStyle ??= options.fontStyles?.length ? readColumnStyles(document) : undefined;
+  const shared = new SharedFormulaReader();
   let maxColumn = 0;
   let maxRow = 0;
 
@@ -431,43 +468,77 @@ function readWorksheet(
     const rowStyle = ['1', 'true'].includes(String(readPath(rowEntry, ['customFormat']))) ? readPath(rowEntry, ['s']) : undefined;
     const cells = toArray(readPath(rowEntry, ['c']))
       .map((cellEntry) => {
-        const cell = readCell(cellEntry, options.sharedStrings);
+        const cell = readCell(cellEntry, options, shared);
         if (!cell) return null;
-        const style = (cellEntry as Record<string, unknown>).s ?? rowStyle ?? columnStyle?.(cell.column) ?? 0;
-        const font = options.fontStyles?.[Number(style)];
+        const index = Number(readPath(cellEntry, ['s']) ?? rowStyle ?? columnStyle(cell.column));
+        const font = options.styles[index]?.font;
         if (font) cell.font = font;
+        if (options.styles.length && index !== 0) cell.styleIndex = index;
         return cell;
       })
       .filter((cell): cell is ParsedCell => cell != null);
     for (const cell of cells) {
       maxColumn = Math.max(maxColumn, cell.column);
     }
-    rows.push({
-      index: rowIndex,
-      cells
-    });
+    rows.push({ index: rowIndex, cells, ...(options.styles.length && rowStyle !== undefined ? { styleIndex: Number(rowStyle) } : {}) });
   }
 
-  return {
+  const sharedFormulas = shared.finish(rows, options.warnings, options.name);
+  return finish({
     id: options.id,
     name: options.name,
     rows,
     columnCount: maxColumn,
-    rowCount: maxRow
+    rowCount: maxRow,
+    ...(sharedFormulas ? { sharedFormulas } : {})
+  });
+}
+
+function readColumnWidthSource(document: unknown, options: { name: string; warnings: string[]; columnWidthFont?: Pick<ParsedColumnWidthSource, 'font' | 'fontSize'> }): ParsedColumnWidthSource {
+  const ranges: ParsedColumnWidthSource['ranges'][number][] = [];
+  let invalid = 0;
+  for (const column of toArray(readPath(document, ['worksheet', 'cols', 'col']))) {
+    const value = readPath(column, ['width']);
+    if (value === undefined) continue;
+    const firstColumn = Number(readPath(column, ['min'])), lastColumn = Number(readPath(column, ['max'])), width = Number(value);
+    if (!Number.isInteger(firstColumn) || !Number.isInteger(lastColumn) || firstColumn < 1 || firstColumn > lastColumn
+      || lastColumn > 16_384 || !Number.isFinite(width * 256) || width <= 0) { invalid++; continue; }
+    ranges.push({ firstColumn, lastColumn, width });
+  }
+  const format = readPath(document, ['worksheet', 'sheetFormatPr']);
+  const readWidth = (name: string, allowZero = false) => {
+    const value = readPath(format, [name]);
+    if (value === undefined) return undefined;
+    const width = Number(value);
+    if (Number.isFinite(width * 256) && (allowZero ? Number.isInteger(width) && width >= 0 : width > 0)) return width;
+    invalid++; return undefined;
   };
+  const defaultWidth = readWidth('defaultColWidth'), baseWidth = readWidth('baseColWidth', true);
+  if (invalid) options.warnings.push(`Ignored ${invalid} invalid or unsupported column width declaration(s) in sheet ${options.name}.`);
+  return { ranges, defaultWidth, baseWidth: baseWidth ?? 8, fontSize: 11, ...options.columnWidthFont };
 }
 
-function readColumnStyles(document: unknown): (column: number) => number {
-  const columns = toArray(readPath(document, ['worksheet', 'cols', 'col'])).map(column => ({
-    min: Number(readPath(column, ['min'])), max: Number(readPath(column, ['max'])), style: Number(readPath(column, ['style']) ?? 0)
+function readMergedRanges(document: unknown, warnings: string[], name: string): ParsedMerge[] {
+  const ranges: ParsedMerge[] = [];
+  let invalid = 0;
+  for (const entry of toArray(readPath(document, ['worksheet', 'mergeCells', 'mergeCell']))) {
+    const range = parseSheetRange(String(readPath(entry, ['ref']) ?? '').trim());
+    if (range) ranges.push(range);
+    else invalid++;
+  }
+  if (invalid) warnings.push(`Ignored ${invalid} invalid merged range(s) in sheet ${name}.`);
+  return ranges;
+}
+
+function readColumnStyles(document: unknown): ParsedColumnStyle[] {
+  return toArray(readPath(document, ['worksheet', 'cols', 'col'])).map(column => ({
+    firstColumn: Number(readPath(column, ['min'])), lastColumn: Number(readPath(column, ['max'])), styleIndex: Number(readPath(column, ['style']) ?? 0)
   }));
-  const cache: number[] = [];
-  // Cache columns actually read, preserving the first declaration even when
-  // unstyled. Never expand a declared range into individual columns.
-  return column => cache[column] ??= columns.find(range => column >= range.min && column <= range.max)?.style ?? 0;
 }
 
-function readCell(cellEntry: unknown, sharedStrings: string[]): ParsedCell | null {
+function readCell(cellEntry: unknown, { sharedStrings, readRichText }: {
+  sharedStrings: (string | ParsedRichText)[]; readRichText: ReturnType<typeof createRichTextReader>;
+}, shared: SharedFormulaReader): ParsedCell | null {
   if (!cellEntry || typeof cellEntry !== 'object') return null;
   const entry = cellEntry as Record<string, unknown>;
   const ref = String(entry.r ?? '');
@@ -480,23 +551,39 @@ function readCell(cellEntry: unknown, sharedStrings: string[]): ParsedCell | nul
   const rawValue = entry.v == null ? null : String(entry.v);
   const formula = readTextValue(entry.f);
   let value = rawValue ?? '';
+  let parsedType: ParsedCell['valueType'];
+  let richText: ParsedRichText | undefined;
 
-  if (valueType === 's') {
-    value = sharedStrings[Number(rawValue ?? '')] ?? '';
+  if (valueType === 's' || valueType === 'inlineStr') {
+    parsedType = 'text';
+    const text = valueType === 'inlineStr' ? readRichText(entry.is) : rawValue?.trim() ? sharedStrings[Number(rawValue)] ?? '' : '';
+    if (typeof text === 'string') value = text;
+    else { richText = text; value = text.value; }
   } else if (valueType === 'b') {
+    parsedType = 'boolean';
     const boolean = rawValue?.trim();
     value = boolean === '1' || boolean === 'true' ? 'TRUE' : 'FALSE';
-  } else if (valueType === 'inlineStr') {
-    value = readSharedStringItem(entry.is);
+  } else if (valueType === 'str') {
+    parsedType = 'text';
+  } else if (valueType === 'e') {
+    parsedType = 'error';
+  } else if (valueType === 'd') {
+    parsedType = 'date';
   }
 
-  return {
+  const uncached = rawValue == null || (!parsedType && rawValue.trim() === '');
+  const isShared = readPath(entry.f, ['t']) === 'shared';
+  const cell: ParsedCell = {
     ref,
     row: position.row,
     column: position.column,
-    value,
-    ...(formula ? { formula, needsCalculation: rawValue == null } : {})
+    value: uncached && (formula || isShared) ? '' : value,
+    ...(parsedType ? { valueType: parsedType } : {}),
+    ...(richText && !(uncached && (formula || isShared)) ? { richText } : {}),
+    ...(formula ? { formula, needsCalculation: uncached } : {})
   };
+  if (isShared) shared.add(entry.f, cell, uncached);
+  return cell;
 }
 
 function inferCsvSheetName(name: string | undefined): string {
@@ -511,22 +598,4 @@ function normalizeFormat(format: string | undefined): string {
 function resolveWorkbookTarget(target: string): string {
   const normalized = target.replace(/\\/g, '/').replace(/^\//, '');
   return normalized.startsWith('xl/') ? normalized : `xl/${normalized}`;
-}
-
-function readPath(source: unknown, path: string[]): unknown {
-  let cursor = source;
-  for (const part of path) {
-    if (!cursor || typeof cursor !== 'object') {
-      return undefined;
-    }
-    cursor = (cursor as Record<string, unknown>)[part];
-  }
-  return cursor;
-}
-
-function toArray<T = unknown>(value: unknown): T[] {
-  if (value == null) {
-    return [];
-  }
-  return Array.isArray(value) ? (value as T[]) : [value as T];
 }

@@ -1,0 +1,18 @@
+{
+  "style": "FiLens logo palette",
+  "sources": [
+    {
+      "input": "docs/assets/readme/demo.gif",
+      "output": "preview.gif"
+    },
+    {
+      "input": "docs/assets/dsh-release/office-preview.en.gif",
+      "output": "dsh-preview.en.gif"
+    },
+    {
+      "input": "docs/assets/dsh-release/office-preview.zh-CN.gif",
+      "output": "dsh-preview.zh-CN.gif"
+    }
+  ],
+  "editing": "Presentation frame only. Source UI and captions retained; sampled at 12 fps. No new product or timing claims."
+}

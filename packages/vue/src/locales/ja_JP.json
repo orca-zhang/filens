@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "この動画ではピクチャーインピクチャーを利用できません",
   "Subtitles": "字幕",
   "Subtitles off": "字幕オフ",
-  "Subtitles {number}": "字幕 {number}"
+  "Subtitles {number}": "字幕 {number}",
+  "Find in document": "文書内を検索",
+  "Previous match": "前の一致",
+  "Next match": "次の一致",
+  "Search incomplete": "検索は未完了です",
+  "Wrap lines": "行を折り返す"
 }

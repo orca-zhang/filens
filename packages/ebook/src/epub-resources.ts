@@ -45,7 +45,7 @@ export async function createEpubResources(
     // Inflate only resources a chapter or stylesheet references. Keep URLs,
     // rather than another copy of every expanded asset in the manifest.
     const file = zip.get(path);
-    let source: PreviewSource | undefined = file ? await file.bytes() : undefined;
+    let source: PreviewSource | undefined = file ? await file.bytes(undefined, signal) : undefined;
     checkAborted(signal);
     let type = mediaTypes.get(path) || contentType(path);
     if (!file && resourceResolver) {

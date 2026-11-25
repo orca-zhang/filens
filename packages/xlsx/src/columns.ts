@@ -26,3 +26,13 @@ export function parseCellRef(ref: string): { row: number; column: number } {
     row: Number(match[2] ?? 1)
   };
 }
+import type { ParsedMerge } from './types';
+
+
+export function parseSheetRange(value: string): ParsedMerge | undefined {
+  const match = /^(\$?[A-Z]{1,3}\$?[1-9]\d*)(?::(\$?[A-Z]{1,3}\$?[1-9]\d*))?$/i.exec(value);
+  if (!match) return undefined;
+  const first = parseCellRef(match[1].replace(/\$/g, '')), last = parseCellRef((match[2] ?? match[1]).replace(/\$/g, ''));
+  if (first.row > last.row || first.column > last.column || last.row > 1_048_576 || last.column > 16_384) return undefined;
+  return { firstRow: first.row, lastRow: last.row, firstColumn: first.column, lastColumn: last.column };
+}

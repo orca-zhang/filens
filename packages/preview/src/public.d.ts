@@ -30,6 +30,8 @@ export interface BrowserPreviewOptions {
   initialScale?: number;
   minScale?: number;
   maxScale?: number;
+  /** Disable viewport windows when a host explicitly needs the entire text DOM. */
+  virtual?: boolean;
   onRendered?: (state: unknown) => void;
   onError?: (error: Error) => void;
   requestPassword?: (request: {
@@ -44,10 +46,23 @@ export interface BrowserPreviewOptions {
 export interface BrowserPreview {
   update(options: Partial<BrowserPreviewOptions>): void;
   /** Inspect the current viewer when using an application-owned toolbar. */
-  getState(): { family: string; loading: boolean; scale?: number; [key: string]: unknown } | undefined;
+  getState(): { family: string; loading: boolean; scale?: number; search?: PreviewSearchState; chapterLoading?: boolean; [key: string]: unknown } | undefined;
+  find(query: string): Promise<void> | undefined;
+  findNext(backward?: boolean): void;
+  setWrap(wrap: boolean): void;
   setScale(scale: number): void;
   fullscreen(): Promise<void> | undefined;
   destroy(): void;
+}
+export interface PreviewSearchState {
+  query: string;
+  searching: boolean;
+  total: number;
+  activeIndex: number;
+  pagesScanned: number;
+  pageCount: number;
+  truncated: boolean;
+  error?: string;
 }
 export declare function createPreview(element: Element | string, options: BrowserPreviewOptions): BrowserPreview;
 export declare function isArchiveVolumeName(name: string): boolean;

@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated **2026-11-05**, checked against the current repository, including work after the published v0.6.4 release. Checked items are implemented within the stated limits; unchecked items are remaining work. Implementation does not imply full format fidelity or availability in every published artifact.
+Updated **2026-11-25**, checked against the current repository, including work after the published v0.6.8 release. Checked items are implemented within the stated limits; unchecked items are remaining work. Implementation does not imply full format fidelity or availability in every published artifact.
 
 ## Current Delivery
 
@@ -10,12 +10,12 @@ Updated **2026-11-05**, checked against the current repository, including work a
 | Shared conversion | Manifest-gated frontend WASM conversion with optional Office, image, PostScript, graphics, and CAD modules; browser and backend hosts reuse the same core. | [Converter client](../packages/converter-client/README.md), [conversion manifests](../wasm/converter-core/manifest/conversions.json). |
 | Passwords and fonts | Office decryption, PDF password handling, encrypted archives, shared font diagnostics, opt-in font packs, host font loading, and similarity-based substitution. | [Password checks](../packages/converter-client/test/password.spec.ts), [font contracts](fonts.md). Coverage remains format-specific. |
 | Agent tools | Rust CLI for reading, OCR, cited excerpts, search, conversion, file inspection, duplicates, similar images, and offline browser previews. | [CLI guide](agent-cli.md); CLI operation coverage differs from browser preview coverage. |
-| Published delivery | v0.6.4 records CLI 0.5.6, preview 0.3.4, iOS/Android source SDKs 0.1.4, DSH 0.1.6, and scoped npm modules. | [Release notes](releases/v0.6.4.md), [publication record](release-v0.6.4-publication.json). Later repository changes require their own release. |
+| Published delivery | v0.6.8 records CLI 0.5.8, preview 0.3.8, iOS/Android source SDKs 0.1.8, DSH 0.1.12, and scoped npm modules. | [Release notes](release-v0.6.8.md), [publication record](release-v0.6.8-publication.json). Later repository changes require their own release. |
 
 ## Next Delivery Priorities
 
 - Close real-file fidelity gaps in PPTX/iWork, DOCX/XLSX layout, and DWG/STEP geometry, with fixtures for each fix.
-- Extend large-file preview behavior: workbook/text virtualization, on-demand book extraction, and PDF text selection/search.
+- Extend large-file preview behavior beyond XLSX/CSV and variable-height Numbers row/column windows, PDF text selection/search and on-demand ebooks: bounded parsing memory and range-based source loading.
 - Finish font coverage beyond the delivered loader: embedded fonts, missing typography metadata, SHX glyphs, and measured layout comparison.
 - Complete native Windows/Linux execution checks and physical-device SDK validation before extending platform compatibility claims.
 - Keep embedding retrieval and media ASR as optional future work; existing OCR, lexical search, and excerpts remain usable independently.
@@ -62,7 +62,7 @@ Status: common formula support delivered; geometry coverage remains partial.
 
 Status: partially delivered.
 
-- [x] Cached column and pie charts, basic diagram-backed SmartArt, and unsupported-object placeholders/warnings.
+- [x] Cached column, horizontal bar and pie charts with basic styling, basic diagram-backed SmartArt, and unsupported-object placeholders/warnings.
 - [x] Embedded audio/video items with native playback controls and poster assets, subject to browser codec support.
 - [x] Office/PDF attachments can open recursively through shared preview routes with download fallbacks.
 - [ ] Extend chart types, source styling, SmartArt layout, and media timing/interaction fidelity.
@@ -110,8 +110,33 @@ Status: initial drivers delivered; fidelity/scalability work remains.
 
 - [x] PDF.js canvas preview with lazy engine loading, visible/nearby page rendering, navigation, zoom/fit, cancellation, and password handling.
 - [x] DOCX flow rendering through `docx-preview`, with shared font integration and resource cleanup.
-- [x] XLSX/CSV read-only workbooks with sheet switching, cached values/basic formulas, incremental rows, and lifecycle handling.
-- [ ] Add PDF text selection/search layers and improve workbook merged cells, styling, formulas, and large-sheet virtualization.
+- [x] XLSX/CSV read-only workbooks with sheet switching, cached values/basic formulas, and lifecycle handling.
+- [x] Selectable PDF.js text layers for visible/nearby pages, sharing extraction with font diagnostics, with zoom/rotation alignment and cancellation/offscreen cleanup.
+- [x] XLSX/CSV row windows with bounded DOM, sparse-row navigation through Excel's final row, offscreen formula dependencies, and font-refresh/scroll preservation. Parsing still retains the full workbook model.
+- [x] Standalone workbook grids detect native scroll-height limits and compress offscreen row spacers when required. Firefox reaches intermediate and final Excel rows with normal-height visible cells and the same bounded row window.
+- [x] Full-document PDF literal search with localized controls, case-insensitive matches, cross-run/line highlights, wrapped navigation, cancellation and explicit partial/truncated results. Retain at most 10,000 matches in the current session.
+- [x] XLSX/CSV column windows with bounded headers/cells, default/source column widths, and sparse navigation through `XFD1048576` without losing offscreen formula references.
+- [x] Numbers table row and column windows reuse the workbook grid, including multiple tables, sparse distant cells, font-refresh scroll preservation, resize and lifecycle cleanup.
+- [x] Variable-height Numbers row virtualization preserves source minimum heights and measures loaded pictures, retaining row heights across horizontal scrolling and font refresh. Resizing remeasures cells while preserving the logical reading row; late image/sibling layout changes retain the bottom position. `virtual: false` retains incremental rows.
+- [x] XLSX and Numbers grid previews retain rectangular merged cells, including blank XLSX merge endpoints, offscreen XLSX anchor values/fonts/formulas, and Numbers anchor text/pictures. Clip native spans/content to row/column windows without expanding source ranges into DOM; incremental Numbers batches retain their anchors. Compact workbook hosts keep the last row reachable.
+- [x] Numbers merge parsing indexes ranges without expanding blank covered cells. Sparse models retain anchors (including missing-storage rows) and stored continuation records; Pages keeps its dense grid. Serialized ZIP/Snappy/IWA fixtures cover 100,000 rows × 1,024 columns through the real worker, and one million rows under a 128 MiB Node V8 old-space cap. This does not bound total archive/model memory.
+- [x] Numbers grids render parsed rich text, loaded font replacements, paragraph spacing/wrapping/padding/alignment, fills and per-side borders through the shared core. Merged content keeps source alignment/gradient coordinates and only paints source perimeter borders. Stored empty style cells survive parsing; narrow tables keep stable columns and each visible batch shares font probes. Real-file header styles and virtual-window fixtures are verified.
+- [x] Numbers grids preserve parsed source column widths in virtual and incremental rendering, including narrow/small tables and columns wider than the viewport. Cumulative widths drive horizontal lookup, spacers, merged text and gradient coordinates; resizing/font refresh retain source widths and reading position.
+- [x] XLSX grids retain explicit/default/base column widths and raw character units, measure the Normal style's digit advances and point size, and preserve the logical reading column on font refresh. Metadata-only parsing retains the numeric fast path, source ranges only size actual cells/merge bounds, and cached Normal-font aliases stay isolated. Source-width navigation through `XFD1048576` is verified; layout-height measurement avoids far-offscreen rectangle precision drift. No-canvas parsing uses a 7px digit baseline; missing source fonts and best-fit/hidden/formula-view geometry remain limits.
+- [x] XLSX renders static font attributes, RGB/theme/indexed colors, solid and basic patterned/gradient fills, perimeter borders, explicit alignment and wrapping. Cell, row, column and base formats apply to visible blanks without adding stored cells. Wrapped rows use sparse height measurements, and clipped merges keep anchor styles and source alignment.
+- [x] XLSX renders built-in and workbook-local number formats for dates, elapsed time, percentages, currencies, fractions, scientific notation and custom sections. The 1900 and 1904 date systems, typed text, cached/evaluated formulas and clipped merged anchors are covered. Formatting runs on visible cells and leaves calculation values intact.
+- [x] XLSX evaluates uncached arithmetic, comparisons, percentages, common aggregates, rounding, conditionals and text concatenation. Cross-sheet cell, row and column references use the sparse workbook index, including quoted names and the last Excel cell. Cached values take priority, and supported formulas preserve text, logical and error results.
+- [x] XLSX restores shared formula followers on demand. Worksheet-local definitions preserve absolute and relative references, including cross-sheet and whole-axis references. Tests cover out-of-order records, cache precedence, malformed groups, and followers at `XFD1048576`.
+- [x] XLSX resolves workbook and worksheet defined names on demand, including local shadowing, explicit workbook qualification, aliases, scalar expressions, relative references and multi-area ranges. Named ranges use the sparse formula index. Invalid definitions, cycles and excess recursive expansion preserve recoverable preview results.
+- [x] XLSX renders rich shared and inline strings with per-run font family, size, emphasis, colors, decorations and baseline shifts. Shared cells reuse one parsed string, formulas see the plain value, and text formatting and clipped merge anchors preserve the runs.
+- [x] XLSX evaluates conditional value, formula, text, blank and error rules with differential styles, priority and stop-if-true behavior. The sparse range index applies rules to visible cells and merged anchors without expanding sheet dimensions; both worksheet parsers retain the rules.
+- [ ] Improve automatic sizing, workbook formula evaluation and remaining number-format fidelity, including locale-specific formats. Extend conditional scales, data bars, icon sets and range-based rules, remaining merge/style effects, Numbers implicit blank-cell inheritance, hidden-track layout, and parsing memory.
+
+XLSX evidence: [shared formula regressions](../packages/xlsx/test/shared-formulas.spec.ts), [defined-name regressions](../packages/xlsx/test/defined-names.spec.ts), [formula browser regressions](../apps/demo/e2e/xlsx-formulas.e2e.ts), [rich-text parsing and font mapping](../packages/xlsx/test/rich-text.spec.ts), [rich text in sparse windows](../apps/demo/e2e/xlsx-rich-text.e2e.ts).
+
+XLSX conditional formatting evidence: [rule and cache regressions](../packages/xlsx/test/conditional-formatting.spec.ts), [conditional styles in sparse windows](../apps/demo/e2e/xlsx-conditional-formatting.e2e.ts).
+
+Evidence: [PDF search regressions](../packages/pdf/test/search.spec.ts), [real PDF search/controls](../apps/demo/e2e/pdf-search.e2e.ts), [grid window regressions](../packages/xlsx/test/row-window.spec.ts), [XLSX source dimensions](../packages/xlsx/test/xlsx-column-widths.spec.ts), [XLSX dimensions in browsers](../apps/demo/e2e/xlsx-column-widths.e2e.ts), [merged-cell parsing/rendering](../packages/xlsx/test/merged-cells.spec.ts), [large/sparse workbook browser checks](../apps/demo/e2e/workbook-lifecycle.e2e.ts), [Numbers window regressions](../packages/iwork/test/numbers-window.spec.ts), [Numbers grid browser checks](../apps/demo/e2e/numbers-window.e2e.ts), [serialized Numbers archive checks](../apps/demo/e2e/numbers-archive.e2e.ts), [merge memory measurements and scope](../benchmarks/frontend/2026-11-25/numbers-merge-memory-review.json).
 
 ### M4: Optional Conversion Layer
 
@@ -134,17 +159,25 @@ Status: broad foundation delivered; remaining work is family-specific.
 - [x] Spherical image/video panoramas and experimental calibrated Insta360/DJI paths with resource-resolved companions.
 - [x] ZIP/TAR/GZIP and optional 7-Zip WASM archive browsing, nested entry previews, encrypted/multi-volume archives, and resource-resolver helpers.
 - [x] EPUB chapter and CBZ image readers with packaged resources and cleanup.
+- [x] On-demand EPUB/CBZ preview: index metadata first, extract only the selected chapter/page and referenced assets, release previous URLs, and cancel obsolete page turns. EPUB 3 navigation/EPUB 2 NCX supply unread chapter titles; full-extraction APIs retain their existing behavior.
 - [x] Native DXF SVG rendering and frontend-WASM DWG → `cad-json` for the same renderer; explicit DWG → DXF remains available.
 - [x] STEP/STP uses lazy truck Rust WASM; common mesh/scene, toolpath, point-cloud, voxel, skeleton, molecule, and volume formats use the shared 3D host.
 - [x] 3D tree/selection, measurements, clipping, exploded views, material inspection, camera presets, snapshots, and format-specific resource diagnostics.
 - [x] FreeMind/OPML/XMind/MindManager trees and diagrams.net/basic Visio viewers with navigation, zoom/fit, and selection.
 - [x] Host font/resource resolvers, file-set/ZIP-backed sidecars, ZIP primary-file promotion, and recursive document attachments.
-- [ ] Text search/wrap controls, encoding safeguards, and virtualization; on-demand ebook extraction and richer reader navigation/themes.
+- [x] Text/code literal search with wrapped match navigation, cancellation/truncation, shared localized PDF/text controls and public `find`/`findNext`; wrap controls retain selectable source text, syntax tokens and logical line-number alignment.
+- [x] Text decoding honors UTF-8/UTF-16 BOMs and explicit MIME charsets; invalid byte sequences produce a warning, and binary/unsupported encodings fail explicitly.
+- [x] Text/code previews above 500 logical lines render visible/nearby 128-line blocks. Wrapped heights are measured, resize/wrap preserves logical reading position, search reaches unmounted text, and copy/select-all retains source text and line endings. `virtual: false` retains the complete DOM; source decoding and line indexing remain resident.
+- [ ] Richer ebook navigation/themes and range-based compressed-source loading.
 - [ ] DWG entity/layout/xref coverage, exact CAD text/SHX rendering, and STEP topology/trimmed-surface cases still failing the geometry screen.
 - [ ] Gerber/Excellon and layered KiCad PCB preview after selecting and validating a frontend parser; DGN, IFC/Revit, and other unregistered CAD formats remain future work.
 - [ ] Broader camera calibration, motion-photo video extraction, and media codec coverage before advertising general support; HLS/DASH and general transcoding remain pending.
 
 Evidence: [per-family limits](support-matrix.md#fidelity-and-feature-details), [design previews](design-preview.md), [DWG audit](dwg-preview-optimization.md), [STEP remaining issues](upstream/truck/remaining-issues.md), [browser media engine](browser-media-engine.md).
+
+Ebook evidence: [on-demand regressions](../packages/ebook/test/on-demand.spec.ts), [browser cancellation/navigation](../apps/demo/e2e/ebook-on-demand.e2e.ts), [sandboxed resource checks](../apps/demo/e2e/ebook-sandbox.e2e.ts).
+
+Text evidence: [search/wrap regressions](../packages/core/test/text-search.spec.ts), [encoding checks](../packages/core/test/text-source.spec.ts), [window regressions](../packages/core/test/text-window.spec.ts), [200,000-line browser checks](../apps/demo/e2e/text-preview.e2e.ts), [wrapped reading position/copy/lifecycle](../apps/demo/e2e/text-window.e2e.ts), [localized controls](../apps/demo/e2e/text-controls.e2e.ts). Full-source decoding/indexing remains; individual extremely long lines still incur layout cost.
 
 ## Track C: Native iWork Fidelity
 
@@ -163,7 +196,9 @@ Status: delivered.
 ### I2: Numbers Semantics
 
 - [x] Sheet canvases, merged-cell parsing/fixtures, sparse table handling, row loading, and shared workbook-grid rendering.
-- [ ] Refine merged-cell edge cases, sizing/header/style inheritance, rich text, and number formats; full Numbers calculation remains unavailable.
+- [x] Render parsed Numbers rich runs, cell/paragraph layout, fills and borders in both virtual and incremental grids; font-ready refresh updates visible typography.
+- [x] Preserve Numbers source column widths through horizontal windows, merged content/gradients and incremental batches; narrow tables retain their source size when the viewport changes.
+- [ ] Refine source rich-text/style parsing, merged-cell edge cases, sizing/header inheritance and implicit blank cells, hidden-track layout, advanced effects, and number formats; full Numbers calculation remains unavailable.
 
 ### I3: Keynote Fidelity
 
@@ -208,7 +243,8 @@ DRM, certificate-bound access, hardware keys, and enterprise rights management r
 ### F0: Font Discovery and Diagnostics
 
 - [x] Shared `PreviewItemState.fonts` and layout-drift warnings for PPTX, iWork, CAD, DOCX, XLSX, and partial PDF renderer inventories; lazy sheet/page updates and conservative availability/source metadata.
-- [ ] Preserve omitted typography such as XLSX rich-text runs and chart fonts; obtain original PDF font names/embedded provenance through a supported engine API.
+- [x] XLSX rich-text run faces participate in font diagnostics and host font loading, with font mappings isolated between cached sessions.
+- [ ] Preserve omitted typography such as chart fonts and obtain original PDF font names and embedded provenance through a supported engine API.
 
 ### F1: Optional Font Packs
 

@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-25",
+  "sdkVersion": "0.1.9",
+  "previewVersion": "0.3.8",
+  "passed": true,
+  "scope": "Single complete offline source SDK ZIP per platform below 3 MiB; mandatory one-time offline preparation on the developer computer, never strong decompression in the app.",
+  "checks": [
+    "Both final SDK ZIPs pass integrity and the strict 3145728-byte limit",
+    "Both final ZIPs compile their bundled decoder and restore all 60 assets offline with exact SHA-256 verification",
+    "Preparation tests reject traversal/output collisions/invalid layouts, reuse intact assets, repair same-size corruption and missing files, and preserve existing assets on failure",
+    "34 Chromium/WebKit real-runtime and bridge checks using the restored final SDK assets; no external requests",
+    "44 HEIF color/pixel checks using the pruned decoder and compact image WASM; one private Apple-image fixture unavailable",
+    "328 conversion fixture checks using the compact complete core and image WASM",
+    "Production Rust 1.93.0 mobile WASM build reproduces both previously validated binary hashes",
+    "Android Java compiles against API 35/WebKit 1.12.1/Brotli 0.1.2; native stream and byte-range checks pass, including mixed single/bulk reads and fallback without the Brotli dependency",
+    "Android Brotli decoder restores all 56 compressed final assets exactly",
+    "Swift direct server compilation and 16 real HTTP checks cover Brotli/gzip/raw, MIME, HEAD, Range and path containment; view source parses",
+    "Required license headers, upstream references and complete compressed third-party notices are retained"
+  ],
+  "notRun": [
+    "Full Gradle AAR / IPA builds and physical-device tests",
+    "Standard swift test: local SwiftPM PackageDescription manifest linker failure; direct Swift/HTTP harness used",
+    "Windows/Linux host preparation compiler paths",
+    "Private Apple HEIC reference fixture"
+  ],
+  "performance": {
+    "scope": "macOS JDK host microbenchmark, not physical Android device latency",
+    "resources": 56,
+    "decodedBytesApprox": 16500000,
+    "directBrotliMedianMs": 72.389625,
+    "bufferedBrotliMedianMs": 72.998541,
+    "note": "The buffered path fixes mixed-read byte loss; measured overhead approximately 0.8%. Phone performance is not established."
+  },
+  "wasm": {
+    "core": {
+      "bytes": 5180346,
+      "sha256": "26e8ba7d6eb1da97478a690bf13d782209ef1c4096f77cb58e45d55c7e89252b"
+    },
+    "image": {
+      "bytes": 1428889,
+      "sha256": "6f63897bc857db925aa84efca317c85093057589a2853d17c6bafc3d1ac167bc"
+    }
+  }
+}

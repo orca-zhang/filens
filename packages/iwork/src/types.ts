@@ -153,6 +153,7 @@ export interface ParsedNumbersSheet {
   index: number;
   name: string;
   canvas: IworkCanvasModel;
+  /** Sparse cells retain merge anchors and stored records; absent covered positions are implicit. */
   tables: IworkTable[];
   loaded?: boolean;
 }
@@ -175,6 +176,7 @@ export interface IworkViewerOptions {
   initialScale?: number;
   minScale?: number;
   maxScale?: number;
+  /** Virtualize page canvases and large Numbers tables, including picture cells; false retains incremental Numbers rows. */
   virtual?: boolean;
 }
 

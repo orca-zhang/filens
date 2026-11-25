@@ -7,6 +7,7 @@ export * from './font-loading';
 export * from './font-packs';
 export * from './font-scenes';
 export * from './native-drivers';
+export * from './find-controls';
 export * from './lazy-driver';
 export * from './model-cache';
 export * from './default-drivers';

@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Picture in picture is unavailable for this video",
   "Subtitles": "Subtitles",
   "Subtitles off": "Subtitles off",
-  "Subtitles {number}": "Subtitles {number}"
+  "Subtitles {number}": "Subtitles {number}",
+  "Find in document": "Find in document",
+  "Previous match": "Previous match",
+  "Next match": "Next match",
+  "Search incomplete": "Search incomplete",
+  "Wrap lines": "Wrap lines"
 }

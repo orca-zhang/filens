@@ -23,6 +23,9 @@ test('opens EPUB chapters, replaces the book with ordered CBZ pages, and release
     };
     await load(epub, 'epub');
     session.goToPage(1);
+    await new Promise<void>(resolve => {
+      const unsubscribe = session.on('statechange', (state: { chapterLoading: boolean }) => { if (!state.chapterLoading) { unsubscribe(); resolve(); } });
+    });
     const chapter = session.getState().chapterTitle;
     const previous = host.querySelector('iframe');
     await load(cbz, 'cbz');
@@ -32,7 +35,7 @@ test('opens EPUB chapters, replaces the book with ordered CBZ pages, and release
   expect(result.chapter).toBe('Chapter 2');
   expect(result.replaced).toBe(true);
   expect(result.state).toMatchObject({ chapterIndex: 0, chapterCount: 200, chapterTitle: 'Page 1', loading: false, error: null });
-  expect(result.active).toBe(200);
+  expect(result.active).toBe(1);
   const image = page.frameLocator('iframe.ebookv-frame').locator('img');
   await expect(image).toHaveAttribute('alt', 'Page 1');
   await expect.poll(() => image.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(600);
@@ -40,6 +43,7 @@ test('opens EPUB chapters, replaces the book with ordered CBZ pages, and release
   await expect(image).toHaveAttribute('alt', 'Page 200');
   await expect.poll(() => image.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(600);
   expect(await image.evaluate(async (image: HTMLImageElement) => (await (await fetch(image.src)).text()).includes('>Page 200</text>'))).toBe(true);
+  expect(await page.evaluate(() => (window as any).ebookLifecycle.active.size)).toBe(1);
   const cleanup = await page.evaluate(() => {
     const { session, active, host } = (window as any).ebookLifecycle;
     session.destroy();

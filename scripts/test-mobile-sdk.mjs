@@ -1,19 +1,56 @@
 // Exercise the actual packaged mobile page and shared engines, with both bridge shapes.
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { brotliDecompressSync } from 'node:zlib';
 import { chromium, webkit } from '@playwright/test';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const assets = path.join(root, 'sdk/ios/Sources/FilensPreview/Resources/filens');
 const androidAssets = path.join(root, 'sdk/android/filens-preview/src/main/assets/filens');
 const policy = (await readFile(path.join(assets, 'mobile.html'), 'utf8')).match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
-for (const file of ['mobile.html', 'mobile.js', 'filens.js', 'archive/7zz.wasm', 'THIRD-PARTY-NOTICES.txt', 'LICENSE']) {
+for (const file of ['mobile.html', 'mobile.js', 'filens.js.br', 'archive/7zz.wasm.br', 'THIRD-PARTY-NOTICES.txt.br', 'LICENSE']) {
   assert.deepEqual(await readFile(path.join(assets, file)), await readFile(path.join(androidAssets, file)), `SDK assets differ: ${file}`);
 }
+// Every original engine/worker must survive packing, with no uncompressed duplicate.
+let rawBytes = 0, storedBytes = 0;
+async function verifyRuntime(relative = '') {
+  const runtime = path.join(root, 'packages/preview/dist/mobile');
+  for (const entry of await readdir(path.join(runtime, relative), { withFileTypes: true })) {
+    const file = path.join(relative, entry.name);
+    if (entry.isDirectory()) { await verifyRuntime(file); continue; }
+    if (file === 'index.html') continue;
+    const original = await readFile(path.join(runtime, file));
+    if (file === 'THIRD-PARTY-NOTICES.txt') {
+      for (const directory of [assets, androidAssets]) {
+        const notices = brotliDecompressSync(await readFile(path.join(directory, `${file}.br`))).toString();
+        assert.ok(notices.startsWith(original.toString()));
+        assert.ok(notices.includes('Android Brotli decoder: org.brotli:dec:0.1.2'));
+        assert.ok(notices.endsWith(await readFile(path.join(root, 'sdk/mobile/BROTLI-LICENSE.txt'), 'utf8')));
+      }
+      continue;
+    }
+    const compressed = /\.(?:m?js|wasm)$/.test(file);
+    for (const directory of [assets, androidAssets]) {
+      const stored = await readFile(path.join(directory, file + (compressed ? '.br' : '')));
+      assert.deepEqual(compressed ? brotliDecompressSync(stored) : stored, original, `Changed SDK runtime: ${file}`);
+      if (compressed) await assert.rejects(readFile(path.join(directory, file)), { code: 'ENOENT' });
+      if (directory === assets) { rawBytes += original.length; storedBytes += stored.length; }
+    }
+  }
+}
+await verifyRuntime();
+assert.deepEqual(brotliDecompressSync(await readFile(path.join(assets, 'converter-core.wasm.br'))),
+  await readFile(path.join(root, 'wasm/converter-core/dist/converter-core-mobile.wasm')));
+for (const file of ['converter-office.wasm', 'converter-postscript.wasm', 'converter-raster.wasm', 'converter-cad.wasm']) {
+  await assert.rejects(readFile(path.join(assets, `${file}.br`)), { code: 'ENOENT' });
+}
+assert.ok(storedBytes < rawBytes, 'Stored runtime must be smaller than its decoded contents');
+console.log(`Offline runtime: ${rawBytes} decoded bytes → ${storedBytes} stored bytes`);
 const sources = new Map();
+const compressedRequests = new Set();
 const server = createServer(async (request, response) => {
   try {
     const [id, ...parts] = new URL(request.url, 'http://localhost').pathname.slice(1).split('/');
@@ -25,7 +62,19 @@ const server = createServer(async (request, response) => {
       response.end(JSON.stringify({ requestId: id, url: './document', name: source.name, locale: 'zh_CN', toolbar: true }));
       return;
     }
-    const bytes = relative === 'document' ? source.bytes : await readFile(path.join(assets, relative));
+    let bytes;
+    if (relative === 'document') bytes = source.bytes;
+    else {
+      try { bytes = await readFile(path.join(assets, relative)); }
+      catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+        const compressed = await readFile(path.join(assets, `${relative}.br`));
+        compressedRequests.add(`${id}/${relative}`);
+        // iOS sends Brotli over loopback; Android supplies a decoded asset stream.
+        if (source.transport === 'br') { bytes = compressed; response.setHeader('Content-Encoding', 'br'); }
+        else bytes = brotliDecompressSync(compressed);
+      }
+    }
     response.setHeader('Content-Type', relative === 'document' ? source.contentType ?? 'application/octet-stream'
       : /\.m?js$/.test(relative) ? 'text/javascript' : relative.endsWith('.html') ? 'text/html'
       : relative.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream');
@@ -52,6 +101,12 @@ const cases = [
     'apps/demo/public/samples/a.pages',
     'apps/demo/public/samples/pepper-carrot.epub',
     'apps/demo/public/samples/sample-video.mp4',
+    'examples/converter/fixtures/doc/sample.doc',
+    'examples/converter/fixtures/design/sample.eps',
+    'examples/converter/fixtures/graphics/sample.tiff',
+    'examples/converter/fixtures/graphics/sample.dwg',
+    'examples/converter/fixtures/graphics/sample.jxl',
+    'packages/converter-client/test/fixtures/heif/420-srgb8-full.heic',
     'examples/converter/fixtures/icons/sample.apk',
     'packages/archive/test/fixtures/rar5-encrypted-filenames.rar'
   ].map(file => ({ name: path.basename(file), file }))
@@ -88,7 +143,8 @@ try {
       });
       page.on('console', message => { if (message.type() === 'error' && /Content Security Policy|Refused to/.test(message.text())) errors.push(message.text()); });
       for (const [index, source] of cases.entries()) {
-        const id = `case-${index}`; sources.set(id, source);
+        const id = `${name}-case-${index}`;
+        sources.set(id, { ...source, transport: name === 'webkit' ? 'br' : 'decoded-stream' });
         await page.goto(`${origin}/${id}/mobile.html?requestId=${id}`);
         if (source.name.endsWith('.rar')) {
           const password = page.locator('input[type=password]');
@@ -98,6 +154,7 @@ try {
         const events = await page.evaluate(() => window.filensEvents);
         assert.equal(events.some(event => event.type === 'error'), false, `${name} ${source.name}: ${JSON.stringify(events)}; ${errors.join('\n')}`);
         assert.ok(events.some(event => event.type === 'rendered' && event.requestId === id));
+        assert.ok(compressedRequests.has(`${id}/filens.js`), 'Mobile entry must load the Brotli-stored runtime');
         if (source.text) assert.ok((await page.locator('body').innerText()).includes(source.text));
         if (source.frameText) await page.frameLocator('iframe').getByText(source.frameText).waitFor();
         assert.equal(await page.evaluate(() => window.injected), undefined);

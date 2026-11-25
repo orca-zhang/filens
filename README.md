@@ -4,149 +4,78 @@
   <p><strong>An Agent CLI. A pure frontend viewer for complex file formats.</strong></p>
   <p>Read, search, OCR, convert and preview local files. Files stay on your device.</p>
   <p>
-    <a href="docs/performance-comparison.md"><img src="docs/assets/readme/highlight-pptx.en.svg" alt="PPTX: the only truly open-source frontend-native viewer, with a better viewing experience" width="220" /></a>
-    <a href="packages/iwork/README.md"><img src="docs/assets/readme/highlight-iwork.en.svg" alt="iWork 15: the first protocol parser and the only pure frontend iWork viewer" width="220" /></a>
-    <a href="docs/performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams"><img src="docs/assets/readme/highlight-panorama.en.svg" alt="Panorama: camera distortion calibration and real-time panorama photos and video in the browser" width="220" /></a>
+    <a href="docs/project-overview.md#what-makes-filens-different">
+      <picture>
+        <source media="(max-width: 600px)" srcset="docs/assets/readme/highlights-mobile.en.png" />
+        <img src="docs/assets/readme/highlights.en.png" alt="AI: describe tasks naturally; PPTX: truly open-source native previews; iWork: the only open-source preview library, supporting pure frontend native rendering; Panorama: camera calibration and real-time 360° video" width="640" />
+      </picture>
+    </a>
   </p>
   <p><sub>To our knowledge, as of November 24, 2026 · <a href="docs/project-overview.md#what-makes-filens-different">Capabilities and measurements</a></sub></p>
   <p>English · <a href="README.zh-CN.md">简体中文</a> · <a href="LICENSE">MIT</a> · <a href="https://filens.cc/bench/en.html">FiLens-Bench</a></p>
 </div>
 
-![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicate files, similar images, CSV-to-XLSX conversion, offline HTML workbook and STEP previews](docs/assets/agent-cli/terminal-demo.gif)
-
-[![Eight actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp?v=branding-20261114)](apps/demo/public/home/filens-demo.mp4)
-
-**Latest release: [v0.6.8](https://github.com/orca-zhang/filens/releases/tag/v0.6.8)** · CLI **0.5.8** · preview **0.3.8** · mobile SDKs **0.1.8** · DSH **0.1.12**.
-
-[▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/demo.gif) · [Format coverage and limits](docs/support-matrix.md)
+**Latest release: [v0.6.8](https://github.com/orca-zhang/filens/releases/tag/v0.6.8)** · CLI **0.5.8** · preview **0.3.8** · mobile SDKs **0.1.9** · DSH **0.1.12**.
 
 | | Agent CLI | Pure frontend previews |
 | --- | --- | --- |
-| Use it for | Give Agents source text, search results, OCR and cited evidence; open a browser preview. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas, archives and more in your app. |
-| Supported formats (by extension) | **349**. | **450**, including direct previews and previews after local WASM conversion. |
-| Download size | **Lite 7.09–7.72 MiB · Full 24.87–27.48 MiB** | **Split-only npm 5.64 MiB · dual-build npm 9.76 MiB**; format modules load on demand. |
-| Start here | [Install and use the CLI](#agent-cli) | [Preview and integrate](#pure-frontend-previews) |
+| Use it for | Give Agents source text, search results, OCR and cited evidence. | Preview Office, iWork, PDF, CAD / 3D, RAW, panoramas and more in your app. |
+| Format coverage | **349** | **450**, including previews after local WASM conversion. |
+| Archive size | **Lite 7.09–7.72 MiB · Full 24.87–27.48 MiB** | **Split-only npm 5.64 MiB · dual-build npm 9.76 MiB** |
+| Start here | [Install the CLI](#agent-cli) | [Integrate previews](#pure-frontend-previews) · [Try online](https://filens.cc/?lang=en) |
 
-Sizes are compressed downloads. Full includes offline preview and OCR; Lite adds them as needed. [CLI platforms](docs/release-v0.6.8.md#downloads) · [Preview packages and runtimes](docs/preview-sizes.md).
+Formats are counted by source-file extension; [inventory](docs/release-v0.6.6-format-counts.json) verified November 24, 2026. Sizes: [CLI platforms](docs/release-v0.6.8.md#downloads) · [Preview packages](docs/preview-sizes.md).
 
-Verified November 24, 2026: CLI **349** extensions; preview **450** source-file extensions (**451** route entries including internal `cad-json`). [Published extension inventory](docs/release-v0.6.6-format-counts.json).
+[![Twelve actual previews: Office, PDF, iWork, CAD, 3D and panoramas](docs/assets/readme/overview.webp)](apps/demo/public/home/filens-demo.mp4)
 
-## FiLens-Bench
-
-FiLens-Bench compares each agent harness using native tools versus a normal FiLens CLI installation on a 13-task synthetic corpus covering Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. The latest snapshot uses FiLens CLI **0.5.7**: quality rose in **8/8** pairs, recorded p50/batch time fell in **8/8**, and tokens fell in **5/5** pairs with complete usage. Models vary across harnesses, so comparisons are within each pair.
-
-[![FiLens-Bench results across eight agent harnesses](benchmarks/filens-bench/readme-summary.en.svg)](https://filens.cc/bench/en.html)
-
-[Official results site](https://filens.cc/bench/en.html) · [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Protocol and reproduction](benchmarks/filens-bench/README.zh-CN.md)
+[▶ Watch the 30-second walkthrough](apps/demo/public/home/filens-demo.mp4) · [Animated preview](docs/assets/readme/preview.gif) · [Format coverage and limits](docs/support-matrix.md)
 
 ## Agent CLI
 
-**Supports 349 file formats (counted by extension).** Read PDFs, Office documents, spreadsheets, scans and images locally. Search directories and nested archives; extract key original passages; find duplicate files and similar images. Outputs include text, JSON, Markdown, HTML, YAML, XML, CSV and TSV, with available page coordinates and document structure. Check `filens capacity --json` for your installation's capabilities; extraction fidelity varies by format. Paraphrasing, translation and question answering belong to the calling Agent.
-
-### Installation and use
+Read local documents, search directories and nested archives, extract key original passages, and find duplicate files or similar images. Output JSON, Markdown, CSV and more, retaining available page references, coordinates and document structure. The calling Agent handles summarization, translation and question answering.
 
 **Ask your Agent to install it:**
 
 > Install filens for me. Read https://filens.cc/skills/filens/SKILL.md and follow it to set up the CLI and skill. Offline packages: https://filens.cc/downloads/.
 
-[Skill guide](https://filens.cc/skills/filens/SKILL.md) · For manual installation, download your platform’s offline bundle from the [official downloads](https://filens.cc/downloads/) and extract the entire archive. Full includes offline preview assets, OCR and models. Lite keeps OCR and preview assets optional. Both run without Node.js or npm.
+Or get your platform's offline bundle from the [official downloads](https://filens.cc/downloads/) and extract the entire archive. No Node.js or npm is required. Full includes offline preview, OCR and models; Lite adds them as needed.
 
 ```sh
 filens 'read "report.pdf" as json'
 filens 'search "./documents" for "budget risk" as json'
 filens summarize report.pdf --query 'budget risk' --json
 filens convert report.doc report.docx
-
 filens inspect unknown-file --json
 filens capacity --json
 ```
 
-`filens inspect FILE --json` identifies the actual format from bounded content reads, reports MIME/evidence and extension mismatches, and keeps ambiguous inputs explicit. It uses no OCR and does not validate the entire file.
+`inspect` identifies the actual format through bounded content reads; it does not validate the entire file. Check `capacity` for installed capabilities. See the [CLI guide](docs/agent-cli.md) and [observed examples](docs/agent-cli-examples.zh-CN.md) for natural-language scope and extraction limits.
 
-### Offline browser previews
-
-**CLI 0.5.8:** `filens preview report.pdf` creates a self-contained HTML with the source file, preview engine and licenses, opens it locally and exits. No server or file upload is needed. The v0.6.8 Full bundles include preview 0.3.8. With Lite, download and extract [the all-in-one runtime ZIP](https://filens.cc/downloads/v0.6.8/filens-preview-0.3.8-all-in-one.zip), then pass `--assets /path/to/filens-preview-0.3.8-all-in-one` or set `FILENS_PREVIEW_DIR`. Copying its contents into `preview/` beside the executable also enables automatic discovery. npm CLI 0.5.8 pins preview 0.3.8; DSH 0.1.11 embeds preview 0.3.8; npm installations can prepare assets with `filens setup-preview`. The frontend package includes both builds and is measured separately: [package sizes](docs/preview-package-sizes.json).
+### Export an offline preview
 
 ```sh
-# Export a portable offline preview; existing files are never overwritten
 filens preview report.pdf --output report-preview.html --no-open
-# Return the generated file URL and path as JSON
-filens preview report.pdf --no-open --json
-# Browser compatibility mode: loopback HTTP server, Ctrl-C to stop
-filens preview report.pdf --mode serve
 ```
 
-The HTML checks browser capabilities and blocks external resource requests. It contains a copy of the original file; temporary HTML files remain after exit. Safari/WebKit iWork previews require HTTP compatibility mode. [Preview setup and limits](packages/preview/README.md#cli-preview) · [Browser validation](docs/preview-html-validation.json).
+Creates a self-contained HTML with the original file, preview engine and licenses. Copy it to another computer to open offline; existing files are never overwritten. Omit `--no-open` to open it automatically. Safari/WebKit iWork previews require `--mode serve`. See [preview setup](packages/preview/README.md#cli-preview) for Lite assets.
 
-### ZimaOS
+![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicates, similar images, conversion and offline previews](docs/assets/agent-cli/terminal-demo.gif)
 
-**[ZimaOS ModStore](https://github.com/IceWhaleTech/Mod-Store/tree/main/builtin/filens):** install with `sudo zpkg install filens`. To upgrade, run `sudo zpkg update` and `sudo zpkg upgrade filens`. ModStore 0.5.1 includes the offline HTML preview engine for Linux x64/arm64 and always skips browser launching. Download or copy the generated HTML to your computer; `--json` returns its path on ZimaOS. Node.js and npm are not required. [Install, export previews and configure OCR](packaging/zimaos/README.md).
+### FiLens-Bench: Agent results
 
-<details>
-<summary>CLI sizes, capabilities and further examples</summary>
+Across 13 synthetic tasks and eight paired agent harnesses, installing FiLens CLI **0.5.7** improved quality in **8/8** pairs, reduced recorded time in **8/8**, and reduced tokens in **5/5** pairs with complete usage. Tasks cover Office, PDFs, nested archives, scans, cross-file questions and unanswerable queries. Models vary across harnesses; compare within each pair.
 
-<!-- agent-cli-size:en:start -->
-  <p><strong>CLI executable 3.74 MiB · Lite 10.87 MiB · Full 34.09 MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v0.5.8 · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>
-<!-- agent-cli-size:en:end -->
+[![FiLens-Bench results across eight agent harnesses](benchmarks/filens-bench/readme-summary.en.svg)](https://filens.cc/bench/en.html)
 
-CLI 0.5.8 native executables measure **1.03–3.74 MiB**. The v0.6.8 Full archives include preview **0.3.8**, OCR runtime and models. [Download and extracted sizes](docs/preview-release-sizes.json). npm component installations measure **8.17–10.87 MiB Lite / 31.19–36.90 MiB Full**, excluding Node.js, caches and preview assets. [Platform measurements](docs/agent-cli-npm-release.json). 1 MiB = 1,048,576 bytes.
-
-- [Installation, protocol and packaging](docs/agent-cli.md) · [Agent skill](https://filens.cc/skills/filens/SKILL.md)
-- [Output formats and layouts](docs/agent-cli-formats-and-layout.zh-CN.md) · [68 observed examples and limits](docs/agent-cli-examples.zh-CN.md)
-- [Search](docs/agent-cli-search.zh-CN.md), [nested archives](docs/agent-cli-search-archives.zh-CN.md) and [model-free key excerpts](docs/agent-cli-pruning.zh-CN.md)
-- [Duplicates and similar images](docs/agent-cli-similarity.md) · [Windows setup and validation status](docs/agent-cli-windows.zh-CN.md)
-- [Search coverage](docs/agent-cli-search-formats.zh-CN.md), [retrieval benchmarks](docs/agent-cli-search-benchmark.zh-CN.md) and [startup costs](docs/agent-cli-search-native.zh-CN.md)
-- [FiLens-Bench dedicated results site](https://filens.cc/bench/en.html): compare complex-file quality, latency and token usage before and after normal FiLens installation. [Current bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Methodology and reproduction](benchmarks/filens-bench/README.zh-CN.md).
-
-The CLI uses Rust and the same frontend conversion core. Full bundles RapidOCR NCNN (max side 960 by default, up to 1600 for transparent scans, two OpenMP threads); Lite adds it with `filens setup-ocr`. Inspect `capacity` for the installed build's operations and conversion pairs. Natural-language requests recognize a bounded set of intents; use explicit `--pages` / `--slides` for selection. Field-specific questions are not implemented. Windows/Linux native execution remains pending validation.
-
-**macOS OCR comparison:** Apple Vision is faster on the tested warm image calls, but loses tiny text and can be less accurate on blurred input; fresh-process latency is also higher. It cannot yet replace RapidOCR across this project's requirements. [Measurements, capability gaps and reproduction](docs/macos-ocr-benchmark.zh-CN.md).
-
-</details>
+[Official results site](https://filens.cc/bench/en.html) · [Bilingual scorecard](benchmarks/filens-bench/published/converged-2026-11-24/README.md) · [Method and reproduction](benchmarks/filens-bench/README.zh-CN.md)
 
 ## Pure frontend previews
 
-**Preview 450 file formats in the browser with no upload or conversion server.** Counted by extension, including direct previews and previews after local WASM conversion. Browse Keynote slides, Pages pages and Numbers sheets; read Office and PDF documents; inspect CAD and 3D models; view RAW photos and 360° photos or video. See the [support matrix](docs/support-matrix.md) for coverage and limits by format.
+Parse and render locally in the browser, with no upload or conversion server. View PPTX, Keynote, Pages and Numbers natively, alongside Office / PDF, CAD / 3D, design files, RAW, 360° photos and video, archives, ebooks and more. Format modules and WASM load on demand; CLI, Web and mobile share the same conversion core.
 
-### DeepSeek Harness
+### Browser integration
 
-**Faster first previews than DSH built in: PPTX 10.52× · DOCX 12.15× · PDF 1.72×.**
-
-| Typical file | DSH built in · first open | FiLens 0.1.11 · first open | Speedup |
-| --- | ---: | ---: | ---: |
-| PPTX presentation | 1,325 ms | **126 ms** | **10.52×** |
-| DOCX document | 1,312 ms | **108 ms** | **12.15×** |
-| PDF document | 343 ms | **200 ms** | **1.72×** |
-
-Measured 2026-11-24 on Apple M4 Pro/macOS with **DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**: nine paired rounds per format, through actual render readiness plus two frames, excluding app startup and retaining OS/persistent caches. Office and PDF use separate runs; DOCX follows PPTX. Cached PDF opens are equal at **108 ms (1.00×)**. [Complete samples and method](docs/assets/dsh-plugin/performance-0.1.11.md).
-
-Version 0.1.12 adds Cordis 4.2 peer compatibility; its renderer and workspace code match the measured 0.1.11 files byte-for-byte.
-
-Install [`dsh-filens@0.1.12`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now** for native sidebar previews of **450 formats**, plus local reading, OCR, search and conversion. [Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° gallery](docs/assets/dsh-plugin/README.md#3d-and-360-gallery) · [Measured comparisons](#performance-and-documentation).
-
-<!-- dsh-package-metrics:start -->
-**DSH 0.1.12: 5.75 MiB download / 17.39 MiB unpacked**, including the built-in workspace. CLI/OCR dependencies and DSH caches are separate. [Package measurements](docs/dsh-plugin-package.json).
-<!-- dsh-package-metrics:end -->
-
-**0.1.10 demos:** refreshed in DSH Desktop 0.2.2-rc.1 with English UI and captions, using a build matching the published package. [Release notes, provenance and media](docs/releases/dsh-filens-0.1.8/README.md) · [Earlier public-package installation](docs/assets/dsh-plugin/README.md).
-
-![English DSH demo: Word, Excel sheets and fullscreen PowerPoint](docs/assets/dsh-release/office-preview.en.gif?v=branding-20261114)
-
-Rotate and zoom 3D models, look around 360° photos and play panoramic video in the same sidebar. [Full-color animated WebP](docs/assets/dsh-release/3d-and-panorama.en.webp?v=branding-20261114) · [Full MP4](docs/assets/dsh-release/3d-and-panorama.en.mp4?v=branding-20261114).
-
-![English DSH demo: GLB and 3MF models, the Milky Way and 360-degree video](docs/assets/dsh-release/3d-and-panorama.en.gif?v=branding-20261114)
-
-Version 0.1.10 includes **File workspace** in the same `dsh-filens` installation: session groups with real thumbnails, related files, and links back to the source message or question. Its switch is independent of sidebar Preview. Supports DSH **0.2.2-rc.1**, alongside the previously validated rc.5/alpha.3 versions.
-
-![English DSH demo: session file groups, related files and navigation to the source question](docs/assets/dsh-release/file-workspace.en.gif?v=branding-20261114)
-
-### Browser integration: single file or split modules
-
-**Preview 0.3.8:** split ZIP and npm package sizes are listed in [the release report](docs/release-v0.6.8.md). Download browser runtimes from [GitHub Releases](https://github.com/orca-zhang/filens/releases/tag/v0.6.8). Deploy the complete split directory, or choose the all-in-one JS build. Keep the archive sidecars to enable RAR / 7z.
-
-npm: [filens-preview@0.3.8](https://www.npmjs.com/package/filens-preview/v/0.3.8), **9.76 MiB** / **25.50 MiB** installed with both builds; [filens-preview-split@0.3.8](https://www.npmjs.com/package/filens-preview-split/v/0.3.8) is **5.64 MiB** / **17.03 MiB** installed, 42% smaller because it omits the all-in-one build. [Package measurements](docs/preview-sizes.md) · [Release validation](docs/release-v0.6.8-validation.json).
-
-The same API is available in both builds and both npm packages. Vue, styles and the conversion engines are included; your app needs no Vue installation. Install the split-only package when you want to avoid downloading the all-in-one runtime:
+Install the split package in a frontend project such as Vite. Your app needs no separate Vue installation:
 
 ```sh
 npm install filens-preview-split
@@ -155,148 +84,55 @@ npm install filens-preview-split
 ```html
 <div id="preview" style="height: 80vh"></div>
 <script type="module">
-  // Deploy the entire extracted directory; the split build loads engines as needed.
-  import { createPreview } from './filens.js';
-  // The all-in-one build uses the same entry point with styles, WASM and workers included.
-  // Keep the archive sidecars for RAR / 7z.
+  import { createPreview } from 'filens-preview-split';
 
   const viewer = createPreview('#preview', { src: './report.pdf', name: 'report.pdf' });
-  // viewer.update({ src: anotherFile, name: anotherFile.name });
-  // viewer.destroy();
+  // Change files: viewer.update({ src: anotherFile, name: anotherFile.name });
+  // On unmount: viewer.destroy();
 </script>
 ```
 
-Deploy the extracted runtime directory and import its `filens.js` over HTTP(S). For a Vue app, use the shared [`Preview` component](packages/vue/README.md); for direct JavaScript integration and CLI previews, see the [standalone guide](packages/preview/README.md). Single-file packaging trades a larger initial download for simpler deployment; it has the same format limits as the split build.
+Or get a standalone runtime from [Releases](https://github.com/orca-zhang/filens/releases/tag/v0.6.8), deploy its complete directory and import `filens.js` over HTTP(S). Split and all-in-one builds share the same API; keep the archive sidecars for RAR / 7z. [Standalone guide](packages/preview/README.md) · [Vue components](packages/vue/README.md).
+
+Previews are read-only; layout and font fidelity vary by file. Camera-original stitching is experimental. See the [support matrix](docs/support-matrix.md) for format boundaries.
 
 ### iOS / Android SDKs
 
-**SDK 0.1.8 / preview 0.3.8:** iOS and Android source SDKs are **5.66 MiB** compressed and about **17.1 MiB** extracted, including the split runtime and offline assets. [Exact sizes](docs/mobile-sdk-sizes.json).
-Source SDKs are available as a local Swift Package and an Android
-Library, sharing the offline frontend and WASM runtime. See the
-[mobile SDK integration guide](sdk/README.md) and
-[runtime, npm and SDK sizes](docs/preview-sizes.md).
+Swift Package and Android Library source SDKs wrap the same offline runtime, with file loading, render/error callbacks and cleanup. **Version 0.1.9 source SDK ZIPs are each smaller than 3 MiB**, retaining all offline formats. Run `node prepare-runtime.mjs` once on the developer computer before integration; Node.js 18+ and a C++17 compiler are required. [Integration guide](sdk/README.md) · [Exact sizes](docs/mobile-sdk-sizes.json).
 
-### Format coverage
+## Ready-made integrations
 
-| Files | Preview | Main limits |
-| --- | --- | --- |
-| PPTX, Keynote / Pages / Numbers | Slide, page and worksheet canvases. | Fidelity varies by layout, fonts and objects. |
-| DOCX, XLSX / CSV, PDF | Documents, sheets and paged PDFs. | Read-only; advanced styling may differ. |
-| DOC / XLS / PPT, WPS / ET / DPS | Local WASM conversion for preview. | Preview-focused; macros are stripped. |
-| PSD / PSB, AI / EPS / PS | Saved composite images or vector PDF. | 8-bit RGB/grayscale for Photoshop; bounded PostScript preview subset. [Design limits](docs/design-preview.md). |
-| DXF, STEP / STP, mesh models | Pan drawings and orbit 3D geometry. | STEP omits source colors, names and assembly trees. |
-| RAW, common images and icons | Embedded JPEG first, lightweight RAW development as fallback. | Camera coverage and image quality vary. |
-| 360° photos and video | Interactive viewing and supported camera-original stitching. | Stitching is experimental; metadata, sidecars and browser codecs matter. |
-| Archives, ebooks, code, mind maps and diagrams | Browse entries, chapters, source and node relationships. | Each format supports a documented subset. |
+### DeepSeek Harness
 
-### Bundle sizes and loading costs
+Enter [`dsh-filens@0.1.12`](https://www.npmjs.com/package/dsh-filens) in **Plugins → Add plugin → Install → Enable now**. One plugin provides native sidebar previews, local reading / OCR / search / conversion, and a file workspace with thumbnails, related files and links to source messages.
 
-<details>
-<summary>Detailed bundle sizes and loading costs</summary>
+![English DSH demo: Word, Excel sheets and fullscreen PowerPoint](docs/assets/readme/dsh-preview.en.gif)
 
-Preview 0.3.8 source-build main runtimes: **4.17 MB Brotli** summed across split files, or **3.56 MB Brotli / 3.69 MB gzip / 6.89 MB raw** for the supplied precompressed all-in-one JS. Optional archive WASM and worker add **0.36 MB Brotli / 0.46 MB gzip / 1.17 MB raw** to either build. Main runtimes include Vue, styles, document/image/STEP WASM and their workers. Media uses browser codecs with a small HEIC/HEIF decoder fallback. [Standalone measurements](docs/preview-build-sizes.json).
+[Setup and usage](integrations/deepseek-harness/README.md) · [3D / 360° demo](docs/assets/dsh-release/3d-and-panorama.en.gif?v=branding-20261114) · [File workspace demo](docs/assets/dsh-release/file-workspace.en.gif?v=branding-20261114) · [Recording provenance](docs/releases/dsh-filens-0.1.8/README.md)
 
-<!-- bundle-sizes:en:start -->
-| Module / core | Raw | gzip | Brotli |
+**First-open performance on representative samples:**
+
+| File | DSH built in | FiLens 0.1.11 | Speedup |
 | --- | ---: | ---: | ---: |
-| Conversion core WASM (Office detection) | 969.1 KiB | 432.0 KiB | **347.3 KiB** |
-| Image / RAW WASM (deployed assets) | 2915.6 KiB | 940.3 KiB | **713.2 KiB** |
-| Media / panorama preview | 465.1 KiB | 128.8 KiB | **108.3 KiB** |
-| truck STEP WASM | 925.5 KiB | 326.4 KiB | **255.0 KiB** |
+| PPTX | 1,325 ms | **126 ms** | **10.52×** |
+| DOCX | 1,312 ms | **108 ms** | **12.15×** |
+| PDF | 343 ms | **200 ms** | **1.72×** |
 
-Document, image / RAW, and STEP WASM modules load independently on demand. Media preview and image conversion are measured separately. JS rows include their CSS; shared dependencies and workers are listed separately.
+Measured November 24, 2026 on Apple M4 Pro/macOS, DSH Desktop 0.2.3-alpha.2: nine paired rounds per format, median through render readiness plus two frames, excluding app startup. Cached PDF opens are equal. Version 0.1.12's renderer and workspace match the measured version. [Samples, cache conditions and method](docs/assets/dsh-plugin/performance-0.1.11.md).
 
-<details>
-<summary>All modules and initial loading cost</summary>
+### ZimaOS
 
-| Module / core | Raw | gzip | Brotli |
-| --- | ---: | ---: | ---: |
-| Office decryption WASM (optional) | 370.6 KiB | 160.3 KiB | **127.6 KiB** |
-| DWG reader WASM (on demand) | 921.8 KiB | 449.2 KiB | **364.4 KiB** |
-| Raster preview WASM (on demand) | 1748.0 KiB | 718.0 KiB | **538.0 KiB** |
-| PostScript WASM (optional) | 2428.8 KiB | 745.4 KiB | **515.6 KiB** |
-| HEIC / HEIF decoder WASM | 1423.8 KiB | 470.2 KiB | **344.5 KiB** |
-| Demo entry | 249.5 KiB | 72.2 KiB | **60.2 KiB** |
-| Agent CLI demo UI | 25.6 KiB | 9.8 KiB | **8.0 KiB** |
-| Shared vendor dependencies | 854.2 KiB | 244.0 KiB | **204.0 KiB** |
-| PPTX / core runtime | 386.8 KiB | 108.3 KiB | **91.7 KiB** |
-| Vue preview host | 247.2 KiB | 66.0 KiB | **52.5 KiB** |
-| DOCX / XLSX / PDF | 51.8 KiB | 16.1 KiB | **14.5 KiB** |
-| On-demand DOCX engine | 74.6 KiB | 20.1 KiB | **18.1 KiB** |
-| Office attachments | 31.5 KiB | 12.1 KiB | **11.0 KiB** |
-| Shared XML compatibility | 29.9 KiB | 10.0 KiB | **9.0 KiB** |
-| Shared ZIP compatibility | 43.1 KiB | 13.2 KiB | **11.9 KiB** |
-| Encrypted ZIP support | 99.1 KiB | 37.0 KiB | **32.4 KiB** |
-| On-demand PDF engine | 435.2 KiB | 128.1 KiB | **106.8 KiB** |
-| iWork preview | 40.5 KiB | 12.1 KiB | **10.8 KiB** |
-| CAD / mind maps / diagrams | 101.1 KiB | 28.6 KiB | **24.5 KiB** |
-| 3D preview | 109.0 KiB | 31.7 KiB | **27.7 KiB** |
-| glTF / GLB model loader | 42.7 KiB | 12.6 KiB | **11.2 KiB** |
-| FBX model loader | 43.9 KiB | 14.1 KiB | **12.6 KiB** |
-| OBJ model loader | 8.5 KiB | 2.9 KiB | **2.6 KiB** |
-| MTL model loader | 4.2 KiB | 1.7 KiB | **1.5 KiB** |
-| 3DS model loader | 8.4 KiB | 2.8 KiB | **2.5 KiB** |
-| LDraw model loader | 24.0 KiB | 8.3 KiB | **7.3 KiB** |
-| USDZ model loader | 8.5 KiB | 2.6 KiB | **2.4 KiB** |
-| VRML model loader | 178.1 KiB | 46.4 KiB | **39.7 KiB** |
-| Media decoder loader | 108.2 KiB | 35.2 KiB | **31.3 KiB** |
-| Archive preview | 48.1 KiB | 14.6 KiB | **13.1 KiB** |
-| RAR / 7z extraction WASM (optional) | 1089.9 KiB | 429.8 KiB | **332.3 KiB** |
-| Archive worker (optional) | 51.6 KiB | 18.2 KiB | **16.3 KiB** |
-| Text / ebooks | 18.1 KiB | 6.9 KiB | **6.1 KiB** |
-| iWork worker | 901.0 KiB | 188.5 KiB | **157.5 KiB** |
-| PDF worker | 1053.3 KiB | 291.1 KiB | **233.1 KiB** |
-| truck STEP loader | 2.8 KiB | 1.4 KiB | **1.2 KiB** |
+<p align="center"><a href="https://www.zimaspace.com/en/zimaos?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=filens_zimaos&amp;utm_content=readme_banner_en"><img src="docs/assets/readme/zimaos-banner.en.png" alt="ZimaOS: a personal cloud with FiLens integration" width="640" /></a></p>
 
-Entry, preloaded JS, and CSS total **476.1 KiB Brotli** (1998.6 KiB raw / 566.6 KiB gzip), plus images, video, and samples. Modules share dependencies; these rows are not standalone per-format download totals.
+Install from the official Mod Store for Linux x64/arm64; no Node.js required:
 
-</details>
+```sh
+sudo zpkg install filens
+```
 
-Measured from the demo build. Compression columns describe artifacts; actual transfer depends on hosting. [Full report and reproduction](docs/bundle-sizes.md).
-<!-- bundle-sizes:en:end -->
+`filens preview report.pdf --output report-preview.html --json` exports HTML without opening a browser. Download or copy it to your computer to view it. OCR reuses compatible Photos components; run `filens setup-ocr` if needed. [Installation, updates and OCR setup](packaging/zimaos/README.md).
 
-The [format package audit](docs/format-package-sizes.md) records dependency sharing,
-worker packaging and measured savings for applications combining the npm libraries.
-
-The [DWG optimization audit](docs/dwg-preview-optimization.md) records the compact CAD reader (443 KB gzip), direct drawing-model loading, and measurements across 13 drawings; the reader is included in the build measurements above.
-
-The table above measures the v0.6.6 production demo build. The new standalone builds have their own [complete measurements](docs/preview-build-sizes.json), including embedded dependencies. Individual chunks are not independent per-format download totals.
-
-</details>
-
-### Frontend project comparisons
-
-<details>
-<summary>Frontend project comparisons</summary>
-
-| Frontend project | iWork | 360° photos / video | RAW preview | Native PPTX | CAD / 3D |
-| --- | --- | --- | --- | --- | --- |
-| **filens** | **✅ All three** | **✅** | **◐** | **✅** | **✅** |
-| [SheetJS CE](https://docs.sheetjs.com/docs/miscellany/formats/) | ◐ Numbers | — | — | — | — |
-| [Photo Sphere Viewer](https://github.com/mistic100/Photo-Sphere-Viewer) | — | ✅ | — | — | — |
-| [LibRaw-Wasm](https://github.com/ybouane/LibRaw-Wasm) | — | — | ✅ | — | — |
-| [vue-office](https://github.com/501351981/vue-office) | — | — | — | ✅ | — |
-| [PPTist](https://github.com/pipipi-pikachu/PPTist) | — | — | — | ✅ | — |
-| [Online 3D Viewer](https://github.com/kovacsv/Online3DViewer) | — | — | — | — | ✅ |
-
-<sub>✅ Available path · ◐ Partial or conditional support · — No built-in path documented. [Format coverage and limits](docs/support-matrix.md).</sub>
-
-**iWork, panoramas, RAW, Office, and CAD / 3D in one browser-local workspace.** The projects above specialize in different areas; filens brings these previews together.
-
-<details>
-<summary>Comparison notes and support boundaries</summary>
-
-- Entries follow public documentation and browser-local processing paths, rather than overall project rankings. Support and fidelity vary by file.
-- **iWork / PPTX:** filens previews Keynote, Pages, and Numbers natively. SheetJS extracts Numbers table data and needs an application UI. PPTist imports PPTX into its presentation model; vue-office's [PPTX core is not open source](https://github.com/501351981/pptx-preview#关于授权).
-- **Panoramas:** both filens and Photo Sphere Viewer display photos and video. filens also handles supported X5 INSP originals, Insta360 / DJI calibration and distortion, original-track synchronization, and calibrated DNG stitching. Camera-original stitching is experimental and depends on metadata, companion files, and browser codecs. PSV's [generic dual-fisheye adapter](https://photo-sphere-viewer.js.org/guide/adapters/dual-fisheye.html) does not parse X5 calibration.
-- **RAW:** filens prioritizes embedded JPEGs, then lightweight sensor development. LibRaw-Wasm offers full / half-size decoding and development through an API that needs an application UI. These paths have different image-quality goals.
-- **CAD / 3D:** filens covers DXF, STEP, and mesh previews. Online 3D Viewer specializes in model viewing, inspection, and export, including STEP / IGES / IFC. filens STEP previews retain geometry and instance placement, but omit source colors, names, and the assembly tree.
-
-</details>
-
-</details>
-
-## Run the demo locally
+## Local development
 
 Requires Node.js 20+ and [Rust via rustup](https://rustup.rs/). The repository pins the Rust compiler and WASI target.
 
@@ -306,79 +142,17 @@ npm run build:wasm
 npm run dev --workspace @filens/demo
 ```
 
-Open [the online demo](https://filens.cc/?lang=en) or [the local demo](http://localhost:5173/modules/filens/?lang=en) (requires local deployment), then choose a sample or drop in a file. For hosting, see the [Vercel guide](docs/deploy-vercel.md).
+Open [the local demo](http://localhost:5173/modules/filens/?lang=en), then choose a sample or drop in a file. [Deployment guide](docs/deploy-vercel.md).
 
-## Install on ZimaOS
-
-<p align="center"><a href="https://www.zimaspace.com/en/zimaos?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=filens_zimaos&amp;utm_content=readme_banner_en"><img src="docs/assets/readme/zimaos-banner.en.png" alt="ZimaOS: a personal cloud with FiLens integration" width="640" /></a></p>
-
-Install FiLens from the official Mod Store. In the ZimaOS terminal or over SSH, run:
-
-```sh
-sudo zpkg install filens
-```
-
-This installs the native CLI and shared WASM engines for Linux x64/arm64, with no Node.js dependency. Run `filens capacity --json`, then `filens read report.pdf --json`. OCR reuses Photos' installed NCNN v7 runtime and RapidOCR models. If they are absent or incompatible, `filens setup-ocr` installs a compatible private copy; document reading and conversion work without OCR.
-
-On ZimaOS, `filens preview report.pdf --output report-preview.html --json` exports an HTML without launching a browser. Download or copy it to your computer to open it. HTTP compatibility mode requires an SSH tunnel to the loopback port.
-
-If the module is not found, run `sudo zpkg update` to refresh the store index, then retry. See the [ZimaOS packaging guide](packaging/zimaos/README.md) for building, publishing and updating the package.
-
-## Performance and documentation
-
-HEIF decoder source versions, rebuild steps, and Apple-edited 10-bit color regression:
-[HEIF decoder build](packages/converter-client/vendor/libheif/README.md).
-
-<details>
-<summary>Show SOTA benchmark results</summary>
-
-DSH retested 2026-11-24; other workloads retain their stated dates. **12 measured scenarios** cover DSH, XLSX, ZIP, PPTX, RAW and STEP. Each workload shows its latest recorded FiLens result against the named baseline; measurement dates and stages are stated. Tiny examples and marginal gains remain in the full reports.
-
-**Complete DSH sidebar previews**
-
-| Sample · first / cached median (ms) | FiLens 0.1.11 | DSH built in | First-open speedup |
-| --- | ---: | ---: | ---: |
-| PPTX | **126 / 92** | 1325 / 111 | **10.52×** |
-| DOCX | **108 / 92** | 1312 / 112 | **12.15×** |
-| PDF | **200 / 108** | 343 / 108 | **1.72×** |
-
-Measured 2026-11-24 on Apple M4 Pro/macOS with **DSH Desktop 0.2.3-alpha.2 / FiLens 0.1.11**: nine paired rounds per format, through actual render readiness plus two frames, excluding app startup and retaining OS/persistent caches. Office and PDF use separate runs; DOCX follows PPTX. Cached PDF opens are equal at **108 ms (1.00×)**. [Complete samples and method](docs/assets/dsh-plugin/performance-0.1.11.md).
-
-**Large-input parsing against specialized libraries**
-
-| Larger parsing workload | Baseline | Baseline / FiLens median (ms) | Speedup |
-| --- | --- | ---: | ---: |
-| XLSX · 2,000 × 64, 128,000 cells | SheetJS CE 0.20.3 | 150.94 / **61.72** | **2.45×** |
-| XLSX · 8,000 × 64, 512,000 cells | SheetJS CE 0.20.3 | 615.71 / **213.50** | **2.88×** |
-| ZIP · 10,000 entries, 18.34 MiB expanded | JSZip 3.10.1 | 700.55 / **55.52** | **12.62×** |
-| ZIP · 2,500 entries, 36.23 MiB expanded | JSZip 3.10.1 | 247.99 / **95.37** | **2.60×** |
-
-Nine measured rounds after two warmups, alternating library order; all cell values or complete entry texts verified. These parser timings exclude rendering, imports, network and verification. The DSH rows include preview rendering. Results are limited to the named workloads and baselines; they do not establish a universal ranking or identical feature coverage. [Methods, versions, raw samples and reproduction](docs/featured-performance.md) · [Historical comparisons](docs/performance-comparison.md).
-
-**PPTX, RAW and STEP: latest recorded browser comparisons**
-
-| Workload | FiLens (ms) | Baseline (ms) | Speedup | Measured |
-| --- | ---: | --- | ---: | --- |
-| PPTX · 11.1 MB, 13 slides, complete parse | **28.5** | pptx-preview 1.0.7: 56.6 | **1.99×** | Oct 23–24 |
-| NEF · Nikon D3S, sensor → preview canvas | **152.7** | LibRaw-Wasm 1.6.0 half-size: 326.7 | **2.14×** | Oct 23–24 |
-| DNG · Pentax K-r, sensor → preview canvas | **167.7** | LibRaw-Wasm 1.6.0 fast half-size: 314.4 | **1.87×** | Oct 23–24 |
-| STEP · as1_pe_203 assembly, geometry import | **61.2** | occt-import-js 0.0.23: 195.0 | **3.19×** | Nov 1 |
-| STEP · tailturbine, geometry import | **50.6** | occt-import-js 0.0.23: 153.9 | **3.04×** | Nov 1 |
-
-All dates are in 2026. RAW inputs have no embedded JPEG; preview resolution/tone differs from LibRaw. STEP compares parsing/tessellation and validated geometry, with different triangulations; scene construction and drawing are excluded. PPTX measures complete parsing. These are the latest recorded runs for each workload, with inputs/modules ready before timing. [Browser methods, confidence intervals and raw evidence](docs/performance-comparison.md).
-
-</details>
+## Documentation
 
 | Looking for… | Start here |
 | --- | --- |
-| Standalone single-file / split builds and CLI preview | [Preview guide](packages/preview/README.md) |
-| Vue integration | [Vue components](packages/vue/README.md) |
-| Supported formats | [Support matrix](docs/support-matrix.md) |
-| Browser media without a conversion server | [Integration, limits and validation](docs/browser-media-engine.md) |
-| Architecture and WASM boundaries | [Project overview](docs/project-overview.md) |
-| Frontend benchmarks and raw data | [Performance comparison](docs/performance-comparison.md) |
-| macOS native OCR vs RapidOCR | [Measured comparison](docs/macos-ocr-benchmark.zh-CN.md) |
-| CLI and conversion | [Rust Agent CLI](docs/agent-cli.md) · [WASM conversion core](wasm/converter-core-rust/README.md) |
+| CLI commands, output and search | [CLI guide](docs/agent-cli.md) · [Output formats](docs/agent-cli-formats-and-layout.zh-CN.md) · [Search](docs/agent-cli-search.zh-CN.md) · [Duplicates and similar images](docs/agent-cli-similarity.md) |
+| Format coverage and architecture | [Support matrix](docs/support-matrix.md) · [Architecture and comparisons](docs/project-overview.md) · [WASM conversion core](wasm/converter-core-rust/README.md) |
+| Performance and raw data | [Selected measurements](docs/featured-performance.md) · [Frontend comparisons](docs/performance-comparison.md) · [OCR comparison](docs/macos-ocr-benchmark.zh-CN.md) |
+| Package sizes and loading costs | [Preview and SDKs](docs/preview-sizes.md) · [Frontend bundles](docs/bundle-sizes.md) · [CLI platforms](docs/agent-cli-npm-release.json) |
+| Browser media compatibility | [Integration, limits and validation](docs/browser-media-engine.md) |
 
 Try your files and [report a reproducible issue](https://github.com/orca-zhang/filens/issues/new/choose). [Roadmap](docs/roadmap.md) · [MIT license](LICENSE) · [Third-party notices](packaging/agent-third-party.md).
 

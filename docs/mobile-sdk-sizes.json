@@ -1,24 +1,32 @@
 {
-  "date": "2026-11-24",
-  "version": "0.1.8",
+  "date": "2026-11-25",
+  "version": "0.1.9",
   "previewVersion": "0.3.8",
-  "scope": "Source SDK ZIPs with complete offline split runtime, archive sidecars, platform source, integration guide and notices. Not precompiled AAR/XCFramework artifacts. Excludes build tools and filesystem allocation overhead.",
+  "assetEncoding": "br",
+  "distributionEncoding": "zpaq-host-only",
+  "preparationRequired": true,
+  "zipLimitBytes": 3145728,
+  "scope": "Complete offline source SDK ZIPs smaller than 3 MiB. Run the included node prepare-runtime.mjs on the developer computer before integration; all asset data and C++ decoder sources are included. Strong decompression never runs on the phone. runtimeBytes measures the distribution payload, preparedRuntimeBytes the app-ready Brotli assets, decodedRuntimeBytes their decoded contents. Native apps retain streamed reads, lazy modules and all offline formats. Not precompiled AAR/XCFramework artifacts. Excludes external build tools and filesystem allocation overhead.",
   "packages": [
     {
       "platform": "ios",
-      "file": "filens-ios-sdk-0.1.8.zip",
-      "bytes": 5933561,
-      "unpackedBytes": 17894515,
-      "runtimeBytes": 17851555,
-      "sha256": "77d6d91c667cee811349e657fbaf3ae5198505d9fba7f994e2f515b79e7a51ee"
+      "file": "filens-ios-sdk-0.1.9.zip",
+      "bytes": 3113396,
+      "unpackedBytes": 3232584,
+      "runtimeBytes": 3046246,
+      "preparedRuntimeBytes": 3920321,
+      "decodedRuntimeBytes": 16068562,
+      "sha256": "72cfc1bf2dd950368c7e0afe6feb327da0165a4eae73c9460f434e85e2868208"
     },
     {
       "platform": "android",
-      "file": "filens-android-sdk-0.1.8.zip",
-      "bytes": 5936431,
-      "unpackedBytes": 17890357,
-      "runtimeBytes": 17851555,
-      "sha256": "2b70ca6c30ff331f23606ab90ddf638b7933e1c3a4a83d53b07d0e8cd45c0f83"
+      "file": "filens-android-sdk-0.1.9.zip",
+      "bytes": 3117561,
+      "unpackedBytes": 3231189,
+      "runtimeBytes": 3046246,
+      "preparedRuntimeBytes": 3920321,
+      "decodedRuntimeBytes": 16068562,
+      "sha256": "e298c95dcc0ac4cb34da9ab0d8393d476840490de38111e3a018bb1ea9bf5d94"
     }
   ]
 }

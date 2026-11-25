@@ -353,8 +353,11 @@ describe('iWork viewer', () => {
       disconnect(): void {}
     });
     let width = 832;
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(() =>
-      ({ x: 0, y: 0, top: 0, left: 0, width, height: 600, right: width, bottom: 600 }) as DOMRect);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      const top = this.tagName === 'TABLE' ? -(this.closest('.xlsxv-grid')?.scrollTop ?? 0) : 0;
+      const height = this.tagName === 'TR' ? 26 : 600;
+      return { x: 0, y: top, top, left: 0, width, height, right: width, bottom: top + height } as DOMRect;
+    });
     const canvas = createPagesDocument().pages[0].canvas;
     canvas.slide.items.push({
       id: 'shape', kind: 'shape', shapeType: 'rect', order: 0, groupPath: [],
@@ -376,18 +379,18 @@ describe('iWork viewer', () => {
     await viewer.preview(new Uint8Array([1, 2, 3]));
     const table = container.querySelector<HTMLTableElement>('.xlsxv-table')!;
     const grid = container.querySelector<HTMLElement>('.xlsxv-grid')!;
-    expect(table.tBodies[0].rows).toHaveLength(100);
+    expect(table.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
     Object.defineProperties(grid, { scrollHeight: { value: 6000 }, clientHeight: { value: 800 } });
     grid.scrollTop = 5200;
     grid.dispatchEvent(new Event('scroll'));
-    expect(table.tBodies[0].rows).toHaveLength(200);
+    await vi.waitFor(() => expect(table.querySelector('tr[aria-rowindex="201"]')?.textContent).toContain('Last'));
     const resized = () => notifyResize([], {} as ResizeObserver);
     resized();
     width = 432;
     resized();
     expect(container.querySelector('.xlsxv-table')).toBe(table);
-    expect(table.tBodies[0].rows).toHaveLength(200);
-    expect(table.tBodies[0].rows[199].textContent).toContain('Last');
+    expect(table.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
+    expect(table.querySelector('tr[aria-rowindex="201"]')?.textContent).toContain('Last');
     expect(grid.scrollTop).toBe(5200);
     const shell = container.querySelector<HTMLElement>('.iworkv-numbers-objects .iworkv-page-shell')!;
     expect(shell.style.width).toBe('400px');

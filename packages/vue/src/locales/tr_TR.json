@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Bu videoda resim içinde resim kullanılamıyor",
   "Subtitles": "Altyazılar",
   "Subtitles off": "Altyazıları kapat",
-  "Subtitles {number}": "Altyazılar {number}"
+  "Subtitles {number}": "Altyazılar {number}",
+  "Find in document": "Belgede bul",
+  "Previous match": "Önceki eşleşme",
+  "Next match": "Sonraki eşleşme",
+  "Search incomplete": "Arama tamamlanmadı",
+  "Wrap lines": "Satırları kaydır"
 }

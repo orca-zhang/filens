@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Níl pictiúr i bpictiúr ar fáil don fhíseán seo",
   "Subtitles": "Fotheidil",
   "Subtitles off": "Múch fotheidil",
-  "Subtitles {number}": "Fotheidil {number}"
+  "Subtitles {number}": "Fotheidil {number}",
+  "Find in document": "Aimsigh sa doiciméad",
+  "Previous match": "An meaitseáil roimhe seo",
+  "Next match": "An chéad mheaitseáil eile",
+  "Search incomplete": "Cuardach neamhiomlán",
+  "Wrap lines": "Timfhilleadh línte"
 }

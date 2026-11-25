@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "此视频不支持画中画",
   "Subtitles": "字幕",
   "Subtitles off": "关闭字幕",
-  "Subtitles {number}": "字幕 {number}"
+  "Subtitles {number}": "字幕 {number}",
+  "Find in document": "在文档中查找",
+  "Previous match": "上一处匹配",
+  "Next match": "下一处匹配",
+  "Search incomplete": "搜索未完成",
+  "Wrap lines": "自动换行"
 }

@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Bild i bild är inte tillgängligt för denna video",
   "Subtitles": "Undertexter",
   "Subtitles off": "Stäng av undertexter",
-  "Subtitles {number}": "Undertexter {number}"
+  "Subtitles {number}": "Undertexter {number}",
+  "Find in document": "Sök i dokumentet",
+  "Previous match": "Föregående träff",
+  "Next match": "Nästa träff",
+  "Search incomplete": "Sökningen är ofullständig",
+  "Wrap lines": "Radbrytning"
 }

@@ -1,5 +1,8 @@
 import { normalizeExtension } from './formats';
 import { AudioPreviewPlayer } from './audio-player';
+import { PreviewFindControls } from './find-controls';
+import { readPreviewText } from './text-source';
+import { TextWindow } from './text-window';
 import { bindPreviewTouchGestures } from './touch-gestures';
 import { createVideoPreviewPlayer, resolveMediaDuration } from './video-player';
 import type {
@@ -676,34 +679,57 @@ export class TextPreviewSession extends NativePreviewSession<TextPreviewState> {
   private loadGeneration = 0;
   private loadController: AbortController | null = null;
   private removeAbortListener: (() => void) | null = null;
+  private readonly container: HTMLDivElement;
+  private readonly findControls: PreviewFindControls;
+  private readonly wrapButton = document.createElement('button');
+  private text = '';
+  private pre: HTMLPreElement | null = null;
+  private textWindow?: TextWindow;
+  private searchGeneration = 0;
+  private matches: Array<{ start: number; end: number }> = [];
+  private marks: HTMLElement[] = [];
   private state: TextPreviewState = {
-    loading: false,
-    error: null,
-    family: 'text',
-    warnings: [],
-    capabilities: {
-      search: true,
-      wordWrap: true,
-      lineNumbers: true,
-      codeHighlight: false,
-      download: true
-    },
-    wrap: true,
-    encoding: 'utf-8'
+    loading: false, error: null, family: 'text', warnings: [],
+    capabilities: { search: true, wordWrap: true, lineNumbers: true, codeHighlight: false, download: true },
+    wrap: true, encoding: 'utf-8'
   };
+
+  constructor(host: HTMLElement, private readonly options: PreviewOptions = {}) {
+    super(host);
+    this.root.tabIndex = 0;
+    this.container = document.createElement('div'); this.container.className = 'pptxv-text-container';
+    const controls = document.createElement('div'); controls.className = 'pptxv-text-controls'; controls.dataset.previewControls = '';
+    this.findControls = new PreviewFindControls(this.root, {
+      state: () => this.state.search, find: query => this.find(query),
+      reset: query => this.resetSearch(query), next: backward => this.findNext(backward),
+      translate: message => this.options.translate?.(message) ?? message
+    });
+    this.wrapButton.type = 'button';
+    this.wrapButton.addEventListener('click', () => this.setWrap(!this.state.wrap));
+    controls.append(this.findControls.element, this.wrapButton);
+    this.container.append(controls, this.root); this.host.replaceChildren(this.container);
+    this.refreshTranslations();
+  }
+
+  refreshTranslations(): void {
+    this.findControls.refreshTranslations();
+    const label = this.options.translate?.('Wrap lines') ?? 'Wrap lines';
+    this.wrapButton.textContent = label; this.wrapButton.title = label; this.wrapButton.setAttribute('aria-label', label);
+    this.wrapButton.setAttribute('aria-pressed', String(this.state.wrap));
+  }
 
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
     const generation = ++this.loadGeneration;
-    this.loadController?.abort();
-    this.removeAbortListener?.();
-    const controller = new AbortController();
-    this.loadController = controller;
+    this.loadController?.abort(); this.removeAbortListener?.();
+    this.releaseTextWindow();
+    this.text = ''; this.pre = null; this.marks = []; this.findControls.close(); this.resetSearch('', false);
+    const controller = new AbortController(); this.loadController = controller;
     const abort = () => {
       controller.abort();
       if (generation === this.loadGeneration) {
-        this.root.replaceChildren();
-        this.state.loading = false;
-        this.emit('statechange', this.state);
+        this.releaseTextWindow();
+        this.text = ''; this.pre = null; this.marks = []; this.resetSearch('', false); this.root.replaceChildren();
+        this.state.loading = false; this.emit('statechange', this.getState());
       }
     };
     context.signal?.addEventListener('abort', abort, { once: true });
@@ -711,96 +737,222 @@ export class TextPreviewSession extends NativePreviewSession<TextPreviewState> {
     this.removeAbortListener = removeAbortListener;
     const isCode = context.route?.family === 'code';
     this.state = {
-      ...this.state,
-      loading: false,
-      error: null,
-      title: context.descriptor.name,
-      family: isCode ? 'code' : 'text',
-      warnings: [],
-      capabilities: {
-        ...this.state.capabilities,
-        codeHighlight: isCode
-      },
-      language: isCode ? inferLanguage(context.route?.sourceFormat) : undefined,
-      lineCount: undefined,
-      wrap: !isCode
+      ...this.state, loading: false, error: null, title: context.descriptor.name,
+      family: isCode ? 'code' : 'text', warnings: [], encoding: undefined,
+      capabilities: { ...this.state.capabilities, codeHighlight: isCode },
+      language: isCode ? inferLanguage(context.route?.sourceFormat) : undefined, lineCount: undefined, wrap: !isCode
     };
-    this.root.replaceChildren();
-    this.setLoading(this.state);
-
+    this.root.replaceChildren(); this.setLoading(this.state); this.refreshTranslations();
     try {
       if (context.signal?.aborted) abort();
       checkTextAborted(controller.signal);
-      const text = await readTextSource(source, { ...context, signal: controller.signal });
+      const decoded = await readPreviewText(source, { ...context, signal: controller.signal });
       if (generation !== this.loadGeneration) return;
       checkTextAborted(controller.signal);
-      const lineCount = countTextLines(text);
-      const shell = document.createElement('div');
-      shell.className = 'pptxv-native-text-shell';
-      shell.dataset.family = this.state.family;
-      shell.dataset.wrap = String(this.state.wrap);
-
-      const body = document.createElement('div');
-      body.className = 'pptxv-native-text-body';
-
-      const gutter = document.createElement('div');
-      gutter.className = 'pptxv-native-text-gutter';
-      gutter.setAttribute('aria-hidden', 'true');
-      gutter.textContent = Array.from({ length: lineCount }, (_, index) => String(index + 1)).join('\n');
-
-      const pre = document.createElement('pre');
-      pre.className = 'pptxv-native-text';
-      pre.dataset.family = this.state.family;
-      pre.dataset.wrap = String(this.state.wrap);
-      if (this.state.language) {
-        pre.dataset.language = this.state.language;
-      }
-      if (isCode && text.length <= CODE_HIGHLIGHT_LIMIT) {
-        renderHighlightedCode(pre, text, this.state.language);
-        pre.dataset.highlighted = 'true';
-      } else {
-        pre.textContent = text;
-        pre.dataset.highlighted = 'false';
-      }
-      body.replaceChildren(gutter, pre);
-      shell.replaceChildren(body);
-
-      this.state.loading = false;
-      this.state.error = null;
-      this.state.lineCount = lineCount;
-      this.root.className = 'pptxv-native-preview pptxv-native-preview--text';
-      this.root.replaceChildren(shell);
-      this.emit('rendered', this.state);
-      this.emit('statechange', this.state);
+      this.text = decoded.text;
+      this.state.encoding = decoded.encoding; this.state.warnings = decoded.warnings;
+      this.state.lineCount = countTextLines(this.text);
+      this.state.search!.pageCount = 1;
+      this.state.loading = false; this.state.error = null;
+      this.renderText();
+      if (decoded.warnings.length) this.emit('warnings', decoded.warnings.slice());
+      this.emit('rendered', this.getState()); this.emit('statechange', this.getState());
     } catch (error) {
       if (generation !== this.loadGeneration) return;
-      this.root.replaceChildren();
-      this.state.loading = false;
-      checkTextAborted(controller.signal);
-      this.setError(this.state, error);
+      this.releaseTextWindow();
+      this.root.replaceChildren(); this.text = ''; this.pre = null; this.state.loading = false;
+      checkTextAborted(controller.signal); this.setError(this.state, error);
     } finally {
-      removeAbortListener();
-      if (generation === this.loadGeneration) {
-        this.loadController = null;
-        this.removeAbortListener = null;
+      if (generation !== this.loadGeneration || (!this.pre && !this.textWindow)) {
+        removeAbortListener();
+        if (generation === this.loadGeneration) { this.loadController = null; this.removeAbortListener = null; }
       }
     }
   }
 
-  destroy(): void {
-    this.loadGeneration++;
-    this.loadController?.abort();
-    this.loadController = null;
-    this.removeAbortListener?.();
-    this.removeAbortListener = null;
-    this.state.loading = false;
-    super.destroy();
-    for (const listeners of Object.values(this.listeners)) listeners.clear();
+  setWrap(wrap: boolean): void {
+    if ((!this.pre && !this.textWindow) || this.state.wrap === wrap) return;
+    const top = this.root.scrollTop, anchor = this.textWindow?.anchorOffset();
+    this.state.wrap = wrap; this.renderText();
+    if (anchor !== undefined && this.textWindow) this.textWindow.reveal(anchor, true);
+    else this.root.scrollTop = top;
+    this.refreshTranslations(); this.emit('statechange', this.getState());
   }
 
-  getState(): TextPreviewState {
-    return this.state;
+  private releaseTextWindow(): void {
+    this.textWindow?.destroy(); this.textWindow = undefined;
   }
+
+  private renderText(): void {
+    this.releaseTextWindow(); this.pre = null; this.marks = [];
+    this.root.className = 'pptxv-native-preview pptxv-native-preview--text';
+    const highlight = this.state.family === 'code' && this.text.length <= CODE_HIGHLIGHT_LIMIT;
+    const tokens = highlight ? indexCodeTokens(this.text, this.state.language) : undefined;
+    if (this.options.virtual !== false && (this.state.lineCount ?? 0) > 500) {
+      this.textWindow = new TextWindow(this.root, this.text, {
+        family: this.state.family, wrap: this.state.wrap, language: this.state.language,
+        render: (pre, gutter, text, firstLine, lineCount, offset) => {
+          if (tokens) renderCodeSlice(pre, this.text, tokens, offset, offset + text.length); else pre.textContent = text;
+          pre.dataset.highlighted = String(highlight);
+          wrapPreviewText(pre, gutter, text, { firstLine, lineCount, offset });
+        },
+        changed: () => this.applyMatches(false)
+      });
+      this.textWindow.refresh(); this.applyMatches(); return;
+    }
+    const shell = document.createElement('div'); shell.className = 'pptxv-native-text-shell';
+    shell.dataset.family = this.state.family; shell.dataset.wrap = String(this.state.wrap);
+    const body = document.createElement('div'); body.className = 'pptxv-native-text-body';
+    const gutter = document.createElement('div'); gutter.className = 'pptxv-native-text-gutter'; gutter.setAttribute('aria-hidden', 'true');
+    gutter.textContent = Array.from({ length: this.state.lineCount ?? 0 }, (_, index) => String(index + 1)).join('\n');
+    const pre = document.createElement('pre'); pre.className = 'pptxv-native-text';
+    pre.dataset.family = this.state.family; pre.dataset.wrap = String(this.state.wrap);
+    if (this.state.language) pre.dataset.language = this.state.language;
+    if (tokens) renderCodeSlice(pre, this.text, tokens, 0, this.text.length); else pre.textContent = this.text;
+    pre.dataset.highlighted = String(highlight);
+    if (this.state.wrap) wrapPreviewText(pre, gutter, this.text);
+    body.append(gutter, pre); shell.append(body);
+    this.pre = pre;
+    this.marks = [];
+    this.root.className = 'pptxv-native-preview pptxv-native-preview--text'; this.root.replaceChildren(shell);
+    this.applyMatches();
+  }
+
+  private resetSearch(query = '', notify = true): number {
+    this.findControls.cancelPending();
+    const generation = ++this.searchGeneration;
+    this.matches = []; this.clearMarks();
+    this.state.search = { query, searching: false, total: 0, activeIndex: -1, pagesScanned: 0, pageCount: this.pre || this.textWindow ? 1 : 0, truncated: false };
+    this.findControls.update(); if (notify) this.emit('statechange', this.getState());
+    return generation;
+  }
+
+  async find(query: string): Promise<void> {
+    this.findControls.setQuery(query);
+    const generation = this.resetSearch(query), text = this.text;
+    if (generation !== this.searchGeneration || (!this.pre && !this.textWindow) || !query.trim()) return;
+    const search = this.state.search!, found: typeof this.matches = [];
+    const current = () => generation === this.searchGeneration;
+    search.searching = true; this.findControls.update(); this.emit('statechange', this.getState());
+    const pattern = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'giu');
+    const batchSize = 256 * 1024;
+    let nextOffset = 0;
+    for (let offset = 0; offset < text.length; offset += batchSize) {
+      if (!current()) return;
+      const end = Math.min(text.length, offset + batchSize);
+      const batch = text.slice(offset, end + query.length - 1);
+      pattern.lastIndex = Math.max(0, nextOffset - offset);
+      for (let match = pattern.exec(batch); match && match.index < end - offset; match = pattern.exec(batch)) {
+        if (found.length === 10_000) { search.truncated = true; break; }
+        nextOffset = offset + match.index + match[0].length;
+        found.push({ start: offset + match.index, end: nextOffset });
+      }
+      if (search.truncated) break;
+      if (end < text.length) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (!current()) return;
+    this.matches = found; search.total = found.length; search.activeIndex = found.length ? 0 : -1;
+    search.pagesScanned = 1; search.searching = false;
+    this.applyMatches(); this.findControls.update(); this.emit('statechange', this.getState());
+  }
+
+  findNext(backward = false): void {
+    const search = this.state.search;
+    if (!search || !this.matches.length) return;
+    search.activeIndex = (search.activeIndex + (backward ? -1 : 1) + this.matches.length) % this.matches.length;
+    this.activateMatch(); this.findControls.update(); this.emit('statechange', this.getState());
+  }
+
+  private clearMarks(): void {
+    for (const parent of new Set(this.marks.map(mark => mark.parentElement))) {
+      if (parent && [...parent.childNodes].every(node => node.nodeType === Node.TEXT_NODE
+        || (node instanceof HTMLElement && node.classList.contains('pptxv-text-match')))) parent.textContent = parent.textContent;
+    }
+    for (const mark of this.marks) if (mark.parentElement) mark.replaceWith(...mark.childNodes);
+    this.marks = []; this.pre?.normalize();
+    for (const view of this.textWindow?.views() ?? []) view.pre.normalize();
+  }
+
+  private applyMatches(scrollActive = true): void {
+    this.clearMarks();
+    if (!this.matches.length) return;
+    for (const { pre, start } of this.textWindow?.views() ?? (this.pre ? [{ pre: this.pre, start: 0 }] : [])) this.highlightText(pre, start);
+    this.activateMatch(scrollActive);
+  }
+
+  private highlightText(pre: HTMLPreElement, sourceOffset: number): void {
+    const walker = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT), nodes: Text[] = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) nodes.push(node as Text);
+    let start = sourceOffset, index = 0;
+    while (index < this.matches.length && this.matches[index].end <= start) index++;
+    for (const node of nodes) {
+      const text = node.data, end = start + text.length;
+      while (index < this.matches.length && this.matches[index].end <= start) index++;
+      const fragment = document.createDocumentFragment(); let cursor = 0;
+      for (let hit = index; hit < this.matches.length && this.matches[hit].start < end; hit++) {
+        const match = this.matches[hit], from = Math.max(0, match.start - start), to = Math.min(text.length, match.end - start);
+        if (to <= from) continue;
+        fragment.append(document.createTextNode(text.slice(cursor, from)));
+        const mark = document.createElement('mark'); mark.className = 'pptxv-text-match'; mark.dataset.matchIndex = String(hit);
+        mark.textContent = text.slice(from, to); fragment.append(mark); this.marks.push(mark); cursor = to;
+      }
+      if (cursor) { fragment.append(document.createTextNode(text.slice(cursor))); node.replaceWith(fragment); }
+      start = end;
+    }
+  }
+
+  private activateMatch(scroll = true): void {
+    const match = this.matches[this.state.search?.activeIndex ?? -1];
+    if (scroll && match) this.textWindow?.reveal(match.start);
+    let active: HTMLElement | undefined;
+    for (const mark of this.marks) {
+      const selected = Number(mark.dataset.matchIndex) === this.state.search?.activeIndex;
+      mark.classList.toggle('is-active', selected); if (selected && !active) active = mark;
+    }
+    if (!active || !scroll) return;
+    const rect = active.getBoundingClientRect(), viewport = this.root.getBoundingClientRect();
+    if (rect.top < viewport.top || rect.bottom > viewport.bottom) this.root.scrollTop += rect.top - viewport.top - this.root.clientHeight / 2;
+    if (rect.left < viewport.left || rect.right > viewport.right) this.root.scrollLeft += rect.left - viewport.left - this.root.clientWidth / 2;
+    this.textWindow?.rememberPosition();
+  }
+
+  destroy(): void {
+    this.loadGeneration++; this.loadController?.abort(); this.loadController = null;
+    this.removeAbortListener?.(); this.removeAbortListener = null;
+    this.releaseTextWindow();
+    this.text = ''; this.pre = null; this.marks = []; this.resetSearch('', false); this.findControls.destroy();
+    this.state.loading = false; super.destroy();
+    if (this.container.parentElement === this.host) this.host.replaceChildren();
+  }
+
+  getState(): TextPreviewState { return { ...this.state, warnings: this.state.warnings.slice(), search: this.state.search ? { ...this.state.search } : undefined }; }
+}
+
+/** Keep source text/token spans intact while CSS grid shares each wrapped line's height with its number. */
+function wrapPreviewText(pre: HTMLPreElement, gutter: HTMLElement, text: string,
+  window?: { firstLine: number; lineCount: number; offset: number }): void {
+  const lineCount = window?.lineCount ?? countTextLines(text), firstLine = window?.firstLine ?? 0;
+  const lines = text.matchAll(/[^\r\n]*(?:\r\n|\r|\n|$)/g);
+  const contents = document.createDocumentFragment(), numbers = document.createDocumentFragment();
+  const nodes = [...pre.childNodes]; let nodeIndex = 0, nodeOffset = 0, offset = window?.offset ?? 0;
+  for (let index = 0; index < lineCount; index++) {
+    const value = lines.next().value?.[0] ?? '';
+    const line = document.createElement('span'); line.className = 'pptxv-text-line'; line.style.gridRow = String(index + 1);
+    line.dataset.textStart = String(offset); offset += value.length;
+    let remaining = value.length;
+    while (remaining > 0 && nodeIndex < nodes.length) {
+      const node = nodes[nodeIndex], value = node.textContent ?? '';
+      const count = Math.min(remaining, value.length - nodeOffset), part = value.slice(nodeOffset, nodeOffset + count);
+      if (node.nodeType === Node.TEXT_NODE) line.append(document.createTextNode(part));
+      else { const token = node.cloneNode(false) as HTMLElement; token.textContent = part; line.append(token); }
+      remaining -= count; nodeOffset += count;
+      if (nodeOffset === value.length) { nodeOffset = 0; nodeIndex++; }
+    }
+    const number = document.createElement('span'); number.className = 'pptxv-text-number'; number.style.gridRow = String(index + 1);
+    number.textContent = String(firstLine + index + 1) + (index < lineCount - 1 ? '\n' : '');
+    numbers.append(number); contents.append(line);
+  }
+  pre.replaceChildren(contents); gutter.replaceChildren(numbers);
 }
 
 export class HtmlPreviewSession extends NativePreviewSession<PreviewItemState> {
@@ -1114,7 +1266,7 @@ export function createTextPreviewDriver(): PreviewDriver<TextPreviewState> {
     id: 'text',
     family: 'text',
     supports: (format) => TEXT_FORMATS.has(normalizeExtension(format)) || CODE_FORMATS.has(normalizeExtension(format)),
-    createSession: (host) => new TextPreviewSession(host)
+    createSession: (host, options) => new TextPreviewSession(host, options)
   };
 }
 
@@ -1138,43 +1290,6 @@ export function createHtmlPreviewDriver(): PreviewDriver<PreviewItemState> {
 
 export function createDefaultNativePreviewDrivers(): PreviewDriver[] {
   return [createImagePreviewDriver(), createTextPreviewDriver(), createMediaPreviewDriver(), createHtmlPreviewDriver()];
-}
-
-async function readTextSource(source: PreviewSource, context: PreviewLoadContext): Promise<string> {
-  if (typeof source === 'string') {
-    if (isDataUrl(source)) {
-      return readDataUrl(source);
-    }
-    const response = await fetch(source, { signal: context.signal });
-    if (!response.ok) {
-      throw new Error(`Failed to load text preview source: ${response.status} ${response.statusText}`.trim());
-    }
-    return response.text();
-  }
-
-  if (ArrayBuffer.isView(source)) {
-    return new TextDecoder().decode(toUint8Array(source));
-  }
-  if (source instanceof ArrayBuffer) {
-    return new TextDecoder().decode(source);
-  }
-  if (source instanceof Blob) {
-    return source.text();
-  }
-  return String(source);
-}
-
-function readDataUrl(source: string): string {
-  const commaIndex = source.indexOf(',');
-  if (commaIndex < 0) {
-    return source;
-  }
-  const meta = source.slice(0, commaIndex).toLowerCase();
-  const payload = source.slice(commaIndex + 1);
-  if (meta.endsWith(';base64')) {
-    return new TextDecoder().decode(Uint8Array.from(atob(payload), (char) => char.charCodeAt(0)));
-  }
-  return decodeURIComponent(payload);
 }
 
 function checkTextAborted(signal: AbortSignal): void {
@@ -1484,33 +1599,27 @@ function inferLanguage(format: string | undefined): string | undefined {
   return aliases[normalized] ?? normalized;
 }
 
-function renderHighlightedCode(pre: HTMLPreElement, source: string, language: string | undefined): void {
-  const pattern = createCodeTokenPattern(language);
-  const fragment = document.createDocumentFragment();
-  let cursor = 0;
+interface CodeTokenRange { start: number; end: number; kind: CodeTokenKind }
 
-  for (const match of source.matchAll(pattern)) {
-    const index = match.index ?? cursor;
-    if (index > cursor) {
-      fragment.append(document.createTextNode(source.slice(cursor, index)));
-    }
-
-    const value = match[0];
-    const kind = classifyCodeToken(match.groups, source, index, value);
-    if (kind) {
-      const token = document.createElement('span');
-      token.className = `pptxv-token pptxv-token--${kind}`;
-      token.textContent = value;
-      fragment.append(token);
-    } else {
-      fragment.append(document.createTextNode(value));
-    }
-    cursor = index + value.length;
+function indexCodeTokens(source: string, language: string | undefined): CodeTokenRange[] {
+  const tokens: CodeTokenRange[] = [];
+  for (const match of source.matchAll(createCodeTokenPattern(language))) {
+    const kind = classifyCodeToken(match.groups, source, match.index!, match[0]);
+    if (kind) tokens.push({ start: match.index!, end: match.index! + match[0].length, kind });
   }
+  return tokens;
+}
 
-  if (cursor < source.length) {
-    fragment.append(document.createTextNode(source.slice(cursor)));
+function renderCodeSlice(pre: HTMLPreElement, source: string, tokens: CodeTokenRange[], from: number, to: number): void {
+  const fragment = document.createDocumentFragment(); let cursor = from, low = 0, high = tokens.length;
+  while (low < high) { const mid = (low + high) >>> 1; if (tokens[mid].end <= from) low = mid + 1; else high = mid; }
+  for (let index = low; index < tokens.length && tokens[index].start < to; index++) {
+    const token = tokens[index], start = Math.max(from, token.start), end = Math.min(to, token.end);
+    if (start > cursor) fragment.append(document.createTextNode(source.slice(cursor, start)));
+    const span = document.createElement('span'); span.className = `pptxv-token pptxv-token--${token.kind}`;
+    span.textContent = source.slice(start, end); fragment.append(span); cursor = end;
   }
+  if (cursor < to) fragment.append(document.createTextNode(source.slice(cursor, to)));
   pre.replaceChildren(fragment);
 }
 

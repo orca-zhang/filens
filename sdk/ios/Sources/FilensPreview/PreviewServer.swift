@@ -21,6 +21,21 @@ final class PreviewServer {
         self.contentType = contentType
     }
 
+    static func missingAsset(in directory: URL) -> String? {
+        for name in ["mobile.html", "mobile.js", "filens.js"] {
+            let variants = name == "filens.js" ? [name, name + ".br", name + ".gz"] : [name]
+            let available = variants.contains { candidate in
+                let file = directory.appendingPathComponent(candidate)
+                guard let attributes = try? FileManager.default.attributesOfItem(atPath: file.path) else { return false }
+                return attributes[.type] as? FileAttributeType == .typeRegular
+                    && ((attributes[.size] as? NSNumber)?.uint64Value ?? 0) > 0
+                    && FileManager.default.isReadableFile(atPath: file.path)
+            }
+            if !available { return name }
+        }
+        return nil
+    }
+
     func start(completion: @escaping (Result<URL, Error>) -> Void) throws {
         let parameters = NWParameters.tcp
         parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
@@ -115,26 +130,35 @@ final class PreviewServer {
             send(connection, data: metadata, type: "application/json", head: method == "HEAD")
             return
         }
-        let file: URL
+        var file: URL
+        var encoding: String?
         if relative == "document" { file = document }
         else {
             file = assets.appendingPathComponent(relative).resolvingSymlinksInPath()
             guard file.path.hasPrefix(assets.path + "/") else { reject(connection, status: 404); return }
+            if !FileManager.default.fileExists(atPath: file.path) {
+                let suffix = FileManager.default.fileExists(atPath: file.appendingPathExtension("br").path) ? "br" : "gz"
+                file = file.appendingPathExtension(suffix).resolvingSymlinksInPath()
+                guard file.path.hasPrefix(assets.path + "/") else { reject(connection, status: 404); return }
+                encoding = suffix == "br" ? "br" : "gzip"
+            }
         }
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: file.path),
               attributes[.type] as? FileAttributeType == .typeRegular,
               let length = (attributes[.size] as? NSNumber)?.uint64Value,
               let handle = try? FileHandle(forReadingFrom: file) else { reject(connection, status: 404); return }
         let range: Range<UInt64>
-        do { range = try Self.byteRange(headers["range"], length: length) }
+        // Compressed assets are complete HTTP representations; source media still supports ranges.
+        do { range = try Self.byteRange(encoding == nil ? headers["range"] : nil, length: length) }
         catch {
             try? handle.close()
             reject(connection, status: 416, extra: "Content-Range: bytes */\(length)\r\n")
             return
         }
-        let partial = headers["range"] != nil
-        let extra = partial ? "Content-Range: bytes \(range.lowerBound)-\(range.upperBound - 1)/\(length)\r\n" : ""
-        let type = relative == "document" ? contentType : Self.mime(file)
+        let partial = encoding == nil && headers["range"] != nil
+        let extra = (encoding.map { "Content-Encoding: \($0)\r\nAccept-Ranges: none\r\n" } ?? "Accept-Ranges: bytes\r\n")
+            + (partial ? "Content-Range: bytes \(range.lowerBound)-\(range.upperBound - 1)/\(length)\r\n" : "")
+        let type = relative == "document" ? contentType : Self.mime(URL(fileURLWithPath: relative))
         let header = Self.header(status: partial ? 206 : 200, length: range.count, type: type, extra: extra)
         connection.send(content: Data(header.utf8), completion: .contentProcessed { error in
             if error != nil || method == "HEAD" { try? handle.close(); connection.cancel(); return }
@@ -168,7 +192,7 @@ final class PreviewServer {
     }
 
     private static func header(status: Int, length: Int, type: String, extra: String = "") -> String {
-        "HTTP/1.1 \(status) Response\r\nContent-Length: \(length)\r\nContent-Type: \(type)\r\nConnection: close\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nContent-Security-Policy: default-src 'self' blob: data:; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' blob: data:; connect-src 'self' blob: data:; worker-src 'self' blob:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'\r\nAccept-Ranges: bytes\r\n\(extra)\r\n"
+        "HTTP/1.1 \(status) Response\r\nContent-Length: \(length)\r\nContent-Type: \(type)\r\nConnection: close\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nContent-Security-Policy: default-src 'self' blob: data:; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' blob: data:; connect-src 'self' blob: data:; worker-src 'self' blob:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'\r\n\(extra)\r\n"
     }
 
     static func relativePath(_ target: String, token: String) -> String? {
@@ -204,6 +228,7 @@ final class PreviewServer {
         case "wasm": return "application/wasm"
         case "css": return "text/css"
         case "json": return "application/json"
+        case "txt": return "text/plain; charset=utf-8"
         default: return "application/octet-stream"
         }
     }

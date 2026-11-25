@@ -106,7 +106,7 @@ describe('XLSX preview driver', () => {
     await session.load(await zip.generateAsync({ type: 'uint8array' }), {
       descriptor: { source: new Uint8Array(), name: 'converted.xlsx', extension: 'xlsx' }
     });
-    expect(Array.from(host.querySelectorAll('tbody tr:first-child td')).map(cell => cell.textContent))
+    expect(Array.from(host.querySelectorAll('tbody tr[aria-rowindex="2"] td')).map(cell => cell.textContent))
       .toEqual([' Name ', '42', ' 中文 & text', ' inline text']);
     session.destroy();
   });
@@ -246,7 +246,7 @@ describe('XLSX preview driver', () => {
     host.remove();
   });
 
-  it('renders large sheets in row batches', async () => {
+  it('keeps large-sheet DOM bounded while scrolling down and back up', async () => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     const session = createXlsxPreviewDriver().createSession(host);
@@ -262,14 +262,20 @@ describe('XLSX preview driver', () => {
     });
 
     const grid = host.querySelector('.xlsxv-grid') as HTMLDivElement;
-    expect(host.querySelectorAll('.xlsxv-table tbody tr')).toHaveLength(100);
+    const rows = () => [...host.querySelectorAll('.xlsxv-table tbody tr[aria-rowindex]')];
+    expect(rows()).toHaveLength(100);
     Object.defineProperties(grid, {
       clientHeight: { configurable: true, value: 500 },
-      scrollHeight: { configurable: true, value: 2600 },
       scrollTop: { configurable: true, writable: true, value: 1800 }
     });
     grid.dispatchEvent(new Event('scroll'));
-    expect(host.querySelectorAll('.xlsxv-table tbody tr')).toHaveLength(200);
+    await vi.waitFor(() => expect(rows()[0].querySelector('th')?.textContent).toBe('60'));
+    expect(rows()).toHaveLength(100);
+    grid.scrollTop = 6500; grid.dispatchEvent(new Event('scroll'));
+    await vi.waitFor(() => expect(rows().at(-1)?.querySelector('th')?.textContent).toBe('250'));
+    expect(rows()).toHaveLength(100);
+    grid.scrollTop = 0; grid.dispatchEvent(new Event('scroll'));
+    await vi.waitFor(() => expect(rows()[0].textContent).toContain('Row 1'));
 
     session.destroy();
     host.remove();

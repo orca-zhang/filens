@@ -1,39 +1,41 @@
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 
-test('opens 200,000 code lines, preserves selection, and aligns the last line number after scrolling', async ({ page }) => {
+test('windows 200,000 code lines, keeps the last line aligned/selectable and copies the original source', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('./');
   const moduleUrl = new URL(`@fs${resolve('packages/core/src/preview/index.ts')}`, page.url()).href;
-  const result = await page.evaluate(async moduleUrl => {
+  await page.evaluate(async moduleUrl => {
     const lib = await import(/* @vite-ignore */ moduleUrl);
     const host = document.createElement('div'); host.style.cssText = 'position:fixed;inset:0'; document.body.replaceChildren(host);
     const text = Array.from({ length: 200_000 }, (_, i) => `const row${i + 1} = ${i + 1};`).join('\n');
-    const source = new TextEncoder().encode(text);
-    const session = lib.createTextPreviewDriver().createSession(host);
+    const source = new TextEncoder().encode(text), session = lib.createTextPreviewDriver().createSession(host);
     await session.load(source, { descriptor: { source, name: 'large.js' }, route: lib.resolveFormatRoute({ name: 'large.js' }) });
-    const root = host.querySelector('.pptxv-native-preview') as HTMLElement;
-    const pre = host.querySelector('pre')!, gutter = host.querySelector('.pptxv-native-text-gutter')!;
-    root.scrollTop = root.scrollHeight;
-    const lastLineRect = (element: Element) => {
-      const node = element.firstChild!;
-      const range = document.createRange(); range.setStart(node, node.textContent!.lastIndexOf('\n') + 1); range.setEnd(node, node.textContent!.length);
-      return { range, rect: range.getBoundingClientRect() };
-    };
-    const bodyLine = lastLineRect(pre), numberLine = lastLineRect(gutter);
-    const selection = getSelection()!; selection.removeAllRanges(); selection.addRange(bodyLine.range);
-    const result = { lineCount: session.getState().lineCount, contentMatches: pre.textContent === text,
-      number: numberLine.range.toString(), selected: selection.toString(), deltaY: Math.abs(bodyLine.rect.y - numberLine.rect.y),
-      visible: bodyLine.rect.top >= 0 && bodyLine.rect.bottom <= innerHeight,
-      gutterElements: gutter.childElementCount };
-    session.destroy();
-    return { ...result, empty: !host.childElementCount };
+    (window as any).largeText = { host, text, session };
   }, moduleUrl);
-  expect(result).toMatchObject({ lineCount: 200_000, contentMatches: true, number: '200000',
-    selected: 'const row200000 = 200000;', visible: true, empty: true });
-  expect(result.deltaY).toBeLessThan(1);
-  expect(result.gutterElements).toBeLessThan(100);
-  expect(errors).toEqual([]);
+  const root = page.locator('.pptxv-native-preview');
+  expect(await page.locator('.pptxv-text-line').count()).toBeLessThanOrEqual(512);
+  await root.evaluate(root => { root.scrollTop = root.scrollHeight; });
+  await expect(page.locator('.pptxv-text-number').last()).toHaveText('200000');
+  const last = page.locator('.pptxv-text-line').last(); await expect(last).toHaveText('const row200000 = 200000;');
+  await expect(last).toBeInViewport();
+  const result = await page.evaluate(() => {
+    const { host, text, session } = (window as any).largeText;
+    const line = [...host.querySelectorAll('.pptxv-text-line')].at(-1)!, number = [...host.querySelectorAll('.pptxv-text-number')].at(-1)!;
+    const selection = getSelection()!, range = document.createRange(); range.selectNodeContents(line); selection.removeAllRanges(); selection.addRange(range);
+    return { lineCount: session.getState().lineCount, selected: selection.toString(), deltaY: Math.abs(line.getBoundingClientRect().y - number.getBoundingClientRect().y),
+      rendered: [...host.querySelectorAll('pre')].reduce((sum: number, pre: Element) => sum + pre.textContent!.length, 0), full: text.length };
+  });
+  expect(result).toMatchObject({ lineCount: 200_000, selected: 'const row200000 = 200000;' });
+  expect(result.deltaY).toBeLessThan(1); expect(result.rendered).toBeLessThan(20_000); expect(result.full).toBeGreaterThan(4_000_000);
+  await root.focus(); await root.press('ControlOrMeta+a');
+  expect(await root.evaluate(root => {
+    let copied = ''; const event = new Event('copy', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', { value: { setData: (_type: string, value: string) => { copied = value; } } });
+    root.dispatchEvent(event); return event.defaultPrevented && copied === (window as any).largeText.text;
+  })).toBe(true);
+  await page.evaluate(() => (window as any).largeText.session.destroy());
+  await expect(page.locator('.pptxv-text-container')).toHaveCount(0); expect(errors).toEqual([]);
 });
 
 test('keeps the current file when a replaced URL finishes late and clears pending work on destroy', async ({ page }) => {

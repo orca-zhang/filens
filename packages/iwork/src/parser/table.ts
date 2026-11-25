@@ -75,9 +75,8 @@ interface TableMergeSpan {
 }
 
 interface TableMergeMap {
-  starts: Map<string, TableMergeSpan>;
-  covered: Set<string>;
-  columnsByRow: Map<number, number[]>;
+  starts: Map<number, Map<number, TableMergeSpan>>;
+  coveredAt(row: number): (column: number) => boolean;
 }
 
 interface TableHeaderStyles {
@@ -183,7 +182,7 @@ export function buildTableItem(
     ),
     resolveHiddenStateIndexes(archive, tableModel, 'row')
   );
-  const mergeMap = resolveTableMergeMap(archive, tableModel, baseDataStore);
+  const mergeMap = resolveTableMergeMap(archive, tableModel, baseDataStore, rowHeights.length, columnWidths.length);
   const cells: TableCell[] = [];
   const plainTextStyles = new Map<unknown, PlainTextTemplates>();
   const richTextFrames = new Map<unknown, Map<unknown, TextFrame>>();
@@ -228,6 +227,10 @@ export function buildTableItem(
     rowIndexBase += Number(readField<number>(tile, ['numrows']) ?? Math.max(0, ...rowInfos.map(info => Number(readField(info, ['tileRowIndex', 'tile_row_index']) ?? 0) + 1)));
   }
 
+  const storedRows = new Set(tableRows.map(({ row }) => row));
+  for (const row of mergeMap.starts.keys()) {
+    if (!storedRows.has(row)) tableRows.push({ row, rowInfo: {} });
+  }
   tableRows.sort((left, right) => left.row - right.row);
   const columnHeaderTexts = resolveColumnHeaderTexts(archive, tableRows, lookup, headerRowCount, columnWidths.length, rowOffsets);
 
@@ -241,15 +244,17 @@ export function buildTableItem(
     // cellCount counts stored cells, not the last occupied column. Sparse
     // rows can have payloads after holes, including in the final column.
     const rowColumnCount = Math.max(cellCount, totalColumns, columnWidths.length);
+    const anchors = mergeMap.starts.get(row);
     const sparseColumns = preserveEmptyGrid ? undefined
-      : resolveSparseColumns(rowInfo, rowOffsets, rowColumnCount, mergeMap.columnsByRow.get(row));
+      : resolveSparseColumns(rowInfo, rowOffsets, rowColumnCount, anchors ? [...anchors.keys()] : []);
+    if (sparseColumns?.length === 0) continue;
+    const covered = mergeMap.coveredAt(row);
     for (let index = 0; index < (sparseColumns?.length ?? rowColumnCount); index += 1) {
       const column = sparseColumns ? sparseColumns[index] : index;
       const cellInfo = parseTableCell(archive.type, rowInfo, column, rowOffsets);
-      const cellKey = createCellPositionKey(row, column);
-      const mergeSpan = mergeMap.starts.get(cellKey);
-      const isMergedContinuation = mergeMap.covered.has(cellKey);
-      if (!preserveEmptyGrid && !hasRenderablePayload(cellInfo) && !mergeSpan && !isMergedContinuation) {
+      const mergeSpan = anchors?.get(column);
+      const isMergedContinuation = covered(column);
+      if (!preserveEmptyGrid && cellInfo.offset === 65535 && !mergeSpan) {
         continue;
       }
 
@@ -457,12 +462,20 @@ function selectDominantTableFontSize(runs: TextFrame['paragraphs'][number]['runs
 function resolveTableMergeMap(
   archive: IworkArchiveIndex,
   tableModel: Record<string, unknown>,
-  baseDataStore: Record<string, unknown> | undefined
+  baseDataStore: Record<string, unknown> | undefined,
+  rowCount: number,
+  columnCount: number
 ): TableMergeMap {
-  const mergeMap: TableMergeMap = {
-    starts: new Map<string, TableMergeSpan>(),
-    covered: new Set<string>(),
-    columnsByRow: new Map()
+  const starts = new Map<number, Map<number, TableMergeSpan>>();
+  const ranges: Array<TableMergeSpan & { row: number; column: number }> = [];
+  let invalid = 0;
+  const add = (range: typeof ranges[number] | undefined) => {
+    if (!range || ![range.row, range.column, range.rowSpan, range.colSpan].every(Number.isSafeInteger)
+      || range.row < 0 || range.column < 0 || range.rowSpan < 1 || range.colSpan < 1
+      || range.row + range.rowSpan > rowCount || range.column + range.colSpan > columnCount) { invalid++; return; }
+    const columns = starts.get(range.row) ?? new Map<number, TableMergeSpan>();
+    columns.set(range.column, { rowSpan: range.rowSpan, colSpan: range.colSpan });
+    starts.set(range.row, columns); ranges.push(range);
   };
 
   const mergeRegionMap = getRecordValue<Record<string, unknown>>(
@@ -470,7 +483,7 @@ function resolveTableMergeMap(
     readField(baseDataStore, ['mergeRegionMap', 'merge_region_map'])
   );
   for (const cellRange of asArray<Record<string, unknown>>(readField(mergeRegionMap, ['cellRange', 'cell_range']))) {
-    addMergeSpan(mergeMap, resolveMergeCellRange(cellRange));
+    add(resolveMergeCellRange(cellRange));
   }
 
   // Recent Pages archives store merge ranges as endpoint formulas in the
@@ -478,32 +491,34 @@ function resolveTableMergeMap(
   const mergeOwner = asObject(readField(tableModel, ['mergeOwner', 'merge_owner']));
   const formulaStore = asObject(readField(mergeOwner, ['formulaStore', 'formula_store']));
   for (const entry of asArray<Record<string, unknown>>(readField(formulaStore, ['formulas']))) {
-    addMergeSpan(mergeMap, resolveFormulaMergeRange(entry));
+    add(resolveFormulaMergeRange(entry));
   }
-
-  return mergeMap;
-}
-
-function addMergeSpan(mergeMap: TableMergeMap, resolved: { row: number; column: number; rowSpan: number; colSpan: number } | undefined): void {
-  if (!resolved) {
-    return;
-  }
-
-  const { row, column, rowSpan, colSpan } = resolved;
-  const startKey = createCellPositionKey(row, column);
-  mergeMap.starts.set(startKey, { rowSpan, colSpan });
-
-  for (let rowOffset = 0; rowOffset < rowSpan; rowOffset += 1) {
-    const columns = mergeMap.columnsByRow.get(row + rowOffset) ?? [];
-    mergeMap.columnsByRow.set(row + rowOffset, columns);
-    for (let columnOffset = 0; columnOffset < colSpan; columnOffset += 1) {
-      columns.push(column + columnOffset);
-      if (rowOffset === 0 && columnOffset === 0) {
-        continue;
-      }
-      mergeMap.covered.add(createCellPositionKey(row + rowOffset, column + columnOffset));
+  if (invalid) archive.warnings.push(`Ignored ${invalid} invalid table merge range(s).`);
+  if (!ranges.length) return { starts, coveredAt: () => () => false };
+  ranges.sort((a, b) => a.row - b.row);
+  let next = 0, active: typeof ranges = [];
+  return { starts, coveredAt(row) {
+    // Table rows are visited in order; retain ranges, never their covered cells.
+    while (next < ranges.length && ranges[next].row <= row) active.push(ranges[next++]);
+    active = active.filter(range => range.row + range.rowSpan > row);
+    const intervals = active.map(range => ({ first: range.column + Number(row === range.row), last: range.column + range.colSpan }))
+      .filter(range => range.first < range.last).sort((a, b) => a.first - b.first);
+    const union: typeof intervals = [];
+    for (const range of intervals) {
+      const previous = union[union.length - 1];
+      if (previous && previous.last >= range.first) previous.last = Math.max(previous.last, range.last);
+      else union.push(range);
     }
-  }
+    return column => {
+      let low = 0, high = union.length;
+      while (low < high) {
+        const middle = (low + high) >>> 1;
+        if (union[middle].first <= column) low = middle + 1;
+        else high = middle;
+      }
+      return low > 0 && union[low - 1].last > column;
+    };
+  } };
 }
 
 function resolveFormulaMergeRange(entry: Record<string, unknown>): { row: number; column: number; rowSpan: number; colSpan: number } | undefined {
@@ -608,10 +623,6 @@ function readTableSize(value: Record<string, unknown>): { rowSpan: number; colSp
     rowSpan: packed >>> 16,
     colSpan: packed & 0xffff
   };
-}
-
-function createCellPositionKey(row: number, column: number): string {
-  return `${row}:${column}`;
 }
 
 function buildContentLookup(archive: IworkArchiveIndex, baseDataStore: Record<string, unknown> | undefined): TableContentLookup {
@@ -3736,13 +3747,13 @@ function getRowOffsets(rowInfo: Record<string, unknown>, cache: RowOffsetCache):
   return rowOffsets;
 }
 
-function resolveSparseColumns(rowInfo: Record<string, unknown>, cache: RowOffsetCache, columnCount: number, mergedColumns: number[] = []): number[] | undefined {
+function resolveSparseColumns(rowInfo: Record<string, unknown>, cache: RowOffsetCache, columnCount: number, anchorColumns: number[] = []): number[] | undefined {
   const { regular, preBnc } = getRowOffsets(rowInfo, cache);
   // Dense rows keep the direct loop. Sparse rows visit only stored records
-  // and merge cells, avoiding a parsed empty object for every grid position.
-  if (regular.columns.length + preBnc.columns.length + mergedColumns.length >= columnCount / 2) return undefined;
+  // and merge anchors, avoiding a parsed empty object for every grid position.
+  if (regular.columns.length + preBnc.columns.length + anchorColumns.length >= columnCount / 2) return undefined;
   const columns = new Set<number>();
-  for (const source of [regular.columns, preBnc.columns, mergedColumns]) {
+  for (const source of [regular.columns, preBnc.columns, anchorColumns]) {
     for (const column of source) {
       if (column >= 0 && column < columnCount) columns.add(column);
     }

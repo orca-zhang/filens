@@ -40,10 +40,12 @@ export async function createStyledBookFixture() {
     <item id="font" href="fonts/preview.woff" media-type="font/woff"/>
     <item id="image" href="images/sky%20blue.svg" media-type="image/svg+xml"/>
     <item id="escaped" href="images/paren)%20blue.svg" media-type="image/svg+xml"/>
+    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
   </manifest><spine><itemref idref="first"/><itemref idref="last"/></spine></package>`, { date });
   const image = '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="64"><rect width="80" height="64" fill="#e0e7ff"/></svg>';
   zip.file('OPS/images/sky blue.svg', image, { date });
   zip.file('OPS/images/paren) blue.svg', image, { date });
+  zip.file('OPS/nav.xhtml', '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><body><nav epub:type="toc"><a href="text/chapter1.xhtml">First chapter</a><a href="text/chapter%202.xhtml">Last chapter</a></nav></body></html>', { date });
   const fontFile = './preview-font.woff';
   zip.file('OPS/fonts/preview.woff', await readFile(new URL(fontFile, import.meta.url)), { date });
   zip.file('OPS/styles/main.css', `@import "nested/colors.css" screen;

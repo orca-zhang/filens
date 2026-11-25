@@ -15,9 +15,9 @@ import {
   type WorkbookPreviewState
 } from '@filens/core';
 import { loadPreviewWorkbook } from './workbook-cache';
-import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE } from './table';
+import { createSheetTable, ROW_BATCH_SIZE, COLUMN_BATCH_SIZE, SheetRowWindow } from './table';
 export { appendSheetRows, createSheetTable, ROW_BATCH_SIZE } from './table';
-import type { ParsedSheet, ParsedWorkbook } from './types';
+import type { ParsedRichText, ParsedWorkbook } from './types';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -44,6 +44,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
   private readonly fontLoading: ReturnType<typeof bindPreviewFontLoading>;
   private fontReferences: PreviewFontReference[] = [];
   private allFontReferences: PreviewFontReference[] = [];
+  private rowWindow?: SheetRowWindow;
 
   constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
     this.root = document.createElement('div');
@@ -55,7 +56,6 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     this.grid.className = 'xlsxv-grid';
     this.root.replaceChildren(this.tabs, this.grid);
     this.host.replaceChildren(this.root);
-    this.grid.addEventListener('scroll', this.handleGridScroll, { passive: true });
     this.state = {
       loading: false,
       error: null,
@@ -110,8 +110,27 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
       if (controller.signal.aborted) throw new DOMException('Workbook preview aborted.', 'AbortError');
       this.workbook = workbook;
       const used = new Set<PreviewFontReference>();
-      for (const sheet of workbook.sheets) for (const row of sheet.rows) for (const cell of row.cells) {
-        if (cell.font) used.add(cell.font);
+      const richTexts = new Set<ParsedRichText>();
+      for (const sheet of workbook.sheets) {
+        if (sheet.columnWidthSource?.font) used.add(sheet.columnWidthSource.font);
+        const formats = sheet.cellStyles?.formats;
+        const addStyleFont = (index: number) => {
+          const font = formats?.[index]?.font;
+          if (font) used.add(font);
+        };
+        addStyleFont(0);
+        for (const range of sheet.cellStyles?.columns ?? []) {
+          if (range.firstColumn <= sheet.columnCount && range.lastColumn >= 1) addStyleFont(range.styleIndex);
+        }
+        for (const row of sheet.rows) {
+          if (row.styleIndex !== undefined) addStyleFont(row.styleIndex);
+          for (const cell of row.cells) {
+            if (cell.font) used.add(cell.font);
+            if (!cell.richText || richTexts.has(cell.richText)) continue;
+            richTexts.add(cell.richText);
+            for (const run of cell.richText.runs) if (run.font?.fontFamily) used.add(run.font);
+          }
+        }
       }
       this.allFontReferences = (workbook.fonts ?? []).map(ref => ({ ...ref }));
       this.fontReferences = this.allFontReferences.filter((_, index) => used.has(workbook.fonts![index]));
@@ -160,7 +179,6 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     this.removeAbortListener?.();
     this.releaseWorkbook();
     this.state.loading = false;
-    this.grid.removeEventListener('scroll', this.handleGridScroll);
     this.root.replaceChildren();
     if (this.root.parentElement === this.host) {
       this.host.replaceChildren();
@@ -182,20 +200,25 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
   refreshFonts(update: PreviewFontRefresh): void {
     if (!this.workbook || this.loadController?.signal.aborted) return;
     this.fontReferences = update.references;
-    this.allFontReferences = this.allFontReferences.map(ref => update.references.find(item => item.fontFamily === ref.fontFamily && item.traits?.weight === ref.traits?.weight) ?? ref);
+    const replacementFor = (ref: PreviewFontReference) => update.references.find(item => item.fontFamily === ref.fontFamily
+      && item.traits?.weight === ref.traits?.weight && (item.fontStyle ?? 'normal') === (ref.fontStyle ?? 'normal'));
+    this.allFontReferences = this.allFontReferences.map(ref => replacementFor(ref) ?? ref);
     const analysis = analyzeLoadedPreviewFonts({ ...update, references: this.allFontReferences }, this.host.ownerDocument);
     for (const ref of this.workbook.fonts ?? []) {
-      const replacement = update.references.find(item => item.fontFamily === ref.fontFamily && item.traits?.weight === ref.traits?.weight);
+      const replacement = replacementFor(ref);
       if (replacement?.resolvedFontFamily) ref.resolvedFontFamily = replacement.resolvedFontFamily;
     }
     this.state.fonts = analysis.fonts;
     this.state.warnings = [...new Set([...this.workbook.warnings, ...analysis.warnings])];
     if (update.loaded.length || update.relayout) {
       const sheet = this.workbook.sheets[this.state.activeSheetIndex];
-      const top = this.grid.scrollTop, left = this.grid.scrollLeft;
-      const rows = this.grid.querySelector('tbody')?.rows.length ?? ROW_BATCH_SIZE;
-      if (sheet) this.grid.replaceChildren(createSheetTable(sheet, rows));
-      this.grid.scrollTop = top; this.grid.scrollLeft = left;
+      if (this.rowWindow) this.rowWindow.refresh();
+      else if (sheet) {
+        const top = this.grid.scrollTop, left = this.grid.scrollLeft;
+        this.grid.replaceChildren(createSheetTable(sheet));
+        this.grid.scrollTop = top;
+        this.grid.scrollLeft = left;
+      }
     }
     this.emit('warnings', this.state.warnings);
     this.emit('rendered', this.getState()); this.emit('statechange', this.getState());
@@ -251,31 +274,20 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
 
   private renderActiveSheet(): void {
     const sheet = this.workbook?.sheets[this.state.activeSheetIndex];
+    this.rowWindow?.destroy();
+    this.rowWindow = undefined;
     this.grid.replaceChildren();
     this.grid.scrollTop = this.grid.scrollLeft = 0;
     if (!sheet) {
       return;
     }
-    this.grid.appendChild(createSheetTable(sheet, Math.min(Math.max(sheet.rowCount, 1), ROW_BATCH_SIZE)));
+    if (sheet.columnWidthSource || sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE) this.rowWindow = new SheetRowWindow(sheet, this.grid);
+    else this.grid.appendChild(createSheetTable(sheet));
   }
 
-  private readonly handleGridScroll = () => {
-    const sheet = this.workbook?.sheets[this.state.activeSheetIndex];
-    const body = this.grid.querySelector('tbody');
-    if (!sheet || !body || this.grid.scrollHeight - this.grid.scrollTop - this.grid.clientHeight > this.grid.clientHeight * 2) {
-      return;
-    }
-
-    const renderedRows = body.rows.length;
-    const totalRows = Math.max(sheet.rowCount, 1);
-    if (renderedRows >= totalRows) {
-      return;
-    }
-    // ponytail: rows stay mounted after loading; switch to windowed rows if million-row sheets become a real use case.
-    appendSheetRows(body, sheet, renderedRows + 1, Math.min(renderedRows + ROW_BATCH_SIZE, totalRows));
-  };
-
   private releaseWorkbook(): void {
+    this.rowWindow?.destroy();
+    this.rowWindow = undefined;
     this.fontReferences = [];
     this.allFontReferences = [];
     this.workbook = null;

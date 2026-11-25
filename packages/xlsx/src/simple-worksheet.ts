@@ -1,4 +1,4 @@
-import type { ParsedCell, ParsedRow, ParsedSheet } from './types';
+import type { ParsedCell, ParsedCellStyle, ParsedRichText, ParsedRow, ParsedSheet } from './types';
 import { columnNameToIndex } from './columns';
 
 // Reuse patterns across cells. Every stateful attribute match sets its cursor
@@ -10,12 +10,12 @@ const booleanPattern = /^\s*(?:true|false)\s*$/;
 const referencePattern = /^([A-Z]+)([1-9]\d*)$/i;
 
 /** Read the common numeric/shared-string cell representation directly into the
- * preview model. Rich text, formulas and other XML constructs use the general
+ * preview model. Inline strings, formulas and other XML constructs use the general
  * parser; rejecting the entire fast path prevents partially missing content. */
-export function readSimpleWorksheet(xml: string, options: { id: string; name: string; sharedStrings: string[]; fontStyles?: ParsedCell['font'][]; columnStyle?: (column: number) => number }): ParsedSheet | undefined {
-  const { sharedStrings, fontStyles, columnStyle } = options;
+export function readSimpleWorksheet(xml: string, options: { id: string; name: string; sharedStrings: (string | ParsedRichText)[]; styles?: ParsedCellStyle[]; columnStyle?: (column: number) => number }): ParsedSheet | undefined {
+  const { sharedStrings, styles, columnStyle } = options;
   if (xml.includes('<!')) return undefined;
-  if (fontStyles?.length && /<cols\b/.test(xml) && !columnStyle) return undefined;
+  if (styles?.length && /<cols\b/.test(xml) && !columnStyle) return undefined;
   const opening = /<sheetData\b([^<>]*)>/.exec(xml);
   if (!opening || !attributes(opening[1])) return undefined;
   const start = opening.index + opening[0].length;
@@ -36,7 +36,7 @@ export function readSimpleWorksheet(xml: string, options: { id: string; name: st
     const index = Number(rowAttrs.r ?? rows.length + 1);
     if (!Number.isInteger(index) || index < 1) return undefined;
     const rowStyle = rowAttrs.customFormat === '1' || rowAttrs.customFormat === 'true' ? rowAttrs.s : undefined;
-    const rowFont = fontStyles?.[Number(rowStyle ?? 0)];
+    const rowStyleIndex = rowStyle === undefined ? undefined : Number(rowStyle);
     const cells: ParsedCell[] = [];
     const content = row[2] ?? '';
     let cellOffset = 0;
@@ -56,18 +56,24 @@ export function readSimpleWorksheet(xml: string, options: { id: string; name: st
         const ref = referencePattern.exec(attrs.r);
         if (!ref) return undefined;
         const column = columnNameToIndex(ref[1]);
-        const value = attrs.t === 's' ? sharedStrings[Number(raw)] ?? '' :
+        const value = attrs.t === 's' ? (raw.trim() ? sharedStrings[Number(raw)] ?? '' : '') :
           attrs.t === 'b' ? (raw.trim() === '1' || raw.trim() === 'true' ? 'TRUE' : 'FALSE') : raw;
-        const parsed: ParsedCell = { ref: attrs.r, row: Number(ref[2]), column, value };
-        const font = attrs.s !== undefined ? fontStyles?.[Number(attrs.s)] : rowStyle === undefined && columnStyle
-          ? fontStyles?.[columnStyle(column)] : rowFont;
-        if (font) parsed.font = font;
+        const parsed: ParsedCell = { ref: attrs.r, row: Number(ref[2]), column, value: typeof value === 'string' ? value : value.value };
+        if (typeof value !== 'string') parsed.richText = value;
+        if (attrs.t === 's') parsed.valueType = 'text';
+        if (attrs.t === 'b') parsed.valueType = 'boolean';
+        if (styles?.length) {
+          const styleIndex = attrs.s === undefined ? rowStyleIndex ?? columnStyle?.(column) ?? 0 : Number(attrs.s);
+          const font = styles[styleIndex]?.font;
+          if (font) parsed.font = font;
+          if (styleIndex !== 0) parsed.styleIndex = styleIndex;
+        }
         cells.push(parsed);
         maxColumn = Math.max(maxColumn, column);
       }
       cellOffset = cellPattern.lastIndex;
     }
-    rows.push({ index, cells });
+    rows.push({ index, cells, ...(styles?.length && rowStyleIndex !== undefined ? { styleIndex: rowStyleIndex } : {}) });
     maxRow = Math.max(maxRow, index);
     offset = rowPattern.lastIndex;
   }

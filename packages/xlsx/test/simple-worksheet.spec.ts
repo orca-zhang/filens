@@ -36,7 +36,7 @@ describe('simple worksheet XML reader', () => {
       expect(readSimpleWorksheet(document('r="A1" broken'), options)).toBeUndefined();
       expect(readSimpleWorksheet(document('r="A1" t="str"', 'text'), options)).toBeUndefined();
       const result = readSimpleWorksheet(document("r='A1' t='s' ", '1'), options);
-      expect(result?.rows[0].cells[0]).toEqual({ ref: 'A1', row: 1, column: 1, value: 'Names & notes' });
+      expect(result?.rows[0].cells[0]).toEqual({ ref: 'A1', row: 1, column: 1, value: 'Names & notes', valueType: 'text' });
     }
   });
 });

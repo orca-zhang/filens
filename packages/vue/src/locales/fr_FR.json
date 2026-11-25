@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "L’image dans l’image est indisponible pour cette vidéo",
   "Subtitles": "Sous-titres",
   "Subtitles off": "Désactiver les sous-titres",
-  "Subtitles {number}": "Sous-titres {number}"
+  "Subtitles {number}": "Sous-titres {number}",
+  "Find in document": "Rechercher dans le document",
+  "Previous match": "Résultat précédent",
+  "Next match": "Résultat suivant",
+  "Search incomplete": "Recherche incomplète",
+  "Wrap lines": "Retour à la ligne"
 }

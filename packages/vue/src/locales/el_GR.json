@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Η εικόνα σε εικόνα δεν είναι διαθέσιμη για αυτό το βίντεο",
   "Subtitles": "Υπότιτλοι",
   "Subtitles off": "Απενεργοποίηση υποτίτλων",
-  "Subtitles {number}": "Υπότιτλοι {number}"
+  "Subtitles {number}": "Υπότιτλοι {number}",
+  "Find in document": "Εύρεση στο έγγραφο",
+  "Previous match": "Προηγούμενο αποτέλεσμα",
+  "Next match": "Επόμενο αποτέλεσμα",
+  "Search incomplete": "Η αναζήτηση δεν ολοκληρώθηκε",
+  "Wrap lines": "Αναδίπλωση γραμμών"
 }

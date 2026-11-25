@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Imaginea în imagine nu este disponibilă pentru acest video",
   "Subtitles": "Subtitrări",
   "Subtitles off": "Dezactivează subtitrările",
-  "Subtitles {number}": "Subtitrări {number}"
+  "Subtitles {number}": "Subtitrări {number}",
+  "Find in document": "Caută în document",
+  "Previous match": "Rezultatul anterior",
+  "Next match": "Rezultatul următor",
+  "Search incomplete": "Căutare incompletă",
+  "Wrap lines": "Încadrare rânduri"
 }

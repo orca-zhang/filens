@@ -35,6 +35,7 @@ public final class FilensPreviewView: UIView, WKNavigationDelegate {
     private var pageURL: URL?
     private var activeNavigation: WKNavigation?
     private var destroyed = false
+    private var assetsValidated = false
 
     public override init(frame: CGRect) {
         let configuration = WKWebViewConfiguration()
@@ -64,15 +65,22 @@ public final class FilensPreviewView: UIView, WKNavigationDelegate {
         guard !destroyed else { report("view_destroyed", "Create a new FilensPreviewView after destroy()."); return }
         close()
         guard fileURL.isFileURL else { report("io_error", "A local file URL is required."); return }
-        guard let assets = Bundle.module.resourceURL?.appendingPathComponent("filens"),
-              FileManager.default.fileExists(atPath: assets.appendingPathComponent("mobile.html").path) else {
+        guard let assets = Bundle.module.resourceURL?.appendingPathComponent("filens") else {
             report("engine_unavailable", "Missing SDK assets. Run npm run build:sdk:mobile before building the app.")
             return
         }
         let id = requestId
         let displayName = name ?? fileURL.lastPathComponent
         let contentType = UTType(filenameExtension: (displayName as NSString).pathExtension)?.preferredMIMEType ?? "application/octet-stream"
+        let validateAssets = !assetsValidated
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            if validateAssets, let missing = PreviewServer.missingAsset(in: assets) {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self, self.requestId == id, !self.destroyed else { return }
+                    self.report("engine_unavailable", "Missing SDK asset: \(missing). Run node prepare-runtime.mjs at the SDK ZIP root or rebuild resources.")
+                }
+                return
+            }
             let work = FileManager.default.temporaryDirectory.appendingPathComponent("filens-\(UUID().uuidString)", isDirectory: true)
             let input = work.appendingPathComponent("document")
             do {
@@ -90,6 +98,7 @@ public final class FilensPreviewView: UIView, WKNavigationDelegate {
                         try? FileManager.default.removeItem(at: work); return
                     }
                     self.directory = work
+                    self.assetsValidated = true
                     let server = PreviewServer(assets: assets, document: input, metadata: data, contentType: contentType)
                     self.server = server
                     do {

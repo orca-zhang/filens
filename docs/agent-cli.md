@@ -1,5 +1,9 @@
 # Agent CLI: local reading and cited document content
 
+## Describe tasks through capabilities
+
+Tell your agent what you want to accomplish, for example, “Find the payment terms in these documents and cite the sources.” FiLens supplies reading, search, OCR, conversion and preview capabilities; your agent selects and combines them for the task.
+
 ## Document inspection updates (0.5.4)
 
 Directional queries: `docx>?` lists DOCX targets, `?>pdf` lists PDF sources, and `docx>pdf` checks that exact pair. Use `capacity 'docx>?'` in the CLI or `{"query":"docx>?"}` in DSH; `--query` and stdin JSON also accept it. `?` means any format. Defaults return only declared cross-format pairs; same-format pairs such as `docx>docx` are omitted from lists and counts. Empty means no matching cross-format conversion, with no inferred intermediate routes. Quote the expression in a shell to prevent redirection and glob expansion.

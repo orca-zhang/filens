@@ -11,6 +11,7 @@ vi.mock('pdfjs-dist/build/pdf.worker.min.mjs?url', () => ({ get default() { retu
 
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {},
+  TextLayer: vi.fn(),
   getDocument: vi.fn(() => ({
     destroy,
     promise: Promise.resolve({

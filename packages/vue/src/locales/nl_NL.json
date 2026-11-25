@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Beeld in beeld is niet beschikbaar voor deze video",
   "Subtitles": "Ondertitels",
   "Subtitles off": "Ondertitels uit",
-  "Subtitles {number}": "Ondertitels {number}"
+  "Subtitles {number}": "Ondertitels {number}",
+  "Find in document": "Zoeken in document",
+  "Previous match": "Vorige overeenkomst",
+  "Next match": "Volgende overeenkomst",
+  "Search incomplete": "Zoekopdracht onvolledig",
+  "Wrap lines": "Regels afbreken"
 }

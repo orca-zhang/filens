@@ -127,10 +127,10 @@ describe('EPUB preview driver', () => {
     }
 
     session.next?.();
-    expect(session.getState()).toMatchObject({
+    await vi.waitFor(() => expect(session.getState()).toMatchObject({
       chapterIndex: 1,
       chapterTitle: 'Chapter Two'
-    });
+    }));
     expect((host.querySelector('iframe.ebookv-frame') as HTMLIFrameElement | null)?.srcdoc).toContain('Chapter Two');
 
     session.destroy();

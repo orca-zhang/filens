@@ -306,19 +306,23 @@ describe('Numbers repeated cell styles', () => {
       .toEqual(['Date', '2023-02-01', '2023-02-02']);
   });
 
-  it('retains regular/fallback positions and empty merged cells in sparse rows', () => {
+  it('retains regular/fallback positions and empty merge anchors without synthesizing covered cells', () => {
     const { rows, offsetsAt, build } = sparseTableArchive();
     // An invalid regular offset must not hide the valid legacy cached value.
     rows[1].cellOffsets = offsetsAt(31, 65000);
     rows[1].cellStorageBuffer = new Uint8Array(0);
     const table = build();
     expect(table.cells.map(cell => [cell.row, cell.column])).toEqual([
-      [0, 31], [1, 6], [1, 7], [1, 31], [2, 4], [2, 6], [2, 7], [2, 31]
+      [0, 31], [1, 6], [1, 31], [2, 4], [2, 31]
     ]);
     const merge = table.cells.find(cell => cell.row === 1 && cell.column === 6)!;
     expect([merge.rowSpan, merge.colSpan, merge.isMergedContinuation]).toEqual([2, 2, false]);
     expect(table.cells.filter(cell => cell.isMergedContinuation).map(cell => [cell.row, cell.column]))
-      .toEqual([[1, 7], [2, 6], [2, 7]]);
+      .toEqual([]);
+    rows[2].cellOffsets = offsetsAt(6);
+    const covered = build().cells.find(cell => cell.row === 2 && cell.column === 6)!;
+    expect(covered.isMergedContinuation).toBe(true);
+    expect(covered.textFrame.paragraphs[0].runs[0].text).toBe('Note');
     rows[2].cellOffsets = offsetsAt(30);
     expect(build().cells.some(cell => cell.row === 2 && cell.column === 30)).toBe(true);
     expect(build().cells.some(cell => cell.row === 2 && cell.column === 4)).toBe(false);
@@ -330,6 +334,25 @@ describe('Numbers repeated cell styles', () => {
     const table = build();
     expect(table.cells).toHaveLength(96);
     expect(table.cells.filter(cell => cell.row === 2).map(cell => cell.column)).toEqual(Array.from({ length: 32 }, (_, i) => i));
+  });
+
+  it('retains stored empty cells with inherited and explicit fills without expanding missing cells', () => {
+    const { archive, rows, offsetsAt, build } = sparseTableArchive();
+    const model = archive.records['1'].value as any;
+    model.bodyCellStyle = { identifier: 5 }; model.baseDataStore.styleTable = { identifier: 6 };
+    archive.records['5'] = { ...archive.records['3'], id: 5, archiveId: 5, typeName: 'TST.CellStyleArchive',
+      value: { cellProperties: { cellFill: { color: { r: 1, g: 0, b: 0 } } } } };
+    archive.records['6'] = { ...archive.records['3'], id: 6, archiveId: 6,
+      value: { entries: [{ key: 23, reference: { identifier: 7 } }] } };
+    archive.records['7'] = { ...archive.records['5'], id: 7, archiveId: 7,
+      value: { cellProperties: { cellFill: { color: { r: 0, g: 1, b: 0 } } } } };
+    rows[1].cellOffsets = offsetsAt(4); rows[1].cellStorageBuffer = createTextCellBufferWithStyle(0, 0);
+    rows[2].cellOffsets = offsetsAt(4); rows[2].cellStorageBuffer = createTextCellBufferWithStyle(0, 23);
+    const table = build(), inherited = table.cells.find(cell => cell.row === 1 && cell.column === 4)!, explicit = table.cells.find(cell => cell.row === 2 && cell.column === 4)!;
+    expect(inherited.fill.color).toBe('#ff0000'); expect(explicit.fill.color).toBe('#00ff00');
+    expect(inherited.textFrame.paragraphs[0].runs[0].text).toBe('');
+    expect(explicit.textFrame.paragraphs[0].runs[0].text).toBe('');
+    expect(table.cells.some(cell => cell.row === 1 && cell.column === 5)).toBe(false);
   });
 
   it.each(['array', 'unaligned view'])('reads row buffers from %s and observes replacements on rebuild', representation => {
@@ -573,7 +596,7 @@ describe('iWork table parser', () => {
     expect(text).toBe('Published');
   });
 
-  it('applies Numbers mergeRegionMap spans and marks covered cells', () => {
+  it('applies Numbers mergeRegionMap spans and marks stored covered cells', () => {
     const archive = createNumbersArchive();
 
     archive.records['1'] = {
@@ -623,8 +646,8 @@ describe('iWork table parser', () => {
           {
             tileRowIndex: 1,
             cellCount: 2,
-            cellOffsets: createCellOffsets([65535, 65535]),
-            cellStorageBuffer: new Uint8Array(0)
+            cellOffsets: createCellOffsets([65535, 0]),
+            cellStorageBuffer: createTextCellBuffer(0)
           }
         ]
       }
@@ -689,7 +712,7 @@ describe('iWork table parser', () => {
     );
 
     expect(table).toBeTruthy();
-    expect(table?.cells).toHaveLength(4);
+    expect(table?.cells).toHaveLength(2);
 
     const anchorCell = table?.cells.find((cell) => cell.row === 0 && cell.column === 0);
     expect(anchorCell).toMatchObject({
@@ -701,7 +724,7 @@ describe('iWork table parser', () => {
     expect(text).toBe('Merged');
 
     const coveredCells = table?.cells.filter((cell) => cell.isMergedContinuation) ?? [];
-    expect(coveredCells.map((cell) => `${cell.row}:${cell.column}`).sort()).toEqual(['0:1', '1:0', '1:1']);
+    expect(coveredCells.map((cell) => `${cell.row}:${cell.column}`)).toEqual(['1:1']);
   });
 
   it('supports merge ranges stored through expanded coordinates and packed table sizes', () => {
@@ -754,8 +777,8 @@ describe('iWork table parser', () => {
           {
             tileRowIndex: 1,
             cellCount: 2,
-            cellOffsets: createCellOffsets([65535, 65535]),
-            cellStorageBuffer: new Uint8Array(0)
+            cellOffsets: createCellOffsets([65535, 0]),
+            cellStorageBuffer: createTextCellBuffer(0)
           }
         ]
       }

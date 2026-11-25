@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { resolveCellValue } from '../src/parser';
+import { loadXlsxWorkbook, resolveCellValue } from '../src/parser';
+import { clonePreviewWorkbook } from '../src/workbook-cache';
 import type { ParsedCell, ParsedSheet } from '../src/types';
+import { createFormulaWorkbook } from './fixtures/formula-workbook.mjs';
 
 function sheet(values: string[], formula: string) {
   const result: ParsedCell = { ref: 'B1', row: 1, column: 2, value: '', formula, needsCalculation: true };
@@ -119,5 +121,58 @@ describe('formula range evaluation', () => {
     const { model, result } = sheet(['text', '1'], formula);
     expect(resolveCellValue(model, result)).toBe(`=${formula}`);
     expect(result.needsCalculation).toBe(false);
+  });
+});
+
+describe('typed workbook formulas', () => {
+  it.each([
+    ['-2^2+12.5%*8', '5', undefined], ['2^3^2', '512', undefined],
+    ['"a ""quote""" & TRUE & 3', 'a "quote"TRUE3', 'text'],
+    ['_xlfn.CONCAT("項目 ",2,LEN("測試"))', '項目 22', 'text'],
+    ['IF(3<>4,TRUE,1/0)', 'TRUE', 'boolean'],
+    ['IF(FALSE,UNKNOWN(A1),"ok")', 'ok', 'text'],
+    ['IFERROR(5,UNKNOWN(A1))', '5', undefined],
+    ['IFERROR(#N/A,"fallback")', 'fallback', 'text'],
+    ['NOT(AND(OR(FALSE,TRUE),1))', 'FALSE', 'boolean'],
+    ['ROUND(-2.675,2)', '-2.68', undefined], ['ROUNDUP(-4.1,0)', '-5', undefined],
+    ['ROUNDDOWN(-1.9,0)', '-1', undefined], ['ROUND(1250,-2)', '1300', undefined],
+    ['MIN(9,4,7)+MAX(9,4,7)', '13', undefined],
+    ['1/0', '#DIV/0!', 'error'], ['XFE1', '#REF!', 'error'],
+    ['SUM("x",1)', '#VALUE!', 'error'], ['ABS(-5)', '5', undefined]
+  ])('evaluates %s as the expected value and type', (formula, value, type) => {
+    const { model, result } = sheet(['1'], formula);
+    expect(resolveCellValue(model, result)).toBe(value);
+    expect(result.valueType).toBe(type);
+  });
+
+  it('evaluates cross-sheet formulas, whole columns/rows and data types on sparse source cells', async () => {
+    const { sheets: [summary, input] } = await loadXlsxWorkbook(await createFormulaWorkbook());
+    const row = (index: number) => summary.rows[index].cells.map(cell => resolveCellValue(summary, cell));
+    expect(row(0)).toEqual(['10', '15', '7.5', 'total: 15', 'safe', '2.68', '1', '1', '6']);
+    expect(input.rows[0].cells[0].value).toBe('10');
+    expect(row(1)).toEqual(['=Input!B1', 'missing', '#N/A', '4:TRUE', '5', "='[remote.xlsx]Sheet1'!A1"]);
+    const last = summary.rows[2].cells[0];
+    expect(resolveCellValue(summary, last)).toBe('225.25');
+    expect(summary.rows[0].cells[3].valueType).toBe('text');
+    expect(summary.rows[1].cells[2].valueType).toBe('error');
+  });
+
+  it('resolves sibling references against the individual cached workbook copy', async () => {
+    const original = await loadXlsxWorkbook(await createFormulaWorkbook());
+    const copy = clonePreviewWorkbook(original);
+    copy.sheets[2].rows[0].cells[0].value = '99';
+    expect(resolveCellValue(copy.sheets[0], copy.sheets[0].rows[0].cells[0])).toBe('100');
+    expect(resolveCellValue(original.sheets[0], original.sheets[0].rows[0].cells[0])).toBe('10');
+  });
+
+  it('bounds dependency recursion without caching failures in uncalculated dependencies', () => {
+    const { model, result } = sheet(Array(75).fill(''), 'A1');
+    model.rows.forEach((row, i) => Object.assign(row.cells[0], {
+      formula: i === model.rows.length - 1 ? '1' : 'A' + (i + 2) + '+1',
+      needsCalculation: true
+    }));
+    expect(resolveCellValue(model, result)).toBe('=A1');
+    expect(model.rows[50].cells[0].needsCalculation).toBe(true);
+    expect(resolveCellValue(model, model.rows[50].cells[0])).toBe('25');
   });
 });

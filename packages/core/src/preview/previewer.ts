@@ -229,6 +229,12 @@ export class Previewer implements PreviewerInstance {
     this.activeSession?.goToPage?.(index);
   }
 
+  async find(query: string): Promise<void> { await this.activeSession?.find?.(query); }
+
+  findNext(backward = false): void { this.activeSession?.findNext?.(backward); }
+
+  setWrap(wrap: boolean): void { this.activeSession?.setWrap?.(wrap); }
+
   next(): void {
     this.activeSession?.next?.();
   }

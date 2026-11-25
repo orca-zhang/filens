@@ -19,7 +19,7 @@ async function workbook(sheet: string, theme?: string, bold = '') {
 }
 
 describe('XLSX font styles', () => {
-  it('refreshes loaded cells without losing lazy rows or scroll position', async () => {
+  it('refreshes loaded cells without losing the row window or scroll position', async () => {
     const context = { font: '', measureText: () => ({ width: 100 }) };
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context as unknown as CanvasRenderingContext2D);
     let resolve!: (response: Response) => void;
@@ -34,16 +34,16 @@ describe('XLSX font styles', () => {
       await session.load(source, { descriptor: { source, extension: 'xlsx' } });
       const grid = host.querySelector<HTMLElement>('.xlsxv-grid')!;
       grid.dispatchEvent(new Event('scroll'));
-      expect(host.querySelector('tbody')?.rows.length).toBe(200);
+      expect(host.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
       grid.scrollTop = 144; grid.scrollLeft = 37;
       const before = host.querySelector('table');
       resolve(new Response(new Uint8Array([1, 2, 3])));
       await vi.waitFor(() => expect(session.getState().fonts?.[0].resolvedFontFamily).toBe('Web Book'));
-      expect(host.querySelector('table')).not.toBe(before);
-      expect(host.querySelector('tbody')?.rows.length).toBe(200);
+      expect(host.querySelector('table')).toBe(before);
+      expect(host.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
       expect(grid.scrollTop).toBe(144); expect(grid.scrollLeft).toBe(37);
       expect(splitPreviewFontFamilies(host.querySelector<HTMLElement>('td.xlsxv-cell')!.style.fontFamily).slice(0, 2)).toEqual(['Book Face', 'Web Book']);
-      expect(session.getFontReferences?.().map(ref => ref.fontFamily)).toEqual(['Book Face']);
+      expect(session.getFontReferences?.().map(ref => ref.fontFamily)).toEqual(['Book Face', 'Code Face']);
       expect(session.getState().fonts?.map(font => font.fontFamily)).toEqual(['Book Face', 'Code Face', 'Art Face']);
       expect(fetch).toHaveBeenCalledTimes(1);
     } finally { session.destroy(); vi.unstubAllGlobals(); delete (document as unknown as { fonts?: unknown }).fonts; }

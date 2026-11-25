@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "이 동영상에서는 화면 속 화면을 사용할 수 없습니다",
   "Subtitles": "자막",
   "Subtitles off": "자막 끄기",
-  "Subtitles {number}": "자막 {number}"
+  "Subtitles {number}": "자막 {number}",
+  "Find in document": "문서에서 찾기",
+  "Previous match": "이전 일치 항목",
+  "Next match": "다음 일치 항목",
+  "Search incomplete": "검색 미완료",
+  "Wrap lines": "자동 줄 바꿈"
 }

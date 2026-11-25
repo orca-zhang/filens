@@ -55,11 +55,12 @@ The similarity implementation's macOS arm64 local build comparison added about *
 
 ## What Makes filens Different
 
-To our knowledge, as of **November 24, 2026**, the three defining capabilities are:
+To our knowledge, as of **November 24, 2026**, the four defining capabilities are:
 
-1. **The world's only truly open-source, frontend-native PPTX preview library, with a better viewing experience.** MIT-licensed parsing and HTML/SVG rendering display text, images, shapes, tables and supported charts without uploads or a conversion service. [Real-file preview performance and coverage](performance-comparison.md).
-2. **The first and only library to truly parse the iWork 15 protocol, and the only pure frontend iWork viewer.** Decode and display Keynote, Pages and Numbers in the browser without Apple hardware or iCloud. Earlier protocol research and code are credited to [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork), with continued protocol and rendering work built on part of that foundation. [Implementation and coverage](../packages/iwork/README.md).
-3. **Panorama: possibly the best support for panorama photo and video distortion parameters.** Read official calibration embedded in DJI and Insta360 originals and render panorama video in real time, entirely in the browser. Tested X5 seams look visibly better than specialist PSV's generic dual-fisheye projection. [Visual comparison and scope](performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams) · [Real-time rendering](panorama-rendering-implementation.md).
+1. **AI: describe tasks through capabilities.** Tell your agent what you want to accomplish; it selects and combines FiLens reading, search, OCR, conversion and preview capabilities. [Natural-language task example](agent-cli.md#describe-tasks-through-capabilities).
+2. **The world's only truly open-source, frontend-native PPTX preview library, with a better viewing experience.** MIT-licensed parsing and HTML/SVG rendering display text, images, shapes, tables and supported charts without uploads or a conversion service. [Real-file preview performance and coverage](performance-comparison.md).
+3. **The only open-source iWork preview library, supporting pure frontend native rendering.** First to support iWork 15 protocol parsing, it decodes and displays Keynote, Pages and Numbers in the browser without Apple hardware or iCloud. Earlier protocol research and code are credited to [`dunhamsteve/iwork`](https://github.com/dunhamsteve/iwork), with continued protocol and rendering work built on part of that foundation. [Implementation and coverage](../packages/iwork/README.md).
+4. **Panorama: possibly the best support for panorama photo and video distortion parameters.** Read official calibration embedded in DJI and Insta360 originals and render panorama video in real time, entirely in the browser. Tested X5 seams look visibly better than specialist PSV's generic dual-fisheye projection. [Visual comparison and scope](performance-comparison.md#x5-originals-native-calibration-and-more-natural-seams) · [Real-time rendering](panorama-rendering-implementation.md).
 
 Additional capabilities include:
 

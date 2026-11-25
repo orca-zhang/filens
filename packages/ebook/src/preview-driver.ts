@@ -2,6 +2,7 @@ import { createEpubResources, resolveArchivePath } from './epub-resources';
 import { createFrameResourceUrl } from './frame-resource-url';
 import {
   openZipArchive,
+  waitForContainerTask,
   type EbookPreviewState,
   type ZipEntry,
   type PreviewDriver,
@@ -35,6 +36,15 @@ interface ManifestItem {
   id: string;
   href: string;
   mediaType: string;
+  properties?: string;
+}
+
+interface IndexedBook {
+  title?: string;
+  chapters: Omit<ParsedEpubChapter, 'html'>[];
+  warnings: string[];
+  zip: Map<string, ZipEntry>;
+  epub?: { manifest: ManifestItem[]; packageDir: string };
 }
 
 export { EBOOK_FORMAT_ROUTES, createEbookPreviewRoutes } from './routes';
@@ -50,8 +60,10 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
   private readonly root: HTMLDivElement;
   private readonly tabs: HTMLDivElement;
   private readonly stage: HTMLDivElement;
-  private readonly createdUrls: string[] = [];
-  private book: ParsedEpubBook | null = null;
+  private createdUrls = new Set<string>();
+  private book: IndexedBook | null = null;
+  private chapterController?: AbortController;
+  private chapterGeneration = 0;
   private frame: HTMLIFrameElement | null = null;
   private loadGeneration = 0;
   private loadController?: AbortController;
@@ -72,6 +84,7 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     chapterTitle: undefined,
     chapterIndex: 0,
     chapterCount: 0,
+    chapterLoading: false,
     chapters: []
   };
 
@@ -129,20 +142,16 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
       }
 
       const loadContext = { ...context, signal: controller.signal };
-      const createUrl = (blob: Blob) => {
-        checkAborted(controller.signal);
-        return this.createObjectUrl(blob);
-      };
       const book =
         format === 'cbz'
-          ? await loadCbzBook(source, loadContext, createUrl)
-          : await loadEpubBook(source, loadContext, createUrl, this.options.resourceResolver);
+          ? await indexCbzBook(source, loadContext)
+          : await indexEpubBook(source, loadContext);
       if (generation !== this.loadGeneration) return;
       checkAborted(controller.signal);
       this.book = book;
       this.state = {
         ...this.state,
-        loading: false,
+        loading: true,
         error: null,
         title: this.book.title ?? context.descriptor.name,
         warnings: this.book.warnings.slice(),
@@ -152,7 +161,10 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
           title: chapter.title
         }))
       };
-      this.render();
+      this.renderTabs();
+      await this.openChapter(0);
+      if (generation !== this.loadGeneration) return;
+      checkAborted(controller.signal);
       if (this.state.warnings.length) {
         this.emit('warnings', this.state.warnings);
       }
@@ -190,7 +202,7 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     return {
       ...this.state,
       warnings: this.state.warnings.slice(),
-      chapters: this.state.chapters?.slice() ?? []
+      chapters: this.state.chapters.map(chapter => ({ ...chapter }))
     };
   }
 
@@ -214,26 +226,77 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
   }
 
   private goToChapter(index: number): void {
-    if (!Number.isInteger(index) || !this.book?.chapters.length) {
-      return;
-    }
-    const nextIndex = Math.max(0, Math.min(index, this.book.chapters.length - 1));
-    if (nextIndex === this.state.chapterIndex && this.frame) {
-      return;
-    }
-    const chapter = this.book.chapters[nextIndex]!;
-    this.state.chapterIndex = nextIndex;
-    this.state.location = chapter.href;
-    this.state.chapterTitle = chapter.title;
-    this.state.progress = this.book.chapters.length <= 1 ? 1 : nextIndex / (this.book.chapters.length - 1);
-    this.renderTabs();
-    this.renderChapter(chapter);
-    this.emit('statechange', this.state);
+    const book = this.book, generation = this.loadGeneration;
+    const operation = this.openChapter(index), chapterGeneration = this.chapterGeneration;
+    void operation.catch(error => {
+      if (book !== this.book || generation !== this.loadGeneration || chapterGeneration !== this.chapterGeneration) return;
+      this.state.loading = false;
+      this.state.chapterLoading = false;
+      const normalized = error instanceof Error ? error : new Error(String(error));
+      this.state.error = normalized.message;
+      this.emit('error', normalized);
+      this.emit('statechange', this.getState());
+    });
   }
 
-  private render(): void {
-    this.renderTabs();
-    this.goToChapter(0);
+  private async openChapter(index: number): Promise<void> {
+    const book = this.book, parentSignal = this.loadController?.signal;
+    if (!Number.isInteger(index) || !book?.chapters.length || parentSignal?.aborted) return;
+    const next = Math.max(0, Math.min(index, book.chapters.length - 1));
+    if (next === this.state.chapterIndex && !this.state.error && (this.frame || this.chapterController)) return;
+    this.chapterController?.abort();
+    const chapterGeneration = ++this.chapterGeneration;
+    const controller = new AbortController();
+    this.chapterController = controller;
+    const urls = new Set<string>();
+    const abort = () => controller.abort();
+    parentSignal?.addEventListener('abort', abort, { once: true });
+    controller.signal.addEventListener('abort', () => revokeUrls(urls), { once: true });
+    const current = () => book === this.book && chapterGeneration === this.chapterGeneration && !controller.signal.aborted;
+    const previous = this.state.chapterIndex;
+    this.state = { ...this.state, chapterIndex: next, chapterTitle: book.chapters[next].title,
+      location: book.chapters[next].href, progress: book.chapters.length <= 1 ? 1 : next / (book.chapters.length - 1), chapterLoading: true, error: null };
+    this.tabs.children[previous]?.classList.remove('is-active');
+    this.tabs.children[next]?.classList.add('is-active');
+    this.stage.setAttribute('aria-busy', 'true');
+    this.emit('statechange', this.getState());
+    let committed = false;
+    const createUrl = (blob: Blob) => {
+      checkAborted(controller.signal);
+      const url = URL.createObjectURL(blob); urls.add(url); return url;
+    };
+    try {
+      if (!current()) return;
+      const warnings = book.warnings.slice();
+      const chapter = await waitForContainerTask((async () => {
+        const resources = book.epub ? await createEpubResources(book.zip, book.epub.manifest, book.epub.packageDir,
+          createUrl, controller.signal, this.options.resourceResolver, warnings) : undefined;
+        return readChapter(book, next, createUrl, controller.signal, resources);
+      })(), controller.signal);
+      if (!current()) return;
+      if (!chapter) throw new Error(`Missing chapter file ${book.chapters[next].href}.`);
+      const oldUrls = this.createdUrls;
+      this.renderChapter(chapter);
+      this.createdUrls = urls; committed = true;
+      this.chapterController = undefined;
+      revokeUrls(oldUrls);
+      book.chapters[next].title = chapter.title;
+      this.state.chapters[next] = { id: chapter.id, title: chapter.title };
+      this.tabs.children[next].textContent = chapter.title;
+      this.state.chapterTitle = chapter.title;
+      this.state.loading = false;
+      this.state.chapterLoading = false;
+      this.state.warnings = warnings;
+      this.stage.setAttribute('aria-busy', 'false');
+      if (warnings.length) this.emit('warnings', warnings);
+      this.emit('statechange', this.getState());
+    } catch (error) {
+      if (current()) { this.stage.setAttribute('aria-busy', 'false'); throw error; }
+    } finally {
+      parentSignal?.removeEventListener('abort', abort);
+      if (!committed) revokeUrls(urls);
+      if (this.chapterController === controller) this.chapterController = undefined;
+    }
   }
 
   private renderTabs(): void {
@@ -260,33 +323,24 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     this.stage.replaceChildren(frame);
   }
 
-  private createObjectUrl(blob: Blob): string {
-    const url = URL.createObjectURL(blob);
-    this.createdUrls.push(url);
-    return url;
-  }
-
   private releaseBook(): void {
-    this.revokeCreatedUrls();
+    this.chapterGeneration++;
+    this.chapterController?.abort();
+    this.chapterController = undefined;
+    revokeUrls(this.createdUrls);
+    this.book?.zip.clear();
     this.book = null;
     this.frame = null;
     this.tabs.replaceChildren();
     this.stage.replaceChildren();
+    this.stage.removeAttribute('aria-busy');
     this.state.chapterCount = 0;
+    this.state.chapterLoading = false;
     this.state.chapterIndex = 0;
     this.state.chapters = [];
     this.state.chapterTitle = undefined;
     this.state.location = undefined;
     this.state.progress = 0;
-  }
-
-  private revokeCreatedUrls(): void {
-    while (this.createdUrls.length) {
-      const url = this.createdUrls.pop();
-      if (url) {
-        URL.revokeObjectURL(url);
-      }
-    }
   }
 
   private emit<T extends PreviewEventName>(event: T, payload: PreviewEventMap[T]): void {
@@ -315,6 +369,20 @@ export async function loadEpubBook(
   createUrl: (blob: Blob) => string = (blob) => URL.createObjectURL(blob),
   resourceResolver?: PreviewResourceResolver
 ): Promise<ParsedEpubBook> {
+  const book = await indexEpubBook(source, context);
+  const resources = await createEpubResources(book.zip, book.epub!.manifest, book.epub!.packageDir,
+    createUrl, context.signal, resourceResolver, book.warnings);
+  const chapters: ParsedEpubChapter[] = [];
+  for (let index = 0; index < book.chapters.length; index++) {
+    const chapter = await readChapter(book, index, createUrl, context.signal, resources);
+    if (chapter) chapters.push(chapter);
+    else book.warnings.push(`Missing chapter file ${resolveArchivePath(book.epub!.packageDir, book.chapters[index].href)}.`);
+  }
+  if (!chapters.length) throw new Error('Invalid EPUB: no readable HTML chapters found.');
+  return { title: book.title, chapters, warnings: book.warnings };
+}
+
+async function indexEpubBook(source: PreviewSource, context: PreviewLoadContext): Promise<IndexedBook> {
   const bytes = await sourceToArrayBuffer(source, context);
   checkAborted(context.signal);
   const zip = await openZipArchive(new Uint8Array(bytes), { signal: context.signal });
@@ -341,8 +409,8 @@ export async function loadEpubBook(
   const manifest = readManifest(document);
   const spineIds = readSpine(document);
   const title = firstText(document, 'title');
-  const resources = await createEpubResources(zip, manifest.values(), packageDir, createUrl, context.signal, resourceResolver, warnings);
-  const chapters: ParsedEpubChapter[] = [];
+  const titles = await readNavigationTitles(zip, manifest, packageDir, context.signal, warnings);
+  const chapters: IndexedBook['chapters'] = [];
 
   for (const idref of spineIds) {
     checkAborted(context.signal);
@@ -357,18 +425,15 @@ export async function loadEpubBook(
     }
 
     const path = resolveArchivePath(packageDir, item.href);
-    const html = await readZipText(zip, path, context.signal);
-    if (!html) {
+    if (!zip.has(path) || zip.get(path)!.directory || zip.get(path)!.size === 0) {
       warnings.push(`Missing chapter file ${path}.`);
       continue;
     }
 
-    const chapter = await rewriteChapterHtml(html, item.href, packageDir, resources, context.signal);
     chapters.push({
       id: item.id,
       href: item.href,
-      title: chapter.title ?? item.href,
-      html: chapter.html
+      title: titles.get(path) ?? item.href
     });
   }
 
@@ -379,7 +444,9 @@ export async function loadEpubBook(
   return {
     title: title || undefined,
     chapters,
-    warnings
+    warnings,
+    zip,
+    epub: { manifest: [...manifest.values()], packageDir }
   };
 }
 
@@ -392,6 +459,24 @@ export async function loadCbzBook(
   },
   createUrl: (blob: Blob) => string = (blob) => URL.createObjectURL(blob)
 ): Promise<ParsedEpubBook> {
+  const book = await indexCbzBook(source, context);
+  const chapters: ParsedEpubChapter[] = [];
+  for (let start = 0; start < book.chapters.length; start += 8) {
+    checkAborted(context.signal);
+    const batch = book.chapters.slice(start, start + 8);
+    const pages = await Promise.all(batch.map(chapter =>
+      book.zip.get(chapter.href)!.bytes(undefined, context.signal)));
+    checkAborted(context.signal);
+    for (const [index, chapter] of batch.entries()) {
+      checkAborted(context.signal);
+      const url = createFrameResourceUrl(pages[index], imageContentType(chapter.href), createUrl);
+      chapters.push({ ...chapter, html: createComicPageHtml(chapter.title, url) });
+    }
+  }
+  return { title: book.title, chapters, warnings: book.warnings };
+}
+
+async function indexCbzBook(source: PreviewSource, context: PreviewLoadContext): Promise<IndexedBook> {
   const bytes = await sourceToArrayBuffer(source, context);
   checkAborted(context.signal);
   const zip = await openZipArchive(new Uint8Array(bytes), { signal: context.signal });
@@ -405,33 +490,33 @@ export async function loadCbzBook(
     throw new Error('Invalid CBZ: no readable image pages found.');
   }
 
-  const chapters: ParsedEpubChapter[] = [];
-  // Bound in-flight decompression and preserve page order.
-  for (let start = 0; start < entries.length; start += 8) {
-    checkAborted(context.signal);
-    const batch = entries.slice(start, start + 8);
-    const pages = await Promise.all(batch.map(entry => entry.bytes()));
-    checkAborted(context.signal);
-    for (const [offset, entry] of batch.entries()) {
-      checkAborted(context.signal);
-      const index = start + offset;
-      const contentType = imageContentType(entry.name);
-      const url = createFrameResourceUrl(pages[offset]!, contentType, createUrl);
-      const title = `Page ${index + 1}`;
-      chapters.push({
-        id: `page-${index + 1}`,
-        title,
-        href: entry.name,
-        html: createComicPageHtml(title, url)
-      });
-    }
-  }
-
   return {
     title: context.descriptor.name,
-    chapters,
-    warnings: []
+    chapters: entries.map((entry, index) => ({ id: `page-${index + 1}`, title: `Page ${index + 1}`, href: entry.name })),
+    warnings: [],
+    zip
   };
+}
+
+async function readChapter(book: IndexedBook, index: number, createUrl: (blob: Blob) => string,
+  signal?: AbortSignal, resources?: Awaited<ReturnType<typeof createEpubResources>>): Promise<ParsedEpubChapter | null> {
+  checkAborted(signal);
+  const chapter = book.chapters[index];
+  if (book.epub) {
+    const html = await readZipText(book.zip, resolveArchivePath(book.epub.packageDir, chapter.href), signal);
+    if (!html) return null;
+    const content = await rewriteChapterHtml(html, chapter.href, book.epub.packageDir, resources!, signal);
+    return { ...chapter, title: content.title ?? chapter.title, html: content.html };
+  }
+  const bytes = await book.zip.get(chapter.href)!.bytes(undefined, signal);
+  checkAborted(signal);
+  const url = createFrameResourceUrl(bytes, imageContentType(chapter.href), createUrl);
+  return { ...chapter, html: createComicPageHtml(chapter.title, url) };
+}
+
+function revokeUrls(urls: Set<string>): void {
+  for (const url of urls) URL.revokeObjectURL(url);
+  urls.clear();
 }
 
 async function sourceToArrayBuffer(source: PreviewSource, context: PreviewLoadContext): Promise<ArrayBuffer> {
@@ -468,7 +553,7 @@ async function readZipText(zip: Map<string, ZipEntry>, path: string, signal?: Ab
   if (!file) {
     return null;
   }
-  const text = await file.text();
+  const text = new TextDecoder().decode(await file.bytes(undefined, signal));
   checkAborted(signal);
   return text;
 }
@@ -492,7 +577,8 @@ function readManifest(document: Document): Map<string, ManifestItem> {
       manifest.set(id, {
         id,
         href,
-        mediaType
+        mediaType,
+        properties: element.getAttribute('properties') ?? undefined
       });
     }
   }
@@ -504,6 +590,42 @@ function readSpine(document: Document): string[] {
     .filter((element) => element.localName === 'itemref')
     .map((element) => element.getAttribute('idref') ?? '')
     .filter(Boolean);
+}
+
+async function readNavigationTitles(zip: Map<string, ZipEntry>, manifest: Map<string, ManifestItem>,
+  packageDir: string, signal: AbortSignal | undefined, warnings: string[]): Promise<Map<string, string>> {
+  const titles = new Map<string, string>();
+  const items = [...manifest.values()];
+  const navigation = items.find(item => item.properties?.split(/\s+/).includes('nav'))
+    ?? items.find(item => item.mediaType === 'application/x-dtbncx+xml');
+  if (!navigation) return titles;
+  const path = resolveArchivePath(packageDir, navigation.href);
+  try {
+    const xml = await readZipText(zip, path, signal);
+    if (!xml) throw new Error('Missing navigation document.');
+    const document = parseXml(xml, path);
+    const add = (href: string | null, title: string | undefined) => {
+      if (!href || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(href)) return;
+      const target = resolveArchivePath(dirname(path), href), label = title?.replace(/\s+/g, ' ').trim();
+      if (label && !titles.has(target)) titles.set(target, label);
+    };
+    if (navigation.mediaType === 'application/x-dtbncx+xml') {
+      for (const point of Array.from(document.getElementsByTagName('*')).filter(element => element.localName === 'navPoint')) {
+        const children = Array.from(point.children);
+        add(children.find(child => child.localName === 'content')?.getAttribute('src') ?? null,
+          children.find(child => child.localName === 'navLabel')?.textContent ?? undefined);
+      }
+    } else {
+      const navs = Array.from(document.getElementsByTagName('*')).filter(element => element.localName === 'nav');
+      const toc = navs.find(element => (element.getAttributeNS('http://www.idpf.org/2007/ops', 'type') ?? element.getAttribute('epub:type'))?.split(/\s+/).includes('toc')
+        || element.getAttribute('role') === 'doc-toc') ?? navs[0] ?? document.documentElement;
+      for (const link of toc.querySelectorAll('a[href]')) add(link.getAttribute('href'), link.textContent ?? undefined);
+    }
+  } catch {
+    checkAborted(signal);
+    warnings.push(`EPUB navigation metadata is unavailable: ${path}.`);
+  }
+  return titles;
 }
 
 async function rewriteChapterHtml(

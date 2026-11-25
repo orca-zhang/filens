@@ -97,7 +97,7 @@ test('website charts keep four panels, include every harness and distinguish mis
     for (const row of data.baselines.filter(row => row.metrics.allTaskTokensKnownSubtotal)) {
       const group = [...doc.querySelectorAll('[data-metric="tokens"] [data-harness]')].find(node => node.getAttribute('data-harness') === row.harness);
       assert.equal(group.querySelectorAll('[fill="url(#unknown)"]').length, 2);
-      assert.match(group.textContent, english ? /Incomplete\*/ : /不完整\*/);
+      assert.match(group.textContent, english ? /Partial\*/ : /不完整\*/);
       assert.doesNotMatch(group.textContent, /%/);
     }
     assert.doesNotMatch(svg, /NaN|Infinity/);

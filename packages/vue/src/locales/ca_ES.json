@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Imatge sobre imatge no està disponible per a aquest vídeo",
   "Subtitles": "Subtítols",
   "Subtitles off": "Desactiva els subtítols",
-  "Subtitles {number}": "Subtítols {number}"
+  "Subtitles {number}": "Subtítols {number}",
+  "Find in document": "Cerca al document",
+  "Previous match": "Coincidència anterior",
+  "Next match": "Coincidència següent",
+  "Search incomplete": "Cerca incompleta",
+  "Wrap lines": "Ajusta les línies"
 }

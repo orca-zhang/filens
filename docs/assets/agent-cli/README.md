@@ -21,7 +21,7 @@ OCR benchmark corpus. See ../../agent-cli-examples.zh-CN.md for actual errors.
 `terminal-demo.gif` (English) and `terminal-demo.zh-CN.gif` (Chinese) are
 1280 × 820, 12 fps, 60-second deterministic replays of actual CLI requests
 and responses, with localized commands, interface text and synthetic documents.
-The matching PNG files are static posters. The eleven scenes open with OCR geometry,
+The matching PNG files are static posters. The frame uses the FiLens logo's cyan, violet and pink gradients around dark terminal panels. The eleven scenes open with OCR geometry,
 then demonstrate Markdown, model-free excerpts, nested ZIP search and direct member
 reading, full-file duplicates, perceptual image groups, CSV-to-XLSX conversion,
 previewing that converted workbook, orbiting a STEP assembly, and content inspection of a PNG deliberately named `.pdf`.

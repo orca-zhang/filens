@@ -1,5 +1,5 @@
 // Deterministic, uncompressed PDF with varying page sizes, vector art and searchable text.
-export function createPdfFixture(pageCount = 100, mixedSizes = false) {
+export function createPdfFixture(pageCount = 100, mixedSizes = false, rotation = 0, textCommands) {
   const objects = ['<< /Type /Catalog /Pages 2 0 R >>', '', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
   const pages = [];
   for (let index = 0; index < pageCount; index++) {
@@ -11,8 +11,9 @@ export function createPdfFixture(pageCount = 100, mixedSizes = false) {
       const x = 40 + (item % 6) * 80, y = 90 + Math.floor(item / 6) * 36;
       return `${(item % 7) / 7} 0.4 0.7 rg ${x} ${y} 62 22 re f`;
     }).join('\n');
-    const stream = `0.08 0.18 0.3 rg 0 0 ${width} ${height} re f\n${art}\n1 1 1 rg BT /F1 24 Tf 40 ${height - 60} Td (Document page ${index + 1}) Tj ET\n`;
-    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${width} ${height}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${pageId + 1} 0 R >>`);
+    const textArt = textCommands ? textCommands(index, height) : `1 1 1 rg BT /F1 24 Tf 40 ${height - 60} Td (Document page ${index + 1}) Tj ET\n`;
+    const stream = `0.08 0.18 0.3 rg 0 0 ${width} ${height} re f\n${art}\n${textArt}`;
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${width} ${height}] /Rotate ${rotation} /Resources << /Font << /F1 3 0 R >> >> /Contents ${pageId + 1} 0 R >>`);
     objects.push(`<< /Length ${stream.length} >>\nstream\n${stream}endstream`);
   }
   objects[1] = `<< /Type /Pages /Count ${pageCount} /Kids [${pages.join(' ')}] >>`;

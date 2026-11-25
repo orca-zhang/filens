@@ -1,4 +1,4 @@
-// Measure real npm artifacts and keep the README's leading sizes reproducible.
+// Measure real npm artifacts and keep the npm packaging README sizes reproducible.
 import assert from 'node:assert/strict';
 import { copyFile, readFile, stat, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
@@ -39,25 +39,6 @@ function block(text,id,body,anchor){
 }
 async function update(){
   const rows=await sizes(),mac=rows.find(r=>r.platform==='darwin-arm64');assert.ok(mac);
-  for(const [file,language,anchor] of [
-    ['README.md','en','  <p>Local file tools for Agents and browsers. Read, search, OCR, and preview files without uploading them.</p>'],
-    ['README.zh-CN.md','zh','  <p>面向 Agent 与浏览器的本地文件工具：读取、搜索、OCR 与多格式预览。文件无需上传。</p>'],
-  ]){
-    let text=await readFile(path.join(root,file),'utf8');
-    const range=values=>`${Math.min(...values).toFixed(2)}–${Math.max(...values).toFixed(2)}`;
-    const liteRange=range(rows.map(r=>r.lite.installedBytes/1048576));
-    const fullRange=range(rows.map(r=>r.full.installedBytes/1048576));
-    const binaryRange=range(rows.map(r=>r.binaryBytes/1048576));
-    text=language==='zh'
-      ? text.replace(/(\| 大概多大 \| ).*?( \|)/,`$1**Lite 基础组件 ${liteRange} MiB · Full 基础组件 ${fullRange} MiB**，完整版含 OCR 运行时与模型。$2`)
-        .replace(/原生可执行文件为 \*\*[^*]+\*\*/,`原生可执行文件为 **${binaryRange} MiB**`)
-      : text.replace(/(\| Approximate size \| ).*?( \|)/,`$1**Lite components: ${liteRange} MiB · Full components: ${fullRange} MiB**, including OCR runtime and models.$2`)
-        .replace(/The native executable is \*\*[^*]+\*\*/,`The native executable is **${binaryRange} MiB**`);
-    const body=language==='zh'
-      ? `  <p><strong>CLI 可执行文件 ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full 为基础组件体积，离线预览资源另计；Full 含 OCR 模型；<a href="docs/agent-cli-npm-release.json">各平台完整数据</a></sub></p>`
-      : `  <p><strong>CLI executable ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB · <a href="LICENSE">MIT</a></strong><br /><sub>v${release.version} · macOS arm64 · Lite/Full component sizes exclude offline preview assets; Full includes OCR models; <a href="docs/agent-cli-npm-release.json">all platform sizes</a></sub></p>`;
-    await writeFile(path.join(root,file),block(text,`agent-cli-size:${language}`,body,anchor));
-  }
   const table='| Platform | CLI executable | Lite installed / download | Full installed / download |\n| --- | ---: | ---: | ---: |\n'+rows.map(r=>`| ${r.platform} | ${mib(r.binaryBytes)} MiB | ${mib(r.lite.installedBytes)} / ${mib(r.lite.downloadBytes)} MiB | ${mib(r.full.installedBytes)} / ${mib(r.full.downloadBytes)} MiB |`).join('\n');
   const body=`**v${release.version} · MIT · CLI executable ${mib(mac.binaryBytes)} MiB · Lite ${mib(mac.lite.installedBytes)} MiB · Full ${mib(mac.full.installedBytes)} MiB** (macOS arm64; Lite/Full installed sizes; Full includes OCR models).\n\n${table}\n\nTotals add the launcher and selected platform packages from npm pack. Node.js, npm caches, filesystem overhead and the optional frontend preview package are excluded. Bundled dependencies retain their own licenses; see THIRD-PARTY-NOTICES.md in the platform packages.`;
   const readme=path.join(root,'packaging/npm/README.md');

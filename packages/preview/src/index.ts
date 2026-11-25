@@ -47,6 +47,9 @@ export function createPreview(element: Element | string, options: BrowserPreview
     update(next: Partial<BrowserPreviewOptions>) { Object.assign(props, next); },
     /** Controls for applications that supply their own toolbar. */
     getState() { return preview.value?.getState(); },
+    find(query: string) { return preview.value?.find(query); },
+    findNext(backward = false) { preview.value?.findNext(backward); },
+    setWrap(wrap: boolean) { preview.value?.setWrap(wrap); },
     setScale(scale: number) { preview.value?.setScale(scale); },
     fullscreen() { return preview.value?.fullscreen(); },
     destroy() { app.unmount(); }

@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Picture-in-picture não está disponível para este vídeo",
   "Subtitles": "Legendas",
   "Subtitles off": "Desativar legendas",
-  "Subtitles {number}": "Legendas {number}"
+  "Subtitles {number}": "Legendas {number}",
+  "Find in document": "Localizar no documento",
+  "Previous match": "Correspondência anterior",
+  "Next match": "Próxima correspondência",
+  "Search incomplete": "Pesquisa incompleta",
+  "Wrap lines": "Quebrar linhas"
 }

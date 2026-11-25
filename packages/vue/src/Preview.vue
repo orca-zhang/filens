@@ -93,6 +93,7 @@ const props = withDefaults(
     initialScale?: number;
     minScale?: number;
     maxScale?: number;
+    virtual?: boolean;
     toolbar?: boolean | 'minimal';
     controlsTarget?: HTMLElement;
     locale?: string;
@@ -112,6 +113,7 @@ const props = withDefaults(
     initialScale: 1,
     minScale: 0.4,
     maxScale: 4,
+    virtual: undefined,
     toolbar: true,
     drivers: undefined,
     routes: undefined,
@@ -502,6 +504,7 @@ function clonePreviewState<T extends PreviewItemState>(state: T): T {
     capabilities: { ...state.capabilities },
     warnings: [...state.warnings]
   } as T;
+  if (state.search) cloned.search = { ...state.search };
   if (state.fonts) cloned.fonts = state.fonts.map((font) => ({ ...font, classification: font.classification ? { ...font.classification } : undefined }));
 
   const measurement = (state as unknown as { measurement?: PreviewMeasurementInfo }).measurement;
@@ -568,6 +571,7 @@ async function recreatePreviewer(): Promise<void> {
     initialScale: childOptions.initialScale ?? props.initialScale,
     minScale: childOptions.minScale ?? props.minScale,
     maxScale: childOptions.maxScale ?? props.maxScale,
+    virtual: childOptions.virtual ?? props.virtual,
     fontResolver: childOptions.fontResolver ?? props.fontResolver,
     fontLoading: childOptions.fontLoading ?? props.fontLoading,
     resourceResolver: childOptions.resourceResolver ?? props.resourceResolver,
@@ -1186,6 +1190,9 @@ function normalizeSearchText(value: string): string {
 }
 
 defineExpose({
+  find: (query: string) => previewer.value?.find?.(query),
+  findNext: (backward = false) => previewer.value?.findNext?.(backward),
+  setWrap: (wrap: boolean) => previewer.value?.setWrap?.(wrap),
   fullscreen: toggleFullscreen,
   goToIndex,
   next: nextPage,
@@ -1228,6 +1235,7 @@ watch(
     props.initialScale,
     props.minScale,
     props.maxScale,
+    props.virtual,
     props.drivers,
     props.routes,
     props.converter,

@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Obraz v obraze není pro toto video dostupný",
   "Subtitles": "Titulky",
   "Subtitles off": "Vypnout titulky",
-  "Subtitles {number}": "Titulky {number}"
+  "Subtitles {number}": "Titulky {number}",
+  "Find in document": "Najít v dokumentu",
+  "Previous match": "Předchozí shoda",
+  "Next match": "Další shoda",
+  "Search incomplete": "Hledání není dokončeno",
+  "Wrap lines": "Zalamovat řádky"
 }

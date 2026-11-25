@@ -291,6 +291,19 @@ export interface PreviewItemState {
   /** A best-effort snapshot for fonts discovered by this driver; absent means uninspected. */
   fonts?: PreviewFontDiagnostic[];
   capabilities: PreviewCapabilities;
+  search?: PreviewSearchState;
+}
+
+export interface PreviewSearchState {
+  query: string;
+  searching: boolean;
+  total: number;
+  /** Zero-based active match, or -1 when there are no matches. */
+  activeIndex: number;
+  pagesScanned: number;
+  pageCount: number;
+  truncated: boolean;
+  error?: string;
 }
 
 export interface PagedPreviewState extends PreviewItemState {
@@ -336,6 +349,8 @@ export interface MediaPreviewState extends PreviewItemState {
 
 export interface EbookPreviewState extends PreviewItemState {
   family: 'ebook';
+  /** A page turn is pending; document controls remain usable. */
+  chapterLoading?: boolean;
   location?: string;
   progress?: number;
   chapterTitle?: string;
@@ -533,6 +548,9 @@ export interface PreviewEventMap {
 }
 
 export interface PreviewSession<TState extends PreviewItemState = PreviewItemState> {
+  find?(query: string): Promise<void>;
+  findNext?(backward?: boolean): void;
+  setWrap?(wrap: boolean): void;
   refreshTranslations?(): void;
   getAttachments?(): Promise<PreviewAttachment[]>;
   getFontReferences?(): readonly PreviewFontReference[];
@@ -574,6 +592,9 @@ export interface PreviewSession<TState extends PreviewItemState = PreviewItemSta
 }
 
 export interface PreviewerInstance<TState extends PreviewItemState = PreviewItemState> {
+  find?(query: string): Promise<void>;
+  findNext?(backward?: boolean): void;
+  setWrap?(wrap: boolean): void;
   /** Refresh driver labels after the translation callback changes, preserving the loaded media. */
   refreshTranslations?(): void;
   preview(source: PreviewSource | SourceDescriptor, descriptor?: Partial<SourceDescriptor>): Promise<void>;

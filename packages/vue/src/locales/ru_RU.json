@@ -122,5 +122,10 @@
   "Picture in picture is unavailable for this video": "Режим «Картинка в картинке» недоступен для этого видео",
   "Subtitles": "Субтитры",
   "Subtitles off": "Выключить субтитры",
-  "Subtitles {number}": "Субтитры {number}"
+  "Subtitles {number}": "Субтитры {number}",
+  "Find in document": "Найти в документе",
+  "Previous match": "Предыдущее совпадение",
+  "Next match": "Следующее совпадение",
+  "Search incomplete": "Поиск не завершён",
+  "Wrap lines": "Перенос строк"
 }

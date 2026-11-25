@@ -143,11 +143,149 @@ directory over HTTP(S). To integrate into another page:
 ```
 
 `createPreview()` mounts the shared `Preview` component and returns `update()`,
-`getState()`, `setScale()`, `fullscreen()` and `destroy()`. Pass `toolbar: false`
+`getState()`, `find()`, `findNext()`, `setWrap()`, `setScale()`, `fullscreen()` and `destroy()`. Pass `toolbar: false`
 to use your application’s toolbar, then call these controls on the returned viewer. Options include `src`, `name`, `extension`, `toolbar`, `converter`, `panoramaProcessor`,
 `resourceResolver`, `fontResolver`, `onRendered` and `onError`. The default converter
 uses the bundled frontend WASM engines. Use [`@filens/vue`](https://github.com/orca-zhang/filens/tree/main/packages/vue) for
 direct Vue component integration.
+
+Once a PDF is ready, `await viewer.find('literal phrase')` searches all pages,
+including pages outside the rendered viewport. `viewer.findNext()` advances to
+the next match and `viewer.findNext(true)` goes backwards, wrapping at either
+end. `viewer.find('')` cancels and clears the search. The PDF find control also
+opens with Ctrl/Cmd+F while the PDF viewport has focus, supports Enter/Shift+Enter
+and Escape, and follows the host locale. `getState()?.search` reports the query,
+active match, total, pages scanned, progress and any error/truncation. Matching is
+case-insensitive literal text; line endings between PDF text items act as spaces.
+Results are session-local and capped at 10,000 with explicit incomplete status;
+new queries, file replacement and destruction discard previous results. Image-only
+PDFs need OCR before they contain searchable text. These controls are in the
+current source and require a new runtime build; published preview 0.3.8 predates them.
+
+Text/code previews also implement `find()`/`findNext()` with literal, case-insensitive
+matching, a 10,000-match cap, and cancellation on a new query, replacement or
+destruction. `viewer.setWrap(true)` wraps source lines while preserving syntax
+spans and aligned logical line numbers. These previews share the localized find
+controls and keyboard shortcuts with PDF. UTF-8/UTF-16 BOMs and declared MIME
+charsets are honored; malformed byte sequences warn and binary/unsupported
+encodings fail explicitly. Text search reports one source document in the shared
+page-count fields. Above 500 logical lines, previews render visible/nearby
+128-line blocks, measuring wrapped heights and retaining the logical reading
+position across resize/wrap changes. Search navigates to unmounted content.
+Focus the text viewport and press Ctrl/Cmd+A before copying to include the full
+original source, including its line endings. Native drag-selection covers mounted
+content; pass `virtual: false` when the host needs the complete DOM or native
+browser find. Full decoding and line indexes remain in memory; an individual
+extremely long logical line still incurs layout cost, and unread dimensions are
+estimated until measured.
+
+Current-source EPUB/CBZ previews index the book before opening only the selected
+chapter/page and its referenced assets. Page turns discard superseded reads and
+release the previous chapter's owned URLs. The previous frame stays visible while
+a chapter loads; `getState()?.chapterLoading` reports that work while ordinary
+navigation remains available. EPUB 3 navigation and EPUB 2 NCX supply chapter labels;
+without them, unread chapters use filenames until opened. Compressed source bytes
+and ZIP metadata/cache remain resident. The separate `@filens/books` extraction
+functions `loadEpubBook()` and `loadCbzBook()` retain complete-book extraction.
+
+Current-source Numbers previews also reuse the XLSX/CSV row and column windows
+for large tables, including picture cells. Variable row heights preserve source
+minimums and measure loaded images; horizontal scrolling and font refresh retain
+known heights. Several tables can share one viewport; resize remeasures cells
+while preserving the logical reading row, and late layout changes retain the
+bottom position. `virtual: false` retains incremental row loading. The full
+parsed model stays resident; this reduces rendered DOM rather than parsing memory.
+
+XLSX and Numbers grids preserve rectangular merged cells across both window
+boundaries. XLSX anchor values/fonts/formulas and Numbers anchor text/pictures
+survive offscreen origins.
+Only mounted rows/columns receive native spans; content keeps its source offsets
+so scrolling through a large merge does not repeat its heading. Multi-row merged
+pictures fit the source row area. Incremental Numbers batches retain earlier
+anchors. Compact workbook hosts fit their available height. Source alignment,
+borders and full styling remain partial for XLSX.
+
+Numbers grids render parsed rich runs (fonts, sizes, emphasis, colors and links),
+paragraph spacing/wrapping/padding/alignment, solid/gradient/basic pattern fills
+and per-side borders through the shared core. Loaded font mappings reach visible
+runs; font probes are shared only within each synchronous visible-row batch.
+Merged text retains its source alignment, gradients retain source coordinates,
+and clipped fragments omit interior borders. Stored empty style cells retain
+source fills; unstored blanks still use grid defaults. Source column widths stay
+fixed in both virtual and incremental grids, including narrow tables and columns
+wider than the viewport. Horizontal windows, spacers, merged text and gradients
+use cumulative source widths. Resizing retains those widths and the reading row.
+Omitted style metadata, hidden-track layout and advanced effects remain partial;
+picture cells keep fitted image previews. CSV keeps default column widths.
+
+XLSX grids retain explicit column ranges, `defaultColWidth` and `baseColWidth`,
+including the implicit eight-character base when no size metadata is stored.
+Widths use the Normal style's font, point size and maximum digit advance with the
+ISO 29500 character-to-pixel calculation. Rendering measures the available font;
+font refresh remeasures widths while preserving the logical reading column and
+position within it. The parser retains raw metadata alongside a 7px digit-width
+baseline for hosts without canvas metrics. Metadata-only parsing keeps numeric
+worksheets on their fast path; source ranges never create cell objects or extend
+the sheet beyond its cells/merges. Normal fonts used only for sizing participate
+in font loading, with mappings isolated between cached previews. Missing source
+fonts, automatic best-fit sizing, hidden tracks and formula-view width doubling
+remain fidelity limits. Layout-height measurement keeps the final Excel row
+reachable when far-offscreen client rectangles lose precision. Standalone
+workbook grids compress unmounted row spacers when the sheet exceeds the
+browser's scroll height limit. Visible rows keep their layout height.
+
+XLSX also renders source font size, emphasis, underline and strike, RGB/theme/indexed
+colors, solid and basic patterned or gradient fills, four-sided borders and explicit
+alignment. Visible blank cells inherit row, column or default formats without
+creating stored cells. Wrapped text grows individual rows with sparse height
+measurements. Merged fragments retain the anchor's formatting, source alignment and
+gradient coordinates. Shared and inline rich strings preserve per-run fonts,
+sizes, emphasis, colors, decorations and baseline shifts. Run faces participate
+in font diagnostics and host font loading. Diagonal and continuation-cell borders
+and advanced alignment remain partial or unavailable.
+
+Conditional formatting applies value comparisons, supported formulas, text
+matches, blanks and errors to visible cells and merged anchors. Rules honor source
+priority and stop-if-true, and use the differential fill, emphasis, color, border
+and number-format declarations. Relative formulas share the worksheet formula
+engine. Color scales, data bars, icon sets, range statistics and extension rules
+remain pending.
+
+XLSX displays built-in and custom number formats for dates, elapsed time,
+percentages, currencies, fractions and scientific notation. It supports the 1900
+and 1904 date systems, cached or evaluated numeric formulas, and custom sections
+for positive, negative, zero and text values. Formatting happens when a cell is
+mounted, so formulas retain their raw inputs and results. Numeric-looking strings,
+booleans and errors retain their source types. Unsupported format codes that fail
+to parse keep the raw value. Locale-specific calendar names and separators,
+negative date/time display, format color directives and width-driven accounting
+padding remain limited.
+
+For XLSX formulas without a cached result, the preview supports arithmetic,
+comparisons, percentages, `SUM`, `AVERAGE`, `MIN`, `MAX`, `COUNT`, `COUNTA`,
+rounding, `ABS`, `IF`, `IFERROR`, `AND`, `OR`, `NOT`, `LEN`, `CONCAT`,
+`CONCATENATE` and `&`. References may point to other sheets, including quoted
+names and whole rows or columns. Range evaluation visits stored cells in
+worksheet order and supports dependencies outside of the rendered window.
+Cached results remain authoritative. Shared formula followers use one master
+definition per group and translate their relative references when evaluated.
+Absolute references, quoted names and literals are preserved. Missing or invalid
+definitions produce a worksheet warning. Defined names can be workbook-wide or
+local to a worksheet, and support case-insensitive lookup, aliases, scalar
+expressions and sparse multi-area ranges. Relative coordinates are resolved at
+the formula cell. External references, unsupported functions and complete array
+formula evaluation remain limited. Cyclic or unsupported formulas retain their
+source text when available. Formula length, dependency depth and name expansion
+are bounded for preview.
+
+Numbers parsing also indexes merged ranges without creating blank covered-cell
+objects. Its sparse model retains merge anchors, including those without row
+storage, and actual stored continuation records; Pages keeps its dense grid.
+Serialized ZIP/Snappy/IWA fixtures exercise 100,000 rows × 1,024 columns through
+the real browser worker, and up to one million rows in the built parser under a
+128 MiB Node V8 old-space cap. This bounds merge bookkeeping rather than total
+archive/model memory: compressed/decoded data and source track arrays remain
+resident. See [measurement scope](../../benchmarks/frontend/2026-11-25/numbers-merge-memory-review.json).
 
 The current source API also accepts `controlsTarget` to place the existing
 controls in an application header, including worksheet tabs, archive tools,

@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/zpaq/zpaq",
+  "commit": "9ab539f644e364f0d92e2918b90ce2534c75653f",
+  "version": "7.15",
+  "scope": "Host-only SDK asset preparation. Not included in the iOS or Android application.",
+  "changes": [
+    "Removed branches disabled by NOJIT using unifdef -DNOJIT; no runtime JIT is used.",
+    "Removed the header's API tutorial, retaining its license and upstream source link."
+  ]
+}

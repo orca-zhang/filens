@@ -171,16 +171,17 @@ describe('Numbers render and lazy-sheet ownership', () => {
       const scale = session.getState().scale;
       const grid = container.querySelector<HTMLElement>('.xlsxv-grid')!;
       grid.dispatchEvent(new Event('scroll')); grid.scrollTop = 111; container.scrollTop = 88;
-      expect(container.querySelector('tbody')?.rows.length).toBe(200);
+      expect(container.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
       const before = container.querySelector('table');
       pending.resolve(new Response(new Uint8Array([1, 2, 3])));
       await vi.waitFor(() => expect(session.getState().fonts?.[0].resolvedFontFamily).toBe('Web Numbers'));
       expect(container.querySelector('table')).not.toBe(before);
-      expect(container.querySelector('tbody')?.rows.length).toBe(200);
+      expect(container.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
       expect(container.querySelector<HTMLElement>('.xlsxv-grid')?.scrollTop).toBe(111);
       expect(container.scrollTop).toBe(88);
       expect(session.getState()).toMatchObject({ activeSheetIndex: 0, scale });
       expect(session.getState().fonts?.[0].fontFamily).toBe('Missing Serif');
+      expect(container.querySelector<HTMLElement>('.xlsxv-cell .pptxv-run')!.style.fontFamily).toContain('Web Numbers');
     } finally { session.destroy(); delete (document as unknown as { fonts?: unknown }).fonts; }
   });
   it('updates font diagnostics and warning events after a lazy Numbers sheet arrives', async () => {
@@ -211,7 +212,7 @@ describe('Numbers render and lazy-sheet ownership', () => {
     const tabs = [...container.querySelectorAll<HTMLButtonElement>('.xlsxv-sheet-tab')], grid = container.querySelector('.xlsxv-grid')!, table = container.querySelector<HTMLTableElement>('table')!;
     viewer.goToSheet(0);
     tabs[1].click(); grid.dispatchEvent(new Event('scroll'));
-    expect(viewer.getState().currentSheet).toBe(0); expect(mocks.parseSheet).not.toHaveBeenCalled(); expect(table.tBodies[0].rows.length).toBe(100);
+    expect(viewer.getState().currentSheet).toBe(0); expect(mocks.parseSheet).not.toHaveBeenCalled(); expect(table.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
     await viewer.preview(bytes); tabs[1].click(); expect(viewer.getState().currentSheet).toBe(0); viewer.destroy();
   });
   it('does not let old sheet completion delete the new document sheet request', async () => {

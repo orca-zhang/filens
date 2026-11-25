@@ -15,6 +15,7 @@ const logos = Object.fromEntries(Object.entries(logoFiles).map(([harness, filena
   harness,
   `data:image/png;base64,${readFileSync(new URL(`./assets/harness-logos/${filename}`, import.meta.url)).toString('base64')}`
 ]));
+const filensLogo = `data:image/png;base64,${readFileSync(new URL('../../apps/demo/public/brand/filens-icon-32.png', import.meta.url)).toString('base64')}`;
 
 function renderEnglishChart(data) {
   const ordered = [...data.baselines].sort((a, b) =>
@@ -90,7 +91,7 @@ ${text(42, 40, 'FILENS-BENCH · CLI ' + data.dataset.filensCliVersion, 13, '#5d6
 ${text(42, 82, 'Complex-file search: quality, latency & tokens', 34, '#172a43', 'start', true)}
 ${text(42, 113, `${data.generatedAt} · Harnesses sorted by native quality`, 16, '#5d6d80')}
 <rect x="42" y="136" width="14" height="14" rx="3" fill="${colors.stock}"/>${text(64, 148, 'Stock tools', 14, '#172a43')}
-<rect x="174" y="136" width="14" height="14" rx="3" fill="${colors.filens}"/>${text(196, 148, 'FiLens enabled', 14, '#172a43')}
+<image x="174" y="133" width="20" height="20" xlink:href="${filensLogo}"/>${text(201, 148, 'FiLens enabled', 14, '#172a43')}
 ${stats.map(([value, label], i) => `<rect x="${1368 + i * 190}" y="28" width="174" height="82" rx="12" fill="#fff" stroke="#dfe6ed"/>${text(1385 + i * 190, 61, value, 25, '#168f82', 'start', true)}${text(1385 + i * 190, 88, label, 12, '#5d6d80')}`).join('')}
 ${panelsSvg}
 ${text(42, 1534, '* Hatched token bars are known subtotals only; missing usage is unknown.', 14, '#5d6d80')}
@@ -159,7 +160,7 @@ export function renderSiteChart(data, english = false) {
     }).join('');
     return `<g data-metric="${panel.id}"><rect x="${left}" y="${top}" width="744" height="386" rx="15" fill="#fff" stroke="#dde5ec"/>${text(left + 22, top + 34, panel.title, 20, '#172a43', 'start', true)}${text(left + 22, top + 57, panel.note, 12, '#5d6d80')}${grid}${bars}</g>`;
   }).join('\n');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1110" viewBox="0 0 1600 1110" role="img" aria-labelledby="title desc" font-family="Arial,sans-serif">
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="1110" viewBox="0 0 1600 1110" role="img" aria-labelledby="title desc" font-family="Arial,sans-serif">
 <title id="title">${escape(t('FiLens-Bench · 官网四面板配对成绩', 'FiLens-Bench · Four-panel paired results'))}</title>
 <desc id="desc">${escape(t(`${ordered.length} 个 harness 的质量、p50 / 整批耗时、p95 与 token 分组柱状图。星号表示用量不完整，不计算节省率。`, `Grouped bars for quality, p50 / batch time, p95 and tokens across ${ordered.length} harnesses. Asterisks mark incomplete usage; savings are not calculated.`))}</desc>
 <defs><pattern id="unknown" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M-2 2L2-2M0 7L7 0M5 9L9 5" stroke="#fff" stroke-width="1.5" opacity=".65"/></pattern></defs>
@@ -169,7 +170,7 @@ ${text(48, 82, `FiLens-Bench · FiLens CLI ${data.dataset.filensCliVersion}`, 31
 ${text(48, 113, t(`${data.generatedAt} · 按原生质量分降序 · 比较同一 harness 安装前后的变化`, `${data.generatedAt} · Native quality descending · Compare within each harness`), 15, '#5d6d80')}
 ${stats.map(([value, label], i) => `<rect x="${1042 + i * 172}" y="28" width="160" height="88" rx="12" fill="#fff" stroke="#e1e7ed"/>${text(1060 + i * 172, 57, value, 25, '#e5364b', 'start', true)}${text(1060 + i * 172, 82, label, 11, '#5d6d80')}`).join('')}
 <rect x="50" y="133" width="13" height="13" rx="3" fill="${colors.stock}"/>${text(70, 144, t('原生工具', 'Stock tools'))}
-<rect x="176" y="133" width="13" height="13" rx="3" fill="${colors.filens}"/>${text(196, 144, 'FiLens')}
+<image x="176" y="129" width="20" height="20" xlink:href="${filensLogo}"/>${text(203, 144, 'FiLens')}
 ${charts}
 ${text(48, 1005, t(`* 缺失用量按未知处理；斜线柱只显示已知小计，不计算节省率。用量完整的 ${tokens.length} 组中，${tokens.filter(pair => pair.filens < pair.stock).length} 组 token 下降。`, `* Hatched bars show known subtotals only; missing usage is unknown. Tokens fell in ${tokens.filter(pair => pair.filens < pair.stock).length}/${tokens.length} complete-usage pairs.`), 14, '#5d6d80')}
 ${text(48, 1035, t('¹ WorkBuddy 每组仅一批 13 题；Blue 每题每组仅测一次，其余 CLI 每题每组通常重复三次。', '¹ WorkBuddy: one 13-task batch per condition. Blue: one attempt per task and condition. Other CLIs: usually three repetitions.'), 14, '#5d6d80')}

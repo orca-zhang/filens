@@ -295,8 +295,8 @@ export default defineConfig({
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
   base: process.env.VITE_BASE_PATH || '/modules/filens/',
   plugins: [previewLinkNavigation(), archiveEngineAssets(), sharedCompression(), xmlParserOnly(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
-  // Discover lazy worker dependencies at startup so first use does not reload an uploaded file.
-  optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js'] },
+  // Prebundle dependencies from lazy routes before opening an uploaded file.
+  optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js', 'ssf'] },
   server: { proxy: externalSampleProxy },
   preview: { proxy: externalSampleProxy },
   resolve: {

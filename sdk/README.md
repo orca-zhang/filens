@@ -8,9 +8,14 @@ code does not implement format parsing or conversion. These are preview componen
 they currently do not expose native APIs for reading, OCR, search, or standalone
 conversion results.
 
-SDK version: **0.1.7**. Shared preview runtime: **0.3.7**. The SDK ZIPs in Releases
-already include the offline assets. Extract an archive and integrate its `sdk/ios`
-or `sdk/android` module directly. See below for building and packaging from source.
+SDK version: **0.1.9**. Shared preview runtime: **0.3.8**. The SDK ZIPs in Releases
+include all offline assets in a compressed distribution archive. Extract the ZIP
+and run `node prepare-runtime.mjs` once at its root before integrating `sdk/ios`
+or `sdk/android`. Preparation runs entirely offline on the developer computer and
+requires Node.js 18+ and a C++17 compiler (Xcode Command Line Tools, clang++, g++,
+or MSVC; set `CXX` if needed). It verifies checksums and reuses intact resources
+on subsequent runs. Strong decompression never runs in the phone app.
+See below for building and packaging from source.
 [Download and extracted sizes](../docs/mobile-sdk-sizes.json) ·
 [Runtime and npm package sizes](../docs/preview-sizes.md).
 
@@ -22,7 +27,8 @@ toolchain are required:
 ```sh
 npm ci
 npm run build:wasm
-npm run build:preview
+rustup toolchain install 1.93.0 --component rust-src
+npm run build:wasm:mobile
 npm run build:sdk:mobile
 ```
 
@@ -30,11 +36,30 @@ To create both source SDK ZIPs with offline assets, run
 `npm run package:sdk:mobile`. The archives are written to `dist/mobile-sdk/`.
 This command does not produce a precompiled AAR or XCFramework.
 
-The final build step copies the split preview runtime, separate archive engine and
-worker, mobile entry point, MIT license, and third-party notices into both SDKs'
-resource directories. Generated assets are not committed to Git and must be
-included when distributing an SDK. If the runtime has already been built, only the
-final build step is needed. The SDK does not download the runtime at startup.
+The final step builds the mobile split runtime with one complete shared conversion
+core, separate archive engine and workers, then stages it with the mobile entry,
+MIT license and third-party notices in both SDKs. Generated assets are not committed
+to Git and must be distributed with the SDK. When WASM is already built, only the
+final step is needed. Runtime assets are available offline at startup.
+
+Mobile builds store JS / WASM and full third-party notices as `.br`, retaining lazy
+format modules and separate workers. iOS serves the original URLs with
+`Content-Encoding: br` for WebKit; Android streams a `BrotliInputStream` from
+`org.brotli:dec:0.1.2`. Neither host extracts another copy to app storage. Decode
+`THIRD-PARTY-NOTICES.txt.br` with `brotli -d` to read it; the host also serves decoded
+text at the original `.txt` URL. The MIT license remains plain text, and complete
+required notices and upstream links are retained. Update native host source and
+assets together; older gzip and uncompressed resources remain supported.
+
+Each complete source SDK ZIP is **smaller than 3 MiB**, enforced during packaging;
+see [exact sizes](../docs/mobile-sdk-sizes.json). One shared complete conversion
+WASM removes duplicate code while retaining format support. Its first conversion
+compiles a larger core; parsing memory still depends on the document and format.
+The ZIP bundles a host-only preparation tool and all resources; after preparation,
+only the native module and its Brotli resources go into the app. ZIP size does not
+represent installed app size. Measurements exclude compiled native code and Maven
+dependencies. Measure the
+final AAR / IPA / APK to determine application size.
 
 ## iOS: Swift Package
 
@@ -110,7 +135,8 @@ gradle -p sdk/android :filens-preview:assembleRelease
 ```
 
 When using the AAR directly, the host must also declare
-`implementation("androidx.webkit:webkit:1.12.1")`; a plain AAR does not bundle its
+`implementation("androidx.webkit:webkit:1.12.1")` and
+`implementation("org.brotli:dec:0.1.2")`; a plain AAR does not bundle its
 Maven dependencies. Maven coordinates have not been published.
 
 ```kotlin
@@ -184,3 +210,15 @@ macOS. The Swift component passed compilation for an iOS Simulator arm64 target
 compilation against Android API 35 / AndroidX WebKit 1.12.1 and its byte-range
 tests. That validation did not include a full Gradle AAR build, a simulator app,
 or physical-device tests.
+
+SDK 0.1.9 validation (2026-11-25): both complete ZIPs are below 3 MiB. Offline
+preparation restores every resource exactly and recovers incomplete or corrupted
+prepared files. All 34 Chromium / WebKit checks pass, including DOC, EPS, TIFF,
+DWG, JPEG XL and HEIC. The compact WASM core/image pass 328 conversion fixtures.
+Sixteen native Swift HTTP checks cover Brotli, legacy gzip, HEAD, ranges and path
+restrictions. Android compiles against API 35 / WebKit 1.12.1; stream tests cover
+mixed single/bulk reads and safe fallback when the Brotli dependency is missing.
+Full Gradle AAR / IPA builds and physical-device tests were not run. The local
+`swift test` command is blocked by a SwiftPM manifest linker failure; direct
+Swift compilation and the HTTP harness were used instead. Host preparation was
+validated on macOS; Windows/Linux compiler paths have not been executed.
