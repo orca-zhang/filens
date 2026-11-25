@@ -102,6 +102,7 @@ export async function loadXlsxWorkbook(source: PreviewSource, context?: PreviewL
       readRichText,
       styles: workbookStyles.styles,
       differentialStyles: workbookStyles.differentialStyles,
+      color: workbookStyles.color,
       columnWidthFont: workbookStyles.columnWidthFont,
       date1904,
       warnings
@@ -404,6 +405,7 @@ function readWorksheet(
     readRichText: ReturnType<typeof createRichTextReader>;
     styles: ParsedCellStyle[];
     differentialStyles: ParsedConditionalStyle[];
+    color: ReturnType<typeof colorReader>;
     columnWidthFont?: Pick<ParsedColumnWidthSource, 'font' | 'fontSize'>;
     date1904: boolean;
     warnings: string[];
@@ -428,7 +430,7 @@ function readWorksheet(
   const dataEnd = simple ? xml.indexOf('</sheetData>', dataStart) + '</sheetData>'.length : 0;
   const document = parser.parse(simple ? xml.slice(0, dataStart) + xml.slice(dataEnd) : xml) as Record<string, unknown>;
   const merges = readMergedRanges(document, options.warnings, options.name);
-  const conditionalRules = readConditionalRules(document, options.differentialStyles, options.warnings, options.name);
+  const conditionalRules = readConditionalRules(document, options.differentialStyles, options.color, options.warnings, options.name);
   const columnWidthSource = readColumnWidthSource(simple ? metadata : document, options);
   if (!simple && options.styles.length) {
     columnStyles = readColumnStyles(document);
