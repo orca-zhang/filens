@@ -248,8 +248,23 @@ Conditional formatting applies value comparisons, supported formulas, text
 matches, blanks and errors to visible cells and merged anchors. Rules honor source
 priority and stop-if-true, and use the differential fill, emphasis, color, border
 and number-format declarations. Relative formulas share the worksheet formula
-engine. Color scales, data bars, icon sets, range statistics and extension rules
-remain pending.
+engine. Two- and three-color scales and legacy or Office 2010 data bars resolve
+numeric, percentage, percentile and supported formula thresholds. Sparse range
+scans include offscreen values and count overlapping areas once. Rankings and
+exact percentiles use a temporary numeric buffer. Data bars retain signed axes,
+direction, source colors, borders, and the layout of clipped merged cells.
+The preview supports all base and Office 2010 icon families, including reversed
+order, inclusive and exclusive thresholds, custom or omitted icons, and optional
+formula gates. Icon-only mode hides the rendered value while retaining its
+accessible text. The browser approximates Excel's icon graphics and data bar
+gradients.
+
+Top and bottom rules include every value tied at the cutoff. Percentage ranks
+round down using the number of numeric cells. Above and below average rules
+support inclusive bounds and population standard deviations. Duplicate and unique
+rules compare typed values, with case-insensitive whole-cell wildcards for text.
+They skip empty and error cells. Locale-specific text matching, date-period rules
+and further extensions are pending.
 
 XLSX displays built-in and custom number formats for dates, elapsed time,
 percentages, currencies, fractions and scientific notation. It supports the 1900

@@ -1,12 +1,14 @@
+import { conditionalIcons, isConditionalIconSet } from './conditional-icons';
 import { MAX_FORMULA_LENGTH } from './formula-reader';
 import { readTextValue } from './rich-text';
 import type { colorReader } from './style-appearance';
-import type { ConditionalThreshold, ParsedConditionalVisual, ParsedDataBar } from './types';
+import type { ConditionalThreshold, ParsedConditionalIcon, ParsedConditionalVisual, ParsedDataBar, ParsedIconSet } from './types';
 import { readLocalPath, readPath, toArray } from './xml-values';
 
 type ReadColor = ReturnType<typeof colorReader>;
 const isFalse = (value: unknown) => value === '0' || value === 'false';
 const isTrue = (value: unknown) => value === '1' || value === 'true';
+const office2010Icons = new Set(['3Stars', '3Triangles', '5Boxes']);
 
 function readThreshold(node: unknown, extension = false): ConditionalThreshold | undefined {
   const type = readPath(node, ['type']);
@@ -33,6 +35,41 @@ export function readColorScale(node: unknown, color: ReadColor): ParsedCondition
   if ((thresholds.length !== 2 && thresholds.length !== 3) || thresholds.length !== colors.length
     || !thresholds.every(value => value !== undefined) || !colors.every(value => value !== undefined)) return undefined;
   return { type: 'colorScale', thresholds, colors };
+}
+
+export function readIconSet(node: unknown, extension = false): ParsedIconSet | undefined {
+  const set = readPath(node, ['iconSet']) ?? '3TrafficLights1';
+  const children = toArray((extension ? readLocalPath : readPath)(node, ['cfvo']));
+  const custom = extension && isTrue(readPath(node, ['custom']));
+  if (children.length < 3 || children.length > 5) return undefined;
+  // The lowest icon covers everything below the first boundary. Its cfvo is a placeholder.
+  const boundaries = children.slice(1);
+  const thresholds = boundaries.map(entry => readThreshold(entry, extension));
+  if (!thresholds.every(threshold => threshold !== undefined)) return undefined;
+  const inclusive = boundaries.map(entry => !isFalse(readPath(entry, ['gte'])));
+  const showValue = !isFalse(readPath(node, ['showValue']));
+  let icons: (ParsedConditionalIcon | null)[];
+  if (custom) {
+    const entries = toArray(readLocalPath(node, ['cfIcon']));
+    const specified = entries.map(readCustomIcon);
+    if (specified.length !== children.length || !specified.every(icon => icon !== undefined)) return undefined;
+    icons = specified;
+  } else if (extension && set === 'NoIcons') {
+    icons = children.map(() => null);
+  } else {
+    if (!isConditionalIconSet(set) || (!extension && office2010Icons.has(set)) || conditionalIcons[set].length !== children.length) return undefined;
+    icons = children.map((_, index) => ({ set, index }));
+    if (isTrue(readPath(node, ['reverse']))) icons.reverse();
+  }
+  return { type: 'iconSet', thresholds, inclusive, icons, showValue };
+}
+
+function readCustomIcon(entry: unknown): ParsedConditionalIcon | null | undefined {
+  const set = readPath(entry, ['iconSet']), id = readPath(entry, ['iconId']);
+  if (typeof id !== 'string' || !/^\d+$/.test(id)) return undefined;
+  const index = Number(id);
+  if (set === 'NoIcons') return index === 0 ? null : undefined;
+  return isConditionalIconSet(set) && index < conditionalIcons[set].length ? { set, index } : undefined;
 }
 
 export function readDataBar(node: unknown, color: ReadColor, rightToLeft: boolean,

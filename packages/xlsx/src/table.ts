@@ -1,5 +1,5 @@
 // Shared by XLSX and iWork; importing tables never imports a workbook parser.
-import { applyTableCellPaint, buildPreviewFontStack, withTextMeasurementScope } from '@filens/core';
+import { applyTableCellPaint, applyTint, buildPreviewFontStack, withTextMeasurementScope } from '@filens/core';
 import { resolveCellValue } from './cell-value';
 import { formatCellValue } from './number-formats';
 import { RowHeights } from './row-heights';
@@ -9,7 +9,9 @@ import { columnIndexToName } from './columns';
 import { sheetMerges } from './merged-cells';
 import { columnStyleLookup } from './column-styles';
 import { conditionalFormattingWindow } from './conditional-formatting';
-import type { ParsedCell, ParsedCellStyle, ParsedConditionalStyle, ParsedRichText, ParsedRichTextRun, ParsedRow, ParsedSheet } from './types';
+import { createConditionalIcon } from './conditional-icons';
+import type { DataBarAppearance } from './conditional-visuals';
+import type { ParsedCell, ParsedCellStyle, ParsedConditionalIcon, ParsedConditionalStyle, ParsedRichText, ParsedRichTextRun, ParsedRow, ParsedSheet } from './types';
 export type { ParsedSheet } from './types';
 
 export type SheetCellRenderer = (element: HTMLTableCellElement, cell: ParsedCell) => void;
@@ -93,6 +95,53 @@ function appendRichText(element: HTMLElement, text: ParsedRichText, style: Parse
 function applyConditionalFont(element: HTMLElement, style: ParsedConditionalStyle): void {
   if (style.bold !== undefined) element.style.fontWeight = style.bold ? '700' : '400';
   if (style.italic !== undefined) element.style.fontStyle = style.italic ? 'italic' : 'normal';
+}
+
+function appendDataBar(cell: HTMLTableCellElement, appearance: DataBarAppearance,
+  geometry?: { top: string; left: string; width: string; height: string }): void {
+  const document = cell.ownerDocument;
+  const clip = document.createElement('span'); clip.className = 'xlsxv-data-bar-clip';
+  clip.setAttribute('aria-hidden', 'true');
+  const track = document.createElement('span'); track.className = 'xlsxv-data-bar-track';
+  if (geometry) Object.assign(track.style, { right: 'auto', bottom: 'auto', ...geometry });
+  if (appearance.width > 0) {
+    const fill = document.createElement('span'); fill.className = 'xlsxv-data-bar-fill';
+    fill.style.left = `${appearance.start}%`;
+    fill.style.width = `${appearance.width}%`;
+    fill.style.background = appearance.gradient
+      ? `linear-gradient(to ${appearance.gradient}, ${appearance.color}, ${applyTint(appearance.color, .78)})` : appearance.color;
+    if (appearance.borderColor) fill.style.border = `1px solid ${appearance.borderColor}`;
+    track.append(fill);
+  }
+  if (appearance.axis) {
+    const axis = document.createElement('span'); axis.className = 'xlsxv-data-bar-axis';
+    axis.style.left = `${appearance.axis.position}%`;
+    axis.style.borderColor = appearance.axis.color;
+    track.append(axis);
+  }
+  clip.append(track);
+  cell.classList.add('xlsxv-data-bar-cell');
+  cell.append(clip);
+}
+
+function applyConditionalIcon(cell: HTMLTableCellElement, reference: ParsedConditionalIcon | null, showValue: boolean): void {
+  const document = cell.ownerDocument;
+  const icon = reference ? createConditionalIcon(document, reference.set, reference.index) : undefined;
+  if (!icon && showValue) return;
+  // Keep the icon and value on one line inside vertically aligned merged cells.
+  const content = document.createElement('span');
+  if (icon) {
+    if (showValue) icon.dataset.withValue = '';
+    content.append(icon);
+  }
+  if (showValue) content.append(...cell.childNodes);
+  else {
+    const value = document.createElement('span');
+    value.className = 'xlsxv-icon-hidden-value';
+    value.append(...cell.childNodes);
+    content.append(value);
+  }
+  cell.append(content);
 }
 
 function applyCellStyle(element: HTMLTableCellElement, style: ParsedCellStyle, merged: boolean, rich: boolean): void {
@@ -242,6 +291,14 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
       if (conditional) applyConditionalFont(td, conditional);
       if (style) applyCellStyle(td, style, Boolean(merge), Boolean(rich));
       if (cell) renderCell?.(td, cell);
+      const dataBar = conditional?.dataBar;
+      const iconSet = conditional?.iconSet;
+      if (iconSet) applyConditionalIcon(td, iconSet.icon, iconSet.showValue && dataBar?.showValue !== false);
+      else if (dataBar && !dataBar.showValue) {
+        const value = td.ownerDocument.createElement('span');
+        value.className = 'xlsxv-data-bar-hidden-value';
+        value.append(...td.childNodes); td.append(value);
+      }
       if (merge) {
         td.classList.add('xlsxv-merged-cell');
         td.rowSpan = merge.lastRow - merge.firstRow + 1; td.colSpan = merge.lastColumn - merge.firstColumn + 1;
@@ -282,7 +339,11 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
           }
         } else clip.classList.add('is-single-row');
         content.append(...td.childNodes); clip.append(content); td.append(clip);
-      }
+        if (dataBar) appendDataBar(td, dataBar, {
+          left: `calc(${scale * sourceLeft}${unit} + 2px)`, width: `calc(${scale * sourceWidth}${unit} - 4px)`,
+          top: `${before(merge.source.firstRow) - before(merge.firstRow) + 2}px`, height: `${Math.max(0, height - 4)}px`
+        });
+      } else if (dataBar) appendDataBar(td, dataBar);
       tr.appendChild(td);
     }
     if (columns && columns.last < sheet.columnCount) tr.append(columnSpacer(widths.before(widths.count + 1) - widths.before(columns.last + 1), 'td'));

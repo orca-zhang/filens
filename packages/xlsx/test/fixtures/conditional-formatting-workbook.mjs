@@ -55,7 +55,7 @@ export async function createConditionalFormattingWorkbook(forceGeneral = false) 
     area('E2:E3', rule('notContainsErrors', 14, 3)),
     area('F1', rule('expression', 2, 6, ['TRUE'])),
     area('A500', rule('expression', 15, 0, ['A500>10'])),
-    area('B3', rule('iconSet', 16)), area('B3', compare('equal', 17, 999, [3])), area('XFE1', compare('equal', 18, 0, [1]))
+    area('B3', rule('timePeriod', 16)), area('B3', compare('equal', 17, 999, [3])), area('XFE1', compare('equal', 18, 0, [1]))
   ].join('')));
   zip.file('xl/worksheets/s2.xml', worksheet([row(1, n('A1', 5)), row(2, n('A2', 1))],
     area('A1:A1048576', compare('greaterThan', 1, 0, [3]))

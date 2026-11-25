@@ -1,4 +1,5 @@
 import type { BorderBox, FillStyle, PreviewFontReference } from '@filens/core';
+import type { ConditionalIconSetName } from './conditional-icons';
 
 export interface ParsedWorkbook {
   sheets: ParsedSheet[];
@@ -69,7 +70,21 @@ export type ConditionalThreshold =
 
 export type ParsedConditionalVisual =
   | { type: 'colorScale'; thresholds: readonly ConditionalThreshold[]; colors: readonly string[] }
-  | ParsedDataBar;
+  | ParsedDataBar
+  | ParsedIconSet;
+
+export interface ParsedConditionalIcon {
+  set: ConditionalIconSetName;
+  index: number;
+}
+
+export interface ParsedIconSet {
+  type: 'iconSet';
+  thresholds: readonly ConditionalThreshold[];
+  inclusive: readonly boolean[];
+  icons: readonly (ParsedConditionalIcon | null)[];
+  showValue: boolean;
+}
 
 export interface ParsedDataBar {
   type: 'dataBar';
@@ -92,6 +107,9 @@ export type ParsedCondition =
   | { type: 'expression'; formula: string }
   | { type: 'containsText' | 'notContainsText' | 'beginsWith' | 'endsWith'; text: string }
   | { type: 'containsBlanks' | 'notContainsBlanks' | 'containsErrors' | 'notContainsErrors' }
+  | { type: 'top10'; rank: number; bottom: boolean; percent: boolean }
+  | { type: 'aboveAverage'; above: boolean; equal: boolean; deviations: number }
+  | { type: 'duplicateValues' | 'uniqueValues' }
   | ParsedConditionalVisual;
 
 export interface ParsedConditionalRule {
@@ -101,6 +119,7 @@ export interface ParsedConditionalRule {
   stopIfTrue: boolean;
   condition: ParsedCondition;
   style?: ParsedConditionalStyle;
+  activeFormula?: string;
 }
 
 export interface ParsedConditionalStyle extends Pick<ParsedCellStyle, 'color' | 'fill' | 'borders' | 'numberFormat' | 'underline' | 'strike'> {

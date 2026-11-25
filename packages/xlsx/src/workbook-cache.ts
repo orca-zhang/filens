@@ -64,7 +64,7 @@ function workbookBytes(workbook: ParsedWorkbook): number {
     bytes += (sheet.columnWidths?.length ?? 0) * 8 + (sheet.columnWidthSource?.ranges.length ?? 0) * 32;
     if (sheet.sharedFormulas) for (const group of Object.values(sheet.sharedFormulas)) bytes += 96 + group.formula.length * 2;
     for (const rule of sheet.conditionalRules ?? []) {
-      bytes += 160 + JSON.stringify(rule.condition).length * 2;
+      bytes += 160 + (JSON.stringify(rule.condition).length + (rule.activeFormula?.length ?? 0)) * 2;
       conditionalRanges.add(rule.ranges);
       if (rule.style) conditionalStyles.add(rule.style);
     }
@@ -98,7 +98,7 @@ export async function loadPreviewWorkbook(source: PreviewSource, context: Previe
   if (format === 'csv' || typeof source === 'string' || context.descriptor.password !== undefined) return loadXlsxWorkbook(source, context);
   const bytes = await snapshotPreviewBytes(source, context.signal);
   if (!bytes) return loadXlsxWorkbook(source, context);
-  const key = await previewContentKey(bytes, 'xlsx-preview-v9', context.signal);
+  const key = await previewContentKey(bytes, 'xlsx-preview-v11', context.signal);
   const cached = previewModelCache.get<ParsedWorkbook>(key);
   if (cached) return cached;
   const workbook = await loadXlsxWorkbook(bytes, context);

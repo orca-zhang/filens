@@ -1,13 +1,21 @@
 import { evaluateWorksheetFormula, readCellScalar } from './cell-value';
+import { createRangeValueReader, numericCellValue, type ConditionalRangeValues } from './conditional-range-values';
+import { compileVisualRule, type ConditionalAppearance } from './conditional-visuals';
 import { compareFormulaValues } from './formula-reader';
 import { RowRangeIndex } from './row-range-index';
 import { createFormulaTranslator } from './shared-formulas';
-import type { ParsedCell, ParsedConditionalRule, ParsedConditionalStyle, ParsedMerge, ParsedSheet } from './types';
+import type { ParsedCell, ParsedConditionalRule, ParsedMerge, ParsedSheet } from './types';
+import { wildcardMatcher } from './wildcard-matcher';
 
 interface RankedRule { order: number; rule: ParsedConditionalRule }
 interface RuleArea extends ParsedMerge { rules: RankedRule[] }
-type RuleTest = (row: number, column: number, cell?: ParsedCell) => boolean;
-const indexes = new WeakMap<ParsedSheet, { index: RowRangeIndex<RuleArea>; tests: Map<ParsedConditionalRule, RuleTest> }>();
+type RuleTest = (row: number, column: number, cell?: ParsedCell) => boolean | ConditionalAppearance;
+type RangeReader = () => ConditionalRangeValues;
+const indexes = new WeakMap<ParsedSheet, {
+  index: RowRangeIndex<RuleArea>;
+  tests: Map<ParsedConditionalRule, RuleTest>;
+  rangeReaders: Map<readonly ParsedMerge[], RangeReader>;
+}>();
 
 /** Select only the declared ranges that intersect this batch of visible cells. */
 export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number, lastRow: number, firstColumn: number, lastColumn: number) {
@@ -21,11 +29,16 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
       else groups.set(rule.ranges, [{ rule, order }]);
     }
     const areas: RuleArea[] = [];
-    for (const [ranges, rules] of groups) for (const range of ranges) areas.push({ ...range, rules });
-    state = { index: new RowRangeIndex(areas), tests: new Map() };
+    const rangeReaders = new Map<readonly ParsedMerge[], RangeReader>();
+    for (const [ranges, rules] of groups) {
+      for (const range of ranges) areas.push({ ...range, rules });
+      const readRange = createRangeValueReader(sheet, ranges, rules.map(({ rule }) => rule.condition));
+      if (readRange) rangeReaders.set(ranges, readRange);
+    }
+    state = { index: new RowRangeIndex(areas), tests: new Map(), rangeReaders };
     indexes.set(sheet, state);
   }
-  const { index, tests } = state;
+  const { index, tests, rangeReaders } = state;
   const intersect = (top: number, bottom: number, left: number, right: number) => {
     const groups = new Map<RankedRule[], RuleArea[]>();
     index.forEach(top, bottom, area => {
@@ -39,20 +52,22 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
     return candidates.sort((a, b) => a.rule.priority - b.rule.priority || a.order - b.order);
   };
   const visible = intersect(firstRow, lastRow, firstColumn, lastColumn);
-  return (row: number, column: number, cell?: ParsedCell): ParsedConditionalStyle | undefined => {
+  return (row: number, column: number, cell?: ParsedCell): ConditionalAppearance | undefined => {
     // A clipped merge can display a logical anchor outside the visible window.
     const candidates = row >= firstRow && row <= lastRow && column >= firstColumn && column <= lastColumn
       ? visible : intersect(row, row, column, column);
-    let result: ParsedConditionalStyle | undefined;
+    let result: ConditionalAppearance | undefined;
     for (const { rule, areas } of candidates) {
       if (!areas.some(area => row >= area.firstRow && row <= area.lastRow && column >= area.firstColumn && column <= area.lastColumn)) continue;
       let test = tests.get(rule);
-      if (!test) { test = compileRule(sheet, rule); tests.set(rule, test); }
-      if (!test(row, column, cell)) continue;
-      if (rule.style) {
+      if (!test) { test = compileRule(sheet, rule, rangeReaders.get(rule.ranges)); tests.set(rule, test); }
+      const match = test(row, column, cell);
+      if (!match) continue;
+      const style = match === true ? rule.style : rule.style ? { ...rule.style, ...match } : match;
+      if (style) {
         const first = result;
-        result = first ? { ...rule.style, ...first } : rule.style;
-        if (rule.style.borders && first?.borders) result.borders = { ...rule.style.borders, ...first.borders };
+        result = first ? { ...style, ...first } : style;
+        if (style.borders && first?.borders) result.borders = { ...style.borders, ...first.borders };
       }
       if (rule.stopIfTrue) break;
     }
@@ -60,7 +75,7 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
   };
 }
 
-function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule): RuleTest {
+function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?: RangeReader): RuleTest {
   const { condition } = rule;
   const origin = rule.ranges[0];
   const expression = (source: string) => {
@@ -73,13 +88,17 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule): RuleTest 
     return (row: number, column: number) => evaluateWorksheetFormula(sheet,
       translate(row - origin.firstRow, column - origin.firstColumn), { row, column });
   };
+  const isTrue = (value: ReturnType<typeof evaluateWorksheetFormula>) => value === true || typeof value === 'number' && value !== 0;
   switch (condition.type) {
+    case 'colorScale': case 'dataBar': case 'iconSet': {
+      const format = compileVisualRule(sheet, condition, origin, readRange!);
+      if (!rule.activeFormula) return format;
+      const active = expression(rule.activeFormula);
+      return (row, column, cell) => isTrue(active(row, column)) && format(row, column, cell);
+    }
     case 'expression': {
       const evaluate = expression(condition.formula);
-      return (row, column) => {
-        const value = evaluate(row, column);
-        return value === true || typeof value === 'number' && value !== 0;
-      };
+      return (row, column) => isTrue(evaluate(row, column));
     }
     case 'cellIs': {
       const [lower, upper] = condition.formulas.map(expression);
@@ -104,9 +123,30 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule): RuleTest 
     case 'notContainsBlanks': return (_, __, cell) => !isUnresolved(cell) && !/^ *$/.test(cell?.value ?? '');
     case 'containsErrors': return (_, __, cell) => cell?.valueType === 'error';
     case 'notContainsErrors': return (_, __, cell) => !isUnresolved(cell) && cell?.valueType !== 'error';
+    case 'top10': return (_, __, cell) => {
+      if (!condition.rank) return false;
+      const value = numericCellValue(sheet, cell);
+      if (value === undefined) return false;
+      const cutoff = readRange!().ranks.get(condition);
+      return cutoff !== undefined && (condition.bottom ? value <= cutoff : value >= cutoff);
+    };
+    case 'aboveAverage': return (_, __, cell) => {
+      const value = numericCellValue(sheet, cell);
+      if (value === undefined) return false;
+      const { center, scale, mean, deviation } = readRange!().average;
+      const shifted = value / scale - center;
+      if (condition.equal) return condition.above ? shifted >= mean : shifted <= mean;
+      const distance = deviation * condition.deviations;
+      return condition.above ? shifted > mean + distance : shifted < mean - distance;
+    };
+    case 'duplicateValues': case 'uniqueValues': return (_, __, cell) => {
+      if (!cell) return false;
+      const count = readRange!().frequency(cell);
+      return condition.type === 'duplicateValues' ? count > 1 : count === 1;
+    };
     default: {
       const text = condition.text.toLowerCase();
-      const search = condition.type === 'containsText' || condition.type === 'notContainsText' ? textSearch(text) : undefined;
+      const search = condition.type === 'containsText' || condition.type === 'notContainsText' ? wildcardMatcher(text, true) : undefined;
       return (_, __, cell) => {
         let value;
         try { value = readCellScalar(sheet, cell); }
@@ -122,36 +162,4 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule): RuleTest 
 
 function isUnresolved(cell?: ParsedCell): boolean {
   return cell?.valueType === undefined && cell?.value[0] === '=';
-}
-
-function textSearch(pattern: string): (input: string) => boolean {
-  if (!/[*?~]/.test(pattern)) return input => input.includes(pattern);
-  const literals = new Map<string, bigint>();
-  let stars = 0n, wildcards = 0n, state = 1n, previousStar = false;
-  const tokens = Array.from(pattern);
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    if (token === '*') {
-      if (previousStar) continue;
-      stars |= state;
-    } else if (token === '?') wildcards |= state;
-    else {
-      const literal = token === '~' && /[*?~]/.test(tokens[i + 1] ?? '') ? tokens[++i] : token;
-      literals.set(literal, (literals.get(literal) ?? 0n) | state);
-    }
-    previousStar = token === '*';
-    state <<= 1n;
-  }
-  const accept = state;
-  return input => {
-    // Advance all wildcard states together, including a fresh search at each character.
-    let active = 1n | ((1n & stars) << 1n);
-    for (const char of input) {
-      if (active & accept) return true;
-      const matches = wildcards | (literals.get(char) ?? 0n);
-      const next = ((active & matches) << 1n) | (active & stars) | 1n;
-      active = next | ((next & stars) << 1n);
-    }
-    return (active & accept) !== 0n;
-  };
 }
