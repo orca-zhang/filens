@@ -4,7 +4,9 @@ import { createShrinkTextWorkbook, longLabel, mergedLabel } from '../../../packa
 async function expectTextToFit(cell: Locator, value: string) {
   const text = cell.locator('.xlsxv-shrink-text');
   await expect(text).toHaveText(value);
-  const { scale, width, available } = await text.evaluate(span => {
+  let dimensions: { scale: number; width: number; available: number } | null;
+  await expect.poll(async () => dimensions = await text.evaluate(span => {
+    if (!span.isConnected) return null;
     const host = span.closest('.xlsxv-merged-content, .xlsxv-fixed-clip > div, td') as HTMLElement;
     const font = getComputedStyle(host);
     const icon = host.querySelector('.xlsxv-conditional-icon');
@@ -17,7 +19,8 @@ async function expectTextToFit(cell: Locator, value: string) {
       available: host.clientWidth - parseFloat(font.paddingLeft) - parseFloat(font.paddingRight)
         - (icon ? icon.getBoundingClientRect().width + parseFloat(getComputedStyle(icon).marginInlineEnd) : 0)
     };
-  });
+  })).not.toBeNull();
+  const { scale, width, available } = dimensions!;
   expect(scale).toBeGreaterThan(0);
   expect(scale).toBeLessThan(1);
   expect(width).toBeLessThanOrEqual(available + 1);

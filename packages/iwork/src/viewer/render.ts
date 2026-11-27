@@ -1,6 +1,6 @@
 /// <reference lib="es2022.intl" />
 import { MediaRegistry, renderSlideToElement, type ParsedPresentation, type SlideModel, type TextParagraph } from '@filens/core';
-import type { IworkCanvasModel, PagesBodyTextSource, PagesLayoutMeasurements, PagesMeasuredSourceRows, PagesTableMeasurement,
+import type { IworkCanvasModel, PagesBodyTextSource, PagesLayoutMeasurements, PagesMeasuredSourceRows, PagesTableCellSource, PagesTableMeasurement,
   ParsedIworkDocument } from '../types';
 
 const DEFAULT_THEME: ParsedPresentation['theme'] = {
@@ -125,8 +125,34 @@ function renderPagesBodyFlows(content: HTMLElement, canvas: IworkCanvasModel): v
   }
 }
 
+export interface PagesCellProbe {
+  width: number;
+  initialHeight: number;
+  height: number;
+  heightScale: number;
+  frame: HTMLElement;
+}
+
+function pagesCellTextHeight(frame: HTMLElement, scale: number): number {
+  return Array.from(frame.children).reduce((height, paragraph) => {
+    const style = getComputedStyle(paragraph);
+    return height + paragraph.getBoundingClientRect().height / scale + (parseFloat(style.marginTop) || 0) +
+      (parseFloat(style.marginBottom) || 0);
+  }, 0);
+}
+
+function measurePagesCellProbe(probe: PagesCellProbe, frame: HTMLElement, scale: number): number {
+  const sample = probe.frame;
+  frame.parentElement!.append(sample);
+  try {
+    return pagesCellTextHeight(sample, scale);
+  } finally {
+    sample.remove();
+  }
+}
+
 export function observePagesTableGrowth(
-  content: HTMLElement, canvas: IworkCanvasModel, previous: PagesLayoutMeasurements,
+  content: HTMLElement, canvas: IworkCanvasModel, previous: PagesLayoutMeasurements, probes: Map<string, Map<number, PagesCellProbe>>,
   update: (measurements: PagesLayoutMeasurements) => void
 ): (() => void) | undefined {
   if (!canvas.bodyFlows?.length) return undefined;
@@ -138,11 +164,24 @@ export function observePagesTableGrowth(
     const items = canvas.slide.items.slice(start, end);
     const children = Array.from(elements[index].children);
     const tables = items.flatMap((item, offset) => {
-      if (item.kind !== 'table' || !item.autoFitRows || item.transform.rotation) return [];
+      if (item.kind !== 'table' || item.transform.rotation) return [];
       const source = tableSources.get(start + offset);
-      if (source === null) return [];
+      if (source === null || (!item.autoFitRows && !source?.cells?.length)) return [];
       const element = children[offset]?.querySelector('table');
-      return element ? [{ item, element, offset, source }] : [];
+      if (!element) return [];
+      const cells: Array<{ frame: HTMLElement; cell: HTMLTableCellElement; source: PagesTableCellSource }> = [];
+      if (source?.cells) {
+        const columnsByRow = new Map<number, number[]>(source.cells.map(({ row }) => [row, []]));
+        for (const cell of item.cells) if (!cell.isMergedContinuation) columnsByRow.get(cell.row)?.push(cell.column);
+        for (const columns of columnsByRow.values()) columns.sort((a, b) => a - b);
+        for (const cellSource of source.cells) {
+          const index = columnsByRow.get(cellSource.row)!.indexOf(cellSource.column);
+          const cell = element.tBodies[0]?.rows[cellSource.row]?.cells[index];
+          const frame = cell?.querySelector<HTMLElement>(':scope > .pptxv-text-frame');
+          if (frame && cell) cells.push({ frame, cell, source: cellSource });
+        }
+      }
+      return [{ item, element, offset, source, cells }];
     });
     return tables.length ? [{ start, bottom, items, children, tables }] : [];
   });
@@ -181,11 +220,58 @@ export function observePagesTableGrowth(
       }
       const batch: Array<[string, PagesTableMeasurement]> = [];
       let owner: PagesTableMeasurement | undefined;
-      for (const { item, element, offset, box, source } of boxes) {
+      for (const { item, element, offset, box, source, cells } of boxes) {
         const width = item.transform.width;
-        const affected = offset < overflow;
+        const affected = offset < overflow || box.bottom > boundary + 1.5 * scale;
         const knownSource = source && previous.sourceRows.get(source.tableId);
         const knownRows = knownSource && Math.abs(knownSource.width - width) <= 0.5 ? knownSource.heights : undefined;
+        if (source && cells.length) {
+          let tableProbes = probes.get(source.tableId);
+          const cellScales = new Map<number, number>();
+          for (const { frame, cell, source: cellSource } of cells) {
+            const { cell: cellIndex, estimatedHeight } = cellSource;
+            const actual = pagesCellTextHeight(frame, scale);
+            if (actual <= 0) continue;
+            const cellBounds = cell.getBoundingClientRect();
+            const cutoff = Math.min(boundary, cellBounds.bottom) + scale;
+            const range = frame.ownerDocument.createRange();
+            range.selectNodeContents(frame);
+            const clipped = Array.from(range.getClientRects()).some(line => line.bottom > cutoff);
+            let probe = tableProbes?.get(cellIndex);
+            if (!probe || Math.abs(probe.width - width) > 0.5) {
+              const sample = frame.cloneNode(true) as HTMLElement;
+              Object.assign(sample.style, { position: 'absolute', inset: '0 auto auto 0', visibility: 'hidden',
+                height: 'auto', width: getComputedStyle(frame).width });
+              sample.setAttribute('aria-hidden', 'true');
+              probe = { width, initialHeight: actual, height: actual, heightScale: 1, frame: sample };
+              if (!tableProbes) probes.set(source.tableId, tableProbes = new Map());
+              tableProbes.set(cellIndex, probe);
+            } else {
+              // Remeasure the same text so changes in wrapping after pagination cannot look like a font change.
+              const height = measurePagesCellProbe(probe, frame, scale);
+              if (height > 0 && Math.abs(height - probe.height) > 0.5) {
+                if (height < probe.height || clipped || affected) {
+                  probe.heightScale = Math.max(1, Math.ceil((height - 0.5) / probe.initialHeight * 16) / 16);
+                }
+                probe.height = height;
+              }
+            }
+            if (clipped && actual > estimatedHeight * probe.heightScale + 1) {
+              probe.heightScale = Math.ceil(actual / estimatedHeight * 16) / 16;
+            }
+            cellScales.set(cellIndex, probe.heightScale);
+          }
+          if (cellScales.size) {
+            const result: PagesMeasuredSourceRows = measuredRows.get(source.tableId) ?? { width, heights: new Map() };
+            result.cellScales ??= new Map();
+            for (const [cell, heightScale] of cellScales) {
+              result.cellScales.set(cell, Math.max(result.cellScales.get(cell) ?? 1, heightScale));
+            }
+            measuredRows.set(source.tableId, result);
+          }
+        }
+        // Row heights can include shared space from a split merge.
+        if (!item.autoFitRows || source?.rows.some((row, index) => index >= source.repeatedHeaders && row < 0)) continue;
         const exact = source && previous.tables.get(source.tableId);
         const exactRows = exact && Math.abs(exact.width - width) <= 0.5 ? exact.rows : undefined;
         const knownRow = (row: number) => knownRows?.has(row) || (exactRows != null && row >= 0 && row < exactRows.length);
@@ -222,7 +308,10 @@ export function observePagesTableGrowth(
   measure();
   if (typeof ResizeObserver === 'undefined') return undefined;
   const observer = new ResizeObserver(measure);
-  for (const { tables } of flows) for (const { element } of tables) observer.observe(element);
+  for (const { tables } of flows) for (const { element, cells } of tables) {
+    observer.observe(element);
+    for (const { frame } of cells) for (const paragraph of frame.children) observer.observe(paragraph);
+  }
   return () => observer.disconnect();
 }
 

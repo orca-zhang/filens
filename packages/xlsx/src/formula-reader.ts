@@ -131,7 +131,8 @@ export class FormulaReader {
     private readonly position?: { row: number; column: number },
     private readonly arrayFromRange?: (range: Reference, compactOnly?: boolean) => FormulaArray | undefined,
     private readonly readSpillRange?: (anchor: Reference) => Reference | undefined,
-    private readonly resolveSheetSpan?: (first: string, last: string) => readonly string[]) {
+    private readonly resolveSheetSpan?: (first: string, last: string) => readonly string[],
+    private readonly visitDisplayedRangeValues?: (range: Reference, visit: (value: RangeValue, weight: number) => void) => void) {
     this.tokens = tokenizeFormula(formula);
     this.end = this.tokens.length;
   }
@@ -345,11 +346,13 @@ export class FormulaReader {
     if (name === 'MAKEARRAY') return this.makeArray();
     if (name === 'SCAN' || name === 'REDUCE') return this.accumulate(name === 'SCAN');
     if (aggregateNames.has(name)) return this.aggregate(name);
+    if (name === 'COUNTBLANK') return this.countBlank();
     if (name === 'COUNTIF') return this.countIf();
     if (conditionalAggregateNames.has(name)) return this.conditionalAggregate(name);
     if (name === 'LARGE' || name === 'SMALL') return this.rank(name === 'LARGE');
     if (name === 'CORREL') return this.correlation();
     if (name === 'IF' || name === 'IFERROR' || name === 'IFNA') return this.conditional(name);
+    if (name === 'IFS' || name === 'SWITCH') return this.orderedConditional(name === 'SWITCH');
     if (typeCheckNames.has(name)) return this.typeCheck(name);
     if (textPositionNames.has(name)) return this.textPosition(name);
     if (name === 'TEXTBEFORE' || name === 'TEXTAFTER') return this.textAroundDelimiter(name === 'TEXTAFTER');
@@ -2194,6 +2197,19 @@ export class FormulaReader {
     };
   }
 
+  private countBlank(): number {
+    const args = this.arguments();
+    if (args.length !== 1) throw new FormulaError('#VALUE!');
+    const range = this.argument(args[0], () => this.referenceRange(true));
+    let count = (range.lastRow - range.firstRow + 1) * (range.lastColumn - range.firstColumn + 1);
+    const subtractNonblank = (value: RangeValue, weight: number) => {
+      if (value !== null && value !== '') count -= weight;
+    };
+    if (this.visitDisplayedRangeValues) this.visitDisplayedRangeValues(range, subtractNonblank);
+    else this.visitReferenceValues(range, subtractNonblank);
+    return count;
+  }
+
   private countIf(): Value {
     const args = this.arguments();
     if (args.length !== 2) throw new FormulaError('#VALUE!');
@@ -2375,6 +2391,24 @@ export class FormulaReader {
       }
     }
     throw new Error('Invalid conditional arguments.');
+  }
+
+  private orderedConditional(hasSelector: boolean): Value {
+    const args = this.arguments();
+    const first = hasSelector ? 1 : 0;
+    const pairEnd = args.length - ((args.length - first) % 2);
+    if (pairEnd < first + 2 || args.length > 254 || (!hasSelector && pairEnd !== args.length) ||
+      args.some(([start, end]) => start === end)) throw new FormulaError('#VALUE!');
+
+    return this.liftScalar(args, read => {
+      const selector = hasSelector ? read(0) : null;
+      for (let index = first; index < pairEnd; index += 2) {
+        const test = read(index);
+        if (hasSelector ? compareFormulaValues(selector, test, '=') : logical(test)) return read(index + 1) ?? 0;
+      }
+      if (pairEnd < args.length) return read(pairEnd) ?? 0;
+      throw new FormulaError('#N/A');
+    });
   }
 
   private arguments(): Argument[] {

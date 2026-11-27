@@ -1,4 +1,41 @@
 import { createServer } from 'node:http';
+import { deflateSync } from 'node:zlib';
+
+export function createPdfAttachmentRangeFixture(linkToAttachment = false, compressed = true) {
+  const text = 'Small attachment decoded from the PDF.';
+  const marker = 'final payload belongs to the large attachment';
+  const large = Buffer.alloc(4 * 1024 * 1024, 0x61);
+  large.write(marker, large.length / 2);
+  const stream = (dict, bytes) => Buffer.concat([Buffer.from(`<< ${dict} /Length ${bytes.length} >>\nstream\n`),
+    bytes, Buffer.from('\nendstream')]);
+  const action = linkToAttachment ? '/S /GoToE /T << /R /C /N (notes.txt) >> /D [0 /Fit]'
+    : '/S /URI /URI (https://example.com/)';
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(large.bin) 6 0 R (notes.txt) 5 0 R] >> >> >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] /Annots [9 0 R] /Resources << >> /Contents 4 0 R >>',
+    stream('', Buffer.from('0 0 1 rg 30 30 240 240 re f')),
+    '<< /Type /Filespec /F (notes.txt) /EF << /F 7 0 R >> >>',
+    '<< /Type /Filespec /F (large.bin) /EF << /F 8 0 R >> >>',
+    stream(compressed ? '/Type /EmbeddedFile /Filter /FlateDecode' : '/Type /EmbeddedFile',
+      compressed ? deflateSync(text) : Buffer.from(text)),
+    stream('/Type /EmbeddedFile', large),
+    `<< /Type /Annot /Subtype /Link /Rect [30 30 100 60] /A << ${action} >> >>`
+  ];
+  const chunks = [Buffer.from('%PDF-1.7\n')], offsets = [];
+  let length = chunks[0].length;
+  for (const [index, object] of objects.entries()) {
+    offsets.push(length);
+    const chunk = Buffer.concat([Buffer.from(`${index + 1} 0 obj\n`), Buffer.from(object), Buffer.from('\nendobj\n')]);
+    chunks.push(chunk);
+    length += chunk.length;
+  }
+  chunks.push(Buffer.from(`xref\n0 ${offsets.length + 1}\n0000000000 65535 f \n`
+    + offsets.map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('')
+    + `trailer\n<< /Size ${offsets.length + 1} /Root 1 0 R >>\nstartxref\n${length}\n%%EOF\n`));
+  const bytes = Buffer.concat(chunks);
+  return { bytes, text, payloadOffset: bytes.indexOf(marker) };
+}
 
 export async function servePdfFixture(bytes, { ranges = true } = {}) {
   const requests = [];

@@ -26,6 +26,36 @@ function sheet(values: string[], formula: string) {
   return { model, result };
 }
 
+describe('IFS and SWITCH', () => {
+  it.each([
+    ['_xlfn.IFS(FALSE,1,TRUE,2,TRUE,3)', '2'],
+    ['IFS(0,"no",-1,"yes")', 'yes'],
+    ['IFS(TRUE,TRUE,1/0,2)', 'TRUE'],
+    ['IFS(FALSE,1/0,TRUE,2)', '2'],
+    ['IFS(1/0,1,TRUE,2)', '#DIV/0!'],
+    ['IFS(TRUE,NA())', '#N/A'],
+    ['IFS(FALSE,1)', '#N/A'],
+    ['IFS("invalid",1)', '#VALUE!'],
+    ['IFS(TRUE)', '#VALUE!'],
+    ['IFS(TRUE,D1)', '0'],
+    ['_xlfn.SWITCH("s","S","first","s","second","other")', 'first'],
+    ['SWITCH("S","*","wildcard","literal")', 'literal'],
+    ['SWITCH(2,"2","text",2,FALSE)', 'FALSE'],
+    ['SWITCH(2,1,NA(),2,"two",NA())', 'two'],
+    ['SWITCH(NA(),1,2,0)', '#N/A'],
+    ['SWITCH(2,1,"one")', '#N/A'],
+    ['SWITCH(2,1,"one",NA())', '#N/A'],
+    ['SWITCH(2,1)', '#VALUE!'],
+    ['TEXTJOIN("|",FALSE,IFNA(IFS({1,0,0},10,{0,1,0},FALSE),"none"))', '10|FALSE|none'],
+    ['TEXTJOIN("|",FALSE,IFNA(SWITCH({1,2,3},1,"one",2,NA(),"other"),"error"))', 'one|error|other']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['1'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    if (expected === 'TRUE' || expected === 'FALSE') expect(result.valueType).toBe('boolean');
+    else if (expected.startsWith('#')) expect(result.valueType).toBe('error');
+  });
+});
+
 describe('remainder and parity formulas', () => {
   it.each([
     ['MOD(3,2)', '1'], ['MOD(-3,2)', '1'], ['MOD(3,-2)', '-1'], ['MOD(-3,-2)', '-1'],

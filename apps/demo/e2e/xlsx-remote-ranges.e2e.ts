@@ -2,14 +2,16 @@ import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import { createLargeFirstWorksheetFixture, createRangeWorkbookFixture, secondWorksheetMarker, thirdWorksheetMarker, workbookAttachmentText } from '../../../packages/xlsx/test/fixtures/range-workbook.mjs';
 import { createWorkbookFixture } from '../../../packages/xlsx/test/fixtures/workbook.mjs';
+import { createRepeatedConditionalWorkbook } from '../../../packages/xlsx/test/fixtures/repeated-conditional-workbook.mjs';
 import { serveZipFixture } from './zip-range-fixture';
 
 const workbookType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const formulaResult = (page: Page) => page.locator('.xlsxv-grid tr[aria-rowindex="2"] .xlsxv-cell[aria-colindex="4"]');
 const entryRangeSize = 1024 * 1024;
 
-function streamedWorksheetPayload(bytes: Buffer, sheet = 2) {
-  const header = bytes.indexOf(`xl/worksheets/sheet${sheet}.xml`) - 30;
+function streamedWorksheetPayload(bytes: Buffer, sheet: number | string = 2) {
+  const name = typeof sheet === 'number' ? `sheet${sheet}` : sheet;
+  const header = bytes.indexOf(`xl/worksheets/${name}.xml`) - 30;
   expect(bytes.readUInt32LE(header)).toBe(0x04034b50);
   const start = header + 30 + bytes.readUInt16LE(header + 26) + bytes.readUInt16LE(header + 28);
   const size = bytes.readUInt32LE(header + 18);
@@ -117,6 +119,48 @@ for (const prefixed of [false, true]) test(`extends the first worksheet while it
     await grid.evaluate(element => { element.scrollTop = element.scrollHeight; });
     await expect(grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="3"]')).toHaveText('21');
     await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
+  } finally { await server.close(); }
+});
+
+for (const prefixed of [false, true]) test(prefixed
+  ? 'cancels pending large XLSX conditional metadata when replaced'
+  : 'shows sparse rows while large XLSX conditional metadata is pending without reading the sheet twice', async ({ page }) => {
+  const bytes = Buffer.from(await createRepeatedConditionalWorkbook(24_000, { storeWorksheet: true, prefixed }));
+  const server = await serveZipFixture(bytes, 'xlsx');
+  const { start, size } = streamedWorksheetPayload(bytes, 's1');
+  const final = start + Math.floor((size - 1) / entryRangeSize) * entryRangeSize;
+  const ranges = () => server.requests.filter(request => request.begin >= start && request.begin < start + size);
+  const waiting = () => ranges().find(request => request.begin === final);
+  server.pause(final);
+  try {
+    await page.goto(`./?url=${encodeURIComponent(server.url)}&lang=en`);
+    await expect.poll(() => waiting()?.sent).toBe(0);
+    const grid = page.locator('.xlsxv-grid');
+    const at = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+    await expect(page.locator('.wb-status')).toHaveText('Opening file…');
+    await expect(at(1, 1)).toHaveText('4');
+    await expect(at(1, 1)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+    const last = at(1_048_576, 16_384);
+    await expect(last).toHaveText('9');
+
+    if (prefixed) {
+      await page.locator('.wb-upload input[type=file]').setInputFiles({
+        name: 'replacement.txt', mimeType: 'text/plain', buffer: Buffer.from('Replacement document')
+      });
+      await expect.poll(() => waiting()?.cancelled).toBe(true);
+      await expect(page.locator('.wb-preview-stage')).toContainText('Replacement document');
+      await expect(grid).toHaveCount(0);
+      return;
+    }
+    server.resume();
+    await expect(page.locator('.wb-status')).toHaveText('Preview ready');
+    await expect(last).toHaveText('9.0');
+    await expect(last).toHaveCSS('background-color', 'rgb(255, 205, 210)');
+    await expect(last).toBeInViewport();
+    const blocks = Array.from({ length: Math.ceil(size / entryRangeSize) }, (_, index) => start + index * entryRangeSize);
+    expect(ranges().map(range => range.begin)).toEqual(blocks);
+    expect(ranges().reduce((total, range) => total + range.sent, 0)).toBe(size);
   } finally { await server.close(); }
 });
 

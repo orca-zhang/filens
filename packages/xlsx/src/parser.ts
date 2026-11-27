@@ -231,7 +231,7 @@ export async function readXlsxWorkbook(source: PreviewSource, context?: PreviewL
       color: workbookStyles.color,
       numberFormatPalette: workbookStyles.numberFormatPalette,
       columnWidthFont: workbookStyles.columnWidthFont,
-      compactCells: Boolean(preview),
+      forPreview: Boolean(preview),
       date1904,
       warnings,
       noteRegex,
@@ -779,7 +779,7 @@ interface WorksheetOptions {
   name: string;
   sharedStrings: (string | ParsedRichText)[];
   hasRichSharedStrings: boolean;
-  compactCells: boolean;
+  forPreview: boolean;
   readRichText: ReturnType<typeof createRichTextReader>;
   styles: ParsedCellStyle[];
   differentialStyles: ParsedConditionalStyle[];
@@ -797,6 +797,8 @@ interface WorksheetOptions {
 const worksheetOpening = new RegExp(`<(${xmlPrefix}worksheet)${xmlTagTail}`);
 const sheetDataOpening = new RegExp(`<(${xmlPrefix}sheetData)${xmlTagTail}`);
 const sheetDataClosing = new RegExp(`^[ \\t\\r\\n]*</(${xmlPrefix}sheetData)[ \\t\\r\\n]*>`);
+const sheetDataEnd = new RegExp(`</${xmlPrefix}sheetData[ \\t\\r\\n]*>`);
+const worksheetEnd = new RegExp(`</${xmlPrefix}worksheet[ \\t\\r\\n]*>[ \\t\\r\\n]*$`);
 const lateWorksheetMetadata = new RegExp(`<${xmlPrefix}(?:sheetData|cols|sheetFormatPr)\\b`);
 const inlineFormatting = new RegExp(`<${xmlPrefix}rPr\\b`);
 // These spellings are accepted by the direct value reader but can differ under general XML parsing.
@@ -817,7 +819,7 @@ async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterabl
   let headerMetadata: object | undefined;
   let header = '', pending = '', closed = false, simple = false, ambiguous = false, inline = false, general = false, styled = false;
   let sheetDataTag = '', batchHeader = '', batchFooter = '', headerHasAliases = false;
-  let nextRowUpdate = 1;
+  let publishedRowCount = 0, nextRowUpdate = 1;
   let lastYield = signal ? performance.now() : 0;
 
   function readBatch(final: boolean): boolean {
@@ -886,10 +888,13 @@ async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterabl
   for await (const chunk of chunks) {
     checkAborted(signal);
     pending += typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
-    while (!closed && pending.length >= XML_BATCH_CHARS) {
-      if (!readBatch(false)) return undefined;
-      if (onRows && headerMetadata && rows && !closed && rows.count >= nextRowUpdate) {
-        const first = nextRowUpdate === 1;
+    while (!closed && (pending.length >= XML_BATCH_CHARS || (onRows && sheetDataEnd.test(pending)))) {
+      const before = pending.length;
+      if (!readBatch(false) || (!closed && pending.length === before)) return undefined;
+      if (onRows && headerMetadata && rows && (closed
+        ? rows.count > publishedRowCount && !worksheetEnd.test(pending) : rows.count >= nextRowUpdate)) {
+        const first = publishedRowCount === 0;
+        publishedRowCount = rows.count;
         // Geometric snapshots keep the total number of copied row references linear.
         nextRowUpdate = rows.count + Math.ceil(rows.count / 4);
         const finish = finishWorksheet(headerMetadata, headerMetadata, columnStyles, { ...options, warnings: [] }, styled);
@@ -908,12 +913,16 @@ async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterabl
         lastYield = performance.now();
       }
     }
-    if (closed && pending.length > XML_BATCH_CHARS) return undefined;
+    // Trailing XML shares the ZIP entry's expansion limit. Yield while retaining it so rows stay available during the remaining reads.
+    if (closed && signal && performance.now() - lastYield >= 16) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      checkAborted(signal);
+      lastYield = performance.now();
+    }
   }
   checkAborted(signal);
   pending += decoder.decode();
-  if (!readBatch(true) || !rows || pending.length > XML_BATCH_CHARS ||
-      lateWorksheetMetadata.test(pending)) return undefined;
+  if (!readBatch(true) || !rows || lateWorksheetMetadata.test(pending)) return undefined;
   const metadata = worksheetMetadata(header + `</${sheetDataTag}>` + pending,
     headerHasAliases || namespaceAlias.test(pending) ? namespacedParser : parser);
   if (!metadata) return undefined;
@@ -1004,7 +1013,7 @@ async function readWorksheet(xml: string, options: WorksheetOptions,
 function finishWorksheet(document: unknown, layout: unknown, columnStyles: ParsedColumnStyle[],
   options: WorksheetOptions, hasInlineFormatting: boolean): (sheet: ParsedSheet) => Promise<ParsedSheet> {
   const merges = readMergedRanges(document, options.warnings, options.name);
-  const conditionalRules = readConditionalRules(document, options.differentialStyles, options.color, options.warnings, options.name);
+  const conditionalRules = readConditionalRules(document, options.differentialStyles, options.color, options.warnings, options.name, options.forPreview);
   for (const { condition, activeFormula } of conditionalRules) {
     if (activeFormula) options.noteRegex(activeFormula);
     if ('formula' in condition) options.noteRegex(condition.formula);
@@ -1093,7 +1102,7 @@ function createWorksheetRows(options: WorksheetOptions, columnStyle: (column: nu
         if (!cell) continue;
         column = cell.column;
         const index = Number(readPath(cellEntry, ['s']) ?? rowStyle ?? columnStyle(cell.column));
-        const font = options.compactCells ? undefined : options.styles[index]?.font;
+        const font = options.forPreview ? undefined : options.styles[index]?.font;
         if (font) cell.font = font;
         if (options.styles.length && index !== 0) cell.styleIndex = index;
         cells[cellCount++] = cell;
@@ -1299,7 +1308,7 @@ function readColumnStyles(document: unknown): ParsedColumnStyle[] {
   }));
 }
 
-function readCell(cellEntry: unknown, { sharedStrings, readRichText, compactCells, noteRegex }: WorksheetOptions,
+function readCell(cellEntry: unknown, { sharedStrings, readRichText, forPreview, noteRegex }: WorksheetOptions,
   shared: SharedFormulaReader, row: number, previousColumn: number): ParsedCell | null {
   // An empty <c/> still occupies a position in the row.
   const entry = (typeof cellEntry === 'string' && !cellEntry.trim() ? {} : cellEntry) as Record<string, unknown> | undefined;
@@ -1337,7 +1346,7 @@ function readCell(cellEntry: unknown, { sharedStrings, readRichText, compactCell
   const isShared = readPath(entry.f, ['t']) === 'shared';
   const waitingForFormula = uncached && (formula || isShared);
   const cell = createWorksheetCell(ref, position.row, position.column, waitingForFormula ? '' : value,
-    compactCells && entry.f === undefined);
+    forPreview && entry.f === undefined);
   if (parsedType) cell.valueType = parsedType;
   if (!formula && parsedType && rawValue === null && entry.is === undefined) cell.missingValue = true;
   if (richText && !waitingForFormula) cell.richText = richText;

@@ -124,7 +124,7 @@ export async function loadPreviewWorkbook(source: PreviewSource, context: Previe
       context.descriptor.sensitive || context.descriptor.password !== undefined) return parse(source);
   const bytes = await snapshotPreviewBytes(source, context.signal);
   if (!bytes) return parse(source);
-  const key = await previewContentKey(bytes, 'xlsx-preview-v15', context.signal);
+  const key = await previewContentKey(bytes, 'xlsx-preview-v16', context.signal);
   const cached = previewModelCache.get<ParsedWorkbook>(key);
   if (cached) return cached;
   const workbook = await parse(bytes);

@@ -1,6 +1,6 @@
 import type { ParsedArrayFormula, ParsedCell, ParsedDefinedName, ParsedMerge, ParsedSheet, ParsedTableRange, ParsedWorkbook } from './types';
 import { WorksheetCellIndex } from './cell-index';
-import { FormulaCalculationLimit, MAX_DENSE_ARRAY_SCAN, mergeOccupiedPositions, sliceArray, type FormulaArray } from './formula-array';
+import { captureError, FormulaCalculationLimit, MAX_DENSE_ARRAY_SCAN, mergeOccupiedPositions, sliceArray, type FormulaArray } from './formula-array';
 import { containsNestedAggregate, FormulaError, FormulaReader, isLambda, type FormulaLambda, type FormulaOperand, type Scalar } from './formula-reader';
 import { excelDateSerial, excelLocalDateSerial } from './excel-calendar';
 import { formulaClock, shareFormulaClock, type FormulaClock } from './formula-clock';
@@ -220,7 +220,8 @@ function formulaReader(sheet: ParsedSheet, formula: string, current: () => Calcu
     const spill = spillAt(target, ref.firstRow, ref.firstColumn);
     if (!spill?.dynamic || spill.firstRow !== ref.firstRow || spill.firstColumn !== ref.firstColumn) return undefined;
     return { ...ref, lastRow: spill.lastRow, lastColumn: spill.lastColumn };
-  }, (first, last) => referenceSheetSpan(sheet, first, last));
+  }, (first, last) => referenceSheetSpan(sheet, first, last), (ref, visit) =>
+    visitDisplayedRangeValues(referenceSheet(sheet, ref.sheet), ref, current(), visit));
 }
 
 function filterCoversRow(sheet: ParsedSheet, row: number): boolean {
@@ -431,20 +432,19 @@ function readSpill(sheet: ParsedSheet, spill: SpillRange, row: number, column: n
   return withSpill(sheet, spill, calculation, ({ array, error }) => {
     if (error && row === spill.firstRow && column === spill.firstColumn) throw error;
     if (array) {
-      const value = readSpillValue(array, (row - spill.firstRow) * array.columns + column - spill.firstColumn);
-      return value === null && forDisplay && array.zeroForBlanks ? 0 : value;
+      return readSpillValue(array, (row - spill.firstRow) * array.columns + column - spill.firstColumn, forDisplay);
     }
   });
 }
 
-function readSpillValue(array: FormulaArray, position?: number): Scalar {
+function readSpillValue(array: FormulaArray, position?: number, forDisplay = false): Scalar {
   const value = array.read(position);
   if (typeof value === 'number' && !Number.isFinite(value)) throw new FormulaError('#NUM!');
-  return value;
+  return value === null && forDisplay && array.zeroForBlanks ? 0 : value;
 }
 
-function readSpillDefault(sheet: ParsedSheet, spill: SpillRange, calculation: Calculation): Scalar {
-  return withSpill(sheet, spill, calculation, ({ array }) => array && !array.dense ? readSpillValue(array) : null);
+function readSpillDefault(sheet: ParsedSheet, spill: SpillRange, calculation: Calculation, forDisplay = false): Scalar {
+  return withSpill(sheet, spill, calculation, ({ array }) => array && !array.dense ? readSpillValue(array, undefined, forDisplay) : null);
 }
 
 function writeValue(cell: ParsedCell, value: Scalar): void {
@@ -620,6 +620,21 @@ function visitRangeCells(sheet: ParsedSheet, range: ParsedMerge, calculation: Ca
       if (remaining !== undefined) gaps.set(spill, remaining - 1);
     }
     if (visit(cell, row, column, saved ? undefined : spill) === false) return;
+  }
+}
+
+function visitDisplayedRangeValues(sheet: ParsedSheet, range: ParsedMerge, calculation: Calculation,
+  visit: (value: Scalar | FormulaError, weight: number) => void): void {
+  const gaps = sheet.arrayFormulas?.length ? new Map<SpillRange, number>() : undefined;
+  visitRangeCells(sheet, range, calculation, (cell, row, column, spill) => {
+    const value = captureError(() => {
+      const projected = spill && readSpill(sheet, spill, row, column, calculation, true);
+      return projected === undefined ? readValue(sheet, cell, calculation) : projected;
+    });
+    visit(value, 1);
+  }, false, formulaIndex(sheet), gaps);
+  if (gaps) for (const [spill, weight] of gaps) {
+    if (weight) visit(captureError(() => readSpillDefault(sheet, spill, calculation, true)), weight);
   }
 }
 

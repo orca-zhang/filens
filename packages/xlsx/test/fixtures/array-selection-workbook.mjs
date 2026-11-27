@@ -26,6 +26,46 @@ export async function createBroadcastWorkbook() {
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 }
 
+export async function createOrderedConditionalWorkbook() {
+  const zip = await JSZip.loadAsync(await createArraySpillWorkbook());
+  zip.file('xl/styles.xml', '<styleSheet><dxfs><dxf><fill><patternFill><bgColor rgb="FFDCFCE7"/></patternFill></fill></dxf></dxfs></styleSheet>');
+  zip.file('xl/worksheets/summary.xml', sheet(row(1,
+    spill('A1', 'A1:A4', '_xlfn.IFS(Ledger!A1:A4=1,"first",Ledger!A1:A4=2,FALSE,Ledger!A1:A4=3,NA())', '', 'str', 2),
+    spill('B1', 'B1:B4', '_xlfn.SWITCH(Ledger!A1:A4,1,"red",2,TRUE,3,NA(),"missing")', '', 'str', 2),
+    '<c r="C1"><f>_xlfn.IFS(1/0,49)</f><v>42</v></c>')));
+  zip.file('xl/worksheets/ledger.xml', sheet(row(1, value('A1', 1), value('B1', 7)),
+    row(2, value('A2', 2)), row(3, value('A3', 3)), row(4, value('A4', 4)), row(1048576, value('XFD1048576', 19))));
+  zip.file('xl/worksheets/large.xml', sheet(row(1, formula('A1', 'SUM(B1#)'),
+    spill('B1', 'B1:XFD1048576', '_xlfn.IFS(Ledger!B:XFD>0,_xlfn.SWITCH(Ledger!B:XFD,7,77,19,99,4),TRUE,3)', '', 'n', 2)))
+    .replace('</worksheet>', '<conditionalFormatting sqref="XFD1048576"><cfRule type="expression" dxfId="0" priority="1">'
+      + '<formula>_xlfn.SWITCH(XFD1048576,99,TRUE,FALSE)</formula></cfRule></conditionalFormatting></worksheet>'));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
+export async function createCountBlankWorkbook() {
+  const zip = await JSZip.loadAsync(await createArraySpillWorkbook());
+  const workbook = await zip.file('xl/workbook.xml').async('string');
+  zip.file('xl/workbook.xml', workbook.replace('</definedNames>',
+    '<definedName name="LedgerCells">Ledger!$A:$A</definedName></definedNames>'));
+  zip.file('xl/styles.xml', '<styleSheet><dxfs><dxf><fill><patternFill><bgColor rgb="FFDCFCE7"/></patternFill></fill></dxf></dxfs></styleSheet>');
+  zip.file('xl/worksheets/summary.xml', sheet(
+    row(1, formula('A1', 'COUNTBLANK(Ledger!A1:A8)'), formula('B1', 'COUNTBLANK(LedgerCells)'),
+      formula('C1', 'COUNTBLANK(OFFSET(Ledger!A1,5,0,3))'), formula('D1', 'COUNTBLANK(INDEX(Ledger!A:A,6))')),
+    row(2, formula('A2', 'COUNTBLANK(SpillValues)'), formula('B2', "COUNTBLANK('Large Spill'!C1#)"),
+      formula('C2', "COUNTBLANK('Large Spill'!A:XFD)"))));
+  zip.file('xl/worksheets/ledger.xml', sheet(
+    row(1, value('A1', 0), value('B1', 2)), row(2, formula('A2', 'IF(FALSE,1,"")'), value('B2', '', 'str')),
+    row(3, value('A3', ' ', 'str')), row(4, value('A4', 0, 'b')), row(5, formula('A5', 'NA()')),
+    row(7, '<c r="A7" s="0"/>'), row(8, value('A8', '', 'str')), row(1048576, value('C1048576', 19))));
+  zip.file('xl/worksheets/large.xml', sheet(
+    row(1, spill('B1', 'B1:B1048576', '_xlfn.TAKE(Ledger!B:B,1048576)', '', 'n', 2),
+      spill('C1', 'C1:C1048576', 'IF(Ledger!C:C=0,"",Ledger!C:C)', '', 'str', 2)),
+    row(4, value('C4', 0)), row(1048576, formula('XFD1048576', 'COUNTBLANK(Ledger!A:XFD)')))
+    .replace('</worksheet>', '<conditionalFormatting sqref="XFD1048576"><cfRule type="expression" dxfId="0" priority="1">'
+      + '<formula>COUNTBLANK(LedgerCells)=1048572</formula></cfRule></conditionalFormatting></worksheet>'));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
 export async function createXmatchWorkbook() {
   const zip = await JSZip.loadAsync(await createArraySpillWorkbook());
   const fill = '<styleSheet><dxfs><dxf><fill><patternFill><bgColor rgb="FFDCFCE7"/></patternFill></fill></dxf></dxfs></styleSheet>';

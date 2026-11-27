@@ -28,7 +28,7 @@ import { PDF_PAGE_GAP, PDF_SCROLL_HEIGHT, PdfPageLayout } from './page-layout';
 import { budgetPdfRasters, PDF_DETAIL_RASTER_PIXELS, PDF_MAX_RASTER_PIXELS, sizePdfRaster, sizeVirtualPdfRaster } from './page-raster';
 import { PDF_SEARCH_MATCH_LIMIT, createPdfTextMatcher, highlightPdfRanges, highlightPdfText, indexPdfText, matchPdfTextRuns, releasePdfTextHighlights,
   type PdfTextMatch, type PdfTextProgress } from './search';
-import { createPdfBlobRange, PDF_RANGE_CHUNK_BYTES } from './blob-range';
+import { bindPdfBlobRangeCancellation, createPdfBlobRange, PDF_RANGE_CHUNK_BYTES } from './blob-range';
 import { createLocalPdfWorker, type LocalPdfWorker } from './local-worker';
 
 type PreviewListenerMap = {
@@ -36,6 +36,14 @@ type PreviewListenerMap = {
 };
 type PdfTextContent = Awaited<ReturnType<PDFPageProxy['getTextContent']>>;
 type PdfTextStyles = PdfTextContent['styles'];
+interface PdfAttachmentInfo { id: string; filename: string; content?: Uint8Array | null }
+type PdfAttachments = { entries: PdfAttachmentInfo[] } | PdfAttachmentInfo[] | Record<string, Omit<PdfAttachmentInfo, 'id'>> | null;
+interface PdfAttachmentRead { filens: 'read'; id: string; limit: number; cancelRanges?: boolean }
+interface PdfAttachmentMessages {
+  sendWithPromise(action: 'GetAttachments', data: { filens: 'list' }): Promise<PdfAttachments>;
+  sendWithPromise(action: 'GetAttachments', data: PdfAttachmentRead): Promise<Uint8Array | null>;
+  sendWithStream(action: 'GetAttachments', data: PdfAttachmentRead): ReadableStream<Uint8Array>;
+}
 const VISIBLE_PDF_PAINTS = 2;
 const PDF_SEARCH_CACHE_UNITS = 1024 * 1024;
 const PDF_SEARCH_CACHE_PAGE_UNITS = 32 * 1024;
@@ -117,6 +125,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private dimensions = '';
   private contentKey?: string;
   private sensitive = false;
+  private cancelAttachmentRanges = false;
   private readonly virtual: boolean;
   private unbindTouch = () => {};
   private readonly containerContext;
@@ -427,22 +436,39 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   async getAttachments(): Promise<PreviewAttachment[]> {
     const pdf = this.document;
     if (!pdf) return [];
-    const attachments: Record<string, { filename: string; content: Uint8Array }> | null = await pdf.getAttachments();
+    const loadSignal = this.loadController?.signal;
+    const messages = pdf._transport?.messageHandler as PdfAttachmentMessages | undefined;
+    // The bundled worker accepts the list request. Stock PDF.js returns its usual object instead.
+    const attachments: PdfAttachments = await waitForContainerTask(messages
+      ? messages.sendWithPromise('GetAttachments', { filens: 'list' }) : pdf.getAttachments(), loadSignal);
     if (pdf !== this.document || !attachments) return [];
-    const entries = Object.entries(attachments);
+    const streamed = Array.isArray(attachments.entries);
+    const entries: PdfAttachmentInfo[] = streamed ? attachments.entries as PdfAttachmentInfo[]
+      : Array.isArray(attachments) ? attachments : Object.entries(attachments).map(([id, attachment]) => ({ ...attachment, id }));
     if (!entries.length) return [];
     if (entries.length > PREVIEW_CONTAINER_LIMITS.maxEntries) throw new Error('PDF contains too many attachments.');
-    const sensitive = this.sensitive || !(await isUnencryptedPdf(pdf));
+    const sensitive = this.sensitive || !(await waitForContainerTask(isUnencryptedPdf(pdf), loadSignal));
     if (pdf !== this.document) return [];
     const sourceFlags = sensitive ? { sensitive: true } : {};
-    return entries.map(([id, attachment]) => {
+    return entries.map(({ id, filename, content }) => {
+      const name = attachmentFilename(filename);
+      const size = content?.byteLength;
       const readRaw: NonNullable<PreviewAttachment['readRaw']> = async signal => {
         if (pdf !== this.document) throw new DOMException('PDF preview closed.', 'AbortError');
-        const bytes = await readPreviewContainerEntry(async () => attachment.content, attachment.content.byteLength, this.containerContext, signal);
-        return { source: bytes, name: attachmentFilename(attachment.filename), size: bytes.byteLength, ...sourceFlags };
+        const bytes = await readPreviewContainerEntry(async () => {
+          const limit = Math.min(PREVIEW_CONTAINER_LIMITS.maxEntryBytes,
+            PREVIEW_CONTAINER_LIMITS.maxExpandedBytes - this.containerContext.budget.expandedBytes);
+          const request: PdfAttachmentRead = { filens: 'read', id, limit, cancelRanges: this.cancelAttachmentRanges };
+          const data = content ?? (streamed && messages ? await readPdfAttachment(messages, request, loadSignal, signal)
+            : Array.isArray(attachments) && messages
+              ? await waitForContainerTask(messages.sendWithPromise('GetAttachments', request), loadSignal) : null);
+          if (!data) throw new Error('Could not read the embedded PDF attachment.');
+          return data;
+        }, size, this.containerContext, signal);
+        return { source: bytes, name, size: bytes.byteLength, ...sourceFlags };
       };
       return {
-        id, name: attachmentFilename(attachment.filename), size: attachment.content.byteLength, readRaw,
+        id, name, size, readRaw,
         read: async signal => {
           const raw = await readRaw(signal);
           return { ...await unwrapOfficeAttachment(raw.source as Uint8Array, raw.name!), ...sourceFlags };
@@ -522,12 +548,12 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         if (signal?.aborted) throw abortError();
         if (generation !== this.loadGeneration) return;
       }
-      const sourceOptions = input instanceof Blob
-        ? { range: createPdfBlobRange(pdfjs.PDFDataRangeTransport, input, controller.signal, handleReadError),
-          rangeChunkSize: PDF_RANGE_CHUNK_BYTES }
-        : typeof input === 'string' ? { url: input } : { data: input };
-      const useRanges = input instanceof Blob || (this.virtual && typeof input === 'string'
-        && /^https?:$/.test(new URL(input, window.location.href).protocol));
+      const blobRange = input instanceof Blob ? createPdfBlobRange(pdfjs.PDFDataRangeTransport, input, controller.signal, handleReadError) : undefined;
+      const sourceOptions = typeof input === 'string' ? { url: input }
+        : blobRange ? { range: blobRange.transport, rangeChunkSize: PDF_RANGE_CHUNK_BYTES } : { data: input as Uint8Array };
+      const httpRanges = this.virtual && typeof input === 'string'
+        && /^https?:$/.test(new URL(input, window.location.href).protocol);
+      const useRanges = blobRange || httpRanges;
       const task = pdfjs.getDocument({
         ...sourceOptions,
         ...(this.localWorker ? { worker: this.localWorker.worker } : {}),
@@ -541,6 +567,8 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       const pdf = await waitForContainerTask(task.promise, controller.signal);
       if (generation !== this.loadGeneration) return;
 
+      this.cancelAttachmentRanges = httpRanges || Boolean(blobRange &&
+        bindPdfBlobRangeCancellation(pdf._transport?.messageHandler, blobRange.cancelRange));
       this.document = pdf;
       this.pdfjs = pdfjs;
       this.state.pageCount = pdf.numPages;
@@ -1368,6 +1396,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.loadingTask = null;
     this.localWorker = undefined;
     this.document = null;
+    this.cancelAttachmentRanges = false;
     this.contentKey = undefined;
     this.sensitive = false;
     this.searchPageText.clear();
@@ -1381,6 +1410,26 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
 }
 
 function canvasPixels(canvas?: HTMLCanvasElement): number { return canvas ? canvas.width * canvas.height : 0; }
+
+async function readPdfAttachment(messages: PdfAttachmentMessages, request: PdfAttachmentRead, loadSignal?: AbortSignal,
+  readSignal?: AbortSignal): Promise<Uint8Array | undefined> {
+  loadSignal?.throwIfAborted();
+  readSignal?.throwIfAborted();
+  const reader = messages.sendWithStream('GetAttachments', request).getReader();
+  const abort = () => { void reader.cancel(new DOMException('PDF attachment read cancelled.', 'AbortError')).catch(() => {}); };
+  loadSignal?.addEventListener('abort', abort, { once: true });
+  readSignal?.addEventListener('abort', abort, { once: true });
+  try {
+    const { value } = await reader.read();
+    loadSignal?.throwIfAborted();
+    readSignal?.throwIfAborted();
+    return value;
+  } finally {
+    loadSignal?.removeEventListener('abort', abort);
+    readSignal?.removeEventListener('abort', abort);
+    reader.releaseLock();
+  }
+}
 
 function setTextLayerScale(element: HTMLElement, scale: number, userUnit = 1): void {
   element.style.setProperty('--total-scale-factor', String(scale * userUnit));

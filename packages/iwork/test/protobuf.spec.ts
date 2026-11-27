@@ -128,6 +128,16 @@ describe('schema-directed iWork protobuf decoding', () => {
     expect(decodeTypedMessage('TSP.MessageInfo', payload)).toEqual(normalize('TSP.MessageInfo', payload));
   });
 
+  it('reads Pages document fields around the legacy field 45 and keeps modern equation references', () => {
+    const legacy = Writer.create().uint32((4 << 3) | 2).fork().uint32(8).uint32(2208).ldelim()
+      .uint32(45 << 3).uint32(0).uint32(46 << 3).bool(true).finish();
+    expect(decodeTypedMessage('TP.DocumentArchive', legacy)).toMatchObject({
+      bodyStorage: { identifier: 2208 }, showInBookmarksListParagraphStylesPropertyInitialized: true
+    });
+    const modern = reference.lookupType('TP.DocumentArchive').encode({ equationEnvironment: { identifier: 23 } }).finish();
+    expect(decodeTypedMessage('TP.DocumentArchive', modern)).toMatchObject({ equationEnvironment: { identifier: 23 } });
+  });
+
   it('preserves 64-bit reference values across varint widths and number rounding', () => {
     for (const identifier of ['0', '127', '128', '16383', '16384', '2097151', '2097152',
       '268435455', '268435456', '4294967295', '1099511627776', '9007199254740991',

@@ -22,7 +22,7 @@ interface SimpleWorksheetOptions {
   sharedStrings: (string | ParsedRichText)[];
   styles?: ParsedCellStyle[];
   columnStyle?: (column: number) => number;
-  compactCells?: boolean;
+  forPreview?: boolean;
   allowInline?: boolean;
 }
 
@@ -37,7 +37,7 @@ export function readSimpleWorksheet(xml: string, options: SimpleWorksheetOptions
   return readSimpleRows(xml.slice(start, end), options);
 }
 
-export function readSimpleRows(data: string, { id, name, sharedStrings, styles, columnStyle, compactCells, allowInline }: SimpleWorksheetOptions,
+export function readSimpleRows(data: string, { id, name, sharedStrings, styles, columnStyle, forPreview, allowInline }: SimpleWorksheetOptions,
   previousRow = 0): ParsedSheet | undefined {
   if ((allowInline ? /&|<f\b/ : /<(?:f|is)\b/).test(data)) return undefined;
   const rows: ParsedRow[] = [];
@@ -86,14 +86,14 @@ export function readSimpleRows(data: string, { id, name, sharedStrings, styles, 
       const value = attrs.t === 's' ? (raw.trim() ? sharedStrings[Number(raw)] ?? '' : '') :
         attrs.t === 'b' ? (raw.trim() === '1' || raw.trim() === 'true' ? 'TRUE' : 'FALSE') : copyCellText(raw, valueUnits);
       const parsed = createWorksheetCell(attrs.r, ref ? Number(ref[2]) : index, column,
-        typeof value === 'string' ? value : value.value, compactCells);
+        typeof value === 'string' ? value : value.value, forPreview);
       if (typeof value !== 'string') parsed.richText = value;
       if (inline || attrs.t === 's') parsed.valueType = 'text';
       if (attrs.t === 'b') parsed.valueType = 'boolean';
       if (parsed.valueType && valueMatch[1] === undefined) parsed.missingValue = true;
       if (styles?.length) {
         const styleIndex = attrs.s === undefined ? rowStyleIndex ?? columnStyle?.(column) ?? 0 : Number(attrs.s);
-        const font = compactCells ? undefined : styles[styleIndex]?.font;
+        const font = forPreview ? undefined : styles[styleIndex]?.font;
         if (font) parsed.font = font;
         if (styleIndex !== 0) parsed.styleIndex = styleIndex;
       }

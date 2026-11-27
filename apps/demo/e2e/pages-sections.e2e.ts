@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 import { unzipSync } from 'fflate';
 import {
   createPagesAggregateColumnsArchive, createPagesLongBodyArchive, createPagesLongTableArchive, createPagesNumberingArchive,
-  createPagesSavedColumnsArchive, createPagesSavedTextFitArchive,
+  createPagesParagraphBreakArchive, createPagesSavedColumnsArchive, createPagesSavedTextFitArchive,
   pagesAggregateColumnText, pagesLongBodyText, pagesSavedTextLines, pagesTallCellText, pagesTallMergeText, pagesWrappedTableTail
 } from '../../../packages/iwork/test/fixtures/pages-archive.mjs';
 
@@ -68,7 +68,9 @@ test('renders the saved headers, footers and inline image of a Pages document', 
     }
     if (index === 2) {
       await expect(shell.getByText(sourceFooter, { exact: true })).toHaveCount(0);
-      await expect(shell.getByText('5. Landscape section and wider table', { exact: true })).toBeVisible();
+      const heading = shell.getByText('5. Landscape section and wider table', { exact: true });
+      await expect(heading).toBeVisible();
+      await expect(heading).toHaveCSS('font-size', '14px');
       const tables = shell.locator('.pptxv-table');
       await expect(tables).toHaveCount(2);
       const paper = (await shell.locator('.pptxv-slide').boundingBox())!;
@@ -336,6 +338,122 @@ for (const overflow of [false, true]) {
         await expect(paragraphs).toHaveText(['Saved page 4 of 4.']);
       }
     }
+  });
+}
+
+for (const offset of [0, 2]) {
+  test(`estimates Pages columns and layout changes after ${offset} saved pages`, async ({ page }) => {
+    await page.goto('./?view=preview&lang=zh');
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+      name: 'estimated-columns.pages', mimeType: 'application/vnd.apple.pages',
+      buffer: Buffer.from(await createPagesAggregateColumnsArchive({ savedLayout: offset ? 'prefix' : false }))
+    });
+    const shells = page.locator('.iworkv-page-shell');
+    await expect(shells).toHaveCount(offset + 2);
+    if (offset) {
+      const prefix = shells.first().locator('.pptxv-item--text');
+      await expect(prefix).toHaveText('Saved prefix.');
+      await expect(prefix).toHaveCSS('left', '52px');
+      await shells.nth(1).scrollIntoViewIfNeeded();
+      await expect(shells.nth(1).locator('.pptxv-item')).toHaveCount(0);
+    }
+    const first = shells.nth(offset).locator('.pptxv-slide');
+    const second = shells.last().locator('.pptxv-slide');
+    await first.scrollIntoViewIfNeeded();
+    const firstText = first.locator('.pptxv-item--text');
+    await expect(firstText.nth(0)).toHaveText('Equal left.');
+    await expect(firstText.nth(1)).toHaveText('Left joins');
+    await expect(first.getByText(`right on page ${offset + 1}.`, { exact: true })).toBeVisible();
+    const image = first.locator('img[alt$="Column.svg"]');
+    await expect(image).toBeVisible();
+    await second.scrollIntoViewIfNeeded();
+    const secondText = second.locator('.pptxv-item--text');
+    await expect(secondText).toHaveCount(4);
+    await expect(secondText.nth(1)).toHaveText('Narrow.');
+    await expect(secondText.nth(2)).toHaveText(`Wide on page ${offset + 2}.`);
+    await expect(secondText.nth(3)).toHaveText(`Full on page ${offset + 2} of ${offset + 2}.`);
+    const measure = (paper: typeof first) => paper.locator('.pptxv-item--text').evaluateAll(items => items.map(item => {
+      const paper = item.closest('.pptxv-slide')!.getBoundingClientRect();
+      const frame = item.getBoundingClientRect();
+      const scale = paper.width / 400;
+      const range = document.createRange();
+      range.selectNodeContents(item.querySelector('.pptxv-text-frame')!);
+      const content = range.getBoundingClientRect();
+      return {
+        x: Math.round((frame.x - paper.x) / scale), width: Math.round(frame.width / scale),
+        y: Math.round((frame.y - paper.y) / scale), bottom: Math.round((content.bottom - paper.top) / scale)
+      };
+    }));
+    const firstBounds = await measure(first);
+    const secondBounds = await measure(second);
+    expect(firstBounds.map(({ x, width }) => [x, width])).toEqual(firstBounds.map((_, index) => [index < 2 ? 40 : 220, 140]));
+    expect(secondBounds.map(({ x, width }) => [x, width])).toEqual([[40, 140], [40, 80], [160, 200], [40, 320]]);
+    expect([...firstBounds, ...secondBounds].every(({ bottom }) => bottom <= 281)).toBe(true);
+    expect(secondBounds[1].y).toBeGreaterThanOrEqual(secondBounds[0].bottom - 1);
+    expect(secondBounds[3].y).toBeGreaterThanOrEqual(secondBounds[2].bottom - 1);
+    const lines = await page.locator('.iworkv-page-shell .pptxv-paragraph').allTextContents();
+    expect(lines.filter(text => /^Equal \d+\.$/.test(text))).toEqual(Array.from({ length: 14 }, (_, i) => `Equal ${i + 1}.`));
+  });
+}
+
+test('uses a new physical page for a Pages paragraph break in estimated columns', async ({ page }) => {
+  await page.goto('./?view=preview&lang=zh');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+    name: 'styled-page-break.pages', mimeType: 'application/vnd.apple.pages',
+    buffer: Buffer.from(await createPagesParagraphBreakArchive({ columns: true, savedPrefix: true }))
+  });
+  const shells = page.locator('.iworkv-page-shell');
+  await expect(shells).toHaveCount(4);
+  await expect(shells.nth(0).locator('.pptxv-paragraph')).toHaveText('Saved prefix.');
+  await shells.nth(1).scrollIntoViewIfNeeded();
+  await expect(shells.nth(1).locator('.pptxv-slide')).toBeVisible();
+  await expect(shells.nth(1).locator('.pptxv-item')).toHaveCount(0);
+  const before = shells.nth(2).locator('.pptxv-item--text');
+  await shells.nth(2).scrollIntoViewIfNeeded();
+  await expect(before.locator('.pptxv-paragraph')).toHaveText(['Opening page 3.', 'Before the break.']);
+  const after = shells.nth(3).locator('.pptxv-item--text');
+  await shells.nth(3).scrollIntoViewIfNeeded();
+  await expect(after.locator('.pptxv-paragraph')).toHaveText(['Styled page 4.', 'Same page.', 'Right of page 4.', 'Last on page 4 of 4.']);
+  await expect(after.filter({ hasText: 'Styled page 4.' })).toHaveCSS('left', '40px');
+  await expect(after.filter({ hasText: 'Right of page 4.' })).toHaveCSS('left', '220px');
+  await expect(after.getByText('Right of page 4.', { exact: true })).toHaveCSS('font-size', '18px');
+  await expect(after.getByText('Last on page 4 of 4.', { exact: true })).toHaveCSS('font-size', '14px');
+});
+
+for (const estimatedColumns of ['equal', 'unequal']) {
+  test(`continues estimated Pages tables across ${estimatedColumns} columns and pages when rows grow`, async ({ page }) => {
+    await page.goto('./?view=preview&lang=zh');
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+      name: 'estimated-column-table.pages', mimeType: 'application/vnd.apple.pages',
+      buffer: Buffer.from(await createPagesLongTableArchive({ dataRows: 8, estimatedColumns }))
+    });
+    const shells = page.locator('.iworkv-page-shell');
+    const check = async (pages: number, expected: number[][]) => {
+      await expect(shells).toHaveCount(pages);
+      for (const [index, rows] of expected.entries()) {
+        const shell = shells.nth(Math.floor(index / 2));
+        await shell.evaluate(element => element.scrollIntoView({ block: 'start' }));
+        const table = shell.locator('.pptxv-table').nth(index % 2);
+        await expect(table.locator('tr > td:first-child')).toHaveText(['Heading', ...rows.map(row => `Row ${row}`)]);
+        const bounds = await table.evaluate(element => {
+          const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
+          const box = element.getBoundingClientRect();
+          return { x: (box.left - paper.left) * 400 / paper.width, bottom: (box.bottom - paper.top) * 320 / paper.height,
+            width: box.width * 400 / paper.width };
+        });
+        expect(bounds.x).toBeCloseTo(index % 2 ? (estimatedColumns === 'equal' ? 220 : 200) : 40, 0);
+        expect(Math.abs(bounds.width - (estimatedColumns === 'equal' ? 140 : 120))).toBeLessThan(1.5);
+        expect(bounds.bottom).toBeLessThan(282);
+        if (rows.includes(2)) await expect(table.getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
+      }
+      await expect(shells.last().getByText(`after table on page ${pages} of ${pages}.`, { exact: true })).toBeVisible();
+    };
+    const initial = [[1], [2, 3, 4], [5, 6, 7], [8]];
+    await check(2, initial);
+    const growth = await page.addStyleTag({ content: '.iworkv-body-flow .pptxv-table tr { height: 75px !important; }' });
+    await check(3, [[1], [2, 3], [4, 5], [6, 7], [8]]);
+    await growth.evaluate(style => style.remove());
+    await check(2, initial);
   });
 }
 
@@ -614,11 +732,225 @@ for (const dataRows of [4, 5]) {
   });
 }
 
-test('splits a saved Pages table partition when its rendered rows outgrow the page', async ({ page }) => {
+for (const tableOnly of [false, true]) {
+  test(`splits a saved Pages table partition when its rendered rows outgrow the page (table only: ${tableOnly})`, async ({ page }) => {
+    await page.goto('./?view=preview&lang=zh');
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+      name: 'saved-partition-growth.pages', mimeType: 'application/vnd.apple.pages',
+      buffer: Buffer.from(await createPagesLongTableArchive({
+        dataRows: 4, savedFlow: tableOnly ? 'partition-only' : 'partition', packedPartitions: true
+      }))
+    });
+    const shells = page.locator('.iworkv-page-shell');
+    const show = async (index: number) => {
+      const shell = shells.nth(index);
+      await shell.evaluate(element => element.scrollIntoView({ block: 'start' }));
+      const paper = shell.locator('.pptxv-slide');
+      await expect(paper).toBeVisible();
+      return paper;
+    };
+    await expect(shells).toHaveCount(4);
+    if (tableOnly) await expect((await show(1)).locator('.pptxv-item--text')).toHaveCount(0);
+    else await expect((await show(1)).getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
+    const growth = await page.addStyleTag({
+      content: '.iworkv-page-shell:not(:first-child) .iworkv-body-flow .pptxv-table tr { height: 85px !important; }'
+    });
+    await expect(shells).toHaveCount(5);
+    for (const [index, rows] of [['Heading', 'Row 1'], ['Row 2', 'Row 3'], ['Row 4']].entries()) {
+      const paper = await show(index);
+      const table = paper.locator('.pptxv-table');
+      await expect(table.locator('tr > td:first-child')).toHaveText(rows);
+      const bounds = await table.evaluate(element => {
+        const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
+        const table = element.getBoundingClientRect();
+        return {
+          bottom: (table.bottom - paper.top) * 320 / paper.height,
+          left: (table.left - paper.left) * 400 / paper.width,
+          width: table.width * 400 / paper.width
+        };
+      });
+      expect(bounds.bottom).toBeLessThan(282);
+      const usesSavedRect = index > 0 && !tableOnly;
+      expect(bounds.left).toBeCloseTo(usesSavedRect ? 53 : 40, 0);
+      expect(Math.abs(bounds.width - (usesSavedRect ? 287 : 320))).toBeLessThan(1.5);
+      if (index === 0) await expect(paper.getByText('Saved lead', { exact: true })).toBeVisible();
+      if (index === 1) await expect(table.getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
+      if (index === 2 && !tableOnly) await expect(paper.locator('.pptxv-item--text .pptxv-paragraph')).toHaveText([
+        'After table on page 3 of 5.', 'Final paragraph.'
+      ]);
+    }
+    await expect((await show(3)).locator('.pptxv-item')).toHaveCount(0);
+    const last = await show(4);
+    await expect(last.getByText('Saved next on page 5 of 5.', { exact: true })).toBeVisible();
+    if (tableOnly) await expect(last.getByText('After table on page 5 of 5.', { exact: true })).toBeVisible();
+    const badge = last.locator('img[alt$="Badge.svg"]');
+    await expect(badge).toBeVisible();
+    const paper = (await last.boundingBox())!;
+    const image = (await badge.boundingBox())!;
+    expect((image.x - paper.x) * 400 / paper.width).toBeCloseTo(332, 0);
+    expect((image.y - paper.y) * 320 / paper.height).toBeCloseTo(55, 0);
+    await show(2);
+    await growth.evaluate(style => style.remove());
+    await show(1);
+    await expect(shells).toHaveCount(4);
+    const restored = await show(1);
+    await expect(restored.locator('.pptxv-table tr > td:first-child')).toHaveText(['Row 2', 'Row 3', 'Row 4']);
+    const tail = tableOnly ? await show(3) : restored;
+    await expect(tail.getByText(`After table on page ${tableOnly ? 4 : 2} of 4.`, { exact: true })).toBeVisible();
+  });
+}
+
+for (const height of [70, 115]) {
+  test(`splits the first saved Pages table part when its rows grow to ${height}px`, async ({ page }) => {
+    await page.goto('./?view=preview&lang=zh');
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+      name: 'anchored-partition-growth.pages', mimeType: 'application/vnd.apple.pages',
+      buffer: Buffer.from(await createPagesLongTableArchive({
+        dataRows: 5, savedFlow: 'partition', packedPartitions: true, rowHeight: 44, firstPartitionRows: 4,
+        partitionSuffix: ' After first part.'
+      }))
+    });
+    const shells = page.locator('.iworkv-page-shell');
+    const show = async (index: number) => {
+      const shell = shells.nth(index);
+      await shell.evaluate(element => element.scrollIntoView({ block: 'start' }));
+      const paper = shell.locator('.pptxv-slide');
+      await expect(paper).toBeVisible();
+      return paper;
+    };
+    const rowLabels = (index: number) => shells.nth(index).locator('.pptxv-table tr > td:first-child');
+    const movesEntirePart = height === 115;
+    const count = movesEntirePart ? 7 : 5;
+    const suffixPage = movesEntirePart ? 3 : 1;
+    const savedPart = count - 3;
+    await expect(shells).toHaveCount(4);
+    await expect(rowLabels(0)).toHaveText(['Heading', 'Row 1', 'Row 2', 'Row 3']);
+    await expect(shells.first().getByText('After first part.', { exact: true })).toBeVisible();
+    const growth = await page.addStyleTag({ content: `
+      .iworkv-body-flow .pptxv-item--table[style*="width: 320px"] .pptxv-table tr { height: ${height}px !important; }
+    ` });
+    await expect(shells).toHaveCount(count);
+    const rebuiltRows = movesEntirePart
+      ? [[], ['Heading', 'Row 1'], ['Row 2', 'Row 3'], []]
+      : [['Heading', 'Row 1'], ['Heading', 'Row 2', 'Row 3']];
+    const expectedRows = [...rebuiltRows, ['Row 4', 'Row 5']];
+    for (const [index, rows] of expectedRows.entries()) {
+      const paper = await show(index);
+      const paragraphs = paper.locator('.pptxv-item--text .pptxv-paragraph');
+      await expect(paragraphs).toHaveText(index === 0 ? ['Saved lead']
+        : index === suffixPage ? ['After first part.']
+        : index === savedPart ? [`After table on page ${savedPart + 1} of ${count}.`, 'Final paragraph.'] : []);
+      await expect(rowLabels(index)).toHaveText(rows);
+      if (!rows.length) continue;
+      const table = paper.locator('.pptxv-table');
+      const bounds = await table.evaluate(element => {
+        const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
+        const box = element.getBoundingClientRect();
+        return { bottom: (box.bottom - paper.top) * 320 / paper.height, left: (box.left - paper.left) * 400 / paper.width };
+      });
+      expect(bounds.bottom).toBeLessThan(282);
+      expect(bounds.left).toBeCloseTo(index === savedPart ? 53 : 40, 0);
+      if (index === 0) expect((await paragraphs.first().boundingBox())!.y).toBeLessThan((await table.boundingBox())!.y);
+      if (index === (movesEntirePart ? 2 : 1)) await expect(table.getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
+    }
+    await expect((await show(count - 2)).locator('.pptxv-item')).toHaveCount(0);
+    const last = await show(count - 1);
+    await expect(last.getByText(`Saved next on page ${count} of ${count}.`, { exact: true })).toBeVisible();
+    await expect(last.locator('img[alt$="Badge.svg"]')).toBeVisible();
+    await show(movesEntirePart ? 2 : 1);
+    await growth.evaluate(style => style.remove());
+    await show(1);
+    await show(0);
+    await expect(shells).toHaveCount(4);
+    await expect(rowLabels(0)).toHaveText(['Heading', 'Row 1', 'Row 2', 'Row 3']);
+    await expect(shells.first().getByText('After first part.', { exact: true })).toBeVisible();
+    await expect((await show(1)).getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
+  });
+}
+
+for (const partitionColumns of ['anchor', 'continuation']) {
+  test(`repaginates a saved Pages table in two body regions (${partitionColumns})`, async ({ page }) => {
+    await page.goto('./?view=preview&lang=zh');
+    const anchored = partitionColumns === 'anchor';
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+      name: 'partition-columns.pages', mimeType: 'application/vnd.apple.pages',
+      buffer: Buffer.from(await createPagesLongTableArchive({
+        dataRows: anchored ? 5 : 4, rowHeight: anchored ? 44 : 60, firstPartitionRows: anchored ? 4 : 2,
+        savedFlow: 'partition', packedPartitions: true, partitionColumns
+      }))
+    });
+    const shells = page.locator('.iworkv-page-shell');
+    const show = async (index: number) => {
+      const shell = shells.nth(index);
+      await shell.evaluate(element => element.scrollIntoView({ block: 'start' }));
+      const paper = shell.locator('.pptxv-slide');
+      await expect(paper).toBeVisible();
+      return paper;
+    };
+    const originalPage = anchored ? 0 : 1;
+    const siblingText = anchored ? 'Previous column.' : 'Final paragraph.';
+    const original = await show(originalPage);
+    await expect(shells).toHaveCount(4);
+    await expect(original.getByText(siblingText, { exact: true })).toBeVisible();
+    const marker = 'img[alt$="Marker.svg"]';
+    if (!anchored) await expect(original.locator(marker)).toBeVisible();
+    const growth = await page.addStyleTag({ content: `
+      .iworkv-body-flow .pptxv-item--table[style*="width: ${anchored ? 175 : 145}px"] tr { height: ${anchored ? 70 : 85}px !important; }
+    ` });
+    await expect(shells).toHaveCount(5);
+    const expected = anchored ? [['Heading', 'Row 1'], ['Heading', 'Row 2', 'Row 3'], ['Row 4', 'Row 5']]
+      : [['Heading', 'Row 1'], ['Row 2', 'Row 3'], ['Row 4']];
+    for (const [index, rows] of expected.entries()) {
+      const paper = await show(index);
+      const table = paper.locator('.pptxv-table');
+      await expect(table.locator('tr > td:first-child')).toHaveText(rows);
+      const bounds = await table.evaluate(element => {
+        const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
+        const box = element.getBoundingClientRect();
+        return { bottom: (box.bottom - paper.top) * 320 / paper.height, left: (box.left - paper.left) * 400 / paper.width };
+      });
+      expect(bounds.bottom).toBeLessThan(282);
+      expect(bounds.left).toBeCloseTo(anchored ? (index < 2 ? 185 : 53) : (index === 0 ? 40 : 53), 0);
+    }
+    const lastTable = await show(2);
+    await expect(lastTable.getByText('After table on page 3 of 5.', { exact: true })).toBeVisible();
+    const sibling = (await show(anchored ? 0 : 2)).getByText(siblingText, { exact: true });
+    const left = await sibling.evaluate(element => {
+      const frame = element.closest('.pptxv-item--text')!.getBoundingClientRect();
+      const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
+      return (frame.left - paper.left) * 400 / paper.width;
+    });
+    expect(left).toBeCloseTo(anchored ? 40 : 218, 0);
+    if (!anchored) {
+      const image = lastTable.locator(marker);
+      await expect(image).toBeVisible();
+      const paper = (await lastTable.boundingBox())!;
+      const bounds = (await image.boundingBox())!;
+      expect((bounds.x - paper.x) * 400 / paper.width).toBeCloseTo(255, 0);
+      expect((bounds.y - paper.y) * 320 / paper.height).toBeCloseTo(125, 0);
+      await expect((await show(1)).locator(marker)).toHaveCount(0);
+    }
+    await expect((await show(3)).locator('.pptxv-item')).toHaveCount(0);
+    const last = await show(4);
+    await expect(last.getByText('Saved next on page 5 of 5.', { exact: true })).toBeVisible();
+    await expect(last.locator('img[alt$="Badge.svg"]')).toBeVisible();
+    await show(originalPage + 1);
+    await growth.evaluate(style => style.remove());
+    await show(originalPage);
+    await expect(shells).toHaveCount(4);
+    await expect((await show(originalPage)).getByText(siblingText, { exact: true })).toBeVisible();
+    if (!anchored) await expect((await show(originalPage)).locator(marker)).toBeVisible();
+    await expect((await show(1)).getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
+  });
+}
+
+test('repaginates both saved Pages columns when their tables grow together', async ({ page }) => {
   await page.goto('./?view=preview&lang=zh');
   await page.getByLabel('导入文件', { exact: true }).setInputFiles({
-    name: 'saved-partition-growth.pages', mimeType: 'application/vnd.apple.pages',
-    buffer: Buffer.from(await createPagesLongTableArchive({ dataRows: 4, savedFlow: 'partition', packedPartitions: true }))
+    name: 'two-growing-tables.pages', mimeType: 'application/vnd.apple.pages',
+    buffer: Buffer.from(await createPagesLongTableArchive({
+      dataRows: 4, rowHeight: 44, savedFlow: 'partition', packedPartitions: true, partitionColumns: 'two-tables'
+    }))
   });
   const shells = page.locator('.iworkv-page-shell');
   const show = async (index: number) => {
@@ -628,39 +960,174 @@ test('splits a saved Pages table partition when its rendered rows outgrow the pa
     await expect(paper).toBeVisible();
     return paper;
   };
-  await expect(shells).toHaveCount(4);
-  await expect((await show(1)).getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
-  const growth = await page.addStyleTag({
-    content: '.iworkv-page-shell:not(:first-child) .iworkv-body-flow .pptxv-table tr { height: 85px !important; }'
-  });
-  await expect(shells).toHaveCount(5);
-  for (const [index, rows] of [['Heading', 'Row 1'], ['Row 2', 'Row 3'], ['Row 4']].entries()) {
+  const checkTables = async (index: number, expected: Array<[number, string[]]>) => {
     const paper = await show(index);
-    const table = paper.locator('.pptxv-table');
-    await expect(table.locator('tr > td:first-child')).toHaveText(rows);
-    const bounds = await table.evaluate(element => {
-      const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
-      const table = element.getBoundingClientRect();
-      return { bottom: (table.bottom - paper.top) * 320 / paper.height, left: (table.left - paper.left) * 400 / paper.width };
-    });
-    expect(bounds.bottom).toBeLessThan(282);
-    expect(bounds.left).toBeCloseTo(index === 0 ? 40 : 53, 0);
-    if (index === 1) await expect(table.getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
-    if (index === 2) await expect(paper.locator('.pptxv-item--text .pptxv-paragraph')).toHaveText([
-      'After table on page 3 of 5.', 'Final paragraph.'
-    ]);
-  }
-  await expect((await show(3)).locator('.pptxv-item')).toHaveCount(0);
-  const last = await show(4);
-  await expect(last.getByText('Saved next on page 5 of 5.', { exact: true })).toBeVisible();
+    const tables = paper.locator('.pptxv-table');
+    await expect(tables).toHaveCount(expected.length);
+    for (const [tableIndex, [left, rows]] of expected.entries()) {
+      const table = tables.nth(tableIndex);
+      await expect(table.locator('tr > td:first-child')).toHaveText(rows);
+      const bounds = await table.evaluate(element => {
+        const paper = element.closest('.pptxv-slide')!.getBoundingClientRect();
+        const box = element.getBoundingClientRect();
+        return { bottom: (box.bottom - paper.top) * 320 / paper.height, left: (box.left - paper.left) * 400 / paper.width };
+      });
+      expect(bounds.left).toBeCloseTo(left, 0);
+      expect(bounds.bottom).toBeLessThan(282);
+    }
+  };
+  await expect(shells).toHaveCount(4);
+  await checkTables(1, [[53, ['Row 2', 'Row 3', 'Row 4']], [218, ['Heading', 'Row 1', 'Row 2', 'Row 3']]]);
+  const leftGrowth = '.iworkv-body-flow .pptxv-item--table[style*="width: 145px"] tr { height: 85px !important; }';
+  const rightGrowth = '.iworkv-body-flow .pptxv-item--table[style*="width: 140px"] tr { height: 70px !important; }';
+  const growth = await page.addStyleTag({ content: leftGrowth + rightGrowth });
+  await expect(shells).toHaveCount(6);
+  await checkTables(0, [[40, ['Heading', 'Row 1']]]);
+  await checkTables(1, [[53, ['Row 2', 'Row 3']]]);
+  await checkTables(2, [[53, ['Row 4']], [218, ['Heading', 'Row 1']]]);
+  await checkTables(3, [[218, ['Heading', 'Row 2', 'Row 3']]]);
+  await expect((await show(1)).locator('.pptxv-table').getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
+  await expect((await show(3)).locator('.pptxv-table').getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
+  const middle = await show(2);
+  await expect(middle.getByText('After table on page 3 of 6.', { exact: true })).toBeVisible();
+  await expect(middle.getByText('Right lead', { exact: true })).toBeVisible();
+  await expect((await show(4)).locator('.pptxv-item')).toHaveCount(0);
+  await checkTables(5, [[57, ['Row 4']]]);
+  const last = await show(5);
+  await expect(last.getByText('Saved next on page 6 of 6.', { exact: true })).toBeVisible();
   await expect(last.locator('img[alt$="Badge.svg"]')).toBeVisible();
+  await show(1);
+  await growth.evaluate((style, css) => { style.textContent = css; }, rightGrowth);
   await show(2);
+  await expect(shells).toHaveCount(5);
+  await checkTables(1, [[53, ['Row 2', 'Row 3', 'Row 4']], [218, ['Heading', 'Row 1']]]);
+  await checkTables(2, [[218, ['Heading', 'Row 2', 'Row 3']]]);
+  await expect((await show(1)).getByText('After table on page 2 of 5.', { exact: true })).toBeVisible();
   await growth.evaluate(style => style.remove());
+  await show(2);
   await show(1);
   await expect(shells).toHaveCount(4);
-  const restored = await show(1);
-  await expect(restored.locator('.pptxv-table tr > td:first-child')).toHaveText(['Row 2', 'Row 3', 'Row 4']);
-  await expect(restored.getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
+  await checkTables(1, [[53, ['Row 2', 'Row 3', 'Row 4']], [218, ['Heading', 'Row 1', 'Row 2', 'Row 3']]]);
+  await expect((await show(1)).getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
+  await checkTables(3, [[57, ['Row 4']]]);
+});
+
+test('continues two growing saved Pages tables from the same body region', async ({ page }) => {
+  await page.goto('./?view=preview&lang=zh');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+    name: 'stacked-growing-tables.pages', mimeType: 'application/vnd.apple.pages',
+    buffer: Buffer.from(await createPagesLongTableArchive({
+      dataRows: 4, rowHeight: 24, savedFlow: 'partition', packedPartitions: true, partitionColumns: 'stacked-tables'
+    }))
+  });
+  const shells = page.locator('.iworkv-page-shell');
+  const show = async (index: number) => {
+    const shell = shells.nth(index);
+    await shell.evaluate(element => element.scrollIntoView({ block: 'start' }));
+    const paper = shell.locator('.pptxv-slide');
+    await expect(paper).toBeVisible();
+    return paper;
+  };
+  const checkRows = async (index: number, expected: string[]) => {
+    const paper = await show(index);
+    await expect(paper.locator('.pptxv-table tr > td:first-child')).toHaveText(expected);
+    const bounds = await paper.locator('.pptxv-table').evaluateAll(tables => tables.map(table => {
+      const paper = table.closest('.pptxv-slide')!.getBoundingClientRect();
+      const box = table.getBoundingClientRect();
+      return (box.bottom - paper.top) * 320 / paper.height;
+    }));
+    expect(bounds.every(bottom => bottom < 282)).toBe(true);
+    return paper;
+  };
+  const initial = ['Row 2', 'Row 3', 'Row 4', 'Heading', 'Row 1', 'Row 2', 'Row 3'];
+  const waitForPages = async (count: number) => {
+    await expect.poll(async () => page.evaluate(async expected => {
+      const pages = () => document.querySelectorAll('.iworkv-page-shell');
+      // Scroll resized continuations into the virtual window so both tables can be measured.
+      for (let index = 1; index < pages().length && pages().length !== expected; index += 1) {
+        pages()[index]?.scrollIntoView({ block: 'start' });
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      }
+      return pages().length;
+    }, count)).toBe(count);
+  };
+  await expect(shells).toHaveCount(4);
+  await checkRows(1, initial);
+  const firstGrowth = '.iworkv-body-flow .pptxv-item--table[style*="width: 287px"] tr { height: 85px !important; }';
+  const secondGrowth = '.iworkv-body-flow .pptxv-item--table[style*="width: 180px"] tr { height: 70px !important; }';
+  const growth = await page.addStyleTag({ content: firstGrowth + secondGrowth });
+  await expect(shells).toHaveCount(7);
+  await checkRows(0, ['Heading', 'Row 1']);
+  await checkRows(1, ['Row 2', 'Row 3']);
+  const middle = await checkRows(2, ['Row 4']);
+  await expect(middle.getByText('After table on page 3 of 7.', { exact: true })).toBeVisible();
+  await expect(middle.getByText('Right lead', { exact: true })).toBeVisible();
+  await checkRows(3, ['Heading', 'Row 1']);
+  const secondPart = await checkRows(4, ['Heading', 'Row 2', 'Row 3']);
+  await expect(secondPart.getByRole('cell', { name: 'Merged rows' })).toHaveAttribute('rowspan', '2');
+  await expect((await show(5)).locator('.pptxv-item')).toHaveCount(0);
+  const last = await checkRows(6, ['Row 4']);
+  await expect(last.getByText('Saved next on page 7 of 7.', { exact: true })).toBeVisible();
+  await expect(last.locator('img[alt$="Badge.svg"]')).toBeVisible();
+  await show(4);
+  await growth.evaluate((style, css) => { style.textContent = css; }, firstGrowth);
+  await waitForPages(5);
+  await checkRows(2, ['Row 4', 'Heading', 'Row 1', 'Row 2', 'Row 3']);
+  await checkRows(4, ['Row 4']);
+  await show(1);
+  await growth.evaluate(style => style.remove());
+  await waitForPages(4);
+  await checkRows(1, initial);
+  await expect((await show(1)).getByText('After table on page 2 of 4.', { exact: true })).toBeVisible();
+  await checkRows(3, ['Row 4']);
+});
+
+test('keeps saved Pages table continuations in order when both start the region', async ({ page }) => {
+  await page.goto('./?view=preview&lang=zh');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+    name: 'leading-growing-tables.pages', mimeType: 'application/vnd.apple.pages',
+    buffer: Buffer.from(await createPagesLongTableArchive({
+      dataRows: 4, rowHeight: 24, savedFlow: 'partition', packedPartitions: true, partitionColumns: 'leading-tables'
+    }))
+  });
+  const shells = page.locator('.iworkv-page-shell');
+  const show = async (index: number) => {
+    const shell = shells.nth(index);
+    await shell.evaluate(element => element.scrollIntoView({ block: 'start' }));
+    const paper = shell.locator('.pptxv-slide');
+    await expect(paper).toBeVisible();
+    return paper;
+  };
+  const initial = ['Row 2', 'Row 3', 'Row 4', 'Row 1', 'Row 2', 'Row 3', 'Row 4'];
+  await expect(shells).toHaveCount(5);
+  await expect((await show(2)).locator('.pptxv-table tr > td:first-child')).toHaveText(initial);
+  const growth = await page.addStyleTag({ content: `
+    .iworkv-body-flow .pptxv-item--table[style*="width: 287px"] tr { height: 85px !important; }
+    .iworkv-body-flow .pptxv-item--table[style*="width: 180px"] tr { height: 70px !important; }
+  ` });
+  await expect(shells).toHaveCount(8);
+  for (const [offset, rows] of [['Row 2', 'Row 3'], ['Row 4', 'Row 1'], ['Row 2', 'Row 3', 'Row 4']].entries()) {
+    const paper = await show(offset + 2);
+    await expect(paper.locator('.pptxv-table tr > td:first-child')).toHaveText(rows);
+    const bottoms = await paper.locator('.pptxv-table').evaluateAll(tables => tables.map(table => {
+      const paper = table.closest('.pptxv-slide')!.getBoundingClientRect();
+      return (table.getBoundingClientRect().bottom - paper.top) * 320 / paper.height;
+    }));
+    expect(bottoms.every(bottom => bottom < 282)).toBe(true);
+  }
+  await expect((await show(4)).getByText('After table on page 5 of 8.', { exact: true })).toBeVisible();
+  await expect((await show(5)).getByText('Final paragraph.', { exact: true })).toBeVisible();
+  await expect((await show(6)).locator('.pptxv-item')).toHaveCount(0);
+  const last = await show(7);
+  await expect(last.getByText('Saved next on page 8 of 8.', { exact: true })).toBeVisible();
+  await expect(last.locator('img[alt$="Badge.svg"]')).toBeVisible();
+  await show(4);
+  await growth.evaluate(style => style.remove());
+  for (const index of [3, 2]) await show(index);
+  await expect(shells).toHaveCount(5);
+  const restored = await show(2);
+  await expect(restored.locator('.pptxv-table tr > td:first-child')).toHaveText(initial);
+  await expect(restored.getByText('After table on page 3 of 5.', { exact: true })).toBeVisible();
 });
 
 for (const fittedRows of [false, true]) {
@@ -762,6 +1229,67 @@ for (const fixture of [{ fittedRows: true }, { tallRow: true, mergeRow: 1 }, { f
     expect(chunks[1].join('')).toBe(pagesTallMergeText);
     const count = await shells.count();
     await expect(shells.last().getByText(`after table on page ${count} of ${count}.`, { exact: true })).toBeVisible();
+  });
+}
+
+for (const fixture of [{ tallRow: true }, { tallMerge: true, fittedRows: true, hideMergeAnchor: true },
+  { tallRow: true, savedFlow: 'partition', packedPartitions: true }]) {
+  test(`repaginates split Pages cells when browser lines grow ${JSON.stringify(fixture)}`, async ({ page }) => {
+    await page.goto('./');
+    const moduleUrl = new URL(`@fs${resolve('packages/iwork/src/index.ts')}`, page.url()).href;
+    const source = Array.from(await createPagesLongTableArchive({ ...fixture, dataRows: 4 }));
+    await page.evaluate(async ({ moduleUrl, source }) => {
+      const { createIworkViewer } = await import(/* @vite-ignore */ moduleUrl);
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;inset:0';
+      document.body.replaceChildren(host);
+      const viewer = createIworkViewer(host, { virtual: false, fit: 'none', initialScale: 1.25 });
+      await viewer.preview(new File([Uint8Array.from(source)], 'growing-cell.pages'));
+    }, { moduleUrl, source });
+    const shells = page.locator('.iworkv-page-shell');
+    await expect(page.locator('.pptxv-table').first()).toBeVisible();
+    const contents = async () => page.locator('.pptxv-table td').evaluateAll(cells => cells.flatMap(cell => {
+      const text = cell.textContent ?? '';
+      if (!text.trim()) return [];
+      if (/^(Heading|Row \d+|Side note|Merged rows)$/.test(text)) return [];
+      const page = cell.closest('.pptxv-slide')!.getBoundingClientRect();
+      const bounds = cell.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const lines = Array.from(range.getClientRects());
+      const glyphBottom = Math.max(...lines.map(line => line.bottom));
+      return [{ text, fits: glyphBottom <= Math.min(bounds.bottom, page.top + page.height * 280 / 320) + 1.5 }];
+    }));
+    const expected = fixture.tallRow ? pagesTallCellText : pagesTallMergeText;
+    const graphemes = new Intl.Segmenter().segment(expected);
+    const inspect = async () => {
+      await expect.poll(async () => (await contents()).every(chunk => chunk.fits)).toBe(true);
+      const chunks = await contents();
+      expect(chunks.map(chunk => chunk.text).join('')).toBe(expected);
+      let offset = 0;
+      for (const chunk of chunks) {
+        expect(graphemes.containing(offset)?.index).toBe(offset);
+        offset += chunk.text.length;
+      }
+      if (fixture.tallRow) await expect(page.getByText('Side note', { exact: true })).toHaveCount(1);
+      const count = await shells.count();
+      const tail = page.locator('.pptxv-paragraph').filter({ hasText: 'after table on page' });
+      await expect(tail).toBeVisible();
+      const pageNumber = await tail.evaluate(element => Number((element.closest('.iworkv-page-shell') as HTMLElement).dataset.pageIndex) + 1);
+      await expect(tail).toHaveText(new RegExp(`after table on page ${pageNumber} of ${count}\\.`, 'i'));
+      if (fixture.savedFlow) {
+        await expect(shells.last().getByText(`Saved next on page ${count} of ${count}.`, { exact: true })).toBeVisible();
+        await expect(shells.last().locator('img[alt$="Badge.svg"]')).toBeVisible();
+      } else await expect(shells.last().getByText('Final paragraph.', { exact: true })).toBeVisible();
+    };
+    await inspect();
+    const initial = await shells.count();
+    const growth = await page.addStyleTag({ content: '.iworkv-body-flow .pptxv-table td .pptxv-paragraph { line-height: 34px !important; }' });
+    await expect.poll(() => shells.count()).toBeGreaterThan(initial);
+    await inspect();
+    await growth.evaluate(style => style.remove());
+    await expect(shells).toHaveCount(initial);
+    await inspect();
   });
 }
 

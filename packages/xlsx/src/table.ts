@@ -54,6 +54,12 @@ interface ColumnWindow {
   cells(row: ParsedRow): ParsedCell[];
 }
 
+interface RowHeightMeasurement {
+  first: number;
+  last: number;
+  height: number;
+}
+
 const columnStyles = new WeakMap<ParsedSheet, (column: number) => number>();
 const scrollHeightLimits = new WeakMap<Document, number>();
 
@@ -579,6 +585,9 @@ export class SheetRowWindow {
   private readonly cellRows = new WeakMap<ParsedRow, ParsedCell[]>();
   private heights?: RowHeights;
   private readonly measurements: SheetRowMeasurements;
+  private readonly observedRowHeights = new Map<number, RowHeightMeasurement[]>();
+  private readonly naturalRowHeights = new WeakMap<HTMLTableRowElement, string>();
+  private measuredBody?: HTMLTableSectionElement;
   private previousScrollHeight = 0;
   private destroyed = false;
 
@@ -634,10 +643,7 @@ export class SheetRowWindow {
         this.wide ? { first: this.columnFirst, last: this.columnLast } : undefined));
       this.grid.scrollLeft = this.widths.before(column) + fraction * this.widths.width(column);
     }
-    // A partial column window cannot remeasure wrapping in unmounted columns.
-    const { tracks } = this.widths;
-    const allColumns = tracks.before(this.columnFirst) === 0 && tracks.before(this.columnLast + 1) === tracks.count;
-    if (this.sheet.columnWidthSource && (reason === 'fonts' || allColumns) && this.measurements.width !== undefined
+    if (this.sheet.columnWidthSource && reason === 'fonts' && this.measurements.width !== undefined
       && this.sheet.cellStyles?.formats.some(style => style.wrap || style.textRotation)) {
       this.measurements.width = -1;
     }
@@ -715,11 +721,27 @@ export class SheetRowWindow {
   }
 
   private measureRows(): boolean {
-    if (!this.heights) return false;
+    const heights = this.heights;
+    if (!heights) return false;
+    const body = this.table.tBodies[0];
+    const xlsx = this.sheet.columnWidthSource && this.columnFirst > 0;
+    const measureNatural = xlsx && this.measuredBody !== body;
+    this.measuredBody = xlsx ? body : undefined;
     const xlsxLayout = this.sheet.rowHeightSource || this.sheet.cellStyles?.variableHeight;
     const view = this.table.ownerDocument.defaultView;
+    const reset: Array<[HTMLTableRowElement, number]> = [];
+    const rows = body.querySelectorAll<HTMLTableRowElement>('tr[aria-rowindex]');
+    if (measureNatural) {
+      // Clear the saved DOM floor for this pass while retaining heights from other columns in the index.
+      for (const row of rows) {
+        const natural = this.naturalRowHeights.get(row);
+        if (natural === undefined) continue;
+        reset.push([row, Number(row.getAttribute('aria-rowindex')) - 1]);
+        row.style.height = natural;
+      }
+    }
     let changed = false;
-    for (const row of this.table.querySelectorAll<HTMLTableRowElement>('tbody tr[aria-rowindex]')) {
+    for (const row of rows) {
       const index = Number(row.getAttribute('aria-rowindex')) - 1;
       if (fixedRowHeight(this.sheet.rowHeightSource, index)) continue;
       // The used height retains subpixels without depending on the row's distant Y coordinate.
@@ -728,12 +750,45 @@ export class SheetRowWindow {
         height = row.offsetHeight;
         if (height && view) height = Number.parseFloat(view.getComputedStyle(row).height) || height;
       } else height = row.getBoundingClientRect().height;
-      if (height > 0 && this.heights.set(index, height)) {
-        this.measurements.heights.set(index, this.heights.height(index));
+      if (height <= 0 || (xlsx && !measureNatural && height <= heights.height(index))) continue;
+      const minimum = heights.minimum(index);
+      if (xlsx && this.wide) height = this.mergeRowHeightMeasurements(row, index, height, minimum);
+      if (heights.set(index, height)) {
+        const updated = heights.height(index);
+        if (xlsx && updated === minimum) this.measurements.heights.delete(index);
+        else this.measurements.heights.set(index, updated);
         changed = true;
       }
     }
+    for (const [row, index] of reset) row.style.height = `${heights.height(index)}px`;
     return changed;
+  }
+
+  private mergeRowHeightMeasurements(row: HTMLTableRowElement, index: number, height: number, minimum: number): number {
+    const { columnFirst, columnLast } = this;
+    const previous = this.observedRowHeights.get(index);
+    const grows = height - minimum >= .25;
+    if (!previous && !grows) return height;
+    const measurements = (previous ?? [])
+      .filter(entry => entry.first < columnFirst || entry.last > columnLast);
+    if (grows) {
+      let first = columnLast, last = columnFirst;
+      for (const cell of row.cells) {
+        if (cell.tagName !== 'TD' || (!cell.hasChildNodes() && !cell.style.borderTop && !cell.style.borderBottom)) continue;
+        if (cell.classList.contains('xlsxv-column-spacer') && !cell.hasChildNodes()) continue;
+        const col = Number(cell.getAttribute('aria-colindex')) - 1;
+        if (col < columnFirst || cell.rowSpan > 1 || cell.colSpan > 1) {
+          first = columnFirst; last = columnLast;
+          break;
+        }
+        first = Math.min(first, col);
+        last = Math.max(last, col);
+      }
+      measurements.push({ first: first <= last ? first : columnFirst, last: first <= last ? last : columnLast, height });
+    }
+    if (measurements.length) this.observedRowHeights.set(index, measurements);
+    else this.observedRowHeights.delete(index);
+    return measurements.reduce((tallest, entry) => Math.max(tallest, entry.height), height);
   }
 
   private rowOffset(row: number): number {
@@ -796,6 +851,7 @@ export class SheetRowWindow {
       const widthChanged = width > 0 && this.measurements.width !== undefined && Math.abs(width - this.measurements.width) > .5;
       if (widthChanged && (!this.sheet.columnWidthSource || this.sheet.cellStyles?.formats.some(style => style.wrap || style.textRotation))) {
         this.measurements.heights.clear();
+        this.observedRowHeights.clear();
         this.heights = new RowHeights(rowTracks.sourceCount, this.sheet.rowHeights, undefined, rowTracks, this.sheet.rowHeightSource);
         for (const row of this.table.querySelectorAll<HTMLTableRowElement>('tbody tr[aria-rowindex]')) {
           row.style.height = `${this.heights.height(Number(row.getAttribute('aria-rowindex')) - 1)}px`;
@@ -814,7 +870,7 @@ export class SheetRowWindow {
           rowTop = Math.max(0, y + delta);
           restoreTop = nextTrack.scale > 1 ? rowTop / nextTrack.scale : rowTop + headerHeight;
         } else {
-          this.grid.scrollTop += delta;
+          this.grid.scrollTop = (this.mount === this.grid ? top : this.grid.scrollTop) + delta;
           rowTop += delta;
         }
         track = nextTrack; this.first = 0;
@@ -853,15 +909,26 @@ export class SheetRowWindow {
       const columns: ColumnWindow | undefined = this.wide || columnTracks.count < columnTracks.sourceCount
         ? { first: firstColumn, last: lastColumn, cells: row => this.orderedCells(row) } : undefined;
       const body = document.createElement('tbody');
+      const xlsxHeights = this.sheet.columnWidthSource && this.heights;
       let right = 0;
       withFormulaTime(this.sheet, () => withTextMeasurementScope(() => appendRows(body, this.sheet, first, last,
         this.rows.slice(lowerBound(this.rows, first, row => row.index), lowerBound(this.rows, last + 1, row => row.index)),
         { widths: this.widths, columns, renderCell: this.options.renderCell, renderBlankCell: this.options.renderBlankCell,
-          rowHeight: this.heights ? row => this.heights!.height(row) : undefined,
+          rowHeight: xlsxHeights ? row => xlsxHeights.minimum(row) : this.heights ? row => this.heights!.height(row) : undefined,
           rowOffset: row => this.rowOffset(row), clipMerges: true, calculationPending: this.options.calculationPending?.(),
           extendColumns: end => { right = Math.max(right, end); } })));
       // Measure source labels before committing the horizontal window. Growth adds only blank columns at the end.
       if (this.extendRotatedText(right)) continue;
+      if (xlsxHeights) {
+        for (const row of body.rows) {
+          const index = Number(row.getAttribute('aria-rowindex')) - 1;
+          const previous = this.measurements.heights.get(index);
+          if (previous === undefined || previous <= (Number.parseFloat(row.style.height) || 0)) continue;
+          // Rotated overflow can set a row minimum during rendering.
+          this.naturalRowHeights.set(row, row.style.height);
+          row.style.height = `${previous}px`;
+        }
+      }
       if (firstColumn !== this.columnFirst || lastColumn !== this.columnLast) {
         this.table.tHead!.replaceWith(createSheetHeader(this.sheet, this.widths, columns));
       }
@@ -870,6 +937,7 @@ export class SheetRowWindow {
       body.prepend(this.spacer(before));
       body.append(this.spacer(after));
       this.table.tBodies[0].replaceWith(body);
+      if (xlsxHeights) this.schedule();
       break;
     }
     // The browser can clamp to a fractional endpoint even when scrollHeight is rounded.

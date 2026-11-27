@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { resolve } from 'node:path';
 import { createPdfFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
-import { servePdfFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
+import { createPdfAttachmentRangeFixture, servePdfFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
 
 const bytes = Buffer.from(createPdfFixture(600, false, 0, undefined, 20));
 const canvas = (page: Page, index: number) => page.locator(`canvas.pdfv-page[data-page-index="${index}"][data-rendered="true"]`);
@@ -46,6 +47,88 @@ test('reads ranges from the remote PDF, fetches distant pages and cancels when r
     await expect(canvas(page, 500)).toHaveCount(0);
     await expect(page.getByRole('alert')).toHaveCount(0);
     expect(errors).toEqual([]);
+  } finally { await server.close(); }
+});
+
+test('lists remote PDF attachments and cancels held reads on return and replacement', async ({ page }, testInfo) => {
+  const fixture = createPdfAttachmentRangeFixture();
+  const server = await servePdfFixture(fixture.bytes);
+  const largeRanges = () => server.requests.filter(request => request.partial
+    && request.begin <= fixture.payloadOffset && fixture.payloadOffset < request.end);
+  const errors: Error[] = [];
+  page.on('pageerror', error => errors.push(error));
+  server.pauseRanges(fixture.payloadOffset);
+  try {
+    await page.goto(`./?url=${encodeURIComponent(server.url)}&lang=en`);
+    await expect(canvas(page, 0)).toBeVisible();
+    await page.locator('.filens-attachments summary').click();
+    const attachments = page.locator('.filens-attachments');
+    await expect(attachments.getByRole('button', { name: 'large.bin', exact: true })).toBeVisible();
+    expect(largeRanges()).toHaveLength(0);
+    const listingBytes = server.requests.reduce((sum, request) => sum + request.bytesSent, 0);
+    expect(listingBytes).toBeLessThan(fixture.bytes.length / 8);
+    await testInfo.attach('PDF attachment listing transfer', {
+      body: JSON.stringify({ listingBytes, sourceBytes: fixture.bytes.length }), contentType: 'application/json'
+    });
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await attachments.getByRole('button', { name: 'notes.txt', exact: true }).click();
+      await expect(page.locator('.filens-attachment-preview')).toContainText(fixture.text);
+      await page.getByRole('button', { name: 'Back to document', exact: true }).click();
+    }
+    expect(largeRanges()).toHaveLength(0);
+    await attachments.getByRole('button', { name: 'large.bin', exact: true }).click();
+    await expect.poll(() => largeRanges()[0]?.bytesSent).toBe(0);
+    await page.getByRole('button', { name: 'Back to document', exact: true }).click();
+    await expect.poll(() => largeRanges()[0]?.cancelled).toBe(true);
+    await expect(canvas(page, 0)).toBeVisible();
+    await attachments.getByRole('button', { name: 'large.bin', exact: true }).click();
+    await expect.poll(() => largeRanges()[1]?.bytesSent).toBe(0);
+    await page.locator('.wb-upload input[type=file]').setInputFiles({
+      name: 'replacement.txt', mimeType: 'text/plain', buffer: Buffer.from('Replacement document')
+    });
+    await expect.poll(() => largeRanges()[1]?.cancelled).toBe(true);
+    await expect(page.locator('.wb-preview-stage')).toContainText('Replacement document');
+    await expect(page.locator('.filens-attachment-panel')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  } finally { await server.close(); }
+});
+
+for (const compressed of [true, false]) test(`bounds PDF attachment bytes and resolves embedded links (FlateDecode=${compressed})`, async ({ page }) => {
+  const fixture = createPdfAttachmentRangeFixture(true, compressed);
+  const server = await servePdfFixture(fixture.bytes);
+  try {
+    await page.goto('./');
+    const moduleUrl = new URL(`@fs${resolve('packages/pdf/src/index.ts')}`, page.url()).href;
+    const coreUrl = new URL(`@fs${resolve('packages/core/src/index.ts')}`, page.url()).href;
+    const result = await page.evaluate(async ({ moduleUrl, coreUrl, source, size }) => {
+      const { PdfPreviewSession } = await import(/* @vite-ignore */ moduleUrl);
+      const { PREVIEW_CONTAINER_LIMITS } = await import(/* @vite-ignore */ coreUrl);
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;inset:0;width:800px;height:600px';
+      document.body.replaceChildren(host);
+      const budget = { expandedBytes: PREVIEW_CONTAINER_LIMITS.maxExpandedBytes - size + 1 };
+      const session = new PdfPreviewSession(host, { containerContext: { depth: 0, budget } });
+      try {
+        await session.load(source, { descriptor: { source, name: 'bound-attachment.pdf' } });
+        const listed = await session.getAttachments();
+        const entry = listed.find((attachment: { name: string }) => attachment.name === 'notes.txt');
+        const error = await entry.readRaw().then(() => '', (cause: Error) => cause.message);
+        const refunded = budget.expandedBytes === PREVIEW_CONTAINER_LIMITS.maxExpandedBytes - size + 1;
+        budget.expandedBytes--;
+        const descriptor = await entry.readRaw();
+        const pdfPage = await (session as any).document.getPage(1);
+        const [link] = await pdfPage.getAnnotations();
+        return { error, refunded, text: new TextDecoder().decode(descriptor.source), bufferSize: descriptor.source.buffer.byteLength,
+          atLimit: budget.expandedBytes === PREVIEW_CONTAINER_LIMITS.maxExpandedBytes,
+          linked: new TextDecoder().decode(link.attachment.content), linkBufferSize: link.attachment.content.buffer.byteLength };
+      } finally { session.destroy(); }
+    }, { moduleUrl, coreUrl, source: server.url, size: Buffer.byteLength(fixture.text) });
+    expect(result).toEqual({ error: 'Attachment exceeds the expanded preview size limit.', refunded: true,
+      atLimit: true, text: fixture.text, linked: fixture.text, bufferSize: Buffer.byteLength(fixture.text),
+      linkBufferSize: Buffer.byteLength(fixture.text) });
+    expect(server.requests.some(request => request.partial
+      && request.begin <= fixture.payloadOffset && fixture.payloadOffset < request.end)).toBe(false);
   } finally { await server.close(); }
 });
 

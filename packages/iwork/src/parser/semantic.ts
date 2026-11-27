@@ -17,6 +17,7 @@ import type {
   IworkImageAsset,
   PagesBodyBlock,
   PagesLayoutMeasurements,
+  PagesTableCellSource,
   PagesTableMeasurement,
   PagesTableSourceRows,
   ParsedIworkDocument,
@@ -36,6 +37,7 @@ import {
   colorAlpha,
   colorToHex,
   collectStorageObjectAttributeEntries,
+  computeParagraphStarts,
   fillFromValue,
   findRecordByValue,
   getRecord,
@@ -43,8 +45,10 @@ import {
   getRecordValue,
   lineFromValue,
   paddingFromValue,
+  pagesParagraphContentStart,
   pathSourceToGeometry,
   readField,
+  readStorageParagraphText,
   resolveMergedStyle,
   shadowFromValue,
   transformFromGeometry,
@@ -89,7 +93,6 @@ interface PaginatedPagesBodyPage {
   endParagraph: number;
   fragments: PaginatedPagesBodyFragment[];
   leadingTableCharacterIndex?: number;
-  fitOversizedLine?: boolean;
   savedLayout?: true;
 }
 
@@ -121,6 +124,8 @@ interface PaginatedPagesBodyFragment {
   columnCount?: number;
   startVisibleOffset?: number;
   endVisibleOffset?: number;
+  fitOversizedLine?: true;
+  savedLayout?: true;
 }
 
 interface PagesInlineAttachment {
@@ -134,22 +139,34 @@ interface PagesInlineAttachment {
   block: PagesBodyBlock;
   startsPage?: true;
   partitioned?: true;
+  headerRows: number;
 }
 
 interface PagesEstimatedAttachment {
   characterIndex: number;
   height: number;
-  table?: { item: TableItem; rowHeights: number[]; headerRows: number; offsetY: number };
+  table?: { item: TableItem; rowHeights: number[]; headerRows: number; offsetY: number; savedPartition?: true };
+  drawable?: { item: SlideItem; offsetX: number; offsetY: number };
 }
+
+type PagesSplitCells = WeakMap<TextFrame, Pick<PagesTableCellSource, 'cell' | 'estimatedHeight'>>;
 
 interface PagesSavedContinuation {
   cutoff: number;
   leadingTableCharacterIndex?: number;
-  oversizedPartition?: { item: TableItem; measured: PagesTableMeasurement };
+  oversizedPartitions?: PagesSavedPartition[];
+}
+
+interface PagesSavedPartition {
+  item: TableItem;
+  characterIndex: number;
+  heightBeforeAnchor?: number;
+  headerRows: number;
 }
 
 interface PagesEstimatedTablePart {
   pageIndex: number;
+  fragmentIndex?: number;
   rowStart: number;
   rowCount: number;
   headerRows: number;
@@ -158,6 +175,7 @@ interface PagesEstimatedTablePart {
 
 interface PagesTablePart {
   pageIndex: number;
+  fragmentIndex?: number;
   item: TableItem;
   rowStart: number;
   headerRows: number;
@@ -344,6 +362,11 @@ function buildPagesDocument(
 ): ParsedPagesDocument {
   const tableMeasurements = measurements?.tables;
   const tableSourceRows = new WeakMap<TableItem, PagesTableSourceRows | null>();
+  const splitCellSources: PagesSplitCells = new WeakMap();
+  const getSplitCells = (table: TableItem) => table.cells.flatMap(({ row, column, textFrame }) => {
+    const source = splitCellSources.get(textFrame);
+    return source ? [{ row, column, ...source }] : [];
+  });
   const documentRecord = findRecordByType(context.archive, 'TP.DocumentArchive', ['bodyStorage', 'body_storage', 'pageWidth', 'page_width', 'pageHeight', 'page_height']);
   const documentValue = asObject(documentRecord?.value) ?? {};
   const layout = buildPagesLayout(documentValue);
@@ -372,10 +395,11 @@ function buildPagesDocument(
   };
 
   if (bodyStorage) {
+    const pageBreaks = new Set<number>();
     const attachmentText = buildAttachmentTextMap(context.archive, bodyStorage, { documentName: context.archive.sourceName });
-    bodyFrame = buildPagesBodyFrame(context.archive, bodyStorage, attachmentText);
+    bodyFrame = buildPagesBodyFrame(context.archive, bodyStorage, attachmentText, pageBreaks);
     if (bodyFrame) {
-      const bodyText = normalizeStorageText(readField(bodyStorage, ['text']));
+      const bodyText = asArray<string>(readField(bodyStorage, ['text'])).join('');
       paragraphRanges = buildParagraphRanges(bodyText);
       if (attachmentText.size) setPagesRenderedOffsets(paragraphRanges, attachmentText);
       paragraphMetrics = buildPagesParagraphMetrics(bodyFrame.paragraphs, layout.bodyWidth);
@@ -410,7 +434,10 @@ function buildPagesDocument(
         drawableOrder += 1;
         const attachmentHint =
           attachmentPositionHints.get(record.id) ?? attachmentPositionHints.get(drawableRecord.id);
-        return [{ characterIndex, attachmentObject, attachmentId: record.id, drawable, attachmentItem, attachmentHint,
+        const model = attachmentItem.kind === 'table' && getRecordValue(context.archive, readField(drawable, ['tableModel', 'table_model']));
+        const headerRows = model && readField<boolean>(model, ['repeatingHeaderRowsEnabled', 'repeating_header_rows_enabled']) === true
+          ? Number(readField<number>(model, ['numberOfHeaderRows', 'number_of_header_rows']) ?? 0) : 0;
+        return [{ characterIndex, attachmentObject, attachmentId: record.id, drawable, attachmentItem, attachmentHint, headerRows,
           anchorParagraphIndex: findParagraphIndexForCharacter(paragraphRanges, characterIndex) }];
       });
 
@@ -427,40 +454,47 @@ function buildPagesDocument(
       const resumeSavedBody = paginatedBodyPages.length > 0 && estimatedStart < bodyText.length;
       const estimatedParts = new Map<TableItem, PagesEstimatedTablePart[]>();
       const reflowedPartitions = new Map<string, PagesTablePart[]>();
+      const savedTableStarts = new WeakMap<TableItem, { pageIndex: number; item: TableItem }>();
       const preparedSourceRows = new WeakMap<TableItem, number[]>();
-      const continuedRanges: PagesTextRange[] = [];
-      const sectionStarts = new Set<number>();
+      const continuedRanges: Array<PagesTextRange & { savedPageIndex?: number }> = [];
       for (const entry of sectionEntries) {
         if (!entry.refId || entry.index <= 0) continue;
         const index = findParagraphIndexForCharacter(paragraphRanges, entry.index);
         const paragraph = paragraphRanges[index];
-        if (index > 0 && /^\u0004*$/.test(paragraph.text.slice(0, entry.index - paragraph.start))) sectionStarts.add(index);
+        if (index > 0 && entry.index <= paragraph.start + pagesParagraphContentStart(paragraph.text, 0)) pageBreaks.add(index);
       }
-      const estimateAttachments = (from: number, to: number, bodyWidth = layout.bodyWidth, bodyHeight = layout.bodyHeight) => {
+      const estimateAttachments = (from: number, to: number, options: {
+        bodyWidth?: number; bodyHeight?: number; columnStyles?: PagesColumnStyleRange[]; sourcePageIndex?: number
+      } = {}) => {
+        const { bodyWidth = layout.bodyWidth, bodyHeight = layout.bodyHeight, columnStyles, sourcePageIndex } = options;
         const estimatedAttachments = new Map<number, PagesEstimatedAttachment[]>();
         const first = findPagesDrawableIndex(drawableAttachments, from);
+        let columnStyleIndex = 0;
         for (let index = first; index < drawableAttachments.length; index += 1) {
-          const { anchorParagraphIndex, characterIndex, attachmentHint, attachmentItem, attachmentObject, drawable } = drawableAttachments[index];
+          const { anchorParagraphIndex, characterIndex, attachmentHint, attachmentItem, attachmentObject, headerRows: originalHeaderRows } = drawableAttachments[index];
           if (characterIndex >= to) break;
           if (hasAbsolutePagesAttachmentPosition(attachmentHint)) continue;
           const offsetY = asFiniteNumber(readField(attachmentObject, ['vOffset', 'v_offset'])) ?? 0;
+          const left = asFiniteNumber(readField(attachmentObject, ['hOffset', 'h_offset'])) ?? 0;
+          while (columnStyles?.[columnStyleIndex] && columnStyles[columnStyleIndex].end <= characterIndex) columnStyleIndex += 1;
+          const style = columnStyles?.[columnStyleIndex];
+          const columnWidth = style && style.start <= characterIndex ? pagesMinimumColumnWidth(style.columns, bodyWidth) : undefined;
           const estimated: PagesEstimatedAttachment = { characterIndex, height: Math.max(0, attachmentItem.transform.height + offsetY) };
           if (attachmentItem.kind === 'table') {
-            const left = asFiniteNumber(readField(attachmentObject, ['hOffset', 'h_offset'])) ?? 0;
-            const width = fitPagesInlineTableWidth(attachmentItem.transform.width, bodyWidth, left);
-            const model = getRecordValue(context.archive, readField(drawable, ['tableModel', 'table_model']));
-            const originalHeaderRows = readField<boolean>(model, ['repeatingHeaderRowsEnabled', 'repeating_header_rows_enabled']) === true
-              ? Number(readField<number>(model, ['numberOfHeaderRows', 'number_of_header_rows']) ?? 0) : 0;
-            const measured = resolvePagesTableMeasurement(attachmentItem, width, tableMeasurements);
-            const source = measurements?.sourceRows.get(attachmentItem.id);
-            const measuredRows = source && Math.abs(source.width - width) <= 0.5
-              ? attachmentItem.rows.map((_, row) => source.heights.get(row) ?? measured?.rows[row]) : measured?.rows;
+            const savedStart = savedTableStarts.get(attachmentItem);
+            const savedPartition = savedStart && savedStart.pageIndex === sourcePageIndex ? savedStart.item : undefined;
+            const item = savedPartition ?? attachmentItem;
+            const width = fitPagesInlineTableWidth(item.transform.width, columnWidth ?? bodyWidth, left);
+            // A continued table keeps one width so its rows wrap the same way in unequal columns.
+            if (columnWidth != null) item.transform.width = width;
             const { rowHeights, headerRows, height, sourceRows } = preparePagesTableRows(
-              attachmentItem, width, bodyHeight, originalHeaderRows, measuredRows
+              item, width, bodyHeight, originalHeaderRows, splitCellSources, measurements
             );
-            if (sourceRows) preparedSourceRows.set(attachmentItem, sourceRows);
+            if (sourceRows) preparedSourceRows.set(item, sourceRows);
             estimated.height = Math.max(0, height + offsetY);
-            estimated.table = { item: attachmentItem, rowHeights, headerRows, offsetY };
+            estimated.table = { item, rowHeights, headerRows, offsetY, ...(savedPartition ? { savedPartition: true } : {}) };
+          } else if (columnWidth != null) {
+            estimated.drawable = { item: attachmentItem, offsetX: left, offsetY };
           }
           const paragraphAttachments = estimatedAttachments.get(anchorParagraphIndex) ?? [];
           paragraphAttachments.push(estimated);
@@ -473,28 +507,35 @@ function buildPagesDocument(
           pushUniqueArchiveWarning(context.archive, 'Pages saved layout does not cover the end of the body; estimating the remaining pages.');
         }
         const firstPageIndex = resumeSavedBody ? Math.max(layoutStatePageCount, paginatedBodyPages.at(-1)!.pageIndex + 1) : 0;
+        const columnStyles = readPagesColumnStyles(context.archive, bodyStorage, bodyText.length);
+        const useColumns = columnStyles.some(style => style.end > estimatedStart) || bodyText.indexOf('\u000c', estimatedStart) >= 0;
         const estimatedPages = paginatePagesBodyParagraphs(
-          bodyFrame.paragraphs, paragraphRanges, layout, sectionStarts, estimateAttachments(estimatedStart, bodyText.length),
-          estimatedParts, estimatedStart, firstPageIndex
+          bodyFrame.paragraphs, paragraphRanges, layout, pageBreaks,
+          estimateAttachments(estimatedStart, bodyText.length, { columnStyles }),
+          estimatedParts, estimatedStart, firstPageIndex, bodyText.length, undefined, useColumns ? columnStyles : undefined
         );
         paginatedBodyPages = paginatedBodyPages.concat(estimatedPages);
       }
 
-      const placeInlineAttachments = () => {
+      const placeInlineAttachments = (draft = false) => {
         inlineAttachmentsByPage.clear();
         pencilItemsByPage.clear();
         const tableOnlyPages = new Map<number, PaginatedPagesBodyPage>();
         let continuedIndex = 0;
         for (const [index, attachment] of drawableAttachments.entries()) {
           const attachmentOrder = index + 1;
-          const { attachmentObject, attachmentId, drawable, attachmentItem, attachmentHint, anchorParagraphIndex } = attachment;
+          const { attachmentObject, attachmentId, drawable, attachmentItem, attachmentHint, anchorParagraphIndex, headerRows } = attachment;
           const estimated = attachmentItem.kind === 'table' ? estimatedParts.get(attachmentItem) : undefined;
           let range = continuedRanges[continuedIndex];
           while (range && attachment.characterIndex >= range.location + range.length) range = continuedRanges[++continuedIndex];
-          const continued = range != null && attachment.characterIndex >= range.location;
+          const movedRange = range != null && attachment.characterIndex >= range.location ? range : undefined;
+          const movedSavedPage = movedRange?.savedPageIndex;
+          const originalPage = movedSavedPage == null ? undefined : shiftSavedPage(movedSavedPage);
+          const continued = movedRange != null && originalPage == null;
           const moved = continued || (resumeSavedBody && attachment.characterIndex >= estimatedStart);
           const savedHint = moved && !hasAbsolutePagesAttachmentPosition(attachmentHint) ? undefined : attachmentHint;
-          const pageIndex = estimated?.[0]?.pageIndex ?? (savedHint && !continued
+          const followSavedHint = savedHint && !continued && savedHint.pageIndex !== originalPage;
+          const pageIndex = estimated?.[0]?.pageIndex ?? (followSavedHint
             ? Math.max(0, savedHint.pageIndex)
             : findBodyPageIndexForCharacter(paginatedBodyPages, attachment.characterIndex, anchorParagraphIndex));
           const pageInfo = findPagesBodyPageByIndex(paginatedBodyPages, pageIndex) ?? paginatedBodyPages[paginatedBodyPages.length - 1];
@@ -502,20 +543,24 @@ function buildPagesDocument(
             continue;
           }
 
+          const savedStart = attachmentItem.kind === 'table' ? savedTableStarts.get(attachmentItem) : undefined;
+          const repairedStart = savedStart && reflowedPartitions.has(savedStart.item.id) ? savedStart : undefined;
+          const partitionOriginalPage = repairedStart ? shiftSavedPage(repairedStart.pageIndex) : followSavedHint ? undefined : originalPage;
           const itemParts = attachmentItem.kind !== 'table' ? [] : estimated
             ? slicePagesTableItems(attachmentItem, estimated)
-            : continued ? [] : resolvePagesTableItemPartitions(attachmentItem, pageIndex, tablePartitionHints)
-              .flatMap(part => reflowedPartitions.get(part.item.id) ?? [part]);
+            : continued && !repairedStart ? [] : resolvePagesTableItemPartitions(attachmentItem, partitionOriginalPage ?? pageIndex, tablePartitionHints)
+              .flatMap((part, index) => reflowedPartitions.get(part.item.id) ??
+                [index === 0 && partitionOriginalPage != null ? { ...part, pageIndex } : part]);
           const renderParts = itemParts.length
             ? itemParts
-            : [{ pageIndex, item: attachmentItem, rowStart: 0, headerRows: 0 }];
+            : [{ pageIndex, fragmentIndex: undefined, item: attachmentItem, rowStart: 0, headerRows: 0 }];
           const repeat = estimated?.find(part => part.headerRows > 0)?.headerRows ?? 0;
           const clippedHeader = repeat > 0 && attachmentItem.kind === 'table' && attachmentItem.cells.some(cell =>
             cell.row < repeat && cell.row + cell.rowSpan > repeat);
 
           for (let partIndex = 0; partIndex < renderParts.length; partIndex += 1) {
             const part = renderParts[partIndex];
-            const startsPage = partIndex > 0;
+            const startsPage = partIndex > 0 || part.pageIndex !== pageIndex;
             let partPageInfo = startsPage ? findPagesBodyPageByIndex(paginatedBodyPages, part.pageIndex) ?? tableOnlyPages.get(part.pageIndex) : pageInfo;
             if (!partPageInfo && startsPage && !estimated && pageInfo?.savedLayout && part.pageIndex < layoutStatePageCount) {
               const start = attachment.characterIndex + 1;
@@ -526,9 +571,9 @@ function buildPagesDocument(
               };
               tableOnlyPages.set(part.pageIndex, partPageInfo);
             }
-            const partHint = partIndex === 0 ? savedHint : { pageIndex: part.pageIndex };
-            const fragmentIndex = startsPage ? 0
-              : resolvePagesAttachmentFragmentIndex(partPageInfo, attachment.characterIndex, anchorParagraphIndex);
+            const partHint = startsPage ? { pageIndex: part.pageIndex } : savedHint;
+            const fragmentIndex = part.fragmentIndex ?? (startsPage ? 0
+              : resolvePagesAttachmentFragmentIndex(partPageInfo, attachment.characterIndex, anchorParagraphIndex));
             positionPagesAttachmentItem({
               archive: context.archive,
               item: part.item,
@@ -547,23 +592,27 @@ function buildPagesDocument(
             });
 
             const flowPositioned = !hasAbsolutePagesAttachmentPosition(partHint);
-            if (flowPositioned && partPageInfo && part.item.kind === 'table' && part.item.autoFitRows &&
+            const savedLayout = partPageInfo?.savedLayout || partPageInfo?.fragments[fragmentIndex]?.savedLayout;
+            if (draft && !startsPage && itemParts.length > 1 && !estimated && savedLayout && flowPositioned &&
+              attachmentItem.kind === 'table' && part.item.kind === 'table') {
+              savedTableStarts.set(attachmentItem, { pageIndex, item: part.item });
+            }
+            if (flowPositioned && partPageInfo && part.item.kind === 'table' &&
               attachmentItem.kind === 'table' && !tableSourceRows.has(part.item)) {
-              if (startsPage && !estimated && partPageInfo.savedLayout) {
+              if (itemParts.length > 1 && !estimated && savedLayout && part.item.autoFitRows) {
                 tableSourceRows.set(part.item, {
                   tableId: part.item.id, repeatedHeaders: 0, rows: part.item.rows.map((_, row) => row), savedPartition: true
                 });
-              } else if (!partPageInfo.savedLayout) {
+              } else if (!savedLayout) {
                 const source = preparedSourceRows.get(attachmentItem);
                 const rows = part.item.rows.map((_, index) => {
                   if (index < part.headerRows && clippedHeader) return -1;
                   const row = index < part.headerRows ? index : part.rowStart + index - part.headerRows;
                   return source?.[row] ?? row;
                 });
-                // Split cell content can affect the heights of neighboring rows in the same table.
-                const containsSplitCells = source && rows.some((row, index) => index >= part.headerRows && row < 0);
-                tableSourceRows.set(part.item, !containsSplitCells && rows.some(row => row >= 0)
-                  ? { tableId: attachmentItem.id, repeatedHeaders: part.headerRows, rows } : null);
+                const cells = source ? getSplitCells(part.item) : [];
+                tableSourceRows.set(part.item, cells.length || (part.item.autoFitRows && rows.some(row => row >= 0))
+                  ? { tableId: attachmentItem.id, repeatedHeaders: part.headerRows, rows, ...(cells.length ? { cells } : {}) } : null);
               }
             }
             const pageBucket = inlineAttachmentsByPage.get(part.pageIndex) ?? [];
@@ -578,6 +627,7 @@ function buildPagesDocument(
                 : 0,
               ...(startsPage ? { startsPage: true as const } : {}),
               ...(itemParts.length > 1 ? { partitioned: true as const } : {}),
+              headerRows: startsPage ? 0 : headerRows,
               item: part.item,
               block: {
                 id: `pages-attachment-${part.pageIndex + 1}-${attachmentOrder}-${partIndex + 1}`,
@@ -591,9 +641,9 @@ function buildPagesDocument(
 
           const firstRenderPart = renderParts[0];
           const pencilItems = buildPencilAnnotationItems(context, drawable, attachmentOrder, firstRenderPart.item.transform);
-          const pagePencilItems = pencilItemsByPage.get(pageIndex) ?? [];
+          const pagePencilItems = pencilItemsByPage.get(firstRenderPart.pageIndex) ?? [];
           pagePencilItems.push(...pencilItems);
-          pencilItemsByPage.set(pageIndex, pagePencilItems);
+          pencilItemsByPage.set(firstRenderPart.pageIndex, pagePencilItems);
         }
         if (tableOnlyPages.size) {
           paginatedBodyPages = [...paginatedBodyPages, ...tableOnlyPages.values()].sort((left, right) => left.pageIndex - right.pageIndex);
@@ -601,58 +651,126 @@ function buildPagesDocument(
       };
       const sourceTransforms = paginatedBodyPages.some(page => page.savedLayout)
         ? drawableAttachments.map(({ attachmentItem }) => ({ ...attachmentItem.transform })) : [];
-      placeInlineAttachments();
+      placeInlineAttachments(true);
       const continuations = findSavedPagesContinuations(bodyFrame, paginatedBodyPages, paragraphRanges, layout, inlineAttachmentsByPage, tableMeasurements);
       if (continuations.size) {
         // Draft placement may have fitted an object to the original column.
         drawableAttachments.forEach(({ attachmentItem }, index) => Object.assign(attachmentItem.transform, sourceTransforms[index]));
         const previousParts = Array.from(estimatedParts.values());
+        const saveReflowedPartition = (partition: TableItem, sourceRows?: number[]) => {
+          const ranges = estimatedParts.get(partition);
+          if (!ranges?.length) return;
+          const parts = slicePagesTableItems(partition, ranges);
+          for (const part of parts) {
+            const rows = part.item.rows.map((_, index) => {
+              if (index < part.headerRows) return -1;
+              const row = part.rowStart + index - part.headerRows;
+              return sourceRows?.[row] ?? row;
+            });
+            const cells = sourceRows ? getSplitCells(part.item) : [];
+            tableSourceRows.set(part.item, cells.length || rows.some(row => row >= 0)
+              ? { tableId: partition.id, repeatedHeaders: part.headerRows, rows, savedPartition: true, ...(cells.length ? { cells } : {}) } : null);
+          }
+          reflowedPartitions.set(partition.id, parts);
+        };
         const repaired: PaginatedPagesBodyPage[] = [];
         let inserted = 0;
+        const appendPage = (page: PaginatedPagesBodyPage) => {
+          const previous = repaired.at(-1);
+          if (previous?.pageIndex !== page.pageIndex) {
+            repaired.push(page);
+            return;
+          }
+          // One physical page can contain both saved regions and regions that were repaginated.
+          if (previous.savedLayout) {
+            previous.fragments = previous.fragments.map(fragment => ({ ...fragment, savedLayout: true }));
+            previous.savedLayout = undefined;
+          }
+          previous.fragments = previous.fragments.concat(page.savedLayout
+            ? page.fragments.map(fragment => ({ ...fragment, savedLayout: true })) : page.fragments);
+          previous.endParagraph = page.endParagraph;
+        };
         for (const page of paginatedBodyPages) {
           const pageIndex = page.pageIndex + inserted;
-          const plan = continuations.get(page.pageIndex);
-          if (!plan) {
+          const plans = continuations.get(page.pageIndex);
+          if (!plans) {
             repaired.push({ ...page, pageIndex });
             continue;
           }
-          const { cutoff, leadingTableCharacterIndex, oversizedPartition } = plan;
-          const prefix = oversizedPartition ? undefined
-            : keepPagesBodyBefore(page, cutoff, paragraphRanges, bodyText.length, leadingTableCharacterIndex);
-          const end = page.fragments.at(-1)!.rangeEnd!;
-          const rect = oversizedPartition && page.fragments[0].rect;
-          const continuationLayout = rect ? { ...layout, bodyWidth: rect.width,
-            bodyHeight: Math.max(1, Math.min(rect.height, layout.bodyHeight - rect.y)) } : layout;
-          const partition = oversizedPartition?.item;
-          const prepared = partition && preparePagesTableRows(partition, partition.transform.width, continuationLayout.bodyHeight,
-            0, oversizedPartition.measured.rows);
-          const leading = partition && prepared && leadingTableCharacterIndex != null ? {
-            characterIndex: leadingTableCharacterIndex,
-            table: { item: partition, rowHeights: prepared.rowHeights, headerRows: 0, offsetY: 0 }
-          } : undefined;
-          const continuation = paginatePagesBodyParagraphs(
-            bodyFrame.paragraphs, paragraphRanges, continuationLayout, sectionStarts,
-            estimateAttachments(cutoff, end, continuationLayout.bodyWidth, continuationLayout.bodyHeight),
-            estimatedParts, cutoff, pageIndex + Number(!!prefix), end, leading
-          );
-          if (!continuation.length) {
-            repaired.push({ ...page, pageIndex });
-            continue;
-          }
-          if (partition && prepared) {
-            const parts = slicePagesTableItems(partition, estimatedParts.get(partition) ?? []);
-            for (const part of parts) {
-              const rows = part.item.rows.map((_, index) => prepared.sourceRows?.[part.rowStart + index] ?? part.rowStart + index);
-              tableSourceRows.set(part.item, rows.some(row => row < 0) ? null
-                : { tableId: partition.id, repeatedHeaders: 0, rows, savedPartition: true });
+          const firstPlan = plans.values().next().value!;
+          const separateRegions = page.fragments.length > 1 &&
+            (firstPlan.oversizedPartitions != null || page.fragments.every(fragment => fragment.rect));
+          const regions = separateRegions ? page.fragments.map((fragment, index) => ({
+            ...page, fragments: [fragment], startParagraph: fragment.startParagraph, endParagraph: fragment.endParagraph,
+            leadingTableCharacterIndex: index === 0 ? page.leadingTableCharacterIndex : undefined
+          })) : [page];
+          for (const [index, region] of regions.entries()) {
+            const regionPageIndex = Math.max(pageIndex, repaired.at(-1)?.pageIndex ?? pageIndex);
+            const plan = separateRegions ? plans.get(index) : firstPlan;
+            const fragment = region.fragments[0];
+            const end = region.fragments.at(-1)!.rangeEnd!;
+            const recordMovedRange = (to: number) => {
+              const location = fragment.rangeStart!;
+              if (regionPageIndex > pageIndex && location < to) {
+                continuedRanges.push({ location, length: to - location, savedPageIndex: page.pageIndex });
+              }
+            };
+            if (!plan) {
+              appendPage({ ...region, pageIndex: regionPageIndex });
+              recordMovedRange(end);
+              continue;
             }
-            reflowedPartitions.set(partition.id, parts);
-            if (rect) for (const nextPage of continuation) nextPage.fragments[0].rect = rect;
+            const { cutoff, leadingTableCharacterIndex, oversizedPartitions } = plan;
+            const prefix = oversizedPartitions ? undefined
+              : keepPagesBodyBefore(region, cutoff, paragraphRanges, bodyText.length, leadingTableCharacterIndex);
+            const laterPartitions = inlineAttachmentsByPage.get(page.pageIndex)?.some(attachment =>
+              attachment.partitioned && !attachment.startsPage && attachment.characterIndex >= cutoff && attachment.characterIndex < end);
+            const rect = separateRegions || oversizedPartitions || laterPartitions ? fragment.rect : undefined;
+            const continuationLayout = rect ? { ...layout, bodyWidth: rect.width,
+              bodyHeight: Math.max(1, Math.min(rect.height, layout.bodyHeight - rect.y)) } : layout;
+            const leading = oversizedPartitions?.map(({ item, characterIndex, headerRows, heightBeforeAnchor }) => {
+              const width = item.transform.width;
+              const prepared = preparePagesTableRows(item, width, continuationLayout.bodyHeight, headerRows,
+                splitCellSources, measurements);
+              return { characterIndex, usedHeight: heightBeforeAnchor ?? 0, sourceRows: prepared.sourceRows,
+                table: { item, rowHeights: prepared.rowHeights, headerRows: prepared.headerRows, offsetY: 0 } };
+            });
+            const followingAttachments = estimateAttachments(cutoff, end, {
+              bodyWidth: continuationLayout.bodyWidth, bodyHeight: continuationLayout.bodyHeight, sourcePageIndex: page.pageIndex
+            });
+            const continuation = paginatePagesBodyParagraphs(
+              bodyFrame.paragraphs, paragraphRanges, continuationLayout, pageBreaks, followingAttachments,
+              estimatedParts, cutoff, regionPageIndex + Number(!!prefix), end, leading
+            );
+            if (!continuation.length) {
+              appendPage({ ...region, pageIndex: regionPageIndex });
+              recordMovedRange(end);
+              continue;
+            }
+            recordMovedRange(cutoff);
+            if (cutoff < end) continuedRanges.push({ location: cutoff, length: end - cutoff });
+            if (rect || oversizedPartitions) {
+              for (const nextPage of continuation) {
+                nextPage.fragments[0].rect = rect;
+                nextPage.fragments[0].columnCount = fragment.columnCount;
+              }
+            }
+            for (const { table, sourceRows } of leading ?? []) saveReflowedPartition(table.item, sourceRows);
+            if (oversizedPartitions?.[0].heightBeforeAnchor != null) {
+              // Keep the saved range around the anchor on the first page of the repaired flow.
+              const first = continuation[0];
+              const savedPrefix = keepPagesBodyBefore(region, first.fragments[0].rangeEnd ?? cutoff, paragraphRanges, bodyText.length);
+              if (savedPrefix) continuation[0] = { ...savedPrefix, pageIndex: first.pageIndex };
+            }
+            for (const attachments of followingAttachments.values()) {
+              for (const { table } of attachments) {
+                if (table?.savedPartition) saveReflowedPartition(table.item, preparedSourceRows.get(table.item));
+              }
+            }
+            if (prefix) appendPage({ ...prefix, pageIndex: regionPageIndex });
+            for (const nextPage of continuation) appendPage(nextPage);
           }
-          if (prefix) repaired.push({ ...prefix, pageIndex });
-          for (const nextPage of continuation) repaired.push(nextPage);
-          if (cutoff < end) continuedRanges.push({ location: cutoff, length: end - cutoff });
-          inserted += continuation.length + Number(!!prefix) - 1;
+          inserted += repaired.at(-1)!.pageIndex - pageIndex;
           continuationOffsets.push({ pageIndex: page.pageIndex, count: inserted });
         }
         paginatedBodyPages = repaired;
@@ -752,12 +870,13 @@ function buildPagesDocument(
         pageIndex,
         documentRecord?.id
       );
-      if (bodyPage.fitOversizedLine) {
-        for (const block of bodyFlowBlocks) {
-          block.paragraphs = block.paragraphs?.map(paragraph => fitPagesParagraphLine(paragraph, layout.bodyWidth, layout.bodyHeight));
-        }
+      for (const block of bodyFlowBlocks) {
+        const fragment = bodyPage.fragments[block.fragmentIndex];
+        if (!fragment.fitOversizedLine) continue;
+        block.paragraphs = block.paragraphs?.map(paragraph => fitPagesParagraphLine(paragraph,
+          fragment.rect?.width ?? layout.bodyWidth, fragment.rect?.height ?? layout.bodyHeight));
       }
-      savedBodyText = appendPagesBodyItems(bodyFrame, bodyPage, layout, pageIndex, bodyFlowBlocks, items, bodyFlows, paragraphRanges);
+      savedBodyText = appendPagesBodyItems(bodyFrame, bodyPage, layout, pageIndex, bodyFlowBlocks, items, bodyFlows, paragraphRanges, tableSourceRows);
       blocks.push(...bodyFlowBlocks.map(toPagesBodyBlock));
     } else if (inlineAttachments.length) {
       for (const attachment of inlineAttachments) {
@@ -834,11 +953,13 @@ function buildPagesDocument(
 function buildPagesBodyFrame(
   archive: IworkArchiveIndex,
   storage: AnyObject,
-  attachmentTextMap: ReadonlyMap<number, string[]>
+  attachmentTextMap: ReadonlyMap<number, string[]>,
+  pagesParagraphBreaks?: Set<number>
 ): TextFrame | undefined {
   const frame = buildTextFrameFromStorage(archive, storage, {
     padding: { top: 0, right: 0, bottom: 0, left: 0 },
-    attachmentTextMap
+    attachmentTextMap,
+    pagesBody: { paragraphBreaks: pagesParagraphBreaks }
   });
   for (const paragraph of frame?.paragraphs ?? []) {
     for (const run of paragraph.runs) run.text = stripObjectMarker(run.text);
@@ -1920,6 +2041,7 @@ function normalizePagesPageFragments(
 
 function readPagesColumnStyles(archive: IworkArchiveIndex, storage: AnyObject, textLength: number): PagesColumnStyleRange[] {
   const entries = readPagesBodyAttributes(readField(storage, ['tableLayoutStyle', 'table_layout_style']))
+    .filter(({ index }) => Number.isInteger(index) && index >= 0 && index < textLength)
     .filter((entry, index, list) => index === 0 || entry.refId !== list[index - 1].refId);
   const layouts = new Map<number, PagesColumnLayout | undefined>();
   return entries.flatMap(({ index: start, refId }, index) => {
@@ -2032,6 +2154,13 @@ function pagesColumnRect(columns: PagesColumnLayout, rect: PagesBodyFragmentRect
   }
   const width = (1 - columns.gap * (columns.count - 1)) * rect.width / columns.count;
   return { ...rect, x: rect.x + index * (width + columns.gap * rect.width), width };
+}
+
+function pagesMinimumColumnWidth(columns: PagesColumnLayout, width: number): number | undefined {
+  const fraction = 'tracks' in columns ? columns.tracks.reduce((min, track) => Math.min(min, track.width), 1)
+    : (1 - columns.gap * (columns.count - 1)) / columns.count;
+  const minimum = fraction * width;
+  return minimum >= 1 ? minimum : undefined;
 }
 
 function estimateSavedPagesColumns(
@@ -2241,40 +2370,62 @@ function paginatePagesBodyParagraphs(
   paragraphs: TextParagraph[],
   ranges: PagesParagraphRange[],
   layout: PagesLayoutModel,
-  sectionStarts: ReadonlySet<number>,
+  pageBreaks: ReadonlySet<number>,
   attachments: ReadonlyMap<number, PagesEstimatedAttachment[]>,
   tableParts: Map<TableItem, PagesEstimatedTablePart[]>,
   bodyStart: number,
   firstPageIndex: number,
   bodyEnd = ranges.at(-1)?.end ?? 0,
-  leading?: Pick<PagesEstimatedAttachment, 'characterIndex'> & { table: NonNullable<PagesEstimatedAttachment['table']> }
+  leading?: Array<{ characterIndex: number; table: NonNullable<PagesEstimatedAttachment['table']>; usedHeight: number }>,
+  columnStyles?: PagesColumnStyleRange[]
 ): PaginatedPagesBodyPage[] {
   const pages: PaginatedPagesBodyPage[] = [];
-  const { bodyWidth, bodyHeight } = layout;
+  let { bodyWidth, bodyHeight } = layout;
+  let columns: PagesColumnLayout | undefined;
+  let columnIndex = 0, columnStyleIndex = 0, bandTop = 0, bandHeight = 0;
+  const bandFragments: PaginatedPagesBodyFragment[] = [];
+  let rect: PagesBodyFragmentRect | undefined;
   const textLength = ranges.at(-1)?.end ?? 0;
   let pageIndex = firstPageIndex;
-  let start = bodyStart, end = bodyStart, usedHeight = 0;
-  let hasContent = false;
+  let start = bodyStart, end = bodyStart, usedHeight = leading?.[0]?.usedHeight ?? 0;
+  let hasContent = usedHeight > 0;
   let leadingTableCharacterIndex: number | undefined;
   let fitOversizedLine = false;
 
-  const finishPage = (nextStart = end) => {
+  const updateRegion = () => {
+    if (!columnStyles) return;
+    const band = { x: 0, y: bandTop, width: layout.bodyWidth, height: layout.bodyHeight - bandTop };
+    rect = columns ? pagesColumnRect(columns, band, columnIndex) : band;
+    bodyWidth = rect.width;
+    bodyHeight = rect.height;
+  };
+
+  const finishRegion = (nextStart = end) => {
     if (hasContent) {
       const paragraph = findParagraphIndexForCharacter(ranges, start);
       const sourceStart = start + Number(start === ranges[paragraph].start && ranges[paragraph].text.startsWith('\u0004'));
-      const fragment = sourceStart < end
+      const textFragment = sourceStart < end
         ? mapPagesTextRangeToParagraphFragment(ranges, { range: { location: sourceStart, length: end - sourceStart } }, textLength)
         : undefined;
-      pages.push({
+      const fragment = textFragment ?? { startParagraph: paragraph, endParagraph: paragraph };
+      if (fitOversizedLine) fragment.fitOversizedLine = true;
+      if (rect) {
+        fragment.rect = rect;
+        bandFragments.push(fragment);
+        bandHeight = Math.max(bandHeight, usedHeight);
+      }
+      const page = pages.at(-1);
+      if (page?.pageIndex === pageIndex) {
+        page.fragments.push(fragment);
+        page.endParagraph = fragment.endParagraph;
+      } else pages.push({
         pageIndex,
-        startParagraph: fragment?.startParagraph ?? paragraph,
-        endParagraph: fragment?.endParagraph ?? paragraph,
-        fragments: [fragment ?? { startParagraph: paragraph, endParagraph: paragraph }],
-        leadingTableCharacterIndex,
-        ...(fitOversizedLine ? { fitOversizedLine } : {})
+        startParagraph: fragment.startParagraph,
+        endParagraph: fragment.endParagraph,
+        fragments: [fragment],
+        leadingTableCharacterIndex
       });
     }
-    pageIndex += 1;
     start = end = nextStart;
     usedHeight = 0;
     hasContent = false;
@@ -2282,8 +2433,36 @@ function paginatePagesBodyParagraphs(
     fitOversizedLine = false;
   };
 
+  const nextPage = () => {
+    pageIndex += 1;
+    columnIndex = bandTop = bandHeight = 0;
+    bandFragments.length = 0;
+  };
+
+  const nextRegion = (nextStart = end, forcePage = false) => {
+    finishRegion(nextStart);
+    const count = !columns ? 1 : 'tracks' in columns ? columns.tracks.length : columns.count;
+    if (forcePage || ++columnIndex >= count) nextPage();
+    updateRegion();
+  };
+
+  const changeColumns = (nextColumns: PagesColumnLayout | undefined, offset: number) => {
+    if (nextColumns === columns) return;
+    finishRegion(offset);
+    const height = Math.min(layout.bodyHeight - bandTop, Math.ceil(bandHeight));
+    for (const fragment of bandFragments) fragment.rect = { ...fragment.rect!, height };
+    bandTop += height;
+    if (bandTop >= layout.bodyHeight) nextPage();
+    columns = nextColumns;
+    bandHeight = columnIndex = 0;
+    bandFragments.length = 0;
+    updateRegion();
+  };
+
+  updateRegion();
   const append = (from: number, to: number, height: number, visible: boolean, spaceBefore = 0) => {
-    if ((usedHeight > 0 || hasContent) && usedHeight + height + spaceBefore > bodyHeight) finishPage(from);
+    if ((usedHeight > 0 || hasContent) && usedHeight + height + spaceBefore > bodyHeight) nextRegion(from);
+    if (!hasContent && usedHeight === 0 && bandTop > 0 && height > bodyHeight) nextRegion(from, true);
     if (usedHeight > 0 || hasContent) usedHeight += spaceBefore;
     usedHeight += height;
     hasContent ||= visible;
@@ -2293,18 +2472,21 @@ function paginatePagesBodyParagraphs(
   const appendTable = (table: NonNullable<PagesEstimatedAttachment['table']>, characterIndex: number, textStart: number, startsPage = false) => {
     const headerRows = Math.min(Math.max(0, table.headerRows), table.rowHeights.length - 1);
     const headerHeight = table.rowHeights.slice(0, headerRows).reduce((sum, height) => sum + height, 0);
-    const groups = groupPagesTableRows(table.item, table.rowHeights, headerRows, bodyHeight);
+    const groups = groupPagesTableRows(table.item, table.rowHeights, headerRows, layout.bodyHeight);
     const parts: PagesEstimatedTablePart[] = [];
     let groupIndex = 0;
     while (groupIndex < groups.length) {
       const first = groupIndex === 0;
       const { start: rowStart, height: firstGroupHeight } = groups[groupIndex];
-      const repeat = !first && rowStart >= headerRows && headerHeight + firstGroupHeight <= bodyHeight ? headerRows : 0;
       const offset = first ? Math.max(0, table.offsetY) : 0;
-      const repeatedHeight = repeat ? headerHeight : 0;
       if (first && (hasContent || usedHeight > 0) && usedHeight + offset + firstGroupHeight > bodyHeight) {
-        finishPage(characterIndex);
+        nextRegion(startsPage ? textStart : characterIndex);
       }
+      if (bandTop > 0 && !hasContent && usedHeight + offset + firstGroupHeight > bodyHeight) {
+        nextRegion(first && !startsPage ? characterIndex : textStart, true);
+      }
+      const repeat = !first && rowStart >= headerRows && headerHeight + firstGroupHeight <= bodyHeight ? headerRows : 0;
+      const repeatedHeight = repeat ? headerHeight : 0;
       const available = bodyHeight - usedHeight - offset;
       let height = repeatedHeight, rowEnd = rowStart;
       do {
@@ -2312,41 +2494,39 @@ function paginatePagesBodyParagraphs(
         height += group.height;
         rowEnd = group.end;
       } while (groupIndex < groups.length && height + groups[groupIndex].height <= available);
-      parts.push({ pageIndex, rowStart, rowCount: rowEnd - rowStart, headerRows: repeat, height });
+      const page = pages.at(-1);
+      const fragmentIndex = columnStyles ? (page?.pageIndex === pageIndex ? page.fragments.length : 0) : undefined;
+      parts.push({ pageIndex, fragmentIndex, rowStart, rowCount: rowEnd - rowStart, headerRows: repeat, height });
       end = textStart;
       usedHeight += height + offset;
       hasContent = true;
-      if (startsPage || !first) leadingTableCharacterIndex = characterIndex;
-      if (groupIndex < groups.length) finishPage(textStart);
+      if (startsPage || !first) leadingTableCharacterIndex ??= characterIndex;
+      if (groupIndex < groups.length) nextRegion(textStart);
     }
     tableParts.set(table.item, parts);
   };
 
-  if (leading) appendTable(leading.table, leading.characterIndex, bodyStart, true);
-  const firstParagraph = findParagraphIndexForCharacter(ranges, bodyStart);
-  for (let index = firstParagraph; index < paragraphs.length; index += 1) {
+  const appendParagraphRange = (index: number, rangeStart: number, rangeEnd: number, paragraphAttachments: PagesEstimatedAttachment[]) => {
     const paragraph = paragraphs[index];
     const range = ranges[index];
-    if (range.start >= bodyEnd) break;
-    const rangeStart = Math.max(range.start, bodyStart);
-    const rangeEnd = Math.min(range.end, bodyEnd);
-    if (sectionStarts.has(index) && (end > start || hasContent)) finishPage(rangeStart);
-    const paragraphAttachments = attachments.get(index) ?? [];
     const measuredParagraph = rangeStart === range.start && rangeEnd === range.end ? paragraph
       : sliceTextParagraph(paragraph, resolvePagesRenderedOffset(range, rangeStart), resolvePagesRenderedOffset(range, rangeEnd));
     if (!measuredParagraph && !paragraphAttachments.length) {
       if (!hasContent) start = rangeEnd;
       end = rangeEnd;
-      continue;
+      return;
     }
     const gap = rangeStart === range.start ? pagesParagraphGap(paragraph, paragraphs[index - 1]) : 0;
     const visible = Boolean(collectParagraphVisibleText(measuredParagraph).trim());
-    const textHeight = measuredParagraph && (visible || !paragraphAttachments.length)
-      ? estimateParagraphContentHeight(measuredParagraph, bodyWidth, true, bodyHeight) : 0;
-    const height = paragraphAttachments.reduce((total, item) => total + item.height, textHeight);
-    if (height <= bodyHeight || (!visible && !paragraphAttachments.length)) {
-      append(rangeStart, rangeEnd, height, visible || paragraphAttachments.length > 0, gap);
-      continue;
+    if ((!columnStyles && !paragraphAttachments.some(attachment => attachment.table?.savedPartition)) ||
+      (!visible && !paragraphAttachments.length)) {
+      const textHeight = measuredParagraph && (visible || !paragraphAttachments.length)
+        ? estimateParagraphContentHeight(measuredParagraph, bodyWidth, true, bodyHeight) : 0;
+      const height = paragraphAttachments.reduce((total, item) => total + item.height, textHeight);
+      if (height <= bodyHeight || (!visible && !paragraphAttachments.length)) {
+        append(rangeStart, rangeEnd, height, visible || paragraphAttachments.length > 0, gap);
+        return;
+      }
     }
 
     const appendText = (from: number, to: number, beforeDrawable: boolean) => {
@@ -2361,15 +2541,20 @@ function paginatePagesBodyParagraphs(
       }
       const measure = (slice: TextParagraph) => estimateParagraphContentHeight(slice, bodyWidth, true, bodyHeight) +
         (beforeDrawable ? slice.spaceAfter ?? 0 : 0);
-      const height = measure(slice);
+      let height = measure(slice);
+      const before = from === range.start ? gap : 0;
+      if (columnStyles && height <= bodyHeight && (usedHeight > 0 || hasContent) && usedHeight + before + height > bodyHeight) {
+        nextRegion(from);
+        height = measure(slice);
+      }
       if (height <= bodyHeight) {
-        append(from, to, height, true, from === range.start ? gap : 0);
+        append(from, to, height, true, before);
         return;
       }
 
       const sourceEnd = Math.min(to - range.start, range.text.length);
       const segments = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter().segment(range.text) : undefined;
-      const allowance = Math.min(pagesParagraphFontSize(slice), bodyHeight / 8);
+      const fontSize = pagesParagraphFontSize(slice);
       for (let position = from - range.start; position < sourceEnd;) {
         const characterIndex = range.start + position;
         const endIndex = (offset: number) => offset === sourceEnd ? to : range.start + offset;
@@ -2384,39 +2569,103 @@ function paginatePagesBodyParagraphs(
           firstHeight = heightAt(firstEnd);
         }
         const spaceBefore = characterIndex === range.start ? gap : 0;
+        let allowance = Math.min(fontSize, bodyHeight / 8);
         if ((usedHeight > 0 || hasContent) && usedHeight + spaceBefore + firstHeight + allowance > bodyHeight) {
-          finishPage(characterIndex);
+          nextRegion(characterIndex);
+          firstHeight = heightAt(firstEnd);
+          allowance = Math.min(fontSize, bodyHeight / 8);
+        }
+        if (bandTop > 0 && !hasContent && firstHeight + allowance > bodyHeight) {
+          nextRegion(characterIndex, true);
+          firstHeight = heightAt(firstEnd);
+          allowance = Math.min(fontSize, bodyHeight / 8);
         }
         const available = bodyHeight - usedHeight - allowance - (usedHeight > 0 || hasContent ? spaceBefore : 0);
         if (firstHeight > available) {
           append(characterIndex, endIndex(firstEnd), bodyHeight, true);
           fitOversizedLine = true;
-          finishPage();
+          nextRegion();
           position = firstEnd;
           continue;
         }
         const next = choosePagesTextEnd(range.text, position, sourceEnd, firstEnd, segments, offset => heightAt(offset) <= available);
         append(characterIndex, endIndex(next), heightAt(next) + allowance, true, spaceBefore);
         position = next;
-        if (position < sourceEnd) finishPage();
+        if (position < sourceEnd) nextRegion();
       }
     };
 
     let textStart = rangeStart;
     for (const attachment of paragraphAttachments) {
-      const { characterIndex, table } = attachment;
+      const { characterIndex, table, drawable } = attachment;
       appendText(textStart, characterIndex, true);
       textStart = characterIndex + 1;
-      if (!table || attachment.height <= bodyHeight) {
+      if (drawable) {
+        const { item: { transform }, offsetX, offsetY } = drawable;
+        const scaleToRegion = () => Math.min(1, Math.max(1, bodyWidth - Math.max(0, offsetX)) / Math.max(1, transform.width),
+          Math.max(1, layout.bodyHeight - Math.max(0, offsetY)) / Math.max(1, transform.height));
+        let scale = scaleToRegion();
+        if ((usedHeight > 0 || hasContent) && usedHeight + transform.height * scale + offsetY > bodyHeight) {
+          nextRegion(characterIndex);
+          scale = scaleToRegion();
+        }
+        if (bandTop > 0 && !hasContent && transform.height * scale + offsetY > bodyHeight) {
+          nextRegion(characterIndex, true);
+          scale = scaleToRegion();
+        }
+        transform.width *= scale;
+        transform.height *= scale;
+        append(characterIndex, textStart, Math.max(0, transform.height + offsetY), true);
+      } else if (!table || (!table.savedPartition && attachment.height <= layout.bodyHeight)) {
         append(characterIndex, textStart, attachment.height, true);
-        continue;
+      } else {
+        appendTable(table, characterIndex, textStart);
       }
-
-      appendTable(table, characterIndex, textStart);
     }
     appendText(textStart, rangeEnd, false);
+  };
+
+  // Leading tables are anchored before this source range.
+  for (const { table, characterIndex } of leading ?? []) appendTable(table, characterIndex, bodyStart, true);
+  const firstParagraph = findParagraphIndexForCharacter(ranges, bodyStart);
+  const pageHasContent = () => end > start || hasContent || pages.at(-1)?.pageIndex === pageIndex;
+  for (let index = firstParagraph; index < paragraphs.length; index += 1) {
+    const range = ranges[index];
+    if (range.start >= bodyEnd) break;
+    const rangeStart = Math.max(range.start, bodyStart);
+    const rangeEnd = Math.min(range.end, bodyEnd);
+    const pageBreakBefore = rangeStart === range.start && pageBreaks.has(index);
+    const leadingColumnBreak = pageBreakBefore && columnStyles
+      ? range.text.slice(0, pagesParagraphContentStart(range.text, 0)).lastIndexOf('\u000c') : -1;
+    if (pageBreakBefore && leadingColumnBreak < 0 && pageHasContent()) nextRegion(rangeStart, true);
+    const paragraphAttachments = attachments.get(index) ?? [];
+    if (!columnStyles) {
+      appendParagraphRange(index, rangeStart, rangeEnd, paragraphAttachments);
+      continue;
+    }
+    let attachmentIndex = 0;
+    for (let from = rangeStart; from < rangeEnd;) {
+      while (columnStyleIndex < columnStyles.length && columnStyles[columnStyleIndex].end <= from) columnStyleIndex += 1;
+      const style = columnStyles[columnStyleIndex];
+      const active = style && style.start <= from;
+      const nextColumns = active && pagesMinimumColumnWidth(style.columns, layout.bodyWidth) != null ? style.columns : undefined;
+      changeColumns(nextColumns, from);
+      const marker = range.text.indexOf('\u000c', from - range.start);
+      const breakAt = marker < 0 ? Infinity : range.start + marker;
+      const to = Math.min(rangeEnd, breakAt, (active ? style.end : style?.start) ?? rangeEnd);
+      if (from < to) {
+        const firstAttachment = attachmentIndex;
+        while (paragraphAttachments[attachmentIndex]?.characterIndex < to) attachmentIndex += 1;
+        appendParagraphRange(index, from, to, paragraphAttachments.slice(firstAttachment, attachmentIndex));
+      }
+      from = to;
+      if (from === breakAt && from < rangeEnd) {
+        from += 1;
+        nextRegion(from, marker === leadingColumnBreak && pageHasContent());
+      }
+    }
   }
-  finishPage();
+  finishRegion();
   return pages;
 }
 
@@ -2532,8 +2781,19 @@ function resolvePagesTableMeasurement(
   return measured && measured.rows.length === item.rows.length && Math.abs(measured.width - width) <= 0.5 ? measured : undefined;
 }
 
-function preparePagesTableRows(table: TableItem, width: number, pageHeight: number, headerRows: number, measured?: (number | undefined)[]):
+function resolvePagesMeasuredRows(item: TableItem, width: number, measurements?: PagesLayoutMeasurements): (number | undefined)[] | undefined {
+  const measured = resolvePagesTableMeasurement(item, width, measurements?.tables);
+  const source = measurements?.sourceRows.get(item.id);
+  return source && Math.abs(source.width - width) <= 0.5
+    ? item.rows.map((_, row) => source.heights.get(row) ?? measured?.rows[row]) : measured?.rows;
+}
+
+function preparePagesTableRows(table: TableItem, width: number, pageHeight: number, headerRows: number, splitCellSources: PagesSplitCells,
+  measurements?: PagesLayoutMeasurements):
   { rowHeights: number[]; headerRows: number; height: number; sourceRows?: number[] } {
+  const measured = resolvePagesMeasuredRows(table, width, measurements);
+  const source = measurements?.sourceRows.get(table.id);
+  const cellScales = source && Math.abs(source.width - width) <= 0.5 ? source.cellScales : undefined;
   const columns = pagesTableColumnOffsets(table, width);
   const hiddenRows = new Set(table.hiddenRows);
   const minimumHeights = table.rows.map((height, row) => hiddenRows.has(row) ? 0 : Math.max(height, measured?.[row] ?? 0));
@@ -2567,12 +2827,12 @@ function preparePagesTableRows(table: TableItem, width: number, pageHeight: numb
     rowsWithSplitMerges.add(row);
     return { ...cell, row, rowSpan: end - row };
   }) : table.cells;
-  const cellsByRow = new Map<number, TableItem['cells']>();
-  for (const cell of sourceCells) {
+  const cellsByRow = new Map<number, Array<{ cell: TableItem['cells'][number]; index: number }>>();
+  for (const [index, cell] of sourceCells.entries()) {
     if (cell.isMergedContinuation || hiddenRows.has(cell.row)) continue;
     if (!rowsInOversizedMerge[cell.row] && rowHeights[cell.row] <= pageHeight) continue;
     const cells = cellsByRow.get(cell.row) ?? [];
-    cells.push(cell);
+    cells.push({ cell, index });
     cellsByRow.set(cell.row, cells);
     if (cell.rowSpan > 1) rowsWithSplitMerges.add(cell.row);
   }
@@ -2595,9 +2855,10 @@ function preparePagesTableRows(table: TableItem, width: number, pageHeight: numb
       sourceRows.push(rowsInOversizedMerge[row] ? -1 : row);
       continue;
     }
-    const split = (limit: number) => cells.map(cell => {
-      const cellWidth = columns[Math.min(columns.length - 1, cell.column + cell.colSpan)] - columns[cell.column];
-      return cellWidth > 0 ? splitPagesTableCell(cell.textFrame, cellWidth, limit, limit === pageHeight)
+    const cellWidth = (cell: TableItem['cells'][number]) => columns[Math.min(columns.length - 1, cell.column + cell.colSpan)] - columns[cell.column];
+    const split = (limit: number) => cells.map(({ cell, index }) => {
+      const width = cellWidth(cell);
+      return width > 0 ? splitPagesTableCell(cell.textFrame, width, limit, limit === pageHeight, cellScales?.get(index) ?? 1)
         : [{ frame: cell.textFrame, height: 0 }];
     });
     const savedHeight = table.rows[row];
@@ -2616,8 +2877,13 @@ function preparePagesTableRows(table: TableItem, width: number, pageHeight: numb
       heights.push(partHeight);
       sourceRows.push(-1);
     }
-    cells.forEach((cell, index) => {
-      const chunks = parts[index];
+    cells.forEach(({ cell, index }, column) => {
+      const chunks = parts[column];
+      for (const { frame } of chunks) {
+        const width = cellWidth(cell) - frame.padding.left - frame.padding.right;
+        const estimatedHeight = estimateParagraphGroupHeight(frame.paragraphs, width, frame.wrap !== 'none', pageHeight);
+        if (width > 0 && estimatedHeight > 0) splitCellSources.set(frame, { cell: index, estimatedHeight });
+      }
       splitCells.set(cell, Array.from({ length: cell.rowSpan > 1 ? chunks.length : count }, (_, part) =>
         chunks[part]?.frame ?? { ...cell.textFrame, paragraphs: [] }));
     });
@@ -2645,7 +2911,7 @@ function preparePagesTableRows(table: TableItem, width: number, pageHeight: numb
   return { rowHeights: heights, headerRows: repeatRows === headerLimit ? repeatRows : 0, height, sourceRows };
 }
 
-function splitPagesTableCell(frame: TextFrame, width: number, pageHeight: number, fitOversizedLines: boolean):
+function splitPagesTableCell(frame: TextFrame, width: number, pageHeight: number, fitOversizedLines: boolean, heightScale: number):
   Array<{ frame: TextFrame; height: number }> {
   const { top, bottom, left, right } = frame.padding;
   const padding = top + bottom;
@@ -2655,6 +2921,7 @@ function splitPagesTableCell(frame: TextFrame, width: number, pageHeight: number
   const allowance = Math.min(fontSize, Math.max(0, (pageHeight - padding) / 8));
   const available = Math.max(1, pageHeight - padding - allowance);
   const wrap = frame.wrap !== 'none';
+  const measure = (paragraph: TextParagraph) => estimateParagraphGroupHeight([paragraph], contentWidth, wrap, pageHeight) * heightScale;
   const parts: Array<{ frame: TextFrame; height: number }> = [];
   let paragraphs: TextParagraph[] = [], used = 0;
   const flush = () => {
@@ -2669,7 +2936,7 @@ function splitPagesTableCell(frame: TextFrame, width: number, pageHeight: number
   };
 
   for (const paragraph of frame.paragraphs) {
-    const fullHeight = estimateParagraphGroupHeight([paragraph], contentWidth, wrap, pageHeight);
+    const fullHeight = measure(paragraph);
     const text = paragraph.runs.map(run => run.text).join('');
     if (fullHeight <= available || !text) {
       append(paragraph, fullHeight);
@@ -2683,7 +2950,7 @@ function splitPagesTableCell(frame: TextFrame, width: number, pageHeight: number
       const sliceTo = (next: number) => sliceTextParagraph(paragraph, start, next, end);
       const pieceHeight = (next: number) => {
         const part = sliceTo(next);
-        return part ? estimateParagraphGroupHeight([part], contentWidth, wrap, pageHeight) : 0;
+        return part ? measure(part) : 0;
       };
       const firstHeight = pieceHeight(firstEnd);
       if (paragraphs.length && used + firstHeight > available) flush();
@@ -2695,8 +2962,8 @@ function splitPagesTableCell(frame: TextFrame, width: number, pageHeight: number
         }
         const first = sliceTo(firstEnd);
         if (first) {
-          const scaled = fitPagesParagraphLine(first, contentWidth, available);
-          append(scaled, estimateParagraphGroupHeight([scaled], contentWidth, wrap));
+          const scaled = fitPagesParagraphLine(first, contentWidth, available / heightScale);
+          append(scaled, measure(scaled));
         }
         start = firstEnd;
         if (start < end) flush();
@@ -2893,15 +3160,17 @@ function appendPagesBodyItems(
   bodyBlocks: PagesBodyFlowBlock[],
   items: SlideItem[],
   bodyFlows: NonNullable<IworkCanvasModel['bodyFlows']>[number][],
-  paragraphRanges?: PagesParagraphRange[]
+  paragraphRanges?: PagesParagraphRange[],
+  tableSources?: WeakMap<TableItem, PagesTableSourceRows | null>
 ): NonNullable<IworkCanvasModel['savedBodyText']> {
   const savedBodyText: NonNullable<IworkCanvasModel['savedBodyText']>[number][] = [];
   page.fragments.forEach((fragment, fragmentIndex) => {
+    const savedLayout = page.savedLayout || fragment.savedLayout;
     let fragmentBlocks = bodyBlocks.filter((block) => block.fragmentIndex === fragmentIndex);
     if (!fragmentBlocks.length) {
       return;
     }
-    if (page.savedLayout && fragmentBlocks.length > 1 && fragmentBlocks.every(block => block.kind === 'paragraphs')) {
+    if (savedLayout && fragmentBlocks.length > 1 && fragmentBlocks.every(block => block.kind === 'paragraphs')) {
       // A saved text rectangle needs one frame so its content can rewrap or scroll together.
       fragmentBlocks = [{ ...fragmentBlocks[0], paragraphs: fragmentBlocks.flatMap(block => block.paragraphs ?? []) }];
     }
@@ -2918,7 +3187,7 @@ function appendPagesBodyItems(
 
     fragmentBlocks.forEach((block, blockIndex) => {
       if (block.kind === 'paragraphs' && block.paragraphs?.length) {
-        if (page.savedLayout && fragmentBlocks.length === 1 && block.paragraphs.length === 1) {
+        if (savedLayout && fragmentBlocks.length === 1 && block.paragraphs.length === 1) {
           const paragraph = block.paragraphs[0];
           const fontSize = pagesParagraphFontSize(paragraph);
           const availableWidth = Math.min(width, layout.bodyWidth - Math.max(0, fragment.rect?.x ?? 0));
@@ -2961,7 +3230,7 @@ function appendPagesBodyItems(
           cursorY += height;
           return;
         }
-        if (page.savedLayout) {
+        if (savedLayout) {
           const first = block.firstParagraph;
           const source = hasAutoFitTable && first != null && paragraphRanges?.slice(first, first + paragraphs.length)
             .map(({ start, markers }, index) => ({ start, markers, visibleStart: index === 0 ? block.startVisibleOffset ?? 0 : 0 }));
@@ -2994,7 +3263,7 @@ function appendPagesBodyItems(
       if (block.item) {
         if (block.flowPositioned) {
           block.item.transform.y = cursorY + (block.flowOffsetY ?? 0);
-          hasAutoFitTable ||= block.item.kind === 'table' && block.item.autoFitRows === true;
+          hasAutoFitTable ||= block.item.kind === 'table' && (block.item.autoFitRows === true || Boolean(tableSources?.get(block.item)?.cells?.length));
         } else {
           if (hasAutoFitTable) saveFlow(flowStart);
           flowStart = items.length + 1;
@@ -3013,21 +3282,24 @@ function appendPagesBodyItems(
 function findSavedPagesContinuations(
   bodyFrame: TextFrame, pages: PaginatedPagesBodyPage[], ranges: PagesParagraphRange[], layout: PagesLayoutModel,
   attachments: ReadonlyMap<number, PagesInlineAttachment[]>, measurements?: ReadonlyMap<string, PagesTableMeasurement>
-): Map<number, PagesSavedContinuation> {
-  const continuations = new Map<number, PagesSavedContinuation>();
+): Map<number, Map<number, PagesSavedContinuation>> {
+  const continuations = new Map<number, Map<number, PagesSavedContinuation>>();
   for (const page of pages) {
     const inline = attachments.get(page.pageIndex);
     if (!page.savedLayout || !inline?.some(attachment => attachment.flowPositioned)) continue;
     const blocks = buildPagesBodyFlowBlocksForPage(bodyFrame.paragraphs, page, inline, ranges, page.pageIndex);
+    const plans = new Map<number, PagesSavedContinuation>();
     for (const [fragmentIndex, fragment] of page.fragments.entries()) {
       const flowItems = new Map(inline.filter(attachment => attachment.fragmentIndex === fragmentIndex && attachment.flowPositioned &&
         (attachment.startsPage || (attachment.characterIndex >= fragment.rangeStart! && attachment.characterIndex < fragment.rangeEnd!)))
         .map(attachment => [attachment.item.id, attachment]));
       if (!flowItems.size) continue;
+      const measuredTables = new Map<string, PagesTableMeasurement>();
       const probeBlocks = blocks.filter(block => block.fragmentIndex === fragmentIndex).map(block => {
         const item = block.item;
         if (!item) return { ...block, fragmentIndex: 0 };
         const measured = item.kind === 'table' && resolvePagesTableMeasurement(item, item.transform.width, measurements);
+        if (measured) measuredTables.set(item.id, measured);
         const transform = { ...item.transform, height: measured ? measured.height : estimatePagesSavedItemHeight(item, item.transform.width) };
         return { ...block, fragmentIndex: 0, item: { ...item, transform } };
       });
@@ -3036,11 +3308,11 @@ function findSavedPagesContinuations(
         bodyFrame, { ...page, fragments: [fragment] }, layout, page.pageIndex, probeBlocks, items, []
       );
       const overflow = textItems.find(([index, bottom]) => items[index].transform.y >= bottom - 0.01);
-      if (measurements?.size) {
+      if (measuredTables.size) {
         let measuredBreak: { cutoff: number; leadingTableCharacterIndex?: number } | undefined;
         for (const { item, characterIndex, startsPage } of flowItems.values()) {
           if (item.kind !== 'table') continue;
-          const cutoff = resolvePagesTableMeasurement(item, item.transform.width, measurements)?.textCutoff;
+          const cutoff = measuredTables.get(item.id)?.textCutoff;
           if (cutoff == null || cutoff < fragment.rangeStart! || cutoff >= fragment.rangeEnd! ||
             (!startsPage && cutoff <= characterIndex) || (measuredBreak && measuredBreak.cutoff <= cutoff)) continue;
           measuredBreak = { cutoff, ...(startsPage ? { leadingTableCharacterIndex: characterIndex } : {}) };
@@ -3052,23 +3324,30 @@ function findSavedPagesContinuations(
           const attachment = flowItems.get(item.id);
           if (!attachment || item.kind !== 'table' || item.transform.y + item.transform.height <= bottom + 1.5 ||
             (measuredBreak && attachment.characterIndex >= measuredBreak.cutoff)) continue;
-          const measured = resolvePagesTableMeasurement(item, item.transform.width, measurements);
-          if (!measured) continue;
+          const measured = measuredTables.get(item.id);
+          if (!measured && !(attachment.startsPage && attachment.partitioned)) continue;
           if (!attachment.partitioned) {
-            continuations.set(page.pageIndex, { cutoff: attachment.characterIndex });
+            plans.set(fragmentIndex, { cutoff: attachment.characterIndex });
             break;
           }
-          if (index === 0 && attachment.startsPage && page.fragments.length === 1 &&
-            !inline.some(other => other.startsPage && other !== attachment)) {
-            continuations.set(page.pageIndex, { cutoff: fragment.rangeStart!, leadingTableCharacterIndex: attachment.characterIndex,
-              oversizedPartition: { item, measured } });
-            break;
+          const { characterIndex, startsPage, headerRows } = attachment;
+          if (startsPage) {
+            const leading = [...flowItems.values()].filter(other => other.startsPage);
+            const partitions = leading.flatMap(other => other.partitioned && other.item.kind === 'table'
+              ? [{ item: other.item, characterIndex: other.characterIndex, headerRows: other.headerRows }] : []);
+            if (partitions.length !== leading.length) continue;
+            plans.set(fragmentIndex, { cutoff: fragment.rangeStart!, oversizedPartitions: partitions });
+          } else {
+            const heightBeforeAnchor = Math.max(0, item.transform.y - layout.topMargin - (fragment.rect?.y ?? 0));
+            plans.set(fragmentIndex, { cutoff: characterIndex + 1,
+              oversizedPartitions: [{ item, characterIndex, heightBeforeAnchor, headerRows }] });
           }
-        }
-        if (continuations.has(page.pageIndex)) break;
-        if (measuredBreak) {
-          continuations.set(page.pageIndex, measuredBreak);
           break;
+        }
+        if (plans.has(fragmentIndex)) continue;
+        if (measuredBreak) {
+          plans.set(fragmentIndex, measuredBreak);
+          continue;
         }
       }
       if (!overflow) continue;
@@ -3080,13 +3359,13 @@ function findSavedPagesContinuations(
         const tolerance = item.kind === 'table' && resolvePagesTableMeasurement(item, item.transform.width, measurements) ? 1.5 : 0.5;
         const moveObject = !attachment.partitioned && item.transform.y + item.transform.height > bottom + tolerance &&
           (item.kind === 'table' || item.transform.height <= layout.bodyHeight);
-        continuations.set(page.pageIndex, attachment.startsPage
+        plans.set(fragmentIndex, attachment.startsPage
           ? { cutoff: fragment.rangeStart!, leadingTableCharacterIndex: attachment.characterIndex }
           : { cutoff: attachment.characterIndex + Number(!moveObject) });
         break;
       }
-      if (continuations.has(page.pageIndex)) break;
     }
+    if (plans.size) continuations.set(page.pageIndex, plans);
   }
   return continuations;
 }
@@ -3483,8 +3762,9 @@ function buildPagesSectionStates(
   for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
     const bodyPage = bodyPages.get(pageIndex);
     const firstParagraph = bodyPage && paragraphRanges[bodyPage.startParagraph];
-    const startCharacterIndex = bodyPage?.leadingTableCharacterIndex ?? bodyPage?.fragments[0]?.rangeStart ?? (firstParagraph
-      ? firstParagraph.start + (firstParagraph.text.startsWith('\u0004') ? 1 : 0) : undefined);
+    const fragmentStart = bodyPage?.fragments[0]?.rangeStart ?? firstParagraph?.start;
+    const startCharacterIndex = bodyPage?.leadingTableCharacterIndex ?? (firstParagraph && fragmentStart != null
+      ? Math.max(fragmentStart, firstParagraph.start + pagesParagraphContentStart(firstParagraph.text, 0)) : fragmentStart);
     const resolvedSectionRefId = startCharacterIndex != null
       ? resolvePagesSectionRefIdForCharacter(documentValue, startCharacterIndex, sectionEntries)
       : previousSectionRefId ?? defaultSectionRefId;
@@ -3610,7 +3890,8 @@ function slicePagesTableItems(
       cells: [],
       hiddenRows: hiddenRows?.length ? hiddenRows : undefined
     };
-    return { pageIndex, item: table, rowStart, rowEnd, headerRows, estimated };
+    return { pageIndex, item: table, rowStart, rowEnd, headerRows, estimated,
+      fragmentIndex: estimated ? range.fragmentIndex : undefined };
   });
   const repeatedHeaders = parts.filter(part => part.headerRows > 0);
   const maxHeaderRows = repeatedHeaders.reduce((max, part) => Math.max(max, part.headerRows), 0);
@@ -4639,10 +4920,6 @@ function findCanvasTitle(items: SlideItem[]): string | undefined {
   return undefined;
 }
 
-function normalizeStorageText(value: unknown): string {
-  return asArray<string>(value).join('').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-}
-
 function hasVisibleTextFrame(frame: TextFrame): boolean {
   return frame.paragraphs.some((paragraph) =>
     paragraph.runs.some((run) => stripObjectMarker(run.text).trim().length > 0)
@@ -5028,21 +5305,10 @@ function buildKeynoteLineLayout(
 }
 
 function buildParagraphRanges(text: string): PagesParagraphRange[] {
-  if (!text.length) {
-    return [{ start: 0, end: 0, text: '' }];
-  }
-
-  const starts = [0];
-  for (let index = 0; index < text.length; index += 1) {
-    if (text[index] === '\n' && index + 1 < text.length) {
-      starts.push(index + 1);
-    }
-  }
-
+  const starts = computeParagraphStarts(text, true);
   return starts.map((start, index) => {
     const end = starts[index + 1] ?? text.length;
-    const rawText = text.slice(start, end);
-    const paragraphText = rawText.endsWith('\n') ? rawText.slice(0, -1) : rawText;
+    const paragraphText = readStorageParagraphText(text, start, end);
     const markers = Array.from(paragraphText.matchAll(/[\u0004\u0005\u000c\uFFFC]/g), ({ index }, count) =>
       ({ offset: index, delta: -count - 1 }));
     return {

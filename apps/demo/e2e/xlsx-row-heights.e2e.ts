@@ -16,11 +16,14 @@ test('retains fractional row minima and measured wrapping across horizontal scro
   const height = (index: number) => row(index).evaluate(row => parseFloat(row.style.height));
   await expect.poll(() => height(3)).toBeGreaterThan(60);
   const wrapped = await height(3);
+  await expect.poll(() => height(8)).toBeCloseTo(wrapped, 2);
   await expect.poll(() => height(1)).toBeCloseTo(15.5 * 4 / 3, 3);
   await expect.poll(() => height(10)).toBeCloseTo(15.5 * 4 / 3, 3);
 
+  await page.setViewportSize({ width: 3000, height: 830 });
   await grid.evaluate(element => { element.scrollLeft = element.scrollWidth; });
   const clock = row(7).locator('td[aria-colindex="16385"]');
+  await expect.poll(() => grid.locator('.xlsxv-col-header').count()).toBeGreaterThan(20);
   await expect(clock).toHaveText('1');
   await expect(row(9).getByText('short', { exact: true })).toBeVisible();
   await expect(row(3).getByText('Sixth line', { exact: false })).toHaveCount(0);
@@ -31,6 +34,19 @@ test('retains fractional row minima and measured wrapping across horizontal scro
   await expect.poll(() => height(3)).toBeCloseTo(wrapped, 3);
   await expect(row(9).getByText('Sixth line', { exact: false })).toBeVisible();
   await expect.poll(() => height(9)).toBeGreaterThan(60);
+  await expect.poll(() => height(8)).toBeGreaterThan(wrapped + 40);
+
+  await page.setViewportSize({ width: 1040, height: 830 });
+  await grid.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+  await expect(grid.locator('.xlsxv-col-header')).toHaveCount(20);
+  await page.clock.setFixedTime(firstDay);
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(clock).toHaveText('1');
+  await expect(row(8).getByText('short', { exact: true })).toBeVisible();
+  await expect(row(9).getByText('short', { exact: true })).toBeVisible();
+  await expect.poll(() => height(8)).toBeCloseTo(wrapped, 2);
+  await expect.poll(() => height(9)).toBeLessThan(30);
+  await expect.poll(() => height(3)).toBeCloseTo(wrapped, 3);
 
   await grid.evaluate(element => { element.scrollTop = element.scrollHeight; });
   const last = row(1048576).locator('td[aria-colindex="16385"]');
@@ -136,8 +152,15 @@ test('bounds long wrapped XLSX rows and keeps the final row reachable', async ({
   await expect.poll(() => height(1048575)).toBeLessThan(547);
   await expect(cell(1048576, 16384)).toHaveText('71');
   await expect(cell(1048576, 16384)).toBeInViewport();
+  await page.clock.setFixedTime(new Date('2024-01-02T12:00:00Z'));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(cell(1048575, 16384)).toHaveText('short');
+  await expect.poll(() => height(1048575)).toBeLessThan(30);
+  await expect(cell(1048576, 16384)).toBeInViewport();
 
   await page.getByRole('button', { name: 'Compact', exact: true }).click();
+  await page.clock.setFixedTime(new Date('2024-01-01T12:00:00Z'));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await expect(cell(2, 1)).toContainText('Line 200');
   await expect.poll(() => height(2)).toBeLessThan(547);
   await page.clock.setFixedTime(new Date('2024-01-02T12:00:00Z'));

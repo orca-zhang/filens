@@ -106,6 +106,11 @@ function decodeMessage(type: Type, reader: Reader, end: number, depth = 0): Reco
     const tag = reader.uint32();
     const field = layout.fields[tag >>> 3];
     if (!field) { reader.skipType(tag & 7); continue; }
+    // Pages 5.5.3 writes field 45 as a varint, before its use as equationEnvironment.
+    if (tag === (45 << 3) && type.fullName === '.TP.DocumentArchive') {
+      reader.skipType(0);
+      continue;
+    }
     if (field.repeated) {
       const values = result[field.name] as unknown[];
       if ((tag & 7) === 2 && field.scalar && field.scalar !== 'string' && field.scalar !== 'bytes') {

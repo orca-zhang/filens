@@ -73,19 +73,22 @@ function readCondition(entry: unknown, color: ReadColor, rightToLeft: boolean,
 
 function readConditionalExtensions(worksheet: unknown) {
   const linkedBars = new Map<string, unknown>();
-  const standalone: { entry: unknown; ranges: ReturnType<typeof readRanges> }[] = [];
+  const standalone: { entries: unknown[]; ranges: ReturnType<typeof readRanges> }[] = [];
   for (const ext of toArray(readPath(worksheet, ['extLst', 'ext']))) {
     if (String(readPath(ext, ['uri'])).toLowerCase() !== extensionUri) continue;
     for (const group of toArray(readLocalPath(ext, ['conditionalFormattings', 'conditionalFormatting']))) {
       const ranges = readRanges(readTextValue(readLocalPath(group, ['sqref'])));
-      for (const entry of toArray(readLocalPath(group, ['cfRule']))) {
+      const entries = toArray(readLocalPath(group, ['cfRule']));
+      let hasStandalone = false;
+      for (const entry of entries) {
         if (readPath(entry, ['priority']) !== undefined) {
-          standalone.push({ entry, ranges });
+          hasStandalone = true;
           continue;
         }
         const id = readPath(entry, ['id']);
         if (readPath(entry, ['type']) === 'dataBar' && typeof id === 'string' && id) linkedBars.set(id.toLowerCase(), entry);
       }
+      if (hasStandalone) standalone.push({ entries, ranges });
     }
   }
   return { linkedBars, standalone };
@@ -111,9 +114,45 @@ function readRanges(ref: string) {
   return ranges.every(range => range !== undefined) ? ranges : undefined;
 }
 
+function collectPreviewRules() {
+  type RuleGroup = { ranges: ParsedConditionalRule['ranges']; rules: Map<string, ParsedConditionalRule> };
+  const byGeometry = new Map<string, RuleGroup>();
+  const byRange = new WeakMap<ParsedConditionalRule['ranges'], RuleGroup>();
+  const rules = new Set<ParsedConditionalRule>();
+  return {
+    add(rule: ParsedConditionalRule) {
+      let group = byRange.get(rule.ranges);
+      if (!group) {
+        // Range order preserves the first area's relative formula anchor.
+        const geometry = JSON.stringify(rule.ranges);
+        group = byGeometry.get(geometry);
+        if (!group) {
+          group = { ranges: rule.ranges, rules: new Map() };
+          byGeometry.set(geometry, group);
+        }
+        byRange.set(rule.ranges, group);
+      }
+      const key = JSON.stringify([rule.condition, rule.style, rule.activeFormula, rule.stopIfTrue]);
+      const existing = group.rules.get(key);
+      if (existing && existing.priority <= rule.priority) return;
+      // Reinsert a higher-priority rule in source order to keep stable priority ties.
+      if (existing) rules.delete(existing);
+      rule.ranges = group.ranges;
+      group.rules.set(key, rule);
+      rules.add(rule);
+    },
+    rules
+  };
+}
+
 export function readConditionalRules(document: unknown, styles: readonly ParsedConditionalStyle[],
-  color: ReadColor, warnings: string[], sheet: string): ParsedConditionalRule[] {
+  color: ReadColor, warnings: string[], sheet: string, preview = false): ParsedConditionalRule[] {
   const rules: ParsedConditionalRule[] = [];
+  const collector = preview ? collectPreviewRules() : undefined;
+  const add = (rule: ParsedConditionalRule) => {
+    if (collector) collector.add(rule);
+    else rules.push(rule);
+  };
   const worksheet = readPath(document, ['worksheet']);
   const rightToLeft = isTrue(readPath(toArray(readPath(worksheet, ['sheetViews', 'sheetView']))[0], ['rightToLeft']));
   const { linkedBars, standalone } = readConditionalExtensions(worksheet);
@@ -145,23 +184,27 @@ export function readConditionalRules(document: unknown, styles: readonly ParsedC
         }
       }
       const stop = readPath(entry, ['stopIfTrue']);
-      rules.push({ ranges, priority, condition, stopIfTrue: isTrue(stop), ...(style ? { style } : {}), ...(activeFormula ? { activeFormula } : {}) });
+      add({ ranges, priority, condition, stopIfTrue: isTrue(stop), ...(style ? { style } : {}), ...(activeFormula ? { activeFormula } : {}) });
     }
   }
-  for (const { entry, ranges } of standalone) {
-    const priority = Number(readPath(entry, ['priority']));
-    const condition = readCondition(entry, color, rightToLeft, true);
-    if (condition === 'unsupported') { unsupported++; continue; }
-    const visual = condition && visualTypes.has(condition.type);
-    const activeFormula = visual ? readActiveFormula(entry) : undefined;
-    const dxf = readLocalPath(entry, ['dxf']);
-    if (!ranges || !condition || activeFormula === false || !Number.isSafeInteger(priority) || priority < 1
-      || (visual && dxf !== undefined)) { invalid++; continue; }
-    const style = dxf === undefined ? undefined : readDifferentialStyle(dxf, color, readLocalPath);
-    rules.push({ ranges, priority, condition, stopIfTrue: isTrue(readPath(entry, ['stopIfTrue'])),
-      ...(style ? { style } : {}), ...(activeFormula ? { activeFormula } : {}) });
+  for (const { entries, ranges } of standalone) {
+    for (const entry of entries) {
+      const savedPriority = readPath(entry, ['priority']);
+      if (savedPriority === undefined) continue;
+      const priority = Number(savedPriority);
+      const condition = readCondition(entry, color, rightToLeft, true);
+      if (condition === 'unsupported') { unsupported++; continue; }
+      const visual = condition && visualTypes.has(condition.type);
+      const activeFormula = visual ? readActiveFormula(entry) : undefined;
+      const dxf = readLocalPath(entry, ['dxf']);
+      if (!ranges || !condition || activeFormula === false || !Number.isSafeInteger(priority) || priority < 1
+        || (visual && dxf !== undefined)) { invalid++; continue; }
+      const style = dxf === undefined ? undefined : readDifferentialStyle(dxf, color, readLocalPath);
+      add({ ranges, priority, condition, stopIfTrue: isTrue(readPath(entry, ['stopIfTrue'])),
+        ...(style ? { style } : {}), ...(activeFormula ? { activeFormula } : {}) });
+    }
   }
   if (invalid) warnings.push(`Ignored ${invalid} invalid conditional formatting rules in sheet ${sheet}.`);
   if (unsupported) warnings.push(`Skipped ${unsupported} unsupported conditional formatting rules in sheet ${sheet}.`);
-  return rules.sort((a, b) => a.priority - b.priority);
+  return (collector ? [...collector.rules] : rules).sort((a, b) => a.priority - b.priority);
 }

@@ -58,7 +58,7 @@ export class RowHeights {
     return true;
   }
 
-  private minimum(row: number): number {
+  minimum(row: number): number {
     const height = this.source?.[row - 1];
     return sourceRowHeight(this.xlsxSource, row) ?? (Number.isFinite(height) ? Math.max(26, height!) : this.baseline);
   }

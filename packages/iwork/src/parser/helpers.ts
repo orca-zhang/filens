@@ -1071,6 +1071,7 @@ interface TextFrameOptions {
   padding?: PaddingBox;
   shapeProperties?: AnyObject;
   attachmentTextMap?: ReadonlyMap<number, string[]>;
+  pagesBody?: { paragraphBreaks?: Set<number> };
   attachmentContext?: {
     pageNumber?: number;
     pageNumberAt?: (characterIndex: number) => number | undefined;
@@ -1096,9 +1097,12 @@ export function buildTextFrameFromStorage(
     return undefined;
   }
 
-  const text = asArray<string>(readField(storage, ['text'])).join('').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const sourceText = asArray<string>(readField(storage, ['text'])).join('');
+  const pagesBody = options.pagesBody != null;
+  const paragraphBreaks = options.pagesBody?.paragraphBreaks;
+  const text = pagesBody ? sourceText : sourceText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const attachmentTextMap = options.attachmentTextMap ?? buildAttachmentTextMap(archive, storage, options.attachmentContext);
-  const paragraphStarts = computeParagraphStarts(text);
+  const paragraphStarts = computeParagraphStarts(text, pagesBody);
   const paraStyleEntries = normalizeStyleEntries(readField(storage, ['tableParaStyle', 'table_para_style']), options.defaultParagraphStyleRef);
   const listStyleEntries = normalizeStyleEntries(readField(storage, ['tableListStyle', 'table_list_style']));
   const charStyleEntries = normalizeStyleEntries(readField(storage, ['tableCharStyle', 'table_char_style']));
@@ -1107,19 +1111,22 @@ export function buildTextFrameFromStorage(
     text,
     paragraphStarts,
     paraStyleEntries,
-    listStyleEntries
+    listStyleEntries,
+    pagesBody
   );
   const paragraphs: TextParagraph[] = [];
 
   for (let index = 0; index < paragraphStarts.length; index += 1) {
-    const start = paragraphStarts[index];
+    const start = pagesBody ? pagesParagraphContentStart(text, paragraphStarts[index]) : paragraphStarts[index];
     const end = paragraphStarts[index + 1] ?? text.length;
-    const rawText = text.slice(start, end);
-    const paragraphText = rawText.endsWith('\n') ? rawText.slice(0, -1) : rawText;
+    const paragraphText = readStorageParagraphText(text, start, end);
     const paragraphStyleRef = resolveActiveStyleRef(paraStyleEntries, start, true);
     const paragraphStyle = resolveMergedStyle(archive, paragraphStyleRef);
     const paragraphCharProps = asObject(readField(paragraphStyle, ['charProperties', 'char_properties']));
     const paraProps = asObject(readField(paragraphStyle, ['paraProperties', 'para_properties']));
+    if (paragraphBreaks && readField<boolean>(paraProps, ['pageBreakBefore', 'page_break_before']) === true) {
+      paragraphBreaks.add(index);
+    }
     const runs = buildRunsForParagraph(archive, paragraphText, start, charStyleEntries, paragraphCharProps, attachmentTextMap);
     const defaultFontSize = resolveParagraphDefaultFontSize(runs, paragraphCharProps);
     const normalizedLevel = normalizeOutlineLevel(readField<number>(paraProps, ['outlineLevel', 'outline_level']));
@@ -1208,18 +1215,34 @@ function textAutofitFromShapeProperties(shapeProperties: AnyObject | undefined):
     : undefined;
 }
 
-function computeParagraphStarts(text: string): number[] {
-  if (!text.length) {
-    return [0];
-  }
-
+export function computeParagraphStarts(text: string, pagesBody = false): number[] {
   const starts = [0];
-  for (let index = 0; index < text.length; index += 1) {
-    if (text[index] === '\n' && index + 1 < text.length) {
+  for (let index = 0; index + 1 < text.length; index += 1) {
+    const current = text[index];
+    if (current === '\n' || (pagesBody && current === '\r' && text[index + 1] !== '\n')) {
       starts.push(index + 1);
+    } else if (pagesBody && isPagesParagraphControl(current) && index > 0) {
+      // At the beginning of a paragraph, keep layout controls with the following text.
+      const previous = text[index - 1];
+      if (previous !== '\n' && previous !== '\r' && !isPagesParagraphControl(previous)) starts.push(index + 1);
     }
   }
   return starts;
+}
+
+function isPagesParagraphControl(character: string | undefined): boolean {
+  return character === '\u0004' || character === '\u0005' || character === '\u000c';
+}
+
+export function pagesParagraphContentStart(text: string, start: number): number {
+  while (isPagesParagraphControl(text[start])) start += 1;
+  return start;
+}
+
+export function readStorageParagraphText(text: string, start: number, end: number): string {
+  if (text[end - 1] === '\n' && text[end - 2] === '\r') return text.slice(start, end - 2);
+  if (text[end - 1] === '\n' || text[end - 1] === '\r') return text.slice(start, end - 1);
+  return text.slice(start, end);
 }
 
 interface StyleEntry {
@@ -1456,7 +1479,8 @@ function countImplicitListStyleParagraphs(
   text: string,
   paragraphStarts: number[],
   paraStyleEntries: StyleEntries,
-  listStyleEntries: StyleEntries
+  listStyleEntries: StyleEntries,
+  pagesBody: boolean
 ): Map<number, number> {
   const counts = new Map<number, number>();
   if (archive.type !== 'pages') {
@@ -1464,9 +1488,9 @@ function countImplicitListStyleParagraphs(
   }
 
   for (let index = 0; index < paragraphStarts.length; index += 1) {
-    const start = paragraphStarts[index];
+    const start = pagesBody ? pagesParagraphContentStart(text, paragraphStarts[index]) : paragraphStarts[index];
     const end = paragraphStarts[index + 1] ?? text.length;
-    const paragraphText = text.slice(start, end).replace(/\n$/, '');
+    const paragraphText = readStorageParagraphText(text, start, end);
     if (!hasMeaningfulParagraphText(paragraphText)) {
       continue;
     }

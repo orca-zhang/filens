@@ -3,9 +3,9 @@ import type { PDFDataRangeTransport } from 'pdfjs-dist';
 export const PDF_RANGE_CHUNK_BYTES = 64 * 1024;
 
 export function createPdfBlobRange(RangeTransport: typeof PDFDataRangeTransport, source: Blob,
-  signal: AbortSignal, onError: (error: Error) => void): PDFDataRangeTransport {
+  signal: AbortSignal, onError: (error: Error) => void) {
   const transport = new RangeTransport(source.size, null, true);
-  const readers = new Set<FileReader>();
+  const readers = new Map<FileReader, { begin: number; end: number }>();
   let stopped = false;
   const forget = (reader: FileReader) => {
     reader.onload = reader.onerror = null;
@@ -14,7 +14,7 @@ export function createPdfBlobRange(RangeTransport: typeof PDFDataRangeTransport,
   const abort = () => {
     stopped = true;
     signal.removeEventListener('abort', abort);
-    for (const reader of readers) {
+    for (const reader of readers.keys()) {
       forget(reader);
       reader.abort();
     }
@@ -33,7 +33,7 @@ export function createPdfBlobRange(RangeTransport: typeof PDFDataRangeTransport,
       return;
     }
     const reader = new FileReader();
-    readers.add(reader);
+    readers.set(reader, { begin, end });
     reader.onload = () => {
       forget(reader);
       if (stopped) return;
@@ -54,5 +54,32 @@ export function createPdfBlobRange(RangeTransport: typeof PDFDataRangeTransport,
 
   if (signal.aborted) abort();
   else signal.addEventListener('abort', abort, { once: true });
-  return transport;
+  return {
+    transport,
+    cancelRange(begin: number, end: number) {
+      for (const [reader, range] of readers) if (range.begin === begin && range.end === end) {
+        forget(reader);
+        reader.abort();
+        break;
+      }
+    }
+  };
+}
+
+type RangeRequestHandler = (range: { begin: number; end: number }, sink: { onCancel?: (reason: Error) => void }) => void;
+
+export function bindPdfBlobRangeCancellation(messageHandler: { actionHandler?: Record<string, RangeRequestHandler> } | undefined,
+  cancelRange: (begin: number, end: number) => void): boolean {
+  // PDFDataRangeTransport exposes document-wide abort, so forward the individual sink cancellation to its FileReader.
+  const handlers = messageHandler?.actionHandler, handleRange = handlers?.GetRangeReader;
+  if (!handlers || !handleRange) return false;
+  handlers.GetRangeReader = (range, sink) => {
+    handleRange(range, sink);
+    const cancel = sink.onCancel;
+    if (cancel) sink.onCancel = reason => {
+      cancelRange(range.begin, range.end);
+      cancel(reason);
+    };
+  };
+  return true;
 }

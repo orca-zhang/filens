@@ -10,8 +10,8 @@ import { createSheetTable } from '../src/table';
 import type { ParsedCell, ParsedSheet } from '../src/types';
 import { sheetTracks } from '../src/visible-tracks';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
-import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createCoordinateFormulaWorkbook,
-  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createGroupByWorkbook, createLambdaWorkbook, createMapWorkbook, createOffsetWorkbook, createPivotByWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
+import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createCoordinateFormulaWorkbook, createCountBlankWorkbook,
+  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createGroupByWorkbook, createLambdaWorkbook, createMapWorkbook, createOffsetWorkbook, createOrderedConditionalWorkbook, createPivotByWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
   createSortSpillWorkbook, createStackSpillWorkbook, createTrimRangeWorkbook, createWorkdayArrayWorkbook, createWrapExpandWorkbook, createXlookupSpillWorkbook, createXmatchWorkbook } from './fixtures/array-selection-workbook.mjs';
 
 afterEach(() => {
@@ -323,6 +323,22 @@ describe('declared worksheet array formulas', () => {
     expect(displaySpillCell(large, 1048576, 16383)?.value).toBe('16');
     expect(displaySpillCell(large, 1048576, 16384)?.value).toBe('1064');
     expect(read.mock.calls.length).toBeLessThan(40);
+  });
+
+  it('keeps IFS and SWITCH spill results typed and handles a whole-grid sparse expression', async () => {
+    const { sheets: [summary, , large] } = await loadXlsxWorkbook(await createOrderedConditionalWorkbook());
+    const result = (row: number, column: number) => displaySpillCell(summary, row, column);
+    expect(result(2, 1)).toMatchObject({ value: 'FALSE', valueType: 'boolean' });
+    expect(result(2, 2)).toMatchObject({ value: 'TRUE', valueType: 'boolean' });
+    expect(result(3, 2)).toMatchObject({ value: '#N/A', valueType: 'error' });
+    expect(result(4, 1)).toMatchObject({ value: '#N/A', valueType: 'error' });
+    expect(result(4, 2)).toMatchObject({ value: 'missing', valueType: 'text' });
+    expect(resolveCellValue(summary, summary.rows[0].cells[2])).toBe('42');
+    const reads = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    expect(resolveCellValue(large, large.rows[0].cells[0])).toBe(String((1_048_576 * 16_383 - 2) * 3 + 77 + 99));
+    expect(displaySpillCell(large, 1048576, 16383)?.value).toBe('3');
+    expect(displaySpillCell(large, 1048576, 16384)?.value).toBe('99');
+    expect(reads.mock.calls.length).toBeLessThan(40);
   });
 
   it('keeps OFFSET references sparse and clips legacy outputs to the saved area', async () => {
@@ -673,6 +689,34 @@ describe('declared worksheet array formulas', () => {
     expect(scalar(`IFERROR(CONCAT('Large Spill'!E1#),"bounded")`)).toBe('bounded');
   });
 
+  it('counts blank worksheet references and sparse spills with different defaults', async () => {
+    const { sheets: [summary, , large] } = await loadXlsxWorkbook(await createCountBlankWorkbook());
+    const size = 1_048_576 * 16_384;
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    expect(summary.rows.map(row => row.cells.map(cell => resolveCellValue(summary, cell)))).toEqual([
+      ['4', '1048572', '3', '1'], ['1', '1048574', String(size - 1_048_578)]
+    ]);
+    expect(displaySpillCell(large, 1_048_576, 2)?.value).toBe('0');
+    expect(resolveCellValue(large, large.rows.at(-1)!.cells[0])).toBe(String(size - 6));
+    expect(get.mock.calls.length).toBeLessThan(80);
+    const resolve = (formula: string) => resolveCellValue(summary,
+      { ref: 'E1', row: 1, column: 5, value: '', formula, needsCalculation: true });
+    for (const formula of ['COUNTBLANK()', 'COUNTBLANK(1)', 'COUNTBLANK({1,""})',
+      'COUNTBLANK((A1,A2))', 'COUNTBLANK(A1,A2)', 'COUNTBLANK(Summary:Ledger!A1:A2)']) {
+      expect(resolve(formula), formula).toBe('#VALUE!');
+    }
+    expect(resolve('COUNTBLANK(INDIRECT("Ledger!A6"))')).toBe('1');
+    expect(resolve('COUNTBLANK(INDIRECT("Ledger!A0"))')).toBe('#REF!');
+    expect(resolve("COUNTBLANK('Large Spill'!B3:C1048576)")).toBe('1048572');
+  });
+
+  it('keeps the dense spill scan limit for COUNTBLANK', async () => {
+    const { sheets: [, , sheet] } = await loadXlsxWorkbook(await createSequenceWorkbook());
+    const evaluate = (formula: string) => evaluateWorksheetFormula(sheet, formula, { row: 1, column: 1 });
+    expect(evaluate('COUNTBLANK(XFC1048576:XFD1048576)')).toBe(0);
+    expect(evaluate('COUNTBLANK(B1#)')).toBeUndefined();
+  });
+
   it('weights repeated spill errors without changing saved values or reference types', () => {
     const anchor = { ref: 'A1', row: 1, column: 1, value: '', formula: 'IF(B:B=0,1/0,B:B)', needsCalculation: true };
     const sheet: ParsedSheet = { id: 's', name: 'S', rowCount: 1048576, columnCount: 2, rows: [
@@ -685,6 +729,7 @@ describe('declared worksheet array formulas', () => {
     expect(evaluate('COUNT(A:A)')).toBe(2);
     expect(evaluate('COUNTA(A:A)')).toBe(1048576);
     expect(evaluate('COUNTIF(A:A,"#DIV/0!")')).toBe(1048573);
+    expect(evaluate('COUNTBLANK(A:B)')).toBe(1_048_575);
     expect(evaluate('AGGREGATE(9,6,A:A)')).toBe(6);
     expect(evaluate('IFERROR(SUM(A:A),73)')).toBe(73);
   });

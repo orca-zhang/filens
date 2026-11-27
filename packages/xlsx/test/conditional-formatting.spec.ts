@@ -1,14 +1,114 @@
 import { describe, expect, it, vi } from 'vitest';
+import { XMLParser } from 'fast-xml-parser';
+import { openZipArchive } from '@filens/core';
+import { WorksheetCellIndex } from '../src/cell-index';
 import { conditionalFormattingWindow } from '../src/conditional-formatting';
-import { loadXlsxWorkbook, resolveCellValue } from '../src/parser';
+import { loadXlsxWorkbook, readXlsxWorkbook, resolveCellValue } from '../src/parser';
 import { createSheetTable } from '../src/table';
 import type { ParsedSheet } from '../src/types';
-import { clonePreviewWorkbook } from '../src/workbook-cache';
+import { clonePreviewWorkbook, loadPreviewWorkbook } from '../src/workbook-cache';
 import { createConditionalFormattingWorkbook } from './fixtures/conditional-formatting-workbook.mjs';
+import { createRepeatedConditionalWorkbook } from './fixtures/repeated-conditional-workbook.mjs';
 
 const getCell = (sheet: ParsedSheet, row: number, column: number) => sheet.rows.find(entry => entry.index === row)?.cells.find(cell => cell.column === column);
 
 describe('XLSX conditional formatting', () => {
+  it.each([false, true])('streams large trailing conditional metadata with prefixed worksheet=%s', async prefixed => {
+    const source = await createRepeatedConditionalWorkbook(16_000, { prefixed, linkedBar: true });
+    const zipEntries = await openZipArchive(source);
+    const part = zipEntries.get('xl/worksheets/s1.xml')!;
+    const bytes = Buffer.from(await part.bytes());
+    const close = prefixed ? '</main:sheetData>' : '</sheetData>';
+    const rowsEnd = bytes.indexOf(close) + close.length;
+    expect(bytes.length - rowsEnd).toBeGreaterThan(512 * 1024);
+    const onRows = vi.fn();
+    part.chunks = async function* () {
+      const first = rowsEnd + 20;
+      yield bytes.subarray(0, first);
+      expect(onRows).toHaveBeenCalledOnce();
+      const pending = onRows.mock.calls[0][0] as ParsedSheet;
+      expect(pending.rows.at(-1)?.cells[0].value).toBe('9');
+      expect(pending.conditionalRules).toBeUndefined();
+      for (let offset = first; offset < bytes.length; offset += 32_768) yield bytes.subarray(offset, offset + 32_768);
+    };
+    const read = vi.spyOn(part, 'bytes').mockRejectedValue(new Error('Unexpected second ZIP entry read'));
+    const parse = vi.spyOn(XMLParser.prototype, 'parse');
+    let streamed;
+    try {
+      streamed = await readXlsxWorkbook(source, { descriptor: { source }, zipEntries }, { onRows });
+      for (const tag of [prefixed ? 'main:cfRule' : 'cfRule', 'e:cfRule']) {
+        const batches = parse.mock.calls.map(([xml]) => String(xml)).filter(xml => xml.includes(`<${tag} `)
+          && !xml.includes('<row ') && !xml.includes('<main:row ') && xml.length < 530_000);
+        expect(batches.length).toBeGreaterThan(1);
+      }
+    } finally { parse.mockRestore(); }
+    expect(read).not.toHaveBeenCalled();
+    const bufferedEntries = new Map(zipEntries);
+    const buffered = Buffer.concat([Buffer.from('<!-- parse the original rule groups together -->'), bytes]);
+    bufferedEntries.set(part.name, { ...part, bytes: async () => buffered, chunks: undefined });
+    const referenceContext = { descriptor: { source }, zipEntries: bufferedEntries };
+    const reference = await readXlsxWorkbook(source, referenceContext, {});
+    const original = await loadXlsxWorkbook(source, referenceContext);
+    expect(streamed).toEqual(reference);
+    expect(original.sheets[0].conditionalRules).toHaveLength(16_012);
+    expect(streamed.warnings).toEqual([
+      'Ignored 1 invalid conditional formatting rules in sheet Repeated Rules.',
+      'Skipped 1 unsupported conditional formatting rules in sheet Repeated Rules.'
+    ]);
+    const [sheet] = streamed.sheets;
+    expect(sheet.conditionalRules).toHaveLength(12);
+    expect(sheet.conditionalRules?.at(-1)).toMatchObject({
+      activeFormula: 'A1>0', condition: { type: 'dataBar', gradient: false, direction: 'rightToLeft' }
+    });
+    expect(conditionalFormattingWindow(sheet, 1, 4, 1, 4)!(1_048_576, 16_384, sheet.rows.at(-1)?.cells[0]))
+      .toMatchObject({ fill: { color: '#FFCDD2' }, numberFormat: '0.0', strike: true });
+  });
+
+  it.each([false, true])('folds duplicate base and Office 2010 rules in the preview model (streamed=%s)', async streamed => {
+    const duplicates = 2000;
+    const source = await createRepeatedConditionalWorkbook(duplicates);
+    const entries = new Map(await openZipArchive(source));
+    const part = entries.get('xl/worksheets/s1.xml')!;
+    const read = vi.fn(part.bytes.bind(part));
+    const chunks = async function* () {
+      const data = await part.bytes();
+      for (let offset = 0; offset < data.length; offset += 32_768) yield data.subarray(offset, offset + 32_768);
+    };
+    entries.set(part.name, { ...part, bytes: read, chunks: streamed ? chunks : undefined });
+    const context = { descriptor: { source }, zipEntries: entries };
+    const { sheets: [preview], warnings } = await loadPreviewWorkbook(source, context);
+    expect(read).toHaveBeenCalledTimes(streamed ? 0 : 1);
+    const { sheets: [original] } = await loadXlsxWorkbook(source, context);
+    expect(warnings).toEqual([]);
+    expect(original.conditionalRules).toHaveLength(duplicates + 11);
+    expect(preview.conditionalRules?.map(rule => rule.priority)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    expect(preview.conditionalRules?.[4].ranges).toBe(preview.conditionalRules?.[5].ranges);
+    expect(preview.conditionalRules?.[6].ranges).not.toBe(preview.conditionalRules?.[7].ranges);
+
+    const paint = (sheet: ParsedSheet) => {
+      const view = conditionalFormattingWindow(sheet, 1, 6, 1, 6)!;
+      return [[1, 1], [1, 2], [2, 1], [3, 1], [1, 4], [4, 4], [1, 6], [1_048_576, 16_384]]
+        .map(([row, column]) => view(row, column, getCell(sheet, row, column)));
+    };
+    const originalPaint = paint(original);
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    const scan = vi.spyOn(WorksheetCellIndex.prototype, 'forEachInRange');
+    try {
+      const [first, stopped, negative, average, firstAnchor, secondAnchor, laterStop, final] = paint(preview);
+      expect([first, stopped, negative, average, firstAnchor, secondAnchor, laterStop, final]).toEqual(originalPaint);
+      expect(first).toMatchObject({ fill: { color: '#FFCDD2' }, italic: true });
+      expect(stopped).toEqual({ fill: { type: 'solid', color: '#FFCDD2' }, bold: true });
+      expect(negative).toBeUndefined();
+      expect(average?.strike).toBe(true);
+      expect(firstAnchor?.fill?.color).toBe('#CCDDFF');
+      expect(secondAnchor).toEqual(firstAnchor);
+      expect(laterStop).toEqual(firstAnchor);
+      expect(final).toMatchObject({ fill: { color: '#FFCDD2' }, numberFormat: '0.0', strike: true });
+      expect(get.mock.calls.length).toBeLessThan(55);
+      expect(scan.mock.calls.length).toBe(2);
+    } finally { get.mockRestore(); scan.mockRestore(); }
+  });
+
   it('combines differential styles by priority, stops lower rules, and keeps typed conditions distinct', async () => {
     const workbook = await loadXlsxWorkbook(await createConditionalFormattingWorkbook());
     expect(workbook.warnings).toEqual([

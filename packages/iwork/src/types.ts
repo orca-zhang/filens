@@ -127,7 +127,15 @@ export interface PagesTableSourceRows {
   tableId: string;
   repeatedHeaders: number;
   rows: number[];
+  cells?: PagesTableCellSource[];
   savedPartition?: true;
+}
+
+export interface PagesTableCellSource {
+  row: number;
+  column: number;
+  cell: number;
+  estimatedHeight: number;
 }
 
 export interface PagesBodyTextSource {
@@ -172,6 +180,7 @@ export interface PagesTableMeasurement {
 export interface PagesMeasuredSourceRows {
   width: number;
   heights: Map<number, number>;
+  cellScales?: Map<number, number>;
 }
 
 export interface PagesLayoutMeasurements {

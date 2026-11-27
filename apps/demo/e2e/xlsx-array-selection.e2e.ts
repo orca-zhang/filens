@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySelectionWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createCoordinateFormulaWorkbook,
-  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createGroupByWorkbook, createLambdaWorkbook, createMakeArrayWorkbook, createMapWorkbook, createOffsetWorkbook, createPivotByWorkbook, createRegexWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
+import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySelectionWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createCoordinateFormulaWorkbook, createCountBlankWorkbook,
+  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createGroupByWorkbook, createLambdaWorkbook, createMakeArrayWorkbook, createMapWorkbook, createOffsetWorkbook, createOrderedConditionalWorkbook, createPivotByWorkbook, createRegexWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
   createSortSpillWorkbook, createStackSpillWorkbook, createTextSplitWorkbook, createTrimRangeWorkbook, createWorkdayArrayWorkbook, createWrapExpandWorkbook, createXlookupSpillWorkbook, createXmatchWorkbook } from '../../../packages/xlsx/test/fixtures/array-selection-workbook.mjs';
 
 test('loads the XLSX regex engine on demand and formats the final spill cell', async ({ page }) => {
@@ -290,6 +290,53 @@ test('expands mismatched XLSX arrays and reads a sparse result through the final
   await expect(cell(1048576, 16384)).toHaveText('1064');
   await expect(cell(1048576, 16384)).toBeInViewport();
   await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
+});
+
+test('recalculates IFS and SWITCH through the final Excel cell', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'ordered-conditions.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createOrderedConditionalWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  const expected = [['first', 'red', '42'], ['FALSE', 'TRUE'], ['#N/A', '#N/A'], ['#N/A', 'missing']];
+  for (const [row, values] of expected.entries()) {
+    for (const [column, value] of values.entries()) await expect(cell(row + 1, column + 1)).toHaveText(value);
+  }
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill' }).click();
+  await expect(cell(1, 1)).toHaveText(String((1_048_576 * 16_383 - 2) * 3 + 77 + 99));
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText('99');
+  await expect(last).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+  await expect(last).toBeInViewport();
+});
+
+test('recalculates COUNTBLANK and formats the final Excel cell', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'countblank.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createCountBlankWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  const size = 1_048_576 * 16_384;
+  const expected = [['4', '1048572', '3', '1'], ['1', '1048574', String(size - 1_048_578)]];
+  for (const [row, values] of expected.entries()) {
+    for (const [column, value] of values.entries()) await expect(cell(row + 1, column + 1)).toHaveText(value);
+  }
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill', exact: true }).click();
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  await expect(cell(1_048_576, 2)).toHaveText('0');
+  await expect(cell(1_048_576, 3)).toHaveText('19');
+  await grid.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText(String(size - 6));
+  await expect(last).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+  await expect(last).toBeInViewport();
 });
 
 test('recalculates transpose and XMATCH arrays through the final Excel cell', async ({ page }) => {

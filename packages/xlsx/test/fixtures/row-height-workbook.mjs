@@ -23,10 +23,11 @@ export async function createRowHeightWorkbook({ forceGeneral = false, formula = 
     + '<row r="6" ht="0" customHeight="1"><c r="A6"><v>1</v></c></row>'
     + '<row r="7" ht="99999" customHeight="false"><c r="A7"><v>7</v></c>'
     + (fractional ? '<c r="XFD7"><f>DAY(TODAY())</f></c>' : '') + '</row>'
-    + (fractional ? '<row r="9"><c r="XFD9" s="1"><f>IF(DAY(TODAY())=1,"short",A3)</f></c></row>' : '')
+    + (fractional ? `<row r="8">${long('A8')}<c r="XFD8" s="1"><f>IF(DAY(TODAY())=1,"short",A3&amp;CHAR(10)&amp;A3)</f></c></row>`
+      + '<row r="9"><c r="XFD9" s="1"><f>IF(DAY(TODAY())=1,"short",A3)</f></c></row>' : '')
     + (tall ? `<row r="10">${long('A10')}</row><row r="11">${long('A11', 2)}<c r="B11" s="2"/></row>` : '')
     + '<row r="500001" ht="75" customHeight="1"><c r="A500001" t="s"><v>2</v></c></row>'
-    + (tall ? '<row r="1048575"><c r="XFD1048575" s="1"><f>A3</f></c></row>' : '')
+    + (tall ? '<row r="1048575"><c r="XFD1048575" s="1"><f>IF(DAY(TODAY())=1,A3,"short")</f></c></row>' : '')
     + '<row r="1048576" ht="33.25" customHeight="1"><c r="XFD1048576">' + (formula ? '<f>A6+70</f>' : '<v>71</v>') + '</c></row>'
     + '</sheetData><mergeCells><mergeCell ref="B4:C4"/>' + (tall ? '<mergeCell ref="A10:B10"/>' : '') + '</mergeCells></worksheet>');
   zip.file('xl/worksheets/s2.xml', '<worksheet><sheetFormatPr defaultRowHeight="3" customHeight="1"/><sheetData>' + prefix

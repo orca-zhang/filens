@@ -9,7 +9,8 @@ import {
 } from '../src/index';
 import {
   createPagesAggregateColumnsArchive, createPagesLongBodyArchive, createPagesLongTableArchive, createPagesNumberingArchive,
-  createPagesSavedColumnsArchive, pagesAggregateColumnText, pagesLongBodyText, pagesTallCellText, pagesTallMergeText
+  createPagesParagraphBreakArchive, createPagesSavedColumnsArchive, pagesAggregateColumnText, pagesEstimatedColumnOverflowText, pagesLongBodyText,
+  pagesTallCellText, pagesTallMergeText
 } from './fixtures/pages-archive.mjs';
 import { readFixture, repackageIworkFixture } from './helpers';
 
@@ -199,6 +200,40 @@ describe('iWork parsing', () => {
       paragraph => paragraph.runs.map(run => run.text).join('')) ?? []))).toEqual([
       ['First page 1'], ['Restart page 1'], ['😀 Continued 2 (label IV) — 2 of 3, final.']
     ]);
+  });
+
+  it.each([false, true])('honors inherited Pages paragraph breaks with saved prefix and columns: %s', async columns => {
+    const document = await loadIwork(await createPagesParagraphBreakArchive({ columns, savedPrefix: columns }));
+    if (document.kind !== 'pages') throw new Error('Expected Pages document');
+    const first = columns ? 3 : 1;
+    const last = first + 1;
+    expect(document.pages.map(page => page.blocks.flatMap(block => block.paragraphs ?? [])
+      .map(paragraph => paragraph.runs.map(run => run.text).join('').trim()).filter(Boolean))).toEqual([
+      ...(columns ? [['Saved prefix.'], []] : []),
+      [`Opening page ${first}.`, 'Before the break.'],
+      [`Styled page ${last}.`, ...(columns ? ['Same page.', `Right of page ${last}.`] : [`Same physical page ${last}.`]),
+        `Last on page ${last} of ${last}.`]
+    ]);
+    if (columns) {
+      const [before, after] = document.pages.slice(-2).map(page => page.canvas.slide.items
+        .filter(item => item.kind === 'text').map(({ transform: { x, y } }) => [x, y]));
+      expect(before.every(([x]) => x === 40)).toBe(true);
+      expect(after[0]).toEqual([40, 40]);
+      expect(after.find(([x]) => x === 220)).toEqual([220, 40]);
+      const paragraphs = document.pages.at(-1)?.blocks.flatMap(block => block.paragraphs ?? []);
+      const sizes = paragraphs?.slice(-2).map(paragraph => [...new Set(paragraph.runs.map(run => run.fontSize))]);
+      expect(sizes).toEqual([[18], [14]]);
+    }
+  });
+
+  it('honors a paragraph style that starts a new page after a leading Pages column break', async () => {
+    const document = await loadIwork(await createPagesParagraphBreakArchive({ columns: true, afterColumnBreakStartsPage: true }));
+    if (document.kind !== 'pages') throw new Error('Expected Pages document');
+    expect(document.pages.map(page => page.blocks.flatMap(block => block.paragraphs ?? [])
+      .map(paragraph => paragraph.runs.map(run => run.text).join('').trim()).filter(Boolean))).toEqual([
+      ['Opening page 1.', 'Before the break.'], ['Styled page 2.', 'Same page.'], ['Right of page 3.', 'Last on page 3 of 3.']
+    ]);
+    expect(document.pages[2].canvas.slide.items[0].transform.x).toBe(40);
   });
 
   it('reserves space for wrapping table cells when a Pages archive omits cached pagination and fitted rows', async () => {
@@ -512,6 +547,29 @@ describe('iWork parsing', () => {
     expect(blank).toEqual([]);
     expect(geometry(last)).toEqual([[40, 40, 320]]);
     expect(paragraphs(3)).toEqual(['Saved page 4 of 4.']);
+  });
+
+  it('keeps grapheme clusters intact across estimated unequal Pages columns', async () => {
+    const document = await loadIwork(await createPagesAggregateColumnsArchive({ savedLayout: false, overflow: true }), { hint: 'pages' });
+    if (document.kind !== 'pages') throw new Error('Expected Pages document');
+    const pageCount = document.pages.length;
+    expect(pageCount).toBeGreaterThan(3);
+    const fragments = document.pages.flatMap(page => page.blocks.flatMap(block => block.paragraphs ?? [])
+      .map(paragraph => paragraph.runs.map(run => run.text).join('')));
+    expect(fragments.at(-1)).toBe(`Full on page ${pageCount} of ${pageCount}.`);
+    const start = fragments.indexOf('Wide on page 2.') + 1;
+    expect(start).toBeGreaterThan(0);
+    const parts = fragments.slice(start, -1);
+    expect(parts.join('')).toBe(pagesEstimatedColumnOverflowText);
+    const boundaries = new Intl.Segmenter().segment(pagesEstimatedColumnOverflowText);
+    let offset = 0;
+    for (const part of parts) {
+      expect(boundaries.containing(offset)?.index).toBe(offset);
+      offset += part.length;
+    }
+    const widths = new Set(document.pages.slice(2).flatMap(page => page.canvas.slide.items
+      .filter(item => item.kind === 'text').map(item => item.transform.width)));
+    expect(widths).toEqual(new Set([80, 200, 320]));
   });
 
   it.each([true, 'long', 'leading', 'image', 'split'])('continues text displaced by a saved Pages inline object: %j', async (savedFlow) => {

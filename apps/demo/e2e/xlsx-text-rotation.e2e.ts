@@ -50,7 +50,7 @@ test('lays out XLSX angled and stacked text in source cells and clipped merges',
   await expect(value(3, 2)).toHaveText('12,345.67');
   await expect(value(3, 3).getByText('run')).toHaveCSS('color', 'rgb(153, 17, 85)');
   await expect(value(3, 3).getByText('run')).toHaveCSS('font-weight', '700');
-  const capped = (await row(4).boundingBox())!.height;
+  const capped = await row(4).evaluate(element => parseFloat(getComputedStyle(element).height));
   expect(capped).toBeGreaterThan(535);
   expect(capped).toBeLessThanOrEqual(547);
 
@@ -102,6 +102,7 @@ test('paints rotated text across blank tracks and retains the source anchor outs
   await expect(cell(1, 1)).toHaveCSS('border-right-color', 'rgba(0, 0, 0, 0)');
   await expect(cell(1, 2)).toHaveCSS('border-right-color', 'rgba(0, 0, 0, 0)');
   await expect(cell(1, 4)).toHaveCSS('border-right-color', 'rgb(216, 222, 232)');
+  await expect(page.locator('.wb-preview')).toHaveCSS('opacity', '1');
   const second = await box(cell(1, 2));
   const ink = await overflow(1).locator('.xlsxv-rotated-value').evaluate((el, { x, width }) => {
     const text = el.firstChild!;
@@ -126,10 +127,14 @@ test('paints rotated text across blank tracks and retains the source anchor outs
   await expect(overflow(5)).toHaveCount(0);
   await expect(overflow(8)).toHaveCount(0);
 
-  const sourceX = (r: number) => overflow(r).locator('.xlsxv-rotated-value').evaluate(el => {
-    const grid = el.closest('.xlsxv-grid')!;
-    return el.getBoundingClientRect().x - grid.getBoundingClientRect().x + grid.scrollLeft;
-  });
+  const sourceX = async (r: number) => {
+    let x: number | undefined;
+    await expect.poll(async () => x = await overflow(r).locator('.xlsxv-rotated-value').evaluate(el => {
+      const grid = el.closest('.xlsxv-grid');
+      if (grid) return el.getBoundingClientRect().x - grid.getBoundingClientRect().x + grid.scrollLeft;
+    })).toEqual(expect.any(Number));
+    return x!;
+  };
   await expect(cell(6, 1).locator('.xlsxv-rotated-overflow')).toHaveCount(1);
   await expect(row(7).locator('.xlsxv-column-spacer .xlsxv-rotated-overflow')).toHaveCount(1);
   const autoHeight = (await box(row(7))).height;

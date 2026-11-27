@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import { createPdfFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
+import { createPdfAttachmentRangeFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
 
 interface SliceRead { begin: number; end: number; held: boolean; aborted: boolean }
 interface ReadProbe { whole: number; pauseAt: number; reads: SliceRead[] }
@@ -79,6 +80,34 @@ test('reads a large PDF upload by slices and aborts a held distant page read on 
   await expect(page.locator('.wb-preview-stage')).toContainText('Replacement is ready.');
   await expect.poll(async () => (await probe()).reads.find(read => read.held)?.aborted).toBe(true);
   await expect(page.getByRole('alert')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test('cancels a local PDF attachment slice and lets the same attachment reopen', async ({ page }) => {
+  const { bytes, payloadOffset } = createPdfAttachmentRangeFixture();
+  const name = 'sliced-attachment.pdf';
+  const probe = await trackPdfReads(page, name);
+  const errors: Error[] = [];
+  page.on('pageerror', error => errors.push(error));
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  await expect(canvas(page, 0)).toBeVisible();
+  await page.locator('.filens-attachments summary').click();
+  const large = page.getByRole('button', { name: 'large.bin', exact: true });
+  await expect(large).toBeVisible();
+  const held = async () => (await probe()).reads.filter(read => read.held);
+  await page.evaluate(offset => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = offset; }, payloadOffset);
+  await large.click();
+  await expect.poll(async () => (await held())[0]?.aborted).toBe(false);
+  await page.getByRole('button', { name: 'Back to document', exact: true }).click();
+  await expect.poll(async () => (await held())[0]?.aborted).toBe(true);
+  await expect(canvas(page, 0)).toBeVisible();
+  await page.evaluate(() => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = -1; });
+  const [attachment] = await Promise.all([page.waitForEvent('download'),
+    page.locator('.filens-attachments li').filter({ hasText: 'large.bin' }).getByRole('button', { name: 'Download attachment' }).click()]);
+  const downloaded = await readFile((await attachment.path())!);
+  expect(downloaded).toEqual(bytes.subarray(payloadOffset - downloaded.length / 2, payloadOffset + downloaded.length / 2));
+  expect((await probe()).whole).toBe(0);
   expect(errors).toEqual([]);
 });
 

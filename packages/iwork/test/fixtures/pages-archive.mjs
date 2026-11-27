@@ -67,14 +67,19 @@ export function createPagesSavedColumnsArchive() {
 }
 
 export const pagesAggregateColumnText = 'First column starts here.\n\uFFFC\nLine wraps across the next column: 中文 e\u0301 👩‍💻 and page \uFFFC.';
+export const pagesEstimatedColumnOverflowText = pagesLongBodyText.replaceAll('\uFFFC', '');
 
-export function createPagesAggregateColumnsArchive({ overflow = false } = {}) {
+export function createPagesAggregateColumnsArchive({ overflow = false, savedLayout = true } = {}) {
   const ref = identifier => ({ identifier });
+  const savedPrefix = savedLayout === 'prefix' ? 'Saved prefix.\n' : '';
   const leftText = overflow ? Array.from({ length: 9 }, (_, i) => `Archived left ${i + 1}.`).join('\n') + '\n' : '';
   const rightText = overflow ? Array.from({ length: 20 }, (_, i) => `Archived right ${i + 1}.`).join('\n') + '\n' : '';
-  const pages = [pagesAggregateColumnText, `${leftText}Left stops here.\n\u000cRight starts here.\n${rightText}End of page \uFFFC.`, 'Saved page \uFFFC of \uFFFC.'];
-  const body = pages.join('\n');
-  let location = 0;
+  const pages = savedLayout && !savedPrefix
+    ? [pagesAggregateColumnText, `${leftText}Left stops here.\n\u000cRight starts here.\n${rightText}End of page \uFFFC.`, 'Saved page \uFFFC of \uFFFC.']
+    : [`Equal left.\n\uFFFC\nLeft joins \u000cright on page \uFFFC.\n${Array.from({ length: 14 }, (_, i) => `Equal ${i + 1}.`).join('\n')}`,
+      `Narrow.\u000cWide on page \uFFFC.${overflow ? `\n${pagesEstimatedColumnOverflowText}` : ''}`, 'Full on page \uFFFC of \uFFFC.'];
+  const body = savedPrefix + pages.join('\n');
+  let location = savedPrefix.length;
   const targets = pages.map((text, index) => {
     const length = text.length + Number(index < pages.length - 1);
     const range = { location, length };
@@ -85,18 +90,22 @@ export function createPagesAggregateColumnsArchive({ overflow = false } = {}) {
     doubleOrigin: { x, y }, doubleSize: { width, height } });
   return createIworkArchive([
     [1, 10000, 'TP.DocumentArchive', { bodyStorage: ref(2), pageWidth: 400, pageHeight: 320,
-      topMargin: 40, bottomMargin: 40, leftMargin: 40, rightMargin: 40, deprecatedLayoutState: ref(3) }, [2, 3]],
+      topMargin: 40, bottomMargin: 40, leftMargin: 40, rightMargin: 40,
+      ...(savedLayout ? { deprecatedLayoutState: ref(3) } : {}) }, savedLayout ? [2, 3] : [2]],
     [2, 2001, 'TSWP.StorageArchive', { text: [body], tableLayoutStyle: { entries: [
-      { characterIndex: 0, object: ref(4) }, { characterIndex: targets[1].range.location, object: ref(5) },
+      { characterIndex: targets[0].range.location, object: ref(4) }, { characterIndex: targets[1].range.location, object: ref(5) },
       { characterIndex: targets[2].range.location }
     ] }, tableParaStyle: { entries: [{ characterIndex: 0, object: ref(6) }] },
     tableAttachment: { entries: Array.from(body.matchAll(/\uFFFC/g), ({ index: characterIndex }, i) => ({
       characterIndex, object: ref([9, 7, 7, 7, 8][i])
     })) } }, [4, 5, 6, 7, 8, 9]],
-    [3, 10131, 'TP.LayoutStateArchive', { sectionHints: [{ startPageIndex: 0, pageHints: [
+    ...(savedLayout ? [[3, 10131, 'TP.LayoutStateArchive', { sectionHints: [{ startPageIndex: 0, pageHints: savedPrefix ? [
+      { targetHints: [{ range: { location: 0, length: savedPrefix.length }, doubleOrigin: { x: 12, y: 15 },
+        doubleSize: { width: 250, height: 90 } }] }, { pageKind: 2 }
+    ] : [
       { targetHints: [frame(0, 0, 12, 320, 112)] }, { flowHints: [frame(1, 16, 24, 288, 150)] },
       { pageKind: 2 }, { targetHints: [targets[2]] }
-    ] }] }, []],
+    ] }] }, []]] : []),
     [4, 2024, 'TSWP.ColumnStyleArchive', { super: {}, columnProperties: { columns: {
       equalColumns: { count: 2, gap: 0.125 }
     } } }, []],
@@ -187,26 +196,37 @@ export function createPagesLongBodyArchive({ inlineDrawable = false, savedLayout
 
 export function createPagesLongTableArchive({
   fittedRows = false, dataRows = 9, tallRow = false, tallMerge = false, mergeRow = 2, hideMergeAnchor = false, tallGlyph = false,
-  savedFlow = false, packedPartitions = false, rowHeight = 60
+  savedFlow = false, packedPartitions = false, rowHeight = 60, firstPartitionRows = 2, partitionSuffix = '', partitionColumns,
+  estimatedColumns = false
 } = {}) {
   const ref = identifier => ({ identifier });
   const tail = savedFlow === 'long' ? `\n${pagesLongBodyText.replaceAll('\uFFFC', '')}` : '';
   const partitionOnly = savedFlow === 'partition-only';
   const partitioned = savedFlow === 'partition' || partitionOnly;
+  const siblingImage = partitionColumns === 'continuation';
+  const leadingTables = partitionColumns === 'leading-tables';
+  const twoTables = partitionColumns === 'two-tables' || partitionColumns === 'stacked-tables' || leadingTables;
   const lead = savedFlow === 'leading' ? 'Saved lead ' : '';
   const image = savedFlow === 'image';
   const separator = savedFlow === 'split' ? ' ' : '\n';
   const wrappedGrowth = savedFlow === 'wrapped-growth';
   const afterObject = wrappedGrowth ? pagesWrappedTableTail.replace('VIII', '\uFFFC') : `After ${image ? 'image' : 'table'}`;
   const finalParagraph = savedFlow === 'single-growth' ? '' : '\nFinal paragraph.';
-  const body = partitioned
-    ? 'Saved lead \uFFFC\nAfter table on page \uFFFC of \uFFFC.\nFinal paragraph.\nSaved next on page \uFFFC of \uFFFC.'
+  const body = leadingTables
+    ? 'Saved lead \uFFFC\nRight lead \uFFFC\nAfter table on page \uFFFC of \uFFFC.\nFinal paragraph.\nSaved next on page \uFFFC of \uFFFC.'
+    : partitioned
+    ? `${partitionColumns === 'anchor' ? 'Previous column.\n' : ''}Saved lead \uFFFC${partitionSuffix}\nAfter table on page \uFFFC of \uFFFC.\n${twoTables ? 'Right lead \uFFFC' : `Final paragraph.${siblingImage ? '\uFFFC' : ''}`}\nSaved next on page \uFFFC of \uFFFC.`
     : savedFlow
     ? `${lead}\uFFFC ${afterObject} on page \uFFFC of \uFFFC.${tail}${finalParagraph}${separator}Saved next on page \uFFFC of \uFFFC.`
     : 'Before table \uFFFC after table on page \uFFFC of \uFFFC.\nFinal paragraph.';
   const nextPage = body.indexOf('Saved next on page');
   const partitionText = body.indexOf('After table');
-  const attachmentIds = wrappedGrowth ? [3, 28, 9, 10, 9, 10] : [3, 9, 10, 9, 10];
+  const leadStart = body.indexOf('Saved lead');
+  const finalStart = body.indexOf(twoTables ? 'Right lead' : 'Final paragraph.');
+  const target = (start, end, x, width) => ({ range: { location: start, length: end - start },
+    doubleOrigin: { x, y: 0 }, doubleSize: { width, height: 240 } });
+  const attachmentIds = leadingTables ? [3, 29, 9, 10, 9, 10]
+    : [3, ...(wrappedGrowth ? [28] : []), 9, 10, ...(siblingImage || twoTables ? [29] : []), 9, 10];
   const labels = ['Heading', ...Array.from({ length: dataRows }, (_, index) => `Row ${index + 1}`),
     tallMerge ? pagesTallMergeText : 'Merged rows'];
   if (tallRow) labels[1] = pagesTallCellText;
@@ -229,12 +249,19 @@ export function createPagesLongTableArchive({
   });
   if (tallRow && mergeRow !== 1) labels.push('Side note');
   const fittedHeight = row => tallRow && row === 1 ? 1000 : tallMerge && row >= mergeRow && row < mergeRow + 2 ? 145 : 60;
+  const partitionHints = !partitioned ? [] : [
+    [26, 0, firstPartitionRows, 0], [27, firstPartitionRows, rowInfos.length - firstPartitionRows, 1],
+    ...(twoTables ? [[32, 0, leadingTables ? 1 : 4, 0],
+      [33, leadingTables ? 1 : 4, rowInfos.length - (leadingTables ? 1 : 4), 1]] : [])
+  ];
   return createIworkArchive([
     [1, 10000, 'TP.DocumentArchive', { bodyStorage: ref(2), pageWidth: 400, pageHeight: 320,
       topMargin: 40, bottomMargin: 40, leftMargin: 40, rightMargin: 40,
       ...(savedFlow ? { deprecatedLayoutState: ref(20), floatingDrawables: ref(21) } : {}) }, savedFlow ? [2, 20, 21] : [2]],
     [2, 2001, 'TSWP.StorageArchive', { text: [body], tableAttachment: { entries: Array.from(body.matchAll(/\uFFFC/g),
-      ({ index }, i) => ({ characterIndex: index, object: ref(attachmentIds[i]) })) } }, [3, 9, 10, ...(wrappedGrowth ? [28] : [])]],
+      ({ index }, i) => ({ characterIndex: index, object: ref(attachmentIds[i]) })) },
+      ...(estimatedColumns ? { tableLayoutStyle: { entries: [{ characterIndex: 0, object: ref(34) }] } } : {}) },
+    [...new Set(attachmentIds), ...(estimatedColumns ? [34] : [])]],
     [3, 2003, 'TSWP.DrawableAttachmentArchive', { drawable: ref(4) }, [4]],
     image ? [4, 3005, 'TSD.ImageArchive', { data: ref(25), super: { geometry: { size: { width: 320, height: 240 } } } }, []]
     : [4, 6000, 'TST.TableInfoArchive', { super: { geometry: { position: { x: 0, y: 0 }, size: { width: 320, height: rowInfos.length * rowHeight } } },
@@ -254,7 +281,20 @@ export function createPagesLongTableArchive({
       size: { packedData: 0, numRows: 2, numColumns: 1 } }] }, []],
     [9, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormat: 0 }, []],
     [10, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 1 }, numberFormat: 0 }, []],
+    ...(estimatedColumns ? [[34, 2024, 'TSWP.ColumnStyleArchive', { super: {}, columnProperties: { columns:
+      estimatedColumns === 'unequal' ? { nonEqualColumns: { first: 0.375, following: [{ gap: 0.125, width: 0.5 }] } }
+        : { equalColumns: { count: 2, gap: 0.125 } }
+    } }, []]] : []),
     ...(wrappedGrowth ? [[28, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormat: 123, stringValue: 'VIII' }, []]] : []),
+    ...(siblingImage ? [
+      [29, 2003, 'TSWP.DrawableAttachmentArchive', { drawable: ref(30) }, [30]],
+      [30, 3005, 'TSD.ImageArchive', { data: ref(31), super: { geometry: { size: { width: 10, height: 12 } } } }, []]
+    ] : []),
+    ...(twoTables ? [
+      [29, 2003, 'TSWP.DrawableAttachmentArchive', { drawable: ref(30) }, [30]],
+      [30, 6000, 'TST.TableInfoArchive', { super: { geometry: { size: { width: 180, height: rowInfos.length * rowHeight } } },
+        tableModel: ref(5) }, [5]]
+    ] : []),
     ...(tallMerge ? [
       [11, 6305, 'TST.StrokeSidecarArchive', { rowCount: rowInfos.length, columnCount: 2, rightColumnStrokeLayers: [ref(12)] }, [12]],
       [12, 6306, 'TST.StrokeLayerArchive', { rowColumnIndex: 1, strokeRuns: [{ origin: mergeRow, length: 2, order: 1,
@@ -273,31 +313,40 @@ export function createPagesLongTableArchive({
       [18, 2021, 'TSWP.CharacterStyleArchive', { super: {}, charProperties: { fontSize: 16 } }, []],
       [19, 2022, 'TSWP.ParagraphStyleArchive', { super: {}, paraProperties: { lineSpacing: { mode: 2, amount: 16 } } }, []]
     ] : []),
-    ...(partitioned ? [[0, 2], [2, rowInfos.length - 2]].map(([row, rows], index) => [
-      26 + index, 6198, 'TST.LayoutHintArchive', { isValid: true, partitionPosition: index, horizontal: false,
+    ...partitionHints.map(([id, row, rows, index]) => [
+      id, 6198, 'TST.LayoutHintArchive', { isValid: true, partitionPosition: index, horizontal: false,
         maximumSize: { width: 320, height: 240 }, cellRange: {
           origin: { packedData: packedPartitions ? row : 0, ...(packedPartitions ? {} : { expandedCoord: { row, column: 0 } }) },
           size: { packedData: (2 << 16) | rows }
         } }, []
-    ]) : []),
+    ]),
     ...(savedFlow ? [[20, 10131, 'TP.LayoutStateArchive', { sectionHints: [{ startPageIndex: 0, pageHints: [
-      { ...(partitioned ? { childHints: [ref(26)] } : {}), targetHints: [{ range: { location: 0, length: partitioned ? partitionText : nextPage },
-        doubleOrigin: { x: 0, y: 0 }, doubleSize: { width: 320, height: 240 } }] },
-      ...(partitioned ? [{ childHints: [ref(27)], ...(!partitionOnly ? { targetHints: [{
-        range: { location: partitionText, length: nextPage - partitionText },
-        doubleOrigin: { x: 13, y: 0 }, doubleSize: { width: 287, height: 240 }
-      }] } : {}) }] : []),
+      { ...(partitioned ? { childHints: [ref(26)] } : {}), targetHints: leadingTables ? [target(0, finalStart, 0, 320)]
+        : partitionColumns === 'anchor'
+        ? [target(0, leadStart, 0, 132), target(leadStart, partitionText, 145, 175)]
+        : [target(0, partitioned ? partitionText : nextPage, 0, 320)] },
+      ...(leadingTables ? [
+        { childHints: [ref(32)], targetHints: [target(finalStart, partitionText, 0, 320)] },
+        { childHints: [ref(27), ref(33)], targetHints: [target(partitionText, nextPage, 13, 287)] }
+      ] : partitioned ? [{ childHints: twoTables ? [ref(27), ref(32)] : [ref(27)], ...(siblingImage ? { anchoredAttachmentsMap: [
+        { attachment: ref(29), doublePosition: { x: 255, y: 125 } }
+      ] } : {}), ...(!partitionOnly ? { targetHints: siblingImage || partitionColumns === 'two-tables'
+        ? [target(partitionText, finalStart, 13, 145), target(finalStart, nextPage, 178, 140)]
+        : [target(partitionText, nextPage, 13, 287)] } : {}) }] : []),
       { pageKind: 2 },
-      { targetHints: [{ range: { location: partitionOnly ? partitionText : nextPage, length: body.length - (partitionOnly ? partitionText : nextPage) },
+      { ...(twoTables && !leadingTables ? { childHints: [ref(33)] } : {}),
+        targetHints: [{ range: { location: partitionOnly ? partitionText : nextPage, length: body.length - (partitionOnly ? partitionText : nextPage) },
         doubleOrigin: { x: 17, y: 23 }, doubleSize: { width: 268, height: 190 } }] }
-    ] }] }, partitioned ? [26, 27] : []],
-    [21, 10010, 'TP.FloatingDrawablesArchive', { pageGroups: [{ pageIndex: partitioned ? 3 : 2, foregroundDrawables: [{ drawable: ref(22) }] }] }, [22]],
+    ] }] }, partitionHints.map(([id]) => id)],
+    [21, 10010, 'TP.FloatingDrawablesArchive', { pageGroups: [{ pageIndex: leadingTables ? 4 : partitioned ? 3 : 2,
+      foregroundDrawables: [{ drawable: ref(22) }] }] }, [22]],
     [22, 3005, 'TSD.ImageArchive', { data: ref(23), super: { geometry: {
       position: { x: 332, y: 55 }, size: { width: 20, height: 24 }
     } } }, []]] : []),
-    ...(savedFlow ? [[24, 11006, 'TSP.PackageMetadata', { lastObjectIdentifier: wrappedGrowth ? 28 : partitioned ? 27 : 24, datas: [
+    ...(savedFlow ? [[24, 11006, 'TSP.PackageMetadata', { lastObjectIdentifier: twoTables ? 33 : siblingImage ? 31 : wrappedGrowth ? 28 : partitioned ? 27 : 24, datas: [
       { identifier: 23, digest: new Uint8Array(), preferredFileName: 'Badge.svg', fileName: 'Badge.svg' },
-      ...(image ? [{ identifier: 25, digest: new Uint8Array(), preferredFileName: 'Figure.svg', fileName: 'Figure.svg' }] : [])
+      ...(image ? [{ identifier: 25, digest: new Uint8Array(), preferredFileName: 'Figure.svg', fileName: 'Figure.svg' }] : []),
+      ...(siblingImage ? [{ identifier: 31, digest: new Uint8Array(), preferredFileName: 'Marker.svg', fileName: 'Marker.svg' }] : [])
     ] }, []]] : [])
   ], savedFlow ? {
     'Data/Badge.svg': new TextEncoder().encode(
@@ -305,6 +354,9 @@ export function createPagesLongTableArchive({
     ),
     ...(image ? { 'Data/Figure.svg': new TextEncoder().encode(
       '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="320" height="240" fill="#345778"/></svg>'
+    ) } : {}),
+    ...(siblingImage ? { 'Data/Marker.svg': new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="12"><rect width="10" height="12" fill="#345778"/></svg>'
     ) } : {})
   } : {});
 }
@@ -343,5 +395,52 @@ export function createPagesNumberingArchive({ savedLayout = true } = {}) {
     [10, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormatName: 'decimal', numberFormat: 0, stringValue: '90' }, []],
     [11, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 1, stringEquivalent: '1' }, numberFormat: 0 }, []],
     [12, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormat: 123, stringValue: 'IV' }, []]
+  ]);
+}
+
+export function createPagesParagraphBreakArchive({ columns = false, savedPrefix = false, afterColumnBreakStartsPage = false } = {}) {
+  const ref = identifier => ({ identifier });
+  const separator = columns ? '\r\n' : '\n';
+  const prefix = savedPrefix ? 'Saved prefix.' + separator : '';
+  const columnBreak = (afterColumnBreakStartsPage ? separator : '') + '\u000c';
+  const lines = ['Opening page \uFFFC.', 'Before the break.', 'Styled page \uFFFC.',
+    columns ? `Same page.${columnBreak}Right of page \uFFFC.` : 'Same physical page \uFFFC.', 'Last on page \uFFFC of \uFFFC.'];
+  const body = prefix + (columns ? lines.slice(0, -1).join(separator) + '\u0005' + lines.at(-1) : lines.join(separator));
+  let start = prefix.length;
+  const entries = lines.slice(0, 4).map((line, index) => {
+    const entry = { characterIndex: start, object: ref(index % 2 === 0 ? 5 : 6) };
+    start += line.length + separator.length;
+    return entry;
+  });
+  if (columns) {
+    entries.push({ characterIndex: body.indexOf('Right of page'), object: ref(10) },
+      { characterIndex: body.indexOf('Last on page'), object: ref(11) });
+  }
+  const fields = Array.from(body.matchAll(/\uFFFC/g), ({ index }) => index);
+  return createIworkArchive([
+    [1, 10000, 'TP.DocumentArchive', { bodyStorage: ref(2), pageWidth: 400, pageHeight: 320,
+      topMargin: 40, bottomMargin: 40, leftMargin: 40, rightMargin: 40,
+      ...(savedPrefix ? { deprecatedLayoutState: ref(3) } : {}) }, savedPrefix ? [2, 3] : [2]],
+    [2, 2001, 'TSWP.StorageArchive', { text: [body], tableParaStyle: { entries },
+      ...(columns ? { tableLayoutStyle: { entries: [{ characterIndex: prefix.length, object: ref(9) }] } } : {}),
+      tableAttachment: { entries: fields.map((characterIndex, index) => ({
+        characterIndex, object: ref(index === fields.length - 1 ? 8 : 7)
+      })) } }, [5, 6, 7, 8, ...(columns ? [9, 10, 11] : [])]],
+    ...(savedPrefix ? [[3, 10131, 'TP.LayoutStateArchive', { sectionHints: [{ startPageIndex: 0, pageHints: [
+      { targetHints: [{ range: { location: 0, length: prefix.length }, doubleOrigin: { x: 12, y: 15 },
+        doubleSize: { width: 250, height: 90 } }] }, { pageKind: 2 }
+    ] }] }, []]] : []),
+    [4, 2022, 'TSWP.ParagraphStyleArchive', { super: {}, paraProperties: { pageBreakBefore: true } }, []],
+    [5, 2022, 'TSWP.ParagraphStyleArchive', { super: { parent: ref(4) } }, [4]],
+    [6, 2022, 'TSWP.ParagraphStyleArchive', { super: { parent: ref(4) }, paraProperties: { pageBreakBefore: false } }, [4]],
+    [7, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormat: 0, stringValue: '99' }, []],
+    [8, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 1 }, numberFormat: 0, stringValue: '99' }, []],
+    ...(columns ? [
+      [9, 2024, 'TSWP.ColumnStyleArchive', { super: {}, columnProperties: { columns: { equalColumns: { count: 2, gap: 0.125 } } } }, []],
+      [10, 2022, 'TSWP.ParagraphStyleArchive', {
+        super: { parent: ref(6) }, charProperties: { fontSize: 18 }, paraProperties: { pageBreakBefore: afterColumnBreakStartsPage }
+      }, [6]],
+      [11, 2022, 'TSWP.ParagraphStyleArchive', { super: { parent: ref(6) }, charProperties: { fontSize: 14 } }, [6]]
+    ] : [])
   ]);
 }
