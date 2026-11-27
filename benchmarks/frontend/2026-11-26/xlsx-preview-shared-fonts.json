@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "jsdom": "25.0.1",
+  "method": "Load a file-backed Blob into XlsxPreviewSession in three fresh Node processes per build, alternating build order. Measure the full load and initial viewport, retained heap above startup after GC, and process peak RSS before switching sheets. Then switch to the second sheet and verify its displayed formula result. Compare initial viewport markup on every sheet and serialized public reader models for all five shipped XLSX samples. jsdom uses the font measurement fallback.",
+  "workload": {
+    "dataRows": 16000,
+    "dataColumns": 128,
+    "numericCells": 2048000,
+    "numericValue": 1,
+    "styles": "Odd rows have bold Courier New and two decimal places. Even rows have the default Arial font.",
+    "merge": "A1:B1",
+    "secondSheetFormula": "SUM(Numbers!A1:DX16000)+Numbers!D16000",
+    "verifiedResult": "2048001.00"
+  },
+  "builds": {
+    "baseline": "e6b2fbd0106a771e1721a5aaf2418cc211254c8738b0452bdd55357dc762a155",
+    "sharedFonts": "30f08770e559d52117d35c179ee207c1e60be6ef64b135c3f9cc0707c316f0d6"
+  },
+  "archive": {
+    "bytes": 4633704,
+    "sha256": "9d8d93b71b00013aef984d8bf5f708fd30e2aa5cdd0ec4ebc35d281b6d9d78ec"
+  },
+  "variants": {
+    "baseline": {
+      "samples": [
+        {
+          "loadMs": 1296.638,
+          "retainedHeapBytes": 186630312,
+          "peakRssKiB": 371984
+        },
+        {
+          "loadMs": 1291.618,
+          "retainedHeapBytes": 186487432,
+          "peakRssKiB": 369344
+        },
+        {
+          "loadMs": 1314.27,
+          "retainedHeapBytes": 186479760,
+          "peakRssKiB": 367680
+        }
+      ],
+      "median": {
+        "loadMs": 1296.638,
+        "retainedHeapBytes": 186487432,
+        "peakRssKiB": 369344
+      }
+    },
+    "sharedFonts": {
+      "samples": [
+        {
+          "loadMs": 1285.356,
+          "retainedHeapBytes": 170086152,
+          "peakRssKiB": 356448
+        },
+        {
+          "loadMs": 1294.958,
+          "retainedHeapBytes": 170273880,
+          "peakRssKiB": 351728
+        },
+        {
+          "loadMs": 1296.793,
+          "retainedHeapBytes": 170083560,
+          "peakRssKiB": 355600
+        }
+      ],
+      "median": {
+        "loadMs": 1294.958,
+        "retainedHeapBytes": 170086152,
+        "peakRssKiB": 355600
+      }
+    }
+  },
+  "samples": {
+    "filens-observatory.xlsx": {
+      "publicModelSha256": "24ddcc9193cf0f5a5fd4ecc5f5a7fe38c7c9919b9f227e9128ab8c31a37ae2c9",
+      "viewportSha256": [
+        "75ccb504d15c2146941e1acc465db358f0d669e67a492f5d55c9c74314256c0e",
+        "7ad6b50d8e6f129527fd04f2d867e57baacbb96f1e43a46e5598b4de8e7a7ed7",
+        "7e9ae1eb330e600e603919c1adf47df9617d3ab6c0cffd1fc7a7cedb116cb965"
+      ]
+    },
+    "filens-observatory.zh-CN.xlsx": {
+      "publicModelSha256": "9dd21257228371dfdde62b8cff80c541aec64b602e6dcdf6b8525646ec853549",
+      "viewportSha256": [
+        "de5ef9bedbfcb32f7afaffab9148e578d813982db5452b3d3f85a3a27933c896",
+        "cf14eb077092237e7c3f77f0e95537e8ee76339f35d09cd46477e7a99edf2932",
+        "a87d35a83a3a2ddd7132b1a1fecbc80f477cf5e65ea57921bb4429505f16bbc0"
+      ]
+    },
+    "rich-xlsx-data-types.xlsx": {
+      "publicModelSha256": "a79a7588c7f8db5b3795f1bcdf0af79cbc3dd119fbbbdf50896f975201adc198",
+      "viewportSha256": [
+        "0015010e118e839ce039b0c098ad806f6b4e0ee98af78b0a4bd2d1847e82cecf"
+      ]
+    },
+    "rich-xlsx-formulas.xlsx": {
+      "publicModelSha256": "967c7fbbfbf35754ce4465446261b3b161aa9dc2e15efe41495da246927bc812",
+      "viewportSha256": [
+        "410f0aebc5e8b6d4a63ee91c32d751a9afc0a110a88bd76b3a796f36541e400a"
+      ]
+    },
+    "rich-xlsx-many-columns.xlsx": {
+      "publicModelSha256": "c09da7b9dffa96a4e8e8d2977a0a65278e500a7b290d3afa5d23df96b32b8970",
+      "viewportSha256": [
+        "af679b823a348e7961d168f084d75f023af997cf3ff01cadb3a645fce286b0da"
+      ]
+    }
+  },
+  "viewportSha256": [
+    "62b9c761addaca58b2a8738532cd49a047ccc691791f7540265d4cddfd7a4d82",
+    "a4cea5e79cab75fc29aaf0dd9502311a2d6c7ff39978e9b3fbc2df73496e07f5"
+  ]
+}

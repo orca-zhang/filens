@@ -3,12 +3,13 @@ use anyhow::{Context, Result, ensure};
 use base64::{engine::general_purpose::STANDARD, write::EncoderWriter};
 use serde_json::json;
 use std::{
-    fs::File,
-    io::{BufWriter, Write},
+    fs::{self, File},
+    io::{BufWriter, Read, Write},
     path::{Path, PathBuf},
 };
 
 const TEMPLATE: &str = include_str!("../../../packages/preview/src/standalone.html");
+const SOURCE_CHUNK_BYTES: u64 = 768 * 1024;
 
 pub(super) fn runtime(assets: &Path) -> Option<PathBuf> {
     let mut candidates = vec![
@@ -93,6 +94,7 @@ pub(super) fn run(
 
 fn embed(writer: &mut impl Write, input: &Path, runtime: &Path) -> Result<()> {
     let (prefix, rest) = TEMPLATE.split_once("<!--FILENS_SOURCE-->").unwrap();
+    let (after_source, rest) = rest.split_once("<!--FILENS_ARCHIVE_ENGINE-->").unwrap();
     let (middle, suffix) = rest.split_once("<!--FILENS_RUNTIME-->").unwrap();
     let notices =
         std::fs::read_to_string(runtime.parent().unwrap().join("THIRD-PARTY-NOTICES.txt"))
@@ -104,16 +106,14 @@ fn embed(writer: &mut impl Write, input: &Path, runtime: &Path) -> Result<()> {
         .replace('&', "\\u0026");
     // The source is streamed as base64; the CLI never parses its format.
     writer.write_all(prefix.as_bytes())?;
-    write!(
-        writer,
-        "<script id=\"filens-source\" type=\"application/json\">{{\"name\":{name},\"data\":\""
-    )?;
-    {
-        let mut encoder = EncoderWriter::new(&mut *writer, &STANDARD);
-        std::io::copy(&mut File::open(input)?, &mut encoder)?;
-        encoder.finish()?;
+    embed_source(writer, File::open(input)?, &name)?;
+    writer.write_all(after_source.as_bytes())?;
+    let assets = runtime.parent().unwrap();
+    embed_archive_engine(writer, assets)?;
+    let regex = assets.join("xlsx/pcre2.wasm");
+    if regex.is_file() {
+        embed_engine_asset(writer, "filens-xlsx-regex", &regex)?;
     }
-    writer.write_all(b"\"}</script>")?;
     writer.write_all(middle.as_bytes())?;
     let code = std::fs::read_to_string(runtime)?;
     ensure!(!code.is_empty(), "preview runtime is empty");
@@ -122,6 +122,96 @@ fn embed(writer: &mut impl Write, input: &Path, runtime: &Path) -> Result<()> {
     let escaped = html_text(&code);
     writer.write_all(escaped.as_bytes())?;
     writer.write_all(suffix.as_bytes())?;
+    Ok(())
+}
+
+fn embed_archive_engine(writer: &mut impl Write, assets: &Path) -> Result<()> {
+    let wasm = assets.join("archive/7zz.wasm");
+    if !wasm.is_file() {
+        return Ok(());
+    }
+    let entries = match fs::read_dir(assets.join("assets")) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error.into()),
+    };
+    let mut worker = None;
+    for entry in entries {
+        let path = entry?.path();
+        if path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with("archive-worker-") && name.ends_with(".js"))
+            && path.is_file()
+        {
+            // A deployment containing multiple builds cannot identify a matching worker.
+            if worker.replace(path).is_some() {
+                return Ok(());
+            }
+        }
+    }
+    let Some(worker) = worker else {
+        return Ok(());
+    };
+    for (id, path) in [
+        ("filens-archive-worker", worker),
+        ("filens-archive-wasm", wasm),
+    ] {
+        embed_engine_asset(writer, id, &path)?;
+    }
+    Ok(())
+}
+
+fn embed_engine_asset(writer: &mut impl Write, id: &str, path: &Path) -> Result<()> {
+    let mut file = File::open(path)?;
+    write!(
+        writer,
+        "<script id=\"{id}\" type=\"application/octet-stream\">"
+    )?;
+    let mut encoder = EncoderWriter::new(&mut *writer, &STANDARD);
+    ensure!(
+        std::io::copy(&mut file, &mut encoder)? > 0,
+        "preview engine asset {id} is empty"
+    );
+    encoder.finish()?.write_all(b"</script>")?;
+    Ok(())
+}
+
+fn embed_source(writer: &mut impl Write, mut file: File, name: &str) -> Result<()> {
+    let size = file.metadata()?.len();
+    write!(
+        writer,
+        "<script id=\"filens-source\" type=\"application/json\">{{\"name\":{name}"
+    )?;
+    if size <= SOURCE_CHUNK_BYTES {
+        writer.write_all(b",\"data\":\"")?;
+        encode_source_chunk(writer, &mut file, size)?;
+        writer.write_all(b"\"}</script>")?;
+    } else {
+        write!(writer, ",\"size\":{size}}}</script>")?;
+        let mut remaining = size;
+        while remaining > 0 {
+            let bytes = remaining.min(SOURCE_CHUNK_BYTES);
+            writer.write_all(
+                b"<script type=\"application/octet-stream\" class=\"filens-source-chunk\">",
+            )?;
+            encode_source_chunk(writer, &mut file, bytes)?;
+            writer.write_all(b"</script>")?;
+            remaining -= bytes;
+        }
+    }
+    ensure!(
+        file.read(&mut [0])? == 0,
+        "preview source grew while exporting"
+    );
+    Ok(())
+}
+
+fn encode_source_chunk(writer: &mut impl Write, file: &mut File, size: u64) -> Result<()> {
+    let mut encoder = EncoderWriter::new(writer, &STANDARD);
+    let written = std::io::copy(&mut file.take(size), &mut encoder)?;
+    ensure!(written == size, "preview source shrank while exporting");
+    encoder.finish()?;
     Ok(())
 }
 
@@ -211,6 +301,39 @@ mod tests {
         assert!(!html.contains("</ScRiPt>"));
         assert!(html.contains("&lt;!--&lt;ScRiPt&gt;&lt;/ScRiPt&gt;&lt;script&gt;bad()&lt;/script&gt;--&gt; &amp; value"));
         assert!(html.contains("License &lt;script&gt;not code&lt;/script&gt; &amp; notice"));
+    }
+
+    #[test]
+    fn large_source_chunks_reconstruct_the_original_bytes() {
+        const CHUNK_TAG: &str =
+            "<script type=\"application/octet-stream\" class=\"filens-source-chunk\">";
+        let work = tempfile::tempdir().unwrap();
+        let input = work.path().join("large.pdf");
+        let bytes: Vec<u8> = (0..=255)
+            .cycle()
+            .take(2 * SOURCE_CHUNK_BYTES as usize + 17)
+            .collect();
+        std::fs::write(&input, &bytes).unwrap();
+        let mut output = Vec::new();
+        embed_source(&mut output, File::open(input).unwrap(), "\"large.pdf\"").unwrap();
+        let html = String::from_utf8(output).unwrap();
+        let mut scripts = html.split(CHUNK_TAG);
+        let metadata = scripts.next().unwrap();
+        assert!(metadata.ends_with(&format!("\"size\":{}}}</script>", bytes.len())));
+        let scripts = scripts.collect::<Vec<_>>();
+        assert_eq!(scripts.len(), 3);
+        let mut decoded = Vec::new();
+        for (encoded, expected) in scripts
+            .into_iter()
+            .zip(bytes.chunks(SOURCE_CHUNK_BYTES as usize))
+        {
+            let chunk = STANDARD
+                .decode(encoded.strip_suffix("</script>").unwrap())
+                .unwrap();
+            assert_eq!(chunk, expected);
+            decoded.extend(chunk);
+        }
+        assert_eq!(decoded, bytes);
     }
 
     #[cfg(not(windows))]

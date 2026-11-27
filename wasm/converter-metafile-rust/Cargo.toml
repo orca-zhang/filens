@@ -1,0 +1,18 @@
+[package]
+name = "converter-metafile"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+metafile = { package = "betteroffice-metafile", version = "=0.6.0", features = ["svg"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

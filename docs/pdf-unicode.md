@@ -1,8 +1,9 @@
 # PDF Unicode 映射恢复与真实样本回归
 
 修复在 `wasm/converter-core-rust/src/text/pdf_unicode.rs` 中实现，由共享文本
-WASM 核心在调用 PDFium 前执行。Go 仍只负责调用引擎、临时文件和 OCR 能力。
-原始 PDF 不会被覆盖；有修改时生成请求工作目录内的临时 PDF。
+WASM 核心在调用 PDFium 前执行。Rust CLI 负责调用引擎、临时文件和 OCR 能力。
+修复副本保存在请求内存中，包括显式选择磁盘工作区时。加密 PDF 会跳过修复，
+包括使用空用户密码打开的权限受限 PDF。
 
 ## 为什么不直接合并 Search 的替换表
 
@@ -63,9 +64,9 @@ TrueType Unicode 子表最多检查 8 个，始终仅查询 BMP，不按字体�
 完整输出不进入本文或公开报告，保存在被 Git 忽略的缓存中。
 
 报价单 #19747 只能视为部分恢复：中文标题、工程名称等通过检查，但缺失数字字体
-还影响 PDFium 的渲染，OCR 无法从画错的数字恢复原值。没有尝试通过字体名称猜测
-另一字体的字形编号；不能用这份输出核对工程金额。报告的 `passed` 表示所列检查通过，
-不表示这份文件的全文、数字或表格已正确。
+还影响 PDFium 的渲染，OCR 无法从画错的数字恢复原值。评估允许这个样本返回
+`ocr_low_confidence`，同时仍要求中文关键词、字体修复和逐页 OCR 记录全部符合预期。
+报告的 `passed` 只覆盖这些检查。工程金额应核对原件。
 
 构建并评估公开样本与正常 PDF：
 
@@ -86,7 +87,7 @@ python3 scripts/evaluate-pdf-unicode.py
 报告默认写入缓存；本次完整结果见
 [pdf-unicode-evaluation.json](pdf-unicode-evaluation.json)。报告仅包含公开与项目样本的退出码、完整性、关键词、字体恢复提示、源文件未改、
 输出哈希及耗时；完整文字留在被忽略的本机缓存。错误只保留错误码，避免错误信息夹带本机路径。
-OCR 样本还测试了 `--no-ocr` 确实返回失败。
+OCR 样本还逐页核对了 OCR 结果，以及 `--no-ocr` 返回的原生文本范围和跳过记录。
 
 单元测试使用原创几何字形的微型 TrueType 测试字体，不依赖系统字体或第三方字体。
 可用 `scripts/generate-pdf-unicode-fixture.py` 重新生成（需要 fontTools）。

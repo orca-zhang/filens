@@ -5461,6 +5461,68 @@ describe('keynote semantic builder', () => {
     }
   });
 
+  it('uses Pages section templates and inherits header and footer slots across sections and blank pages', () => {
+    const archive = createEmptyArchive();
+    archive.type = 'pages';
+    const ref = (identifier: number) => ({ identifier });
+    const add = (id: number, typeId: number, typeName: string, value: Record<string, unknown>, references: number[] = []) => {
+      archive.records[id] = { id, typeId, typeName, value, archiveId: 1, messageIndex: id, objectReferences: references, dataReferences: [] };
+      archive.references.outgoing[id] = references;
+    };
+    const lines = ['First', '\u0004Second', 'Second continued', '\u0004Third', '\u0004Fourth', '\u0004Fifth'];
+    const body = lines.join('\n') + '\n';
+    const starts = lines.map((_, index) => lines.slice(0, index).reduce((sum, line) => sum + line.length + 1, 0));
+    const hint = (index: number) => {
+      const skip = Number(lines[index].startsWith('\u0004'));
+      return { targetHints: [{ range: { location: starts[index] + skip, length: lines[index].length - skip },
+        doubleOrigin: { x: 0, y: 0 }, doubleSize: { width: 440, height: 60 } }] };
+    };
+    const documentArchive: Record<string, unknown> = { bodyStorage: ref(2), section: ref(3), deprecatedLayoutState: ref(8) };
+    add(1, 10000, 'TP.DocumentArchive', documentArchive);
+    add(2, 2001, 'TSWP.StorageArchive', { text: [body], tableSection: { entries: [0, 1, 3, 4, 5].map((line, index) => ({
+      characterIndex: starts[line] + Number(lines[line].startsWith('\u0004')), object: ref(3 + index)
+    })) } });
+    add(3, 10011, 'TP.SectionArchive', { sectionTemplateFirstPageDifferent: false,
+      firstSectionTemplatePage: ref(9), oddSectionTemplatePage: ref(10), userDefinedGuideStorage: ref(20) });
+    add(4, 10011, 'TP.SectionArchive', { inheritPreviousHeaderFooter: true, sectionTemplateFirstPageHidesHeaderFooter: true,
+      oddSectionTemplatePage: ref(9), backgroundFill: { color: { r: 1, g: .5, b: .5, a: 1 } } });
+    add(5, 10011, 'TP.SectionArchive', { inheritPreviousHeaderFooter: true, oddSectionTemplatePage: ref(9) });
+    add(6, 10011, 'TP.SectionArchive', { oddSectionTemplatePage: ref(11) });
+    add(7, 10011, 'TP.SectionArchive', { sectionTemplateFirstPageDifferent: true, firstSectionTemplatePage: ref(12), oddSectionTemplatePage: ref(9) });
+    add(8, 10131, 'TP.LayoutStateArchive', { sectionHints: [{ startPageIndex: 0, pageHints: [hint(0), {}, ...[1, 2, 3, 4, 5].map(hint)] }] });
+    add(9, 10143, 'TP.SectionTemplateArchive', { headers: [ref(14)] });
+    add(10, 10143, 'TP.SectionTemplateArchive', { headers: [ref(0), ref(15), ref(16)], footers: [ref(0), ref(0), ref(17)] });
+    add(11, 10017, 'TP.PageTemplateArchive', { headersFootersMatchPreviousPage: true });
+    add(12, 10143, 'TP.SectionTemplateArchive', { headers: [ref(0), ref(0), ref(0)], footers: [ref(0), ref(0), ref(0)] });
+    add(14, 2001, 'TSWP.StorageArchive', { text: ['Unused local header'] });
+    add(15, 2001, 'TSWP.StorageArchive', { text: ['Center header'] });
+    add(16, 2001, 'TSWP.StorageArchive', { text: ['Right header'] });
+    add(17, 2001, 'TSWP.StorageArchive', { text: ['Page \uFFFC'], tableAttachment: { entries: [{ characterIndex: 5, object: ref(18) }] } });
+    add(18, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 } });
+    add(20, 10016, 'TP.UserDefinedGuideMapArchive', { userDefinedGuideStorages: [] });
+    const doc = buildParsedDocument({ archive, media: {} });
+    if (doc.kind !== 'pages') throw new Error('Expected Pages document');
+    expect(doc.pages).toHaveLength(7);
+    const slots = (index: number) => doc.pages[index].canvas.slide.items.flatMap(item =>
+      item.kind === 'text' && /^(header|footer)-/.test(item.name ?? '') ? item.textFrame.paragraphs.map(para =>
+        [item.name, para.align, para.runs.map(run => run.text).join('')]) : []);
+    for (const page of [1, 2, 4, 5, 6]) expect(slots(page - 1)).toEqual([
+      ['header-1', 'center', 'Center header'], ['header-2', 'right', 'Right header'], ['footer-2', 'right', `Page ${page}`]
+    ]);
+    expect(slots(2)).toEqual([]);
+    expect(slots(6)).toEqual([]);
+    expect(doc.pages[1].canvas.slide.items.some(item => item.name === 'Body')).toBe(false);
+    expect(doc.pages[2].canvas.slide.background).toMatchObject({ type: 'solid', color: '#ff8080' });
+    expect(doc.pages[2].canvas.slide.items.find(item => item.kind === 'text' && item.name === 'Body')).toMatchObject({
+      textFrame: { paragraphs: [{ runs: [{ text: 'Second' }] }] }
+    });
+    delete documentArchive.deprecatedLayoutState;
+    delete archive.records[8];
+    const estimated = buildParsedDocument({ archive, media: {} });
+    if (estimated.kind !== 'pages') throw new Error('Expected Pages document');
+    expect(estimated.pages).toHaveLength(5);
+  });
+
   it('falls back to TP.PageTemplateArchive storage refs for pages headers and footers', () => {
     const archive = createEmptyArchive();
     archive.type = 'pages';
@@ -6135,7 +6197,7 @@ describe('keynote semantic builder', () => {
     }
   });
 
-  it('formats supported pages section page number kinds in header and footer attachments', () => {
+  it('refreshes named decimal page numbers and preserves saved unsupported formats', () => {
     const archive = createEmptyArchive();
     archive.type = 'pages';
     const media: Record<string, IworkImageAsset> = {};
@@ -6263,7 +6325,9 @@ describe('keynote semantic builder', () => {
       value: {
         super: {
           kind: 0
-        }
+        },
+        numberFormatName: 'decimal',
+        stringValue: '1'
       }
     };
     archive.records['9'] = {
@@ -6276,8 +6340,11 @@ describe('keynote semantic builder', () => {
       dataReferences: [],
       value: {
         super: {
-          kind: 1
-        }
+          kind: 1,
+          stringEquivalent: 'II'
+        },
+        numberFormat: 0,
+        numberFormatName: 'fixture-nondecimal'
       }
     };
     archive.records['11'] = {
@@ -6323,9 +6390,6 @@ describe('keynote semantic builder', () => {
       return;
     }
 
-    expect(document.warnings).not.toContain(
-      'Pages section page number kind 1 is not fully supported; using numeric fallback.'
-    );
     expect(document.pages).toHaveLength(2);
 
     const page1Header = document.pages[0]?.canvas.slide.items.find(
@@ -6343,10 +6407,10 @@ describe('keynote semantic builder', () => {
     expect(page1Footer && page1Footer.kind === 'text').toBe(true);
 
     if (page1Header && page1Header.kind === 'text') {
-      expect(page1Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('IV');
+      expect(page1Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('4');
     }
     if (page2Header && page2Header.kind === 'text') {
-      expect(page2Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('V');
+      expect(page2Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('5');
     }
     if (page1Footer && page1Footer.kind === 'text') {
       expect(page1Footer.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('II');
@@ -6480,8 +6544,10 @@ describe('keynote semantic builder', () => {
       dataReferences: [],
       value: {
         super: {
-          kind: 0
-        }
+          kind: 0,
+          string_equivalent: '1'
+        },
+        number_format: 0
       }
     };
     archive.records['9'] = {
@@ -6495,7 +6561,9 @@ describe('keynote semantic builder', () => {
       value: {
         super: {
           kind: 1
-        }
+        },
+        number_format_name: 'decimal',
+        string_value: '1'
       }
     };
     archive.records['11'] = {
@@ -6541,9 +6609,6 @@ describe('keynote semantic builder', () => {
       return;
     }
 
-    expect(document.warnings).not.toContain(
-      'Pages section page number kind 1 is not fully supported; using numeric fallback.'
-    );
     expect(document.pages).toHaveLength(2);
 
     const page1Header = document.pages[0]?.canvas.slide.items.find(
@@ -6561,13 +6626,13 @@ describe('keynote semantic builder', () => {
     expect(page1Footer && page1Footer.kind === 'text').toBe(true);
 
     if (page1Header && page1Header.kind === 'text') {
-      expect(page1Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('IV');
+      expect(page1Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('4');
     }
     if (page2Header && page2Header.kind === 'text') {
-      expect(page2Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('V');
+      expect(page2Header.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('5');
     }
     if (page1Footer && page1Footer.kind === 'text') {
-      expect(page1Footer.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('II');
+      expect(page1Footer.textFrame.paragraphs[0]?.runs.map((run) => run.text).join('')).toBe('2');
     }
   });
 

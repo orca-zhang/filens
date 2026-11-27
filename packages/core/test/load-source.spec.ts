@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadSourceBytes } from '../src/parser/load-source';
-import { loadPptx } from '../src/parser/load-pptx';
+import { loadPptx } from '@filens/pptx';
 
 afterEach(() => vi.unstubAllGlobals());
 

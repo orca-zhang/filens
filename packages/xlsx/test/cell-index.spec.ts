@@ -45,6 +45,22 @@ describe('worksheet cell index', () => {
     expect(JSON.stringify(model)).toBe(snapshot);
   });
 
+  it('clips row-local offsets across sparse rows in both directions', () => {
+    const left = cell(2), right = cell(64), middle = cell(33), last = cell(35);
+    const index = new WorksheetCellIndex(sheet([
+      { index: 1, cells: [left, right] }, { index: 2, cells: [] },
+      { index: 4, cells: [middle] }, { index: 6, cells: [cell(1), last, cell(129)] }
+    ]));
+    expect(index.get(6, 35)).toBe(last);
+    expect(index.get(1, 35)).toBeUndefined();
+    const forward: ParsedCell[] = [], reverse: ParsedCell[] = [];
+    index.forEachInRange(1, 6, 32, 96, cell => forward.push(cell));
+    index.forEachInRange(1, 6, 32, 96, cell => { reverse.push(cell); return cell !== middle; }, true);
+    expect(forward).toEqual([right, middle, last]);
+    expect(reverse).toEqual([last, middle]);
+    expect([...index.occupiedPositions(1, 6, 32, 96)]).toEqual([32, 196, 328]);
+  });
+
   it('keeps sparse coordinates above 32 bits distinct without allocating their gaps', () => {
     const first = cell(1), far = cell(2 ** 32 + 32);
     const index = new WorksheetCellIndex(sheet([
@@ -58,11 +74,12 @@ describe('worksheet cell index', () => {
     expect(found).toEqual([far]);
   });
 
-  it('rebuilds a partially loaded ordered prefix when a later row is out of order', () => {
+  it('merges out-of-order row declarations and ignores invalid coordinates', () => {
     const first = cell(1, 'first'), replacement = cell(1, 'last'), boundary = cell(32), next = cell(33);
     const model = sheet([
       { index: 1, cells: [first] }, { index: 2, cells: [next] },
-      { index: 1, cells: [boundary, replacement] }, { index: 3, cells: [] }
+      { index: NaN, cells: [cell(2)] },
+      { index: 1, cells: [boundary, cell(1, 'middle'), cell(0), replacement] }, { index: 3, cells: [] }
     ]);
     const original = JSON.stringify(model), index = new WorksheetCellIndex(model), found: ParsedCell[] = [];
     index.forEachInRange(1, 3, 1, 33, cell => found.push(cell));

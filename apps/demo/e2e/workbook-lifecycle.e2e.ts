@@ -1,7 +1,52 @@
+import { createServer, type ServerResponse } from 'node:http';
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 import JSZip from 'jszip';
 import { createColumnStyledWorkbookFixture, createMergedWorkbookFixture, createWorkbookFixture } from '../../../packages/xlsx/test/fixtures/workbook.mjs';
+import { createImplicitCoordinateWorkbook, createWorksheetBatchWorkbook } from '../../../packages/xlsx/test/fixtures/worksheet-batches.mjs';
+
+test('renders formulas and rich text from a large worksheet parsed in row batches', async ({ page }) => {
+  await page.goto('./?view=preview');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+    name: 'row-batches.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createWorksheetBatchWorkbook()),
+  });
+  const grid = page.locator('.xlsxv-grid');
+  await expect(grid.locator('[data-merge-ref="B1"]')).toHaveText('North & 南 branch');
+  await expect(grid.locator('tr[aria-rowindex="2"] [aria-colindex="4"]')).toHaveText('4');
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+  const last = grid.locator('tr[aria-rowindex="1048577"] [aria-colindex="16385"]');
+  await expect(last).toHaveText('6430.00');
+  await expect(last).toBeInViewport();
+  await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
+});
+
+test('retains omitted XLSX coordinates through the last cell and cross-sheet formulas', async ({ page }) => {
+  await page.goto('./?view=preview');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({
+    name: 'omitted-coordinates.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createImplicitCoordinateWorkbook({ large: true, mixed: true }))
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  await expect(cell(1, 1)).toHaveText('2');
+  await expect(cell(1, 2)).toBeEmpty();
+  await expect(cell(1, 3)).toHaveText('6');
+  await expect(cell(1, 4)).toBeEmpty();
+  await expect(grid.locator('[data-merge-ref="F1"]')).toHaveText('Heading');
+  await expect(cell(9, 1)).toHaveCount(0);
+  await expect(cell(10, 4)).toHaveText('12.00');
+  const summary = page.getByRole('button', { name: 'Summary', exact: true });
+  await expect(summary).toBeVisible();
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+  await expect(cell(1048576, 16384)).toHaveText('22');
+  await expect(cell(1048576, 16384)).toBeInViewport();
+  await summary.click();
+  await expect(cell(1, 1)).toHaveText('59');
+  await expect(cell(4, 4)).toHaveText('9');
+  await expect(cell(5, 4)).toHaveText('12');
+});
 
 test('retains merged-cell geometry and offscreen anchors while windowing both workbook dimensions', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
@@ -196,3 +241,216 @@ test('discards replaced, aborted and destroyed CSV/XLSX reads without stale even
   for (const result of results) expect(result).toMatchObject({ outcome: result.action === 'abort' ? 'AbortError' : 'settled', rendered: result.action === 'replace' ? 1 : 0, reportedErrors: 0, correctContent: true, loading: false });
   expect(errors).toEqual([]);
 });
+
+test('reads a remote CSV body without buffering it in the workbench', async ({ page }) => {
+  const url = 'https://files.example.test/stream.csv';
+  await page.route(url, route => route.fulfill({
+    contentType: 'text/csv', headers: { 'Access-Control-Allow-Origin': '*' },
+    body: 'name,subject\r\n"中文 😀","quoted ""value""\nwith a newline"\r\n'
+  }));
+  await page.addInitScript(url => {
+    const reads: string[] = [];
+    Object.assign(window, { csvBufferedReads: reads });
+    for (const method of ['arrayBuffer', 'text'] as const) {
+      const read = Response.prototype[method];
+      Object.defineProperty(Response.prototype, method, { value(this: Response) {
+        if (this.url === url) reads.push(method);
+        return read.call(this);
+      } });
+    }
+  }, url);
+  await page.goto(`./?url=${encodeURIComponent(url)}&lang=en`);
+  const grid = page.locator('.xlsxv-grid');
+  await expect(grid).toContainText('中文 😀');
+  await expect(grid).toContainText('quoted "value" with a newline');
+  expect(await page.evaluate(() => (window as Window & { csvBufferedReads: string[] }).csvBufferedReads)).toEqual([]);
+});
+
+async function serveHeldCsv(firstChunk: string) {
+  let activeResponse: ServerResponse | undefined, cancelled = false;
+  const server = createServer((_, response) => {
+    activeResponse = response;
+    response.once('close', () => { cancelled = !response.writableFinished; });
+    response.writeHead(200, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'text/csv' });
+    response.write(firstChunk);
+  });
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+  const { port } = server.address() as { port: number };
+  return {
+    url: `http://127.0.0.1:${port}/held.csv`,
+    write: (chunk: string) => activeResponse!.write(chunk),
+    finish: (chunk: string) => activeResponse!.end(chunk),
+    disconnect: () => activeResponse!.destroy(),
+    cancelled: () => cancelled,
+    close: () => new Promise<void>(resolve => { server.close(() => resolve()); server.closeAllConnections(); })
+  };
+}
+
+test('shows complete CSV records before the HTTP body ends and preserves the reading position', async ({ page }) => {
+  const rows = (first: number, count: number) => Array.from({ length: count }, (_, index) =>
+    `Entry ${first + index},completed record from the HTTP stream\r\n`).join('');
+  const server = await serveHeldCsv(rows(1, 220) + 'Split row,"unfinished');
+  try {
+    await page.goto(`./?url=${encodeURIComponent(server.url)}&lang=en`);
+    const grid = page.locator('.xlsxv-grid');
+    const table = grid.locator('table');
+    const status = page.locator('.wb-status');
+    await expect(grid.getByText('Entry 1', { exact: true })).toBeInViewport();
+    await expect(status).toHaveText('Opening file…');
+    await expect(page.locator('.pptxv-overlay.is-progress')).toBeVisible();
+    await expect(table).toHaveAttribute('aria-rowcount', '221');
+    const before = await grid.evaluate(grid => { grid.scrollTop = 2600; return grid.scrollTop; });
+    const readingRow = grid.getByText('Entry 110', { exact: true });
+    await expect(readingRow).toBeInViewport();
+    await readingRow.evaluate(cell => { cell.dataset.existingCell = 'true'; });
+    const oldHeight = await grid.evaluate(grid => grid.scrollHeight);
+
+    server.write(' continuation"\r\n' + rows(222, 60));
+    await expect(table).toHaveAttribute('aria-rowcount', '282');
+    expect(await grid.evaluate(grid => grid.scrollHeight)).toBeGreaterThan(oldHeight);
+    await expect(readingRow).toHaveAttribute('data-existing-cell', 'true');
+
+    server.write(rows(282, 168)
+      + 'wide row,' + Array.from({ length: 30 }, (_, index) => `Column ${index + 2}`).join(',') + '\r\n');
+    await expect(table).toHaveAttribute('aria-rowcount', '451');
+    await expect(table).toHaveAttribute('aria-colcount', '32');
+    await expect(status).toHaveText('Opening file…');
+    expect(await grid.evaluate((grid, top) => Math.abs(grid.scrollTop - top), before)).toBeLessThanOrEqual(1);
+    await expect(readingRow).toBeInViewport();
+    expect(await table.locator('tbody tr[aria-rowindex]').count()).toBeLessThanOrEqual(100);
+
+    await grid.evaluate(grid => { grid.scrollTop = 5700; });
+    await expect(grid.getByText('unfinished continuation', { exact: true })).toBeInViewport();
+    await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+    await expect(grid.getByText('Column 31', { exact: true })).toBeInViewport();
+    const tail = await grid.evaluate(grid => ({ top: grid.scrollTop, left: grid.scrollLeft }));
+    server.finish('Final record,from EOF');
+    await expect(status).toHaveText('Preview ready');
+    await expect(table).toHaveAttribute('aria-rowcount', '452');
+    await expect(page.locator('.pptxv-overlay')).toHaveCount(0);
+    expect(await grid.evaluate(grid => ({ top: grid.scrollTop, left: grid.scrollLeft }))).toEqual(tail);
+    await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = 0; });
+    await expect(grid.getByText('Final record', { exact: true })).toBeInViewport();
+  } finally { await server.close(); }
+});
+
+test('cancels a remote CSV body after the first rows render and the file is replaced', async ({ page }) => {
+  const server = await serveHeldCsv('Streamed,1\r\nStale,"incomplete');
+  try {
+    await page.goto(`./?url=${encodeURIComponent(server.url)}&lang=en`);
+    await expect(page.locator('.xlsxv-grid')).toContainText('Streamed');
+    await expect(page.locator('.xlsxv-grid')).not.toContainText('Stale');
+    await page.locator('.wb-upload input[type=file]').setInputFiles({
+      name: 'replacement.csv', mimeType: 'text/csv', buffer: Buffer.from('Current,42')
+    });
+    await expect(page.locator('.xlsxv-grid')).toContainText('Current');
+    await expect(page.locator('.xlsxv-grid')).not.toContainText('Streamed');
+    await expect.poll(server.cancelled).toBe(true);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+  } finally { await server.close(); }
+});
+
+test('preserves the logical CSV reading row when the growing grid exceeds the browser scroll limit', async ({ page }) => {
+  await page.goto('./?view=preview&format=csv&lang=en');
+  await expect(page.locator('.xlsxv-grid .xlsxv-table')).toBeVisible();
+  const moduleUrl = new URL(`@fs${resolve('packages/xlsx/src/table.ts')}`, page.url()).href;
+  const state = await page.evaluate(async url => {
+    const { SheetRowWindow } = await import(/* @vite-ignore */ url);
+    const grid = document.createElement('div');
+    grid.className = 'xlsxv-grid';
+    grid.style.cssText = 'position:fixed;top:0;left:0;width:480px;height:360px;overflow:auto';
+    document.body.append(grid);
+    const sheet = { id: 'csv', name: 'CSV', rowCount: 500_000, columnCount: 1, rows: [] };
+    const view = new SheetRowWindow(sheet, grid);
+    const middleRow = () => {
+      const y = grid.getBoundingClientRect().top + grid.clientHeight / 2;
+      const row = [...view.table.tBodies[0].rows].find(row => {
+        const bounds = row.getBoundingClientRect();
+        return row.hasAttribute('aria-rowindex') && bounds.top <= y && bounds.bottom > y;
+      });
+      return Number(row?.getAttribute('aria-rowindex'));
+    };
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    grid.scrollTop = 6_000_000;
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    const before = middleRow();
+    sheet.rowCount = 4_000_000;
+    view.refreshCsvDimensions();
+    const after = middleRow();
+    const height = grid.scrollHeight;
+    view.destroy();
+    grid.remove();
+    return { before, after, height };
+  }, moduleUrl);
+  expect(state.before).toBeGreaterThan(100_000);
+  expect(state.height).toBeLessThan(4_000_000 * 26);
+  expect(Math.abs(state.after - state.before), JSON.stringify(state)).toBeLessThanOrEqual(1);
+});
+
+test('clears previously shown CSV rows if the body fails', async ({ page }) => {
+  const server = await serveHeldCsv('Streamed,1\r\nStale,"incomplete');
+  try {
+    await page.goto(`./?url=${encodeURIComponent(server.url)}&lang=en`);
+    await expect(page.locator('.xlsxv-grid')).toContainText('Streamed');
+    server.disconnect();
+    await expect(page.locator('.wb-status')).toHaveText('Preview failed');
+    await expect(page.locator('.xlsxv-grid .xlsxv-table')).toHaveCount(0);
+  } finally { await server.close(); }
+});
+
+test('shows a local CSV before the last Blob slice finishes and reaches the last row', async ({ page }) => {
+  const rows = 12_000, blockSize = 256 * 1024;
+  const buffer = Buffer.from(Array.from({ length: rows }, (_, index) =>
+    `Entry ${index + 1},"quoted ""value""\nwith a newline",${index}\r\n`).join(''));
+  await page.addInitScript(size => {
+    const reads = { whole: 0, slices: [] as number[] };
+    const waiting = new WeakSet<Blob>();
+    let resume!: () => void;
+    const complete = new Promise<void>(resolve => { resume = resolve; });
+    Object.assign(window, { csvBlobReads: reads, resumeCsvRead: resume });
+    const slice = Blob.prototype.slice;
+    Blob.prototype.slice = function (start, end, type) {
+      const result = slice.call(this, start, end, type);
+      if (this.size === size) {
+        reads.slices.push(result.size);
+        if (end !== undefined && end >= size) waiting.add(result);
+      }
+      return result;
+    };
+    for (const method of ['arrayBuffer', 'text'] as const) {
+      const read = Blob.prototype[method];
+      Object.defineProperty(Blob.prototype, method, { value(this: Blob) {
+        if (this.size === size) reads.whole++;
+        if (waiting.has(this)) return complete.then(() => read.call(this));
+        return read.call(this);
+      } });
+    }
+  }, buffer.length);
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({ name: 'large.csv', mimeType: 'text/csv', buffer });
+  const grid = page.locator('.xlsxv-grid');
+  await expect(grid).toContainText('Entry 1');
+  await expect(page.locator('.wb-status')).toHaveText('Opening file…');
+  const partialRows = Number(await grid.locator('table').getAttribute('aria-rowcount'));
+  expect(partialRows).toBeGreaterThan(1);
+  expect(partialRows).toBeLessThan(rows + 1);
+  await page.evaluate(() => (window as Window & { resumeCsvRead: () => void }).resumeCsvRead());
+  await expect(page.locator('.wb-status')).toHaveText('Preview ready');
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; });
+  await expect(grid.locator(`tr[aria-rowindex="${rows + 1}"] [aria-colindex="2"]`)).toHaveText(`Entry ${rows}`);
+  const reads = await page.evaluate(() => (window as Window & { csvBlobReads: { whole: number; slices: number[] } }).csvBlobReads);
+  expect(reads.whole).toBe(0);
+  expect(reads.slices).toEqual(Array.from({ length: Math.ceil(buffer.length / blockSize) },
+    (_, index) => Math.min(blockSize, buffer.length - index * blockSize)));
+});
+
+for (const failure of ['404', 'CORS']) {
+  test(`reports remote CSV ${failure} failures from the workbook driver`, async ({ page }) => {
+    const url = 'https://files.example.test/missing.csv?signature=opaque';
+    await page.route(url, route => failure === '404' ? route.fulfill({ status: 404 }) : route.abort('failed'));
+    await page.goto(`./?url=${encodeURIComponent(url)}&lang=en`);
+    await expect(page.getByRole('alert')).toContainText(failure);
+    await expect(page.getByRole('alert')).not.toContainText('signature');
+    await expect(page.locator('.wb-status')).toHaveText('Preview failed');
+  });
+}

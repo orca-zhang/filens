@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import JSZip from 'jszip';
-import { splitPreviewFontFamilies } from '@filens/core';
+import { createWebFontPacks, splitPreviewFontFamilies } from '@filens/core';
 import { createXlsxPreviewDriver, loadXlsxWorkbook } from '../src';
+import { workbookFontReferences } from '../src/font-usage';
+import { createFontSubsetWorkbook } from './fixtures/font-subset-workbook';
 
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
 
@@ -19,6 +21,59 @@ async function workbook(sheet: string, theme?: string, bold = '') {
 }
 
 describe('XLSX font styles', () => {
+  it('collects displayed glyphs across sheets without evaluating uncached formulas or expanding repeated strings', async () => {
+    const source = await createFontSubsetWorkbook(1600);
+    const workbook = await loadXlsxWorkbook(source);
+    const { loading } = workbookFontReferences(workbook, true);
+    const face = (family: string, weight = 400) => loading.find(font => font.fontFamily === family && font.traits?.weight === weight);
+    expect(face('Noto Sans JP')).toMatchObject({
+      text: '0123456789日本語本語日2026年遠="大阪"&B1="大阪"&B2', textComplete: true
+    });
+    expect(face('Noto Emoji')).toMatchObject({ text: '😀', textComplete: true });
+    expect(face('Noto Sans TC')?.textComplete).toBeUndefined();
+    expect(face('Noto Sans SC')?.textComplete).toBeUndefined();
+    expect(face('Noto Sans SC', 700)?.textComplete).toBeUndefined();
+    expect(face('Noto Sans KR')?.textComplete).toBeUndefined();
+    expect(workbook.sheets[1].rows[0].cells[0]).toMatchObject({ value: '', needsCalculation: true });
+    expect(workbook.fonts?.every(font => font.text === undefined)).toBe(true);
+    expect(workbookFontReferences(workbook, false).loading.every(font => font.text === undefined)).toBe(true);
+  });
+
+  it('loads subsets for complete faces and full fonts for cells with dynamic display', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const faces = new Set<FontFace>();
+    vi.stubGlobal('FontFace', class { async load() { return this; } });
+    Object.defineProperty(document, 'fonts', { configurable: true, value: {
+      add: vi.fn((face: FontFace) => faces.add(face)), delete: vi.fn((face: FontFace) => faces.delete(face))
+    } });
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.includes('/noto-sans-jp@') && url.endsWith('/unicode.json')) {
+        return Response.json({ latin: 'U+0020-007E', '[1]': 'U+65E5,U+672C,U+8A9E,U+5E74,U+5927,U+962A', '[2]': 'U+9060' });
+      }
+      if (url.includes('/noto-emoji@') && url.endsWith('/unicode.json')) return Response.json({ '[9]': 'U+1F600' });
+      return new Response(new Uint8Array([1, 2, 3]));
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const source = await createFontSubsetWorkbook();
+    const host = document.body.appendChild(document.createElement('div'));
+    const session = createXlsxPreviewDriver().createSession(host, { fontLoading: {
+      packs: createWebFontPacks({ mirrors: ['https://fonts.example/npm'] }), concurrency: 1
+    } });
+    try {
+      await session.load(source, { descriptor: { source, extension: 'xlsx' } });
+      await vi.waitFor(() => expect(faces.size).toBe(8));
+      expect(fetcher.mock.calls.map(([url]) => url.split('/').at(-1))).toEqual([
+        'unicode.json', 'noto-sans-jp-latin-400-normal.woff2', 'noto-sans-jp-1-400-normal.woff2', 'noto-sans-jp-2-400-normal.woff2',
+        'noto-sans-tc-chinese-traditional-400-normal.woff2', 'noto-sans-sc-chinese-simplified-400-normal.woff2',
+        'noto-sans-sc-chinese-simplified-700-normal.woff2', 'noto-sans-kr-korean-400-normal.woff2',
+        'unicode.json', 'noto-emoji-9-400-normal.woff2'
+      ]);
+      expect(JSON.stringify(session.getState().fonts)).not.toContain('日本語');
+      session.destroy();
+      expect(faces.size).toBe(0);
+    } finally { session.destroy(); vi.unstubAllGlobals(); delete (document as unknown as { fonts?: unknown }).fonts; }
+  });
+
   it('refreshes loaded cells without losing the row window or scroll position', async () => {
     const context = { font: '', measureText: () => ({ width: 100 }) };
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context as unknown as CanvasRenderingContext2D);

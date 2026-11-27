@@ -3,7 +3,7 @@ import { gzipAsync } from '@gfx/zopfli';
 
 parentPort.once('message', async bytes => {
   try {
-    const compressed = await gzipAsync(bytes, { numiterations: 15 });
+    const compressed = await gzipAsync(bytes, { numiterations: 15, blocksplittingmax: 0 });
     parentPort.postMessage({ bytes: compressed });
   } catch (error) { parentPort.postMessage({ error: String(error) }); }
 });

@@ -35,12 +35,13 @@ npm run build:sdk:mobile
 
 移动端构建将 JS / WASM 和完整第三方许可正文保存为 `.br`，保留按格式加载的模块和
 独立 Worker。iOS 使用原始资源 URL 与 `Content-Encoding: br`，由 WebKit 解码；
-Android 使用 `org.brotli:dec:0.1.2` 的 `BrotliInputStream` 按流解码。两端都无需
+Android 使用 `org.brotli:dec:0.1.2` 的 `BrotliInputStream` 按流解码。XLSX 正则公式
+从同一套本地资源按需读取 `xlsx/pcre2.wasm`。两端都无需
 把资源解压到应用缓存。`THIRD-PARTY-NOTICES.txt.br` 可用 `brotli -d` 还原查看，
 原始 `.txt` URL 也会由宿主解码提供。MIT 许可保持明文；完整许可正文与上游链接一并保留。
 升级时请同步替换原生宿主源码和生成资源；宿主仍兼容旧的 gzip 和未压缩资源。
 
-每端完整源码 SDK ZIP 均小于 **3 MiB**，打包脚本会检查该上限；[精确体积](../docs/mobile-sdk-sizes.json)。
+打包脚本要求每端完整源码 SDK ZIP 小于 **3 MiB**。[已发布包的精确体积](../docs/mobile-sdk-sizes.json)。
 转换模块合并为同一份共享 WASM，减少重复代码并保留全部格式能力；首次转换会编译
 较大的完整核心，解析时的内存仍取决于文件和格式。ZIP 包含开发机准备工具和全部资源；
 准备后仅将原生模块及 Brotli 资源打入应用，ZIP 下载体积不等于应用安装体积。

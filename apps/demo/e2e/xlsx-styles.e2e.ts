@@ -1,6 +1,59 @@
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { createStyledWorkbookFixture } from '../../../packages/xlsx/test/fixtures/styled-workbook.mjs';
+import { createMergeBorderWorkbook, createStyledWorkbookFixture } from '../../../packages/xlsx/test/fixtures/styled-workbook.mjs';
+import { countNearbyPixels } from './screenshot-pixels';
+
+test('paints stored XLSX merge perimeter segments across both virtual axes', async ({ page }) => {
+  await page.setViewportSize({ width: 1260, height: 850 });
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({ name: 'merge-borders.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await createMergeBorderWorkbook()) });
+  const grid = page.locator('.xlsxv-grid');
+  const merge = (ref: string) => grid.locator(`[data-merge-ref="${ref}"]`);
+  const segment = (side: string, color: string) => merge('A5').locator(`.xlsxv-merge-border-segment[style*="border-${side}:"][style*="${color}"]`);
+  const column = (name: string) => grid.locator('.xlsxv-col-header').getByText(name, { exact: true });
+  const width = async (letter: string) => (await column(letter).boundingBox())!.width;
+  const blue = 'rgb(24, 71, 199)', green = 'rgb(18, 126, 34)', red = 'rgb(207, 26, 26)';
+  await expect(merge('A1')).toHaveText('Uniform');
+  await expect(merge('A1')).toHaveCSS('border-right-color', green);
+  await expect(merge('A1')).toHaveCSS('border-bottom-style', 'double');
+  await expect(merge('E1')).toHaveCSS('border-right-color', 'rgb(129, 57, 187)');
+  await expect(merge('E1')).toHaveCSS('border-bottom-width', '0px');
+  const topBlue = segment('top', blue).first();
+  await expect(topBlue).toBeVisible();
+  const bounds = (await topBlue.boundingBox())!;
+  expect(Math.abs(bounds.width - (await width('B') + await width('C')))).toBeLessThan(2);
+  await expect.poll(async () => {
+    const edge = await topBlue.boundingBox();
+    return edge ? countNearbyPixels(page, edge.x + edge.width / 2, edge.y + 1, [24, 71, 199]) : 0;
+  }).toBeGreaterThan(10);
+  await expect(segment('top', 'rgb(231, 139, 18)')).toHaveCount(0);
+  const columnWidth = await width('A');
+  const seek = (row: number, left: number) => grid.evaluate((element, { row, left }) => {
+    const headerHeight = element.querySelector('thead')!.getBoundingClientRect().height;
+    const ratio = Math.max(1, (1048576 * 30 - element.clientHeight + headerHeight) / (element.scrollHeight - element.clientHeight));
+    element.scrollTop = (row - 1) * 30 / ratio;
+    element.scrollLeft = left;
+  }, { row, left });
+
+  await seek(1, columnWidth * 41);
+  await expect(merge('A5')).not.toHaveAttribute('aria-colindex', '2');
+  await expect(segment('top', blue)).toHaveCount(1);
+  await expect(merge('A5')).toHaveCSS('border-left-width', '0px');
+  await seek(98, columnWidth * 43);
+  await expect(segment('top', blue)).toHaveCount(0);
+  await expect(segment('right', red)).toHaveCount(1);
+  await expect(segment('right', green)).toHaveCount(2);
+  await seek(190, columnWidth * 36);
+  await expect(segment('bottom', red)).toHaveCount(1);
+  await expect(segment('bottom', blue).first()).toHaveCSS('border-bottom-style', 'double');
+
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  await expect(merge('XFB1048575')).toHaveText('Tail');
+  await expect(merge('XFB1048575')).toHaveCSS('border-bottom-style', 'double');
+  await expect(merge('XFB1048575')).toHaveCSS('border-right-color', green);
+  await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
+});
 
 test('preserves XLSX source styles, wrapped rows and merged alignment while windowing', async ({ page }) => {
   const errors: string[] = [];

@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import { splitPreviewFontFamilies } from '@filens/core';
 import { createDocxPreviewDriver } from '../src';
 import { prepareDocxFonts, readDocxFontTraits } from '../src/fonts';
+import { fontSubsetDocument } from './fixtures/font-subset-document';
 
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
 
@@ -12,6 +13,59 @@ function mockAvailability() {
 }
 
 describe('DOCX font discovery and substitution', () => {
+  it.each([false, true])('samples rendered pages and falls back for uncertain glyphs (long text: %s)', async long => {
+    mockAvailability();
+    const computed = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+      if (!pseudo) return computed(element);
+      // jsdom parses these rules but has no computed style for pseudo-elements.
+      const style = document.createElement('span').style;
+      for (const sheet of document.styleSheets) for (const rule of sheet.cssRules) {
+        const css = rule as CSSStyleRule;
+        if (css.selectorText?.endsWith(':before') && element.matches(css.selectorText.slice(0, -7))) {
+          style.fontFamily = css.style.getPropertyValue('font-family');
+        }
+      }
+      return style;
+    });
+    const host = document.body.appendChild(document.createElement('div'));
+    const otherHost = document.body.appendChild(document.createElement('div'));
+    const driver = createDocxPreviewDriver();
+    const session = driver.createSession(host, { fontLoading: { packs: [] } });
+    const other = driver.createSession(otherHost);
+    try {
+      const sibling = await fontSubsetDocument({ headingFont: 'Conflicting Preview Face' });
+      await other.load(sibling, { descriptor: { source: sibling } });
+      const source = await fontSubsetDocument({ long });
+      await session.load(source, { descriptor: { source } });
+      expect(host.querySelectorAll('section.docx')).toHaveLength(2);
+      const references = session.getFontReferences!();
+      const font = (name: string) => references.find(ref => ref.fontFamily === name);
+      expect(font('Noto Emoji')?.text).toBe('😀😺');
+      expect(font('Noto Emoji')?.textComplete).toBe(true);
+      expect(font('Noto Sans KR')).toMatchObject({ text: '한글', textComplete: true, traits: { weight: 700 } });
+      for (const family of ['Noto Sans SC', 'Noto Sans TC', 'Noto Serif JP', 'Noto Serif KR']) {
+        expect(font(family)?.fontFamily).toBe(family);
+        expect(font(family)?.textComplete).toBeUndefined();
+      }
+      if (long) {
+        expect(font('Noto Sans JP')?.textComplete).toBeUndefined();
+      } else {
+        expect(font('Noto Sans JP')).toMatchObject({ text: '見出本文注下月日説明', textComplete: true });
+        const resolvedFontFamily = 'Web Japanese Face';
+        await session.refreshFonts!({
+          references: references.map(ref => ref === font('Noto Sans JP') ? { ...ref, resolvedFontFamily } : ref),
+          loaded: [{ fontFamily: resolvedFontFamily }], warnings: []
+        });
+        const body = [...host.querySelectorAll('span')].find(span => span.textContent === '本文')!;
+        const otherBody = [...otherHost.querySelectorAll('span')].find(span => span.textContent === '本文')!;
+        expect(computed(body).fontFamily).toContain(resolvedFontFamily);
+        expect(computed(otherBody).fontFamily).toContain('Conflicting Preview Face');
+        expect(session.getFontReferences!().map(ref => ref.fontFamily)).toEqual(references.map(ref => ref.fontFamily));
+      }
+    } finally { session.destroy(); other.destroy(); }
+  });
+
   it.each([false, true])('uses real font-table metadata and renders a classified fallback (background loading: %s)', async background => {
     mockAvailability();
     let resolveFont!: (response: Response) => void;
@@ -77,6 +131,15 @@ describe('DOCX font discovery and substitution', () => {
     expect(result.fonts.find(font => font.fontFamily === 'Embedded Serif')).toMatchObject({ status: 'unknown', embedded: true, resolvedFontFamily: undefined });
     expect(result.fonts.map(font => font.fontFamily)).toContain('Style Serif');
     expect(result.fonts.map(font => font.fontFamily)).toContain('Missing Serif');
+  });
+
+  it('keeps a mixed font stack in source order when inserting an embedded alias', () => {
+    mockAvailability();
+    const stack = { 'font-family': `var(--docx-minorHAnsi-font), 'Archive, Serif', Arial` };
+    const doc = { documentPart: { body: stack }, fontTablePart: { fonts: [{ name: 'Archive, Serif', embedFontRefs: [{}] }] } };
+    const result = prepareDocxFonts(doc, document, undefined, undefined, new Map([['archive, serif', 'embedded-archive']]));
+    expect(stack['font-family']).toBe(`var(--docx-minorHAnsi-font), embedded-archive, 'Archive, Serif', Arial`);
+    expect(result.loadingReferences).toEqual([]);
   });
 
   it('reads alternate namespace prefixes, preferring pitch over broad family and PANOSE', async () => {

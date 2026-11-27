@@ -1,5 +1,7 @@
 import { createEpubResources, resolveArchivePath } from './epub-resources';
-import { createFrameResourceUrl } from './frame-resource-url';
+import { parseContents, resolveChapterLocation, type ChapterLocation, type ContentsEntry } from './navigation';
+import { readingThemeCss, readingThemes, type ReadingTheme } from './reading-theme';
+import { createFrameResourceUrl, needsInlineFrameResources } from './frame-resource-url';
 import {
   openZipArchive,
   waitForContainerTask,
@@ -44,7 +46,7 @@ interface IndexedBook {
   chapters: Omit<ParsedEpubChapter, 'html'>[];
   warnings: string[];
   zip: Map<string, ZipEntry>;
-  epub?: { manifest: ManifestItem[]; packageDir: string };
+  epub?: { manifest: ManifestItem[]; packageDir: string; chapterPaths: Map<string, number>; contents: ContentsEntry[] };
 }
 
 export { EBOOK_FORMAT_ROUTES, createEbookPreviewRoutes } from './routes';
@@ -60,11 +62,28 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
   private readonly root: HTMLDivElement;
   private readonly tabs: HTMLDivElement;
   private readonly stage: HTMLDivElement;
+  private readonly toolbar = document.createElement('div');
+  private readonly position = document.createElement('input');
+  private readonly positionLabel = document.createElement('span');
+  private readonly positionCount = document.createElement('span');
+  private readonly jumpButton = document.createElement('button');
+  private readonly themeSelect = document.createElement('select');
+  private readonly themeLabel = document.createElement('span');
+  private readonly contents = document.createElement('details');
+  private readonly contentsLabel = document.createElement('summary');
+  private readonly contentsButtons = new Map<string, HTMLButtonElement>();
+  private contentsCurrent?: HTMLButtonElement;
   private createdUrls = new Set<string>();
   private book: IndexedBook | null = null;
   private chapterController?: AbortController;
   private chapterGeneration = 0;
+  private fragment?: string;
+  private displayed?: { chapter: ParsedEpubChapter; index: number; fragment?: string };
   private frame: HTMLIFrameElement | null = null;
+  private frameReady = false;
+  private frameTheme?: HTMLStyleElement;
+  private linkTimer?: number;
+  private theme: ReadingTheme = 'original';
   private loadGeneration = 0;
   private loadController?: AbortController;
   private removeAbortListener?: () => void;
@@ -95,7 +114,14 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     this.tabs.className = 'ebookv-chapters';
     this.stage = document.createElement('div');
     this.stage.className = 'ebookv-stage';
-    this.root.replaceChildren(this.tabs, this.stage);
+    this.buildToolbar();
+    const sidebar = document.createElement('div');
+    sidebar.className = 'ebookv-sidebar';
+    this.contents.className = 'ebookv-contents';
+    this.contents.hidden = true;
+    this.contents.append(this.contentsLabel);
+    sidebar.append(this.contents, this.tabs);
+    this.root.replaceChildren(this.toolbar, sidebar, this.stage);
     this.host.replaceChildren(this.root);
   }
 
@@ -144,8 +170,8 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
       const loadContext = { ...context, signal: controller.signal };
       const book =
         format === 'cbz'
-          ? await indexCbzBook(source, loadContext)
-          : await indexEpubBook(source, loadContext);
+          ? await indexCbzBook(source, loadContext, true)
+          : await indexEpubBook(source, loadContext, true);
       if (generation !== this.loadGeneration) return;
       checkAborted(controller.signal);
       this.book = book;
@@ -162,6 +188,11 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
         }))
       };
       this.renderTabs();
+      this.renderContents(book.epub?.contents ?? []);
+      this.position.max = String(book.chapters.length);
+      this.positionCount.textContent = ` / ${book.chapters.length}`;
+      this.toolbar.hidden = false;
+      this.refreshTranslations();
       await this.openChapter(0);
       if (generation !== this.loadGeneration) return;
       checkAborted(controller.signal);
@@ -225,9 +256,51 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     this.goToChapter(Math.max(this.state.chapterIndex - 1, 0));
   }
 
-  private goToChapter(index: number): void {
+  refreshTranslations(): void {
+    const t = (message: string) => this.options.translate?.(message) ?? message;
+    this.positionLabel.textContent = t(this.book?.epub ? 'Chapter number' : 'Page number');
+    this.jumpButton.textContent = t('Go');
+    this.contentsLabel.textContent = t('Table of contents');
+    this.themeLabel.textContent = t('Reading theme');
+    for (const option of this.themeSelect.options) option.textContent = t(readingThemes[option.value as ReadingTheme].label);
+  }
+
+  private buildToolbar(): void {
+    this.toolbar.className = 'ebookv-toolbar';
+    this.toolbar.hidden = true;
+    const jump = document.createElement('form');
+    const positionLabel = document.createElement('label');
+    this.position.type = 'number';
+    this.position.min = '1';
+    this.position.required = true;
+    positionLabel.append(this.positionLabel, this.position);
+    this.jumpButton.type = 'submit';
+    jump.append(positionLabel, this.positionCount, this.jumpButton);
+    jump.addEventListener('submit', event => {
+      event.preventDefault();
+      this.goToChapter(this.position.valueAsNumber - 1);
+    });
+    const themeLabel = document.createElement('label');
+    for (const value of Object.keys(readingThemes)) {
+      const option = document.createElement('option');
+      option.value = value;
+      this.themeSelect.append(option);
+    }
+    this.themeSelect.addEventListener('change', () => {
+      this.theme = this.themeSelect.value as ReadingTheme;
+      this.stage.style.backgroundColor = readingThemes[this.theme].background;
+      if (!this.frame || !this.displayed) return;
+      if (needsInlineFrameResources()) this.setFrameSource(this.frame, this.displayed.chapter.html);
+      else this.updateFrameTheme();
+    });
+    themeLabel.append(this.themeLabel, this.themeSelect);
+    this.toolbar.append(jump, themeLabel);
+    this.refreshTranslations();
+  }
+
+  private goToChapter(index: number, fragment?: string): void {
     const book = this.book, generation = this.loadGeneration;
-    const operation = this.openChapter(index), chapterGeneration = this.chapterGeneration;
+    const operation = this.openChapter(index, fragment), chapterGeneration = this.chapterGeneration;
     void operation.catch(error => {
       if (book !== this.book || generation !== this.loadGeneration || chapterGeneration !== this.chapterGeneration) return;
       this.state.loading = false;
@@ -239,11 +312,20 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     });
   }
 
-  private async openChapter(index: number): Promise<void> {
+  private async openChapter(index: number, fragment?: string): Promise<void> {
     const book = this.book, parentSignal = this.loadController?.signal;
     if (!Number.isInteger(index) || !book?.chapters.length || parentSignal?.aborted) return;
     const next = Math.max(0, Math.min(index, book.chapters.length - 1));
-    if (next === this.state.chapterIndex && !this.state.error && (this.frame || this.chapterController)) return;
+    if (next === this.state.chapterIndex && !this.state.error && (this.displayed?.index === next || this.chapterController)) {
+      const changed = this.fragment !== fragment;
+      this.setLocation(next, fragment);
+      if (!this.chapterController && this.displayed && (changed || fragment !== undefined)) {
+        this.displayed.fragment = fragment;
+        this.scrollToFragment(fragment ?? '');
+      }
+      if (changed) this.emit('statechange', this.getState());
+      return;
+    }
     this.chapterController?.abort();
     const chapterGeneration = ++this.chapterGeneration;
     const controller = new AbortController();
@@ -255,9 +337,12 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     const current = () => book === this.book && chapterGeneration === this.chapterGeneration && !controller.signal.aborted;
     const previous = this.state.chapterIndex;
     this.state = { ...this.state, chapterIndex: next, chapterTitle: book.chapters[next].title,
-      location: book.chapters[next].href, progress: book.chapters.length <= 1 ? 1 : next / (book.chapters.length - 1), chapterLoading: true, error: null };
+      progress: book.chapters.length <= 1 ? 1 : next / (book.chapters.length - 1), chapterLoading: true, error: null };
     this.tabs.children[previous]?.classList.remove('is-active');
+    this.tabs.children[previous]?.removeAttribute('aria-current');
     this.tabs.children[next]?.classList.add('is-active');
+    this.tabs.children[next]?.setAttribute('aria-current', 'page');
+    this.setLocation(next, fragment);
     this.stage.setAttribute('aria-busy', 'true');
     this.emit('statechange', this.getState());
     let committed = false;
@@ -276,7 +361,7 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
       if (!current()) return;
       if (!chapter) throw new Error(`Missing chapter file ${book.chapters[next].href}.`);
       const oldUrls = this.createdUrls;
-      this.renderChapter(chapter);
+      this.renderChapter(chapter, next);
       this.createdUrls = urls; committed = true;
       this.chapterController = undefined;
       revokeUrls(oldUrls);
@@ -306,21 +391,145 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
       button.type = 'button';
       button.className = 'ebookv-chapter-tab';
       button.classList.toggle('is-active', index === this.state.chapterIndex);
+      if (index === this.state.chapterIndex) button.setAttribute('aria-current', 'page');
       button.textContent = chapter.title;
       button.addEventListener('click', () => this.goToChapter(index));
       this.tabs.appendChild(button);
     }
   }
 
-  private renderChapter(chapter: ParsedEpubChapter): void {
+  private renderContents(contents: ContentsEntry[]): void {
+    this.contents.hidden = !contents.length;
+    if (!contents.length) return;
+    const list = document.createElement('ol');
+    this.contents.append(list);
+    const pending = [{ entries: contents, list }];
+    while (pending.length) {
+      const { entries, list } = pending.pop()!;
+      for (const { title, location, children } of entries) {
+        if (!location && !children.length) continue;
+        const item = document.createElement('li');
+        if (location) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = title;
+          button.addEventListener('click', () => this.goToChapter(location.index, location.fragment));
+          const key = contentsKey(location.index, location.fragment);
+          if (!this.contentsButtons.has(key)) this.contentsButtons.set(key, button);
+          item.append(button);
+        } else {
+          const label = document.createElement('span');
+          label.textContent = title;
+          item.append(label);
+        }
+        if (children.length) {
+          const nested = document.createElement('ol');
+          item.append(nested);
+          pending.push({ entries: children, list: nested });
+        }
+        list.append(item);
+      }
+    }
+    this.contents.hidden = this.contentsButtons.size === 0;
+  }
+
+  private setLocation(index: number, fragment?: string): void {
+    this.fragment = fragment;
+    const href = this.book!.chapters[index].href;
+    this.state.location = fragment === undefined ? href : `${href.split('#', 1)[0]}#${fragment}`;
+    this.position.value = String(index + 1);
+    this.contentsCurrent?.removeAttribute('aria-current');
+    this.contentsCurrent = this.contentsButtons.get(contentsKey(index, fragment));
+    this.contentsCurrent?.setAttribute('aria-current', 'location');
+  }
+
+  private renderChapter(chapter: ParsedEpubChapter, index: number): void {
     const frame = document.createElement('iframe');
     frame.className = 'ebookv-frame';
     frame.title = chapter.title;
     frame.setAttribute('sandbox', 'allow-same-origin allow-popups');
     frame.referrerPolicy = 'no-referrer';
-    frame.srcdoc = chapter.html;
+    this.displayed = { chapter, index, fragment: this.fragment };
     this.frame = frame;
+    this.setFrameSource(frame, chapter.html);
     this.stage.replaceChildren(frame);
+  }
+
+  private setFrameSource(frame: HTMLIFrameElement, html: string): void {
+    window.clearInterval(this.linkTimer);
+    this.frameReady = false;
+    this.frameTheme = undefined;
+    const opaque = needsInlineFrameResources();
+    if (opaque && this.theme !== 'original') {
+      const chapter = new DOMParser().parseFromString(html, 'text/html');
+      const style = chapter.createElement('style');
+      style.textContent = readingThemeCss(this.theme);
+      chapter.head.append(style);
+      html = `<!doctype html>${chapter.documentElement.outerHTML}`;
+    }
+    frame.onload = () => {
+      frame.onload = null;
+      if (this.frame !== frame) return;
+      this.frameReady = true;
+      if (!opaque) {
+        this.updateFrameTheme();
+        this.bindChapterLinks(frame);
+      }
+      if (this.displayed?.fragment !== undefined) this.scrollToFragment(this.displayed.fragment);
+    };
+    frame.srcdoc = html;
+  }
+
+  private updateFrameTheme(): void {
+    if (!this.frameReady || !this.frame?.contentDocument) return;
+    if (this.theme === 'original') {
+      this.frameTheme?.remove();
+      this.frameTheme = undefined;
+      return;
+    }
+    const chapter = this.frame.contentDocument;
+    if (!this.frameTheme) {
+      this.frameTheme = chapter.createElement('style');
+      chapter.head.append(this.frameTheme);
+    }
+    this.frameTheme.textContent = readingThemeCss(this.theme);
+  }
+
+  private scrollToFragment(fragment: string): void {
+    if (this.frameReady) this.frame?.contentWindow?.location.replace(`about:srcdoc#${fragment}`);
+  }
+
+  private bindChapterLinks(frame: HTMLIFrameElement): void {
+    const document = frame.contentDocument, chapterWindow = frame.contentWindow;
+    const epub = this.book?.epub, displayed = this.displayed;
+    if (!document || !chapterWindow || !epub || !displayed) return;
+    const chapterDir = dirname(resolveArchivePath(epub.packageDir, displayed.chapter.href));
+    const destinations = new Map<string, ChapterLocation>();
+    for (const link of document.querySelectorAll('a[href], area[href]')) {
+      if (link.hasAttribute('download')) continue;
+      const location = resolveChapterLocation(link.getAttribute('href')!, chapterDir, epub.chapterPaths, displayed.index);
+      if (!location) continue;
+      const hash = location.index === displayed.index ? `#${location.fragment ?? ''}` : `#filens-link-${this.chapterGeneration}-${destinations.size}`;
+      if (location.index !== displayed.index) destinations.set(hash, location);
+      link.setAttribute('href', `about:srcdoc${hash}`);
+      link.setAttribute('target', '_self');
+    }
+    if (!destinations.size) return;
+    let readingHash = '';
+    // WebKit suppresses chapter event listeners in a sandbox without scripts.
+    // Observe native fragment navigation from the host while this chapter is mounted.
+    const timer = window.setInterval(() => {
+      if (this.frame !== frame || frame.contentDocument !== document) {
+        window.clearInterval(timer);
+        return;
+      }
+      const hash = chapterWindow.location.hash;
+      const location = destinations.get(hash);
+      if (!location) { readingHash = hash; return; }
+      chapterWindow.history.replaceState(null, '', `about:srcdoc${readingHash}`);
+      this.goToChapter(location.index, location.fragment);
+    }, 100);
+    this.linkTimer = timer;
   }
 
   private releaseBook(): void {
@@ -330,7 +539,18 @@ export class EpubPreviewSession implements PreviewSession<EbookPreviewState> {
     revokeUrls(this.createdUrls);
     this.book?.zip.clear();
     this.book = null;
+    this.displayed = undefined;
+    this.fragment = undefined;
     this.frame = null;
+    this.frameTheme = undefined;
+    this.frameReady = false;
+    window.clearInterval(this.linkTimer);
+    this.toolbar.hidden = true;
+    this.contents.replaceChildren(this.contentsLabel);
+    this.contents.hidden = true;
+    this.contents.open = false;
+    this.contentsButtons.clear();
+    this.contentsCurrent = undefined;
     this.tabs.replaceChildren();
     this.stage.replaceChildren();
     this.stage.removeAttribute('aria-busy');
@@ -382,11 +602,8 @@ export async function loadEpubBook(
   return { title: book.title, chapters, warnings: book.warnings };
 }
 
-async function indexEpubBook(source: PreviewSource, context: PreviewLoadContext): Promise<IndexedBook> {
-  const bytes = await sourceToArrayBuffer(source, context);
-  checkAborted(context.signal);
-  const zip = await openZipArchive(new Uint8Array(bytes), { signal: context.signal });
-  checkAborted(context.signal);
+async function indexEpubBook(source: PreviewSource, context: PreviewLoadContext, ranged = false): Promise<IndexedBook> {
+  const zip = await openBookZip(source, context, ranged);
   const warnings: string[] = [];
   const container = await readZipText(zip, 'META-INF/container.xml', context.signal);
   if (!container) {
@@ -409,8 +626,8 @@ async function indexEpubBook(source: PreviewSource, context: PreviewLoadContext)
   const manifest = readManifest(document);
   const spineIds = readSpine(document);
   const title = firstText(document, 'title');
-  const titles = await readNavigationTitles(zip, manifest, packageDir, context.signal, warnings);
   const chapters: IndexedBook['chapters'] = [];
+  const chapterPaths = new Map<string, number>();
 
   for (const idref of spineIds) {
     checkAborted(context.signal);
@@ -430,10 +647,11 @@ async function indexEpubBook(source: PreviewSource, context: PreviewLoadContext)
       continue;
     }
 
+    if (!chapterPaths.has(path)) chapterPaths.set(path, chapters.length);
     chapters.push({
       id: item.id,
       href: item.href,
-      title: titles.get(path) ?? item.href
+      title: item.href
     });
   }
 
@@ -441,12 +659,24 @@ async function indexEpubBook(source: PreviewSource, context: PreviewLoadContext)
     throw new Error('Invalid EPUB: no readable HTML chapters found.');
   }
 
+  const ncxId = document.getElementsByTagNameNS('*', 'spine')[0]?.getAttribute('toc');
+  const contents = await readNavigation(zip, manifest, packageDir, ncxId, chapterPaths, context.signal, warnings);
+  const titled = new Set<number>();
+  const entries = contents.slice().reverse();
+  while (entries.length) {
+    const { title, location, children } = entries.pop()!;
+    if (location && !titled.has(location.index)) {
+      chapters[location.index].title = title;
+      titled.add(location.index);
+    }
+    for (let index = children.length - 1; index >= 0; index--) entries.push(children[index]);
+  }
   return {
     title: title || undefined,
     chapters,
     warnings,
     zip,
-    epub: { manifest: [...manifest.values()], packageDir }
+    epub: { manifest: [...manifest.values()], packageDir, chapterPaths, contents }
   };
 }
 
@@ -476,11 +706,8 @@ export async function loadCbzBook(
   return { title: book.title, chapters, warnings: book.warnings };
 }
 
-async function indexCbzBook(source: PreviewSource, context: PreviewLoadContext): Promise<IndexedBook> {
-  const bytes = await sourceToArrayBuffer(source, context);
-  checkAborted(context.signal);
-  const zip = await openZipArchive(new Uint8Array(bytes), { signal: context.signal });
-  checkAborted(context.signal);
+async function indexCbzBook(source: PreviewSource, context: PreviewLoadContext, ranged = false): Promise<IndexedBook> {
+  const zip = await openBookZip(source, context, ranged);
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
   const entries = [...zip.values()]
     .filter((file) => !file.directory && isComicImage(file.name))
@@ -517,6 +744,15 @@ async function readChapter(book: IndexedBook, index: number, createUrl: (blob: B
 function revokeUrls(urls: Set<string>): void {
   for (const url of urls) URL.revokeObjectURL(url);
   urls.clear();
+}
+
+async function openBookZip(source: PreviewSource, context: PreviewLoadContext, ranged: boolean): Promise<Map<string, ZipEntry>> {
+  const input = ranged && (typeof source === 'string' || source instanceof Blob)
+    ? source : new Uint8Array(await sourceToArrayBuffer(source, context));
+  checkAborted(context.signal);
+  const zip = await openZipArchive(input, { signal: context.signal });
+  checkAborted(context.signal);
+  return zip;
 }
 
 async function sourceToArrayBuffer(source: PreviewSource, context: PreviewLoadContext): Promise<ArrayBuffer> {
@@ -592,41 +828,36 @@ function readSpine(document: Document): string[] {
     .filter(Boolean);
 }
 
-async function readNavigationTitles(zip: Map<string, ZipEntry>, manifest: Map<string, ManifestItem>,
-  packageDir: string, signal: AbortSignal | undefined, warnings: string[]): Promise<Map<string, string>> {
-  const titles = new Map<string, string>();
+async function readNavigation(zip: Map<string, ZipEntry>, manifest: Map<string, ManifestItem>, packageDir: string,
+  ncxId: string | null | undefined, chapterPaths: ReadonlyMap<string, number>, signal: AbortSignal | undefined, warnings: string[]): Promise<ContentsEntry[]> {
   const items = [...manifest.values()];
-  const navigation = items.find(item => item.properties?.split(/\s+/).includes('nav'))
-    ?? items.find(item => item.mediaType === 'application/x-dtbncx+xml');
-  if (!navigation) return titles;
-  const path = resolveArchivePath(packageDir, navigation.href);
-  try {
-    const xml = await readZipText(zip, path, signal);
-    if (!xml) throw new Error('Missing navigation document.');
-    const document = parseXml(xml, path);
-    const add = (href: string | null, title: string | undefined) => {
-      if (!href || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(href)) return;
-      const target = resolveArchivePath(dirname(path), href), label = title?.replace(/\s+/g, ' ').trim();
-      if (label && !titles.has(target)) titles.set(target, label);
-    };
-    if (navigation.mediaType === 'application/x-dtbncx+xml') {
-      for (const point of Array.from(document.getElementsByTagName('*')).filter(element => element.localName === 'navPoint')) {
-        const children = Array.from(point.children);
-        add(children.find(child => child.localName === 'content')?.getAttribute('src') ?? null,
-          children.find(child => child.localName === 'navLabel')?.textContent ?? undefined);
-      }
-    } else {
-      const navs = Array.from(document.getElementsByTagName('*')).filter(element => element.localName === 'nav');
-      const toc = navs.find(element => (element.getAttributeNS('http://www.idpf.org/2007/ops', 'type') ?? element.getAttribute('epub:type'))?.split(/\s+/).includes('toc')
-        || element.getAttribute('role') === 'doc-toc') ?? navs[0] ?? document.documentElement;
-      for (const link of toc.querySelectorAll('a[href]')) add(link.getAttribute('href'), link.textContent ?? undefined);
+  const nav = items.find(item => item.properties?.split(/\s+/).includes('nav'));
+  const declaredNcx = ncxId ? manifest.get(ncxId) : undefined;
+  const ncx = declaredNcx?.mediaType === 'application/x-dtbncx+xml' ? declaredNcx
+    : items.find(item => item.mediaType === 'application/x-dtbncx+xml');
+  for (const navigation of new Set([nav, ncx])) {
+    if (!navigation) continue;
+    const path = resolveArchivePath(packageDir, navigation.href);
+    try {
+      const xml = await readZipText(zip, path, signal);
+      if (!xml) throw new Error('Missing navigation document.');
+      const base = dirname(path), current = chapterPaths.get(path);
+      let hasTarget = false;
+      const contents = parseContents(parseXml(xml, path), navigation === ncx, href => {
+        const target = resolveChapterLocation(href, base, chapterPaths, current);
+        if (target) hasTarget = true;
+        return target;
+      });
+      if (hasTarget) return contents;
+    } catch {
+      checkAborted(signal);
+      warnings.push(`EPUB navigation metadata is unavailable: ${path}.`);
     }
-  } catch {
-    checkAborted(signal);
-    warnings.push(`EPUB navigation metadata is unavailable: ${path}.`);
   }
-  return titles;
+  return [];
 }
+
+function contentsKey(index: number, fragment?: string): string { return `${index}#${fragment ?? ''}`; }
 
 async function rewriteChapterHtml(
   html: string,

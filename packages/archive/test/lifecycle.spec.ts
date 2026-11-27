@@ -132,6 +132,23 @@ describe('archive source lifetime', () => {
 });
 
 describe('archive navigation and embedded previews', () => {
+  it('marks only protected entries and descendants as sensitive', async () => {
+    const child = childFactory();
+    const { session, raw } = setup({ previewerFactory: child.factory });
+    const outer = archive({ 'locked.txt': 'Protected payload', 'inner.zip': new Uint8Array([2]), 'ordinary.txt': 'Ordinary payload' });
+    for (const name of ['locked.txt', 'inner.zip']) Object.assign(outer.get(name)!, { encrypted: true });
+    mocks.open.mockResolvedValueOnce(outer).mockResolvedValueOnce(archive({ 'inside.txt': 'Nested payload' }));
+    await load(session);
+    await raw.openEntryPreview('locked.txt');
+    expect(child.children[0].preview.mock.calls[0][1]).toMatchObject({ sensitive: true, name: 'locked.txt' });
+    await raw.openEntryPreview('ordinary.txt');
+    expect(child.children[1].preview.mock.calls[0][1]).not.toHaveProperty('sensitive');
+    await raw.openNestedArchive('inner.zip');
+    await raw.openEntryPreview('inside.txt');
+    expect(child.children[2].preview.mock.calls[0][1]).toMatchObject({ sensitive: true, name: 'inside.txt' });
+    expect(child.children[2].preview.mock.calls[0][1]).not.toHaveProperty('password');
+  });
+
   it('aborts a password request when leaving an entry and ignores a late answer', async () => {
     const held = deferred<string | null>();
     const requestPassword = vi.fn((_request: PreviewPasswordRequest) => held.promise);

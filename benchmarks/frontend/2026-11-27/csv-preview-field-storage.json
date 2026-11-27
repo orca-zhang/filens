@@ -1,0 +1,187 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Load each file-backed Blob through the bundled XLSX preview driver with jsdom in three fresh Node processes per build, alternating build order. Timings cover loading and the initial viewport. Peak RSS includes the process baseline. Heap and ArrayBuffer deltas are measured above the startup baseline after forcing collections with the preview open. Verify identical HTML at the first, boundary, middle and final viewports after the memory measurement.",
+  "workloads": {
+    "ascii": {
+      "input": {
+        "bytes": 28869372,
+        "sha256": "1f24aa1f34c635513b029e256c40a4c8cde69596f338e6089fc1fedf7866b72c",
+        "rows": 300000,
+        "fieldsPerRow": 5,
+        "label": "Northwest booking line"
+      },
+      "viewportSha256": "b70f94d0751c435f49935e083064f8a57d2ab4d020f237f634f31327e5fd0eca",
+      "medians": {
+        "baseline": {
+          "loadMs": 223.15,
+          "peakRssMiB": 240,
+          "heapMiB": 95.85,
+          "arrayBufferMiB": 0.06,
+          "retainedMiB": 95.91
+        },
+        "packed": {
+          "loadMs": 190.69,
+          "peakRssMiB": 170.75,
+          "heapMiB": 32.25,
+          "arrayBufferMiB": 5.79,
+          "retainedMiB": 38.04
+        }
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 223.15,
+            "peakRssMiB": 240,
+            "heapMiB": 95.85,
+            "arrayBufferMiB": 0.06,
+            "retainedMiB": 95.91
+          },
+          {
+            "loadMs": 228.88,
+            "peakRssMiB": 240.02,
+            "heapMiB": 95.75,
+            "arrayBufferMiB": 0.06,
+            "retainedMiB": 95.81
+          },
+          {
+            "loadMs": 221.48,
+            "peakRssMiB": 226.67,
+            "heapMiB": 95.96,
+            "arrayBufferMiB": 0.06,
+            "retainedMiB": 96.02
+          }
+        ],
+        "packed": [
+          {
+            "loadMs": 189.89,
+            "peakRssMiB": 170.34,
+            "heapMiB": 32.25,
+            "arrayBufferMiB": 5.79,
+            "retainedMiB": 38.04
+          },
+          {
+            "loadMs": 190.69,
+            "peakRssMiB": 170.75,
+            "heapMiB": 32.24,
+            "arrayBufferMiB": 5.79,
+            "retainedMiB": 38.03
+          },
+          {
+            "loadMs": 192.85,
+            "peakRssMiB": 171.17,
+            "heapMiB": 32.25,
+            "arrayBufferMiB": 5.79,
+            "retainedMiB": 38.04
+          }
+        ]
+      }
+    },
+    "mixedUnicode": {
+      "input": {
+        "bytes": 27069372,
+        "sha256": "61d0c01f2337f82304bcb2920f198fec178287f1deb6ac6eb85fa24db736f3ee",
+        "rows": 300000,
+        "fieldsPerRow": 5,
+        "label": "编号华东😀"
+      },
+      "viewportSha256": "01981c70bc34f3f5876ae941e9c416d3e8497cfe52f41fe0cacd60ba00d73201",
+      "medians": {
+        "baseline": {
+          "loadMs": 225.13,
+          "peakRssMiB": 266.94,
+          "heapMiB": 121.05,
+          "arrayBufferMiB": 0.13,
+          "retainedMiB": 121.18
+        },
+        "packed": {
+          "loadMs": 199.71,
+          "peakRssMiB": 191.64,
+          "heapMiB": 47.77,
+          "arrayBufferMiB": 5.85,
+          "retainedMiB": 53.62
+        }
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 225.3,
+            "peakRssMiB": 264.66,
+            "heapMiB": 121.05,
+            "arrayBufferMiB": 0.13,
+            "retainedMiB": 121.18
+          },
+          {
+            "loadMs": 222.69,
+            "peakRssMiB": 266.94,
+            "heapMiB": 120.97,
+            "arrayBufferMiB": 0.13,
+            "retainedMiB": 121.1
+          },
+          {
+            "loadMs": 225.13,
+            "peakRssMiB": 274,
+            "heapMiB": 121.09,
+            "arrayBufferMiB": 0.13,
+            "retainedMiB": 121.22
+          }
+        ],
+        "packed": [
+          {
+            "loadMs": 199.71,
+            "peakRssMiB": 191.64,
+            "heapMiB": 47.79,
+            "arrayBufferMiB": 5.85,
+            "retainedMiB": 53.65
+          },
+          {
+            "loadMs": 200.06,
+            "peakRssMiB": 191.94,
+            "heapMiB": 47.77,
+            "arrayBufferMiB": 5.85,
+            "retainedMiB": 53.62
+          },
+          {
+            "loadMs": 196.86,
+            "peakRssMiB": 189,
+            "heapMiB": 47.75,
+            "arrayBufferMiB": 5.85,
+            "retainedMiB": 53.61
+          }
+        ]
+      }
+    }
+  },
+  "bundleSha256": {
+    "baseline": {
+      "index.js": "d4d972ae51d6b7eea01da2b06549693d66068f49d94fdf0ce95be3c9b5110461",
+      "table-DoFLibSq.js": "193ec7398ea42c725416b3cb562d77a6954391414f249ec6ad85a7cb4dca1e0b"
+    },
+    "packed": {
+      "index.js": "3cedbe11afe6ea1d469da9fd9b53f0e687af6c11052f9e768bef4c20245c19f0",
+      "table-BGN-N0hB.js": "8b03458f8878cf5a5fb30d1a56e8c2477b32b2ac10a920788d54db76ff269871"
+    }
+  },
+  "fixtureDescription": "Each record has a zero-padded id, a Client field, a quoted label with the row number, a comma, doubled quotes and an embedded CRLF, a station number modulo 107 and an empty trailing field. Records end with CRLF.",
+  "packagedBrowserChecks": {
+    "engines": [
+      "Chromium",
+      "Firefox",
+      "WebKit"
+    ],
+    "builds": [
+      "split",
+      "all-in-one"
+    ],
+    "fixture": "mixedUnicode",
+    "heldAfterBytes": 262144,
+    "checkedRowsWhileHeld": [
+      1,
+      820
+    ],
+    "checkedAfterCompletion": "Reading position preserved within one CSS pixel. Row 820 retained all five field values. Row 300,000 rendered after scrolling, with at most 100 rendered data rows."
+  }
+}

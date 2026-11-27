@@ -1,0 +1,209 @@
+{
+  "date": "2026-11-26",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Fresh Node processes, alternating build order. 1024 MiB V8 old-space for the three measured runs per build. Parse times cover opening the ZIP, decoding XML and building the full model, including lazy parser initialization. They exclude fixture generation, reading the input file, static package imports, rendering and network. Peak process RSS includes the process baseline and compressed input and is sampled immediately after parsing. Retained V8 heap is sampled after two explicit collections with the workbook still reachable. Both measurements precede model hashing and formula evaluation. Capped runs limit V8 old space.",
+  "variants": {
+    "baseline": "General XML tree for each shared-string batch and mutable arrays grown by pushes for all worksheet rows.",
+    "candidate": "Direct reads for plain string batches and exact one-cell output arrays for eligible rows."
+  },
+  "publicReader": true,
+  "sharedStrings": {
+    "workload": "220,000 shared strings referenced by worksheets",
+    "archiveBytes": 2303547,
+    "archiveSha256": "05428025967701d96e78f925febf550be20b307bd07a9b74776dfec31026bced",
+    "entrySha256": {
+      "baseline": "731c37b5d48a6b5898adb28447aaf27353ba3b01ef250ba7a94aba6bf300c017",
+      "candidate": "52b95ae13793dc2691e5c296ca675057a1e4bf354277cd39bb5b11bcf472e6bc"
+    },
+    "model": {
+      "cells": 220002,
+      "rows": 220000,
+      "last": "  Batch & 星表 ²",
+      "modelSha256": "c7c452a16565f08f7184421735174f9b98e8952913805da2a2957670c833c9dc"
+    },
+    "medians": {
+      "baseline": {
+        "parseMs": 976.0118749999999,
+        "peakRssKiB": 253808,
+        "retainedHeapKiB": 115703.1484375
+      },
+      "candidate": {
+        "parseMs": 439.94816699999996,
+        "peakRssKiB": 266224,
+        "retainedHeapKiB": 94494.96875
+      }
+    },
+    "samples": {
+      "baseline": [
+        {
+          "result": "complete",
+          "parseMs": 976.0118749999999,
+          "peakRssKiB": 254224,
+          "retainedHeapKiB": 115640.0390625
+        },
+        {
+          "result": "complete",
+          "parseMs": 973.7445,
+          "peakRssKiB": 253808,
+          "retainedHeapKiB": 115764.3203125
+        },
+        {
+          "result": "complete",
+          "parseMs": 978.488875,
+          "peakRssKiB": 248992,
+          "retainedHeapKiB": 115703.1484375
+        }
+      ],
+      "candidate": [
+        {
+          "result": "complete",
+          "parseMs": 436.983958,
+          "peakRssKiB": 269104,
+          "retainedHeapKiB": 94445.390625
+        },
+        {
+          "result": "complete",
+          "parseMs": 441.512875,
+          "peakRssKiB": 266224,
+          "retainedHeapKiB": 94584.640625
+        },
+        {
+          "result": "complete",
+          "parseMs": 439.94816699999996,
+          "peakRssKiB": 264528,
+          "retainedHeapKiB": 94494.96875
+        }
+      ]
+    },
+    "capped": {
+      "128": {
+        "baseline": {
+          "result": "complete",
+          "parseMs": 1104.033167,
+          "peakRssKiB": 240464,
+          "retainedHeapKiB": 115717.3984375
+        },
+        "candidate": {
+          "result": "complete",
+          "parseMs": 464.703125,
+          "peakRssKiB": 260112,
+          "retainedHeapKiB": 94539.5078125
+        }
+      },
+      "256": {
+        "baseline": {
+          "result": "complete",
+          "parseMs": 1018.330458,
+          "peakRssKiB": 249376,
+          "retainedHeapKiB": 115872.1171875
+        },
+        "candidate": {
+          "result": "complete",
+          "parseMs": 460.74499999999995,
+          "peakRssKiB": 260832,
+          "retainedHeapKiB": 94469.2734375
+        }
+      }
+    }
+  },
+  "formulaWorksheet": {
+    "workload": "120,000 worksheet rows with inline strings and formulas",
+    "archiveBytes": 3208374,
+    "archiveSha256": "6f58b94ec99d07babb9a54779e15fe754c0e659bb0109f550d1612ff2f737329",
+    "entrySha256": {
+      "baseline": "731c37b5d48a6b5898adb28447aaf27353ba3b01ef250ba7a94aba6bf300c017",
+      "candidate": "52b95ae13793dc2691e5c296ca675057a1e4bf354277cd39bb5b11bcf472e6bc"
+    },
+    "model": {
+      "cells": 479998,
+      "rows": 120001,
+      "last": "120030",
+      "modelSha256": "7831dc4a3af978fbe00a4bd5d84b5f71e3eda5fe1460df8bcfec91ccc015899c"
+    },
+    "medians": {
+      "baseline": {
+        "parseMs": 2018.1910829999997,
+        "peakRssKiB": 314272,
+        "retainedHeapKiB": 115141.1171875
+      },
+      "candidate": {
+        "parseMs": 2097.4215,
+        "peakRssKiB": 324928,
+        "retainedHeapKiB": 115159.9296875
+      }
+    },
+    "samples": {
+      "baseline": [
+        {
+          "result": "complete",
+          "parseMs": 2094.2982079999997,
+          "peakRssKiB": 321008,
+          "retainedHeapKiB": 115141.1171875
+        },
+        {
+          "result": "complete",
+          "parseMs": 1990.760542,
+          "peakRssKiB": 310352,
+          "retainedHeapKiB": 115148.078125
+        },
+        {
+          "result": "complete",
+          "parseMs": 2018.1910829999997,
+          "peakRssKiB": 314272,
+          "retainedHeapKiB": 115123.0078125
+        }
+      ],
+      "candidate": [
+        {
+          "result": "complete",
+          "parseMs": 2105.893542,
+          "peakRssKiB": 312304,
+          "retainedHeapKiB": 115097.921875
+        },
+        {
+          "result": "complete",
+          "parseMs": 2097.4215,
+          "peakRssKiB": 324928,
+          "retainedHeapKiB": 115222.796875
+        },
+        {
+          "result": "complete",
+          "parseMs": 1990.480583,
+          "peakRssKiB": 327152,
+          "retainedHeapKiB": 115159.9296875
+        }
+      ]
+    },
+    "capped": {
+      "128": {
+        "baseline": {
+          "result": "V8 heap exhausted",
+          "parsed": false
+        },
+        "candidate": {
+          "result": "complete",
+          "parseMs": 3407.384917,
+          "peakRssKiB": 240768,
+          "retainedHeapKiB": 115225.9609375
+        }
+      },
+      "256": {
+        "baseline": {
+          "result": "complete",
+          "parseMs": 2145.2333339999996,
+          "peakRssKiB": 293984,
+          "retainedHeapKiB": 115215.375
+        },
+        "candidate": {
+          "result": "complete",
+          "parseMs": 2192.614333,
+          "peakRssKiB": 291152,
+          "retainedHeapKiB": 115094.28125
+        }
+      }
+    }
+  }
+}

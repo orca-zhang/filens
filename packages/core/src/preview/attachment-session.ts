@@ -1,5 +1,5 @@
 import { loadSourceBytes } from '../parser/load-source';
-import { readOfficeAttachments } from '../parser/attachments';
+import { attachmentFilename, readOfficeAttachments } from '../parser/attachments';
 import { createPreviewContainerContext, descendPreviewContainer, waitForContainerTask } from './containers';
 import { previewPasswordErrorCode } from './password';
 import { isArchiveVolumeName, selectArchiveVolumes } from '../parser/archive-volumes';
@@ -31,6 +31,7 @@ export function createAttachmentPreviewSession(
   let toolbar: HTMLDetailsElement | undefined;
   let childUnsubscribes: Array<() => void> = [];
   let parentName: string | undefined;
+  let parentSensitive = false;
   let returnFocus: HTMLElement | undefined;
   let metadataWarnings: string[] = [];
   let availableAttachments: PreviewAttachment[] = [];
@@ -52,11 +53,24 @@ export function createAttachmentPreviewSession(
     child = undefined;
     childPanel?.remove();
     childPanel = undefined;
+    const inline = root.classList.contains('filens-attachments-shell--inline-child');
+    root.classList.remove('filens-attachments-shell--inline-child');
     documentHost.hidden = false;
-    if (toolbar) toolbar.hidden = false;
+    documentHost.inert = false;
+    if (toolbar) { toolbar.hidden = false; toolbar.inert = false; }
     const focus = returnFocus;
     returnFocus = undefined;
-    if (focus?.isConnected) focus.focus({ preventScroll: true });
+    if (inline && focus) {
+      const parent = controller;
+      // Visibility and inertness can settle after the click that closed the panel.
+      doc.defaultView?.requestAnimationFrame(() => {
+        if (controller !== parent || parent?.signal.aborted || operation || !doc.activeElement?.contains(documentHost)) return;
+        const target = focus.isConnected ? focus : doc.getElementById(focus.id);
+        if (target && documentHost.contains(target)) target.focus({ preventScroll: true });
+      });
+    } else if (focus?.isConnected) {
+      focus.focus({ preventScroll: true });
+    }
     emit('statechange', state());
   };
   const button = (text: string, action: () => void): HTMLButtonElement => {
@@ -78,9 +92,10 @@ export function createAttachmentPreviewSession(
     // Allow the browser to consume the URL before releasing it.
     setTimeout(() => { if (urls.delete(url)) URL.revokeObjectURL(url); }, 1000);
   };
-  const open = async (attachment: PreviewAttachment, downloadOnly = false) => {
+  const open = async (attachment: PreviewAttachment, downloadOnly = false, trigger?: HTMLElement) => {
     if (!controller || controller.signal.aborted) return;
-    const focus = returnFocus ?? (doc.activeElement instanceof HTMLElement ? doc.activeElement : undefined);
+    const sensitive = parentSensitive;
+    const focus = returnFocus ?? trigger ?? (doc.activeElement instanceof HTMLElement ? doc.activeElement : undefined);
     back();
     returnFocus = focus;
     const current = new AbortController();
@@ -90,8 +105,15 @@ export function createAttachmentPreviewSession(
     parentSignal.addEventListener('abort', abort, { once: true });
     current.signal.addEventListener('abort', () => parentSignal.removeEventListener('abort', abort), { once: true });
     const isCurrent = () => operation === current && !current.signal.aborted;
-    documentHost.hidden = true;
-    if (toolbar) toolbar.hidden = true;
+    if (trigger) {
+      // Keep the slide laid out so the inline trigger stays mounted and in view.
+      root.classList.add('filens-attachments-shell--inline-child');
+      documentHost.inert = true;
+      if (toolbar) toolbar.inert = true;
+    } else {
+      documentHost.hidden = true;
+      if (toolbar) toolbar.hidden = true;
+    }
     childPanel = doc.createElement('div');
     childPanel.className = 'filens-attachment-panel';
     const navigation = doc.createElement('div');
@@ -130,7 +152,7 @@ export function createAttachmentPreviewSession(
     navigation.append(button(t('Download attachment'), () => {
       void readDownload().then(value => download(value, current.signal)).catch(showError);
     }));
-    navigation.append(button(t('Retry'), () => { void open(attachment); }));
+    navigation.append(button(t('Retry'), () => { void open(attachment, false, trigger); }));
     backButton.focus({ preventScroll: true });
     try {
       const childContext = downloadOnly ? context : descendPreviewContainer(context);
@@ -152,7 +174,11 @@ export function createAttachmentPreviewSession(
           }
         }
         const set = selectArchiveVolumes(descriptor.name, named);
-        if (set) descriptor = { ...set.primary, archiveVolumes: set.files.slice(1).map(part => ({ name: part.name, source: part.source })) };
+        if (set) descriptor = {
+          ...set.primary,
+          sensitive: set.files.some(part => part.sensitive),
+          archiveVolumes: set.files.slice(1).map(part => ({ name: part.name, source: part.source }))
+        };
       }
       label.textContent = `${parentName ?? t('Document')} › ${descriptor.name ?? attachment.name}`;
       if (downloadOnly) {
@@ -171,7 +197,7 @@ export function createAttachmentPreviewSession(
         child.on('warnings', warnings => { if (isCurrent()) emit('warnings', warnings); }),
         child.on('rendered', () => { if (isCurrent()) emit('rendered', state()); })
       ];
-      await waitForContainerTask(child.preview(descriptor), current.signal);
+      await waitForContainerTask(child.preview(sensitive ? { ...descriptor, sensitive: true } : descriptor), current.signal);
       if (!isCurrent()) return;
       if (child.getState().error) showError(new Error(child.getState().error!));
       else status.hidden = true;
@@ -184,6 +210,7 @@ export function createAttachmentPreviewSession(
 
   const overrides: Partial<PreviewSession> = {
     refreshTranslations() { inner.refreshTranslations?.(); child?.refreshTranslations?.(); },
+    refreshFontLayout() { if (child) child.refreshFonts?.(); else inner.refreshFontLayout?.(); },
     async load(source: PreviewSource, loadContext: PreviewLoadContext) {
       controller?.abort();
       back();
@@ -200,16 +227,34 @@ export function createAttachmentPreviewSession(
       signal.addEventListener('abort', () => parentSignal?.removeEventListener('abort', abort), { once: true });
       if (parentSignal?.aborted) controller.abort();
       parentName = loadContext.descriptor.name;
-      await inner.load(source, { ...loadContext, signal });
+      parentSensitive = Boolean(loadContext.descriptor.sensitive || loadContext.descriptor.password !== undefined);
+      const officeSource = async (activeSignal?: AbortSignal) => loadContext.zipEntries ?? await loadSourceBytes(source, { signal: activeSignal });
+      const openAttachment: PreviewLoadContext['openAttachment'] = format === 'pptx' ? (id, trigger) => {
+        if (signal.aborted || !documentHost.contains(trigger)) return;
+        const listed = availableAttachments.find(entry => entry.id === id);
+        const resolveAttachment = async (readSignal?: AbortSignal) => {
+          const activeSignal = readSignal ?? signal;
+          const [part] = await readOfficeAttachments(await officeSource(activeSignal), context, activeSignal, id);
+          if (!part) throw new Error(t('Some document attachments could not be read.'));
+          return part;
+        };
+        void open(listed ?? {
+          id, name: attachmentFilename(id),
+          read: async readSignal => (await resolveAttachment(readSignal)).read(readSignal),
+          readRaw: async readSignal => (await resolveAttachment(readSignal)).readRaw!(readSignal)
+        }, false, trigger);
+      } : undefined;
+      await inner.load(source, { ...loadContext, signal, openAttachment });
       signal.throwIfAborted();
       try {
         const attachments = availableAttachments = await waitForContainerTask(inner.getAttachments ? inner.getAttachments()
           : ['docx', 'xlsx', 'pptx'].includes(format)
-            ? readOfficeAttachments(await loadSourceBytes(source, { signal }), context, signal) : Promise.resolve([]), signal);
+            ? readOfficeAttachments(await officeSource(signal), context, signal) : Promise.resolve([]), signal);
         signal.throwIfAborted();
         if (!attachments.length) return;
         toolbar = doc.createElement('details');
         toolbar.className = 'filens-attachments';
+        toolbar.inert = documentHost.inert;
         toolbar.dataset.previewControls = '';
         const summary = doc.createElement('summary');
         summary.textContent = `${t('Attachments')} (${attachments.length})`;

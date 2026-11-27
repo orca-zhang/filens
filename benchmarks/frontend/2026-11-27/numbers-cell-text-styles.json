@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-27",
+  "input": {
+    "file": "test-styles.numbers",
+    "source": "https://github.com/masaccio/numbers-parser/blob/972e1cf0cbcba0ec5178d8889b9b410542ebce2c/tests/data/test-styles.numbers",
+    "sha256": "6734e8dd15b77da82d8732d43d5fb2ef7552620dbe0a54758013389011949213"
+  },
+  "oracle": "Typography expectations in the upstream test_header_styles test and property labels authored in the Styles sheet.",
+  "oracleUrl": "https://github.com/masaccio/numbers-parser/blob/972e1cf0cbcba0ec5178d8889b9b410542ebce2c/tests/test_styles.py",
+  "headers": {
+    "propertiesChecked": 29,
+    "matchesBefore": 14,
+    "matchesAfter": 29,
+    "corrected": [
+      {
+        "cell": "E1",
+        "property": "bold",
+        "expected": false,
+        "before": true
+      },
+      {
+        "cell": "B5",
+        "property": "bold",
+        "expected": false,
+        "before": true
+      },
+      {
+        "cell": "E9",
+        "property": "bold",
+        "expected": false,
+        "before": true
+      },
+      {
+        "cell": "C1",
+        "property": "underline",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "C4",
+        "property": "underline",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "C9",
+        "property": "underline",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "B1",
+        "property": "italic",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "B4",
+        "property": "italic",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "B9",
+        "property": "italic",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "D1",
+        "property": "strike",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "A5",
+        "property": "strike",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "D9",
+        "property": "strike",
+        "expected": true,
+        "before": false
+      },
+      {
+        "cell": "A2",
+        "property": "color",
+        "expected": "#1db100",
+        "before": "#000000"
+      },
+      {
+        "cell": "A6",
+        "property": "color",
+        "expected": "#1db100",
+        "before": "#000000"
+      },
+      {
+        "cell": "A10",
+        "property": "color",
+        "expected": "#1db100",
+        "before": "#000000"
+      }
+    ]
+  },
+  "explicitStyleLabels": {
+    "propertiesChecked": 85,
+    "exactMatchesBefore": 9,
+    "exactMatchesAfter": 39,
+    "remainingDifferences": "46 font-family spellings. The preview exposes saved face names such as ArialMT while the labels list family names such as Arial."
+  },
+  "packagedBrowserChecks": {
+    "builds": [
+      "split",
+      "all-in-one"
+    ],
+    "engines": [
+      "Chromium",
+      "Firefox",
+      "WebKit"
+    ],
+    "scope": "Open the Headers sheet and verify bold inheritance, explicit regular weight, italic, underline, strike, and color before and after the font refresh call."
+  }
+}

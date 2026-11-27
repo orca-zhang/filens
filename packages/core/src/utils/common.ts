@@ -52,13 +52,6 @@ export function toNumber(value: unknown, fallback = 0): number {
   return fallback;
 }
 
-let idCounter = 0;
-
-export function createId(prefix: string): string {
-  idCounter += 1;
-  return `${prefix}-${idCounter}`;
-}
-
 export function deepClone<T>(value: T): T {
   if (value == null || typeof value !== 'object') {
     return value;

@@ -1,7 +1,7 @@
 import type { PreviewFontReference } from '@filens/core';
 import { readFontAppearance, readFontReference, type colorReader } from './style-appearance';
 import type { ParsedRichText, ParsedRichTextRun } from './types';
-import { readPath, toArray } from './xml-values';
+import { decodeSpreadsheetText, readPath, toArray } from './xml-values';
 
 export function readTextValue(node: unknown): string {
   if (typeof node === 'string') return node;
@@ -11,12 +11,12 @@ export function readTextValue(node: unknown): string {
 
 export function createRichTextReader(theme: unknown, color: ReturnType<typeof colorReader>, fonts: PreviewFontReference[]) {
   const faces = new Map(fonts.filter(font => font.fontFamily).map(font => [JSON.stringify(font), font]));
-  return (item: unknown): string | ParsedRichText => {
+  const read = (item: unknown): string | ParsedRichText => {
     const text = readPath(item, ['t']);
-    if (text != null) return readTextValue(text);
+    if (text != null) return decodeSpreadsheetText(readTextValue(text));
     let styled = false;
     const runs = toArray(readPath(item, ['r'])).flatMap((run): ParsedRichTextRun[] => {
-      const text = readTextValue(readPath(run, ['t']));
+      const text = decodeSpreadsheetText(readTextValue(readPath(run, ['t'])));
       if (!text) return [];
       const properties = readPath(run, ['rPr']);
       if (!properties) return [{ text }];
@@ -36,4 +36,11 @@ export function createRichTextReader(theme: unknown, color: ReturnType<typeof co
     const value = runs.map(run => run.text).join('');
     return styled ? { value, runs } : value;
   };
+  read.checkpoint = () => {
+    const before = fonts.length;
+    return () => {
+      for (const font of fonts.splice(before)) faces.delete(JSON.stringify(font));
+    };
+  };
+  return read;
 }

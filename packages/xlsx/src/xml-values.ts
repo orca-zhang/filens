@@ -1,3 +1,8 @@
+export function decodeSpreadsheetText(value: string): string {
+  // One pass preserves literal escapes written with the _x005F_ prefix.
+  return value.includes('_x') ? value.replace(/_x([\da-fA-F]{4})_/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16))) : value;
+}
+
 export function readPath(source: unknown, path: readonly string[]): unknown {
   for (const part of path) {
     if (!source || typeof source !== 'object') return undefined;

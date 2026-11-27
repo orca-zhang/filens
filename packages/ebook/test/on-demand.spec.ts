@@ -3,7 +3,7 @@ import * as core from '@filens/core';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEbookPreviewDriver, loadCbzBook } from '../src';
-import { createBookFixture, createComicFixture } from './fixtures/books.mjs';
+import { createBookFixture, createComicFixture, createNavigationBookFixture } from './fixtures/books.mjs';
 
 let active: Set<string>, sequence = 0;
 const originalCreate = Object.getOwnPropertyDescriptor(URL, 'createObjectURL');
@@ -118,6 +118,42 @@ describe('on-demand ebook previews', () => {
       expect(body).not.toHaveBeenCalled();
       expect(session.getState().chapters[1].title).toBe('Unread title');
     } finally { session.destroy(); }
+  });
+
+  it('uses EPUB 2 NCX if the EPUB 3 navigation has no targets in the spine', async () => {
+    const zip = await JSZip.loadAsync(await createNavigationBookFixture('ncx'));
+    const manifest = zip.file('OPS/package.opf')!;
+    zip.file(manifest.name, (await manifest.async('text')).replace('</manifest>',
+      '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest>'));
+    zip.file('OPS/nav.xhtml', '<html><nav><a href="missing.xhtml">Missing chapter</a></nav></html>');
+    const { session, host } = await open(await zip.generateAsync({ type: 'uint8array' }));
+    try {
+      expect(session.getState().chapters[1].title).toBe('Deep sky');
+      expect(host.querySelector('.ebookv-contents')?.textContent).toContain('Winter sky');
+    } finally { session.destroy(); }
+  });
+
+  it('retargets a pending chapter to another fragment without starting a second read', async () => {
+    const bytes = await createNavigationBookFixture(), entries = await core.openZipArchive(bytes);
+    const chapter = entries.get('OPS/chapter 2.xhtml')!;
+    const read = chapter.bytes;
+    let finish!: () => void;
+    const pending = new Promise<void>(resolve => { finish = resolve; });
+    const held = vi.spyOn(chapter, 'bytes').mockImplementation(async (...args) => { await pending; return read(...args); });
+    vi.spyOn(core, 'openZipArchive').mockResolvedValueOnce(entries);
+    const { session, host } = await open(bytes);
+    try {
+      const [first, second] = host.querySelectorAll<HTMLButtonElement>('.ebookv-contents button');
+      first.click();
+      await vi.waitFor(() => expect(held).toHaveBeenCalledOnce());
+      const previous = host.querySelector('iframe');
+      second.click();
+      expect(session.getState()).toMatchObject({ chapterLoading: true, location: 'chapter%202.xhtml#p79' });
+      expect(host.querySelector('iframe')).toBe(previous);
+      finish();
+      await vi.waitFor(() => expect(session.getState()).toMatchObject({ chapterLoading: false, location: 'chapter%202.xhtml#p79' }));
+      expect(held).toHaveBeenCalledOnce();
+    } finally { finish(); session.destroy(); }
   });
 
   it.each(['Error', 'AbortError'])('keeps navigation usable after a chapter reader reports %s without cancelling the session', async name => {

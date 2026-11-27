@@ -1,3 +1,6 @@
+import type { ZipEntry } from '../parser/zip-reader';
+import type { SlideAnimationStep, SlideComment, SlideTransition } from '../types';
+
 export type PreviewSource = string | ArrayBuffer | Uint8Array | Blob | File;
 
 export type PreviewFamily =
@@ -28,6 +31,8 @@ export interface SourceDescriptor {
   archiveVolumes?: readonly { name: string; source: PreviewSource }[];
   /** Password to open this document. Kept in memory for this load only. */
   password?: string;
+  /** Content from a protected source. Keep decoded data out of shared preview caches. */
+  sensitive?: boolean;
   name?: string;
   extension?: string;
   contentType?: string;
@@ -40,6 +45,10 @@ export interface PreviewLoadContext {
   descriptor: SourceDescriptor;
   route?: FormatRoute;
   signal?: AbortSignal;
+  /** An indexed package shared by the document renderer and its attachment list for this load. */
+  zipEntries?: ReadonlyMap<string, ZipEntry>;
+  /** Open a package part explicitly referenced by the rendered document. */
+  openAttachment?: (id: string, trigger: HTMLElement) => void;
 }
 
 export interface PreviewFontResolveRequest {
@@ -70,7 +79,7 @@ export interface PreviewFontTraits {
   serif?: boolean;
   monospace?: boolean;
   style?: 'text' | 'handwriting' | 'decorative' | 'symbol';
-  script?: 'latin' | 'cjk-sc' | 'cjk-tc' | 'japanese' | 'korean' | 'emoji';
+  script?: 'latin' | 'cjk-sc' | 'cjk-tc' | 'japanese' | 'korean' | 'emoji' | 'math';
   /** Ten-byte PANOSE descriptor as twenty hexadecimal characters. */
   panose?: string;
   /** CSS weight (1–1000) and stretch percentage, when known. */
@@ -130,6 +139,8 @@ export interface PreviewFontRefresh {
   loaded: PreviewFontCandidate[];
   warnings: string[];
   relayout?: boolean;
+  /** Loaded faces already registered by the host page. */
+  environment?: ReadonlySet<string>;
 }
 
 export interface PreviewFontClassification extends PreviewFontTraits {
@@ -150,11 +161,13 @@ export interface PreviewFontReference {
   embedded?: boolean;
   /** Optional local matching sample; excluded from diagnostic output. */
   text?: string;
+  /** The text covers this face for the entire loaded document and was not truncated. */
+  textComplete?: boolean;
   fontStyle?: 'normal' | 'italic' | 'oblique';
 }
 
 export interface PreviewFontDiagnostic {
-  /** Renderer font identifier, when original family names are unavailable (e.g. PDF.js). */
+  /** Identifier assigned to the font by the rendering engine. */
   fontId?: string;
   fontFamily?: string;
   fontFile?: string;
@@ -217,6 +230,8 @@ export interface PreviewOptions {
   /** Opt-in background webfont loading, adaptive mirror routing and font-ready relayout. */
   fontLoading?: boolean | PreviewFontLoadingOptions;
   resourceResolver?: PreviewResourceResolver;
+  /** Trusted archive engine assets supplied by the host and resolved on first use. */
+  archiveEngine?: () => { workerUrl: string; wasmUrl: string };
   audio?: AudioPreviewOptions;
   previewerFactory?: PreviewerFactory;
 }
@@ -312,6 +327,13 @@ export interface PagedPreviewState extends PreviewItemState {
   pageCount: number;
   scale: number;
   fit: PreviewFitMode;
+  /** Speaker notes for the active slide, when present. */
+  speakerNotes?: string;
+  /** Review threads on the active slide, when present. */
+  comments?: SlideComment[];
+  /** Authored transition into the active slide. */
+  slideTransition?: SlideTransition;
+  slideAnimations?: SlideAnimationStep[];
 }
 
 export interface FlowPreviewState extends PreviewItemState {
@@ -555,6 +577,7 @@ export interface PreviewSession<TState extends PreviewItemState = PreviewItemSta
   getAttachments?(): Promise<PreviewAttachment[]>;
   getFontReferences?(): readonly PreviewFontReference[];
   refreshFonts?(update: PreviewFontRefresh): Promise<void> | void;
+  refreshFontLayout?(): void;
   load(source: PreviewSource, context: PreviewLoadContext): Promise<void>;
   destroy(): void;
   getState(): TState;
@@ -597,6 +620,8 @@ export interface PreviewerInstance<TState extends PreviewItemState = PreviewItem
   setWrap?(wrap: boolean): void;
   /** Refresh driver labels after the translation callback changes, preserving the loaded media. */
   refreshTranslations?(): void;
+  /** Recheck host-added or removed faces and refresh the current preview's text layout. */
+  refreshFonts?(): void;
   preview(source: PreviewSource | SourceDescriptor, descriptor?: Partial<SourceDescriptor>): Promise<void>;
   destroy(): void;
   getState(): TState;

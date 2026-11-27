@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "method": "Open a synthetic Numbers workbook from a file-backed Blob and call loadIwork with hint 'numbers'. Run each build in three fresh Node processes, alternating builds. Record peak RSS through load and the subsequent GC, before decoding the unreferenced tiles to verify their row offsets.",
+  "fixture": {
+    "description": "A sparse merged Numbers table with three stored cells and an unreferenced stored ZIP entry containing 128 TST.Tile records. Each tile contains 192 rows with a 4096-byte cell offset field filled with 255 and a 16-byte zero-filled cell storage field. Snappy frames cover up to 64 KiB of IWA data each.",
+    "archiveBytes": 4898299,
+    "archiveSha256": "62cf13384f85ae1f2592f278d271b68b06b98eeb1155b96cafc4da6100b2dfeb",
+    "snappyFramesInTileEntry": 1549,
+    "expandedTileEntryBytes": 101461092,
+    "verifiedCellModelSha256": "2b3af1863bc87238f9c6ca9e37ba32ac5150cdf3956a76d14c4ff2e1ff041843",
+    "verifiedTileOffsetsSha256": "1773cd94181c5d8c9cef65dbf597f601c81154e3aa67ae1665eae079ffa8eec6"
+  },
+  "baseline": {
+    "entrySha256": "6c580e113e7160cc92ba327888ca0a3ad107191a1184002a0a106195836aada7",
+    "samples": [
+      { "loadMs": 171.867, "peakRssKiB": 310624 },
+      { "loadMs": 184.600, "peakRssKiB": 312688 },
+      { "loadMs": 174.655, "peakRssKiB": 312608 }
+    ],
+    "median": { "loadMs": 174.655, "peakRssKiB": 312608 }
+  },
+  "streaming": {
+    "entrySha256": "987b95bc3e48e14fd6afd5e9087fb7ef3f830d4824662c86cb060c6af1eb67f2",
+    "samples": [
+      { "loadMs": 171.750, "peakRssKiB": 237520 },
+      { "loadMs": 177.028, "peakRssKiB": 237536 },
+      { "loadMs": 173.425, "peakRssKiB": 242768 }
+    ],
+    "median": { "loadMs": 173.425, "peakRssKiB": 237536 }
+  }
+}

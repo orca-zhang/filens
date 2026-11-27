@@ -1,0 +1,89 @@
+{
+  "date": "2026-11-25",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "workload": "220,000 shared strings referenced by worksheets",
+  "method": "Fresh Node processes, alternating build order. 1024 MiB V8 old-space for the three measured runs per build. Parse times cover opening the ZIP, decoding XML and building the full model, including lazy parser initialization. They exclude fixture generation, reading the input file, static package imports, rendering and network. Peak process RSS includes the process baseline and compressed input and is sampled after parsing, before model hashing or formula evaluation. Capped runs limit V8 old space.",
+  "archiveBytes": 2303547,
+  "archiveSha256": "05428025967701d96e78f925febf550be20b307bd07a9b74776dfec31026bced",
+  "model": {
+    "cells": 220002,
+    "rows": 220000,
+    "last": "  Batch & 星表 ²",
+    "modelSha256": "c7c452a16565f08f7184421735174f9b98e8952913805da2a2957670c833c9dc"
+  },
+  "variants": {
+    "baseline": {
+      "description": "Buffered ZIP expansion and UTF-8 decode before batching shared string XML.",
+      "xlsxEntrySha256": "676514f7a7d1090ea961954474f87d45b55e83257451598d885cd2dbb8460a63",
+      "coreZipChunkSha256": "2dba482733e6849325f2aee282e6833dcd9e6f7845c63c76be9f7aad3a2d3fb5"
+    },
+    "streamed": {
+      "description": "Native ZIP decompression feeds a streaming UTF-8 decoder and shared string XML batches.",
+      "xlsxEntrySha256": "d1af756755da9ea34ea82184f288aae2c9987b9f1ecaf53487689d1d8aa2d99f",
+      "coreZipChunkSha256": "b44718d4cb5d2274f38c00cd0a19db29351b4e6f5f1a41af00cf38aa1caf99b3"
+    }
+  },
+  "samples": {
+    "baseline": [
+      {
+        "result": "complete",
+        "parseMs": 926.365708,
+        "peakRssKiB": 314784
+      },
+      {
+        "result": "complete",
+        "parseMs": 912.929625,
+        "peakRssKiB": 330464
+      },
+      {
+        "result": "complete",
+        "parseMs": 877.711084,
+        "peakRssKiB": 346368
+      }
+    ],
+    "streamed": [
+      {
+        "result": "complete",
+        "parseMs": 936.4082089999999,
+        "peakRssKiB": 258160
+      },
+      {
+        "result": "complete",
+        "parseMs": 1009.078542,
+        "peakRssKiB": 269184
+      },
+      {
+        "result": "complete",
+        "parseMs": 954.2508330000001,
+        "peakRssKiB": 259328
+      }
+    ]
+  },
+  "capped": {
+    "128": {
+      "baseline": {
+        "result": "V8 heap exhausted",
+        "parsed": false
+      },
+      "streamed": {
+        "result": "V8 heap exhausted",
+        "parsed": false
+      }
+    },
+    "256": {
+      "baseline": {
+        "result": "complete",
+        "parseMs": 926.979,
+        "peakRssKiB": 307456
+      },
+      "streamed": {
+        "result": "complete",
+        "parseMs": 1079.285917,
+        "peakRssKiB": 267200
+      }
+    }
+  }
+}

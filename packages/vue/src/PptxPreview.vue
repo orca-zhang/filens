@@ -47,7 +47,7 @@ const viewerHost = ref<HTMLDivElement | null>(null);
 const shellRef = ref<HTMLDivElement | null>(null);
 const sidebarRef = ref<HTMLElement | null>(null);
 const viewer = shallowRef<ViewerInstance | null>(null);
-const viewerState = ref<ViewerState>({
+const viewerState = shallowRef<ViewerState>({
   loading: false,
   error: null,
   currentSlide: 0,
@@ -60,6 +60,7 @@ const viewerState = ref<ViewerState>({
 });
 
 const unsubs: Array<() => void> = [];
+const thumbnailRevision = ref(0);
 
 const presentation = computed(() => viewerState.value.presentation);
 const currentSlide = computed(() => viewerState.value.currentSlide);
@@ -198,7 +199,7 @@ function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   }
 
   return Boolean(
-    target.closest('input, textarea, select, [contenteditable="true"], button')
+    target.closest('input, textarea, select, [contenteditable="true"], button, .pptxv-slide-panel, .pptxv-comment-source')
   );
 }
 
@@ -245,12 +246,14 @@ onMounted(async () => {
     initialScale: props.initialScale,
     minScale: props.minScale,
     maxScale: props.maxScale,
-    virtual: true
+    virtual: true,
+    translate: t
   });
 
   unsubs.push(
     viewer.value.on('rendered', (state) => {
       syncState(state);
+      thumbnailRevision.value++;
       emit('rendered', state.presentation);
     }),
     viewer.value.on('error', (error) => {
@@ -273,6 +276,8 @@ onMounted(async () => {
 
   await loadSource();
 });
+
+watch([locale, () => props.messages], () => viewer.value?.refreshTranslations?.(), { deep: true });
 
 watch(
   () => props.src,
@@ -354,6 +359,7 @@ function getPreferredScrollBehavior(): ScrollBehavior {
             :slide="slide"
             :presentation="presentation"
             :media-registry="viewerState.mediaRegistry"
+            :layout-revision="thumbnailRevision"
           />
           <span class="pptxv-thumb-label">{{ slide.index + 1 }}</span>
         </button>

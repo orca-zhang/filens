@@ -39,13 +39,14 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
-    "docx-preview": "^0.3.7"
+    "jszip": "^3.10.1"
   },
   "peerDependencies": {
     "@filens/core": "^0.1.2"
   },
   "devDependencies": {
-    "@filens/core": "file:../core"
+    "@filens/core": "file:../core",
+    "docx-preview": "0.3.7"
   },
   "license": "MIT",
   "repository": {

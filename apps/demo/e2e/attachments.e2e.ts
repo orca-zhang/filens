@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import JSZip from 'jszip';
 import * as cfb from 'cfb';
 import SevenZip from '7z-wasm';
 import { ZipWriter, Uint8ArrayReader, Uint8ArrayWriter } from '@zip.js/zip.js/lib/zip-core-native.js';
+import { createWorkbookFixture } from '../../../packages/xlsx/test/fixtures/workbook.mjs';
+import { buildOleObjectsFixture, embeddedObjectName } from '../../../packages/pptx/test/fixtures/ole-objects';
 
 async function encryptedZip(files: Array<{ name: string; data: Uint8Array; password: string }>, zipCrypto = false): Promise<Buffer> {
   const writer = new ZipWriter(new Uint8ArrayWriter(), { useWebWorkers: false });
@@ -19,12 +22,35 @@ async function encrypted7z(files: Record<string, Uint8Array>, password: string, 
   return Buffer.from(engine.FS.readFile('/archive.7z'));
 }
 
+test('keeps a workbook inside a decrypted nested ZIP out of the shared model cache', async ({ page }) => {
+  const workbook = Buffer.from(await createWorkbookFixture());
+  const inner = new JSZip();
+  inner.file('ledger.xlsx', workbook);
+  const buffer = await encryptedZip([{ name: 'inner.zip', data: await inner.generateAsync({ type: 'uint8array' }), password: 'outer secret' }]);
+  await page.goto('./?view=preview&lang=zh_CN');
+  const cacheUrl = new URL(`@fs${resolve('packages/core/src/preview/model-cache.ts')}`, page.url()).href;
+  const cacheSize = () => page.evaluate(async url => (await import(/* @vite-ignore */ url)).previewModelCache.size, cacheUrl);
+  const upload = page.getByLabel('导入文件', { exact: true });
+  await upload.setInputFiles({ name: 'locked.zip', mimeType: 'application/zip', buffer });
+  await page.locator('tr.archivev-row').filter({ hasText: 'inner.zip' }).click();
+  const field = page.getByLabel('文档密码', { exact: true });
+  await expect(field).toBeVisible();
+  await field.fill('outer secret'); await field.press('Enter');
+  await page.locator('tr.archivev-row').filter({ hasText: 'ledger.xlsx' }).click();
+  await expect(page.locator('.archivev-entry-preview .xlsxv-grid')).toContainText('First 1');
+  expect(await cacheSize()).toBe(0);
+
+  await upload.setInputFiles({ name: 'ledger.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: workbook });
+  await expect(page.locator('.xlsxv-grid')).toContainText('First 1');
+  await expect.poll(cacheSize).toBe(1);
+});
+
 for (const encryptHeaders of [false, true]) {
   test(`opens password protected 7z with encrypted ${encryptHeaders ? 'filenames' : 'entries'}`, async ({ page }) => {
     const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
     const buffer = await encrypted7z({ '秘密.txt': Buffer.from('SevenZip encrypted preview') }, ' 7z 密码🔐 ', encryptHeaders);
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles({ name: 'protected.7z', mimeType: 'application/x-7z-compressed', buffer });
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'protected.7z', mimeType: 'application/x-7z-compressed', buffer });
     if (!encryptHeaders) await page.locator('tr.archivev-row').filter({ hasText: '秘密.txt' }).click();
     const field = page.getByLabel('文档密码', { exact: true });
     await expect(field).toBeVisible();
@@ -41,7 +67,7 @@ for (const version of [4, 5]) {
   test(`opens RAR ${version} entries with independent passwords`, async ({ page }) => {
     const buffer = await readFile(`packages/archive/test/fixtures/rar${version}-encrypted.rar`);
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles({ name: `test${version}.rar`, mimeType: 'application/vnd.rar', buffer });
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: `test${version}.rar`, mimeType: 'application/vnd.rar', buffer });
     for (const [name, password] of [['b.txt', 'password'], ['d.txt', 'password2']]) {
       await page.locator('tr.archivev-row').filter({ hasText: name }).click();
       const field = page.getByLabel('文档密码', { exact: true });
@@ -55,7 +81,7 @@ for (const version of [4, 5]) {
   test(`unlocks RAR ${version} encrypted filenames`, async ({ page }) => {
     const buffer = await readFile(`packages/archive/test/fixtures/rar${version}-encrypted-filenames.rar`);
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles({ name: `headers${version}.rar`, mimeType: 'application/vnd.rar', buffer });
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: `headers${version}.rar`, mimeType: 'application/vnd.rar', buffer });
     const field = page.getByLabel('文档密码', { exact: true });
     await expect(field).toBeVisible();
     await field.fill('wrong'); await field.press('Enter');
@@ -71,7 +97,7 @@ test('opens an anonymous 7z embedded in Office, then RAR, and returns through bo
   const sevenZip = await encrypted7z({ 'inner.rar': rar }, 'outer password', true);
   const buffer = await documentWithAttachment('docx', sevenZip, 'object.bin');
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'object.bin', exact: true }).click();
   const field = page.getByLabel('文档密码', { exact: true });
@@ -145,7 +171,7 @@ for (const zipCrypto of [true, false]) {
     const password = ' ZIP 密码🔐 ';
     const buffer = await encryptedZip([{ name: 'secret.txt', data: Buffer.from('Decrypted ZIP preview'), password }], zipCrypto);
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles({ name: 'encrypted.zip', mimeType: 'application/zip', buffer });
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'encrypted.zip', mimeType: 'application/zip', buffer });
     await page.locator('tr.archivev-row').filter({ hasText: 'secret.txt' }).click();
     const field = page.getByLabel('文档密码', { exact: true });
     await expect(field).toBeVisible();
@@ -164,7 +190,7 @@ for (const format of ['docx', 'xlsx', 'pptx'] as const) {
   test(`previews an embedded file and restores its parent ${format}`, async ({ page }) => {
     const buffer = await documentWithAttachment(format, Buffer.from('An embedded document attachment'), 'notes.txt');
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles({ name: `parent.${format}`, mimeType: 'application/octet-stream', buffer });
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: `parent.${format}`, mimeType: 'application/octet-stream', buffer });
     await page.locator('.filens-attachments summary').click();
     await page.getByRole('button', { name: 'notes.txt', exact: true }).click();
     await expect(page.locator('.filens-attachment-preview')).toContainText('An embedded document attachment');
@@ -175,13 +201,86 @@ for (const format of ['docx', 'xlsx', 'pptx'] as const) {
   });
 }
 
+test('renders OLE previews on the slide and opens the embedded workbook by keyboard', async ({ page }) => {
+  const base = await readFile(resolve('apps/demo/public/samples/sample-deck.pptx'));
+  const workbook = new Uint8Array(await createWorkbookFixture());
+  const fixture = await buildOleObjectsFixture(base, workbook);
+  const external: string[] = [];
+  await page.route('https://example.invalid/**', route => {
+    external.push(route.request().url());
+    return route.abort();
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./?view=preview&lang=zh_CN');
+  const upload = page.getByLabel('导入文件', { exact: true });
+  const mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  await upload.setInputFiles({ name: 'quarterly-deck.pptx', mimeType, buffer: Buffer.from(fixture) });
+  const shell = page.locator('.pptxv-shell');
+  await expect(shell.locator('.pptxv-slide-stage').first()).toBeVisible();
+  await shell.press('ArrowRight');
+  const frame = shell.locator('.pptxv-slide-shell[data-slide-index="1"] .pptxv-slide-stage');
+  const objects = frame.locator('.pptxv-item--ole');
+  const opener = objects.getByRole('button', { name: `打开附件 · ${embeddedObjectName}`, exact: true });
+  await expect(objects).toHaveCount(3);
+  await expect(opener).toBeVisible();
+  await expect(objects.nth(0)).toHaveCSS('top', '400px');
+  const poster = objects.nth(0).locator('img');
+  expect(await poster.evaluate(image => Number.parseFloat(image.style.width))).toBeCloseTo(114.2857, 3);
+  await expect.poll(() => objects.nth(1).locator('img').evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await expect(objects.nth(1).locator('button')).toHaveCount(0);
+  await expect(objects.nth(2).locator('.pptxv-ole-label')).toBeVisible();
+  await expect(objects.nth(2)).toContainText('Unavailable object');
+  await expect(objects.nth(2).locator('button')).toHaveCount(0);
+
+  await expect(opener).toBeInViewport();
+  await opener.press('Enter');
+  const child = page.locator('.filens-attachment-panel');
+  await expect(child.locator('.xlsxv-grid')).toContainText('First 1');
+  await expect(child.locator('.filens-attachment-navigation')).toContainText('quarterly-deck.pptx › quarterly.xlsx');
+  await child.getByRole('button', { name: '返回文档', exact: true }).click();
+  await expect(child).toHaveCount(0);
+  await expect(opener).toBeFocused();
+  await expect(opener).toBeInViewport();
+  expect(external).toEqual([]);
+
+  await opener.press('Enter');
+  await expect(child.locator('.xlsxv-grid')).toContainText('First 1');
+  await upload.setInputFiles({ name: 'another-deck.pptx', mimeType, buffer: base });
+  await expect(child).toHaveCount(0);
+  await expect(page.locator('.pptxv-item--ole')).toHaveCount(0);
+});
+
+test('paints EMF and WMF OLE previews and retains a fallback for an invalid metafile', async ({ page }) => {
+  const base = await readFile(resolve('apps/demo/public/samples/sample-deck.pptx'));
+  const fixture = await buildOleObjectsFixture(base, new Uint8Array([1]), true);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./?view=preview&lang=zh_CN');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'metafile-deck.pptx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', buffer: Buffer.from(fixture) });
+  const shell = page.locator('.pptxv-shell');
+  await expect(shell.locator('.pptxv-slide-stage').first()).toBeVisible();
+  await shell.press('ArrowRight');
+  const objects = shell.locator('.pptxv-slide-shell[data-slide-index="1"] .pptxv-item--ole');
+  await expect(objects.nth(2).locator('.pptxv-ole-label')).toBeVisible();
+  await expect.poll(() => objects.evaluateAll(items => items.slice(0, 2).map(item => {
+    const picture = item.querySelector('img');
+    if (!picture?.naturalWidth) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = picture.naturalWidth;
+    canvas.height = picture.naturalHeight;
+    const context = canvas.getContext('2d')!;
+    context.drawImage(picture, 0, 0);
+    return [...context.getImageData(canvas.width >> 1, Math.round(canvas.height * 0.75), 1, 1).data];
+  }))).toEqual([[34, 85, 160, 255], [49, 128, 75, 255]]);
+});
+
 test('opens OLE ZIP payloads, keeps nested passwords independent, and can cancel or return', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   const inner = await encryptedZip([{ name: 'inside.txt', data: Buffer.from('Deeply nested document payload'), password: 'inner secret' }]);
   const outer = await encryptedZip([{ name: 'inner.zip', data: inner, password: 'outer secret' }]);
   const buffer = await documentWithAttachment('docx', olePackage('bundle.zip', outer), 'oleObject1.bin');
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'oleObject1.bin', exact: true }).click();
   await expect(page.locator('.filens-attachment-navigation')).toContainText('bundle.zip');
@@ -205,7 +304,7 @@ test('opens OLE ZIP payloads, keeps nested passwords independent, and can cancel
 test('opens an encrypted ZIP embedded in a PDF', async ({ page }) => {
   const archive = await encryptedZip([{ name: 'notes.txt', data: Buffer.from('PDF embedded ZIP payload'), password: 'pdf zip' }]);
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'attachments.pdf', mimeType: 'application/pdf', buffer: pdfWithAttachment(archive) });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'attachments.pdf', mimeType: 'application/pdf', buffer: pdfWithAttachment(archive) });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'bundle.zip', exact: true }).click();
   await page.locator('tr.archivev-row').filter({ hasText: 'notes.txt' }).click();
@@ -221,7 +320,7 @@ test('cancels an encrypted Office attachment and clears its prompt when replacin
   const encrypted = await readFile('packages/converter-client/test/fixtures/password/agile.docx');
   const buffer = await documentWithAttachment('docx', encrypted, 'protected.docx');
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'protected.docx', exact: true }).click();
   const field = page.getByLabel('文档密码', { exact: true });
@@ -232,7 +331,7 @@ test('cancels an encrypted Office attachment and clears its prompt when replacin
   await expect(page.locator('section.docx').first()).toBeVisible();
   await page.getByRole('button', { name: 'protected.docx', exact: true }).click();
   await expect(field).toHaveValue('');
-  await page.locator('input[type=file]').setInputFiles({ name: 'replacement.txt', mimeType: 'text/plain', buffer: Buffer.from('Replaced the parent and attachment') });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'replacement.txt', mimeType: 'text/plain', buffer: Buffer.from('Replaced the parent and attachment') });
   await expect(field).toHaveCount(0);
   await expect(page.locator('.wb-preview-stage')).toContainText('Replaced the parent and attachment');
   await expect(page.locator('.filens-attachment-panel')).toHaveCount(0);
@@ -242,7 +341,7 @@ test('downloads unsupported attachments without blocking the parent document', a
   const payload = Buffer.from([1, 2, 3, 0, 255]);
   const buffer = await documentWithAttachment('docx', payload, 'opaque.custom-file');
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'opaque.custom-file', exact: true }).click();
   await expect(page.locator('.filens-attachment-status')).toContainText('Unsupported preview format');
@@ -261,7 +360,7 @@ test('downloads the original bytes of a corrupt OLE attachment and restores its 
   const payload = Buffer.from(cfb.write(file, { type: 'array' }));
   const buffer = await documentWithAttachment('docx', payload, 'broken.bin');
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'parent.docx', mimeType: 'application/octet-stream', buffer });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'broken.bin', exact: true }).click();
   await expect(page.locator('.filens-attachment-status')).toContainText('truncated');
@@ -287,7 +386,7 @@ for (const format of ['7z', 'zip'] as const) {
   test(`previews shuffled encrypted ${format} volumes selected together`, async ({ page }) => {
     const files = await splitFiles(format);
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles([...files].reverse());
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles([...files].reverse());
     if (format === 'zip') await page.locator('tr.archivev-row').filter({ hasText: 'notes.txt' }).click();
     const field = page.getByLabel('文档密码', { exact: true });
     await expect(field).toBeVisible();
@@ -306,7 +405,7 @@ for (const version of [4, 5]) {
     const names = (await readdir(root)).filter(name => version === 4 ? name.startsWith('test_rar_') : name.startsWith('test_read_')).sort().reverse();
     const files = await Promise.all(names.map(async name => ({ name, mimeType: 'application/vnd.rar', buffer: await readFile(root + name) })));
     await page.goto('./?view=preview&lang=zh_CN');
-    await page.locator('input[type=file]').setInputFiles(files);
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles(files);
     const name = version === 4 ? 'LibarchiveAddingTest.html' : 'cebula.txt';
     await page.locator('tr.archivev-row').filter({ hasText: name }).click();
     await expect(page.locator('.archivev-entry-preview')).toBeVisible();
@@ -322,7 +421,7 @@ test('opens a split 7z nested in ZIP from any volume and returns to its parent',
   for (const file of files) zip.file(`parts/${file.name}`, file.buffer);
   const buffer = await zip.generateAsync({ type: 'nodebuffer' });
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'outer.zip', mimeType: 'application/zip', buffer });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'outer.zip', mimeType: 'application/zip', buffer });
   await page.locator('tr.archivev-row').filter({ hasText: 'parts/' }).click();
   await page.locator('tr.archivev-row').filter({ hasText: files[files.length - 1].name }).click();
   const field = page.getByLabel('文档密码', { exact: true });
@@ -341,7 +440,7 @@ test('collects OLE-wrapped archive volumes embedded in a document', async ({ pag
   const zip = await JSZip.loadAsync(buffer);
   for (const [index, file] of files.slice(1).entries()) zip.file(`word/embeddings/oleObject${index + 2}.bin`, olePackage(file.name, file.buffer));
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles({ name: 'volumes.docx', mimeType: 'application/octet-stream', buffer: await zip.generateAsync({ type: 'nodebuffer' }) });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'volumes.docx', mimeType: 'application/octet-stream', buffer: await zip.generateAsync({ type: 'nodebuffer' }) });
   await page.locator('.filens-attachments summary').click();
   await page.getByRole('button', { name: 'oleObject2.bin', exact: true }).click();
   const field = page.getByLabel('文档密码', { exact: true });
@@ -355,7 +454,20 @@ test('collects OLE-wrapped archive volumes embedded in a document', async ({ pag
 
 test('reports a missing intermediate archive volume by filename', async ({ page }) => {
   const files = await splitFiles();
+  let releaseSample!: () => void;
+  const holdSample = new Promise<void>(resolve => { releaseSample = resolve; });
+  let sampleRequested = false;
+  await page.route('**/filens-introduction.zh-CN.pptx', async route => {
+    sampleRequested = true;
+    await holdSample;
+    await route.continue();
+  });
   await page.goto('./?view=preview&lang=zh_CN');
-  await page.locator('input[type=file]').setInputFiles(files.filter((_, index) => index !== 1));
+  try {
+    await expect.poll(() => sampleRequested).toBe(true);
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles(files.filter((_, index) => index !== 1));
+    await expect(page.getByRole('alert')).toContainText('bundle.7z.002');
+  } finally { releaseSample(); }
+  await expect(page.getByText('放回设备上', { exact: true })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('bundle.7z.002');
 });

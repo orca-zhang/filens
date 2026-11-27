@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-27",
+  "platform": "darwin arm64",
+  "node": "v20.20.2",
+  "method": "Build the same preview source with the full iWork descriptor and the reduced runtime descriptor. Build again with the Numbers sheet-navigation fix. Use identical asset packing and transport encoders and compare deployable files. Compare the complete asset reports and verify the archive sidecars and legal notices byte for byte.",
+  "unit": "bytes",
+  "deliveryLimit": 4000000,
+  "builds": {
+    "baseline": {
+      "sourceSha256": "8920aa31a597c7e6b89f2597368deb0124544e3976e53948d583fdff06ea3660",
+      "jsSha256": "3a259d5bca3f8667aaf419b2e4e0c6ac01cd7b61cf2b6f0bcd220372b25ac329",
+      "js": 7473627,
+      "gzip": 3998997,
+      "brotli": 3840690,
+      "gzipHeadroom": 1003,
+      "brotliHeadroom": 159310,
+      "descriptor": 627533,
+      "splitIworkWorker": 960581,
+      "allInOneIworkWorker": 956749,
+      "allInOneIworkGroupLzma": 169086
+    },
+    "schemaOnly": {
+      "sourceSha256": "dd80551891cde3d93e7bbf9936bb222eb0db97d05e0a889f51d8e48931bf8f72",
+      "jsSha256": "2cbf5d2ab82cfb4d790d3c4e26bb6cfc55f3b4717c922704729894129ac0a183",
+      "js": 7421952,
+      "gzip": 3960379,
+      "brotli": 3804419,
+      "gzipHeadroom": 39621,
+      "brotliHeadroom": 195581,
+      "descriptor": 207593,
+      "splitIworkWorker": 585773,
+      "allInOneIworkWorker": 581933,
+      "allInOneIworkGroupLzma": 130327
+    },
+    "candidate": {
+      "sourceSha256": "30d8d169b01ca01c07f0c5cee3292026805f1205137e258ff4a678a9c4c287d9",
+      "jsSha256": "b413e10d9c55dfe1b35bfc625b55a6bd3c7219c4b08ee17d8ffbaa67f16b8fab",
+      "js": 7422200,
+      "gzip": 3960396,
+      "brotli": 3804831,
+      "gzipHeadroom": 39604,
+      "brotliHeadroom": 195169,
+      "descriptor": 207593,
+      "splitIworkWorker": 585773,
+      "allInOneIworkWorker": 581933,
+      "allInOneIworkGroupLzma": 130327
+    }
+  },
+  "identicalOtherAssetGroups": 8,
+  "identicalSidecars": {
+    "THIRD-PARTY-NOTICES.txt": {
+      "bytes": 957595,
+      "sha256": "a887b1e06c0e9f77e2a3d16807e2ea776c83fac1278e0ccda2bb4678f3284d41"
+    },
+    "assets/archive-worker-uiv_8EYe.js": {
+      "bytes": 52796,
+      "sha256": "df561ea2d7d77b96a53e33bf5aa74c343680031af2801f5634132c40258eead2"
+    },
+    "archive/7zz.wasm": {
+      "bytes": 1116075,
+      "sha256": "12f940e5a33d5a998febd7807fb9cb90a5b14c8bb81e917c5b6620952462a3dc"
+    }
+  }
+}

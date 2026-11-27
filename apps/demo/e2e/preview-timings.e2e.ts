@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import { expect, test } from '@playwright/test';
 
 test('separates a cold SDK load from file downloads and resets timings for a local file', async ({ page }) => {
@@ -6,27 +7,35 @@ test('separates a cold SDK load from file downloads and resets timings for a loc
     await new Promise(resolve => setTimeout(resolve, 700));
     await route.continue();
   });
-  const fileUrl = 'https://files.example.test/timed.txt';
-  await page.route(fileUrl, async route => {
-    await new Promise(resolve => setTimeout(resolve, 700));
-    await route.fulfill({ body: 'A timed remote file.', contentType: 'text/plain' });
+  // Firefox reports the time of route fulfillment rather than the delay before it.
+  const server = createServer((_request, response) => {
+    setTimeout(() => response.writeHead(200, {
+      'Access-Control-Allow-Origin': '*', 'Timing-Allow-Origin': '*', 'Content-Type': 'text/plain',
+    }).end('A timed remote file.'), 700);
   });
-  await page.goto(`./?url=${encodeURIComponent(fileUrl)}&lang=en`);
-  await expect(page.locator('.wb-status')).toHaveText('Preview ready');
-  const timings = page.locator('.wb-runtime-timings');
-  const duration = async (label: string) => Number.parseFloat(await timings.locator('span').filter({ has: page.locator('small', { hasText: label }) }).locator('strong').innerText());
-  const coldSdk = await duration('SDK Loading');
-  expect(coldSdk).toBeGreaterThanOrEqual(700);
-  expect(await duration('Download')).toBeGreaterThanOrEqual(700);
-  expect(await duration('Rendering')).toBeGreaterThan(0);
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  try {
+    const fileUrl = `http://127.0.0.1:${(server.address() as { port: number }).port}/timed.txt`;
+    await page.goto(`./?url=${encodeURIComponent(fileUrl)}&lang=en`);
+    await expect(page.locator('.wb-status')).toHaveText('Preview ready');
+    const timings = page.locator('.wb-runtime-timings');
+    const duration = async (label: string) => Number.parseFloat(await timings.locator('span').filter({ has: page.locator('small', { hasText: label }) }).locator('strong').innerText());
+    const coldSdk = await duration('SDK Loading');
+    expect(coldSdk).toBeGreaterThanOrEqual(700);
+    expect(await duration('Download')).toBeGreaterThanOrEqual(700);
+    expect(await duration('Rendering')).toBeGreaterThan(0);
 
-  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name: 'local.txt', mimeType: 'text/plain', buffer: Buffer.from('A local file.') });
-  await expect(page.locator('.wb-preview-stage')).toContainText('A local file.');
-  await expect(page.locator('.wb-status')).toHaveText('Preview ready');
-  await expect(timings).not.toContainText('Download');
-  await expect(timings).not.toContainText('Conversion');
-  expect(await duration('SDK Loading')).toBeLessThan(coldSdk);
-  expect(await duration('Rendering')).toBeGreaterThan(0);
+    await page.getByLabel('Import files', { exact: true }).setInputFiles({ name: 'local.txt', mimeType: 'text/plain', buffer: Buffer.from('A local file.') });
+    await expect(page.locator('.wb-preview-stage')).toContainText('A local file.');
+    await expect(page.locator('.wb-status')).toHaveText('Preview ready');
+    await expect(timings).not.toContainText('Download');
+    await expect(timings).not.toContainText('Conversion');
+    expect(await duration('SDK Loading')).toBeLessThan(coldSdk);
+    expect(await duration('Rendering')).toBeGreaterThan(0);
+  } finally { await new Promise<void>(resolve => { server.close(() => resolve()); server.closeAllConnections(); }); }
 });
 
 test('reports rendering after a slow prefetched conversion source and separates WASM loading', async ({ page }) => {

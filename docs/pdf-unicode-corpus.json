@@ -23,7 +23,7 @@
       "absent": ["ᣅḷᣕԧ㺘"],
       "repairedFonts": 2,
       "ocr": true,
-      "ocrWarning": "PDF text mapping invalid on page 1; using OCR"
+      "allowedPartialError": "ocr_low_confidence"
     },
     {
       "file": "pymupdf-3538-python.pdf",

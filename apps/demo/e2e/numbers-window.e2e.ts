@@ -2,13 +2,13 @@ import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { createNumbersWindowFixture, createNumbersPictureFixture, createNumbersMergedFixture, createNumbersStyledFixture, createNumbersColumnWidthFixture } from '../../../packages/iwork/test/fixtures/numbers-window.mjs';
 
-async function open(page: Page, fixture = createNumbersWindowFixture()) {
+async function open(page: Page, fixture = createNumbersWindowFixture(), virtual?: boolean) {
   await page.goto('./');
   const moduleUrl = new URL(`@fs${resolve('packages/iwork/src/index.ts')}`, page.url()).href;
-  await page.evaluate(async ({ moduleUrl, fixture }) => {
+  await page.evaluate(async ({ moduleUrl, fixture, virtual }) => {
     const { createIworkViewer } = await import(/* @vite-ignore */ moduleUrl);
     const host = document.createElement('div'); host.style.cssText = 'position:fixed;inset:0'; document.body.replaceChildren(host);
-    const viewer = createIworkViewer(host);
+    const viewer = createIworkViewer(host, { virtual });
     const source = await (await fetch(new URL('samples/a.numbers', location.href))).arrayBuffer();
     await viewer.preview(source, { cache: false });
     const doc = viewer.getState().document;
@@ -17,9 +17,45 @@ async function open(page: Page, fixture = createNumbersWindowFixture()) {
     for (const [id, asset] of Object.entries(fixture.media) as [string, any][]) {
       doc.media[id] = { ...asset, data: new Uint8Array(Object.values(asset.data)) };
     }
-    viewer.refreshFonts();
+    if (virtual === false) viewer.goToSheet(0);
+    else viewer.refreshFonts();
     (window as any).numbersWindow = { viewer, host, source };
-  }, { moduleUrl, fixture });
+  }, { moduleUrl, fixture, virtual });
+}
+
+for (const virtual of [true, false]) {
+  test(`collapses Numbers hidden source tracks with virtual=${virtual}`, async ({ page }) => {
+    const fixture = createNumbersWindowFixture(2100, 64);
+    fixture.sheets[0].tables.splice(1);
+    const item = fixture.sheets[0].tables[0].item;
+    Object.assign(item, { hiddenRows: [0, 2, ...Array.from({ length: 1860 }, (_, i) => i + 40)],
+      hiddenColumns: [0, 2, ...Array.from({ length: 30 }, (_, i) => i + 10)] });
+    Object.assign(item.cells[0], { rowSpan: 4, colSpan: 4 });
+    await open(page, fixture, virtual);
+    const grid = page.locator('.xlsxv-grid'), table = grid.locator('table').first();
+    const rows = table.locator('tbody tr[aria-rowindex]');
+    await expect(rows.first().locator('th')).toHaveText('2');
+    await expect(table.locator('.xlsxv-col-header').first()).toHaveText('B');
+    const merge = table.locator('[data-merge-ref="1:1"]');
+    await expect(merge).toHaveText('large first');
+    await expect(merge).toHaveAttribute('rowspan', '2');
+    await expect(merge).toHaveAttribute('colspan', '2');
+    await expect(rows).toHaveCount(100);
+    const scroll = () => grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+    await scroll();
+    if (!virtual) {
+      await expect(rows).toHaveCount(200);
+      await scroll();
+      await expect(rows).toHaveCount(238);
+      await scroll();
+    }
+    const last = table.locator('tr[aria-rowindex="2101"] td[aria-colindex="65"]');
+    await expect(last).toHaveText('large last');
+    await expect(last).toBeInViewport();
+    if (virtual) await expect(rows).toHaveCount(100);
+    await page.evaluate(() => (window as any).numbersWindow.viewer.refreshFonts());
+    await expect(last).toBeInViewport();
+  });
 }
 
 test('bounds large Numbers grids through distant rows/columns, font refresh, resize and sheet replacement', async ({ page }) => {
@@ -86,8 +122,11 @@ test('windows variable-height Numbers picture rows without collapsing them on ho
   const grid = page.locator('.xlsxv-grid'), table = grid.locator('table').first();
   const first = table.locator('tr[aria-rowindex="2"]'), firstImage = first.locator('img');
   await expect.poll(() => firstImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalHeight)).toBe(240);
-  await expect.poll(() => first.evaluate(row => row.getBoundingClientRect().height)).toBeGreaterThan(180);
-  const firstHeight = await first.evaluate(row => row.getBoundingClientRect().height);
+  let firstHeight = 0;
+  await expect.poll(async () => {
+    firstHeight = await first.evaluate(row => row.getBoundingClientRect().height);
+    return firstHeight;
+  }).toBeGreaterThan(180);
   expect(await table.locator('.xlsxv-cell').count()).toBeLessThanOrEqual(2400);
   await grid.evaluate(grid => { grid.scrollLeft = grid.scrollWidth; });
   await expect(first.locator('td[aria-colindex="65"] img')).toHaveCount(1);

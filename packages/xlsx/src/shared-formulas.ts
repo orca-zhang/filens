@@ -1,5 +1,6 @@
 import { columnIndexToName, columnNameToIndex } from './columns';
 import { readPath } from './xml-values';
+import { structuredBracketEnd } from './structured-references';
 import type { ParsedCell, ParsedRow, ParsedSharedFormula, ParsedSheet } from './types';
 
 const MAX_ROW = 1_048_576;
@@ -107,11 +108,11 @@ function parseAddress(value: string): { row: number; column: number } | undefine
 function translationPlan(source: string): FormulaPart[] {
   // Keep quoted text, sheet names and structured/external bracket contents opaque.
   const tokens: string[] = [];
-  const lexer = /"(?:[^"]|"")*"|'(?:[^']|'')*'|[\p{L}\p{N}_.$\\]+|\s+|./suy;
+  const lexer = /"(?:[^"]|"")*"|'(?:[^']|'')*'|\.:\.?|:\.|(?:[\p{L}\p{N}_$\\]|\.(?!:))+|\s+|./suy;
   while (lexer.lastIndex < source.length) {
     const start = lexer.lastIndex;
     if (source[start] === '[') {
-      lexer.lastIndex = bracketEnd(source, start);
+      lexer.lastIndex = structuredBracketEnd(source, start) ?? source.length;
       tokens.push(source.slice(start, lexer.lastIndex));
     } else {
       const match = lexer.exec(source);
@@ -126,6 +127,7 @@ function translationPlan(source: string): FormulaPart[] {
     return at;
   };
   const axis = (value: number, fixed: string): Axis => ({ value, fixed: Boolean(fixed) });
+  const rangeOperator = /^\.?:\.?$/;
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i], after = next(i, 1), afterColon = next(after, 1);
     if (tokens[after] === '!' || tokens[after] === '(' || tokens[after]?.startsWith('[')
@@ -137,8 +139,8 @@ function translationPlan(source: string): FormulaPart[] {
       continue;
     }
     const before = next(i, -1);
-    const paired = tokens[after] === ':' ? tokens[afterColon]
-      : tokens[before] === ':' ? tokens[next(before, -1)] : undefined;
+    const paired = rangeOperator.test(tokens[after] ?? '') ? tokens[afterColon]
+      : rangeOperator.test(tokens[before] ?? '') ? tokens[next(before, -1)] : undefined;
     if (!paired) continue;
     const row = rowAddress.exec(token);
     if (row && rowAddress.test(paired) && Number(row[2]) <= MAX_ROW) parts[i] = { token, row: axis(Number(row[2]), row[1]) };
@@ -149,14 +151,4 @@ function translationPlan(source: string): FormulaPart[] {
     }
   }
   return parts;
-}
-
-function bracketEnd(source: string, start: number): number {
-  let depth = 1;
-  for (let at = start + 1; at < source.length; at++) {
-    if (source[at] === "'" && /[\[\]'#@]/.test(source[at + 1] ?? '')) at++;
-    else if (source[at] === '[') depth++;
-    else if (source[at] === ']' && --depth === 0) return at + 1;
-  }
-  return source.length;
 }

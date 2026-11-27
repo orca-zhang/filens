@@ -74,9 +74,10 @@ describe('Password-protected preview loads', () => {
     expect(requestPassword.mock.calls.map(([request]) => [request.reason, request.attempt])).toEqual([['password_required', 1], ['password_invalid', 2]]);
     expect(errors).not.toHaveBeenCalled();
     expect(previewer.getState()).not.toHaveProperty('password');
-    expect(fixture.sessions.at(-1)?.context?.descriptor.password).toBe(' 密码🔐 ');
+    expect(fixture.sessions.at(-1)?.context?.descriptor).toMatchObject({ sensitive: true });
+    expect(fixture.sessions.at(-1)?.context?.descriptor).not.toHaveProperty('password');
     await previewer.preview(input, { name: 'ordinary.txt' });
-    expect(fixture.sessions.at(-1)?.context?.descriptor.password).toBeUndefined();
+    expect(fixture.sessions.at(-1)?.context?.descriptor).not.toHaveProperty('sensitive');
     previewer.destroy();
   });
 
@@ -136,7 +137,7 @@ describe('Password-protected preview loads', () => {
   it('reads an encrypted remote Office document once across password retries', async () => {
     const fixture = setup();
     const source = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
-    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, arrayBuffer: async () => source.buffer } as Response);
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(source));
     const requestPassword = vi.fn(async () => 'secret');
     const convert = vi.fn(async (request: ConversionRequest) => {
       if (!request.password) throw new PreviewPasswordError('password_required');
@@ -151,6 +152,7 @@ describe('Password-protected preview loads', () => {
       expect(fetch).toHaveBeenCalledOnce();
       expect(convert).toHaveBeenCalledTimes(2);
       expect(convert.mock.calls[1][0]).toMatchObject({ sourceFormat: 'docx', targetFormat: 'docx', password: 'secret' });
+      expect(fixture.sessions[0]?.context?.descriptor).toMatchObject({ sensitive: true });
       expect(previewer.getState().error).toBeNull();
     } finally { previewer.destroy(); fetch.mockRestore(); }
   });

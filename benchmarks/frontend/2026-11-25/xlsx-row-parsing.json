@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-25",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Fresh Node processes, alternating build order. 1024 MiB V8 old-space for the three measured runs per build. Parse times cover opening the ZIP, decoding XML and building the full model, and exclude fixture generation, reading the input file, imports, rendering and network. Peak process RSS includes the process baseline and compressed input and is sampled after parsing, before model hashing or formula evaluation. Capped runs limit V8 old space.",
+  "archiveBytes": 3208374,
+  "archiveSha256": "1d688ba99826d46df6c9c506827dc0cf8d98e3fc37b3c9b589c55979db5dd334",
+  "entrySha256": {
+    "baseline": "87a025f465f713983867def5e4810f323f5f3c84695a123000d0a468e872879e",
+    "batched": "2bc8cc4c030ee5deec4519e79b02adda3021c7bb38a4365fe2d08d0c36d040bc"
+  },
+  "model": {
+    "cells": 479998,
+    "rows": 120001,
+    "last": "120030",
+    "modelSha256": "7831dc4a3af978fbe00a4bd5d84b5f71e3eda5fe1460df8bcfec91ccc015899c"
+  },
+  "samples": {
+    "baseline": [
+      {
+        "result": "complete",
+        "parseMs": 1944.114792,
+        "peakRssKiB": 829056
+      },
+      {
+        "result": "complete",
+        "parseMs": 1800.098167,
+        "peakRssKiB": 834480
+      },
+      {
+        "result": "complete",
+        "parseMs": 1946.772833,
+        "peakRssKiB": 830272
+      }
+    ],
+    "batched": [
+      {
+        "result": "complete",
+        "parseMs": 2077.829125,
+        "peakRssKiB": 462608
+      },
+      {
+        "result": "complete",
+        "parseMs": 2030.262666,
+        "peakRssKiB": 454736
+      },
+      {
+        "result": "complete",
+        "parseMs": 2027.622167,
+        "peakRssKiB": 470800
+      }
+    ]
+  },
+  "capped": {
+    "128": {
+      "baseline": {
+        "result": "V8 heap exhausted",
+        "parsed": false
+      },
+      "batched": {
+        "result": "V8 heap exhausted",
+        "parsed": false
+      }
+    },
+    "256": {
+      "baseline": {
+        "result": "V8 heap exhausted",
+        "parsed": false
+      },
+      "batched": {
+        "result": "complete",
+        "parseMs": 2426.78125,
+        "peakRssKiB": 383312
+      }
+    }
+  }
+}

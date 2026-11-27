@@ -1,0 +1,107 @@
+import { readFile } from 'node:fs/promises';
+import { expect, test, type Page } from '@playwright/test';
+import { createPdfFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
+
+interface SliceRead { begin: number; end: number; held: boolean; aborted: boolean }
+interface ReadProbe { whole: number; pauseAt: number; reads: SliceRead[] }
+
+async function trackPdfReads(page: Page, name: string) {
+  await page.addInitScript(name => {
+    const probe: ReadProbe = { whole: 0, pauseAt: -1, reads: [] };
+    Object.assign(window, { pdfReadProbe: probe });
+    const spans = new WeakMap<Blob, { begin: number; end: number }>();
+    const held = new WeakMap<FileReader, SliceRead>();
+    const { arrayBuffer, slice } = Blob.prototype;
+    const { readAsArrayBuffer, abort } = FileReader.prototype;
+    Blob.prototype.arrayBuffer = function () {
+      if (this instanceof File && this.name === name) probe.whole++;
+      return arrayBuffer.call(this);
+    };
+    Blob.prototype.slice = function (begin = 0, end = this.size, type?: string) {
+      const blob = slice.call(this, begin, end, type);
+      if (this instanceof File && this.name === name) spans.set(blob, { begin, end });
+      return blob;
+    };
+    FileReader.prototype.readAsArrayBuffer = function (blob) {
+      const span = spans.get(blob);
+      if (span) {
+        const read = { ...span, held: span.begin <= probe.pauseAt && probe.pauseAt < span.end, aborted: false };
+        probe.reads.push(read);
+        if (read.held) { held.set(this, read); return; }
+      }
+      return readAsArrayBuffer.call(this, blob);
+    };
+    FileReader.prototype.abort = function () {
+      const read = held.get(this);
+      if (read) read.aborted = true;
+      return abort.call(this);
+    };
+  }, name);
+  return () => page.evaluate(() => (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe);
+}
+
+const canvas = (page: Page, index: number) => page.locator(`canvas.pdfv-page[data-page-index="${index}"][data-rendered="true"]`);
+const scrollToPage = (page: Page, index: number) => page.locator('.pdfv-preview').evaluate((viewport, index) => {
+  viewport.scrollTop = viewport.scrollHeight * index / 600;
+}, index);
+
+test('reads a large PDF upload by slices and aborts a held distant page read on replacement', async ({ page }, testInfo) => {
+  const bytes = Buffer.from(createPdfFixture(600, false, 0, undefined, 20));
+  const name = 'sliced.pdf';
+  const probe = await trackPdfReads(page, name);
+  const errors: Error[] = [];
+  page.on('pageerror', error => errors.push(error));
+  await page.goto('./?view=preview&lang=en');
+  const upload = page.getByLabel('Import files', { exact: true });
+  await upload.setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  await expect(canvas(page, 0)).toBeVisible();
+  const startup = await probe(), startupBytes = startup.reads.reduce((sum, read) => sum + read.end - read.begin, 0);
+  expect(startup.whole).toBe(0);
+  expect(startupBytes).toBeGreaterThan(0);
+  expect(startupBytes).toBeLessThan(bytes.length / 4);
+  await testInfo.attach('PDF startup reads', { body: JSON.stringify({ startupBytes, fileBytes: bytes.length }), contentType: 'application/json' });
+
+  const middle = bytes.indexOf('Document page 301');
+  const far = bytes.indexOf('Document page 501');
+  expect(middle).toBeGreaterThan(0);
+  expect(far).toBeGreaterThan(middle);
+  const includes = (read: SliceRead, offset: number) => read.begin <= offset && read.end > offset;
+  expect(startup.reads.some(read => includes(read, middle))).toBe(false);
+  await scrollToPage(page, 300);
+  await expect(canvas(page, 300)).toBeVisible();
+  expect((await probe()).reads.some(read => includes(read, middle))).toBe(true);
+
+  expect((await probe()).reads.some(read => includes(read, far))).toBe(false);
+  await page.evaluate(far => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = far; }, far);
+  await scrollToPage(page, 500);
+  await expect.poll(async () => (await probe()).reads.find(read => read.held)?.aborted).toBe(false);
+  await upload.setInputFiles({ name: 'replacement.txt', mimeType: 'text/plain', buffer: Buffer.from('Replacement is ready.') });
+  await expect(page.locator('.wb-preview-stage')).toContainText('Replacement is ready.');
+  await expect.poll(async () => (await probe()).reads.find(read => read.held)?.aborted).toBe(true);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test('uses local PDF ranges for a password-protected file after retrying the password', async ({ page }) => {
+  const fixture = (await readFile('packages/converter-client/test/fixtures/password/encrypted.pdf')).toString('latin1');
+  const xref = Number(/startxref\s+(\d+)/.exec(fixture)![1]);
+  expect(fixture.slice(xref, xref + 4)).toBe('xref');
+  const padding = '% unused PDF comment\n'.repeat(16_384);
+  const bytes = Buffer.from(fixture.slice(0, xref) + padding + fixture.slice(xref).replace(/startxref\s+\d+/, `startxref\n${xref + padding.length}`), 'latin1');
+  const name = 'sliced-protected.pdf';
+  const probe = await trackPdfReads(page, name);
+  await page.goto('./?view=preview&lang=zh_CN');
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  const field = page.getByLabel('文档密码', { exact: true });
+  await expect(field).toBeVisible();
+  await field.fill('wrong');
+  await field.press('Enter');
+  await expect(page.getByRole('alert')).toContainText('密码不正确，请重试。');
+  await field.fill('test123');
+  await field.press('Enter');
+  await expect(canvas(page, 0)).toBeVisible();
+  await expect(field).toHaveCount(0);
+  const reads = await probe();
+  expect(reads.whole).toBe(0);
+  expect(reads.reads.length).toBeGreaterThan(0);
+});

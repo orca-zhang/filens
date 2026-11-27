@@ -121,7 +121,6 @@ fn batches(
             "extract-batch.json",
             serde_json::to_vec(&json!({"files":inputs,"options":options}))?,
         )?;
-        work.remove("result.json")?;
         result.batches += 1;
         let wire = engine.run_with_directory(
             &[
@@ -137,7 +136,7 @@ fn batches(
                 "--target",
                 "text",
                 "--result",
-                "/work/result.json",
+                "/scratch/result.json",
             ]
             .map(String::from),
             Some(root),
@@ -483,9 +482,11 @@ pub fn execute(
             }
         }
     } else {
-        work.write("search-corpus.json", serde_json::to_vec(&corpus)?)?;
-        work.remove("result.json")?;
-        let wire = engine.run(
+        let ranking = work.memory_scratch();
+        let corpus_bytes = zeroize::Zeroizing::new(serde_json::to_vec(&corpus)?);
+        ranking.write("search-corpus.json", corpus_bytes.as_slice())?;
+        drop(corpus_bytes);
+        let wire = engine.fork_without_ocr(&ranking)?.run(
             &[
                 "converter-text",
                 "--operation",
@@ -499,7 +500,7 @@ pub fn execute(
                 "--target",
                 "text",
                 "--result",
-                "/work/result.json",
+                "/scratch/result.json",
             ]
             .map(String::from),
         )?;

@@ -7,6 +7,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
+import { checkPptxVisual, pptxVisualFixtures } from './preview-pptx-visual.mjs';
+import { createShxDxf, testShxFont } from '../packages/cad/test/fixtures/shx.mjs';
+import { createClockFormulaWorkbook } from '../packages/xlsx/test/fixtures/clock-formula-workbook.mjs';
+import { createDateFormulaWorkbook } from '../packages/xlsx/test/fixtures/date-formula-workbook.mjs';
+import { createLocaleDateWorkbook } from '../packages/xlsx/test/fixtures/locale-date-workbook.mjs';
+import { createSystemDateFormatWorkbook } from '../packages/xlsx/test/fixtures/system-date-format-workbook.mjs';
+import { createTextFormulaWorkbook } from '../packages/xlsx/test/fixtures/text-formula-workbook.mjs';
+import { createStructuredReferenceWorkbook } from '../packages/xlsx/test/fixtures/structured-reference-workbook.mjs';
+import { createModernNumbersArchive } from '../packages/iwork/test/fixtures/numbers-archive.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const binary = process.env.FILENS_AGENT_BINARY || path.join(root, 'dist/filens');
@@ -18,8 +27,42 @@ const work = await mkdtemp(path.join(os.tmpdir(), 'filens-preview-'));
 const browser = await chromium.launch({ headless: true });
 const observations = [];
 await writeFile(path.join(work, '中文 preview.txt'), 'FILENS_PREVIEW_2026\nLocal browser preview 中文');
+const calendarFiles = [path.join(work, 'calendar-1900.xlsx'), path.join(work, 'calendar-1904.xlsx')];
+const clockFiles = [path.join(work, 'clock-1900.xlsx'), path.join(work, 'clock-1904.xlsx')];
+const regionalFiles = new Map([
+  [path.join(work, 'regional-en-us.xlsx'), { locale: 'en-US', date: '2024-01-02' }],
+  [path.join(work, 'regional-en-gb.xlsx'), { locale: 'en-GB', date: '2024-02-01' }]
+]);
+const systemFormatFiles = new Map([
+  [path.join(work, 'system-formats-en-us.xlsx'), {
+    locale: 'en-US', date: 'Thursday, February 29, 2024', time: '2:30:45 PM', last: 'Friday, December 31, 9999'
+  }],
+  [path.join(work, 'system-formats-en-gb.xlsx'), {
+    locale: 'en-GB', date: 'Thursday, 29 February 2024', time: '14:30:45', last: 'Friday, 31 December 9999'
+  }]
+]);
+const regionalWorkbook = await createLocaleDateWorkbook();
+const systemFormatWorkbook = await createSystemDateFormatWorkbook();
+const textFormulaFile = path.join(work, 'text-formulas.xlsx');
+const structuredReferenceFile = path.join(work, 'structured-references.xlsx');
+const modernNumbersFile = path.join(work, 'modern-values.numbers');
+await Promise.all([
+  ...calendarFiles.map(async (file, index) => writeFile(file, await createDateFormulaWorkbook(index === 1))),
+  ...clockFiles.map(async (file, index) => writeFile(file, await createClockFormulaWorkbook(index === 1))),
+  ...[...regionalFiles.keys()].map(file => writeFile(file, regionalWorkbook)),
+  ...[...systemFormatFiles.keys()].map(file => writeFile(file, systemFormatWorkbook)),
+  createTextFormulaWorkbook(true).then(bytes => writeFile(textFormulaFile, bytes)),
+  createStructuredReferenceWorkbook().then(bytes => writeFile(structuredReferenceFile, bytes)),
+  createModernNumbersArchive({ locale: 'fr_FR' }).then(bytes => writeFile(modernNumbersFile, bytes))
+]);
 const files = [
   path.join(work, '中文 preview.txt'),
+  ...calendarFiles,
+  ...clockFiles,
+  ...regionalFiles.keys(),
+  ...systemFormatFiles.keys(),
+  textFormulaFile,
+  structuredReferenceFile,
   path.join(root, 'apps/demo/public/samples/filens-aurora-guide.docx'),
   path.join(root, 'apps/demo/public/samples/filens-cosmic-atlas.pdf'),
   ...['filens-cafe-2000.dwg', 'filens-cafe-2018.dwg', 'field-notes.tiff']
@@ -31,8 +74,9 @@ const files = [
   path.join(root, 'apps/demo/public/samples/filens-observatory.xlsx'),
   path.join(root, 'apps/demo/public/samples/rich-spreadsheet.ods'),
   path.join(root, 'apps/demo/public/samples/legacy-project-workflow.doc'),
-  path.join(root, 'apps/demo/public/samples/filens-field-notes.pptx'),
+  ...pptxVisualFixtures.map(name => path.join(root, 'apps/demo/public/samples', name)),
   path.join(root, 'apps/demo/public/samples/a.numbers'),
+  modernNumbersFile,
   path.join(root, 'apps/demo/public/samples/raw/pentax-k-r.dng'),
   path.join(root, 'apps/demo/public/samples/showcase/milky-way-360.jpg'),
   path.join(root, 'apps/demo/public/samples/sample-nested-archives.zip')
@@ -86,7 +130,13 @@ try {
     for (const file of files) {
       await readFile(file);
       const server = await serve(file, mode);
-      const page = await browser.newPage();
+      const hasClock = clockFiles.includes(file);
+      const regional = regionalFiles.get(file);
+      const systemFormat = systemFormatFiles.get(file);
+      const page = await browser.newPage({
+        locale: regional?.locale ?? systemFormat?.locale, timezoneId: hasClock ? 'America/New_York' : undefined
+      });
+      if (hasClock) await page.clock.setFixedTime(new Date('2024-01-02T04:59:50Z'));
       const requests = [], errors = [];
       page.on('pageerror', error => errors.push(error.message));
       page.on('requestfailed', request => {
@@ -120,7 +170,6 @@ try {
         });
         const state = await page.evaluate(() => ({state:document.body.dataset.state,error:document.body.dataset.error,text:document.body.innerText,canvases:document.querySelectorAll('canvas').length}));
         assert.equal(state.state, 'ready', `${mode}: ${file}: ${JSON.stringify(state)}; ${errors}`);
-        assert.deepEqual(errors, [], `${mode}: ${file}`);
         if (mode === 'split') assert.equal(requests.filter(url => url.includes('converter-office.wasm')).length, encrypted ? 1 : 0);
         if (encrypted) assert.match(state.text, /Fixture (DOCX document|XLSX workbook|PPTX presentation slide)/);
         if (/\.(apk|ipa)$/.test(file)) {
@@ -144,6 +193,91 @@ try {
           assert.equal(requests.filter(url => url.includes('converter-raster.wasm')).length, 1);
           assert.equal(requests.filter(url => /converter-(cad|graphics|core)\.wasm/.test(url)).length, 0);
         }
+        if (calendarFiles.includes(file)) {
+          const grid = page.locator('.xlsxv-grid');
+          await grid.getByText('2024-03-31', { exact: true }).waitFor();
+          const epoch = calendarFiles[1] === file ? '0' : '1462';
+          assert.equal(await grid.locator('tr[aria-rowindex="3"] td[aria-colindex="2"]').textContent(), epoch);
+          assert.equal(await grid.locator('tr[aria-rowindex="4"] td[aria-colindex="2"]').textContent(), '3');
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          await grid.getByText('2025-02-28 23:59:59', { exact: true }).waitFor();
+          assert.equal(await grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16384"]').textContent(), '2024-03-05');
+        }
+        if (hasClock) {
+          const grid = page.locator('.xlsxv-grid');
+          const time = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          await time.filter({ hasText: /^2024-01-01 23:59:50$/ }).waitFor();
+          await page.clock.setFixedTime(new Date('2024-01-02T05:01:00Z'));
+          await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+          await time.filter({ hasText: /^2024-01-02 00:01:00$/ }).waitFor();
+        }
+        if (regional) {
+          const grid = page.locator('.xlsxv-grid');
+          assert.equal(await grid.locator('tr[aria-rowindex="2"] td[aria-colindex="2"]').textContent(), regional.date);
+          assert.equal(await grid.locator('tr[aria-rowindex="2"] td[aria-colindex="3"]').textContent(), '16:30:00');
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          const date = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+          await date.waitFor();
+          assert.equal(await date.textContent(), regional.date);
+        }
+        if (systemFormat) {
+          const grid = page.locator('.xlsxv-grid');
+          const clock = await grid.locator('tr[aria-rowindex="2"] td[aria-colindex="3"]').textContent();
+          assert.equal(clock.replace(/\s+/g, ' '), systemFormat.time);
+          assert.equal(await grid.locator('tr[aria-rowindex="2"] td[aria-colindex="4"]').textContent(), systemFormat.date);
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          const last = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+          await last.waitFor();
+          assert.equal(await last.textContent(), systemFormat.last);
+        }
+        if (file === structuredReferenceFile) {
+          const grid = page.locator('.xlsxv-grid');
+          const first = grid.locator('tr[aria-rowindex="2"]');
+          assert.equal(await first.locator('td[aria-colindex="2"]').textContent(), '44');
+          assert.equal(await first.locator('td[aria-colindex="3"]').textContent(), '32');
+          assert.equal(await first.locator('td[aria-colindex="4"]').textContent(), '5');
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          const last = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+          await last.waitFor();
+          assert.equal(await last.textContent(), '76');
+        }
+        if (file === textFormulaFile) {
+          const grid = page.locator('.xlsxv-grid');
+          await grid.getByText('February 29, 2024', { exact: true }).waitFor();
+          await grid.getByText('a/b:c/d', { exact: true }).waitFor();
+          assert.equal(await grid.locator('tr[aria-rowindex="3"] td[aria-colindex="6"]').textContent(), '4  17/50 ');
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          const last = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+          await last.waitFor();
+          assert.equal(await last.textContent(), 'North | South | Far | 12.50% | Deep');
+        }
+        if (file === modernNumbersFile) {
+          const grid = page.locator('.xlsxv-grid');
+          await grid.getByText('-12,50 %', { exact: true }).waitFor();
+          await grid.getByText('1999-12-31 23:59:59', { exact: true }).waitFor();
+          await grid.getByText('01:01,001', { exact: true }).waitFor();
+          await grid.getByText('3 16/113', { exact: true }).waitFor();
+          await grid.getByText('FFFFFF01', { exact: true }).waitFor();
+          await grid.getByText('12,35 %', { exact: true }).first().waitFor();
+          await grid.getByText(/jeudi, 29 février 2024/).waitFor();
+          await grid.getByText('1372023', { exact: true }).waitFor();
+          await grid.getByText('Ref 007%: 1 234,56', { exact: true }).waitFor();
+          await grid.getByText('Tag [A&B]', { exact: true }).waitFor();
+          await grid.getByText('CHF 42,45 paid', { exact: true }).waitFor();
+          await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+          await grid.locator('tr[aria-rowindex="100001"] td[aria-colindex="2044"]')
+            .getByText('Zero or below 1 234,56', { exact: true }).waitFor();
+          await grid.getByText('Epoch 2001/01/01 24:00 0', { exact: true }).waitFor();
+          await grid.getByText('1.00E+01', { exact: true }).waitFor();
+          await grid.getByText('1 jour 1 heure', { exact: true }).waitFor();
+          const last = grid.locator('tr[aria-rowindex="100001"] td[aria-colindex="2049"]');
+          await last.waitFor();
+          assert.equal(await last.textContent(), '42,50\u00a0€');
+          const accounting = grid.locator('tr[aria-rowindex="100001"] td[aria-colindex="2046"] .iworkv-accounting');
+          await accounting.waitFor();
+          assert.equal((await accounting.textContent()).replace(/\s/g, ' '), '(1 234,56) $US');
+        }
         if (file.endsWith('.ods')) {
           assert.match(state.text, /Test spreadsheet/);
           assert.match(state.text, /2nd row 2nd column/);
@@ -151,11 +285,12 @@ try {
           await page.locator('.xlsxv-grid').getByText('13', { exact:true }).waitFor();
           assert.equal(await page.locator('.xlsxv-sheet-tab').count(), 3);
         }
+        const visual = await checkPptxVisual(page, path.basename(file));
         if (mode === 'all-in-one') {
           assert.equal(requests.filter(url => /\.(js|mjs|wasm)(?:\?|$)/.test(url)).length, 1, requests.join('\n'));
         }
         observations.push({ mode, file:path.basename(file), state:state.state, canvases:state.canvases,
-          runtimeRequests:requests.filter(url => /\.(js|mjs|wasm)(?:\?|$)/.test(url)).length });
+          runtimeRequests:requests.filter(url => /\.(js|mjs|wasm)(?:\?|$)/.test(url)).length, visual });
         if (file.endsWith('.txt')) {
           await page.evaluate(async locales => {
             const { createPreview } = await import(new URL('./filens.js', location.href).href);
@@ -195,7 +330,16 @@ try {
           assert.equal((await raw(server.url, `${prefix}source.json`, {Origin:'https://example.com'})).status,403);
           assert.equal((await raw(server.url, `${prefix}source.json`, {'Sec-Fetch-Site':'cross-site'})).status,403);
           assert.equal((await raw(server.url, `${prefix}source.json`, {}, 'POST')).status,405);
+          await page.locator('#file').setInputFiles([
+            { name: 'stroke.shx', mimeType: 'application/octet-stream', buffer: Buffer.from(testShxFont) },
+            { name: 'drawing.dxf', mimeType: 'application/dxf', buffer: Buffer.from(createShxDxf()) }
+          ]);
+          const shxPath = page.locator('svg.cadv-canvas path[data-shx-text][aria-label="AA"]');
+          await shxPath.waitFor();
+          assert.match(await shxPath.getAttribute('d'), /^M.+L/);
+          assert.ok(!requests.some(url => url.endsWith('.shx')));
         }
+        assert.deepEqual(errors, [], `${mode}: ${file}`);
         console.log(`${mode}: ${path.basename(file)} rendered (${observations.at(-1).runtimeRequests} runtime requests)`);
       } finally { await page.close(); await server.close(); }
     }
@@ -203,10 +347,11 @@ try {
   await writeFile(path.resolve(root, reportPath), `${JSON.stringify({
     date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai'}).format(new Date()),
     platform:`${process.platform}-${process.arch}`, browser:await browser.version(),
-    scope:'Actual CLI loopback server and real shared engines. External network requests blocked. Render readiness and source text checked; no pixel-fidelity claim. Encrypted DOCX/XLSX/PPTX tested with wrong and correct passwords; split Office module loaded only after password submission and reused on retry.',
+    scope:'Actual CLI loopback server and real shared engines. External network requests blocked. Render readiness, source text, and the listed PPTX visual properties are checked. Encrypted DOCX/XLSX/PPTX tested with wrong and correct passwords; split Office module loaded only after password submission and reused on retry.',
     localeChecks:locales.map(({ locale }) => locale),
     localeChecksScope:`${modes.join(', ')}: switch all 28 toolbar languages without reloading the source, then verify an instance message override.`,
     httpChecks:['GET','HEAD','byte ranges','invalid ranges','unscoped paths','directory traversal','Host','Origin','Sec-Fetch-Site','unsupported method'],
+    cadShxChecks: modes.map(mode => `${mode}: local DXF and SHX upload with no font request`),
     observations
   },null,2)}\n`);
   console.log(`${observations.length} real preview checks passed; saved ${reportPath}`);

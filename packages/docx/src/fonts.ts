@@ -2,6 +2,9 @@ import {
   analyzePreviewFonts, analyzeLoadedPreviewFonts, buildPreviewFontStack, fontTraitsFromPanose, getPreviewFontWarnings, officeFontTraits, splitPreviewFontFamilies,
   type PreviewFontReference, type PreviewFontTraits, type PreviewFontRefresh
 } from '@filens/core';
+import { applyDocxEmbeddedFontAliases } from './embedded-fonts';
+
+interface DocxThemeFont { latinTypeface?: string }
 
 interface DocxFontDocument {
   fontTablePart?: {
@@ -11,10 +14,12 @@ interface DocxFontDocument {
   };
   documentPart?: { body?: unknown };
   stylesPart?: { styles?: unknown };
+  themePart?: { theme?: { fontScheme?: { majorFont?: DocxThemeFont; minorFont?: DocxThemeFont } } };
   parts?: Array<Record<string, unknown>>;
 }
 
 const originalStacks = new WeakMap<object, string>();
+const rewrittenStacks = new WeakMap<DocxFontDocument, Map<string, string>>();
 
 /** docx-preview omits PANOSE/pitch; read just its existing package's font table. */
 export async function readDocxFontTraits(document: DocxFontDocument, ownerDocument: Document): Promise<Map<string, PreviewFontTraits>> {
@@ -45,7 +50,9 @@ export async function readDocxFontTraits(document: DocxFontDocument, ownerDocume
 }
 
 /** Reuse parsed payloads; never traverse package/resource graphs. */
-export function prepareDocxFonts(document: DocxFontDocument, ownerDocument: Document, metadata = new Map<string, PreviewFontTraits>(), update?: PreviewFontRefresh) {
+export function prepareDocxFonts(document: DocxFontDocument, ownerDocument: Document, metadata = new Map<string, PreviewFontTraits>(),
+  update?: PreviewFontRefresh, aliases: ReadonlyMap<string, string> = new Map()) {
+  const previousStacks = rewrittenStacks.get(document);
   const references = new Map<string, PreviewFontReference>();
   for (const font of document.fontTablePart?.fonts ?? []) {
     if (!font.name) continue;
@@ -61,8 +68,14 @@ export function prepareDocxFonts(document: DocxFontDocument, ownerDocument: Docu
     visited.add(value);
     if (Array.isArray(value)) { value.forEach(visit); return; }
     const record = value as Record<string, unknown>;
+    if (record.type === 'symbol' && typeof record.font === 'string' && aliases.size) {
+      const stack = originalStacks.get(record) ?? record.font;
+      originalStacks.set(record, stack);
+      record.font = applyDocxEmbeddedFontAliases(stack, aliases);
+    }
     if (typeof record['font-family'] === 'string') {
-      const stack = originalStacks.get(record) ?? record['font-family'];
+      // docx-preview copies rewritten stacks while resolving inherited styles.
+      const stack = originalStacks.get(record) ?? previousStacks?.get(record['font-family']) ?? record['font-family'];
       originalStacks.set(record, stack);
       styles.push({ values: record, stack });
       for (const fontFamily of splitPreviewFontFamilies(stack)) {
@@ -76,12 +89,19 @@ export function prepareDocxFonts(document: DocxFontDocument, ownerDocument: Docu
   visit(document.documentPart?.body);
   visit(document.stylesPart?.styles);
   for (const part of document.parts ?? []) {
-    for (const key of ['body', 'styles', 'domNumberings', 'notes', 'comments']) visit(part[key]);
+    for (const key of ['body', 'rootElement', 'styles', 'domNumberings', 'notes', 'comments']) visit(part[key]);
+  }
+  const scheme = document.themePart?.theme?.fontScheme;
+  for (const font of [scheme?.majorFont, scheme?.minorFont]) {
+    if (!font?.latinTypeface || !aliases.size) continue;
+    const stack = originalStacks.get(font) ?? font.latinTypeface;
+    originalStacks.set(font, stack);
+    font.latinTypeface = applyDocxEmbeddedFontAliases(stack, aliases);
   }
   // Only claim automatic selection for declarations we can actually rewrite.
-  const rewritable = styles.filter(({ stack }) => !/[()]/.test(stack)
-    && !splitPreviewFontFamilies(stack).some(family => references.get(family.toLowerCase())?.embedded));
-  const eligibleFamilies = new Set(rewritable.flatMap(({ stack }) => splitPreviewFontFamilies(stack).map(family => family.toLowerCase())));
+  const rewritable = new Set(styles.filter(({ stack }) => !/[()]/.test(stack)
+    && !splitPreviewFontFamilies(stack).some(family => references.get(family.toLowerCase())?.embedded)));
+  const eligibleFamilies = new Set([...rewritable].flatMap(({ stack }) => splitPreviewFontFamilies(stack).map(family => family.toLowerCase())));
   const replacements = new Map(update?.references.map(ref => [ref.fontFamily?.toLowerCase(), ref]));
   for (const [key, ref] of references) {
     const replacement = replacements.get(key);
@@ -94,11 +114,20 @@ export function prepareDocxFonts(document: DocxFontDocument, ownerDocument: Docu
     ...analyzePreviewFonts([...references.values()].filter(ref => !eligibleFamilies.has(ref.fontFamily!.toLowerCase())), ownerDocument).fonts
   ];
   const targets = new Map(fonts.map(font => [font.fontFamily?.toLowerCase(), font.resolvedFontFamily]));
-  for (const { values, stack } of rewritable) {
-    const families = splitPreviewFontFamilies(stack);
-    const preferred = families.map(family => targets.get(family.toLowerCase())).filter((target): target is string => !!target);
-    values['font-family'] = buildPreviewFontStack(stack, family => references.get(family.toLowerCase())?.traits, preferred);
+  const nextStacks = new Map<string, string>();
+  for (const style of styles) {
+    const { values, stack } = style;
+    let rewritten = stack;
+    if (rewritable.has(style)) {
+      const preferred = splitPreviewFontFamilies(stack).map(family => targets.get(family.toLowerCase())).filter((target): target is string => !!target);
+      rewritten = buildPreviewFontStack(stack, family => references.get(family.toLowerCase())?.traits, preferred);
+    } else {
+      rewritten = applyDocxEmbeddedFontAliases(stack, aliases);
+    }
+    if (values['font-family'] !== rewritten) values['font-family'] = rewritten;
+    if (rewritten !== stack) nextStacks.set(rewritten, stack);
   }
+  rewrittenStacks.set(document, nextStacks);
   return { fonts, references: [...references.values()], loadingReferences: eligible,
     warnings: [...new Set([...getPreviewFontWarnings(fonts), ...update?.warnings ?? []])] };
 }

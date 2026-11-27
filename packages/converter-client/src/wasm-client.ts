@@ -106,11 +106,6 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
       const resultPath = '/work/result.json';
       const input = await sourceToBytes(request.source, options.fetch, context.signal);
       throwIfAborted(context.signal);
-      const requestOptions = JSON.stringify({
-        ...(request.password ? { password: request.password } : {}),
-        ...(request.locale ? { locale: request.locale } : {})
-      });
-
       const useImageConverter = Boolean(runImage && imageConversionPairs.has(conversionPair));
       if (useImageConverter && targetFormat === 'jpg' && previewImage) {
         const preview = await previewImage(input, context.signal);
@@ -120,48 +115,65 @@ export function createWasmConverterClient(options: WasmConverterClientOptions): 
       const usePostscriptConverter = Boolean(runPostscript && targetFormat === 'pdf' && ['eps', 'ps', 'ai'].includes(sourceFormat));
       const useGraphicsConverter = Boolean(runGraphics && ['dwg', 'tif', 'tiff', 'tga', 'pgm', 'pbm', 'pnm', 'dds', 'hdr', 'dib', 'cur', 'pcx', 'exr', 'jxl', 'qoi', 'ff'].includes(sourceFormat));
       const runConverter = runCad && sourceFormat === 'dwg' ? runCad : useGraphicsConverter ? runGraphics! : usePostscriptConverter ? runPostscript! : useImageConverter ? runImage! : runCore;
-      const invoke = (runner: typeof runCore, bytes: Uint8Array) => runner({
-        args: [
-          useImageConverter ? 'converter-image' : 'converter-core',
-          '--input',
-          inputPath,
-          '--output',
-          outputPath,
-          '--source',
-          sourceFormat,
-          '--target',
-          targetFormat,
-          '--options',
-          optionsPath,
-          '--result',
-          resultPath
-        ],
-        files: {
-          [inputPath]: bytes,
-          [optionsPath]: new TextEncoder().encode(requestOptions)
-        },
-        readFiles: [resultPath, outputPath],
-        signal: context.signal
-      });
-      let invocation = await invoke(runConverter, input);
-      let coreResult = parseCoreResult(invocation.files[resultPath]);
-      if (!coreResult.ok && coreResult.errorCode === 'engine_unavailable'
-        && coreResult.requiredModule === 'office' && runOffice) {
-        const decrypted = await invoke(runOffice, input);
-        assertSuccessfulInvocation(parseCoreResult(decrypted.files[resultPath]), decrypted.exitCode);
-        invocation = await invoke(runCore, decrypted.files[outputPath]);
-        coreResult = parseCoreResult(invocation.files[resultPath]);
-      }
-      throwIfAborted(context.signal);
-      assertSuccessfulInvocation(coreResult, invocation.exitCode);
+      const args = [
+        useImageConverter ? 'converter-image' : 'converter-core',
+        '--input', inputPath,
+        '--output', outputPath,
+        '--source', sourceFormat,
+        '--target', targetFormat,
+        '--options', optionsPath,
+        '--result', resultPath
+      ];
+      const invoke = async (runner: typeof runCore, bytes: Uint8Array, password: string | undefined, sensitive: boolean) => {
+        const payload = new TextEncoder().encode(JSON.stringify({
+          ...(password ? { password } : {}),
+          ...(request.locale ? { locale: request.locale } : {})
+        }));
+        try {
+          return await runner({
+            args,
+            files: { [inputPath]: bytes, [optionsPath]: payload },
+            readFiles: [resultPath, outputPath],
+            signal: context.signal,
+            sensitive
+          });
+        } finally { payload.fill(0); }
+      };
 
-      const output = invocation.files[outputPath];
-      return {
-        source: output,
-        format: normalizeFormat(coreResult.targetFormat || targetFormat),
-        contentType: coreResult.contentType,
-        warnings: coreResult.warnings
-      } satisfies ConversionResult;
+      let sensitive = Boolean(context.descriptor.sensitive || request.password);
+      let output: Uint8Array | undefined;
+      try {
+        let invocation = await invoke(runConverter, input, request.password, sensitive);
+        output = invocation.files[outputPath];
+        let coreResult = parseCoreResult(invocation.files[resultPath]);
+        if (!coreResult.ok && coreResult.errorCode === 'engine_unavailable'
+          && coreResult.requiredModule === 'office' && runOffice) {
+          sensitive = true;
+          output?.fill(0);
+          const decrypted = await invoke(runOffice, input, request.password, true);
+          const plaintext = decrypted.files[outputPath];
+          try {
+            assertSuccessfulInvocation(parseCoreResult(decrypted.files[resultPath]), decrypted.exitCode);
+            if (!plaintext) throw new Error('Office decryption did not return a document.');
+            invocation = await invoke(runCore, plaintext, undefined, true);
+          } finally { plaintext?.fill(0); }
+          output = invocation.files[outputPath];
+          coreResult = parseCoreResult(invocation.files[resultPath]);
+        }
+        throwIfAborted(context.signal);
+        assertSuccessfulInvocation(coreResult, invocation.exitCode);
+        if (!output) throw new Error('WASM conversion did not return a document.');
+        const result = {
+          source: output,
+          format: normalizeFormat(coreResult.targetFormat || targetFormat),
+          contentType: coreResult.contentType,
+          warnings: coreResult.warnings
+        } satisfies ConversionResult;
+        output = undefined;
+        return result;
+      } finally {
+        if (sensitive) output?.fill(0);
+      }
     }
   };
 }

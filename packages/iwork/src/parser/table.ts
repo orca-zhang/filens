@@ -1,17 +1,28 @@
 import type { TableCell, TableItem, TextFrame } from '@filens/core';
-import type { IworkArchiveIndex } from '../types';
+import type { IworkArchiveIndex, IworkTable, IworkTableCell } from '../types';
+import { createNumbersCustomFormatReader, type NumbersCustomFormat } from './custom-formats';
+import { createDecimalFormatter, type DecimalNumberFormat, type NumbersFormatting } from './decimal-format';
+import { createDateSymbols } from './date-symbols';
+import { createDurationFormatter, type NumbersDurationFormat } from './duration';
+import { approximateFraction, formatBuiltInNumber, type BuiltInNumberFormat } from './number-formats';
+import { resolveCellBorders, resolveTableCellFill, tableRegion, type NumbersBlankCellStyles, type ResolvedTableBorderSide,
+  type SourceCellPaint, type TableBorderSide, type TableGridPaint, type TableRegion } from '../table-paint';
+import { cellStrokeBorders, readTableStrokeEdges } from '../table-strokes';
 import {
   asArray,
   asObject,
   buildTextFrameFromStorage,
   colorToHex,
   fillFromValue,
+  getRecord,
   getRecordValue,
   getRefId,
   lineFromValue,
   paddingFromValue,
   readField,
+  readIcuQuotedLiteral,
   resolveMergedStyle,
+  uuidToKey,
   verticalAlignFromValue
 } from './helpers';
 
@@ -21,11 +32,13 @@ interface TableCellInfo {
   keyOffset: number;
   cellType: number;
   styleKey: number;
+  textStyleKey?: number;
   contentKey: number;
   formatKey: number;
   numberValue: number;
   hasNumber: boolean;
   usePreBnc: boolean;
+  native?: boolean;
 }
 
 interface PlainTextTemplates {
@@ -35,27 +48,22 @@ interface PlainTextTemplates {
 }
 
 interface CellStorage {
-  offsets: number[];
+  offsets: DataView;
+  offsetUnit: number;
+  columnCount: number;
   columns: number[];
   buffer: Uint8Array;
   view: DataView;
 }
 
-type RowOffsetCache = WeakMap<object, { regular: CellStorage; preBnc: CellStorage }>;
+interface RowStorage { regular: CellStorage; preBnc: CellStorage }
 
-interface TableFormatEntry {
-  formatType?: number;
-  decimalPlaces?: number;
-  currencyCode?: string;
-  negativeStyle?: number;
-  showThousandsSeparator?: boolean;
-  useAccountingStyle?: boolean;
-  scaleFactor?: number;
+interface TableFormatEntry extends NumbersDurationFormat, BuiltInNumberFormat, DecimalNumberFormat {
+  nativeCustom?: NumbersCustomFormat;
   customFormatString?: string;
   dateTimeFormat?: string;
   suppressDateFormat?: boolean;
   suppressTimeFormat?: boolean;
-  usesPlusSign?: boolean;
   boolTrueString?: string;
   boolFalseString?: string;
 }
@@ -67,6 +75,9 @@ interface TableContentLookup {
   formats: Map<number, TableFormatEntry>;
   formatsPreBnc: Map<number, TableFormatEntry>;
   controlMenus: string[][];
+  formatDuration: ReturnType<typeof createDurationFormatter>;
+  formatDecimal: ReturnType<typeof createDecimalFormatter>;
+  dateSymbols: ReturnType<typeof createDateSymbols>;
 }
 
 interface TableMergeSpan {
@@ -84,10 +95,6 @@ interface TableHeaderStyles {
   textStyles: Map<number, number>;
 }
 
-type TableBorderSide = NonNullable<TableCell['borders']>['top'];
-type ResolvedTableBorderSide = TableBorderSide | false | undefined;
-type ResolvedTableStyleBorders = Record<'top' | 'right' | 'bottom' | 'left', ResolvedTableBorderSide>;
-
 interface TableStyleDefaults {
   bodyTextStyle?: unknown;
   headerRowTextStyle?: unknown;
@@ -97,35 +104,7 @@ interface TableStyleDefaults {
   headerRowStyle?: number;
   headerColumnStyle?: number;
   footerRowStyle?: number;
-  bandedRows?: boolean;
-  bandedFill?: TableCell['fill'];
-  bodyHorizontalStroke?: ResolvedTableBorderSide;
-  bodyVerticalStroke?: ResolvedTableBorderSide;
-  bodyHorizontalBorderStroke?: ResolvedTableBorderSide;
-  bodyVerticalBorderStroke?: ResolvedTableBorderSide;
-  headerRowHorizontalStroke?: ResolvedTableBorderSide;
-  headerRowVerticalStroke?: ResolvedTableBorderSide;
-  headerRowBorderStroke?: ResolvedTableBorderSide;
-  headerRowSeparatorStroke?: ResolvedTableBorderSide;
-  headerColumnHorizontalStroke?: ResolvedTableBorderSide;
-  headerColumnVerticalStroke?: ResolvedTableBorderSide;
-  headerColumnBorderStroke?: ResolvedTableBorderSide;
-  headerColumnSeparatorStroke?: ResolvedTableBorderSide;
-  footerRowHorizontalStroke?: ResolvedTableBorderSide;
-  footerRowVerticalStroke?: ResolvedTableBorderSide;
-  footerRowBorderStroke?: ResolvedTableBorderSide;
-  footerRowSeparatorStroke?: ResolvedTableBorderSide;
-  vStrokesVisible?: boolean;
-  hStrokesVisible?: boolean;
-  hrSeparatorVisible?: boolean;
-  hcSeparatorVisible?: boolean;
-  footerSeparatorVisible?: boolean;
-  tableBorderVisible?: boolean;
-  tableHeaderBorderVisible?: boolean;
-  tableHcDividerVisible?: boolean;
-  tableHrDividerVisible?: boolean;
-  tableFooterDividerVisible?: boolean;
-  presetVisibleMask?: number;
+  paint: TableGridPaint;
 }
 
 export function buildTableItem(
@@ -133,8 +112,9 @@ export function buildTableItem(
   tableDrawable: Record<string, unknown>,
   transform: TableItem['transform'],
   order: number,
-  groupPath: string[] = []
-): TableItem | undefined {
+  groupPath: string[] = [],
+  formatting?: NumbersFormatting
+): IworkTable['item'] | undefined {
   const tableModel = getRecordValue<Record<string, unknown>>(archive, readField(tableDrawable, ['tableModel', 'table_model']));
   if (!tableModel) {
     return undefined;
@@ -143,16 +123,16 @@ export function buildTableItem(
   const baseDataStore = asObject(readField(tableModel, ['baseDataStore', 'base_data_store']));
   const tileStorage = asObject(readField(baseDataStore, ['tiles']));
   const tileRefs = asArray<Record<string, unknown>>(readField(tileStorage, ['tiles']));
-  if (!tileRefs.length) {
-    return undefined;
-  }
+  const totalRows = Number(readField<number>(tableModel, ['numberOfRows', 'number_of_rows']) ?? 0);
+  const totalColumns = Number(readField<number>(tableModel, ['numberOfColumns', 'number_of_columns']) ?? 0);
+  // A completely empty Numbers table can carry its dimensions and styles without any tiles.
+  if (!tileRefs.length && (archive.type !== 'numbers' || !Number.isSafeInteger(totalRows) || totalRows < 1 || totalRows > 1_048_576
+    || !Number.isSafeInteger(totalColumns) || totalColumns < 1 || totalColumns > 16_384)) return undefined;
 
-  const lookup = buildContentLookup(archive, baseDataStore);
+  const lookup = buildContentLookup(archive, baseDataStore, formatting);
   const headerRowCount = Number(readField<number>(tableModel, ['numberOfHeaderRows', 'number_of_header_rows']) ?? 0);
   const headerColumnCount = Number(readField<number>(tableModel, ['numberOfHeaderColumns', 'number_of_header_columns']) ?? 0);
   const footerRowCount = Number(readField<number>(tableModel, ['numberOfFooterRows', 'number_of_footer_rows']) ?? 0);
-  const totalRows = Number(readField<number>(tableModel, ['numberOfRows', 'number_of_rows']) ?? 0);
-  const totalColumns = Number(readField<number>(tableModel, ['numberOfColumns', 'number_of_columns']) ?? 0);
   const rowHeaderStyles = resolveHeaderStyles(
     archive,
     readField(baseDataStore, ['rowHeaders', 'row_headers']),
@@ -165,7 +145,24 @@ export function buildTableItem(
   );
   const styleDefaults = resolveTableStyleDefaults(archive, tableModel);
   const columnWidths = resolveColumnWidths(archive, tableModel, baseDataStore);
-  const rowHeights = resolveRowHeights(archive, tableDrawable, tableModel, baseDataStore);
+  const { heights: rowHeights, hasFittedRows } = resolveRowHeights(archive, tableDrawable, tableModel, baseDataStore);
+  const regions = { rowCount: rowHeights.length, columnCount: columnWidths.length, headerRowCount, headerColumnCount, footerRowCount };
+  const strokeEdges = archive.type === 'numbers' || archive.type === 'pages'
+    ? readTableStrokeEdges(archive, readField(tableModel, ['strokeSidecar', 'stroke_sidecar']), regions.rowCount, regions.columnCount) : undefined;
+  if (archive.type === 'pages' && strokeEdges) {
+    for (const [boundary, strokes] of Object.entries(strokeEdges.horizontal)) {
+      const row = Number(boundary);
+      const inset = strokes.reduce((width, { line }) => Math.max(width, line.width ?? 0), 0) / 2;
+      if (row > 0) rowHeights[row - 1] += inset;
+      if (row < rowHeights.length) rowHeights[row] += inset;
+    }
+  }
+  const defaultCellStyles: Record<TableRegion, number | undefined> = {
+    body: getRefId(readField(tableModel, ['bodyCellStyle', 'body_cell_style']) ?? styleDefaults.bodyCellStyle),
+    headerRow: getRefId(readField(tableModel, ['headerRowStyle', 'header_row_style']) ?? styleDefaults.headerRowStyle),
+    headerColumn: getRefId(readField(tableModel, ['headerColumnStyle', 'header_column_style']) ?? styleDefaults.headerColumnStyle),
+    footerRow: getRefId(readField(tableModel, ['footerRowStyle', 'footer_row_style']) ?? styleDefaults.footerRowStyle)
+  };
   const hiddenColumns = mergeIndexes(
     resolveHiddenHeaderIndexes(
       archive,
@@ -183,20 +180,40 @@ export function buildTableItem(
     resolveHiddenStateIndexes(archive, tableModel, 'row')
   );
   const mergeMap = resolveTableMergeMap(archive, tableModel, baseDataStore, rowHeights.length, columnWidths.length);
-  const cells: TableCell[] = [];
+  const cells: IworkTableCell[] = [];
   const plainTextStyles = new Map<unknown, PlainTextTemplates>();
   const richTextFrames = new Map<unknown, Map<unknown, TextFrame>>();
   // Scope caches to one table build: public archive edits must be reflected
   // when the caller rebuilds the model.
   const cellStyles = new Map<number | undefined, {
-    style: ReturnType<typeof resolveMergedStyle>;
-    fill: TableCell['fill'];
+    paint: SourceCellPaint;
     padding: TextFrame['padding'];
     verticalAlign: TextFrame['verticalAlign'];
     wrap: TextFrame['wrap'];
     borders: Map<number, TableCell['borders']>;
   }>();
-  const rowOffsets: RowOffsetCache = new WeakMap();
+  const getCellStyle = (id: number | undefined) => {
+    let cellStyle = cellStyles.get(id);
+    if (cellStyle) return cellStyle;
+    const style = resolveMergedStyle(archive, id);
+    const props = asObject(readField(style, ['cellProperties', 'cell_properties']));
+    cellStyle = {
+      paint: {
+        fill: fillFromValue(readField(props, ['cellFill', 'cell_fill']), archive.type === 'numbers'),
+        fallbackStroke: lineFromValue(readField(props, ['stroke'])),
+        strokes: {
+          top: readCellBorderStroke(props, 'top'), right: readCellBorderStroke(props, 'right'),
+          bottom: readCellBorderStroke(props, 'bottom'), left: readCellBorderStroke(props, 'left')
+        }
+      },
+      padding: paddingFromValue(readField(props, ['padding']), 4),
+      verticalAlign: verticalAlignFromValue(readField(props, ['verticalAlignment', 'vertical_alignment'])),
+      wrap: resolveCellTextWrap(props),
+      borders: new Map()
+    };
+    cellStyles.set(id, cellStyle);
+    return cellStyle;
+  };
   const tableRows: Array<{ row: number; rowInfo: Record<string, unknown> }> = [];
 
   let rowIndexBase = 0;
@@ -232,7 +249,7 @@ export function buildTableItem(
     if (!storedRows.has(row)) tableRows.push({ row, rowInfo: {} });
   }
   tableRows.sort((left, right) => left.row - right.row);
-  const columnHeaderTexts = resolveColumnHeaderTexts(archive, tableRows, lookup, headerRowCount, columnWidths.length, rowOffsets);
+  const columnHeaderTexts = resolveColumnHeaderTexts(archive, tableRows, lookup, headerRowCount, columnWidths.length);
 
   for (const tableRow of tableRows) {
     const row = tableRow.row;
@@ -245,13 +262,14 @@ export function buildTableItem(
     // rows can have payloads after holes, including in the final column.
     const rowColumnCount = Math.max(cellCount, totalColumns, columnWidths.length);
     const anchors = mergeMap.starts.get(row);
+    const storage = readRowStorage(rowInfo);
     const sparseColumns = preserveEmptyGrid ? undefined
-      : resolveSparseColumns(rowInfo, rowOffsets, rowColumnCount, anchors ? [...anchors.keys()] : []);
+      : resolveSparseColumns(storage, rowColumnCount, anchors ? [...anchors.keys()] : []);
     if (sparseColumns?.length === 0) continue;
     const covered = mergeMap.coveredAt(row);
     for (let index = 0; index < (sparseColumns?.length ?? rowColumnCount); index += 1) {
       const column = sparseColumns ? sparseColumns[index] : index;
-      const cellInfo = parseTableCell(archive.type, rowInfo, column, rowOffsets);
+      const cellInfo = parseTableCell(archive.type, storage, column);
       const mergeSpan = anchors?.get(column);
       const isMergedContinuation = covered(column);
       if (!preserveEmptyGrid && cellInfo.offset === 65535 && !mergeSpan) {
@@ -262,30 +280,8 @@ export function buildTableItem(
         lookup.styles.get(cellInfo.styleKey) ??
         rowHeaderStyles.cellStyles.get(row) ??
         columnHeaderStyles.cellStyles.get(column) ??
-        resolveDefaultCellStyleRefId(
-          tableModel,
-          styleDefaults,
-          row,
-          column,
-          rowHeights.length,
-          headerRowCount,
-          headerColumnCount,
-          footerRowCount
-        );
-      let cellStyle = cellStyles.get(cellStyleRefId);
-      if (!cellStyle) {
-        const style = resolveMergedStyle(archive, cellStyleRefId);
-        const props = asObject(readField(style, ['cellProperties', 'cell_properties']));
-        cellStyle = {
-          style,
-          fill: fillFromValue(readField(props, ['cellFill', 'cell_fill'])),
-          padding: paddingFromValue(readField(props, ['padding']), 4),
-          verticalAlign: verticalAlignFromValue(readField(props, ['verticalAlignment', 'vertical_alignment'])),
-          wrap: resolveCellTextWrap(props),
-          borders: new Map()
-        };
-        cellStyles.set(cellStyleRefId, cellStyle);
-      }
+        defaultCellStyles[tableRegion(row, column, regions)];
+      const cellStyle = getCellStyle(cellStyleRefId);
       // Every predicate used by resolveTableStyleBorders is represented here.
       // Interior cells with the same style therefore share border computation.
       const borderPosition =
@@ -297,13 +293,16 @@ export function buildTableItem(
         (Number(column === 0) << 7) | (Number(column === columnWidths.length - 1) << 8) |
         (Number(column < headerColumnCount) << 9) | (Number(column === headerColumnCount - 1) << 10);
       if (!cellStyle.borders.has(borderPosition)) {
-        cellStyle.borders.set(borderPosition, createDefaultBorders(cellStyle.style, styleDefaults, row, column, rowHeights.length, columnWidths.length, headerRowCount, headerColumnCount, footerRowCount));
+        cellStyle.borders.set(borderPosition, resolveCellBorders(cellStyle.paint, styleDefaults.paint, row, column, regions));
       }
+      const textStyleId = cellInfo.textStyleKey ? lookup.styles.get(cellInfo.textStyleKey) : undefined;
+      const cellTextStyle = textStyleId !== undefined && getRecord(archive, textStyleId)?.typeName === 'TSWP.ParagraphStyleArchive' ? textStyleId : undefined;
       const textFrame = resolveTableCellTextFrame(
         archive,
         cellInfo,
         lookup,
-        rowHeaderStyles.textStyles.get(row) ??
+        cellTextStyle ??
+          rowHeaderStyles.textStyles.get(row) ??
           columnHeaderStyles.textStyles.get(column) ??
           resolveDefaultTextStyleRefId(
             tableModel,
@@ -323,14 +322,17 @@ export function buildTableItem(
         richTextFrames
       );
 
+      const inheritedBorders = cellStyle.borders.get(borderPosition);
+      const authoredBorders = strokeEdges && !isMergedContinuation && (!mergeSpan || archive.type === 'pages')
+        ? cellStrokeBorders(strokeEdges, row, column, mergeSpan?.rowSpan, mergeSpan?.colSpan) : undefined;
       cells.push({
         row,
         column,
         rowSpan: mergeSpan?.rowSpan ?? 1,
         colSpan: mergeSpan?.colSpan ?? 1,
         isMergedContinuation,
-        fill: cloneCellFill(resolveTableCellFill(cellStyle.fill, styleDefaults, row, headerRowCount, footerRowCount, rowHeights.length)),
-        borders: cloneCellBorders(cellStyle.borders.get(borderPosition)),
+        fill: cloneCellFill(resolveTableCellFill(cellStyle.paint.fill, styleDefaults.paint, row, headerRowCount, footerRowCount, rowHeights.length)),
+        borders: cloneCellBorders(authoredBorders ? { ...inheritedBorders, ...authoredBorders } : inheritedBorders),
         textFrame
       });
     }
@@ -347,6 +349,25 @@ export function buildTableItem(
         height: rowHeights.reduce((total, height) => total + height, 0) || transform.height
       }
     : transform;
+  let blankCellStyles: NumbersBlankCellStyles | undefined;
+  if (archive.type === 'numbers' && (strokeEdges || rowHeaderStyles.cellStyles.size || columnHeaderStyles.cellStyles.size
+    || Object.values(defaultCellStyles).some(id => id !== undefined) || Object.values(styleDefaults.paint).some(value => value !== undefined))) {
+    const defaults: NumbersBlankCellStyles['defaults'] = {};
+    for (const region of Object.keys(defaultCellStyles) as TableRegion[]) {
+      const id = defaultCellStyles[region];
+      if (id !== undefined) defaults[region] = getCellStyle(id).paint;
+    }
+    const trackPaint = (headers: TableHeaderStyles, count: number) => {
+      const paint: Record<number, SourceCellPaint> = {};
+      for (const [index, id] of headers.cellStyles) {
+        if (Number.isInteger(index) && index >= 0 && index < count) paint[index] = getCellStyle(id).paint;
+      }
+      return paint;
+    };
+    // Reuse the resolved paint per style. Empty coordinates are resolved by the mounted grid.
+    blankCellStyles = { gridPaint: styleDefaults.paint, regions, defaults,
+      rows: trackPaint(rowHeaderStyles, rowHeights.length), columns: trackPaint(columnHeaderStyles, columnWidths.length) };
+  }
 
   return {
     id: `table-${order}-${transform.x}-${transform.y}`,
@@ -360,8 +381,11 @@ export function buildTableItem(
     groupPath,
     columns: columnWidths,
     rows: rowHeights,
+    ...(archive.type === 'pages' && !hasFittedRows ? { autoFitRows: true as const } : {}),
     hiddenColumns,
     hiddenRows,
+    ...(blankCellStyles ? { blankCellStyles } : {}),
+    ...(strokeEdges ? { strokeEdges } : {}),
     cells
   };
 }
@@ -486,8 +510,7 @@ function resolveTableMergeMap(
     add(resolveMergeCellRange(cellRange));
   }
 
-  // Recent Pages archives store merge ranges as endpoint formulas in the
-  // table's MergeOwner instead of a DataStore mergeRegionMap.
+  // Recent iWork archives also store merge ranges in the table's MergeOwner.
   const mergeOwner = asObject(readField(tableModel, ['mergeOwner', 'merge_owner']));
   const formulaStore = asObject(readField(mergeOwner, ['formulaStore', 'formula_store']));
   for (const entry of asArray<Record<string, unknown>>(readField(formulaStore, ['formulas']))) {
@@ -524,7 +547,21 @@ function resolveTableMergeMap(
 function resolveFormulaMergeRange(entry: Record<string, unknown>): { row: number; column: number; rowSpan: number; colSpan: number } | undefined {
   const formula = asObject(readField(entry, ['formula']));
   const nodeArray = asObject(readField(formula, ['ASTNodeArray', 'ast_node_array']));
-  const coordinates = asArray<Record<string, unknown>>(readField(nodeArray, ['ASTNode', 'ast_node']))
+  const nodes = asArray<Record<string, unknown>>(readField(nodeArray, ['ASTNode', 'ast_node']));
+  const tract = asObject(readField(nodes[0], ['ASTColonTract', 'AST_colon_tract', 'ast_colon_tract']));
+  if (tract) {
+    const axis = (keys: string[]) => {
+      const ranges = asArray<Record<string, unknown>>(readField(tract, keys));
+      if (ranges.length !== 1) return undefined;
+      const first = Number(readField(ranges[0], ['rangeBegin', 'range_begin']));
+      const last = Number(readField(ranges[0], ['rangeEnd', 'range_end']) ?? first);
+      return { first, span: last - first + 1 };
+    };
+    const row = axis(['absoluteRow', 'absolute_row']);
+    const column = axis(['absoluteColumn', 'absolute_column']);
+    return row && column ? { row: row.first, column: column.first, rowSpan: row.span, colSpan: column.span } : undefined;
+  }
+  const coordinates = nodes
     .map((node) => {
       const row = readField<number>(asObject(readField(node, ['ASTRow', 'ast_row'])), ['row']);
       const column = readField<number>(asObject(readField(node, ['ASTColumn', 'ast_column'])), ['column']);
@@ -556,7 +593,7 @@ function resolveMergeCellRange(cellRange: Record<string, unknown>): { row: numbe
     return undefined;
   }
 
-  const coordinate = readPackedCellCoordinate(origin) ?? readExpandedCellCoordinate(asObject(readField(origin, ['expandedCoord', 'expanded_coord'])));
+  const coordinate = readExpandedCellCoordinate(asObject(readField(origin, ['expandedCoord', 'expanded_coord']))) ?? readPackedCellCoordinate(origin);
   if (!coordinate) {
     return undefined;
   }
@@ -574,15 +611,16 @@ function resolveMergeCellRange(cellRange: Record<string, unknown>): { row: numbe
   };
 }
 
-function readPackedCellCoordinate(value: Record<string, unknown>): { row: number; column: number } | undefined {
+export function readPackedCellCoordinate(value: Record<string, unknown>): { row: number; column: number } | undefined {
   const packed = readField<number>(value, ['packedData', 'packed_data']);
   if (typeof packed !== 'number' || !Number.isFinite(packed)) {
     return readExpandedCellCoordinate(value);
   }
 
+  // Packed TST table coordinates and sizes put the row in the low word.
   return {
-    row: packed >>> 16,
-    column: packed & 0xffff
+    row: packed & 0xffff,
+    column: packed >>> 16
   };
 }
 
@@ -620,19 +658,24 @@ function readTableSize(value: Record<string, unknown>): { rowSpan: number; colSp
   }
 
   return {
-    rowSpan: packed >>> 16,
-    colSpan: packed & 0xffff
+    rowSpan: packed & 0xffff,
+    colSpan: packed >>> 16
   };
 }
 
-function buildContentLookup(archive: IworkArchiveIndex, baseDataStore: Record<string, unknown> | undefined): TableContentLookup {
+function buildContentLookup(archive: IworkArchiveIndex, baseDataStore: Record<string, unknown> | undefined,
+  formatting?: NumbersFormatting): TableContentLookup {
+  const readCustom = archive.type === 'numbers' ? createNumbersCustomFormatReader(formatting) : undefined;
   return {
     strings: createStringLookup(archive, readField(baseDataStore, ['stringTable', 'string_table'])),
     rich: createRichLookup(archive, readField(baseDataStore, ['richTextTable', 'rich_text_table'])),
     styles: createStyleLookup(archive, readField(baseDataStore, ['styleTable', 'style_table'])),
-    formats: createFormatLookup(archive, readField(baseDataStore, ['formatTable', 'format_table'])),
-    formatsPreBnc: createFormatLookup(archive, readField(baseDataStore, ['formatTablePreBnc', 'format_table_pre_bnc'])),
-    controlMenus: createControlMenus(archive, readField(baseDataStore, ['multipleChoiceListFormatTable', 'multiple_choice_list_format_table']))
+    formats: createFormatLookup(archive, readField(baseDataStore, ['formatTable', 'format_table']), readCustom),
+    formatsPreBnc: createFormatLookup(archive, readField(baseDataStore, ['formatTablePreBnc', 'format_table_pre_bnc']), readCustom),
+    controlMenus: createControlMenus(archive, readField(baseDataStore, ['multipleChoiceListFormatTable', 'multiple_choice_list_format_table'])),
+    formatDuration: createDurationFormatter(formatting?.locale),
+    formatDecimal: createDecimalFormatter(formatting),
+    dateSymbols: createDateSymbols(formatting)
   };
 }
 
@@ -675,7 +718,8 @@ function createStyleLookup(archive: IworkArchiveIndex, ref: unknown): Map<number
   return result;
 }
 
-function createFormatLookup(archive: IworkArchiveIndex, ref: unknown): Map<number, TableFormatEntry> {
+function createFormatLookup(archive: IworkArchiveIndex, ref: unknown,
+  readCustom?: ReturnType<typeof createNumbersCustomFormatReader>): Map<number, TableFormatEntry> {
   const result = new Map<number, TableFormatEntry>();
   const entries = resolveTableDataListEntries(archive, ref);
   for (const entry of entries) {
@@ -684,16 +728,27 @@ function createFormatLookup(archive: IworkArchiveIndex, ref: unknown): Map<numbe
     if (!key || !format) {
       continue;
     }
+    const formatType = readOptionalNumber(format, ['formatType', 'format_type']);
+    const nativeCustom = readCustom?.(format);
     result.set(key, {
-      formatType: readOptionalNumber(format, ['formatType', 'format_type']),
+      formatType,
+      nativeCustom,
       decimalPlaces: readOptionalNumber(format, ['decimalPlaces', 'decimal_places']),
+      fractionAccuracy: readOptionalNumber(format, ['fractionAccuracy', 'fraction_accuracy']),
+      base: readOptionalNumber(format, ['base']),
+      basePlaces: readOptionalNumber(format, ['basePlaces', 'base_places']),
+      baseUseMinusSign: readOptionalBoolean(format, ['baseUseMinusSign', 'base_use_minus_sign']),
       currencyCode: readOptionalString(format, ['currencyCode', 'currency_code']),
       negativeStyle: readOptionalNumber(format, ['negativeStyle', 'negative_style']),
       showThousandsSeparator: readOptionalBoolean(format, ['showThousandsSeparator', 'show_thousands_separator']),
       useAccountingStyle: readOptionalBoolean(format, ['useAccountingStyle', 'use_accounting_style']),
       scaleFactor: readOptionalNumber(format, ['scaleFactor', 'scale_factor']),
       customFormatString: readOptionalString(format, ['customFormatString', 'custom_format_string']),
-      dateTimeFormat: readOptionalString(format, ['dateTimeFormat', 'date_time_format']),
+      dateTimeFormat: nativeCustom?.date ?? readOptionalString(format, ['dateTimeFormat', 'date_time_format']),
+      durationStyle: readOptionalNumber(format, ['durationStyle', 'duration_style']),
+      durationUnitLargest: readOptionalNumber(format, ['durationUnitLargest', 'duration_unit_largest']),
+      durationUnitSmallest: readOptionalNumber(format, ['durationUnitSmallest', 'duration_unit_smallest']),
+      useAutomaticDurationUnits: readOptionalBoolean(format, ['useAutomaticDurationUnits', 'use_automatic_duration_units']),
       suppressDateFormat: readOptionalBoolean(format, ['suppressDateFormat', 'suppress_date_format']),
       suppressTimeFormat: readOptionalBoolean(format, ['suppressTimeFormat', 'suppress_time_format']),
       usesPlusSign: readOptionalBoolean(format, ['usesPlusSign', 'uses_plus_sign']),
@@ -784,25 +839,25 @@ function resolveRowHeights(
   tableDrawable: Record<string, unknown>,
   tableModel: Record<string, unknown>,
   baseDataStore: Record<string, unknown> | undefined
-): number[] {
+): { heights: number[]; hasFittedRows: boolean } {
   const fallbackHeight = positiveTableTrackSize(readField<number>(tableModel, ['defaultRowHeight', 'default_row_height']), 22);
   const total = Number(readField<number>(tableModel, ['numberOfRows', 'number_of_rows']) ?? 0);
+  let fittedRows: number[] | undefined;
   if (archive.type === 'pages') {
     const layoutEngine = asObject(readField(tableDrawable, ['layoutEngine', 'layout_engine']));
     const widthHeightCache = asObject(readField(layoutEngine, ['widthHeightCache', 'width_height_cache']));
-    const fittedRows = asArray<Record<string, unknown>>(readField(widthHeightCache, ['rowsFittingEntries', 'rows_fitting_entries']))
+    const rows = asArray<Record<string, unknown>>(readField(widthHeightCache, ['rowsFittingEntries', 'rows_fitting_entries']))
       .map((entry) => positiveTableTrackSize(readField<number>(entry, ['fittingSize', 'fitting_size']), 0));
-    if (fittedRows.length === total && fittedRows.every((height) => height > 0)) {
-      return fittedRows;
+    const fittedColumnCount = readField<number>(widthHeightCache, ['columnsCount', 'columns_count']);
+    const columnCount = readField<number>(tableModel, ['numberOfColumns', 'number_of_columns']);
+    if ((fittedColumnCount == null || fittedColumnCount === columnCount) && rows.length === total && rows.every(height => height > 0)) {
+      fittedRows = rows;
     }
   }
   const rowHeadersRef = readField(baseDataStore, ['rowHeaders', 'row_headers']);
   const rowHeaders = resolveHeaderStorage(archive, rowHeadersRef);
-  if (!rowHeaders.length) {
-    return Array.from({ length: total }, () => fallbackHeight);
-  }
 
-  const heights = Array.from({ length: total }, () => fallbackHeight);
+  const heights = fittedRows ?? Array.from({ length: total }, () => fallbackHeight);
   for (const header of rowHeaders) {
     const index = Number(readField<number>(header, ['index']) ?? -1);
     // See resolveColumnWidths: row headers normally report the column count.
@@ -811,13 +866,14 @@ function resolveRowHeights(
       Number(readField<number>(tableModel, ['numberOfColumns', 'number_of_columns']) ?? 0)
     );
     if (index >= 0 && index < heights.length) {
-      const height = positiveTableTrackSize(readField<number>(header, ['size']), fallbackHeight);
+      const height = positiveTableTrackSize(readField<number>(header, ['size']), fittedRows ? 0 : fallbackHeight);
       for (let offset = 0; offset < span && index + offset < heights.length; offset += 1) {
-        heights[index + offset] = height;
+        const row = index + offset;
+        heights[row] = fittedRows ? Math.max(heights[row], height) : height;
       }
     }
   }
-  return heights;
+  return { heights, hasFittedRows: fittedRows !== undefined };
 }
 
 function positiveTableTrackSize(value: unknown, fallback: number): number {
@@ -1016,20 +1072,6 @@ function readUuidList(value: unknown): string[] {
     .filter((entry): entry is string => Boolean(entry));
 }
 
-function uuidToKey(value: unknown): string | undefined {
-  const uuid = asObject(value);
-  if (!uuid) {
-    return undefined;
-  }
-
-  const lower = readField<number | string>(uuid, ['lower']);
-  const upper = readField<number | string>(uuid, ['upper']);
-  if (lower == null && upper == null) {
-    return undefined;
-  }
-  return `${String(upper ?? 0)}:${String(lower ?? 0)}`;
-}
-
 function mergeIndexes(...indexes: Array<number[] | undefined>): number[] | undefined {
   const merged = new Set<number>();
   for (const values of indexes) {
@@ -1045,8 +1087,7 @@ function resolveColumnHeaderTexts(
   tableRows: Array<{ row: number; rowInfo: Record<string, unknown> }>,
   lookup: TableContentLookup,
   headerRowCount: number,
-  columnCount: number,
-  rowOffsets: RowOffsetCache
+  columnCount: number
 ): string[] {
   const headers = Array.from({ length: columnCount }, () => '');
   if (headerRowCount <= 0) {
@@ -1059,14 +1100,15 @@ function resolveColumnHeaderTexts(
     }
     // cellCount is a count of stored records, not the last occupied column.
     // Header text after a sparse hole still supplies date/number context.
-    const sparseColumns = resolveSparseColumns(tableRow.rowInfo, rowOffsets, columnCount);
+    const storage = readRowStorage(tableRow.rowInfo);
+    const sparseColumns = resolveSparseColumns(storage, columnCount);
     for (let index = 0; index < (sparseColumns?.length ?? columnCount); index += 1) {
       const column = sparseColumns ? sparseColumns[index] : index;
       if (headers[column]) {
         continue;
       }
-      const cellInfo = parseTableCell(archive.type, tableRow.rowInfo, column, rowOffsets);
-      const text = resolveCellPlainText(archive, cellInfo, lookup, '');
+      const cellInfo = parseTableCell(archive.type, storage, column);
+      const text = resolveDecimalDisplay(archive, cellInfo, lookup)?.text ?? resolveCellPlainText(archive, cellInfo, lookup, '');
       if (text.trim().length) {
         headers[column] = text;
       }
@@ -1080,6 +1122,8 @@ function cloneCellFill(fill: TableCell['fill']): TableCell['fill'] {
   const cloned = { ...fill };
   if (fill.stops) cloned.stops = fill.stops.map(stop => ({ ...stop }));
   if (fill.crop) cloned.crop = { ...fill.crop };
+  if (fill.pictureSize) cloned.pictureSize = { ...fill.pictureSize };
+  if (fill.pictureTint) cloned.pictureTint = { ...fill.pictureTint };
   if (fill.gradientFillToRect) cloned.gradientFillToRect = { ...fill.gradientFillToRect };
   if (fill.gradientTileRect) cloned.gradientTileRect = { ...fill.gradientTileRect };
   return cloned;
@@ -1095,206 +1139,6 @@ function cloneCellBorder(side: TableBorderSide): TableBorderSide {
 function cloneCellBorders(borders: TableCell['borders']): TableCell['borders'] {
   if (!borders) return undefined;
   return { top: cloneCellBorder(borders.top), right: cloneCellBorder(borders.right), bottom: cloneCellBorder(borders.bottom), left: cloneCellBorder(borders.left) };
-}
-
-function createDefaultBorders(
-  styleLike: unknown,
-  styleDefaults: TableStyleDefaults,
-  row: number,
-  column: number,
-  rowCount: number,
-  columnCount: number,
-  headerRowCount: number,
-  headerColumnCount: number,
-  footerRowCount: number
-): TableCell['borders'] {
-  const style = asObject(styleLike);
-  const cellProps = asObject(readField(style, ['cellProperties', 'cell_properties']));
-  const fallbackStroke = lineFromValue(readField(cellProps, ['stroke'])) ?? {
-    color: colorToHex(undefined, '#cbd5e1'),
-    width: 1
-  };
-  const tableStyleBorders = resolveTableStyleBorders(styleDefaults, row, column, rowCount, columnCount, headerRowCount, headerColumnCount, footerRowCount);
-  const borders: TableCell['borders'] = {
-    top: resolveBorderSide(readCellBorderStroke(cellProps, 'top'), tableStyleBorders.top, fallbackStroke),
-    right: resolveBorderSide(readCellBorderStroke(cellProps, 'right'), tableStyleBorders.right, fallbackStroke),
-    bottom: resolveBorderSide(readCellBorderStroke(cellProps, 'bottom'), tableStyleBorders.bottom, fallbackStroke),
-    left: resolveBorderSide(readCellBorderStroke(cellProps, 'left'), tableStyleBorders.left, fallbackStroke)
-  };
-  return Object.values(borders).some(Boolean) ? borders : undefined;
-}
-
-function resolveBorderSide(
-  local: ResolvedTableBorderSide,
-  tableStyle: ResolvedTableBorderSide,
-  fallback: TableBorderSide
-): TableBorderSide {
-  if (local === false) {
-    return undefined;
-  }
-  if (local) {
-    return local;
-  }
-  if (tableStyle === false) {
-    return undefined;
-  }
-  return tableStyle ?? fallback;
-}
-
-function resolveTableStyleBorders(
-  styleDefaults: TableStyleDefaults,
-  row: number,
-  column: number,
-  rowCount: number,
-  columnCount: number,
-  headerRowCount: number,
-  headerColumnCount: number,
-  footerRowCount: number
-): ResolvedTableStyleBorders {
-  const isHeaderRow = row < headerRowCount;
-  const isHeaderColumn = column < headerColumnCount;
-  const isFooter = footerRowCount > 0 && row >= rowCount - footerRowCount;
-  if (isHeaderRow) {
-    return {
-      top: visibleStroke(
-        row === 0 ? (styleDefaults.headerRowBorderStroke ?? styleDefaults.headerRowHorizontalStroke) : styleDefaults.headerRowHorizontalStroke,
-        styleDefaults.hStrokesVisible,
-        row === 0 ? styleDefaults.tableHeaderBorderVisible : undefined,
-        row === 0 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'top') : undefined
-      ),
-      right: visibleStroke(
-        column === columnCount - 1 ? (styleDefaults.headerRowBorderStroke ?? styleDefaults.headerRowVerticalStroke) : styleDefaults.headerRowVerticalStroke,
-        styleDefaults.vStrokesVisible,
-        column === columnCount - 1 ? styleDefaults.tableHeaderBorderVisible : undefined,
-        column === columnCount - 1 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'right') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-      ),
-      bottom:
-        row === headerRowCount - 1
-          ? visibleStroke(
-              styleDefaults.headerRowSeparatorStroke ?? styleDefaults.headerRowBorderStroke ?? styleDefaults.headerRowHorizontalStroke,
-              styleDefaults.hStrokesVisible,
-              styleDefaults.hrSeparatorVisible,
-              styleDefaults.tableHrDividerVisible,
-              presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')
-            )
-          : visibleStroke(styleDefaults.headerRowHorizontalStroke, styleDefaults.hStrokesVisible, presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')),
-      left: visibleStroke(
-        column === 0 ? (styleDefaults.headerRowBorderStroke ?? styleDefaults.headerRowVerticalStroke) : styleDefaults.headerRowVerticalStroke,
-        styleDefaults.vStrokesVisible,
-        column === 0 ? styleDefaults.tableHeaderBorderVisible : undefined,
-        column === 0 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'left') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-      )
-    };
-  }
-
-  if (isFooter) {
-    return {
-      top:
-        row === rowCount - footerRowCount
-          ? visibleStroke(
-              styleDefaults.footerRowSeparatorStroke ?? styleDefaults.footerRowBorderStroke ?? styleDefaults.footerRowHorizontalStroke,
-              styleDefaults.hStrokesVisible,
-              styleDefaults.footerSeparatorVisible,
-              styleDefaults.tableFooterDividerVisible,
-              presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')
-            )
-          : visibleStroke(styleDefaults.footerRowHorizontalStroke, styleDefaults.hStrokesVisible, presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')),
-      right: visibleStroke(
-        column === columnCount - 1 ? (styleDefaults.footerRowBorderStroke ?? styleDefaults.footerRowVerticalStroke) : styleDefaults.footerRowVerticalStroke,
-        styleDefaults.vStrokesVisible,
-        column === columnCount - 1 ? styleDefaults.tableBorderVisible : undefined,
-        column === columnCount - 1 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'right') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-      ),
-      bottom: visibleStroke(
-        row === rowCount - 1 ? (styleDefaults.footerRowBorderStroke ?? styleDefaults.footerRowHorizontalStroke) : styleDefaults.footerRowHorizontalStroke,
-        styleDefaults.hStrokesVisible,
-        row === rowCount - 1 ? styleDefaults.tableBorderVisible : undefined,
-        row === rowCount - 1 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'bottom') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')
-      ),
-      left: visibleStroke(
-        column === 0 ? (styleDefaults.footerRowBorderStroke ?? styleDefaults.footerRowVerticalStroke) : styleDefaults.footerRowVerticalStroke,
-        styleDefaults.vStrokesVisible,
-        column === 0 ? styleDefaults.tableBorderVisible : undefined,
-        column === 0 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'left') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-      )
-    };
-  }
-
-  if (isHeaderColumn) {
-    return {
-      top: visibleStroke(styleDefaults.headerColumnHorizontalStroke, styleDefaults.hStrokesVisible, presetBorderVisible(styleDefaults.presetVisibleMask, row === 0 ? 'top' : 'insideH')),
-      right:
-        column === headerColumnCount - 1
-          ? visibleStroke(
-              styleDefaults.headerColumnSeparatorStroke ?? styleDefaults.headerColumnBorderStroke ?? styleDefaults.headerColumnVerticalStroke,
-              styleDefaults.vStrokesVisible,
-              styleDefaults.hcSeparatorVisible,
-              styleDefaults.tableHcDividerVisible,
-              presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-            )
-          : visibleStroke(styleDefaults.headerColumnVerticalStroke, styleDefaults.vStrokesVisible, presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')),
-      bottom: visibleStroke(styleDefaults.headerColumnHorizontalStroke, styleDefaults.hStrokesVisible, presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')),
-      left: visibleStroke(
-        column === 0 ? (styleDefaults.headerColumnBorderStroke ?? styleDefaults.headerColumnVerticalStroke) : styleDefaults.headerColumnVerticalStroke,
-        styleDefaults.vStrokesVisible,
-        column === 0 ? styleDefaults.tableBorderVisible : undefined,
-        column === 0 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'left') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-      )
-    };
-  }
-
-  return {
-    top: visibleStroke(
-      row === 0 ? (styleDefaults.bodyHorizontalBorderStroke ?? styleDefaults.bodyHorizontalStroke) : styleDefaults.bodyHorizontalStroke,
-      styleDefaults.hStrokesVisible,
-      row === 0 ? styleDefaults.tableBorderVisible : undefined,
-      row === 0 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'top') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')
-    ),
-    right: visibleStroke(
-      column === columnCount - 1 ? (styleDefaults.bodyVerticalBorderStroke ?? styleDefaults.bodyVerticalStroke) : styleDefaults.bodyVerticalStroke,
-      styleDefaults.vStrokesVisible,
-      column === columnCount - 1 ? styleDefaults.tableBorderVisible : undefined,
-      column === columnCount - 1 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'right') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-    ),
-    bottom:
-      row === rowCount - 1 || (footerRowCount > 0 && row === rowCount - footerRowCount - 1)
-        ? visibleStroke(
-            styleDefaults.bodyHorizontalBorderStroke ?? styleDefaults.bodyHorizontalStroke,
-            styleDefaults.hStrokesVisible,
-            styleDefaults.tableBorderVisible,
-            row === rowCount - 1 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'bottom') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')
-          )
-        : visibleStroke(styleDefaults.bodyHorizontalStroke, styleDefaults.hStrokesVisible, presetBorderVisible(styleDefaults.presetVisibleMask, 'insideH')),
-    left: visibleStroke(
-      column === 0 ? (styleDefaults.bodyVerticalBorderStroke ?? styleDefaults.bodyVerticalStroke) : styleDefaults.bodyVerticalStroke,
-      styleDefaults.vStrokesVisible,
-      column === 0 ? styleDefaults.tableBorderVisible : undefined,
-      column === 0 ? presetBorderVisible(styleDefaults.presetVisibleMask, 'left') : presetBorderVisible(styleDefaults.presetVisibleMask, 'insideV')
-    )
-  };
-}
-
-function visibleStroke(stroke: ResolvedTableBorderSide, ...flags: Array<boolean | undefined>): ResolvedTableBorderSide {
-  if (stroke === false) {
-    return false;
-  }
-  return flags.some((flag) => flag === false) ? false : stroke;
-}
-
-function presetBorderVisible(mask: number | undefined, side: 'top' | 'right' | 'bottom' | 'left' | 'insideH' | 'insideV'): boolean | undefined {
-  if (typeof mask !== 'number' || !Number.isFinite(mask)) {
-    return undefined;
-  }
-
-  const bits: Record<typeof side, number> = {
-    top: 1,
-    right: 2,
-    bottom: 4,
-    left: 8,
-    insideH: 16,
-    insideV: 32
-  };
-  return (Math.trunc(mask) & bits[side]) !== 0;
 }
 
 function readCellBorderStroke(
@@ -1386,39 +1230,14 @@ function capitalize(value: string): string {
   return `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`;
 }
 
-function resolveTableCellFill(
-  localFill: TableCell['fill'],
-  styleDefaults: TableStyleDefaults,
-  row: number,
-  headerRowCount: number,
-  footerRowCount: number,
-  rowCount: number
-): TableCell['fill'] {
-  if (localFill.type !== 'none') {
-    return localFill;
-  }
-
-  if (!styleDefaults.bandedRows || !styleDefaults.bandedFill || styleDefaults.bandedFill.type === 'none') {
-    return localFill;
-  }
-
-  const isHeader = row < headerRowCount;
-  const isFooter = footerRowCount > 0 && row >= rowCount - footerRowCount;
-  if (isHeader || isFooter) {
-    return localFill;
-  }
-
-  return (row - headerRowCount) % 2 === 1 ? styleDefaults.bandedFill : localFill;
-}
-
 function resolveTableStyleDefaults(archive: IworkArchiveIndex, tableModel: Record<string, unknown>): TableStyleDefaults {
   const styleNetwork = resolveTableStyleNetwork(archive, tableModel);
-  if (!styleNetwork) {
-    return {};
-  }
-  const tableStyle = resolveMergedStyle(archive, readField(styleNetwork, ['tableStyle', 'table_style']));
+  const directStyle = archive.type === 'numbers' ? resolveMergedStyle(archive, readField(tableModel, ['tableStyle', 'table_style'])) : undefined;
+  if (!styleNetwork && !directStyle) return { paint: {} };
+  const tableStyle = directStyle ?? resolveMergedStyle(archive, readField(styleNetwork, ['tableStyle', 'table_style']));
   const tableProperties = asObject(readField(tableStyle, ['tableProperties', 'table_properties']));
   const strokePreset = readTableStrokePreset(tableProperties);
+  const bandedFill = fillFromValue(readField(tableProperties, ['bandedFill', 'banded_fill']), archive.type === 'numbers');
 
   return {
     bodyTextStyle: readField(styleNetwork, ['bodyTextStyle', 'body_text_style']),
@@ -1429,53 +1248,54 @@ function resolveTableStyleDefaults(archive: IworkArchiveIndex, tableModel: Recor
     headerRowStyle: getRefId(readField(styleNetwork, ['headerRowStyle', 'header_row_style'])),
     headerColumnStyle: getRefId(readField(styleNetwork, ['headerColumnStyle', 'header_column_style'])),
     footerRowStyle: getRefId(readField(styleNetwork, ['footerRowStyle', 'footer_row_style'])),
-    bandedRows: Boolean(readField(tableProperties, ['bandedRows', 'banded_rows'])),
-    bandedFill: fillFromValue(readField(tableProperties, ['bandedFill', 'banded_fill'])),
-    bodyHorizontalStroke: readTableStyleStroke(tableProperties, ['tableBodyHorizontalStroke', 'table_body_horizontal_stroke'], ['deprecatedTableBodyHorizontalStroke', 'deprecated_table_body_horizontal_stroke']) ?? strokePreset?.horizontalStroke,
-    bodyVerticalStroke: readTableStyleStroke(tableProperties, ['tableBodyVerticalStroke', 'table_body_vertical_stroke'], ['deprecatedTableBodyVerticalStroke', 'deprecated_table_body_vertical_stroke']) ?? strokePreset?.verticalStroke,
-    bodyHorizontalBorderStroke:
-      readTableStyleStroke(
+    paint: {
+      bandedFill: readField(tableProperties, ['bandedRows', 'banded_rows']) && bandedFill.type !== 'none' ? bandedFill : undefined,
+      bodyHorizontalStroke: readTableStyleStroke(tableProperties, ['tableBodyHorizontalStroke', 'table_body_horizontal_stroke'], ['deprecatedTableBodyHorizontalStroke', 'deprecated_table_body_horizontal_stroke']) ?? strokePreset?.horizontalStroke,
+      bodyVerticalStroke: readTableStyleStroke(tableProperties, ['tableBodyVerticalStroke', 'table_body_vertical_stroke'], ['deprecatedTableBodyVerticalStroke', 'deprecated_table_body_vertical_stroke']) ?? strokePreset?.verticalStroke,
+      bodyHorizontalBorderStroke:
+        readTableStyleStroke(
+          tableProperties,
+          ['tableBodyHorizontalBorderStroke', 'table_body_horizontal_border_stroke'],
+          ['deprecatedTableBodyHorizontalBorderStroke', 'deprecated_table_body_horizontal_border_stroke']
+        ) ?? strokePreset?.exteriorStroke,
+      bodyVerticalBorderStroke:
+        readTableStyleStroke(
+          tableProperties,
+          ['tableBodyVerticalBorderStroke', 'table_body_vertical_border_stroke'],
+          ['deprecatedTableBodyVerticalBorderStroke', 'deprecated_table_body_vertical_border_stroke']
+        ) ?? strokePreset?.exteriorStroke,
+      headerRowHorizontalStroke: readTableStyleStroke(tableProperties, ['headerRowHorizontalStroke', 'header_row_horizontal_stroke'], ['deprecatedHeaderRowHorizontalStroke', 'deprecated_header_row_horizontal_stroke']),
+      headerRowVerticalStroke: readTableStyleStroke(tableProperties, ['headerRowVerticalStroke', 'header_row_vertical_stroke'], ['deprecatedHeaderRowVerticalStroke', 'deprecated_header_row_vertical_stroke']),
+      headerRowBorderStroke: readTableStyleStroke(tableProperties, ['headerRowBorderStroke', 'header_row_border_stroke'], ['deprecatedHeaderRowBorderStroke', 'deprecated_header_row_border_stroke']),
+      headerRowSeparatorStroke: readTableStyleStroke(tableProperties, ['headerRowSeparatorStroke', 'header_row_separator_stroke'], ['deprecatedHeaderRowSeparatorStroke', 'deprecated_header_row_separator_stroke']),
+      headerColumnHorizontalStroke: readTableStyleStroke(
         tableProperties,
-        ['tableBodyHorizontalBorderStroke', 'table_body_horizontal_border_stroke'],
-        ['deprecatedTableBodyHorizontalBorderStroke', 'deprecated_table_body_horizontal_border_stroke']
-      ) ?? strokePreset?.exteriorStroke,
-    bodyVerticalBorderStroke:
-      readTableStyleStroke(
+        ['headerColumnHorizontalStroke', 'header_column_horizontal_stroke'],
+        ['deprecatedHeaderColumnHorizontalStroke', 'deprecated_header_column_horizontal_stroke']
+      ),
+      headerColumnVerticalStroke: readTableStyleStroke(tableProperties, ['headerColumnVerticalStroke', 'header_column_vertical_stroke'], ['deprecatedHeaderColumnVerticalStroke', 'deprecated_header_column_vertical_stroke']),
+      headerColumnBorderStroke: readTableStyleStroke(tableProperties, ['headerColumnBorderStroke', 'header_column_border_stroke'], ['deprecatedHeaderColumnBorderStroke', 'deprecated_header_column_border_stroke']),
+      headerColumnSeparatorStroke: readTableStyleStroke(
         tableProperties,
-        ['tableBodyVerticalBorderStroke', 'table_body_vertical_border_stroke'],
-        ['deprecatedTableBodyVerticalBorderStroke', 'deprecated_table_body_vertical_border_stroke']
-      ) ?? strokePreset?.exteriorStroke,
-    headerRowHorizontalStroke: readTableStyleStroke(tableProperties, ['headerRowHorizontalStroke', 'header_row_horizontal_stroke'], ['deprecatedHeaderRowHorizontalStroke', 'deprecated_header_row_horizontal_stroke']),
-    headerRowVerticalStroke: readTableStyleStroke(tableProperties, ['headerRowVerticalStroke', 'header_row_vertical_stroke'], ['deprecatedHeaderRowVerticalStroke', 'deprecated_header_row_vertical_stroke']),
-    headerRowBorderStroke: readTableStyleStroke(tableProperties, ['headerRowBorderStroke', 'header_row_border_stroke'], ['deprecatedHeaderRowBorderStroke', 'deprecated_header_row_border_stroke']),
-    headerRowSeparatorStroke: readTableStyleStroke(tableProperties, ['headerRowSeparatorStroke', 'header_row_separator_stroke'], ['deprecatedHeaderRowSeparatorStroke', 'deprecated_header_row_separator_stroke']),
-    headerColumnHorizontalStroke: readTableStyleStroke(
-      tableProperties,
-      ['headerColumnHorizontalStroke', 'header_column_horizontal_stroke'],
-      ['deprecatedHeaderColumnHorizontalStroke', 'deprecated_header_column_horizontal_stroke']
-    ),
-    headerColumnVerticalStroke: readTableStyleStroke(tableProperties, ['headerColumnVerticalStroke', 'header_column_vertical_stroke'], ['deprecatedHeaderColumnVerticalStroke', 'deprecated_header_column_vertical_stroke']),
-    headerColumnBorderStroke: readTableStyleStroke(tableProperties, ['headerColumnBorderStroke', 'header_column_border_stroke'], ['deprecatedHeaderColumnBorderStroke', 'deprecated_header_column_border_stroke']),
-    headerColumnSeparatorStroke: readTableStyleStroke(
-      tableProperties,
-      ['headerColumnSeparatorStroke', 'header_column_separator_stroke'],
-      ['deprecatedHeaderColumnSeparatorStroke', 'deprecated_header_column_separator_stroke']
-    ),
-    footerRowHorizontalStroke: readTableStyleStroke(tableProperties, ['footerRowHorizontalStroke', 'footer_row_horizontal_stroke'], ['deprecatedFooterRowHorizontalStroke', 'deprecated_footer_row_horizontal_stroke']),
-    footerRowVerticalStroke: readTableStyleStroke(tableProperties, ['footerRowVerticalStroke', 'footer_row_vertical_stroke'], ['deprecatedFooterRowVerticalStroke', 'deprecated_footer_row_vertical_stroke']),
-    footerRowBorderStroke: readTableStyleStroke(tableProperties, ['footerRowBorderStroke', 'footer_row_border_stroke'], ['deprecatedFooterRowBorderStroke', 'deprecated_footer_row_border_stroke']),
-    footerRowSeparatorStroke: readTableStyleStroke(tableProperties, ['footerRowSeparatorStroke', 'footer_row_separator_stroke'], ['deprecatedFooterRowSeparatorStroke', 'deprecated_footer_row_separator_stroke']),
-    vStrokesVisible: readOptionalBoolean(tableProperties ?? {}, ['vStrokesVisible', 'v_strokes_visible']),
-    hStrokesVisible: readOptionalBoolean(tableProperties ?? {}, ['hStrokesVisible', 'h_strokes_visible']),
-    hrSeparatorVisible: readOptionalBoolean(tableProperties ?? {}, ['hrSeparatorVisible', 'hr_separator_visible']),
-    hcSeparatorVisible: readOptionalBoolean(tableProperties ?? {}, ['hcSeparatorVisible', 'hc_separator_visible']),
-    footerSeparatorVisible: readOptionalBoolean(tableProperties ?? {}, ['footerSeparatorVisible', 'footer_separator_visible']),
-    tableBorderVisible: readOptionalBoolean(tableProperties ?? {}, ['tableBorderVisible', 'table_border_visible']),
-    tableHeaderBorderVisible: readOptionalBoolean(tableProperties ?? {}, ['tableHeaderBorderVisible', 'table_header_border_visible']),
-    tableHcDividerVisible: readOptionalBoolean(tableProperties ?? {}, ['tableHcDividerVisible', 'table_hc_divider_visible']),
-    tableHrDividerVisible: readOptionalBoolean(tableProperties ?? {}, ['tableHrDividerVisible', 'table_hr_divider_visible']),
-    tableFooterDividerVisible: readOptionalBoolean(tableProperties ?? {}, ['tableFooterDividerVisible', 'table_footer_divider_visible']),
-    presetVisibleMask: strokePreset?.visibleMask
+        ['headerColumnSeparatorStroke', 'header_column_separator_stroke'],
+        ['deprecatedHeaderColumnSeparatorStroke', 'deprecated_header_column_separator_stroke']
+      ),
+      footerRowHorizontalStroke: readTableStyleStroke(tableProperties, ['footerRowHorizontalStroke', 'footer_row_horizontal_stroke'], ['deprecatedFooterRowHorizontalStroke', 'deprecated_footer_row_horizontal_stroke']),
+      footerRowVerticalStroke: readTableStyleStroke(tableProperties, ['footerRowVerticalStroke', 'footer_row_vertical_stroke'], ['deprecatedFooterRowVerticalStroke', 'deprecated_footer_row_vertical_stroke']),
+      footerRowBorderStroke: readTableStyleStroke(tableProperties, ['footerRowBorderStroke', 'footer_row_border_stroke'], ['deprecatedFooterRowBorderStroke', 'deprecated_footer_row_border_stroke']),
+      footerRowSeparatorStroke: readTableStyleStroke(tableProperties, ['footerRowSeparatorStroke', 'footer_row_separator_stroke'], ['deprecatedFooterRowSeparatorStroke', 'deprecated_footer_row_separator_stroke']),
+      vStrokesVisible: readOptionalBoolean(tableProperties ?? {}, ['vStrokesVisible', 'v_strokes_visible']),
+      hStrokesVisible: readOptionalBoolean(tableProperties ?? {}, ['hStrokesVisible', 'h_strokes_visible']),
+      hrSeparatorVisible: readOptionalBoolean(tableProperties ?? {}, ['hrSeparatorVisible', 'hr_separator_visible']),
+      hcSeparatorVisible: readOptionalBoolean(tableProperties ?? {}, ['hcSeparatorVisible', 'hc_separator_visible']),
+      footerSeparatorVisible: readOptionalBoolean(tableProperties ?? {}, ['footerSeparatorVisible', 'footer_separator_visible']),
+      tableBorderVisible: readOptionalBoolean(tableProperties ?? {}, ['tableBorderVisible', 'table_border_visible']),
+      tableHeaderBorderVisible: readOptionalBoolean(tableProperties ?? {}, ['tableHeaderBorderVisible', 'table_header_border_visible']),
+      tableHcDividerVisible: readOptionalBoolean(tableProperties ?? {}, ['tableHcDividerVisible', 'table_hc_divider_visible']),
+      tableHrDividerVisible: readOptionalBoolean(tableProperties ?? {}, ['tableHrDividerVisible', 'table_hr_divider_visible']),
+      tableFooterDividerVisible: readOptionalBoolean(tableProperties ?? {}, ['tableFooterDividerVisible', 'table_footer_divider_visible']),
+      presetVisibleMask: strokePreset?.visibleMask
+    }
   };
 }
 
@@ -1547,27 +1367,6 @@ function resolveDefaultTextStyleRefId(
   return readField(tableModel, ['bodyTextStyle', 'body_text_style']) ?? styleDefaults.bodyTextStyle;
 }
 
-function resolveDefaultCellStyleRefId(
-  tableModel: Record<string, unknown>,
-  styleDefaults: TableStyleDefaults,
-  row: number,
-  column: number,
-  rowCount: number,
-  headerRowCount: number,
-  headerColumnCount: number,
-  footerRowCount: number
-): number | undefined {
-  const ref =
-    row < headerRowCount
-      ? (readField(tableModel, ['headerRowStyle', 'header_row_style']) ?? styleDefaults.headerRowStyle)
-      : footerRowCount > 0 && row >= rowCount - footerRowCount
-        ? (readField(tableModel, ['footerRowStyle', 'footer_row_style']) ?? styleDefaults.footerRowStyle)
-        : column < headerColumnCount
-          ? (readField(tableModel, ['headerColumnStyle', 'header_column_style']) ?? styleDefaults.headerColumnStyle)
-          : (readField(tableModel, ['bodyCellStyle', 'body_cell_style']) ?? styleDefaults.bodyCellStyle);
-  return getRefId(ref);
-}
-
 function resolveTableCellTextFrame(
   archive: IworkArchiveIndex,
   cellInfo: TableCellInfo,
@@ -1579,11 +1378,11 @@ function resolveTableCellTextFrame(
   headerText: string,
   plainTextStyles: Map<unknown, PlainTextTemplates>,
   richTextFrames: Map<unknown, Map<unknown, TextFrame>>
-): TextFrame {
+): IworkTableCell['textFrame'] {
   // Pages uses a separate cell type for rich payloads. Plain text cells can
   // reuse the same numeric key as a rich-text entry, so consulting the rich
   // table unconditionally replaces ordinary values with unrelated text.
-  const richPayloadRef = (archive.type === 'numbers' || cellInfo.cellType === 9)
+  const richPayloadRef = ((archive.type === 'numbers' && !cellInfo.native) || cellInfo.cellType === 9)
     ? lookup.rich.get(cellInfo.contentKey)
     : undefined;
   if (richPayloadRef) {
@@ -1592,23 +1391,45 @@ function resolveTableCellTextFrame(
     const styleKey = getRefId(defaultTextStyleRef) ?? defaultTextStyleRef;
     const storageKey = getRefId(storageRef) ?? storageRef;
     let templates = richTextFrames.get(styleKey);
-    const cached = templates?.get(storageKey);
-    if (cached) return cloneCellTextFrame(cached, padding, verticalAlign, wrap);
-    const frame = buildTextFrameFromStorage(archive, storageRef, {
-      defaultParagraphStyleRef: defaultTextStyleRef,
-      padding,
-      verticalAlign
-    });
-    if (frame) {
-      frame.wrap = wrap;
-      if (!templates) richTextFrames.set(styleKey, templates = new Map());
-      templates.set(storageKey, frame);
-      return cloneCellTextFrame(frame, padding, verticalAlign, wrap);
+    let template = templates?.get(storageKey);
+    if (!template) {
+      template = buildTextFrameFromStorage(archive, storageRef, {
+        defaultParagraphStyleRef: defaultTextStyleRef,
+        padding,
+        verticalAlign
+      });
+      if (template) {
+        if (!templates) richTextFrames.set(styleKey, templates = new Map());
+        templates.set(storageKey, template);
+      }
+    }
+    if (template) {
+      const frame = cloneCellTextFrame(template, padding, verticalAlign, wrap);
+      const formats = cellInfo.usePreBnc ? lookup.formatsPreBnc : lookup.formats;
+      const segments = formats.get(cellInfo.formatKey)?.nativeCustom?.text;
+      if (segments?.length === 2) {
+        const [prefix, suffix] = segments;
+        const first = frame.paragraphs[0], last = frame.paragraphs.at(-1);
+        if (prefix && first) first.runs.unshift({ ...first.runs[0], text: prefix, href: undefined });
+        if (suffix && last) last.runs.push({ ...last.runs.at(-1), text: suffix, href: undefined });
+      }
+      return frame;
     }
   }
 
-  const text = resolveCellPlainText(archive, cellInfo, lookup, headerText);
-  return buildPlainTextFrame(archive, text, defaultTextStyleRef, padding, verticalAlign, wrap, plainTextStyles);
+  const decimal = resolveDecimalDisplay(archive, cellInfo, lookup);
+  const text = decimal?.text ?? resolveCellPlainText(archive, cellInfo, lookup, headerText);
+  const frame = buildPlainTextFrame(archive, text, defaultTextStyleRef, padding, verticalAlign, wrap, plainTextStyles);
+  if (!decimal || (!decimal.red && !decimal.accounting)) return frame;
+  const paragraph = frame.paragraphs[0];
+  if (frame.paragraphs.length !== 1 || paragraph.runs.length !== 1) return frame;
+  const run = { ...paragraph.runs[0] };
+  if (decimal.red) {
+    run.color = '#ff0000';
+    run.colorAlpha = undefined;
+  }
+  const runs = decimal.accounting?.map(text => ({ ...run, text })) ?? [run];
+  return { ...frame, accounting: decimal.accounting ? true : undefined, paragraphs: [{ ...paragraph, runs }] };
 }
 
 function cloneCellTextFrame(template: TextFrame, padding: TextFrame['padding'], verticalAlign: TextFrame['verticalAlign'], wrap: TextFrame['wrap']): TextFrame {
@@ -1714,6 +1535,13 @@ function resolveCellTextWrap(cellProps: Record<string, unknown> | undefined): Te
   return readField<boolean>(cellProps, ['textWrap', 'text_wrap']) === false ? 'none' : 'square';
 }
 
+function resolveDecimalDisplay(archive: IworkArchiveIndex, cell: TableCellInfo, lookup: TableContentLookup) {
+  if (archive.type !== 'numbers' || !cell.hasNumber || (cell.cellType !== 2 && cell.cellType !== 10)) return undefined;
+  const format = (cell.usePreBnc ? lookup.formatsPreBnc : lookup.formats).get(cell.formatKey);
+  if (!format || format.nativeCustom || format.customFormatString || format.dateTimeFormat) return undefined;
+  return lookup.formatDecimal(cell.numberValue, format);
+}
+
 function resolveCellPlainText(
   archive: IworkArchiveIndex,
   cellInfo: TableCellInfo,
@@ -1721,19 +1549,45 @@ function resolveCellPlainText(
   headerText: string
 ): string {
   const formatLookup = cellInfo.usePreBnc ? lookup.formatsPreBnc : lookup.formats;
+  const format = formatLookup.get(cellInfo.formatKey);
+  if (archive.type === 'numbers' && cellInfo.cellType === 7 && cellInfo.hasNumber) {
+    const seconds = cellInfo.numberValue;
+    return (format && (formatDurationWithFormat(seconds / 86_400, format) || lookup.formatDuration(seconds, format)))
+      || `${formatNumber(seconds)} s`;
+  }
+  if (cellInfo.native) {
+    const value = cellInfo.numberValue;
+    if (cellInfo.hasNumber && (cellInfo.cellType === 2 || cellInfo.cellType === 10)) {
+      return formatNumericCellValue(value, format, '');
+    }
+    if (cellInfo.cellType === 5 && cellInfo.hasNumber) {
+      const floor = Math.floor(value);
+      const micros = Math.round((value - floor) * 1_000_000);
+      const time = new Date(Date.UTC(2001, 0, 1) + floor * 1000 + Math.floor(micros / 1000));
+      const parts = dateTimeParts(time);
+      if (!parts) return '';
+      const fraction = String(micros % 1_000_000).padStart(6, '0');
+      return formatDateTimeParts(parts, format, lookup.dateSymbols, fraction);
+    }
+    if (cellInfo.cellType === 6 && cellInfo.hasNumber) {
+      return value ? format?.boolTrueString ?? 'TRUE' : format?.boolFalseString ?? 'FALSE';
+    }
+    if (cellInfo.cellType === 8) return '#ERROR!';
+    if (cellInfo.cellType === 3) return formatTextCellValue(lookup.strings.get(cellInfo.contentKey) ?? '', format);
+  }
   switch (cellInfo.cellType) {
     case 0:
       return resolveControlCellText(cellInfo.contentKey, lookup);
     case 2:
       if (cellInfo.hasNumber) {
-        return formatNumericCellValue(cellInfo.numberValue, formatLookup.get(cellInfo.formatKey), headerText);
+        return formatNumericCellValue(cellInfo.numberValue, format, headerText);
       }
       if (cellInfo.contentKey !== 0) {
         return String(cellInfo.contentKey);
       }
       return '';
     case 3:
-      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), formatLookup.get(cellInfo.formatKey));
+      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), format);
     case 5:
       if (cellInfo.hasNumber) {
         const dateText = formatExcelSerialDateTime(cellInfo.numberValue);
@@ -1741,14 +1595,14 @@ function resolveCellPlainText(
           return dateText;
         }
       }
-      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), formatLookup.get(cellInfo.formatKey));
+      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), format);
     case 9:
-      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), formatLookup.get(cellInfo.formatKey));
+      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), format);
     default:
       if (cellInfo.hasNumber) {
-        return formatNumericCellValue(cellInfo.numberValue, formatLookup.get(cellInfo.formatKey), headerText);
+        return formatNumericCellValue(cellInfo.numberValue, format, headerText);
       }
-      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), formatLookup.get(cellInfo.formatKey));
+      return formatTextCellValue(resolveCellStringContent(archive, cellInfo.contentKey, lookup), format);
   }
 }
 
@@ -1757,13 +1611,7 @@ function hasRenderablePayload(cellInfo: TableCellInfo): boolean {
 }
 
 function formatNumber(value: number): string {
-  if (!Number.isFinite(value)) {
-    return '';
-  }
-  if (Math.abs(value - Math.round(value)) < 1e-9) {
-    return String(Math.round(value));
-  }
-  return String(value);
+  return Number.isFinite(value) ? String(value) : '';
 }
 
 function resolveCellStringContent(archive: IworkArchiveIndex, key: number, lookup: TableContentLookup): string {
@@ -1782,6 +1630,7 @@ function resolveCellStringContent(archive: IworkArchiveIndex, key: number, looku
 }
 
 function formatTextCellValue(text: string, format: TableFormatEntry | undefined): string {
+  if (format?.nativeCustom?.text) return format.nativeCustom.text.join(text);
   const customFormat = format?.customFormatString;
   if (!customFormat) {
     return text;
@@ -1865,6 +1714,7 @@ function isCustomTextSectionTokenBoundary(section: string, index: number): boole
 
 function formatNumericCellValue(value: number, format: TableFormatEntry | undefined, headerText: string): string {
   if (format) {
+    if (format.nativeCustom?.number) return format.nativeCustom.number(value) ?? formatNumber(value);
     const boolText = formatBooleanWithFormat(value, format);
     if (boolText) {
       return boolText;
@@ -1878,6 +1728,11 @@ function formatNumericCellValue(value: number, format: TableFormatEntry | undefi
     const dateText = formatDateTimeWithFormat(value, format);
     if (dateText) {
       return dateText;
+    }
+
+    if (!format.customFormatString) {
+      const builtInNumber = formatBuiltInNumber(value, format);
+      if (builtInNumber) return builtInNumber;
     }
   }
 
@@ -1926,13 +1781,16 @@ function formatDateTimeWithFormat(value: number, format: TableFormatEntry): stri
   }
 
   const parts = excelSerialDateTimeParts(value);
-  if (!parts) {
-    return '';
-  }
+  return parts ? formatDateTimeParts(parts, format) : '';
+}
 
-  const wantsDate = !format.suppressDateFormat && dateTimeFormatIncludesDate(format.dateTimeFormat);
-  const wantsTime = !format.suppressTimeFormat && dateTimeFormatIncludesTime(format.dateTimeFormat);
-  const formatted = format.dateTimeFormat ? renderDateTimePattern(format.dateTimeFormat, parts, wantsDate, wantsTime) : '';
+function formatDateTimeParts(parts: NonNullable<ReturnType<typeof dateTimeParts>>, format?: TableFormatEntry,
+  symbols?: ReturnType<typeof createDateSymbols>, fraction?: string): string {
+  const pattern = format?.dateTimeFormat || (format?.formatType === 272 ? format.customFormatString : undefined);
+  if (!pattern) return parts.hasTime ? `${parts.dateText} ${parts.timeText}` : parts.dateText;
+  const wantsDate = !format?.suppressDateFormat && dateTimeFormatIncludesDate(pattern);
+  const wantsTime = !format?.suppressTimeFormat && dateTimeFormatIncludesTime(pattern);
+  const formatted = renderDateTimePattern(pattern, parts, wantsDate, wantsTime, symbols, fraction);
   if (formatted) {
     return formatted;
   }
@@ -2087,10 +1945,14 @@ function formatDurationInteger(value: number, width: number): string {
   return width > 1 ? String(value).padStart(width, '0') : String(value);
 }
 
-function excelSerialDateTimeParts(
-  value: number
-):
+function excelSerialDateTimeParts(value: number): ReturnType<typeof dateTimeParts> {
+  if (!looksLikeExcelSerialDateTime(value)) return undefined;
+  return dateTimeParts(new Date(Date.UTC(1899, 11, 30) + Math.round(value * 86_400_000)));
+}
+
+function dateTimeParts(time: Date):
   | {
+      time: Date;
       year: number;
       month: number;
       day: number;
@@ -2106,16 +1968,14 @@ function excelSerialDateTimeParts(
       hasTime: boolean;
     }
   | undefined {
-  if (!looksLikeExcelSerialDateTime(value)) {
-    return undefined;
-  }
-  const totalMilliseconds = Math.round(value * 24 * 60 * 60 * 1000);
-  const time = new Date(Date.UTC(1899, 11, 30) + totalMilliseconds);
+  if (!Number.isFinite(time.getTime())) return undefined;
   const year = time.getUTCFullYear();
   const month = time.getUTCMonth() + 1;
   const day = time.getUTCDate();
-  const dayOfYear = Math.floor((Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 1)) / (24 * 60 * 60 * 1000)) + 1;
-  const weekOfYear = Math.floor((dayOfYear + new Date(Date.UTC(year, 0, 1)).getUTCDay()) / 7) + 1;
+  const yearStart = new Date(0);
+  yearStart.setUTCFullYear(year, 0, 1);
+  const dayOfYear = Math.floor((time.getTime() - yearStart.getTime()) / 86_400_000) + 1;
+  const weekOfYear = Math.floor((dayOfYear + yearStart.getUTCDay()) / 7) + 1;
   const weekday = time.getUTCDay();
   const hour = time.getUTCHours();
   const minute = time.getUTCMinutes();
@@ -2124,6 +1984,7 @@ function excelSerialDateTimeParts(
   const dateText = `${year}-${padNumber(month)}-${padNumber(day)}`;
   const timeText = `${padNumber(hour)}:${padNumber(minute)}:${padNumber(second)}`;
   return {
+    time,
     year,
     month,
     day,
@@ -2136,7 +1997,7 @@ function excelSerialDateTimeParts(
     millisecond,
     dateText,
     timeText,
-    hasTime: totalMilliseconds % (24 * 60 * 60 * 1000) !== 0
+    hasTime: !!(hour || minute || second || millisecond)
   };
 }
 
@@ -2144,15 +2005,18 @@ function renderDateTimePattern(
   pattern: string,
   parts: NonNullable<ReturnType<typeof excelSerialDateTimeParts>>,
   wantsDate: boolean,
-  wantsTime: boolean
+  wantsTime: boolean,
+  symbols?: ReturnType<typeof createDateSymbols>,
+  fraction?: string
 ): string {
   const normalized = stripDateTimeFormatMarkers(pattern).trim();
   if (!normalized.length) {
     return '';
   }
 
-  const usesMeridiem = dateTimePatternUsesMeridiem(normalized);
-  const rendered = renderDateTimeTokens(normalized, parts, usesMeridiem);
+  const usesMeridiem = !symbols && dateTimePatternUsesMeridiem(normalized);
+  const rendered = renderDateTimeTokens(normalized, parts, usesMeridiem, symbols, fraction);
+  if (symbols) return rendered;
 
   if (!wantsDate && wantsTime) {
     return stripDatePatternFragments(rendered).trim();
@@ -2163,8 +2027,7 @@ function renderDateTimePattern(
   return rendered;
 }
 
-function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typeof excelSerialDateTimeParts>>, usesMeridiem: boolean): string {
-  const tokens = [
+const dateTimeTokens = [
     'AM/PM',
     'am/pm',
     'A/P',
@@ -2176,8 +2039,15 @@ function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typ
     'a',
     'yyyy',
     'YYYY',
+    'yyy',
     'yy',
     'YY',
+    'y',
+    'GGGGG',
+    'GGGG',
+    'GGG',
+    'GG',
+    'G',
     'LLLLL',
     'MMMMM',
     'mmmmm',
@@ -2196,8 +2066,12 @@ function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typ
     'ddd',
     'hh',
     'HH',
+    'kk',
+    'KK',
     'h',
     'H',
+    'k',
+    'K',
     'QQQQQ',
     'QQQQ',
     'QQQ',
@@ -2207,6 +2081,8 @@ function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typ
     'q',
     'ww',
     'w',
+    'W',
+    'F',
     'mm',
     'LL',
     'L',
@@ -2223,7 +2099,10 @@ function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typ
     'S',
     'ss',
     's'
-  ];
+] as const;
+
+function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typeof excelSerialDateTimeParts>>, usesMeridiem: boolean,
+  symbols?: ReturnType<typeof createDateSymbols>, fraction?: string): string {
   let output = '';
   let index = 0;
 
@@ -2256,6 +2135,12 @@ function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typ
       index += quotedLiteral.length;
       continue;
     }
+    if (symbols && fraction && char === 'S') {
+      const width = pattern.slice(index).match(/^S{1,9}/)![0].length;
+      output += symbols.digits(fraction.slice(0, width).padEnd(width, '0'));
+      index += width;
+      continue;
+    }
     const fractionalSecond = renderFractionalSecondToken(pattern, index, output, parts.millisecond);
     if (fractionalSecond) {
       output += fractionalSecond.text;
@@ -2269,9 +2154,10 @@ function renderDateTimeTokens(pattern: string, parts: NonNullable<ReturnType<typ
       continue;
     }
 
-    const token = tokens.find((candidate) => pattern.startsWith(candidate, index));
+    const token = dateTimeTokens.find((candidate) => pattern.startsWith(candidate, index));
     if (token) {
-      output += renderDateTimeToken(token, pattern, index, parts, usesMeridiem);
+      const rendered = renderDateTimeToken(token, pattern, index, parts, usesMeridiem, symbols);
+      output += symbols ? symbols.digits(rendered) : rendered;
       index += token.length;
       continue;
     }
@@ -2309,8 +2195,11 @@ function renderDateTimeToken(
   pattern: string,
   offset: number,
   parts: NonNullable<ReturnType<typeof excelSerialDateTimeParts>>,
-  usesMeridiem: boolean
+  usesMeridiem: boolean,
+  symbols?: ReturnType<typeof createDateSymbols>
 ): string {
+  const date = parts.time;
+  const year = symbols && parts.year <= 0 ? 1 - parts.year : parts.year;
   switch (token) {
     case 'AM/PM':
     case 'am/pm':
@@ -2321,23 +2210,37 @@ function renderDateTimeToken(
     case 'aaa':
     case 'aa':
     case 'a':
+      if (symbols && token.startsWith('a') && !token.includes('/')) {
+        const name = symbols.period(date);
+        return token === 'aaaaa' ? Array.from(name)[0] ?? '' : name;
+      }
       return meridiemText(token, parts.hour);
     case 'yyyy':
     case 'YYYY':
-      return String(parts.year);
+      return symbols ? String(year).padStart(4, '0') : String(year);
+    case 'yyy':
+      return symbols ? String(year).padStart(3, '0') : `${padNumber(year % 100)}y`;
+    case 'y':
+      return symbols ? String(year) : token;
     case 'yy':
     case 'YY':
-      return padNumber(parts.year % 100);
+      return padNumber(year % 100);
+    case 'G':
+    case 'GG':
+    case 'GGG':
+    case 'GGGG':
+    case 'GGGGG':
+      return symbols?.era(date, token.length === 5 ? 'narrow' : token.length === 4 ? 'long' : 'short') ?? token;
     case 'EEEE':
     case 'dddd':
-      return weekdayName(parts.weekday, 'long');
+      return symbols?.weekday(date, 'long') ?? weekdayName(parts.weekday, 'long');
     case 'EEEEE':
-      return weekdayName(parts.weekday, 'narrow');
+      return symbols?.weekday(date, 'narrow') ?? weekdayName(parts.weekday, 'narrow');
     case 'EEE':
     case 'EE':
     case 'E':
     case 'ddd':
-      return weekdayName(parts.weekday, 'short');
+      return symbols?.weekday(date, 'short') ?? weekdayName(parts.weekday, 'short');
     case 'dd':
       return padNumber(parts.day);
     case 'd':
@@ -2357,15 +2260,15 @@ function renderDateTimeToken(
     case 'LLLL':
     case 'MMMM':
     case 'mmmm':
-      return monthName(parts.month, 'long');
+      return symbols?.month(date, 'long', token[0] === 'L') ?? monthName(parts.month, 'long');
     case 'LLLLL':
     case 'MMMMM':
     case 'mmmmm':
-      return monthName(parts.month, 'narrow');
+      return symbols?.month(date, 'narrow', token[0] === 'L') ?? monthName(parts.month, 'narrow');
     case 'LLL':
     case 'MMM':
     case 'mmm':
-      return monthName(parts.month, 'short');
+      return symbols?.month(date, 'short', token[0] === 'L') ?? monthName(parts.month, 'short');
     case 'LL':
     case 'MM':
       return padNumber(parts.month);
@@ -2374,10 +2277,16 @@ function renderDateTimeToken(
       return String(parts.month);
     case 'hh':
     case 'HH':
-      return padNumber(usesMeridiem ? hour12(parts.hour) : parts.hour);
+      return padNumber(usesMeridiem || (symbols && token === 'hh') ? hour12(parts.hour) : parts.hour);
     case 'h':
     case 'H':
-      return String(usesMeridiem ? hour12(parts.hour) : parts.hour);
+      return String(usesMeridiem || (symbols && token === 'h') ? hour12(parts.hour) : parts.hour);
+    case 'kk':
+    case 'k':
+      return symbols ? String(parts.hour || 24).padStart(token.length, '0') : token;
+    case 'KK':
+    case 'K':
+      return symbols ? String(parts.hour % 12).padStart(token.length, '0') : token;
     case 'QQQQQ':
       return String(Math.ceil(parts.month / 3));
     case 'QQQQ':
@@ -2391,17 +2300,21 @@ function renderDateTimeToken(
     case 'q':
       return String(Math.ceil(parts.month / 3));
     case 'ww':
-      return padNumber(parts.weekOfYear);
+      return padNumber(symbols?.week(date, false) ?? parts.weekOfYear);
     case 'w':
-      return String(parts.weekOfYear);
+      return String(symbols?.week(date, false) ?? parts.weekOfYear);
+    case 'W':
+      return symbols ? String(symbols.week(date, true)) : token;
+    case 'F':
+      return symbols ? String(Math.ceil(parts.day / 7)) : token;
     case 'ss':
       return padNumber(parts.second);
     case 's':
       return String(parts.second);
     case 'mm':
-      return shouldRenderMinutes(pattern, offset) ? padNumber(parts.minute) : padNumber(parts.month);
+      return symbols || shouldRenderMinutes(pattern, offset) ? padNumber(parts.minute) : padNumber(parts.month);
     case 'm':
-      return shouldRenderMinutes(pattern, offset) ? String(parts.minute) : String(parts.month);
+      return symbols || shouldRenderMinutes(pattern, offset) ? String(parts.minute) : String(parts.month);
     default:
       return token;
   }
@@ -2501,31 +2414,6 @@ function renderIcuFractionalSecondToken(pattern: string, offset: number, millise
     text: String(millisecond).padStart(3, '0').slice(0, width),
     length: width
   };
-}
-
-function readIcuQuotedLiteral(pattern: string, offset: number): { text: string; length: number } | undefined {
-  if (pattern[offset] !== "'") {
-    return undefined;
-  }
-  if (pattern[offset + 1] === "'") {
-    return { text: "'", length: 2 };
-  }
-
-  let text = '';
-  let index = offset + 1;
-  while (index < pattern.length) {
-    if (pattern[index] === "'") {
-      if (pattern[index + 1] === "'") {
-        text += "'";
-        index += 2;
-        continue;
-      }
-      return { text, length: index - offset + 1 };
-    }
-    text += pattern[index];
-    index += 1;
-  }
-  return { text, length: pattern.length - offset };
 }
 
 function shouldRenderMinutes(pattern: string, offset: number): boolean {
@@ -2700,7 +2588,7 @@ function decorateFormattedNumber(
 }
 
 function isPercentFormat(format: TableFormatEntry): boolean {
-  if (format.formatType === 3) {
+  if (format.formatType === 3 || format.formatType === 258) {
     return true;
   }
   return hasUnescapedPercent(format.customFormatString);
@@ -3210,46 +3098,6 @@ function formatFractionPlaceholderNumber(value: number, token: string): string {
   return text.padStart(Math.max(token.length, text.length), ' ');
 }
 
-function approximateFraction(value: number, denominatorMax: number): { numerator: number; denominator: number } {
-  let bestNumerator = 0;
-  let bestDenominator = 1;
-  let bestError = Number.POSITIVE_INFINITY;
-
-  for (let denominator = 1; denominator <= denominatorMax; denominator += 1) {
-    const numerator = Math.round(value * denominator);
-    const error = Math.abs(value - numerator / denominator);
-    if (error < bestError) {
-      bestNumerator = numerator;
-      bestDenominator = denominator;
-      bestError = error;
-    }
-    if (bestError < 1e-9) {
-      break;
-    }
-  }
-
-  if (bestNumerator === 0) {
-    return { numerator: 0, denominator: 1 };
-  }
-
-  const divisor = greatestCommonDivisor(bestNumerator, bestDenominator);
-  return {
-    numerator: bestNumerator / divisor,
-    denominator: bestDenominator / divisor
-  };
-}
-
-function greatestCommonDivisor(left: number, right: number): number {
-  let a = Math.abs(Math.trunc(left));
-  let b = Math.abs(Math.trunc(right));
-  while (b !== 0) {
-    const next = a % b;
-    a = b;
-    b = next;
-  }
-  return a || 1;
-}
-
 function selectCustomNumberSection(pattern: string, value: number): string {
   const sections = splitCustomNumberSections(pattern);
   const conditionedSections = sections
@@ -3735,20 +3583,17 @@ function readOptionalString(value: Record<string, unknown>, keys: string[]): str
   return typeof raw === 'string' && raw.length ? raw : undefined;
 }
 
-function getRowOffsets(rowInfo: Record<string, unknown>, cache: RowOffsetCache): { regular: CellStorage; preBnc: CellStorage } {
-  let rowOffsets = cache.get(rowInfo);
-  if (!rowOffsets) {
-    rowOffsets = {
-      regular: createCellStorage(readField(rowInfo, ['cellOffsets', 'cell_offsets']), readField(rowInfo, ['cellStorageBuffer', 'cell_storage_buffer'])),
-      preBnc: createCellStorage(readField(rowInfo, ['cellOffsetsPreBnc', 'cell_offsets_pre_bnc']), readField(rowInfo, ['cellStorageBufferPreBnc', 'cell_storage_buffer_pre_bnc']))
-    };
-    cache.set(rowInfo, rowOffsets);
-  }
-  return rowOffsets;
+function readRowStorage(rowInfo: Record<string, unknown>): RowStorage {
+  const wide = readField<boolean>(rowInfo, ['hasWideOffsets', 'has_wide_offsets']);
+  return {
+    regular: createCellStorage(readField(rowInfo, ['cellOffsets', 'cell_offsets']),
+      readField(rowInfo, ['cellStorageBuffer', 'cell_storage_buffer']), wide ? 4 : 1),
+    preBnc: createCellStorage(readField(rowInfo, ['cellOffsetsPreBnc', 'cell_offsets_pre_bnc']),
+      readField(rowInfo, ['cellStorageBufferPreBnc', 'cell_storage_buffer_pre_bnc']))
+  };
 }
 
-function resolveSparseColumns(rowInfo: Record<string, unknown>, cache: RowOffsetCache, columnCount: number, anchorColumns: number[] = []): number[] | undefined {
-  const { regular, preBnc } = getRowOffsets(rowInfo, cache);
+function resolveSparseColumns({ regular, preBnc }: RowStorage, columnCount: number, anchorColumns: number[] = []): number[] | undefined {
   // Dense rows keep the direct loop. Sparse rows visit only stored records
   // and merge anchors, avoiding a parsed empty object for every grid position.
   if (regular.columns.length + preBnc.columns.length + anchorColumns.length >= columnCount / 2) return undefined;
@@ -3761,28 +3606,26 @@ function resolveSparseColumns(rowInfo: Record<string, unknown>, cache: RowOffset
   return [...columns].sort((left, right) => left - right);
 }
 
-function parseTableCell(type: IworkArchiveIndex['type'], rowInfo: Record<string, unknown>, column: number, cache: RowOffsetCache): TableCellInfo {
-  const rowOffsets = getRowOffsets(rowInfo, cache);
-  const offsets = rowOffsets.regular;
-  const preOffsets = rowOffsets.preBnc;
+function parseTableCell(type: IworkArchiveIndex['type'], { regular, preBnc }: RowStorage, column: number): TableCellInfo {
   if (type === 'numbers') {
-    const regular = column < offsets.offsets.length ? parseTableCellFromBuffer(type, offsets, column, false) : emptyCell();
+    const cell = column < regular.columnCount ? parseTableCellFromBuffer(type, regular, column, false) : emptyCell();
+    if (cell.native) return cell;
     const fallback =
-      column < preOffsets.offsets.length
-        ? parseTableCellFromBuffer(type, preOffsets, column, true)
+      column < preBnc.columnCount
+        ? parseTableCellFromBuffer(type, preBnc, column, true)
         : emptyCell();
-    return mergeNumbersCellInfo(regular, fallback);
+    return mergeNumbersCellInfo(cell, fallback);
   }
 
-  if (column < offsets.offsets.length) {
-    const info = parseTableCellFromBuffer(type, offsets, column, false);
+  if (column < regular.columnCount) {
+    const info = parseTableCellFromBuffer(type, regular, column, false);
     if (info.offset !== 65535) {
       return info;
     }
   }
 
-  if (column < preOffsets.offsets.length) {
-    const info = parseTableCellFromBuffer(type, preOffsets, column, true);
+  if (column < preBnc.columnCount) {
+    const info = parseTableCellFromBuffer(type, preBnc, column, true);
     if (info.offset !== 65535) {
       return info;
     }
@@ -3806,27 +3649,17 @@ function emptyCell(): TableCellInfo {
   };
 }
 
-function createCellStorage(rawOffsets: unknown, rawBuffer: unknown): CellStorage {
-  // A row is immutable during one build. Normalize its buffers and construct
-  // one view here instead of allocating a DataView for every scalar read.
+function createCellStorage(rawOffsets: unknown, rawBuffer: unknown, offsetUnit = 1): CellStorage {
   const buffer = rawBuffer instanceof Uint8Array ? rawBuffer : rawBuffer ? Uint8Array.from(rawBuffer as number[]) : new Uint8Array(0);
-  const offsets = decodeOffsets(rawOffsets);
+  const bytes = rawOffsets instanceof Uint8Array ? rawOffsets : rawOffsets ? Uint8Array.from(rawOffsets as number[]) : new Uint8Array(0);
+  const offsets = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const columnCount = Math.floor(offsets.byteLength / 2);
   const columns: number[] = [];
-  for (let column = 0; column < offsets.length; column += 1) {
-    if (offsets[column] !== 65535 && offsets[column] < buffer.length) columns.push(column);
+  for (let column = 0; column < columnCount; column += 1) {
+    const offset = offsets.getUint16(column * 2, true);
+    if (offset !== 65535 && offset * offsetUnit < buffer.length) columns.push(column);
   }
-  return { offsets, columns, buffer, view: new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength) };
-}
-
-function decodeOffsets(raw: unknown): number[] {
-  const bytes = raw instanceof Uint8Array ? raw : raw ? Uint8Array.from(raw as number[]) : new Uint8Array(0);
-  const count = Math.floor(bytes.length / 2);
-  const offsets = new Array<number>(count);
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  for (let index = 0; index < count; index += 1) {
-    offsets[index] = view.getUint16(index * 2, true);
-  }
-  return offsets;
+  return { offsets, offsetUnit, columnCount, columns, buffer, view: new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength) };
 }
 
 function parseTableCellFromBuffer(
@@ -3835,7 +3668,7 @@ function parseTableCellFromBuffer(
   column: number,
   usePreBnc: boolean
 ): TableCellInfo {
-  const { offsets, buffer, view } = storage;
+  const { offsets, offsetUnit, columnCount, buffer, view } = storage;
   const info: TableCellInfo = {
     offset: 65535,
     recordEnd: buffer.length,
@@ -3849,17 +3682,18 @@ function parseTableCellFromBuffer(
     usePreBnc
   };
 
-  if (column < 0 || column >= offsets.length) {
+  if (column < 0 || column >= columnCount) {
     return info;
   }
 
-  const offset = offsets[column];
-  if (offset === 65535 || offset >= buffer.length) {
+  const rawOffset = offsets.getUint16(column * 2, true);
+  const offset = rawOffset * offsetUnit;
+  if (rawOffset === 65535 || offset >= buffer.length) {
     return info;
   }
 
   info.offset = offset;
-  info.recordEnd = nextCellBoundary(offsets, column, buffer.length);
+  info.recordEnd = Math.min(nextCellBoundary(storage, column, rawOffset), buffer.length);
   info.cellType = buffer[offset + 1] ?? 0;
 
   if (type !== 'numbers') {
@@ -3932,10 +3766,21 @@ function parseTableCellFromBuffer(
   }
 
   const recordType = buffer[offset];
+  if (recordType === 5 && info.recordEnd >= offset + 12) {
+    const fields = view.getUint32(offset + 8, true);
+    if (fields || info.recordEnd === offset + 12) return readNativeNumbersCell(view, info, fields) ? info : emptyCell();
+  }
   if (recordType === 4) {
+    const flags = offset + 6 <= info.recordEnd ? view.getUint16(offset + 4, true) : 0;
+    const textStyleOffset = offset + (flags & 0x2 ? 16 : 12);
+    if (flags & 0x2 && offset + 16 <= info.recordEnd) info.styleKey = view.getUint32(offset + 12, true);
+    if (flags & 0x80 && textStyleOffset + 4 <= info.recordEnd) info.textStyleKey = view.getUint32(textStyleOffset, true);
+    if (info.cellType === 2 || info.cellType === 5 || info.cellType === 7) {
+      readLegacyNumbersValue(view, info, flags);
+      if (info.hasNumber || info.cellType === 7) return info;
+    }
     let keyOffset = info.recordEnd - 4;
-    if (offset + 6 <= buffer.length) {
-      const flags = view.getUint16(offset + 4, true);
+    if (offset + 6 <= info.recordEnd) {
       const candidateKeyOffset = popcount(flags) * 4 + 8 + offset;
       if (candidateKeyOffset + 4 <= info.recordEnd) {
         keyOffset = candidateKeyOffset;
@@ -3961,8 +3806,8 @@ function parseTableCellFromBuffer(
     } else {
       info.contentKey = rawValue;
     }
-    const styleKeys = collectStyleKeys(view, offset, keyOffset, info.contentKey);
-    if (styleKeys.length) {
+    if (!(flags & (0x2 | 0x80))) {
+      const styleKeys = collectStyleKeys(view, offset, keyOffset, info.contentKey);
       info.styleKey = styleKeys[0] ?? 0;
     }
   } else if (recordType === 5) {
@@ -4000,6 +3845,60 @@ function parseTableCellFromBuffer(
   return info;
 }
 
+function readLegacyNumbersValue(view: DataView, info: TableCellInfo, flags: number): void {
+  const { offset, recordEnd } = info;
+  if (offset + 12 > recordEnd) return;
+  const formatOffset = offset + 12 + popcount(flags & (0x2 | 0x80 | 0x400 | 0x800)) * 4;
+  const date = info.cellType === 5;
+  const valueOffset = formatOffset + popcount(flags & (0x4 | 0x8 | 0x10 | 0x1000)) * 4 + (date && (flags & 0x20) ? 8 : 0);
+  if (!(flags & (date ? 0x40 : 0x20)) || valueOffset + 8 > recordEnd) return;
+  info.keyOffset = valueOffset;
+  info.numberValue = view.getFloat64(valueOffset, true);
+  info.hasNumber = Number.isFinite(info.numberValue);
+  if (date && info.hasNumber) info.native = true;
+  if (flags & 0x4) {
+    info.formatKey = view.getUint32(formatOffset, true);
+  } else if ((view.getUint16(offset + 10, true) & 0xff) && valueOffset + 12 <= recordEnd) {
+    info.formatKey = view.getUint32(valueOffset + 8, true);
+  }
+}
+
+// The six v5 format keys follow the cached result kind rather than the order of cell types.
+const numbersResultKinds: Record<number, number> = { 2: 1, 3: 5, 5: 3, 6: 6, 7: 4, 9: 5, 10: 2 };
+
+function readNativeNumbersCell(view: DataView, info: TableCellInfo, fields: number): boolean {
+  const decimalOffset = info.offset + 12;
+  const doubleOffset = decimalOffset + (fields & 1 ? 16 : 0);
+  const dateOffset = doubleOffset + (fields & 2 ? 8 : 0);
+  const keyOffset = dateOffset + (fields & 4 ? 8 : 0);
+  if (keyOffset + popcount(fields & 0xffff8) * 4 > info.recordEnd) return false;
+  const key = (field: number) => fields & field
+    ? view.getUint32(keyOffset + popcount(fields & (field - 1) & ~7) * 4, true) : 0;
+  const type = info.cellType;
+  if ((type === 2 || type === 10) && (fields & 1)) {
+    const high = view.getBigUint64(decimalOffset + 8, true);
+    const coefficient = ((high & 0x1ffffffffffffn) << 64n) | view.getBigUint64(decimalOffset, true);
+    const exponent = Number((high >> 49n) & 0x3fffn) - 6176;
+    info.numberValue = Number(`${high >> 63n ? '-' : ''}${coefficient}e${exponent}`);
+    info.hasNumber = Number.isFinite(info.numberValue);
+  } else if ((type === 6 || type === 7) && (fields & 2)) {
+    info.numberValue = view.getFloat64(doubleOffset, true);
+    info.hasNumber = Number.isFinite(info.numberValue);
+  } else if (type === 5 && (fields & 4)) {
+    info.numberValue = view.getFloat64(dateOffset, true);
+    info.hasNumber = Number.isFinite(info.numberValue);
+  } else if (type === 3 || type === 9) {
+    info.contentKey = key(type === 3 ? 8 : 16);
+  }
+  info.styleKey = key(0x20);
+  if (fields & 0x40) info.textStyleKey = key(0x40);
+  const resultKind = key(0x1000);
+  const formatKind = resultKind >= 1 && resultKind <= 6 ? resultKind : numbersResultKinds[type];
+  if (formatKind) info.formatKey = key(1 << (12 + formatKind));
+  info.native = true;
+  return true;
+}
+
 function collectStyleKeys(view: DataView, offset: number, keyOffset: number, key: number): number[] {
   if (keyOffset - offset < 8) {
     return [];
@@ -4028,8 +3927,9 @@ function mergeNumbersCellInfo(primary: TableCellInfo, fallback: TableCellInfo): 
   }
 
   const merged = primary;
-  if (!hasRenderablePayload(merged) && hasRenderablePayload(fallback)) {
+  if (fallback.native || (!hasRenderablePayload(merged) && hasRenderablePayload(fallback))) {
     fallback.styleKey ||= primary.styleKey;
+    if (primary.textStyleKey) fallback.textStyleKey ||= primary.textStyleKey;
     return fallback;
   }
   if (fallback.hasNumber) {
@@ -4047,20 +3947,18 @@ function mergeNumbersCellInfo(primary: TableCellInfo, fallback: TableCellInfo): 
   if (!merged.styleKey && fallback.styleKey) {
     merged.styleKey = fallback.styleKey;
   }
+  if (!merged.textStyleKey && fallback.textStyleKey) merged.textStyleKey = fallback.textStyleKey;
   return merged;
 }
 
-function nextCellBoundary(offsets: number[], column: number, bufferLength: number): number {
-  const current = offsets[column];
-  if (current == null || current === 65535) {
-    return bufferLength;
-  }
-  for (let index = column + 1; index < offsets.length; index += 1) {
-    if (offsets[index] !== 65535 && offsets[index] > current) {
-      return offsets[index];
+function nextCellBoundary({ offsets, offsetUnit, columnCount, buffer }: CellStorage, column: number, current: number): number {
+  for (let index = column + 1; index < columnCount; index += 1) {
+    const next = offsets.getUint16(index * 2, true);
+    if (next !== 65535 && next > current) {
+      return next * offsetUnit;
     }
   }
-  return bufferLength;
+  return buffer.length;
 }
 
 function popcount(value: number): number {

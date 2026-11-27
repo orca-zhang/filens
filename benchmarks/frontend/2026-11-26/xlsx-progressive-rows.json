@@ -1,0 +1,159 @@
+{
+  "date": "2026-11-26",
+  "platform": "darwin-arm64",
+  "workload": {
+    "fixture": "packages/xlsx/test/fixtures/range-workbook.mjs: createLargeFirstWorksheetFixture()",
+    "archiveBytes": 3676928,
+    "archiveSha256": "807a3c9e06514de94f0556ff1736753aa42f1d328646df9d685f0a7a9e0f5eaa",
+    "compressedWorksheetBytes": 2627164,
+    "blockBytes": 1048576,
+    "finalRow": 1048576
+  },
+  "method": "Both previous and current preview builds opened the same generated workbook by HTTP ranges. Held the second worksheet range, then delivered it and held the third. Row counts are the largest declared source row the preview reported at each gate, sampled after the pending range started and the browser painted. The current build also verified visibility of the last available data row while the final range was held. Formula recalculation, merges, and the final source row were checked after all ranges completed. The viewport was 1040 by 840 CSS pixels. Runtime hashes cover filens.js and the XLSX driver chunk for split builds, in order.",
+  "tests": [
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "baseline",
+      "mode": "split",
+      "rowsAfterFirstBlock": 699,
+      "rowsAfterSecondBlock": 699,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "b1cfe3debce7c3a27e60b6b86195929d41f21d2b336f7096449fe10a02584f87"
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "baseline",
+      "mode": "all-in-one",
+      "rowsAfterFirstBlock": 699,
+      "rowsAfterSecondBlock": 699,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "4a01212fa529e289aa29a536148e25c3c12570bf28401d8dd21a2dcb4e000003"
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "current",
+      "mode": "split",
+      "rowsAfterFirstBlock": 1180,
+      "rowsAfterSecondBlock": 2140,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "725d99d951354257181a1635fe3d030865e80fa71cd854a178a0b3209862217a"
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "current",
+      "mode": "all-in-one",
+      "rowsAfterFirstBlock": 1180,
+      "rowsAfterSecondBlock": 2140,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "54dc585d6b98e71e511fbe7f9a5684cf0650fbcc41e761f4956bc43c70d63df6"
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "baseline",
+      "mode": "split",
+      "rowsAfterFirstBlock": 699,
+      "rowsAfterSecondBlock": 699,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0.02,
+      "finalRow": 1048576,
+      "runtimeHash": "b1cfe3debce7c3a27e60b6b86195929d41f21d2b336f7096449fe10a02584f87"
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "baseline",
+      "mode": "all-in-one",
+      "rowsAfterFirstBlock": 699,
+      "rowsAfterSecondBlock": 699,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0.02,
+      "finalRow": 1048576,
+      "runtimeHash": "4a01212fa529e289aa29a536148e25c3c12570bf28401d8dd21a2dcb4e000003"
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "current",
+      "mode": "split",
+      "rowsAfterFirstBlock": 1180,
+      "rowsAfterSecondBlock": 2140,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0.02,
+      "finalRow": 1048576,
+      "runtimeHash": "725d99d951354257181a1635fe3d030865e80fa71cd854a178a0b3209862217a"
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "current",
+      "mode": "all-in-one",
+      "rowsAfterFirstBlock": 1180,
+      "rowsAfterSecondBlock": 2140,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0.02,
+      "finalRow": 1048576,
+      "runtimeHash": "54dc585d6b98e71e511fbe7f9a5684cf0650fbcc41e761f4956bc43c70d63df6"
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "baseline",
+      "mode": "split",
+      "rowsAfterFirstBlock": 699,
+      "rowsAfterSecondBlock": 699,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "b1cfe3debce7c3a27e60b6b86195929d41f21d2b336f7096449fe10a02584f87"
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "baseline",
+      "mode": "all-in-one",
+      "rowsAfterFirstBlock": 699,
+      "rowsAfterSecondBlock": 699,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "4a01212fa529e289aa29a536148e25c3c12570bf28401d8dd21a2dcb4e000003"
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "current",
+      "mode": "split",
+      "rowsAfterFirstBlock": 1180,
+      "rowsAfterSecondBlock": 2140,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "725d99d951354257181a1635fe3d030865e80fa71cd854a178a0b3209862217a"
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "current",
+      "mode": "all-in-one",
+      "rowsAfterFirstBlock": 1180,
+      "rowsAfterSecondBlock": 2140,
+      "intermediateDriftPx": 0,
+      "finalDriftPx": 0,
+      "finalRow": 1048576,
+      "runtimeHash": "54dc585d6b98e71e511fbe7f9a5684cf0650fbcc41e761f4956bc43c70d63df6"
+    }
+  ]
+}

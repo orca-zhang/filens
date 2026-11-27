@@ -1,12 +1,26 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { loadXlsxWorkbook } from '../src/parser';
-import { readSimpleWorksheet } from '../src/simple-worksheet';
+import { readSimpleRows, readSimpleWorksheet } from '../src/simple-worksheet';
 import { createColumnStyledWorkbookFixture } from './fixtures/workbook.mjs';
 
 const options = { id: '1', name: 'Sheet', sharedStrings: ['Shared 中文', 'Names & notes'] };
 
 describe('simple worksheet XML reader', () => {
+  it('decodes SpreadsheetML escapes in both parsers and preserves escaped literals', async () => {
+    const encoded = 'one_x000D_two_x005F_x0001__xD83E__xDE90_';
+    const expected = 'one\rtwo_x0001_🪐';
+    const inline = `<c r="A1" t="inlineStr"><is><t>${encoded}</t></is></c>`;
+    const saved = `<c r="B1" t="str"><f>""</f><v>${encoded}</v></c>`;
+    const rich = `<c r="C1" t="inlineStr"><is><r><rPr><b/></rPr><t>${encoded}</t></r></is></c>`;
+    expect(readSimpleRows(`<row r="1">${inline}</row>`, { ...options, allowInline: true })?.rows[0].cells[0].value).toBe(expected);
+    const zip = await JSZip.loadAsync(await createColumnStyledWorkbookFixture(1, 1));
+    zip.file('xl/worksheets/sheet.xml', `<worksheet><sheetData><row r="1">${inline}${saved}${rich}</row></sheetData></worksheet>`);
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await zip.generateAsync({ type: 'uint8array' }));
+    expect(sheet.rows[0].cells.map(cell => cell.value)).toEqual([expected, expected, expected]);
+    expect(sheet.rows[0].cells[2].richText?.runs[0].text).toBe(expected);
+  });
+
   it.each([' custom="1"', " xmlns:x='urn:extension' x:flag='yes' ", ' custom="" another = "two"'])(
     'preserves models and column styles when sheetData has attributes: %s', async attributes => {
       const bytes = await createColumnStyledWorkbookFixture(24, 8, { sheetDataAttributes: attributes });

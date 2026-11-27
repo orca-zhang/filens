@@ -1,5 +1,27 @@
 import { expect, test } from '@playwright/test';
 import { createRichTextWorkbook } from '../../../packages/xlsx/test/fixtures/rich-text-workbook.mjs';
+import { createSharedStringsWorkbook, sharedStringsLastValue } from '../../../packages/xlsx/test/fixtures/shared-strings.mjs';
+
+for (const prefixed of [false, true]) test(`renders a shared string from the final XML batch (prefixed=${prefixed})`, async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({
+    name: 'shared-strings.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createSharedStringsWorkbook(12_000, { prefixed, styled: prefixed })),
+  });
+  const grid = page.locator('.xlsxv-grid');
+  await expect(grid.locator('tbody tr[aria-rowindex="2"] .xlsxv-cell[aria-colindex="2"]')).toContainText('Northern sky ★');
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight * 5990 / 1048576; });
+  await expect(grid.locator('tr[aria-rowindex="6002"] .xlsxv-cell[aria-colindex="2"]')).toContainText('Catalog entry 6000:');
+  await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+  const distant = grid.locator('tr[aria-rowindex="1048577"] .xlsxv-cell[aria-colindex="16385"]');
+  await expect(distant).toHaveText(sharedStringsLastValue);
+  await expect(distant.locator('span > span').nth(1)).toHaveCSS('color', 'rgb(51, 102, 153)');
+  await expect(distant).toBeInViewport();
+  await page.getByRole('button', { name: 'Summary', exact: true }).click();
+  const formula = grid.locator('tbody tr[aria-rowindex="2"] .xlsxv-cell[aria-colindex="3"]');
+  await expect(formula).toHaveText(prefixed ? sharedStringsLastValue.length.toFixed(2) : String(sharedStringsLastValue.length));
+  if (prefixed) await expect(formula).toHaveCSS('color', 'rgb(18, 52, 86)');
+});
 
 test('renders rich strings and their styles across sparse XLSX windows', async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 720 });

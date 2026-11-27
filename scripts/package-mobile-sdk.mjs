@@ -27,7 +27,7 @@ for (const platform of ['ios', 'android']) {
     await cp(path.join(root, 'sdk', platform, file), path.join(target, file), { recursive: true });
   }
   const runtime = path.join(target, platform === 'ios' ? 'Sources/FilensPreview/Resources/filens' : 'filens-preview/src/main/assets/filens');
-  for (const file of ['filens.js.br', 'mobile.html', 'mobile.js', 'archive/7zz.wasm.br', 'THIRD-PARTY-NOTICES.txt.br']) {
+  for (const file of ['filens.js.br', 'mobile.html', 'mobile.js', 'archive/7zz.wasm.br', 'xlsx/pcre2.wasm.br', 'THIRD-PARTY-NOTICES.txt.br']) {
     await stat(path.join(runtime, file));
   }
   await rm(runtime, { recursive: true, force: true });

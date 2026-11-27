@@ -8,7 +8,7 @@ import lzma from 'lzma';
 import { createPackedAssetReader } from '../packages/preview/src/packed-assets.mjs';
 import { deferredPreviewWorkers } from './preview-asset-packing.mjs';
 
-test('inline workers defer setup while preserving Blob fallback, options and URL cleanup', () => {
+test('inline workers keep their Blob URL through startup and release it on response, error or termination', () => {
   const plugin = deferredPreviewWorkers(), id = '/media-worker.ts?worker&inline';
   // The setup and lifecycle follow Vite 6's classic inline worker wrapper.
   const source = `const jsContent = restore();
@@ -37,23 +37,31 @@ test('inline workers defer setup while preserving Blob fallback, options and URL
     const Wrapper = runInNewContext(transformed + '\nWorkerWrapper;', {
       self, restore: () => { restores++; return 'postMessage("中文")'; },
       Blob: class { constructor() { blobs++; } },
-      Worker: class {
+      Worker: class extends EventTarget {
         constructor(url, options) {
           if (mode === 'blob-failure' && url === 'blob:worker') throw new Error('Blob blocked');
+          super();
           this.url = url; this.options = options;
         }
-        addEventListener(_event, callback) { this.error = callback; }
-      }
+        terminate() { this.terminated = true; }
+      }, Error
     });
     assert.equal(restores, 0); assert.equal(blobs, 0);
-    for (let count = 1; count <= 2; count++) {
+    for (const [index, event] of ['message', 'error', 'terminate'].entries()) {
       const worker = new Wrapper({ name: 'test' });
-      assert.equal(restores, count); assert.equal(worker.options.name, 'test');
+      assert.equal(restores, index + 1); assert.equal(worker.options.name, 'test');
       assert.equal(worker.url, mode === 'blob' ? 'blob:worker' :
         'data:text/javascript;charset=utf-8,' + encodeURIComponent('postMessage("中文")'));
-      if (mode === 'blob') worker.error();
+      if (mode === 'blob') {
+        assert.equal(revoked.length, index, 'The worker must still be able to open its script.');
+        if (event === 'terminate') worker.terminate();
+        else worker.dispatchEvent(new Event(event));
+        assert.equal(revoked.length, index + 1);
+      }
+      worker.terminate();
+      assert.equal(worker.terminated, true);
     }
-    assert.equal(revoked.length, mode === 'no-blob' ? 0 : mode === 'blob' ? 4 : 2);
+    assert.equal(revoked.length, mode === 'no-blob' ? 0 : 3);
   }
 });
 

@@ -35,7 +35,9 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.map"
+    "!dist/**/*.map",
+    "vendor/pcre2/LICENCE.md",
+    "vendor/pcre2/NOTICE.txt"
   ],
   "scripts": {
     "build": "vite build && node ../../scripts/rename-css.mjs ./dist style.css index.css",
@@ -48,7 +50,7 @@
     "ssf": "0.11.2"
   },
   "peerDependencies": {
-    "@filens/core": "^0.1.5"
+    "@filens/core": "^0.1.6"
   },
   "devDependencies": {
     "@filens/core": "file:../core",

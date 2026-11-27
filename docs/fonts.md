@@ -1,9 +1,8 @@
 # Font diagnostics and on-demand loading
 
 The generic preview runtime exposes optional `PreviewItemState.fonts` metadata.
-PPTX, Keynote, Pages, Numbers, DXF, DOCX, and XLSX currently populate it. PDF.js
-also exposes partial renderer font information as pages render. Hosts receive the
-same metadata through `getState()`, `rendered`, and `statechange`, including the
+PPTX, Keynote, Pages, Numbers, DXF, DOCX, XLSX, and PDF currently populate it.
+Hosts receive the same metadata through `getState()`, `rendered`, and `statechange`, including the
 Vue wrapper's `state-change` event. Missing, substituted, and browser-unsupported
 fonts also produce ordinary `warnings` describing possible layout drift.
 
@@ -23,7 +22,7 @@ diagnostics cover rendered pages so far; optional metadata work never blocks the
 first preview and results from replaced documents are ignored.
 
 Font downloads are opt-in. Set `fontLoading: true` on `createPreviewer()` or a
-participating driver's options to enable the optional Latin/CJK packs and font-ready
+participating driver's options to enable the built-in font packs and font-ready
 relayout. The Vue `<Preview>` component accepts `:font-loading="true"`; the demo
 enables it. The low-level `init()` / `createViewer()` API does not manage packs.
 See [automatic loading](#automatic-font-loading) for custom sources and defaults.
@@ -32,7 +31,7 @@ See [automatic loading](#automatic-font-loading) for custom sources and defaults
 
 | Field | Meaning |
 | --- | --- |
-| `fontFamily` | Original family referenced by parsed text, when known. |
+| `fontFamily` | Original family referenced by parsed text, or the PDF font name reported by PDF.js, when known. |
 | `fontFile` | Original file reference, such as a DXF style's `romans.shx`. |
 | `styleName` | Original named style, when provided by the format. |
 | `resolvedFontFamily` | Application mapping or detected automatic substitute; explicit targets are retained even when availability cannot be verified. |
@@ -40,13 +39,14 @@ See [automatic loading](#automatic-font-loading) for custom sources and defaults
 | `substitutionReason` | Reason for an automatic substitute, such as `serif`, `monospace`, or `decorative`. |
 | `matchScore` | Relative similarity score for an automatically selected candidate; not a confidence percentage. |
 | `coverage` | `matched` when candidate cmap ranges cover the supplied local sample, otherwise `unknown`; does not certify whole-document coverage or shaping. |
-| `embedded` | An embedded-font declaration exists; this does not certify loading or rendering. |
+| `embedded` | The driver found an embedded font declaration or program. Check `source` for verified provenance and `status` for availability. |
 | `fontId` | Rendering-engine identifier, currently used for PDF.js font inventories. |
 | `status` | `available`, `missing`, `substituted`, `unsupported`, or `unknown`. |
 | `source` | `embedded`, `application`, `environment`, `fallback`, or `unknown`. |
 
 `available` means that local measurements suggest the requested family is
-available, or a managed `FontFace` has successfully loaded. `substituted` means a different application mapping or automatically
+available, a managed `FontFace` has loaded, the CAD driver has used a supplied
+SHX stroke font, or PDF.js has provided an embedded face or glyph program for rendering. `substituted` means a different application mapping or automatically
 selected named target appears available. `missing` means the requested family or mapping target was not
 detected. `unsupported` identifies references such as unmapped SHX files that
 cannot be rendered directly by the browser. `unknown` means that availability
@@ -55,38 +55,50 @@ does not identify a single font.
 
 `environment` deliberately does not identify an operating-system font: the same
 family could come from a system installation, a page stylesheet, or an existing
-`FontFace`. `application` identifies a driver-known host mapping. `fallback`
+`FontFace`. `application` identifies a driver-known host mapping or a supplied
+SHX sidecar used to draw glyphs. `fallback`
 identifies an automatic similar-font substitute, missing or unsupported font
-fallback, or a requested CSS generic family. `embedded` is reserved for drivers that can establish an active embedded
-font's provenance; current scene discovery does not extract or load embedded
-font files. DOCX reports declarations using `embedded: true`; an embedded family
-that is not yet detected stays `unknown` and is not automatically replaced.
+fallback, or a requested CSS generic family. `embedded` identifies active font data
+from the document when the renderer establishes that provenance. DOCX and PPTX report
+declarations using `embedded: true` and reports `source: 'embedded'` after the
+browser decodes and registers a face for that family. A declaration without
+load proof retains ordinary local availability or `unknown`.
 A mapping whose availability is unknown retains its application
 provenance and `unknown` status.
 
 ## Discovery and availability limits
 
 Scene discovery includes explicit or parser-resolved family names on text runs,
-shape text, table cells, and bullet labels across parsed slides/pages. Grouped
-PPTX objects are already flattened into those scenes. It does not scan unused
-theme fonts, discover font properties absent from the scene model (for example,
-chart typography), or extract embedded fonts. DOCX reuses decoded font-table declarations and font
+shape text, table cells, and bullet labels across parsed slides/pages. PPTX also
+includes chart and axis titles, legends, visible axis ticks and visible
+column/bar data labels. Chart text participates in face matching and relayout after a
+host-managed font loads. Mixed-script ticks and legends retain the chart's
+Latin, East Asian and complex-script faces and use language hints for theme
+fonts. The loader tracks the visible faces by weight and style. PPTX chart and
+axis titles keep source edge coordinates or offsets from automatic placement.
+Vertical titles use browser shaping for East Asian and Mongolian flow and
+upright WordArt columns. Browser font metrics affect the painted text bounds.
+Grouped PPTX objects are already flattened into those scenes. DOCX reuses
+decoded font-table declarations and font
 references in parsed document parts and styles, including header/footer/notes and
 numbering parts. It also reads PANOSE and pitch from the font table in the existing
 document package, since docx-preview discards those fields; optional metadata
 failure does not prevent rendering. XLSX reads font-table family classes, bold
 states, theme Latin names/PANOSE/pitch-family values, and
-cell, row, column and base-style font inheritance; rich-text run typography is
-not yet preserved. Renderers can apply
+cell, row, column and base-style font inheritance. Rich-text runs retain their
+own font references and typography. Renderers can apply
 additional script, symbol, or emoji fallbacks; the inventory records references,
-not the actual font used for each glyph. DXF also includes declared text styles
-and Big Font file references, retaining SHX warnings.
+not the actual font used for each glyph. DXF and DWG drawing models include
+declared text styles and available Big Font references.
 
-PDF.js public text styles expose renderer identifiers and CSS fallback families,
-not original PDF BaseFont names, reliable embedded provenance or per-glyph font
-selection. PDF entries therefore retain `unknown` status/source, even when the
-CSS family is generic. PDF font replacement remains controlled by PDF.js; the
-similarity matcher does not rewrite PDF content.
+PDF previews pair text-style identifiers with PDF.js font objects from the
+rendered page. Where available, `fontFamily` contains the engine's PDF font name,
+including its subset prefix. Decoded embedded outline fonts and Type 3 fonts with
+PDF glyph programs report `source: 'embedded'`. Entries with unverified
+provenance retain `unknown`, including standard fonts using system fallback.
+On a cached first-page reopen, the preview can request that page's rendering
+operators in the background to recover font metadata. PDF.js manages font bytes,
+glyph selection and substitution.
 
 Availability compares a fixed multilingual sample's canvas width against several
 generic fallback baselines. It never treats `document.fonts.check()` as proof of
@@ -100,7 +112,8 @@ wrapping, pagination, or layout fidelity. The same font file can render
 differently across browser/platform combinations. Diagnostic snapshots do not
 block the first preview on downloads or `document.fonts.ready`. With `fontLoading`
 enabled, managed loads update diagnostics and trigger the participating driver's
-text/layout refresh; unrelated external font loads are not observed automatically.
+text/layout refresh. The preview also follows relevant faces loaded by the host
+page, even when optional downloads are disabled.
 
 ## Shared helpers
 
@@ -125,9 +138,10 @@ cache. Document text is excluded from diagnostic output and the availability
 measurement sample. A host may supply an optional local `text` sample to the
 similarity matcher for checking candidate glyph coverage; it is never returned
 in diagnostics.
-Optional Latin/CJK packs, authorized font URL/byte loading, and font-ready relayout
-are available through the loader below. Emoji/math packs, licensed document-specific
-subsets, and embedded extraction remain roadmap F1/F2 work.
+The loader below supports optional Latin, CJK, Emoji and math packs, authorized
+font URL/byte loading, and font-ready relayout. Document-specific subset
+generation and embedded font support in other Office and iWork drivers remain
+roadmap F1/F2 work.
 
 
 ## Automatic similar-font substitution
@@ -192,7 +206,8 @@ const result = analyzePreviewFonts(
 );
 ```
 
-The reader does not load fonts, extract outlines or open embedded font resources.
+The metadata reader does not load fonts, extract outlines or open embedded font resources.
+`readPreviewFontEmbeddingFlags()` reads the raw OS/2 `fsType` flags of a single SFNT.
 Malformed tables throw; unsupported WOFF/WOFF2/TTC containers are explicit errors.
 Missing or unsupported Unicode cmap formats leave coverage unknown. Coverage
 checks sample at most 256 distinct non-control code points and omit joiners and
@@ -205,9 +220,8 @@ existing fallback catalog; its diagnostic inventory continues to describe source
 references rather than claim an exact per-glyph replacement.
 
 Explicit application mapping targets are not replaced by the automatic matcher.
-DOCX theme-variable stacks and embedded declarations retain renderer-controlled
-loading; declarations that cannot be rewritten are not reported as automatically
-substituted. Explicit CSS family order precedes selected targets, and selected
+DOCX keeps theme-variable stacks and embedded declarations out of automatic
+substitution. Explicit CSS family order precedes selected targets, and selected
 targets precede other classified fallback candidates. XLSX uses that same target
 order for rendered cells and applies parsed bold states.
 Legacy Symbol/Wingdings and SHX encodings require glyph mapping, so they are not
@@ -265,15 +279,41 @@ compatible family before retaining local fallback and publishing a warning.
 
 ### Built-in packs and self-hosting
 
-The manifests pin `@fontsource/*` packages to **5.2.6**. They contain no font
-payloads and use WOFF2 files from jsDelivr and unpkg. Families are Carlito, Caladea,
+The manifests contain URLs for versioned WOFF2 files on jsDelivr and unpkg.
+The Latin and CJK families pin `@fontsource/*` packages to **5.2.6**. They are Carlito, Caladea,
 Arimo, Tinos, Cousine, Noto Sans, Noto Serif, Noto Sans Mono, and Noto Sans/Serif
 SC, TC, JP and KR. All include weights 400/700; Latin families include italic
 except Noto Sans Mono. CJK faces currently provide normal style only. Latin packs
-declare their subset's nominal Unicode ranges; CJK coverage remains unknown and
-the selected full regional file can be substantially larger. Selection does not
-promise complete glyph coverage. Dedicated handwriting/decorative, Emoji and math
-packs are not included; hosts can supply them.
+declare their subset's nominal Unicode ranges.
+
+Emoji packs include Noto Color Emoji (400, about 5.8 MB) and outline Noto Emoji
+(400/700, about 0.48 MB per face) at **5.3.2**. Math packs include STIX Two Math
+and Noto Sans Math (400, about 0.40 MB and 0.27 MB) at **5.3.0**. These are
+normal faces. A declared Emoji or math family can use
+these candidates, and automatic substitutions stay within that category. Fonts
+already detected locally follow the same availability and `preferLocal` rules.
+Math packs load complete faces. Hosts can supply additional styles, including
+handwriting and decorative faces.
+
+PPTX, XLSX and DOCX use the versioned Fontsource Unicode index to select the WOFF2
+subsets of an Emoji or CJK face that cover a complete font sample. A complete
+sample holds all text recorded for that face, up to 4096 UTF-16 code units.
+XLSX collects from stored cells across sheets, including rich-text runs, cached
+results, static display formats, saved formula text, and the Normal font's width
+probe digits. Repeated strings share a sample entry. Uncached formulas and
+conditional rules that can change the output text, weight, or style use full
+faces for affected fonts. DOCX samples the renderer's first layout, including
+inherited styles, headers, footers, footnotes, endnotes and offscreen pages.
+It uses full faces when generated list or note markers may use the font, when
+the family has mixed weights or non-normal styles, when CSS transforms the text,
+or when the DOM scan exceeds 8192 nodes. The loader also uses the full
+face for truncated or incomplete samples, combining characters, joined Emoji,
+flags, variation selectors, more than six needed subsets, or an unavailable index
+or subset. Noto Color Emoji uses the full face when the browser lacks SVG font
+support. Other drivers currently use complete faces. The text and code points
+stay in the browser. A mirror can infer the broad Unicode ranges from the
+versioned subset file names requested. Selecting an asset establishes family
+availability, with glyph and sequence coverage dependent on the font and browser.
 
 Each manifest includes an upstream `LICENSE` URL. Hosts must review those licenses
 before redistribution or subsetting. To self-host the same versioned NPM directory
@@ -285,6 +325,9 @@ const packs = createWebFontPacks({
 });
 // e.g. /npm/@fontsource/carlito@5.2.6/files/carlito-latin-400-normal.woff2
 ```
+
+Self-hosting subset selection uses the same `unicode.json` index and `files/`
+directory for the pinned package, along with the full face for fallback.
 
 Arbitrary file layouts use custom `PreviewFontPack` manifests. Supply accurate
 `traits`, optional Unicode `coverage`, and CSS `descriptors` for each face. Fonts
@@ -321,8 +364,25 @@ example bytes read from a host-selected local file. No upload is involved.
 `fontResolver` remains synchronous; it supplies already known aliases/manifests,
 and the loader handles fetching and decoding afterward. Return stable asset
 objects to share inflight loads across sessions. An alias to an already available
-family also triggers layout refresh without a download. Explicit CAD SHX aliases
-can use browser-loadable host assets; this does not decode SHX glyphs.
+family also triggers layout refresh without a download.
+
+### CAD SHX sidecars
+
+Select the DXF or DWG and its `.shx` files together in the demo or packaged
+browser preview. A host can supply the same files through
+`createFileSetResourceResolver(files)` or return bytes, a file, or an explicit
+URL from `resourceResolver` for requests with `family: 'cad'` and
+`relation: 'font'`. Extensionless CAD references such as `txt` look up `txt.shx`.
+The drawing's file references do not trigger network requests on their own.
+
+FiLens draws horizontal text from AutoCAD-86 `shapes` 1.0/1.1, `unifont` 1.0,
+and `bigfont` 1.0 files as SVG strokes, including arcs and scaled Big Font
+primitives. Non-ASCII glyphs in legacy SHX files use a supported drawing code
+page. Supported East Asian mappings include Shift JIS, GBK, Big5, and EUC-KR.
+Explicit `fontResolver` aliases take precedence. When a text entity has a missing
+glyph, a missing or unreadable sidecar, or an unsupported writing mode, it stays
+readable as browser text and the preview reports the fallback. Vertical SHX
+layout and other legacy encodings have partial coverage.
 
 ### Routing, retry and fallback
 
@@ -353,6 +413,44 @@ URLs provide cache isolation; there is no additional persistent font database or
 service worker. No document text or local coverage sample is placed in font
 requests, URLs or diagnostics. Loader warnings omit source URLs and authorization.
 
+### DOCX embedded fonts
+
+DOCX preview loads internal TrueType and OpenType font parts, including Word's
+GUID-obfuscated files. It preserves regular, bold, italic and bold italic faces
+and applies them to direct, inherited, theme and symbol font references. The
+first preview opens with fallback fonts while the browser decodes embedded
+faces. Each preview registers its own CSS families, so another document can
+embed different data under the same source name. These loads are independent of
+the optional `fontLoading` setting.
+
+DOCX honors OS/2 `fsType` for preview use. Restricted embedding, bitmap-only
+embedding and missing permission metadata leave the fallback active, as do
+missing, corrupt, external or unsupported font parts. FiLens uses permitted
+fonts within the preview and releases them on replacement, cancellation or
+close. A registered face establishes family availability. Glyph coverage still
+depends on the embedded face and browser.
+
+### PPTX embedded fonts
+
+PPTX follows internal font relationships from `p:embeddedFontLst` in the
+presentation. It loads single-face SFNT TTF/OTF and EOT, including XOR-wrapped
+and MTX-compressed parts, in their authored regular, bold, italic and bold
+italic variants. The first slide appears before font decoding completes. A font
+with restricted embedding, bitmap-only permission or a web binding keeps its
+fallback. External and unreadable parts also keep the fallback. An enabled
+optional loader can try a substitute when an embedded family fails to load.
+
+The native Viewer and generic preview share this path. After the browser
+registers an embedded face, mounted slides recalculate font-dependent layout
+and retain their page, scale and scroll. Legacy Vue thumbnails refresh with the
+same faces. Each preview releases its fonts when replaced, cancelled or closed.
+MTX decoding runs in a short-lived browser worker with a WASM memory limit and
+a timeout. The decoder and fonts work offline. [Browser regression](../apps/demo/e2e/pptx-fonts.e2e.ts)
+
+The MTX decoder uses libeot 0.0.4. Rebuild or verify the checked-in WebAssembly
+with `WASI_SDK_PATH=/path/to/wasi-sdk node scripts/build-pptx-font-wasm.mjs`
+or add `--check` with WASI SDK 27.0. [Source and licenses](../packages/pptx/vendor/libeot/NOTICE.txt)
+
 ### Layout refresh and lifetime
 
 PPTX remounts visible slides to recalculate text metrics/autofit. Keynote and Pages
@@ -360,7 +458,22 @@ refresh their scenes; Numbers and XLSX rebuild the active table while keeping it
 loaded rows. DOCX reuses the parsed document and renders an attached hidden staging
 container before swapping it into view. CAD redraws SVG text while preserving
 layer visibility and viewport. These paths retain the current page/sheet, supported
-zoom and scroll position. PDF fonts remain under PDF.js control.
+zoom and viewport position. A sheet keeps its visible row when fonts change the
+row height. PDF fonts remain under PDF.js control.
+
+PPTX, DOCX, XLSX, iWork and CAD preview sessions follow the host page's font
+loading events for referenced families and known aliases. They coalesce font
+loads before refreshing and keep explicit host mappings. An authored face can
+take over from an automatically chosen font pack when the host makes it
+available. These refreshes use the faces already registered by the page.
+
+Call `previewer.refreshFonts?.()` after registering an already loaded `FontFace`
+or removing a host face with `document.fonts.delete()`. The Vue `Preview` ref
+and the object returned by `createPreview()` expose the same method. The method
+schedules a refresh for the current document and publishes its updated state
+through the usual preview events. The legacy PPTX Viewer also observes relevant
+font loads and exposes `refreshFonts()` for an explicit relayout. Host faces
+remain available after the preview closes.
 
 Managed `FontFace` objects and inflight requests are leased per document and
 configuration object. Replacement, abort and destruction release that preview's
@@ -375,8 +488,9 @@ call `bindPreviewFontLoading(session, ownerDocument, options)`. Call its
 `collectSlideFontLoadingReferences()` / `applySlideFontMappings()` preserve original
 scene names while collecting variants and applying targets. Font changes can alter
 wrapping and pagination; this refresh is not a guarantee of exact Office layout.
-Embedded extraction, WOFF2 metadata inspection, glyph subsetting and measured
-candidate-layout comparison remain future work.
+Embedded extraction for other Office and iWork drivers, WOFF2 metadata
+inspection, custom glyph subsetting and measured candidate-layout comparison
+remain future work.
 
 `npm run test:fonts:browser` builds core/XLSX and checks actual Chromium font
 decoding, mirror failover, changed text metrics, table replacement, retained rows

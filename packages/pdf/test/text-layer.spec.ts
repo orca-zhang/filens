@@ -2,25 +2,34 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getDocument, TextLayer } from 'pdfjs-dist';
 import { createPdfPreviewDriver } from '../src';
 
-const { renderText, cancelText } = vi.hoisted(() => ({
-  renderText: vi.fn<() => Promise<void>>(async () => {}), cancelText: vi.fn()
+const { renderText, cancelText, updateText } = vi.hoisted(() => ({
+  renderText: vi.fn<() => Promise<void>>(async () => {}), cancelText: vi.fn(), updateText: vi.fn()
 }));
 
 vi.mock('pdfjs-dist/build/pdf.worker.min.mjs?url', () => ({ default: 'pdf-worker.mjs' }));
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {},
+  AbortException: class extends Error { name = 'AbortException'; },
   getDocument: vi.fn(),
-  TextLayer: vi.fn(function (options: { container: HTMLElement; textContentSource: { items: Array<{ str: string }> } }) {
+  TextLayer: vi.fn(function (options: { container: HTMLElement; textContentSource: ReadableStream<{ items: Array<{ str: string }> }> }) {
+    const textDivs: HTMLElement[] = [], reader = options.textContentSource.getReader();
     return {
+      textDivs,
       async render() {
         await renderText();
-        for (const item of options.textContentSource.items) {
-          const span = document.createElement('span');
-          span.textContent = item.str;
-          options.container.append(span);
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) return;
+          for (const item of value.items) {
+            const span = document.createElement('span');
+            span.textContent = item.str;
+            textDivs.push(span);
+            options.container.append(span);
+          }
         }
       },
-      cancel: cancelText
+      update: updateText,
+      cancel() { cancelText(); void reader.cancel().catch(() => {}); }
     };
   })
 }));
@@ -33,11 +42,13 @@ afterEach(() => { document.body.replaceChildren(); vi.restoreAllMocks(); vi.unst
 
 const content = { items: [{ str: 'Selectable text' }], styles: { f1: { fontFamily: 'serif' } } };
 
-function open(pageCount = 1, getTextContent = vi.fn(async () => content), signal?: AbortSignal) {
+function open(pageCount = 1, streamTextContent = vi.fn(() => new ReadableStream<typeof content>({
+  start(controller) { controller.enqueue(content); controller.close(); }
+})), signal?: AbortSignal) {
   const host = document.body.appendChild(document.createElement('div'));
   const page = {
     getViewport: ({ scale }: { scale: number }) => ({ width: 600 * scale, height: 800 * scale, scale }),
-    render: vi.fn(() => ({ promise: Promise.resolve() })), getTextContent
+    render: vi.fn(() => ({ promise: Promise.resolve() })), streamTextContent
   };
   const destroy = vi.fn(async () => undefined);
   vi.mocked(getDocument).mockReturnValueOnce({ destroy, promise: Promise.resolve({
@@ -56,9 +67,9 @@ describe('PDF text selection', () => {
       await load;
       await vi.waitFor(() => expect(host.querySelector('.pdfv-text-layer[data-rendered="true"]')?.textContent).toBe('Selectable text'));
       expect(host.querySelector('canvas')?.width).toBe(1200);
-      expect(vi.mocked(TextLayer).mock.calls[0][0]).toMatchObject({ viewport: { scale: 1 }, textContentSource: content });
+      expect(vi.mocked(TextLayer).mock.calls[0][0]).toMatchObject({ viewport: { scale: 1 }, textContentSource: expect.any(ReadableStream) });
       expect(host.querySelector<HTMLElement>('.pdfv-text-layer')?.style.getPropertyValue('--total-scale-factor')).toBe('1');
-      expect(page.getTextContent).toHaveBeenCalledTimes(1);
+      expect(page.streamTextContent).toHaveBeenCalledTimes(1);
       expect(session.getState().fonts).toMatchObject([{ fontId: 'f1', fontFamily: 'serif' }]);
     } finally { session.destroy(); }
   });
@@ -79,29 +90,58 @@ describe('PDF text selection', () => {
     } finally { session.destroy(); }
   });
 
-  it('does not delay first paint or restore text extracted before zoom or destruction', async () => {
-    let finish!: (value: typeof content) => void;
-    const getTextContent = vi.fn(() => new Promise<typeof content>(resolve => { finish = resolve; }));
-    const { host, session, load } = open(1, getTextContent);
+  it('keeps the unfinished text reader through zoom and cancels it on failed relayout or destruction', async () => {
+    const reads: ReturnType<typeof vi.fn>[] = [];
+    const streamTextContent = vi.fn(() => {
+      const cancel = vi.fn();
+      return new ReadableStream<typeof content>({
+        start() { reads.push(cancel); },
+        cancel
+      }, { highWaterMark: 0 });
+    });
+    const { host, session, load } = open(1, streamTextContent);
     try {
       await load;
       expect(session.getState().loading).toBe(false);
       expect(host.querySelector('canvas[data-rendered="true"]')).not.toBeNull();
-      const oldText = finish;
+      expect(reads).toHaveLength(1);
+      const firstLayer = host.querySelector('.pdfv-text-layer');
       session.setScale?.(2);
-      oldText(content);
-      await vi.waitFor(() => expect(getTextContent).toHaveBeenCalledTimes(2));
-      expect(host.querySelector('.pdfv-text-layer')).toBeNull();
-      finish(content);
-      await vi.waitFor(() => expect(host.querySelector('.pdfv-text-layer[data-rendered="true"]')).not.toBeNull());
-      expect(vi.mocked(TextLayer).mock.calls[0][0]).toMatchObject({ viewport: { scale: 2 } });
+      await vi.waitFor(() => expect(host.querySelector('canvas[data-rendered="true"]')?.getAttribute('width')).toBe('1200'));
+      expect(updateText).toHaveBeenLastCalledWith(expect.objectContaining({ viewport: expect.objectContaining({ scale: 2 }) }));
+      expect(host.querySelector('.pdfv-text-layer')).toBe(firstLayer);
+      expect(reads).toHaveLength(1);
+      expect(reads[0]).not.toHaveBeenCalled();
       session.setScale?.(3);
-      await vi.waitFor(() => expect(getTextContent).toHaveBeenCalledTimes(3));
-      const staleText = finish;
-      session.destroy(); staleText(content);
-      await Promise.resolve(); await Promise.resolve();
+      await vi.waitFor(() => expect(host.querySelector('canvas[data-rendered="true"]')?.getAttribute('width')).toBe('1800'));
+      expect(host.querySelector('.pdfv-text-layer')).toBe(firstLayer);
+      expect(reads).toHaveLength(1);
+      updateText.mockImplementationOnce(() => { throw new Error('Cannot update text layout'); });
+      session.setScale?.(4);
+      await vi.waitFor(() => expect(reads).toHaveLength(2));
+      expect(reads[0]).toHaveBeenCalledOnce();
+      expect(firstLayer?.isConnected).toBe(false);
+      expect(host.querySelector('.pdfv-text-layer[data-rendered="true"]')).toBeNull();
+      expect(vi.mocked(TextLayer).mock.calls[1][0]).toMatchObject({ viewport: { scale: 4 } });
+      session.destroy();
+      expect(reads[1]).toHaveBeenCalledOnce();
       expect(host.childElementCount).toBe(0);
-      expect(TextLayer).toHaveBeenCalledTimes(1);
+    } finally { session.destroy(); }
+  });
+
+  it('relayouts finished text while reusing the layer and extraction', async () => {
+    const { host, page, session, load } = open();
+    const selector = '.pdfv-text-layer[data-rendered="true"]';
+    try {
+      await load;
+      await vi.waitFor(() => expect(host.querySelector(selector)).not.toBeNull());
+      const layer = host.querySelector<HTMLElement>(selector);
+      session.setScale?.(2);
+      expect(layer?.style.getPropertyValue('--total-scale-factor')).toBe('2');
+      await vi.waitFor(() => expect(updateText).toHaveBeenCalledWith(expect.objectContaining({ viewport: expect.objectContaining({ scale: 2 }) })));
+      expect(host.querySelector(selector)).toBe(layer);
+      expect(page.streamTextContent).toHaveBeenCalledOnce();
+      expect(cancelText).not.toHaveBeenCalled();
     } finally { session.destroy(); }
   });
 

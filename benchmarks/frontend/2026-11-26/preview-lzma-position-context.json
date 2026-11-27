@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "node": "v20.20.2",
+  "method": "Use the same all-in-one JS input, nine asset groups and LZMA-JS level 9. Replace only the encoded group payloads, compare gzip with the release Zopfli settings and Brotli with Node defaults, and verify the decoded group bytes.",
+  "sourceSha256": "b7ed370c3e989084341e60720e04991c361333cfb7293ec779eb2ab724155dcc",
+  "decodedSha256": "6ad68064bbda6269926f087a9cd6c226766a514ad5b22f3f2fe589a1da6728f6",
+  "baseline": {
+    "js": 7440738,
+    "jsSha256": "ba1516d5a02d5b3389327c0e118c1e116fa95125f81393ce6f03960a1be11b88",
+    "gzip": 3999983,
+    "brotli": 3844010,
+    "lzmaProfile": "lzma-js 2.3.2 level 9, pb=2"
+  },
+  "candidate": {
+    "js": 7428466,
+    "jsSha256": "1391327c9ff750f312d659bbe6a0546f42547bc7a869cbb1d9efbfc12fe2dd34",
+    "gzip": 3990217,
+    "brotli": 3834973,
+    "lzmaProfile": "lzma-js 2.3.2 level 9, pb=0"
+  },
+  "gzipEncoder": "Zopfli 15 iterations, unrestricted block splitting",
+  "groups": [
+    {
+      "decodedBytes": 407624,
+      "priorLzmaBytes": 89274,
+      "newLzmaBytes": 88895
+    },
+    {
+      "decodedBytes": 956113,
+      "priorLzmaBytes": 173443,
+      "newLzmaBytes": 172814
+    },
+    {
+      "decodedBytes": 109408,
+      "priorLzmaBytes": 32349,
+      "newLzmaBytes": 32248
+    },
+    {
+      "decodedBytes": 1078612,
+      "priorLzmaBytes": 240311,
+      "newLzmaBytes": 239136
+    },
+    {
+      "decodedBytes": 5498476,
+      "priorLzmaBytes": 1439458,
+      "newLzmaBytes": 1434876
+    },
+    {
+      "decodedBytes": 1492779,
+      "priorLzmaBytes": 353825,
+      "newLzmaBytes": 353214
+    },
+    {
+      "decodedBytes": 278249,
+      "priorLzmaBytes": 116852,
+      "newLzmaBytes": 116651
+    },
+    {
+      "decodedBytes": 1457990,
+      "priorLzmaBytes": 340488,
+      "newLzmaBytes": 339664
+    },
+    {
+      "decodedBytes": 947729,
+      "priorLzmaBytes": 253251,
+      "newLzmaBytes": 252549
+    }
+  ]
+}

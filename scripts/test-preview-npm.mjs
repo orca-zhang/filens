@@ -8,10 +8,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { npmInvocation } from './agent-platforms.mjs';
 import { chromium } from '@playwright/test';
+import { checkPptxVisual, pptxVisualFixtures } from './preview-pptx-visual.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const splitOnly = process.argv.includes('--split-only');
-const packageDirectory = path.join(root, splitOnly ? 'dist/preview-split-npm' : 'dist/preview-npm');
+const packageDirectory = path.resolve(root, process.env.FILENS_PREVIEW_NPM_TEST_DIR ?? (splitOnly ? 'dist/preview-split-npm' : 'dist/preview-npm'));
 const release = JSON.parse(await readFile(path.join(packageDirectory,'release.json'),'utf8'));
 const registry = process.argv.includes('--registry');
 const work = await mkdtemp(path.join(os.tmpdir(),splitOnly ? 'filens-preview-split-npm-' : 'filens-preview-npm-'));
@@ -72,6 +73,7 @@ single(document.body, {src: {source: new Blob(['test']), name:'sample.txt'}}).de
     env:{...env,FILENS_PREVIEW_TEST_DIR:path.join(installed,'dist'),FILENS_PREVIEW_TEST_MODES:modes.join(',')}});
   // npm users also re-bundle the ESM exports. Check workers and WASM URLs after
   // a production Vite build, rather than relying only on direct static hosting.
+  const visualChecks = [];
   const browser = await chromium.launch({headless:true});
   try {
     const entries = splitOnly ? ['filens-preview-split'] : ['filens-preview','filens-preview/all-in-one'];
@@ -115,7 +117,8 @@ document.querySelector('#file').onchange = event => {
         for (const file of ['apps/demo/public/samples/filens-cosmic-atlas.pdf','apps/demo/public/samples/a.pages',
           'apps/demo/public/samples/raw/pentax-k-r.dng','packages/model3d/test/fixtures/occt/cube.stp',
           'apps/demo/public/samples/live-photo/apple-iphone-15-live-photo.HEIC',
-          'packages/archive/test/fixtures/rar5-encrypted-filenames.rar']) {
+          'packages/archive/test/fixtures/rar5-encrypted-filenames.rar',
+          ...pptxVisualFixtures.map(name => `apps/demo/public/samples/${name}`)]) {
           await page.locator('#file').setInputFiles(path.join(root,file));
           if (file.endsWith('.rar')) {
             const password = page.locator('input[type=password]');
@@ -126,9 +129,11 @@ document.querySelector('#file').onchange = event => {
           await page.waitForFunction(()=>['ready','error'].includes(document.body.dataset.state),null,{timeout:30000});
           const result = await page.evaluate(()=>({state:document.body.dataset.state,error:document.body.dataset.error}));
           assert.equal(result.state,'ready',`${entry}: ${file}: ${result.error}`);
+          const visual = await checkPptxVisual(page, path.basename(file));
+          if (visual) visualChecks.push({entry,file:path.basename(file),...visual});
           assert.deepEqual(errors,[],`${entry}: ${file}`);
         }
-        console.log(`${entry}: PDF/iWork/RAW/STEP/HEIF/RAR rendered after production Vite bundling.`);
+        console.log(`${entry}: PDF/iWork/RAW/STEP/HEIF/RAR/PPTX rendered after production Vite bundling.`);
       } finally {await page.close();await new Promise(resolve=>server.close(resolve));}
     }
   } finally {await browser.close();}
@@ -137,12 +142,13 @@ document.querySelector('#file').onchange = event => {
     splitOnly ? 'TypeScript NodeNext consumer import of the split-only export' : 'TypeScript consumer imports of split and all-in-one exports',
     'Native audio, HEIF decoding and unsupported codec handling',
     `${modes.length * 6} PDF/iWork/RAW/STEP/HEIF/RAR previews after production Vite bundling`,
+    `${visualChecks.length} PPTX visual checks after production Vite bundling`,
     'No external requests during installed-package browser tests'];
   if (!process.argv.includes('--skip-cli-preview')) checks.push(`${browserReport.observations.length} direct installed-runtime browser previews`,
     'CLI loopback HTTP restrictions');
   const report = {observedAt:new Date().toISOString(),name:release.name,version:release.version,
     source:registry?'public registry with fresh npm cache':'offline npm tarball',platform:`${process.platform}-${process.arch}`,
-    passed:true,checks,mediaBrowser:process.env.FILENS_MEDIA_TEST_BROWSER || 'chromium'};
+    passed:true,checks,visualChecks,mediaBrowser:process.env.FILENS_MEDIA_TEST_BROWSER || 'chromium'};
   await writeFile(process.env.FILENS_PREVIEW_NPM_TEST_REPORT || path.join(root,splitOnly?'docs/preview-split-npm-validation.json':'docs/preview-npm-validation.json'),JSON.stringify(report,null,2)+'\n');
   console.log(`${release.name}@${release.version}: isolated installation, NodeNext types and ${splitOnly?'split':'both'} browser build${splitOnly?'':'s'} passed.`);
 } finally { await rm(work,{recursive:true,force:true}); }

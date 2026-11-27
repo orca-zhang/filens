@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-26",
+  "platform": "darwin-arm64",
+  "browser": "Chromium 159.0.8154.6",
+  "node": "v20.20.2",
+  "workload": {
+    "sourceBytes": 60744633,
+    "sourceSha256": "8ba7f8ce5aa0d8bbdf24cde878b886179311d08173e1159076c6fb65a29eac74",
+    "pages": 3600,
+    "drawingItemsPerPage": 350,
+    "query": "Document page 3600",
+    "fixture": "packages/pdf/test/fixtures/document.mjs: createPdfFixture(3600, false, 0, undefined, 20, 350)",
+    "viewport": {
+      "width": 1000,
+      "height": 800,
+      "deviceScaleFactor": 1
+    }
+  },
+  "method": "Same release CLI and source used to export both all-in-one builds. Opened each actual file in a new offline Chromium context after removing the source. Alternated build order and discarded the first pair. Navigation ends at ready after the first page paints. Search ends when the full-document scan reports its sole match on page 3,600. CDP Performance TaskDuration measures renderer main-thread tasks for each interval, including page setup and automation work, without dedicated worker time. First and last canvas PNG hashes verified across runs. Synthetic vector/text workload on one desktop.",
+  "before": {
+    "parser": "PDF.js main-thread fallback",
+    "samples": [
+      {
+        "navigationToFirstPageMs": 413.3,
+        "navigationMainThreadTaskMs": 353.3,
+        "searchToLastPageMs": 2225.7,
+        "searchMainThreadTaskMs": 2189.6
+      },
+      {
+        "navigationToFirstPageMs": 406.9,
+        "navigationMainThreadTaskMs": 351.3,
+        "searchToLastPageMs": 2206.6,
+        "searchMainThreadTaskMs": 2171.3
+      },
+      {
+        "navigationToFirstPageMs": 414.4,
+        "navigationMainThreadTaskMs": 357.6,
+        "searchToLastPageMs": 2183.9,
+        "searchMainThreadTaskMs": 2148
+      },
+      {
+        "navigationToFirstPageMs": 406.3,
+        "navigationMainThreadTaskMs": 349.3,
+        "searchToLastPageMs": 2185.3,
+        "searchMainThreadTaskMs": 2152.5
+      },
+      {
+        "navigationToFirstPageMs": 423.4,
+        "navigationMainThreadTaskMs": 366.1,
+        "searchToLastPageMs": 2221.2,
+        "searchMainThreadTaskMs": 2183.3
+      }
+    ],
+    "htmlBytes": 91113851,
+    "firstPageSha256": "ac285d0df8fc4e16bc48497a77f24e66d10b4a64e910d65eb39269e83ee13b1c",
+    "lastPageSha256": "b3d5f4c6eda226c46489ca534d4a6f0511cb9ff4f296e7ccc7afd96469b1644e",
+    "median": {
+      "navigationToFirstPageMs": 413.3,
+      "navigationMainThreadTaskMs": 353.3,
+      "searchToLastPageMs": 2206.6,
+      "searchMainThreadTaskMs": 2171.3
+    },
+    "runtimeSha256": "ac4e582160c484b5c472896e26244bdd31a7c5a1f3a9b7ecfed9e8089d4564fc",
+    "runtimeGzipBytes": 3989091
+  },
+  "after": {
+    "parser": "Dedicated PDF.js module worker",
+    "samples": [
+      {
+        "navigationToFirstPageMs": 446.5,
+        "navigationMainThreadTaskMs": 332.3,
+        "searchToLastPageMs": 2408.2,
+        "searchMainThreadTaskMs": 295.9
+      },
+      {
+        "navigationToFirstPageMs": 476.4,
+        "navigationMainThreadTaskMs": 352.4,
+        "searchToLastPageMs": 2424.2,
+        "searchMainThreadTaskMs": 305
+      },
+      {
+        "navigationToFirstPageMs": 460.4,
+        "navigationMainThreadTaskMs": 348.1,
+        "searchToLastPageMs": 2377.4,
+        "searchMainThreadTaskMs": 286.1
+      },
+      {
+        "navigationToFirstPageMs": 456.7,
+        "navigationMainThreadTaskMs": 338.4,
+        "searchToLastPageMs": 2401.9,
+        "searchMainThreadTaskMs": 295.3
+      },
+      {
+        "navigationToFirstPageMs": 444.2,
+        "navigationMainThreadTaskMs": 322.5,
+        "searchToLastPageMs": 2418.3,
+        "searchMainThreadTaskMs": 304.3
+      }
+    ],
+    "htmlBytes": 91115266,
+    "firstPageSha256": "ac285d0df8fc4e16bc48497a77f24e66d10b4a64e910d65eb39269e83ee13b1c",
+    "lastPageSha256": "b3d5f4c6eda226c46489ca534d4a6f0511cb9ff4f296e7ccc7afd96469b1644e",
+    "median": {
+      "navigationToFirstPageMs": 456.7,
+      "navigationMainThreadTaskMs": 338.4,
+      "searchToLastPageMs": 2408.2,
+      "searchMainThreadTaskMs": 295.9
+    },
+    "runtimeSha256": "124127ece78e07bf35bc90ba845eb4021944cb85246e35d6aae8e3e16df53fb2",
+    "runtimeGzipBytes": 3989706
+  }
+}

@@ -1,7 +1,7 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import { packageDeclarations } from '../../scripts/package-declarations';
-import { pdfWorkerAsset } from '../../scripts/media-wasm-plugin';
+import { pdfWorkerAsset } from '../../scripts/pdf-worker-asset';
 
 export default defineConfig({
   base: './',

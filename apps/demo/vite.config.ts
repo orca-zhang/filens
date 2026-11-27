@@ -6,9 +6,11 @@ import vue from '@vitejs/plugin-vue';
 import { stepWasmAsset } from '../../scripts/step-wasm-plugin';
 import { agentSkillAsset } from './agent-assets';
 import { sharedCompression } from '../../scripts/shared-compression';
+import { docxPreviewZip } from '../../scripts/docx-preview-zip';
 import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 import { optionalEngineChunk } from '../../scripts/optional-engine-chunks';
+import { pdfWorkerAsset } from '../../scripts/pdf-worker-asset';
 
 const compressibleAssets = /\.(?:css|html|js|json|mjs|wasm)$/;
 
@@ -294,7 +296,7 @@ const externalSampleProxy = {
 export default defineConfig({
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
   base: process.env.VITE_BASE_PATH || '/modules/filens/',
-  plugins: [previewLinkNavigation(), archiveEngineAssets(), sharedCompression(), xmlParserOnly(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
+  plugins: [previewLinkNavigation(), archiveEngineAssets(), sharedCompression(), docxPreviewZip(), xmlParserOnly(), pdfWorkerAsset(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
   // Prebundle dependencies from lazy routes before opening an uploaded file.
   optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js', 'ssf'] },
   server: { proxy: externalSampleProxy },
@@ -304,6 +306,8 @@ export default defineConfig({
     alias: {
       '@filens/xlsx/table': path.resolve(__dirname, '../../packages/xlsx/src/table.ts'),
       '@filens/core/preview-runtime': path.resolve(__dirname, '../../packages/core/src/preview-runtime.ts'),
+      '@filens/core/presentation-support': path.resolve(__dirname, '../../packages/core/src/presentation-support.ts'),
+      '@filens/core/rendering': path.resolve(__dirname, '../../packages/core/src/rendering.ts'),
       '@filens/media/codecs': path.resolve(__dirname, '../../packages/media/src/codec-preview-driver.ts'),
       '@filens/archive/routes': path.resolve(__dirname, '../../packages/archive/src/routes.ts'),
       '@filens/cad/routes': path.resolve(__dirname, '../../packages/cad/src/routes.ts'),
@@ -329,6 +333,8 @@ export default defineConfig({
       '@filens/core/zip': path.resolve(__dirname, '../../packages/core/src/zip.ts'),
       '@filens/core/archive-volumes': path.resolve(__dirname, '../../packages/core/src/archive-volumes.ts'),
       '@filens/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
+      '@filens/pptx/style.css': path.resolve(__dirname, '../../packages/pptx/src/styles/index.css'),
+      '@filens/pptx': path.resolve(__dirname, '../../packages/pptx/src/index.ts'),
       '@filens/converter-client': path.resolve(__dirname, '../../packages/converter-client/src/index.ts'),
       '@filens/diagram/style.css': path.resolve(__dirname, '../../packages/diagram/src/styles/index.css'),
       '@filens/diagram': path.resolve(__dirname, '../../packages/diagram/src/index.ts'),

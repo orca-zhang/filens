@@ -2,6 +2,7 @@ use anyhow::{Result, bail, ensure};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{io::Read, time::Duration};
+use zeroize::{Zeroize, Zeroizing};
 
 pub const FORMATS: [&str; 8] = [
     "text", "json", "markdown", "html", "yaml", "xml", "csv", "tsv",
@@ -57,6 +58,21 @@ pub struct Options {
     pub timeout: Duration,
     pub help: bool,
     pub structured: bool,
+    pub ask_password: bool,
+}
+
+impl Request {
+    pub fn clear_conversion_password(&mut self) {
+        if let Some(serde_json::Value::String(secret)) = self.options.get_mut("password") {
+            secret.zeroize();
+        }
+    }
+}
+
+impl Drop for Options {
+    fn drop(&mut self) {
+        self.request.clear_conversion_password();
+    }
 }
 
 impl Default for Options {
@@ -68,6 +84,7 @@ impl Default for Options {
             timeout: Duration::from_secs(120),
             help: false,
             structured: false,
+            ask_password: false,
         }
     }
 }
@@ -147,6 +164,10 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
             .map_or((arg.as_str(), None), |(k, v)| (k, Some(v)));
         match name {
             "--help" | "-h" => o.help = true,
+            "--ask-password" => {
+                ensure!(inline.is_none(), "--ask-password takes no value");
+                o.ask_password = true;
+            }
             "--json" => {
                 explicit = Some("json".to_owned());
                 o.request.format = "json".into();
@@ -248,23 +269,25 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
             _ => bail!("unknown option {name}; use --help or describe what to read"),
         }
     }
+    let supplied_password = o.request.options.get("password").is_some();
     if piped {
         ensure!(
             positional.is_empty() && o.request.input.is_empty(),
             "stdin request cannot be combined with another input or intent"
         );
-        let mut data = String::new();
+        let mut data = Zeroizing::new(String::new());
         stdin.take((1 << 20) + 1).read_to_string(&mut data)?;
         ensure!(data.len() <= 1 << 20, "request exceeds 1 MiB");
         if data.trim_start().starts_with('{') {
             o.structured = true;
             o.request.format = "json".into();
             // Merge fields onto CLI defaults, matching the existing protocol.
-            let value: serde_json::Value = serde_json::from_str(&data)?;
+            let fields: serde_json::Map<String, serde_json::Value> = serde_json::from_str(&data)?;
             let mut merged = serde_json::to_value(&o.request)?;
-            for (key, value) in value.as_object().unwrap() {
-                merged[key] = value.clone();
+            for (key, value) in fields {
+                merged[key] = value;
             }
+            o.request.clear_conversion_password();
             o.request = serde_json::from_value(merged)?;
         } else {
             ensure!(!data.trim().is_empty(), "stdin request is empty");
@@ -380,6 +403,16 @@ pub fn parse(o: &mut Options, args: &[String], stdin: impl Read) -> Result<()> {
     );
     o.ocr &= o.request.ocr != "never";
     resolve(&mut o.request)?;
+    if o.ask_password {
+        ensure!(
+            o.request.operation == "convert",
+            "--ask-password requires convert"
+        );
+        ensure!(
+            !supplied_password && o.request.options.get("password").is_none(),
+            "--ask-password cannot be combined with a supplied password"
+        );
+    }
     ensure!(
         o.request.max_images.is_none_or(|n| (1..=16).contains(&n)),
         "maxImages must be between 1 and 16"
@@ -972,8 +1005,50 @@ fn resolve_conversion(r: &mut Request) -> Result<()> {
 mod tests {
     use super::*;
     #[test]
+    fn hidden_convert_password_input_is_explicit_and_exclusive() {
+        let parse_args = |args: &[&str], input: &str| {
+            let mut o = Options::default();
+            parse(
+                &mut o,
+                &args.iter().map(|value| (*value).into()).collect::<Vec<_>>(),
+                input.as_bytes(),
+            )?;
+            Ok::<_, anyhow::Error>(o)
+        };
+        assert!(
+            parse_args(
+                &["convert", "input.doc", "output.docx", "--ask-password"],
+                ""
+            )
+            .unwrap()
+            .ask_password
+        );
+        assert!(parse_args(&["read", "input.doc", "--ask-password"], "").is_err());
+        assert!(
+            parse_args(
+                &[
+                    "convert",
+                    "input.doc",
+                    "output.docx",
+                    "--ask-password=value"
+                ],
+                ""
+            )
+            .is_err()
+        );
+        assert!(parse_args(&["-", "--ask-password"], r#"{"op":"convert","input":"input.doc","output":"output.docx","options":{"password":"test"}}"#).is_err());
+        assert!(
+            parse_args(
+                &["-", "--ask-password", "--password", "test"],
+                r#"{"op":"convert","input":"input.doc","output":"output.docx","options":{}}"#
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
     fn image_arguments_are_bounded_and_read_scoped() {
-        let r = options(
+        let r = &options(
             &[
                 "read",
                 "deck.pptx",
@@ -1001,7 +1076,7 @@ mod tests {
     }
     #[test]
     fn capability_conditions_are_scoped_and_match_json_requests() {
-        let r = options(
+        let r = &options(
             &[
                 "capacity", "--op", "READ", "--query", "ocr", "--from", "PPTX", "--to", "PDF",
             ],
@@ -1020,7 +1095,7 @@ mod tests {
             ),
             ("capabilities", "read", "ocr", "pptx", "pdf", "text")
         );
-        let r = options(
+        let r = &options(
             &["-"],
             r#"{"op":"capacity","forOp":"read","query":"ocr","sourceFormat":"pptx"}"#,
         )
@@ -1039,15 +1114,15 @@ mod tests {
             (vec!["capabilities", "--query", "docx>?"], ""),
             (vec!["-"], r#"{"op":"capacity","query":"docx>?"}"#),
         ] {
-            let r = options(&args, stdin).unwrap().request;
+            let r = &options(&args, stdin).unwrap().request;
             assert_eq!(r.source_format, "docx");
             assert!(r.target_format.is_empty() && r.query.is_empty());
             assert_eq!(r.section, "conversionPairs");
         }
-        let r = options(&["capacity", "?>PDF"], "").unwrap().request;
+        let r = &options(&["capacity", "?>PDF"], "").unwrap().request;
         assert!(r.source_format.is_empty());
         assert_eq!(r.target_format, "pdf");
-        let r = options(&["capacity", "?>?", "--section", "formats"], "")
+        let r = &options(&["capacity", "?>?", "--section", "formats"], "")
             .unwrap()
             .request;
         assert_eq!(r.section, "formats");
@@ -1058,7 +1133,7 @@ mod tests {
     }
     #[test]
     fn search_intents_and_boundaries() {
-        let request = options(&["在 \"./文档\" 中搜索 \"预算 风险\"，以 JSON 输出"], "")
+        let request = &options(&["在 \"./文档\" 中搜索 \"预算 风险\"，以 JSON 输出"], "")
             .unwrap()
             .request;
         assert_eq!(
@@ -1070,7 +1145,7 @@ mod tests {
             ),
             ("search", "./文档", "预算 风险", "json")
         );
-        let request = options(
+        let request = &options(
             &["search", "./documents", "--query", "budget risk", "--json"],
             "",
         )
@@ -1182,13 +1257,13 @@ mod tests {
     }
     #[test]
     fn extractive_summary_intents_and_budgets() {
-        let r=options(&["提取 \"meeting notes.docx\" 的关键内容，关注预算和风险，保留30%，最多500字，以 JSON 输出"],"").unwrap().request;
+        let r=&options(&["提取 \"meeting notes.docx\" 的关键内容，关注预算和风险，保留30%，最多500字，以 JSON 输出"],"").unwrap().request;
         assert_eq!(r.operation, "summarize");
         assert_eq!(r.input, "meeting notes.docx");
         assert_eq!(r.query, "预算和风险");
         assert_eq!(r.summary_ratio, Some(0.3));
         assert_eq!(r.summary_chars, Some(500));
-        let r = options(
+        let r = &options(
             &["summarize 'report.pdf' focusing on 'budget risk' as json"],
             "",
         )

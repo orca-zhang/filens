@@ -1,32 +1,65 @@
+const wildcardSyntax = /[*?]|~[~*?]/;
+
 export function wildcardMatcher(pattern: string, substring = false): (input: string) => boolean {
-  if (!/[*?]|~[~*?]/.test(pattern)) return substring ? input => input.includes(pattern) : input => input === pattern;
+  if (!wildcardSyntax.test(pattern)) return substring ? input => input.includes(pattern) : input => input === pattern;
+  const { initial, accept, advance } = wildcardStates(pattern.match(/~[~*?]|./gsu) ?? [], substring);
+  return input => {
+    let active = initial;
+    for (const char of input) {
+      if (substring && (active & accept)) return true;
+      active = advance(active, char);
+      if (!active) return false;
+    }
+    return (active & accept) !== 0n;
+  };
+}
+
+export function wildcardSearch(pattern: string, input: string): number {
+  if (!/[*?~]/.test(pattern) && /^[\x00-\x7f]*$/.test(pattern) && /^[\x00-\x7f]*$/.test(input)) {
+    return input.toLowerCase().indexOf(pattern.toLowerCase());
+  }
+  // SEARCH escapes any following code unit and ignores a trailing escape.
+  const tokens = pattern.match(/~[\s\S]|[^~]/g) ?? [];
+  const { initial, accept, advance } = wildcardStates(tokens.reverse(), true, foldSearchUnit);
+  if (initial & accept) return 0;
+  // Reverse the scan so an accepting state gives the start of a match.
+  let active = initial, first = -1;
+  for (let index = input.length - 1; index >= 0; index--) {
+    active = advance(active, foldSearchUnit(input[index]));
+    if (active & accept) first = index;
+  }
+  return first;
+}
+
+function foldSearchUnit(unit: string): string {
+  const upper = unit.toUpperCase();
+  return (upper.length === 1 ? upper : unit).toLowerCase();
+}
+
+function wildcardStates(tokens: string[], substring: boolean, fold?: (literal: string) => string) {
   const literals = new Map<string, bigint>();
   let stars = 0n, wildcards = 0n, state = 1n, previousStar = false;
-  const tokens = Array.from(pattern);
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
+  for (const token of tokens) {
     if (token === '*') {
       if (previousStar) continue;
       stars |= state;
     } else if (token === '?') wildcards |= state;
     else {
-      const literal = token === '~' && /[*?~]/.test(tokens[i + 1] ?? '') ? tokens[++i] : token;
+      const unescaped = token.startsWith('~') && token.length === 2 ? token[1] : token;
+      const literal = fold ? fold(unescaped) : unescaped;
       literals.set(literal, (literals.get(literal) ?? 0n) | state);
     }
     previousStar = token === '*';
     state <<= 1n;
   }
   const accept = state, restart = substring ? 1n : 0n;
-  return input => {
-    // Advance all wildcard states together, restarting only for substring searches.
-    let active = 1n | ((1n & stars) << 1n);
-    for (const char of input) {
-      if (substring && (active & accept)) return true;
+  return {
+    accept,
+    initial: 1n | ((1n & stars) << 1n),
+    advance(active: bigint, char: string): bigint {
       const matches = wildcards | (literals.get(char) ?? 0n);
       const next = ((active & matches) << 1n) | (active & stars) | restart;
-      active = next | ((next & stars) << 1n);
-      if (!active) return false;
+      return next | ((next & stars) << 1n);
     }
-    return (active & accept) !== 0n;
   };
 }

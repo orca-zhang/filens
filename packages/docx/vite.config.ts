@@ -1,6 +1,7 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import { packageDeclarations } from '../../scripts/package-declarations';
+import { docxPreviewZip } from '../../scripts/docx-preview-zip';
 
 export default defineConfig({
   base: './',
@@ -22,6 +23,7 @@ export default defineConfig({
     globals: true
   },
   plugins: [
+    docxPreviewZip({ notice: true }),
     packageDeclarations({
       include: ['src/**/*.ts'],
       outDir: 'dist',

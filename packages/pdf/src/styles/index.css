@@ -15,6 +15,10 @@
   overflow: auto;
 }
 
+.pdfv-virtual { display: block; justify-items: normal; overflow-anchor: none; scrollbar-gutter: stable; }
+.pdfv-page-track { position: relative; overflow: clip; }
+.pdfv-page-track > .pdfv-page-slot { position: absolute; margin: 0; }
+
 .pdfv-page-slot {
   position: relative;
   justify-self: start;
@@ -27,6 +31,8 @@
   display: block;
   background: #ffffff;
 }
+
+.pdfv-page-detail { position: absolute; pointer-events: none; }
 
 /* Layout variables follow the public PDF.js TextLayer contract. */
 .pdfv-text-layer {
@@ -75,4 +81,6 @@
 
 .pdfv-text-layer .pdfv-search-match { color: transparent; background: rgb(255 211 61 / 50%); }
 .pdfv-text-layer .pdfv-search-match.is-active { background: rgb(255 136 0 / 65%); }
+.pdfv-text-layer ::highlight(filens-pdf-search-match) { color: transparent; background-color: rgb(255 211 61 / 50%); }
+.pdfv-text-layer ::highlight(filens-pdf-search-active) { color: transparent; background-color: rgb(255 136 0 / 65%); }
 .pdfv-container > .pdfv-search-controls { position: absolute; top: 8px; right: 8px; z-index: 4; }

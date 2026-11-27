@@ -1,18 +1,34 @@
-import type { IworkTypeHint, ParsedIworkDocument, ParsedNumbersDocument, ParsedNumbersSheet } from '../types';
+import { PreviewPasswordError, type PreviewPasswordErrorCode } from '@filens/core';
+import type { IworkPackageSource } from '../parser/load-source';
+import type { IworkImageAsset, IworkTypeHint, PagesTableMeasurement, ParsedIworkDocument, ParsedNumbersDocument,
+  ParsedNumbersSheet, ParsedPagesDocument } from '../types';
+import { serveWorkerFile } from './file-source';
+
+export interface NumbersSheetResult {
+  sheet: ParsedNumbersSheet;
+  media?: Record<string, IworkImageAsset>;
+}
+
+export type PagesLayoutResult = Pick<ParsedPagesDocument, 'pages' | 'title' | 'warnings'>;
 
 interface WorkerResponse {
   id: number;
   document?: ParsedIworkDocument;
-  sheet?: ParsedNumbersSheet;
+  sheetResult?: NumbersSheetResult;
+  pagesResult?: PagesLayoutResult;
   error?: string;
+  errorCode?: PreviewPasswordErrorCode;
+  errorName?: string;
+  status?: number;
 }
 
-type WorkerResult = ParsedIworkDocument | ParsedNumbersSheet;
+type WorkerResult = ParsedIworkDocument | NumbersSheetResult | PagesLayoutResult;
 
 export class IworkWorkerClient {
   private worker: Worker | null = null;
   private destroyed = false;
   private requestId = 0;
+  private fileSource?: ReturnType<typeof serveWorkerFile>;
   private readonly pending = new Map<number, { resolve(value: WorkerResult): void; reject(error: Error): void }>();
 
   constructor() {
@@ -34,35 +50,62 @@ export class IworkWorkerClient {
     return this.worker;
   }
 
-  parse(bytes: Uint8Array, hint?: IworkTypeHint, sourceName?: string): Promise<ParsedIworkDocument> {
+  parse(source: IworkPackageSource, hint?: IworkTypeHint, sourceName?: string, password?: string): Promise<ParsedIworkDocument> {
     if (this.pending.size) this.cancel();
+    this.releaseFileSource();
     const id = ++this.requestId;
-    const payload = bytes.buffer instanceof ArrayBuffer && bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
-      ? bytes.buffer : bytes.slice().buffer;
+    // WebKit cannot read a cloned Blob from a worker on an opaque file: page.
+    const fileSource = typeof location !== 'undefined' && location.protocol === 'file:' && source instanceof Blob
+      ? serveWorkerFile(source) : undefined;
+    this.fileSource = fileSource;
+    const payload = ArrayBuffer.isView(source)
+      ? (source.buffer instanceof ArrayBuffer && source.byteOffset === 0 && source.byteLength === source.buffer.byteLength
+        ? source.buffer : source.slice().buffer) : fileSource?.source ?? source;
     return new Promise<ParsedIworkDocument>((resolve, reject) => {
-      this.pending.set(id, { resolve: resolve as (value: WorkerResult) => void, reject });
+      this.pending.set(id, {
+        resolve: value => {
+          const document = value as ParsedIworkDocument;
+          if (this.fileSource === fileSource && (document.kind !== 'numbers' || password !== undefined)) this.releaseFileSource();
+          resolve(document);
+        },
+        reject: error => {
+          if (this.fileSource === fileSource) this.releaseFileSource();
+          reject(error);
+        }
+      });
       this.postRequest(id,
         {
           kind: 'document',
           id,
-          bytes: payload,
+          source: payload,
           hint,
-          sourceName
+          sourceName,
+          password
         },
-        [payload]
+        fileSource ? [fileSource.source.port] : payload instanceof ArrayBuffer ? [payload] : []
       );
     });
   }
 
-  parseSheet(index: number, document?: ParsedNumbersDocument): Promise<ParsedNumbersSheet> {
+  parseSheet(index: number, document?: ParsedNumbersDocument): Promise<NumbersSheetResult> {
     const id = ++this.requestId;
-    return new Promise<ParsedNumbersSheet>((resolve, reject) => {
+    return new Promise<NumbersSheetResult>((resolve, reject) => {
       this.pending.set(id, { resolve: resolve as (value: WorkerResult) => void, reject });
       this.postRequest(id, { kind: 'sheet', id, index, ...(document ? { context: { archive: document.archive, media: document.media } } : {}) });
     });
   }
 
+  reflowPages(measurements: ReadonlyMap<string, PagesTableMeasurement>, document?: ParsedPagesDocument): Promise<PagesLayoutResult> {
+    const id = ++this.requestId;
+    return new Promise<PagesLayoutResult>((resolve, reject) => {
+      this.pending.set(id, { resolve: resolve as (value: WorkerResult) => void, reject });
+      this.postRequest(id, { kind: 'pages-layout', id, measurements,
+        ...(document ? { context: { archive: document.archive, media: document.media } } : {}) });
+    });
+  }
+
   cancel(): void {
+    this.releaseFileSource();
     if (this.pending.size) {
       this.stopWorker(new DOMException('iWork parsing cancelled.', 'AbortError'));
     } else if (this.worker) {
@@ -87,6 +130,7 @@ export class IworkWorkerClient {
   }
 
   private stopWorker(error: Error): void {
+    this.releaseFileSource();
     const worker = this.worker;
     this.worker = null;
     worker?.removeEventListener('message', this.handleMessage);
@@ -98,6 +142,11 @@ export class IworkWorkerClient {
     this.pending.clear();
   }
 
+  private releaseFileSource(): void {
+    this.fileSource?.close();
+    this.fileSource = undefined;
+  }
+
   private readonly handleMessage = (event: MessageEvent<WorkerResponse>) => {
     const pending = this.pending.get(event.data.id);
     if (!pending) {
@@ -105,12 +154,20 @@ export class IworkWorkerClient {
     }
 
     this.pending.delete(event.data.id);
+    if (event.data.errorCode) {
+      pending.reject(new PreviewPasswordError(event.data.errorCode));
+      return;
+    }
     if (event.data.error) {
-      pending.reject(new Error(event.data.error));
+      const { error, errorName, status } = event.data;
+      const failure = errorName === 'TypeError' ? new TypeError(error) : new Error(error);
+      if (errorName) failure.name = errorName;
+      if (status !== undefined) Object.assign(failure, { status });
+      pending.reject(failure);
       return;
     }
 
-    const result = event.data.document ?? event.data.sheet;
+    const result = event.data.document ?? event.data.sheetResult ?? event.data.pagesResult;
     if (!result) {
       pending.reject(new Error('iWork parser worker returned an empty result.'));
       return;

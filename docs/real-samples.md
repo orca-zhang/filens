@@ -83,6 +83,16 @@ node ./scripts/run-real-sample-preview.mjs
 
 Note: the preview smoke includes manifest-backed conversion candidates only if the demo bundle has access to a converter (the demo uses the built-in WASM converter client).
 
+## Check PPTX layout in release artifacts
+
+`npm run test:preview` opens the built split and all-in-one runtimes through the CLI loopback server. After packaging, `npm run test:preview:npm` also installs the tarball in a temporary project and runs the same visual assertions after a production Vite build. The split-only npm check uses the same fixtures. Each report identifies the checked slides and properties per artifact. [Preview checks](../scripts/test-preview.mjs) · [npm consumer checks](../scripts/test-preview-npm.mjs)
+
+- `filens-field-notes.pptx` checks all three slide aspect ratios, visible heading bounds, and image placement against authored slide coordinates. Browser screenshots sample solid panels, the accent stripe, and photo regions to verify their paint order.
+- `rich-pptx-shapes.pptx` checks the first slide's authored table and chart bounds, the four rendered cells, and the four visibly sized pie slices with their source values and fill colors.
+- `rich-pptx-pictures.pptx` checks both slides against the saved picture frames, embedded image dimensions, and pixel samples derived from each source crop. It covers cropping on four sides and an asymmetric vertical crop.
+
+These assertions target specific properties of rendered slides. Font substitution and advanced layout fidelity remain format-specific. [PPTX visual assertions](../scripts/preview-pptx-visual.mjs) · [Support matrix](support-matrix.md)
+
 ## Summarize preview report
 
 This groups the preview results by extension and coarse failure class.

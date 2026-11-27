@@ -1,4 +1,5 @@
 import { evaluateWorksheetFormula } from './cell-value';
+import { memoizeWithFormulaTime } from './formula-clock';
 import { interpolate, numericCellValue, type ConditionalRangeValues } from './conditional-range-values';
 import type { ConditionalThreshold, ParsedCell, ParsedConditionalIcon, ParsedConditionalStyle, ParsedConditionalVisual, ParsedDataBar, ParsedMerge, ParsedSheet } from './types';
 
@@ -18,17 +19,17 @@ export interface DataBarAppearance {
 }
 
 export function compileVisualRule(sheet: ParsedSheet, condition: ParsedConditionalVisual, anchor: ParsedMerge,
-  readRange: () => ConditionalRangeValues): (row: number, column: number, cell?: ParsedCell) => ConditionalAppearance | false {
-  let stops: number[] | null | undefined;
+  readRange: () => ConditionalRangeValues | undefined): (row: number, column: number, cell?: ParsedCell) => ConditionalAppearance | false {
   const colors = condition.type === 'colorScale' ? condition.colors.map(readChannels) : undefined;
+  const readStops = memoizeWithFormulaTime(sheet, () => {
+    const values = condition.thresholds.map(threshold => resolveThreshold(sheet, threshold, anchor, readRange));
+    return values.every((stop, index) => stop !== undefined && Number.isFinite(stop) && (!index || stop >= values[index - 1]!))
+      ? values as number[] : null;
+  });
   return (_, __, cell) => {
     const value = numericCellValue(sheet, cell);
     if (value === undefined) return false;
-    if (stops === undefined) {
-      const values = condition.thresholds.map(threshold => resolveThreshold(sheet, threshold, anchor, readRange));
-      stops = values.every((stop, index) => stop !== undefined && Number.isFinite(stop) && (!index || stop >= values[index - 1]!))
-        ? values as number[] : null;
-    }
+    const stops = readStops();
     if (!stops) return false;
     if (condition.type === 'dataBar') return { dataBar: dataBar(condition, value, stops[0], stops[1]) };
     if (condition.type === 'iconSet') {
@@ -45,13 +46,15 @@ export function compileVisualRule(sheet: ParsedSheet, condition: ParsedCondition
 }
 
 function resolveThreshold(sheet: ParsedSheet, threshold: ConditionalThreshold, anchor: ParsedMerge,
-  readRange: () => ConditionalRangeValues): number | undefined {
+  readRange: () => ConditionalRangeValues | undefined): number | undefined {
   if (threshold.type === 'num') return threshold.value;
   if (threshold.type === 'formula') {
     const value = evaluateWorksheetFormula(sheet, threshold.formula, { row: anchor.firstRow, column: anchor.firstColumn });
     return typeof value === 'number' ? value : undefined;
   }
-  const { min, max, percentiles } = readRange();
+  const values = readRange();
+  if (!values) return undefined;
+  const { min, max, percentiles } = values;
   if (min > max) return undefined;
   switch (threshold.type) {
     case 'min': return min;

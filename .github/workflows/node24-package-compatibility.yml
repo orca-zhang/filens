@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'packages/core/**'
+      - 'packages/pptx/**'
       - 'packages/xlsx/**'
       - 'packages/preview/**'
       - 'scripts/package-declarations.ts'
@@ -30,5 +31,7 @@ jobs:
       - run: node node_modules/vitest/vitest.mjs run packages/xlsx/test/package-declarations.spec.ts
       - name: Check the published XLSX API under NodeNext and TypeScript 7
         run: npx --yes --package=typescript@7.0.2 tsc --ignoreConfig --noEmit --strict --skipLibCheck false --target ES2022 --module NodeNext --moduleResolution NodeNext packages/xlsx/test/fixtures/node-next-public-api.mts
+      - name: Check the PPTX API and core compatibility exports under NodeNext
+        run: npx --yes --package=typescript@7.0.2 tsc --ignoreConfig --noEmit --strict --skipLibCheck false --target ES2022 --module NodeNext --moduleResolution NodeNext packages/pptx/test/fixtures/node-next-public-api.mts
       - name: Check the preview npm API under NodeNext and TypeScript 7
         run: npx --yes --package=typescript@7.0.2 tsc --project packages/preview/test/fixtures/node-next-tsconfig.json

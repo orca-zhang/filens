@@ -33,7 +33,8 @@
     "build:format-detector": "node ./scripts/build-format-detector.mjs",
     "build:search:wasm": "node ./scripts/build-search-wasm.mjs",
     "build:cad": "npm run build --workspace @filens/cad",
-    "build:core": "npm run build --workspace @filens/core",
+    "build:core": "npm run build --workspace @filens/core && npm run build:pptx",
+    "build:pptx": "npm run build --workspace @filens/pptx",
     "build:converter-client": "npm run build --workspace @filens/converter-client",
     "build:diagram": "npm run build --workspace @filens/diagram",
     "build:design": "npm run build --workspace @filens/design",
@@ -159,16 +160,16 @@
     "binaryen": "131.0.0",
     "jsdom": "^25.0.1",
     "lzma": "2.3.2",
+    "pdfjs-dist": "5.4.624",
+    "picomatch": "file:vendor/picomatch",
     "protobufjs-cli": "^1.3.3",
+    "semver": "^7.7.4",
     "terser": "5.44.1",
     "typescript": "^5.8.3",
     "vite": "^6.4.6",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.1.12",
-    "vue": "^3.5.17",
-    "semver": "^7.7.4",
-    "pdfjs-dist": "5.4.624",
-    "picomatch": "file:vendor/picomatch"
+    "vue": "^3.5.17"
   },
   "overrides": {
     "picomatch": "$picomatch",
@@ -184,5 +185,8 @@
     "editorconfig": {
       "minimatch": "^11.0.9"
     }
+  },
+  "dependencies": {
+    "filens-preview": "^0.3.8"
   }
 }

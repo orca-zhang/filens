@@ -44,6 +44,8 @@ await viewer.preview('/samples/a.key');
 const numbers = await loadIwork('/samples/a.numbers');
 ```
 
+Pass `{ password }` as the second argument to `preview()` or `loadIwork()` to open a modern `.iwpv2`-encrypted iWork ZIP package. Content-based `detectIworkType()` accepts the same option. The shared preview runtime prompts and retries for missing or incorrect passwords. Decryption uses Web Crypto, and previews opened with a password bypass the shared parsed-model cache. [Fixture coverage](test/encryption.spec.ts)
+
 ## Source Types
 
 `preview()`, `detectIworkType()`, and `loadIwork()` support:
@@ -53,6 +55,8 @@ const numbers = await loadIwork('/samples/a.numbers');
 - `Uint8Array`
 - `Blob`
 - `File`
+
+For unencrypted Numbers files opened from HTTP(S) or from a local Blob or File larger than 128 KiB, `preview()` reads media when a sheet opens. The viewer's document state accumulates the media for opened sheets. `loadIwork()` returns all sheets and package media, including unused assets.
 
 ## Viewer Options
 
@@ -72,7 +76,7 @@ interface IworkViewerOptions {
 
 ```ts
 interface IworkViewerInstance {
-  preview(source: IworkSource): Promise<void>;
+  preview(source: IworkSource, options?: { signal?: AbortSignal; cache?: boolean; password?: string }): Promise<void>;
   destroy(): void;
   setScale(scale: number): void;
   fit(mode?: IworkFitMode): void;

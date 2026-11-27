@@ -1,18 +1,24 @@
-import { bindPreviewTouchGestures, MediaRegistry, previewContentKey, previewModelCache, renderTableCellContent, type TableCell, type TableItem } from '@filens/core';
+import { applyTableCellPaint, bindPreviewTouchGestures, MediaRegistry, previewContentKey, previewModelCache, previewPasswordErrorCode, renderTableCellContent, type TableItem } from '@filens/core';
 import type { ParsedCell } from '@filens/xlsx';
-import { appendSheetRows, createSheetTable, ROW_BATCH_SIZE, COLUMN_BATCH_SIZE, SheetRowWindow, type ParsedSheet, type SheetCellRenderer, type SheetRowMeasurements } from '@filens/xlsx/table';
+import { addHiddenTrack, appendSheetRows, createSheetTable, ROW_BATCH_SIZE, COLUMN_BATCH_SIZE, sheetTracks, SheetRowWindow,
+  type ParsedSheet, type SheetBlankCellRenderer, type SheetCellRenderer, type SheetRowMeasurements } from '@filens/xlsx/table';
 import type {
   IworkFitMode,
+  IworkTable,
+  IworkTableCell,
   IworkViewerEventMap,
   IworkViewerEventName,
   IworkViewerInstance,
   IworkViewerOptions,
   IworkViewerState,
+  PagesTableMeasurement,
   ParsedIworkDocument
 } from '../types';
 import { loadSourceBytes } from '../parser/load-source';
 import { IworkWorkerClient } from '../worker/client';
-import { createCanvasElement, createMediaRegistry, documentCanvases } from './render';
+import { blankCellPaint } from '../table-paint';
+import { cellStrokeBorders, visibleStrokeRuns } from '../table-strokes';
+import { createCanvasElement, createMediaRegistry, documentCanvases, fitSavedPagesText, observeSavedPagesTableGrowth, samePagesTableGeometry } from './render';
 
 type EventHandler<T extends IworkViewerEventName> = (payload: IworkViewerEventMap[T]) => void;
 
@@ -45,13 +51,19 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
   container.innerHTML = '<div class="iworkv-stage"></div>';
   const stage = container.querySelector('.iworkv-stage') as HTMLDivElement;
   let resizeObserver: ResizeObserver | null = null;
+  let resizeFrame = 0;
   let pageShells: HTMLDivElement[] = [];
   const mountedPages = new Map<number, HTMLElement>();
+  const tableWatchers = new Map<number, () => void>();
+  const pagesTableMeasurements = new Map<string, PagesTableMeasurement>();
+  let pagesLayoutPending = false;
+  let pagesLayoutDirty = false;
   const visiblePages = new Set<number>();
   const sheetLoads = new Map<number, Promise<void>>();
   const rowWindows = new Set<SheetRowWindow>();
+  let numbersView: { preview: HTMLDivElement; tabs: HTMLDivElement; grid?: HTMLDivElement } | undefined;
   let rowMeasurements = new WeakMap<TableItem, SheetRowMeasurements>();
-  let refreshedRows: number[] | undefined;
+  let refreshedTables: ({ rows: number; width: number; height: number } | undefined)[] | undefined;
   let scrollFrame = 0;
   let unbindTouch = () => {};
 
@@ -75,6 +87,11 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     rowWindows.clear();
   };
 
+  const clearTableWatchers = () => {
+    for (const disconnect of tableWatchers.values()) disconnect();
+    tableWatchers.clear();
+  };
+
   const stopLoad = () => {
     unbindTouch();
     unbindTouch = () => {};
@@ -87,11 +104,17 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     renderController = null;
     resizeObserver?.disconnect();
     resizeObserver = null;
+    if (resizeFrame) cancelAnimationFrame(resizeFrame);
+    resizeFrame = 0;
     if (scrollFrame && typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(scrollFrame);
     scrollFrame = 0;
     clearRowWindows(); rowMeasurements = new WeakMap();
+    clearTableWatchers();
+    pagesTableMeasurements.clear();
+    pagesLayoutPending = pagesLayoutDirty = false;
     stage.replaceChildren();
     stage.classList.remove('iworkv-numbers-stage');
+    numbersView = undefined;
     pageShells = [];
     mountedPages.clear();
     visiblePages.clear();
@@ -110,24 +133,23 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     renderController?.abort();
     renderController = new AbortController();
     clearRowWindows();
-    stage.innerHTML = '';
+    clearTableWatchers();
     stage.classList.toggle('iworkv-numbers-stage', state.document?.kind === 'numbers');
     pageShells = [];
     mountedPages.clear();
     visiblePages.clear();
+    if (state.document?.kind === 'numbers') {
+      if (state.document.sheets.length) renderNumbers();
+      return;
+    }
+
+    stage.replaceChildren();
     if (!state.document) {
       return;
     }
 
     const canvases = documentCanvases(state.document);
-    if (!canvases.length) {
-      return;
-    }
-
-    if (state.document.kind === 'numbers') {
-      renderNumbers();
-      return;
-    }
+    if (!canvases.length) return;
 
     if (state.document.kind === 'key' || state.document.kind === 'pages') {
       const pages = document.createElement('div');
@@ -152,19 +174,29 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     if (state.document?.kind !== 'numbers') {
       return;
     }
-    const preview = document.createElement('div');
-    preview.className = 'xlsxv-preview';
-    const tabs = document.createElement('div');
-    tabs.className = 'xlsxv-sheet-tabs';
-    tabs.dataset.previewControls = '';
+    if (!numbersView) {
+      // Keep sheet buttons in place while pending sheet and font updates render the grid.
+      const preview = document.createElement('div');
+      preview.className = 'xlsxv-preview';
+      const tabs = document.createElement('div');
+      tabs.className = 'xlsxv-sheet-tabs';
+      tabs.dataset.previewControls = '';
+      state.document.sheets.forEach((_, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'xlsxv-sheet-tab';
+        button.addEventListener('click', () => goToSheet(index), { signal: loadController!.signal });
+        tabs.appendChild(button);
+      });
+      preview.appendChild(tabs);
+      stage.appendChild(preview);
+      numbersView = { preview, tabs };
+    }
+    const view = numbersView;
     state.document.sheets.forEach((sheet, index) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'xlsxv-sheet-tab';
+      const button = view.tabs.children[index];
       button.classList.toggle('is-active', index === state.currentSheet);
-      button.textContent = sheet.name;
-      button.addEventListener('click', () => goToSheet(index), { signal: renderController!.signal });
-      tabs.appendChild(button);
+      if (button.textContent !== sheet.name) button.textContent = sheet.name;
     });
 
     const grid = document.createElement('div');
@@ -172,12 +204,16 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     const tables = document.createElement('div');
     tables.className = 'iworkv-numbers-tables';
     const activeSheet = state.document.sheets[state.currentSheet];
-    const renderedTables: { sheet: ParsedSheet; table: HTMLTableElement; body: HTMLTableSectionElement; renderCell: SheetCellRenderer }[] = [];
+    const renderedTables: (ReturnType<typeof numbersTableToSheet> & { body: HTMLTableSectionElement })[] = [];
     (activeSheet?.tables ?? []).forEach(({ item }, index) => {
-      const { sheet, renderCell } = numbersTableToSheet(item, index, mediaRegistry);
+      const { sheet, renderCell, renderBlankCell } = numbersTableToSheet(item, index, mediaRegistry);
+      const { rows, columns } = sheetTracks(sheet);
+      const previous = refreshedTables?.[index];
       const section = document.createElement('section');
       section.className = 'iworkv-numbers-table';
-      section.style.containIntrinsicBlockSize = `auto ${(Math.min(Math.max(sheet.rowCount, 1), ROW_BATCH_SIZE) + 1) * 26}px`;
+      if (renderBlankCell) section.classList.add('iworkv-numbers-source-borders');
+      section.style.containIntrinsicBlockSize = `auto ${previous?.height || (Math.min(rows.count, ROW_BATCH_SIZE) + 1) * 26}px`;
+      if (previous?.width) section.style.containIntrinsicInlineSize = `auto ${previous.width}px`;
       if ((activeSheet?.tables.length ?? 0) > 1) {
         const title = document.createElement('h3');
         title.className = 'iworkv-numbers-table-title';
@@ -185,16 +221,17 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
         section.appendChild(title);
       }
       tables.appendChild(section);
-      const windowed = options.virtual !== false && (sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE);
+      const windowed = options.virtual !== false && (rows.count > ROW_BATCH_SIZE || columns.count > COLUMN_BATCH_SIZE);
       if (windowed) {
         section.classList.add('is-windowed');
         const measurements = rowMeasurements.get(item) ?? { heights: new Map<number, number>() };
         rowMeasurements.set(item, measurements);
-        rowWindows.add(new SheetRowWindow(sheet, grid, section, { renderCell, measurements }));
+        rowWindows.add(new SheetRowWindow(sheet, grid, section, { renderCell, renderBlankCell, measurements }));
       } else {
-        const table = createSheetTable(sheet, Math.min(Math.max(sheet.rowCount, 1), refreshedRows?.[index] ?? ROW_BATCH_SIZE), renderCell);
+        const rendered = Math.min(rows.count, previous?.rows ?? ROW_BATCH_SIZE);
+        const table = createSheetTable(sheet, rendered ? rows.source(rendered) : 0, renderCell, renderBlankCell);
         section.appendChild(table);
-        renderedTables.push({ sheet, table, body: table.tBodies[0], renderCell });
+        renderedTables.push({ sheet, body: table.tBodies[0], renderCell, renderBlankCell });
       }
     });
     const floatingItems = activeSheet?.canvas.slide.items.filter((item) => item.kind !== 'table') ?? [];
@@ -222,17 +259,69 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       if (grid.scrollHeight - grid.scrollTop - grid.clientHeight > grid.clientHeight * 2) {
         return;
       }
-      for (const { sheet, body, renderCell } of renderedTables) {
+      for (const { sheet, body, renderCell, renderBlankCell } of renderedTables) {
         const renderedRows = body.rows.length;
-        if (renderedRows < sheet.rowCount) {
-          appendSheetRows(body, sheet, renderedRows + 1, Math.min(renderedRows + ROW_BATCH_SIZE, sheet.rowCount), renderCell);
+        const { rows } = sheetTracks(sheet);
+        if (renderedRows < rows.count) {
+          appendSheetRows(body, sheet, rows.source(renderedRows + 1), rows.source(Math.min(renderedRows + ROW_BATCH_SIZE, rows.count)), renderCell, renderBlankCell);
         }
       }
     }, { passive: true, signal: renderController!.signal });
 
-    preview.replaceChildren(tabs, grid);
-    stage.appendChild(preview);
-    for (const view of rowWindows) view.refresh();
+    if (view.grid) view.grid.replaceWith(grid);
+    else view.preview.appendChild(grid);
+    view.grid = grid;
+    for (const rowWindow of rowWindows) rowWindow.refresh();
+  };
+
+  const requestPagesLayout = () => {
+    const controller = loadController;
+    if (state.document?.kind !== 'pages' || !controller) return;
+    pagesLayoutDirty = true;
+    if (pagesLayoutPending) return;
+    pagesLayoutPending = true;
+    // Mounting several visible pages can supply measurements in one pass.
+    void Promise.resolve().then(async () => {
+      const document = state.document;
+      if (loadController !== controller || document?.kind !== 'pages') return;
+      pagesLayoutDirty = false;
+      const result = await getWorker().reflowPages(pagesTableMeasurements, workerHasDocument ? undefined : document);
+      if (loadController !== controller) return;
+      workerHasDocument = true;
+      if (pagesLayoutDirty) return;
+
+      const top = pageShells[state.currentPage]?.getBoundingClientRect().top;
+      const saved = document.pages[state.currentPage]?.savedPageIndex;
+      const corresponding = saved == null ? -1 : result.pages.findIndex(page => page.savedPageIndex === saved);
+      state.document = { ...document, ...result };
+      state.pageCount = result.pages.length;
+      state.currentPage = corresponding >= 0 ? corresponding : Math.min(state.currentPage, state.pageCount - 1);
+      state.warnings = result.warnings.slice();
+      // The driver reapplies resolved fonts to the new page model before mounting it.
+      emit('pagechange', getState());
+      if (loadController !== controller) return;
+      render();
+      const shell = pageShells[state.currentPage];
+      if (top != null && shell) container.scrollTop += shell.getBoundingClientRect().top - top;
+      emit('rendered', getState());
+    }).catch(() => {
+      if (loadController === controller) workerHasDocument = false;
+    }).finally(() => {
+      if (loadController !== controller) return;
+      pagesLayoutPending = false;
+      if (pagesLayoutDirty) requestPagesLayout();
+    });
+  };
+
+  const updatePagesTableMeasurements = (measurements: Map<string, PagesTableMeasurement>) => {
+    let changed = false;
+    for (const [id, measured] of measurements) {
+      const previous = pagesTableMeasurements.get(id);
+      if (samePagesTableGeometry(measured, previous) && previous?.textCutoff === measured.textCutoff) continue;
+      pagesTableMeasurements.set(id, measured);
+      changed = true;
+    }
+    if (changed) requestPagesLayout();
   };
 
   const syncMountedPages = () => {
@@ -247,6 +336,8 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       : new Set(pageShells.map((_, index) => index));
     for (const [index, element] of mountedPages) {
       if (!targetPages.has(index)) {
+        tableWatchers.get(index)?.();
+        tableWatchers.delete(index);
         element.remove();
         mountedPages.delete(index);
       }
@@ -264,7 +355,10 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       if (content) {
         shell.appendChild(content);
         applyCanvasScale(shell, canvas.width, canvas.height, state.scale);
-        mountedPages.set(index, content as HTMLElement);
+        const mounted = content as HTMLElement;
+        mountedPages.set(index, mounted);
+        const disconnect = observeSavedPagesTableGrowth(mounted, canvas, pagesTableMeasurements, updatePagesTableMeasurements);
+        if (disconnect) tableWatchers.set(index, disconnect);
       }
     }
   };
@@ -362,11 +456,13 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       return;
     }
 
-    resizeObserver = new ResizeObserver(() => {
+    const resize = () => {
+      resizeFrame = 0;
       if (!state.document) {
         return;
       }
       if (state.fit === 'none') {
+        for (const content of mountedPages.values()) fitSavedPagesText(content, state.scale);
         return;
       }
       if (state.document.kind === 'numbers') {
@@ -387,6 +483,11 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
         if (shell) applyCanvasScale(shell, canvas.width, canvas.height, resolveScale(canvas.width, canvas.height, bounds));
       });
       emit('scalechange', getState());
+    };
+    resizeObserver = new ResizeObserver(() => {
+      // Canvas and toolbar changes can resize the stage again after this notification.
+      if (typeof requestAnimationFrame === 'undefined') { resize(); return; }
+      if (!resizeFrame) resizeFrame = requestAnimationFrame(resize);
     });
     resizeObserver.observe(stage);
   };
@@ -404,11 +505,12 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       return;
     }
     const task = (workerHasDocument ? getWorker().parseSheet(index) : getWorker().parseSheet(index, numbers))
-      .then((sheet) => {
+      .then(({ sheet, media }) => {
         if (state.document !== numbers) {
           return;
         }
         workerHasDocument = true;
+        if (media) Object.assign(numbers.media, media);
         numbers.sheets[index] = sheet;
         if (state.currentSheet === index) {
           render();
@@ -456,16 +558,20 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     setStatus();
     emit('loadingchange', getState());
     try {
-      const bytes = await waitForLoad(loadSourceBytes(source, { signal: controller.signal }), controller.signal);
+      const url = typeof source === 'string' ? new URL(source, container.ownerDocument.baseURI) : undefined;
+      const rangeSource = url && /^https?:$/.test(url.protocol) ? url.href
+        : typeof Blob !== 'undefined' && source instanceof Blob && source.size > 128 * 1024 ? source : undefined;
+      const input = rangeSource ?? await waitForLoad(loadSourceBytes(source, { signal: controller.signal }), controller.signal);
       if (controller.signal.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
-      // Snapshot keys cover every byte plus parsing hints; URL and password
-      // callers bypass reuse. Only immutable parser data enters the cache.
-      const key = previewOptions.cache !== false && typeof source !== 'string' && bytes[0] === 0x50 && bytes[1] === 0x4b
-        ? await waitForLoad(previewContentKey(bytes, `iwork-v1:${JSON.stringify([options.type, resolveSourceName(source)])}`, controller.signal), controller.signal)
+      const sourceName = resolveSourceName(source);
+      // Hash owned, buffered ZIP inputs. Ranged and protected sources remain session-local.
+      const key = ArrayBuffer.isView(input) && previewOptions.cache !== false && previewOptions.password === undefined
+        && typeof source !== 'string' && input[0] === 0x50 && input[1] === 0x4b
+        ? await waitForLoad(previewContentKey(input, `iwork-v2:${JSON.stringify([options.type, sourceName])}`, controller.signal), controller.signal)
         : undefined;
       let document = previewModelCache.get<ParsedIworkDocument>(key);
       if (!document) {
-        document = await waitForLoad(getWorker().parse(bytes, options.type, resolveSourceName(source)), controller.signal);
+        document = await waitForLoad(getWorker().parse(input, options.type, sourceName, previewOptions.password), controller.signal);
         if (controller.signal.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
         workerHasDocument = true;
         previewModelCache.put(key, document);
@@ -513,6 +619,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       setStatus();
       emit('loadingchange', getState());
       if (!destroyed && generation === currentGeneration) emit('error', normalized);
+      if (previewPasswordErrorCode(normalized)) throw normalized;
     }
   };
 
@@ -559,11 +666,20 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     preview,
     refreshFonts() {
       if (destroyed || state.loading || !state.document) return;
+      if (state.document.kind === 'pages' && pagesTableMeasurements.size) {
+        pagesTableMeasurements.clear();
+        requestPagesLayout();
+      }
       const top = container.scrollTop, left = container.scrollLeft;
       const grid = stage.querySelector<HTMLElement>('.xlsxv-grid');
       const gridTop = grid?.scrollTop ?? 0, gridLeft = grid?.scrollLeft ?? 0;
-      refreshedRows = [...stage.querySelectorAll('table')].map(table => table.tBodies[0]?.rows.length ?? ROW_BATCH_SIZE);
-      try { render(); } finally { refreshedRows = undefined; }
+      // Offscreen sections use their last dimensions until the browser lays out the rebuilt table.
+      refreshedTables = [...stage.querySelectorAll<HTMLElement>('.iworkv-numbers-table')].map(section => {
+        if (section.classList.contains('is-windowed')) return undefined;
+        const { width, height } = section.getBoundingClientRect();
+        return { rows: section.querySelector('table')?.tBodies[0]?.rows.length ?? ROW_BATCH_SIZE, width, height };
+      });
+      try { render(); } finally { refreshedTables = undefined; }
       container.scrollTop = top; container.scrollLeft = left;
       const nextGrid = stage.querySelector<HTMLElement>('.xlsxv-grid');
       if (nextGrid) { nextGrid.scrollTop = gridTop; nextGrid.scrollLeft = gridLeft; }
@@ -634,10 +750,26 @@ function waitForLoad<T>(task: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
-function numbersTableToSheet(table: TableItem, index: number, registry: MediaRegistry | null): { sheet: ParsedSheet; renderCell: SheetCellRenderer } {
-  const sources = new WeakMap<ParsedCell, TableCell>();
+function numbersTableToSheet(table: IworkTable['item'], index: number, registry: MediaRegistry | null):
+  { sheet: ParsedSheet; renderCell: SheetCellRenderer; renderBlankCell?: SheetBlankCellRenderer } {
+  const { blankCellStyles, strokeEdges } = table;
+  const renderBlankCell: SheetBlankCellRenderer | undefined = blankCellStyles ? (element, row, column) => {
+    const paint = blankCellPaint(blankCellStyles, row - 1, column - 1);
+    const authored = strokeEdges && cellStrokeBorders(strokeEdges, row - 1, column - 1);
+    if (authored) paint.borders = { ...paint.borders, ...authored };
+    if (paint.fill.type === 'picture') element.style.position = 'relative';
+    if (paint.fill.pictureFit) element.classList.add('iworkv-picture-fill');
+    applyTableCellPaint(element, paint, registry ?? undefined);
+  } : undefined;
+  const sources = new WeakMap<ParsedCell, IworkTableCell>();
   const merges: NonNullable<ParsedSheet['merges']> = [];
   const rows = new Map<number, ParsedSheet['rows'][number]>();
+  const hiddenRanges = (indexes?: readonly number[]) => {
+    if (!indexes?.length) return undefined;
+    const ranges: { first: number; last: number }[] = [];
+    for (const index of indexes) addHiddenTrack(ranges, index + 1);
+    return ranges;
+  };
   for (const cell of table.cells) {
     if (cell.isMergedContinuation) {
       continue;
@@ -663,10 +795,17 @@ function numbersTableToSheet(table: TableItem, index: number, registry: MediaReg
     rows: [...rows.values()].sort((left, right) => left.index - right.index),
     columnCount: Math.max(table.columns.length, 1),
     rowCount: Math.max(table.rows.length, 1),
+    hiddenRows: hiddenRanges(table.hiddenRows),
+    hiddenColumns: hiddenRanges(table.hiddenColumns),
     rowHeights: table.rows,
     columnWidths: table.columns,
-    merges
-  }, renderCell: (element, cell) => {
+    merges,
+    mergeBorderRuns: strokeEdges && ((range, side, first, last) => {
+      if (side === 'top' || side === 'bottom') return visibleStrokeRuns(strokeEdges.horizontal,
+        side === 'top' ? range.firstRow - 1 : range.lastRow, first, last);
+      return visibleStrokeRuns(strokeEdges.vertical, side === 'left' ? range.firstColumn - 1 : range.lastColumn, first, last);
+    })
+  }, renderBlankCell, renderCell: (element, cell) => {
     const source = sources.get(cell);
     if (!source || !registry) return;
     element.replaceChildren(); element.classList.add('iworkv-rich-cell'); element.style.padding = '0';
@@ -674,16 +813,25 @@ function numbersTableToSheet(table: TableItem, index: number, registry: MediaReg
     element.style.setProperty('--xlsxv-merge-padding-inline', '0px');
     element.style.setProperty('--xlsxv-merge-padding-block', '0px');
     const frame = source.textFrame;
+    const inlinePicture = source.fill.type === 'picture' && !source.fill.pictureFit;
+    if (source.fill.pictureFit) {
+      element.classList.add('iworkv-picture-fill');
+      element.style.position = 'relative';
+    }
     const text = renderTableCellContent(element, { ...source,
-      fill: source.fill.type === 'picture' ? { type: 'none' } : source.fill,
+      fill: inlinePicture ? { type: 'none' } : source.fill,
       textFrame: { ...frame, verticalAlign: frame.verticalAlign ?? 'top', padding: frame.padding ?? { top: 4, right: 8, bottom: 4, left: 8 },
         paragraphs: frame.paragraphs.map(paragraph => paragraph.runs.some(run => run.fontSize != null) ? paragraph
           : { ...paragraph, runs: paragraph.runs.map(run => ({ ...run, fontSize: 12 })) }) }
     }, registry);
+    if (frame.accounting) text.classList.add('iworkv-accounting');
     if (source.fill.type === 'gradient') element.style.backgroundRepeat = 'no-repeat';
-    if (source.fill.type !== 'picture' || !source.fill.mediaId) return;
+    if (!inlinePicture || !source.fill.mediaId) return;
     const image = document.createElement('img'); image.className = 'iworkv-cell-image';
     image.src = registry.getUrl(source.fill.mediaId); image.alt = ''; image.loading = 'lazy'; text.prepend(image);
+    if (source.fill.pictureTint) void registry.getTintedPicture(source.fill.mediaId, source.fill.pictureTint).then(picture => {
+      if (picture) image.src = picture.url;
+    });
   } };
 }
 
@@ -753,4 +901,5 @@ function applyCanvasScale(shell: HTMLElement, width: number, height: number, sca
   }
   inner.style.transform = `scale(${scale})`;
   inner.style.transformOrigin = 'top left';
+  fitSavedPagesText(inner, scale);
 }

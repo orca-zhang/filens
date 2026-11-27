@@ -1,0 +1,126 @@
+{
+  "date": "2026-11-26",
+  "platform": "darwin arm64",
+  "node": "v20.20.2",
+  "method": "Build the same preview source before and after minifying embedded workers. Compare the deployable artifacts with the same packing and transport encoders. Verify exact transport round trips, identical group membership, identical non-worker groups and archive sidecars, and preservation of the PDF.js license notice and version comment.",
+  "unit": "bytes",
+  "deliveryLimit": 4000000,
+  "baseline": {
+    "sourceSha256": "978acc6c1762ee4ac6927ecfbcf6c48de1fba93226901230d69992230b6865ff",
+    "jsSha256": "a4c84f2a13e02d5bb4870da052c51ed2488f427af8767226ba23dbc3ae839271",
+    "js": 7456325,
+    "gzip": 3999571,
+    "brotli": 3842859,
+    "gzipHeadroom": 429,
+    "brotliHeadroom": 157141
+  },
+  "candidate": {
+    "sourceSha256": "0a3c6a53e4bd3e65b42689ecafc97a8d40e1787dd50b7c689cada32f31fba132",
+    "jsSha256": "cc65dec4c414e8377e605bf023b853fae4be2f1feeeab3b5d68be1b68626dee0",
+    "js": 7440758,
+    "gzip": 3987593,
+    "brotli": 3831201,
+    "gzipHeadroom": 12407,
+    "brotliHeadroom": 168799
+  },
+  "workerGroups": [
+    {
+      "worker": "iWork",
+      "before": {
+        "source": 956113,
+        "lzma": 172814
+      },
+      "after": {
+        "source": 952340,
+        "lzma": 167694
+      }
+    },
+    {
+      "worker": "media",
+      "before": {
+        "source": 109408,
+        "lzma": 32248
+      },
+      "after": {
+        "source": 107869,
+        "lzma": 30719
+      }
+    },
+    {
+      "worker": "PDF.js",
+      "before": {
+        "source": 1078612,
+        "lzma": 239136
+      },
+      "after": {
+        "source": 1016262,
+        "lzma": 234111
+      }
+    }
+  ],
+  "chromiumStartup": {
+    "version": "159.0.8154.6",
+    "method": "Loopback HTTP with deployable gzip, fresh browser context per trial, alternating build order, first pair discarded. Import includes HTTP transfer and ESM initialization. PDF time starts after its source bytes are loaded and stops at onRendered. Text creates zero worker or WASM Blob URLs, and PDF creates a worker Blob URL on demand.",
+    "pdf": "apps/demo/public/samples/filens-cosmic-atlas.pdf",
+    "baseline": {
+      "medianImportMs": 122.8,
+      "medianPdfFirstRenderedMs": 62.9,
+      "samples": [
+        {
+          "importMs": 123.4,
+          "pdfFirstRenderedMs": 62.4
+        },
+        {
+          "importMs": 124.3,
+          "pdfFirstRenderedMs": 62.3
+        },
+        {
+          "importMs": 123.1,
+          "pdfFirstRenderedMs": 62.8
+        },
+        {
+          "importMs": 122.2,
+          "pdfFirstRenderedMs": 64.7
+        },
+        {
+          "importMs": 121.3,
+          "pdfFirstRenderedMs": 64.4
+        },
+        {
+          "importMs": 122.4,
+          "pdfFirstRenderedMs": 63
+        }
+      ]
+    },
+    "candidate": {
+      "medianImportMs": 123,
+      "medianPdfFirstRenderedMs": 62.5,
+      "samples": [
+        {
+          "importMs": 125.3,
+          "pdfFirstRenderedMs": 59.8
+        },
+        {
+          "importMs": 124.6,
+          "pdfFirstRenderedMs": 60.5
+        },
+        {
+          "importMs": 123.3,
+          "pdfFirstRenderedMs": 61.3
+        },
+        {
+          "importMs": 121.3,
+          "pdfFirstRenderedMs": 65.9
+        },
+        {
+          "importMs": 122.8,
+          "pdfFirstRenderedMs": 64.7
+        },
+        {
+          "importMs": 122.3,
+          "pdfFirstRenderedMs": 63.8
+        }
+      ]
+    }
+  }
+}

@@ -32,6 +32,11 @@ test('applies XLSX conditional rules through both axes without expanding the gri
   await expect(at(3, 5)).toHaveCSS('background-color', 'rgb(254, 215, 170)');
   await expect(at(1, 6).locator('span > span')).toHaveCSS('color', 'rgb(51, 102, 153)');
   await expect(at(1, 6).locator('span > span')).toHaveCSS('font-style', 'normal');
+  await expect(at(1, 8)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(at(2, 8)).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+  await expect(at(1, 9)).toHaveCSS('background-color', 'rgb(253, 230, 138)');
+  await expect(at(2, 9)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(at(2, 10)).toHaveCSS('background-color', 'rgb(220, 252, 231)');
 
   await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight * 1000 / 1048576; grid.scrollLeft = 3400; });
   const merge = grid.locator('[data-merge-ref="A500"]');
@@ -43,6 +48,11 @@ test('applies XLSX conditional rules through both axes without expanding the gri
   await expect(last).toHaveText('22.00');
   await expect(last).toHaveCSS('background-color', 'rgb(255, 205, 210)');
   await expect(last).toHaveCSS('font-weight', '700');
+  await expect(last).toHaveCSS('border-bottom-width', '3px');
+  await expect(at(1048575, 16382)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(at(1048576, 16382)).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+  await expect(at(1048575, 16383)).toHaveCSS('background-color', 'rgb(253, 230, 138)');
+  await expect(at(1048576, 16383)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(last).toBeInViewport();
   await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
   expect(await grid.locator('.xlsxv-cell').count()).toBeLessThanOrEqual(2400);

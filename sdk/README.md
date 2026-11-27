@@ -45,14 +45,16 @@ final step is needed. Runtime assets are available offline at startup.
 Mobile builds store JS / WASM and full third-party notices as `.br`, retaining lazy
 format modules and separate workers. iOS serves the original URLs with
 `Content-Encoding: br` for WebKit; Android streams a `BrotliInputStream` from
-`org.brotli:dec:0.1.2`. Neither host extracts another copy to app storage. Decode
+`org.brotli:dec:0.1.2`. XLSX regular expression formulas load `xlsx/pcre2.wasm`
+on demand from those same local resources. Neither host extracts another copy
+to app storage. Decode
 `THIRD-PARTY-NOTICES.txt.br` with `brotli -d` to read it; the host also serves decoded
 text at the original `.txt` URL. The MIT license remains plain text, and complete
 required notices and upstream links are retained. Update native host source and
 assets together; older gzip and uncompressed resources remain supported.
 
-Each complete source SDK ZIP is **smaller than 3 MiB**, enforced during packaging;
-see [exact sizes](../docs/mobile-sdk-sizes.json). One shared complete conversion
+Packaging enforces a **3 MiB** ceiling for each complete source SDK ZIP.
+See the [measured release sizes](../docs/mobile-sdk-sizes.json). One shared complete conversion
 WASM removes duplicate code while retaining format support. Its first conversion
 compiles a larger core; parsing memory still depends on the document and format.
 The ZIP bundles a host-only preparation tool and all resources; after preparation,

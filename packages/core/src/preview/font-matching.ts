@@ -33,20 +33,22 @@ const KNOWN: Array<[RegExp, PreviewFontTraits]> = [
   [/^(?:arial|helvetica(?: neue)?|calibri(?: light)?|carlito|aptos(?: display| narrow)?|segoe ui|verdana|tahoma|roboto|arimo|liberation sans|noto sans)$/i, { serif: false, monospace: false, style: 'text', script: 'latin' }],
   [/^(?:arial narrow|roboto condensed|noto sans condensed)$/i, { serif: false, monospace: false, style: 'text', script: 'latin', stretch: 75 }],
   [/^(?:courier(?: new)?|consolas|cascadia (?:mono|code)|menlo|monaco|liberation mono|cousine|roboto mono|noto sans mono)$/i, { monospace: true, style: 'text', script: 'latin' }],
-  [/^(?:simsun|nsimsun|songti sc|stsong|noto serif cjk sc|source han serif sc)$/i, { serif: true, style: 'text', script: 'cjk-sc' }],
-  [/^(?:simhei|microsoft yahei|pingfang sc|dengxian(?: light)?|noto sans cjk sc|source han sans sc)$/i, { serif: false, style: 'text', script: 'cjk-sc' }],
+  [/^(?:simsun|nsimsun|songti sc|stsong|noto serif(?: cjk)? sc|source han serif sc)$/i, { serif: true, style: 'text', script: 'cjk-sc' }],
+  [/^(?:simhei|microsoft yahei|pingfang sc|dengxian(?: light)?|noto sans(?: cjk)? sc|source han sans sc)$/i, { serif: false, style: 'text', script: 'cjk-sc' }],
   [/^(?:kaiti|stkaiti|fangsong|stfangsong)$/i, { serif: true, style: 'handwriting', script: 'cjk-sc' }],
-  [/^(?:mingliu|pmingliu|songti tc|noto serif cjk tc)$/i, { serif: true, style: 'text', script: 'cjk-tc' }],
-  [/^(?:microsoft jhenghei|pingfang tc|noto sans cjk tc)$/i, { serif: false, style: 'text', script: 'cjk-tc' }],
-  [/^(?:yu mincho|ms pmincho|hiragino mincho pron|noto serif cjk jp)$/i, { serif: true, style: 'text', script: 'japanese' }],
-  [/^(?:yu gothic(?: ui| light)?|meiryo|ms pgothic|hiragino sans|noto sans cjk jp)$/i, { serif: false, style: 'text', script: 'japanese' }],
-  [/^(?:batang|applemyungjo|noto serif cjk kr)$/i, { serif: true, style: 'text', script: 'korean' }],
-  [/^(?:malgun gothic|apple sd gothic neo|noto sans cjk kr)$/i, { serif: false, style: 'text', script: 'korean' }],
+  [/^(?:mingliu|pmingliu|songti tc|noto serif(?: cjk)? tc)$/i, { serif: true, style: 'text', script: 'cjk-tc' }],
+  [/^(?:microsoft jhenghei|pingfang tc|noto sans(?: cjk)? tc)$/i, { serif: false, style: 'text', script: 'cjk-tc' }],
+  [/^(?:yu mincho|ms pmincho|hiragino mincho pron|noto serif(?: cjk)? jp)$/i, { serif: true, style: 'text', script: 'japanese' }],
+  [/^(?:yu gothic(?: ui| light)?|meiryo|ms pgothic|hiragino sans|noto sans(?: cjk)? jp)$/i, { serif: false, style: 'text', script: 'japanese' }],
+  [/^(?:batang|applemyungjo|noto serif(?: cjk)? kr)$/i, { serif: true, style: 'text', script: 'korean' }],
+  [/^(?:malgun gothic|apple sd gothic neo|noto sans(?: cjk)? kr)$/i, { serif: false, style: 'text', script: 'korean' }],
   [/^(?:comic sans ms|segoe print|bradley hand|chalkboard se|chalkboard)$/i, { style: 'handwriting', script: 'latin' }],
   [/^(?:papyrus|copperplate|algerian|jokerman)$/i, { style: 'decorative', script: 'latin' }],
   [/^impact$/i, { serif: false, style: 'text', script: 'latin' }],
   [/^(?:wingdings(?: [23])?|webdings|symbol|segoe ui symbol|apple symbols|noto sans symbols(?: 2)?)$/i, { style: 'symbol' }],
-  [/^(?:segoe ui emoji|apple color emoji|noto color emoji)$/i, { style: 'symbol', script: 'emoji' }]
+  [/^(?:segoe ui emoji|apple color emoji|noto(?: color)? emoji|twemoji mozilla)$/i, { style: 'symbol', script: 'emoji' }],
+  [/^(?:cambria math|stix(?: two)? math|xits math|latin modern math|libertinus math|asana math|noto sans math|fira math)$/i,
+    { style: 'text', script: 'math' }]
 ];
 
 /** Format metadata takes precedence; name inference remains explicitly labelled. */
@@ -106,7 +108,8 @@ export function getFontFallbackCandidates(fontFamily: string, hints?: PreviewFon
   const name = normalizeLocalizedFontAlias(fontFamily).toLowerCase();
   const traits = classifyPreviewFont(fontFamily, hints);
   let candidates: string[] = [];
-  if (traits.script === 'emoji') candidates = ['Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'emoji'];
+  if (traits.script === 'emoji') candidates = ['Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Noto Emoji', 'emoji'];
+  else if (traits.script === 'math') candidates = ['Cambria Math', 'STIX Two Math', 'Latin Modern Math', 'Noto Sans Math', 'math'];
   else if (traits.style === 'symbol') return []; // Legacy symbol encodings require glyph mapping, not family similarity.
   else if (traits.monospace) candidates = CJK_MONOSPACE[traits.script ?? '']
     ? [CJK_MONOSPACE[traits.script!], 'monospace'] : MONO;
@@ -147,10 +150,15 @@ export interface PreviewFontMatch {
   coverage: 'matched' | 'unknown';
 }
 
+function isSpecializedScript(script: PreviewFontTraits['script']): boolean {
+  return script === 'emoji' || script === 'math';
+}
+
 /** Rank compatible candidates; callers still must verify that the chosen family is loaded. */
 export function rankPreviewFontCandidates(request: PreviewFontReference, candidates: readonly PreviewFontCandidate[]): PreviewFontMatch[] {
   const source = classifyPreviewFont(request.fontFamily ?? '', request.traits);
-  if (source.style === 'symbol' && source.script !== 'emoji') return [];
+  const specialized = isSpecializedScript(source.script);
+  if (source.style === 'symbol' && !specialized) return [];
   const sample = new Set<number>();
   for (const character of request.text ?? '') {
     const point = character.codePointAt(0)!;
@@ -163,7 +171,7 @@ export function rankPreviewFontCandidates(request: PreviewFontReference, candida
     const target = classifyPreviewFont(candidate.fontFamily, candidate.traits);
     if (source.monospace === true && target.monospace !== true) continue;
     if (['handwriting', 'decorative', 'symbol'].includes(source.style ?? '') && target.style !== source.style) continue;
-    if (source.script === 'emoji' && target.script !== 'emoji') continue;
+    if ((specialized || isSpecializedScript(target.script)) && source.script !== target.script) continue;
     if ((['monospace', 'serif', 'style', 'script'] as const).some(key => source[key] !== undefined && target[key] !== undefined && source[key] !== target[key])) continue;
     const ranges = candidate.coverage;
     if (ranges && sample.size && [...sample].some(point => !ranges.some(([start, end]) => point >= start && point <= end))) continue;

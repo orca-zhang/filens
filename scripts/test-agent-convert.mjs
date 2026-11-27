@@ -43,6 +43,20 @@ try {
     assert.ok(zip['[Content_Types].xml']); assert.ok(zip[entry],entry);
     if (token) assert.ok(strFromU8(zip[entry]).includes(token),`${fixture}: ${token}`);
   }
+  const encrypted = path.join(root,'packages/converter-client/test/fixtures/password/agile.docx');
+  const password = ' filens 密码🔐 ';
+  const unlocked = path.join(work,'unlocked.docx');
+  const encryptedRequest = {op:'convert',input:encrypted,output:unlocked,workspace:'disk'};
+  const required = invoke([],JSON.stringify(encryptedRequest),3);
+  assert.equal(required.error.code,'password_required');
+  const rejected = invoke([],JSON.stringify({...encryptedRequest,options:{password:'incorrect'}}),3);
+  assert.equal(rejected.error.code,'password_invalid');
+  const decrypted = invoke([],JSON.stringify({...encryptedRequest,options:{password}}));
+  assert.ok(strFromU8(unzipSync(await readFile(decrypted.output.path))['word/document.xml']).includes('Fixture DOCX document'));
+  assert.ok(!JSON.stringify(decrypted).includes(password), 'conversion output metadata must exclude credentials');
+  const conflict = invoke(['convert',encrypted,'conflict.docx','--ask-password','--password',password],'',2);
+  assert.equal(conflict.error.code,'invalid_request');
+  assert.ok(!JSON.stringify(conflict).includes(password));
   for (const [fixture,target,signature] of [
     ['raw/sample.dng','jpg',[0xff,0xd8]],
     ['image/sample.icns','png',[0x89,0x50,0x4e,0x47]],

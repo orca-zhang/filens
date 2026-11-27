@@ -4,7 +4,9 @@ import {
   getPreviewFontWarnings,
   bindPreviewFontLoading,
   analyzeLoadedPreviewFonts,
+  waitForContainerTask,
   type PreviewFontRefresh,
+  type PreviewFontDiagnostic,
   type CadPreviewState,
   type PreviewFontResolver,
   type PreviewFontReference,
@@ -18,6 +20,7 @@ import {
   type PreviewSource
 } from '@filens/core';
 import type { CadModel, ModelEntity, ModelStyle, ModelGeometry, ModelHatchEdge, ModelPoint } from './cad-model';
+import { layoutShxText, MAX_SHX_BYTES, parseShxFont, type ShxFont, type ShxTextPath } from './shx-font';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -250,6 +253,7 @@ export interface CadTextEntity {
   styleName?: string;
   fontFamily?: string;
   fontFile?: string;
+  verticalText?: boolean;
 }
 
 export interface CadImageEntity {
@@ -298,6 +302,7 @@ export interface CadTextStyle {
   fontFile?: string;
   bigFontFile?: string;
   fontFamily?: string;
+  vertical?: boolean;
 }
 
 export interface CadLayer {
@@ -340,7 +345,13 @@ export interface CadDrawing {
 export interface CadHeaderMetadata {
   units?: CadUnitsMetadata;
   lineTypeScale?: number;
+  textEncoding?: string;
 }
+
+type RenderedCadDrawing = CadDrawing & {
+  shxPaths?: Map<CadTextEntity, ShxTextPath>;
+  shxFonts?: PreviewFontDiagnostic[];
+};
 
 export interface CadUnitsMetadata {
   code?: number;
@@ -433,7 +444,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
   private readonly root: HTMLDivElement;
   private canvas: SVGSVGElement | null = null;
   private canvasResizeObserver?: ResizeObserver;
-  private drawing: CadDrawing | null = null;
+  private drawing: RenderedCadDrawing | null = null;
   private panX = 0;
   private panY = 0;
   private state: CadPreviewState;
@@ -505,7 +516,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
         throw new Error(`CAD preview supports DXF and native CAD drawing models, got ${format || 'unknown'}.`);
       }
 
-      const text = await sourceToText(source, { ...context, signal });
+      const text = await sourceToText(source, format, signal);
       checkCadAborted(signal);
       const parsedDrawing = format === 'cad-json' ? loadCadDrawing(text) : loadDxfDrawing(text);
       const resourceResolvedDrawing = await applyCadResourceResolver(
@@ -516,7 +527,10 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
         signal
       );
       checkCadAborted(signal);
-      const drawing = applyCadFontResolver(resourceResolvedDrawing, this.options.fontResolver, format);
+      const mappedDrawing = applyCadFontResolver(resourceResolvedDrawing, this.options.fontResolver, format);
+      const drawing: RenderedCadDrawing = this.options.resourceResolver
+        ? await applyCadShxResources(resourceResolvedDrawing, mappedDrawing, this.options.resourceResolver, format, signal)
+        : mappedDrawing;
       checkCadAborted(signal);
       this.fontReferences = collectCadFontReferences(resourceResolvedDrawing, drawing);
       const fontAnalysis = analyzePreviewFonts(this.fontReferences, this.host.ownerDocument);
@@ -530,7 +544,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
         loading: false,
         error: null,
         warnings: [...new Set([...drawing.warnings, ...fontWarnings])],
-        fonts: fontAnalysis.fonts,
+        fonts: [...(drawing.shxFonts ?? []), ...fontAnalysis.fonts],
         layers: drawingLayersToState(drawing),
         activeLayerIds
       };
@@ -604,23 +618,25 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
 
   getFontReferences(): readonly PreviewFontReference[] { return this.fontReferences; }
 
+  refreshFontLayout(): void { this.fontLoading.refresh(); }
+
   refreshFonts(update: PreviewFontRefresh): void {
     if (!this.drawing || this.loadController?.signal.aborted) return;
     for (const entity of this.drawing.entities) {
-      if (entity.type !== 'text') continue;
+      if (entity.type !== 'text' || this.drawing.shxPaths?.has(entity)) continue;
       const index = this.fontReferences.findIndex(ref => ref.styleName === entity.styleName
         && (ref.resolvedFontFamily ?? ref.fontFamily) === entity.fontFamily);
-      const target = update.references[index]?.resolvedFontFamily;
+      const replacement = update.references[index];
+      const target = replacement?.resolvedFontFamily ?? replacement?.fontFamily;
       if (target) entity.fontFamily = target;
     }
     this.fontReferences = update.references;
     const analysis = analyzeLoadedPreviewFonts(update, this.host.ownerDocument);
-    this.state.fonts = analysis.fonts;
+    this.state.fonts = [...(this.drawing.shxFonts ?? []), ...analysis.fonts];
     this.state.warnings = [...new Set([...this.drawing.warnings, ...getPreviewFontWarnings(analysis.fonts.filter(font => font.status !== 'unsupported')), ...update.warnings])];
     if (update.loaded.length || update.relayout) {
       this.render(this.drawing);
-      this.appliedLayers = new Set(this.drawing.layers);
-      this.applyLayerVisibility();
+      this.applyLayerVisibility(true);
     }
     this.emit('warnings', this.state.warnings); this.emit('rendered', this.getState()); this.emit('statechange', this.getState());
   }
@@ -683,7 +699,7 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
     };
   }
 
-  private render(drawing: CadDrawing): void {
+  private render(drawing: RenderedCadDrawing): void {
     this.drawing = drawing;
     this.knownLayers = new Set(drawing.layers);
     const stage = document.createElement('div');
@@ -703,13 +719,13 @@ export class CadPreviewSession implements PreviewSession<CadPreviewState> {
     }
   }
 
-  private applyLayerVisibility(): void {
+  private applyLayerVisibility(force = false): void {
     if (!this.canvas) {
       return;
     }
     const activeLayers = new Set(this.state.activeLayerIds ?? []);
     for (const [layerId, elements] of this.layerElements) {
-      if (activeLayers.has(layerId) === this.appliedLayers.has(layerId)) continue;
+      if (!force && activeLayers.has(layerId) === this.appliedLayers.has(layerId)) continue;
       for (const element of elements) {
         const entityVisible = element.getAttribute('data-entity-visible') !== 'false';
         const visible = entityVisible && (!layerId || activeLayers.has(layerId));
@@ -766,6 +782,8 @@ export function loadCadDrawing(source: string): CadDrawing {
   const warnings: string[] = [];
   const styles = new Map<string, CadTextStyle>(model.text_styles.map(style => [normalizeTextStyleName(style.name), {
     name: style.name, fontFile: style.font ?? undefined,
+    bigFontFile: typeof style.props?.['dwg.big_font'] === 'string' ? style.props['dwg.big_font'] : undefined,
+    vertical: style.props?.['dwg.vertical'] === true,
     fontFamily: style.font && !isShxFont(style.font) ? fontFileToFamily(style.font) : undefined
   }]));
   const blocks = new Map(model.blocks.map(block => [block.name, block]));
@@ -850,8 +868,9 @@ export function loadCadDrawing(source: string): CadDrawing {
   });
   const layerMap = new Map(layers.map(layer => [normalizeLayerName(layer.name), layer]));
   const resolvedEntities = resolveEntityStyles(entities, layerMap, lineTypeMap);
+  const textEncoding = drawingTextEncoding(model.source.codepage ?? undefined);
   return { entities: resolvedEntities, bounds: computeBounds(resolvedEntities),
-    header: { units: { name: model.units.unit } },
+    header: { units: { name: model.units.unit }, ...(textEncoding ? { textEncoding } : {}) },
     layers: uniqueSorted([...layers.map(layer => layer.name), ...entities.map(entity => entity.layer).filter((name): name is string => !!name)]),
     layerStyles: layers, lineTypes: [...lineTypeMap.values()], textStyles: [...styles.values()],
     warnings: uniqueWarnings([...warnings, ...model.warnings.filter(warning => !/ (?:RAY|XLINE) entities mapped to Unknown$/.test(warning.message)).map(warning => warning.message),
@@ -871,7 +890,7 @@ function modelEntityStyle(entity: ModelStyle): CadEntityMetadataSource {
 function degrees(radians: number): number { return radians * 180 / Math.PI; }
 
 function modelText(geometry: Extract<ModelGeometry, { type: 'text' | 'm_text' }>, styles: Map<string, CadTextStyle>): CadTextEntity {
-  const style = geometry.style ? styles.get(normalizeTextStyleName(geometry.style)) : undefined;
+  const style = styles.get(normalizeTextStyleName(geometry.style ?? 'STANDARD'));
   const horizontal = geometry.type === 'text' ? geometry.halign : geometry.attachment.split('_')[1];
   const vertical = geometry.type === 'text' ? geometry.valign : geometry.attachment.split('_')[0];
   return { type: 'text', point: geometry.position,
@@ -881,7 +900,7 @@ function modelText(geometry: Extract<ModelGeometry, { type: 'text' | 'm_text' }>
     obliqueAngle: geometry.type === 'text' ? degrees(geometry.oblique) : 0,
     horizontalAlign: horizontal === 'right' ? 'right' : horizontal === 'center' ? 'center' : 'left',
     verticalAlign: vertical === 'top' ? 'top' : vertical === 'middle' ? 'middle' : vertical === 'bottom' ? 'bottom' : 'baseline',
-    styleName: geometry.style ?? undefined, fontFile: style?.fontFile, fontFamily: style?.fontFamily };
+    styleName: geometry.style ?? style?.name, fontFile: style?.fontFile, fontFamily: style?.fontFamily };
 }
 
 function modelGeometryEntities(entity: ModelEntity, styles: Map<string, CadTextStyle>, warnings: string[]): CadEntity[] {
@@ -1097,10 +1116,27 @@ function readHeaderMetadata(pairs: DxfPair[]): CadHeaderMetadata {
   const measurementCode = readHeaderNumber(pairs, '$MEASUREMENT');
   const lineTypeScale = normalizeLineTypeScale(readHeaderNumber(pairs, '$LTSCALE'));
   const units = readCadUnits(unitCode, measurementCode);
+  const textEncoding = drawingTextEncoding(pairs.find((pair, index) => pair.code === 3 && pairs[index - 1]?.code === 9
+    && pairs[index - 1]?.value === '$DWGCODEPAGE')?.value);
   return {
     ...(units ? { units } : {}),
-    ...(lineTypeScale == null ? {} : { lineTypeScale })
+    ...(lineTypeScale == null ? {} : { lineTypeScale }),
+    ...(textEncoding ? { textEncoding } : {})
   };
+}
+
+function drawingTextEncoding(codepage: string | undefined): string | undefined {
+  const label = codepage?.trim().toLowerCase() ?? '';
+  const windows = /^(?:ansi_|windows-)(125[0-8]|874)$/.exec(label)?.[1];
+  if (windows) return `windows-${windows}`;
+  if (['ansi_932', 'dos932', 'shift_jis'].includes(label)) return 'shift_jis';
+  if (['ansi_936', 'gb2312', 'gbk'].includes(label)) return 'gbk';
+  if (['ansi_949', 'ksc5601', 'euc-kr'].includes(label)) return 'euc-kr';
+  if (['ansi_950', 'big5'].includes(label)) return 'big5';
+  if (label === 'dos866' || label === 'ibm866') return 'ibm866';
+  const iso = /^iso-?8859-([1-9])$/.exec(label)?.[1];
+  if (iso) return `iso-8859-${iso}`;
+  if (label === 'macintosh') return label;
 }
 
 function readHeaderNumber(pairs: DxfPair[], variableName: string): number | undefined {
@@ -1706,8 +1742,9 @@ function parseText(type: string | undefined, values: DxfPair[], textStyles: Map<
     [readString(values, 1), ...values.filter((pair) => pair.code === 3).map((pair) => pair.value)].filter(Boolean).join('')
   );
   if (!anchor || !value) return undefined;
-  const styleName = readString(values, 7);
-  const style = styleName ? textStyles.get(normalizeTextStyleName(styleName)) : undefined;
+  const explicitStyle = readString(values, 7);
+  const style = textStyles.get(normalizeTextStyleName(explicitStyle ?? 'STANDARD'));
+  const styleName = explicitStyle ?? style?.name;
   const rotation = isMtext ? (readNumber(values, 50) ?? mtextDirectionRotation(values) ?? 0) : (readNumber(values, 50) ?? 0);
   return {
     ...entityStyle(values),
@@ -1720,6 +1757,7 @@ function parseText(type: string | undefined, values: DxfPair[], textStyles: Map<
     obliqueAngle: readNumber(values, 51) ?? 0,
     horizontalAlign,
     verticalAlign,
+    ...(isMtext && readNumber(values, 72) === 3 ? { verticalText: true } : {}),
     styleName,
     fontFamily: style?.fontFamily,
     fontFile: style?.fontFile
@@ -2274,7 +2312,7 @@ function skipEntityValues(pairs: DxfPair[], index: number): number {
   return index;
 }
 
-function renderDrawingToSvg(drawing: CadDrawing, layerElements: Map<string, SVGElement[]>): SVGSVGElement {
+function renderDrawingToSvg(drawing: RenderedCadDrawing, layerElements: Map<string, SVGElement[]>): SVGSVGElement {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.classList.add('cadv-canvas');
   const width = Math.max(drawing.bounds.maxX - drawing.bounds.minX, 1);
@@ -2300,7 +2338,7 @@ function renderDrawingToSvg(drawing: CadDrawing, layerElements: Map<string, SVGE
   svg.appendChild(group);
 
   for (const entity of drawing.entities) {
-    const node = renderEntity(entity, drawing.bounds, layerElements);
+    const node = renderEntity(entity, drawing.bounds, layerElements, entity.type === 'text' ? drawing.shxPaths?.get(entity) : undefined);
     if (node) {
       group.appendChild(node);
     }
@@ -2318,7 +2356,7 @@ function renderDrawingToSvg(drawing: CadDrawing, layerElements: Map<string, SVGE
   return svg;
 }
 
-function renderEntity(entity: CadEntity, bounds: CadDrawing['bounds'], layerElements: Map<string, SVGElement[]>): SVGElement | null {
+function renderEntity(entity: CadEntity, bounds: CadDrawing['bounds'], layerElements: Map<string, SVGElement[]>, shx?: ShxTextPath): SVGElement | null {
   const applyEntityAttributes = (node: SVGElement, paintTarget: 'stroke' | 'fill' = 'stroke'): SVGElement => {
     node.setAttribute(paintTarget, entity.color ?? DEFAULT_CAD_COLOR);
     if (paintTarget === 'stroke') {
@@ -2326,7 +2364,7 @@ function renderEntity(entity: CadEntity, bounds: CadDrawing['bounds'], layerElem
         node.setAttribute('stroke-width', String(entity.lineWeight));
       }
       const dashArray = lineTypeDashArray(entity.lineType, entity.lineTypePattern, entity.lineTypeScale);
-      if (dashArray) {
+      if (dashArray && entity.type !== 'text') {
         node.setAttribute('stroke-dasharray', dashArray);
       }
     }
@@ -2479,8 +2517,21 @@ function renderEntity(entity: CadEntity, bounds: CadDrawing['bounds'], layerElem
       return applyEntityAttributes(path);
     }
     case 'text': {
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       const point = toSvgPoint(entity.point, bounds);
+      if (shx) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', shx.path);
+        path.setAttribute('data-shx-text', 'true');
+        path.setAttribute('role', 'img');
+        path.setAttribute('aria-label', entity.value);
+        path.setAttribute('transform', `${textTransform(entity, point)} translate(${point.x} ${point.y})`.trim());
+        if (!(entity.lineWeight && entity.lineWeight > 0)) {
+          path.setAttribute('stroke-width', '1');
+          path.setAttribute('vector-effect', 'non-scaling-stroke');
+        }
+        return applyEntityAttributes(path);
+      }
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       const lines = textLines(entity.value);
       text.setAttribute('x', String(point.x));
       text.setAttribute('y', String(point.y));
@@ -3283,6 +3334,7 @@ function normalizeDxfText(value: string): string {
     .replace(/\\[Ss]([^;]*);/g, (_match, stacked: string) => stacked.replace(/[#$^]/g, '/'))
     .replace(/\\[AaCcFfHhWwQqTt][^;]*;/g, '')
     .replace(/\\[LlOoKk]/g, '')
+    .replace(/\\U\+([\da-f]{4})/gi, (_match, hex: string) => String.fromCharCode(parseInt(hex, 16)))
     .replace(/\\([{}\\])/g, '$1')
     .replace(/[{}]/g, '');
 }
@@ -3901,6 +3953,7 @@ function parseTextStyle(values: DxfPair[]): CadTextStyle | undefined {
     name,
     fontFile,
     bigFontFile,
+    ...((readNumber(values, 70) ?? 0) & 4 ? { vertical: true } : {}),
     fontFamily: fontFile && !isShxFont(fontFile) ? fontFileToFamily(fontFile) : undefined
   };
 }
@@ -4006,14 +4059,144 @@ function checkCadAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('CAD preview aborted.', 'AbortError');
 }
 
-function collectCadFontReferences(original: CadDrawing, resolved: CadDrawing): PreviewFontReference[] {
+async function applyCadShxResources(
+  original: CadDrawing, drawing: CadDrawing, resolver: PreviewResourceResolver, sourceFormat: string, signal: AbortSignal
+): Promise<RenderedCadDrawing> {
+  const styles = new Map(drawing.textStyles.map(style => [normalizeTextStyleName(style.name), style]));
+  const fonts = new Map<string, ShxFont | undefined>();
+  const shxFonts = new Map<string, PreviewFontDiagnostic>(), shxPaths = new Map<CadTextEntity, ShxTextPath>();
+  const aliases = new Set<string>(), handledFiles = new Set<string>(), warnings = new Set<string>();
+  const budget = { instructions: 2_000_000, strokes: 200_000 };
+  const bounds = { ...drawing.bounds };
+  let bytesLeft = 32 * 1024 * 1024;
+  const readFont = async (file: string): Promise<ShxFont | undefined> => {
+    if (fonts.has(file)) return fonts.get(file);
+    if (fonts.size >= 64 || bytesLeft <= 0) {
+      warnings.add('SHX sidecars exceed the drawing preview resource limit.');
+      return undefined;
+    }
+    fonts.set(file, undefined);
+    try {
+      const result = await waitForContainerTask(Promise.resolve(resolver({ family: 'cad', sourceFormat,
+        source: file, relation: 'font', name: file.split(/[\\/]/).pop() ?? file })), signal);
+      checkCadAborted(signal);
+      if (!result) return undefined;
+      const wrapped = typeof result === 'object' && !(result instanceof ArrayBuffer || result instanceof Blob || ArrayBuffer.isView(result));
+      const source = wrapped ? result.source : result;
+      if (wrapped) for (const warning of result.warnings ?? []) warnings.add(warning);
+      if (!source) return undefined;
+      handledFiles.add(file);
+      const bytes = await readShxBytes(source, Math.min(bytesLeft, MAX_SHX_BYTES), signal);
+      bytesLeft -= bytes.byteLength;
+      const font = parseShxFont(bytes, drawing.header.textEncoding);
+      fonts.set(file, font);
+      return font;
+    } catch (error) {
+      checkCadAborted(signal);
+      handledFiles.add(file);
+      warnings.add(`SHX font "${file}" could not be used (${error instanceof Error ? error.message : 'read failed'}). Browser text is used where needed.`);
+      return undefined;
+    }
+  };
+
+  for (const [index, entity] of drawing.entities.entries()) {
+    if (entity.type !== 'text') continue;
+    if (entity !== original.entities[index]) {
+      if (entity.fontFile) aliases.add(entity.fontFile);
+      continue;
+    }
+    const style = styles.get(normalizeTextStyleName(entity.styleName ?? 'STANDARD'));
+    const primary = shxSidecarName(entity.fontFile);
+    const secondary = shxSidecarName(style?.bigFontFile);
+    if (!primary && !secondary) continue;
+    checkCadAborted(signal);
+    // Extensionless CAD styles can resolve to a supplied SHX file or a browser face.
+    if (entity.fontFamily && !primary) continue;
+    const font = primary ? await readFont(primary) : undefined;
+    const bigFont = secondary ? await readFont(secondary) : undefined;
+    if (!font && !bigFont) continue;
+    if (!Number.isFinite(entity.height) || entity.height <= 0) continue;
+    if (entity.verticalText || style?.vertical) {
+      warnings.add('Vertical SHX text uses browser fallback.');
+      continue;
+    }
+    const layout = budget.strokes > 0 && layoutShxText(textLines(entity.value), font, bigFont, entity.height,
+      entity.horizontalAlign, entity.verticalAlign, budget);
+    if (!layout) {
+      const description = [primary, secondary].filter(Boolean).join(', ');
+      const reason = budget.strokes <= 0 || budget.instructions <= 0 ? 'preview limit reached'
+        : bigFont?.bigFont && !bigFont.encoding ? 'drawing code page is unavailable or a glyph is unsupported'
+          : 'glyphs are missing or unsupported';
+      warnings.add(`SHX text (${description}) uses browser fallback: ${reason}.`);
+      continue;
+    }
+    shxPaths.set(entity, { path: layout.path, bounds: layout.bounds });
+    for (const [file, active] of [[primary, font], [secondary, bigFont]] as const) {
+      if (file && active && layout.fonts.has(active)) shxFonts.set(JSON.stringify([file, entity.styleName]), {
+        fontFile: file, styleName: entity.styleName, status: 'available', source: 'application'
+      });
+    }
+    const angle = entity.rotation * Math.PI / 180, cos = Math.cos(angle), sin = Math.sin(angle);
+    const skew = Math.tan(entity.obliqueAngle * Math.PI / 180);
+    for (const x of [layout.bounds.minX, layout.bounds.maxX]) {
+      for (const y of [layout.bounds.minY, layout.bounds.maxY]) {
+        const scaledX = (x - y * skew) * entity.widthFactor;
+        const px = entity.point.x + cos * scaledX + sin * y, py = entity.point.y + sin * scaledX - cos * y;
+        if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
+        bounds.minX = Math.min(bounds.minX, px); bounds.maxX = Math.max(bounds.maxX, px);
+        bounds.minY = Math.min(bounds.minY, py); bounds.maxY = Math.max(bounds.maxY, py);
+      }
+    }
+  }
+  if (!handledFiles.size && !warnings.size) return drawing;
+  const previous = collectDrawingWarnings(drawing.entities, styles, aliases);
+  const updated = collectDrawingWarnings(drawing.entities, styles, new Set([...aliases, ...handledFiles]));
+  return { ...drawing, bounds, shxPaths, shxFonts: [...shxFonts.values()],
+    warnings: uniqueWarnings([...drawing.warnings.filter(warning => !previous.includes(warning)), ...updated, ...warnings]) };
+}
+
+async function readShxBytes(source: PreviewSource, limit: number, signal: AbortSignal): Promise<Uint8Array> {
+  const checkSize = (size: number) => { if (size > limit) throw new Error('SHX font exceeds the byte limit'); };
+  if (typeof source === 'string') {
+    const response = await fetch(source, { signal });
+    if (!response.ok || !response.body) throw new Error(`Unable to read SHX resource (HTTP ${response.status})`);
+    const reader = response.body.getReader(), chunks: Uint8Array[] = [];
+    let length = 0;
+    try {
+      checkSize(Number(response.headers.get('content-length')));
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        length += value.byteLength;
+        checkSize(length);
+        chunks.push(value);
+      }
+    } catch (error) {
+      void reader.cancel().catch(() => {});
+      throw error;
+    } finally { reader.releaseLock(); }
+    const bytes = new Uint8Array(length);
+    let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+    return bytes;
+  }
+  if (source instanceof Blob) {
+    checkSize(source.size);
+    return new Uint8Array(await waitForContainerTask(source.arrayBuffer(), signal));
+  }
+  checkSize(source.byteLength);
+  return ArrayBuffer.isView(source) ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength) : new Uint8Array(source);
+}
+
+function collectCadFontReferences(original: CadDrawing, resolved: RenderedCadDrawing): PreviewFontReference[] {
   const references: PreviewFontReference[] = [];
   const usedStyles = new Set<string>();
   for (const [index, entity] of original.entities.entries()) {
     if (entity.type !== 'text') continue;
     if (entity.styleName) usedStyles.add(normalizeTextStyleName(entity.styleName));
     const mapped = resolved.entities[index];
-    const provided = mapped !== entity && mapped.type === 'text';
+    if (mapped.type !== 'text' || resolved.shxPaths?.has(mapped)) continue;
+    const provided = mapped !== entity;
     references.push({
       fontFamily: entity.fontFamily, fontFile: entity.fontFile, styleName: entity.styleName,
       resolvedFontFamily: provided ? mapped.fontFamily : undefined,
@@ -4024,7 +4207,11 @@ function collectCadFontReferences(original: CadDrawing, resolved: CadDrawing): P
     if (!usedStyles.has(normalizeTextStyleName(style.name))) {
       references.push({ fontFamily: style.fontFamily, fontFile: style.fontFile, styleName: style.name });
     }
-    if (style.bigFontFile) references.push({ fontFile: style.bigFontFile, styleName: style.name });
+    const bigFontFile = shxSidecarName(style.bigFontFile) ?? style.bigFontFile;
+    if (bigFontFile && !resolved.shxFonts?.some(font => font.fontFile === bigFontFile
+      && normalizeTextStyleName(font.styleName ?? 'STANDARD') === normalizeTextStyleName(style.name))) {
+      references.push({ fontFile: bigFontFile, styleName: style.name });
+    }
   }
   return references;
 }
@@ -4103,8 +4290,9 @@ function collectDrawingWarnings(entities: CadEntity[], textStyles: Map<string, C
     if (style.fontFile && isShxFont(style.fontFile) && !resolvedFontFiles.has(style.fontFile)) {
       shxFonts.add(style.fontFile);
     }
-    if (style.bigFontFile && isShxFont(style.bigFontFile) && !resolvedFontFiles.has(style.bigFontFile)) {
-      shxFonts.add(style.bigFontFile);
+    const bigFontFile = shxSidecarName(style.bigFontFile);
+    if (bigFontFile && !resolvedFontFiles.has(bigFontFile)) {
+      shxFonts.add(bigFontFile);
     }
   }
 
@@ -4152,6 +4340,13 @@ function isShxFont(fontFile: string): boolean {
   return /\.shx$/i.test(fontFile.trim());
 }
 
+function shxSidecarName(fontFile: string | undefined): string | undefined {
+  const path = fontFile?.trim();
+  if (!path) return undefined;
+  if (isShxFont(path)) return path;
+  if (/^[^.]+$/.test(path.split(/[\\/]/).pop() ?? '')) return `${path}.shx`;
+}
+
 function isBrowserLoadableImageSource(source: string | undefined): boolean {
   return Boolean(source && /^(data:image\/|blob:|https?:\/\/)/i.test(source.trim()));
 }
@@ -4160,30 +4355,50 @@ function normalizeTextStyleName(name: string): string {
   return name.trim().toLowerCase();
 }
 
-async function sourceToText(source: PreviewSource, context: PreviewLoadContext): Promise<string> {
+async function sourceToText(source: PreviewSource, format: string, signal: AbortSignal): Promise<string> {
   if (typeof source === 'string') {
     if (source.trimStart().toLowerCase().startsWith('data:')) {
-      return dataUrlToText(source);
+      return dataUrlToText(source, format);
     }
-    const response = await fetch(source, { signal: context.signal });
+    const response = await fetch(source, { signal });
     if (!response.ok) {
       throw new Error(`Failed to load CAD source: ${response.status} ${response.statusText}`.trim());
     }
-    return response.text();
+    return decodeCadBytes(new Uint8Array(await response.arrayBuffer()), format);
   }
   if (source instanceof Blob) {
-    return source.text();
+    return decodeCadBytes(new Uint8Array(await source.arrayBuffer()), format);
   }
   if (ArrayBuffer.isView(source)) {
-    return new TextDecoder().decode(new Uint8Array(source.buffer, source.byteOffset, source.byteLength));
+    return decodeCadBytes(new Uint8Array(source.buffer, source.byteOffset, source.byteLength), format);
   }
   if (source instanceof ArrayBuffer) {
-    return new TextDecoder().decode(source);
+    return decodeCadBytes(new Uint8Array(source), format);
   }
   return String(source);
 }
 
-function dataUrlToText(dataUrl: string): string {
+function decodeCadBytes(bytes: Uint8Array, format: string): string {
+  const utf8 = new TextDecoder();
+  if (format === 'dxf' && !(bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf)) {
+    const sample = utf8.decode(bytes.subarray(0, 64 * 1024));
+    const header = readDxfSections(readDxfPairs(sample)).get('HEADER') ?? [];
+    const version = header.find((pair, index) => pair.code === 1 && header[index - 1]?.code === 9
+      && header[index - 1]?.value === '$ACADVER')?.value.match(/^AC(\d{4})$/)?.[1];
+    const encoding = readHeaderMetadata(header).textEncoding;
+    if (encoding && (!version || Number(version) < 1021)) {
+      if (!version) {
+        try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+        catch { /* Older drawings may omit the version header. */ }
+      }
+      try { return new TextDecoder(encoding).decode(bytes); }
+      catch { /* Some runtimes only include UTF-8 support. */ }
+    }
+  }
+  return utf8.decode(bytes);
+}
+
+function dataUrlToText(dataUrl: string, format: string): string {
   const commaIndex = dataUrl.indexOf(',');
   if (commaIndex < 0) {
     return dataUrl;
@@ -4193,7 +4408,7 @@ function dataUrlToText(dataUrl: string): string {
   if (meta.includes(';base64')) {
     const binary = atob(payload);
     const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
+    return decodeCadBytes(bytes, format);
   }
   return decodeURIComponent(payload);
 }

@@ -19,11 +19,6 @@ export function mediaWasmAsset() {
   ];
 }
 
-/** Keep PDF's existing worker as a file instead of a Base64 URL module. */
-export function pdfWorkerAsset() {
-  return libraryAsset('/pdfjs-dist/build/pdf.worker.min.mjs?url', 'pdf.worker.min.mjs');
-}
-
 /** Emit both variants separately; the loader fetches only the selected one. */
 export function formatDetectorWasmAssets() {
   return [

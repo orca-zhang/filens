@@ -2,6 +2,7 @@ import { DEFAULT_FORMAT_ROUTES, inferExtensionFromName, type FormatDefinition } 
 import { createLazyCorePreviewDrivers } from './lazy-driver';
 import { createPreviewRegistry, type PreviewRegistry } from './registry';
 import { loadSourceBytes } from '../parser/load-source';
+import { openZipSource } from '../parser/zip-source';
 import { PreviewPasswordError, previewPasswordErrorCode } from './password';
 import { createPreviewContainerContext } from './containers';
 import { createAttachmentPreviewSession } from './attachment-session';
@@ -23,6 +24,8 @@ import type {
 type PreviewerListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
+
+const compoundFileSignature = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
 
 export interface CreatePreviewerOptions extends PreviewOptions {
   drivers?: PreviewDriver[];
@@ -69,6 +72,7 @@ export class Previewer implements PreviewerInstance {
       fontResolver: options.fontResolver,
       fontLoading: options.fontLoading,
       resourceResolver: options.resourceResolver,
+      archiveEngine: options.archiveEngine,
       audio: options.audio,
       previewerFactory: options.previewerFactory ?? ((host, childOptions) => new Previewer(host, {
         ...childOptions, registry: this.registry, converter: this.converter
@@ -108,6 +112,10 @@ export class Previewer implements PreviewerInstance {
           if (token !== this.requestToken || !resolved) {
             return;
           }
+          if (resolved.descriptor !== initialDescriptor && initialDescriptor.password !== undefined) {
+            const { password: _, ...retryDescriptor } = initialDescriptor;
+            initialDescriptor = retryDescriptor;
+          }
 
           const driver = resolved.driver.loadDriver
             ? await waitForPreviewTask(resolved.driver.loadDriver(), controller?.signal)
@@ -130,6 +138,7 @@ export class Previewer implements PreviewerInstance {
           await waitForPreviewTask(session.load(resolved.descriptor.source, {
             descriptor: resolved.descriptor,
             route: resolved.route,
+            ...(resolved.zipEntries ? { zipEntries: resolved.zipEntries } : {}),
             signal: controller?.signal
           }), controller?.signal);
 
@@ -208,6 +217,8 @@ export class Previewer implements PreviewerInstance {
   refreshTranslations(): void {
     this.activeSession?.refreshTranslations?.();
   }
+
+  refreshFonts(): void { this.activeSession?.refreshFontLayout?.(); }
 
   fit(mode?: PreviewOptions['fit']): void {
     this.activeSession?.fit?.(mode);
@@ -335,20 +346,27 @@ export class Previewer implements PreviewerInstance {
     descriptor: SourceDescriptor,
     token: number,
     signal?: AbortSignal
-  ): Promise<{ descriptor: SourceDescriptor; driver: PreviewDriver; route: FormatRoute } | null> {
+  ): Promise<{ descriptor: SourceDescriptor; driver: PreviewDriver; route: FormatRoute; zipEntries?: PreviewLoadContext['zipEntries'] } | null> {
     const resolved = this.registry.resolve(descriptor);
     if (!resolved) {
       throw new Error(`Unsupported preview format${formatDescriptorLabel(descriptor)}.`);
     }
 
     let encryptedOffice = false;
-    if (!resolved.route.conversion?.required && ['docx', 'xlsx', 'pptx'].includes(resolved.route.sourceFormat)) {
-      // Native Office readers expect ZIP. Password-protected packages use a CFB envelope.
-      // Read once so remote documents are not fetched a second time for rendering.
-      const bytes = await loadSourceBytes(descriptor.source, { signal });
+    let zipEntries: PreviewLoadContext['zipEntries'];
+    const { sourceFormat } = resolved.route;
+    if (!resolved.route.conversion?.required && ['docx', 'xlsx', 'pptx'].includes(sourceFormat)) {
+      const source = descriptor.source;
+      // Encrypted OOXML uses a compound-file envelope. Keep it on the shared converter path.
+      const packageSource = (typeof source === 'string' || source instanceof Blob)
+        ? await openZipSource(source, { signal }, compoundFileSignature[0])
+        : await loadSourceBytes(source, { signal });
       if (token !== this.requestToken) return null;
-      descriptor.source = bytes;
-      encryptedOffice = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1].every((byte, index) => bytes[index] === byte);
+      if (packageSource instanceof Map) zipEntries = packageSource;
+      else {
+        descriptor.source = packageSource;
+        encryptedOffice = compoundFileSignature.every((byte, index) => packageSource[index] === byte);
+      }
     }
     if (!resolved.route.conversion?.required && !encryptedOffice) {
       if (!resolved.driver) {
@@ -357,7 +375,8 @@ export class Previewer implements PreviewerInstance {
       return {
         descriptor,
         driver: resolved.driver,
-        route: resolved.route
+        route: resolved.route,
+        zipEntries
       };
     }
 
@@ -386,13 +405,12 @@ export class Previewer implements PreviewerInstance {
       return null;
     }
 
+    const sensitive = descriptor.sensitive || descriptor.password !== undefined || encryptedOffice;
     const convertedDescriptor = normalizeSourceDescriptor(conversion.source, {
       name: descriptor.name,
       extension: conversion.format,
       contentType: conversion.contentType,
-      // Keep password opens recognizable to downstream cache policies, even
-      // when the converter has already decrypted the Office container.
-      ...(descriptor.password !== undefined ? { password: descriptor.password } : {})
+      ...(sensitive ? { sensitive: true } : {})
     });
     const convertedResolved = this.registry.resolve(convertedDescriptor);
     if (!convertedResolved?.driver) {

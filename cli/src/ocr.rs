@@ -14,6 +14,7 @@ use std::{
     },
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
+use zeroize::{Zeroize, Zeroizing};
 
 type JsonFn = unsafe extern "C" fn(*const u8, usize, *mut u8, usize) -> usize;
 
@@ -25,11 +26,18 @@ struct Native {
     handle: u64,
 }
 
-fn call(function: JsonFn, request: Value) -> Result<Value> {
-    let mut payload = serde_json::to_vec(&request)?;
+fn call(function: JsonFn, mut request: Value) -> Result<Value> {
+    let payload = serde_json::to_vec(&request);
+    if let Some(Value::String(encoded)) = request
+        .get_mut("input")
+        .and_then(|input| input.get_mut("image_base64"))
+    {
+        encoded.zeroize();
+    }
+    let mut payload = Zeroizing::new(payload?);
     let length = payload.len();
     payload.push(0);
-    let mut output = vec![0; 4 << 20];
+    let mut output = Zeroizing::new(vec![0; 4 << 20]);
     // Both buffers remain live throughout the native JSON ABI invocation.
     let size = unsafe { function(payload.as_ptr(), length, output.as_mut_ptr(), output.len()) };
     ensure!(
@@ -165,7 +173,7 @@ pub fn worker() -> Result<()> {
             let request: Value = serde_json::from_str(&line)?;
             let size = request["byteLength"].as_u64().unwrap_or(0);
             ensure!(size <= 256 << 20, "OCR image exceeds 256 MiB");
-            let mut image = vec![0; size as usize];
+            let mut image = Zeroizing::new(vec![0; size as usize]);
             input.read_exact(&mut image)?;
             let mut response =
                 json!({"provider":"rapidocr-ncnn","openmpThreads":2,"maxSideLen":960});
@@ -287,7 +295,7 @@ impl Provider {
             writeln!(worker.input, "{request}")?;
             worker.input.write_all(image)?;
             worker.input.flush()?;
-            let line = worker.responses.recv_timeout(Duration::from_secs(30))??;
+            let line = Zeroizing::new(worker.responses.recv_timeout(Duration::from_secs(30))??);
             let value: Value = serde_json::from_str(&line)?;
             if let Some(error) = value["error"].as_str().filter(|s| !s.is_empty()) {
                 bail!("{error}");
@@ -298,6 +306,9 @@ impl Provider {
             self.worker = None;
         }
         result
+    }
+    pub fn discard_worker(&mut self) {
+        self.worker = None;
     }
     pub fn capacity(&mut self) -> Value {
         let mut result = json!({"provider":"rapidocr-ncnn","enabled":self.enabled,"available":false,"openmpThreads":2,"maxSideLen":960,"padding":50,"orientation":true});

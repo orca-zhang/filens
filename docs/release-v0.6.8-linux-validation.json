@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-27",
+  "githubRelease": "v0.6.8",
+  "cliVersion": "0.5.8",
+  "runner": {
+    "host": "macOS arm64",
+    "qemu": "11.1.2",
+    "guest": "Debian 12 initramfs",
+    "libc": "2.36-9+deb12u14",
+    "network": "disabled",
+    "cliPath": "direct binary with PATH=/missing"
+  },
+  "checks": {
+    "capacity": "JSON capability response",
+    "read-text": "UTF-8 text with an English search marker and Chinese text",
+    "read-pdf": "First page from apps/demo/public/samples/filens-cosmic-atlas.pdf with OCR disabled",
+    "read-xlsx": "Worksheet text from apps/demo/public/samples/filens-observatory.xlsx with OCR disabled",
+    "search": "A unique text marker locates the source file within the guest directory",
+    "convert": "examples/converter/fixtures/xls/sample.csv to XLSX with 56.5 present in the OpenXML worksheet",
+    "ocr": "Full loads its packaged RapidOCR libraries and models, completes the selected image and returns its expected marker",
+    "preview": "Full uses its packaged runtime and Lite uses the same runtime through --assets. Both export identical offline XLSX HTML."
+  },
+  "observations": [
+    "On the ARM guest the TGA fixture returned partial OCR with the expected text and a low-confidence diagnostic at the default threshold.",
+    "On the emulated x64 guest the synthetic PNG had one accepted line with no low-confidence warning, but read FILS FFLIE CR instead of FILENS OFFLINE OCR."
+  ],
+  "scope": "Offline execution smoke tests for the four shipped Linux archives. The guest uses glibc 2.36. Physical hosts, the glibc 2.17 baseline, native Windows, and physical phones remain outside this run.",
+  "platforms": [
+    {
+      "platform": "linux-arm64",
+      "guest": "Linux 6.1.0-50-arm64",
+      "cpu": "QEMU HVF, host AArch64",
+      "kernelSha256": "84b9c190bb4589c4a9527e3191fec051f9f115e88f0a3e8afae96ba0dfb4dfef",
+      "archives": [
+        {
+          "profile": "lite",
+          "file": "filens-0.5.8-linux-arm64-lite.tar.gz",
+          "sha256": "6c54cfb719d3b42830c61a860df8316540f004497725d0ab9babdb3e93fccce0"
+        },
+        {
+          "profile": "full",
+          "file": "filens-0.5.8-linux-arm64-full.tar.gz",
+          "sha256": "867b54be3619202199dea8e2b707e33da35bd5bfb2b0e45c1c338ac7bc202787"
+        }
+      ],
+      "passed": [
+        "lite-capacity",
+        "lite-read-text",
+        "lite-read-pdf",
+        "lite-read-xlsx",
+        "lite-search",
+        "lite-convert",
+        "full-capacity",
+        "full-read-text",
+        "full-read-pdf",
+        "full-read-xlsx",
+        "full-search",
+        "full-convert",
+        "full-ocr",
+        "full-preview",
+        "lite-preview"
+      ],
+      "ocr": {
+        "input": "Synthetic 540 by 120 RGB PNG, black Arial Bold 46 px on white at (30, 28)",
+        "text": "FILENS OFFLINE OCR",
+        "sha256": "e039623b91e0bbe508156897dd3f8570aa1df92341155a0c523f6656d8cc09f4"
+      }
+    },
+    {
+      "platform": "linux-x64",
+      "guest": "Linux 6.1.0-50-amd64",
+      "cpu": "QEMU TCG, emulated x86_64",
+      "kernelSha256": "d8808aa4ca188560da1e6d749dcb930c87a5fd8b11ebff1f3fa6d728af35203d",
+      "archives": [
+        {
+          "profile": "lite",
+          "file": "filens-0.5.8-linux-x64-lite.tar.gz",
+          "sha256": "1153d80da3ec9384543ccbce0bb1fd975a1c43e97587cf8699c71f0cc2744c71"
+        },
+        {
+          "profile": "full",
+          "file": "filens-0.5.8-linux-x64-full.tar.gz",
+          "sha256": "ea379bf7947045cd485122b13e288b48a3d090ff4bc20fa9ea0f6bb5742de72f"
+        }
+      ],
+      "passed": [
+        "lite-capacity",
+        "lite-read-text",
+        "lite-read-pdf",
+        "lite-read-xlsx",
+        "lite-search",
+        "lite-convert",
+        "full-capacity",
+        "full-read-text",
+        "full-read-pdf",
+        "full-read-xlsx",
+        "full-search",
+        "full-convert",
+        "full-ocr",
+        "full-preview",
+        "lite-preview"
+      ],
+      "ocr": {
+        "input": "apps/demo/public/samples/graphics/texture-study.tga",
+        "textContains": "FILENS"
+      }
+    }
+  ]
+}

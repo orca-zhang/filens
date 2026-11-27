@@ -21,7 +21,7 @@ use anyhow::Result;
 use request::Options;
 use serde_json::{Value, json};
 use std::{
-    io::{IsTerminal, Write},
+    io::{ErrorKind, IsTerminal, Write},
     path::{Path, PathBuf},
     sync::{
         Arc,
@@ -194,6 +194,30 @@ fn run() -> Result<i32> {
     ctrlc::set_handler(move || {
         signal.store(true, Ordering::SeqCst);
     })?;
+    if options.ask_password {
+        match rpassword::prompt_password("Document password: ") {
+            Ok(secret) => {
+                if options.request.options.is_null() {
+                    options.request.options = json!({});
+                }
+                options.request.options["password"] = Value::String(secret);
+            }
+            Err(error) => {
+                let (code, message, status) = match error.kind() {
+                    ErrorKind::Interrupted | ErrorKind::UnexpectedEof => {
+                        ("canceled", "document password entry canceled", 1)
+                    }
+                    _ => (
+                        "password_input_unavailable",
+                        "--ask-password requires an interactive terminal",
+                        2,
+                    ),
+                };
+                failure(&mut value, code, message);
+                return Ok(finish(&options.request.format, &value, status));
+            }
+        }
+    }
     let format = options.request.format.clone();
     let conversion = (options.request.operation == "convert").then(|| {
         (
@@ -207,7 +231,8 @@ fn run() -> Result<i32> {
     let worker_pid = pid.clone();
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
-        let result = execute(&options, value, &bundle, &work_path, worker_pid);
+        let result = execute(&mut options, value, &bundle, &work_path, worker_pid);
+        drop(options);
         let _ = tx.send(result);
     });
     let deadline = Instant::now() + timeout;
@@ -268,7 +293,7 @@ fn run() -> Result<i32> {
 }
 
 fn execute(
-    o: &Options,
+    o: &mut Options,
     mut response: Value,
     bundle: &Path,
     work: &Workspace,
@@ -340,7 +365,7 @@ fn execute(
                 "--operation",
                 "text-capabilities",
                 "--result",
-                "/work/result.json",
+                "/scratch/result.json",
             ]
             .map(String::from),
         ) {
@@ -457,11 +482,9 @@ fn extract_content(
         "--options",
         "/work/options.json",
         "--result",
-        "/work/result.json",
+        "/scratch/result.json",
     ]
     .map(String::from);
-    // A failed invocation must never reuse the capabilities result.
-    work.remove("result.json")?;
     let wire = engine.run(&args)?;
     let Some(content) = wire.get("payload").filter(|v| v.is_object()) else {
         failure(

@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { loadXlsxWorkbook, resolveCellValue } from '../src/parser';
-import { resolveSharedFormula } from '../src/shared-formulas';
+import { createFormulaTranslator, resolveSharedFormula } from '../src/shared-formulas';
 import type { ParsedCell, ParsedSheet } from '../src/types';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
 import { createSharedFormulaWorkbook } from './fixtures/shared-formula-workbook.mjs';
@@ -38,6 +38,11 @@ describe('XLSX shared formulas', () => {
       sharedFormulas: { 0: { formula, row: 2, column: 3, firstRow: 2, lastRow: 5, firstColumn: 3, lastColumn: 4 } } };
     expect(resolveSharedFormula(model, { ref: 'D4', row: 4, column: 4, value: '', sharedFormulaId: 0 }))
       .toBe(`SUM($A4,C$1,$C$3,B:D,$2:7,'Data ''2026'''!E4,LOG10(F4),Sheet2!G4,"A1:$A$2",Table1[[#All],[A1]],[Book.xlsx]S2!H4,S1:S2!I4,1E-6,A1.foo,αA1)`);
+  });
+
+  it('translates the endpoints of each trim operator', () => {
+    const translate = createFormulaTranslator('SUM(Sheet2!A1.:.$B4,C:.D,$2.:5,1.25,"A1.:.B4")');
+    expect(translate(2, 1)).toBe('SUM(Sheet2!B3.:.$B6,D:.E,$2.:7,1.25,"A1.:.B4")');
   });
 
   it('preserves caches and reports malformed, orphaned, out-of-range and ambiguous entries', async () => {

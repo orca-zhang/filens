@@ -8,11 +8,11 @@ export interface PreviewFontMetadata {
   coverage?: PreviewFontCandidate['coverage'];
 }
 
-/** Inspect a single SFNT TTF/OTF locally; does not load the font or extract outlines. */
-export function readPreviewFontMetadata(source: ArrayBuffer | Uint8Array): PreviewFontMetadata {
+const invalid = (): never => { throw new Error('Invalid SFNT font metadata.'); };
+
+function readSfntTables(source: ArrayBuffer | Uint8Array): Map<string, DataView> {
   const bytes = source instanceof Uint8Array ? source : new Uint8Array(source);
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const invalid = (): never => { throw new Error('Invalid SFNT font metadata.'); };
   const check = (offset: number, length: number) => {
     if (offset < 0 || length < 0 || offset > bytes.length || length > bytes.length - offset) invalid();
   };
@@ -30,6 +30,18 @@ export function readPreviewFontMetadata(source: ArrayBuffer | Uint8Array): Previ
     if (tables.has(tag)) invalid();
     tables.set(tag, new DataView(bytes.buffer, bytes.byteOffset + offset, length));
   }
+  return tables;
+}
+
+/** Raw OS/2 fsType flags for a single SFNT font. Missing flags leave permission unknown. */
+export function readPreviewFontEmbeddingFlags(source: ArrayBuffer | Uint8Array): number | undefined {
+  const os2 = readSfntTables(source).get('OS/2');
+  return os2 && os2.byteLength >= 10 ? os2.getUint16(8) : undefined;
+}
+
+/** Inspect a single SFNT TTF/OTF locally; does not load the font or extract outlines. */
+export function readPreviewFontMetadata(source: ArrayBuffer | Uint8Array): PreviewFontMetadata {
+  const tables = readSfntTables(source);
   const head = tables.get('head');
   const units = head && head.byteLength >= 20 ? head.getUint16(18) : 0;
   const em = units >= 16 && units <= 16384 ? units : undefined;

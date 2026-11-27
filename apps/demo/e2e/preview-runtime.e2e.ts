@@ -54,16 +54,16 @@ for (const action of ['replace', 'destroy'] as const) {
       // Allow the conversion continuation to run before checking the current DOM and state.
       await new Promise(resolve => setTimeout(resolve, 0));
       const previous = state.previewer.getState();
-      const content = state.host.textContent;
+      const content = state.host.querySelector('pre')?.textContent ?? '';
       if (action === 'destroy') await state.previewer.preview(new TextEncoder().encode('Reopened text'), { name: 'reopened.txt' });
-      const reopened = state.host.textContent;
+      const reopened = state.host.querySelector('pre')?.textContent ?? '';
       state.previewer.destroy();
       return { title: previous.title ?? null, content, reopened, warnings: state.warnings, errors: state.errors, empty: !state.host.childElementCount };
     }, action);
     expect(result).toEqual({
       title: action === 'replace' ? 'current.txt' : null,
-      content: action === 'replace' ? '1Current text' : '',
-      reopened: action === 'replace' ? '1Current text' : '1Reopened text',
+      content: action === 'replace' ? 'Current text' : '',
+      reopened: action === 'replace' ? 'Current text' : 'Reopened text',
       warnings: [], errors: [], empty: true
     });
     expect(errors).toEqual([]);
@@ -111,8 +111,8 @@ test('keeps a loaded image signal until replacement and ignores detached image e
 
 test('recovers from a failed document through the demo upload flow', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto('./?view=preview');
-  const upload = page.locator('input[type=file]');
+  await page.goto('./?view=preview&lang=zh');
+  const upload = page.getByLabel('导入文件', { exact: true });
   await upload.setInputFiles({ name: 'broken.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer: Buffer.from('invalid ZIP') });
   await expect(page.locator('.pptxv-overlay.is-error')).toBeVisible();
   await upload.setInputFiles({ name: 'recovered.txt', mimeType: 'text/plain', buffer: Buffer.from('Preview recovered') });
@@ -129,8 +129,8 @@ test('loads the PDF engine only when opening a PDF through the demo', async ({ p
     if (/\/assets\/pdf-runtime-[^/]+\.js$/.test(path) || /\/deps\/pdfjs-dist\.js$/.test(path)) engines.push(path);
   });
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('./?view=preview');
-  const upload = page.locator('input[type=file]');
+  await page.goto('./?view=preview&lang=zh');
+  const upload = page.getByLabel('导入文件', { exact: true });
   await upload.setInputFiles({ name: 'before-pdf.txt', mimeType: 'text/plain', buffer: Buffer.from('Readable before PDF') });
   await expect(page.locator('pre.pptxv-native-text')).toHaveText('Readable before PDF');
   expect(engines).toHaveLength(0);

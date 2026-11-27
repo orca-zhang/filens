@@ -2,12 +2,96 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadXlsxWorkbook } from '../src/parser';
 import { createSheetTable, SheetRowWindow } from '../src/table';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
-import { createStyledWorkbookFixture } from './fixtures/styled-workbook.mjs';
+import { createDiagonalBorderWorkbook, createMergeBorderWorkbook, createStyledWorkbookFixture } from './fixtures/styled-workbook.mjs';
+import { createShrinkTextWorkbook } from './fixtures/shrink-text-workbook.mjs';
+import { createRotatedWorkbook, createTrailingRotatedOverflowWorkbook } from './fixtures/rotated-workbook.mjs';
+import { createCenterAcrossWorkbook } from './fixtures/center-across-workbook.mjs';
 
 beforeEach(() => { vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null); });
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
 
 describe('XLSX cell appearance', () => {
+  it('preserves center across alignment and typed blanks on both XML paths', async () => {
+    const workbook = await loadXlsxWorkbook(await createCenterAcrossWorkbook({ numericOnly: true }));
+    expect(await loadXlsxWorkbook(await createCenterAcrossWorkbook({ numericOnly: true, forceGeneral: true }))).toEqual(workbook);
+    const { sheets: [sheet] } = clonePreviewWorkbook(workbook);
+    expect(sheet.cellStyles!.formats[1]).toMatchObject({ horizontal: 'center', centerAcross: true, vertical: 'middle' });
+    expect(sheet.rows[0].cells[1]).toMatchObject({ ref: 'B1', valueType: 'text', missingValue: true });
+    const table = createSheetTable(sheet, 1);
+    expect(table.querySelector('.xlsxv-center-across')?.textContent).toBe('42');
+    expect([...table.tBodies[0].rows[0].cells].map(cell => cell.colSpan)).toEqual([1, 1, 1, 1]);
+    expect(table.querySelector('td[aria-colindex="5"]')?.textContent).toBe('');
+  });
+
+  it('retains hidden and sized trailing columns without extending parsed cell dimensions', async () => {
+    const { sheets } = await loadXlsxWorkbook(await createTrailingRotatedOverflowWorkbook());
+    expect(sheets.map(sheet => sheet.columnCount)).toEqual([1, 1, 1, 1]);
+    expect(sheets[0].hiddenColumns).toEqual([{ first: 2, last: 2 }]);
+    expect(sheets[0].columnWidthSource?.ranges).toContainEqual({ firstColumn: 3, lastColumn: 3, width: 24 });
+    expect(sheets[0].columnWidths).toHaveLength(1);
+  });
+
+  it('retains signed angles, stacking and style inheritance through worksheet readers and the workbook cache', async () => {
+    const workbook = await loadXlsxWorkbook(await createRotatedWorkbook());
+    expect(await loadXlsxWorkbook(await createRotatedWorkbook({ forceGeneral: true }))).toEqual(workbook);
+    const { sheets: [sheet] } = clonePreviewWorkbook(workbook);
+    expect(sheet.cellStyles!.formats.map(style => style.textRotation)).toEqual([
+      undefined, -45, 45, -90, 90, 255, undefined, -45, -90, -30, undefined, 60
+    ]);
+    expect(sheet.cellStyles?.variableHeight).toBe(true);
+  });
+
+  it('uses terminal borders and retains consecutive continuation styles on the source perimeter', async () => {
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await createMergeBorderWorkbook({ includeTail: false }));
+    const table = createSheetTable(sheet, 8);
+    const merge = (ref: string) => table.querySelector<HTMLTableCellElement>(`[data-merge-ref="${ref}"]`)!;
+    const uniform = merge('A1');
+    expect(uniform.style.borderBottomStyle).toBe('double');
+    expect(uniform.style.borderRightColor).toBe('rgb(18, 126, 34)');
+    expect(uniform.querySelectorAll('.xlsxv-merge-border-segment')).toHaveLength(0);
+    const conditional = merge('E1');
+    expect(conditional.style.borderBottomWidth).toBe('0px');
+    expect(conditional.style.borderRightColor).toBe('rgb(129, 57, 187)');
+    const segmented = Array.from(merge('A5').querySelectorAll<HTMLElement>('.xlsxv-merge-border-segment'));
+    expect(segmented.filter(segment => segment.style.borderTopColor === 'rgb(24, 71, 199)')).toHaveLength(2);
+    expect(segmented.filter(segment => segment.style.borderLeftColor === 'rgb(18, 126, 34)')).toHaveLength(2);
+    expect(segmented.some(segment => segment.style.borderTopColor === 'rgb(231, 139, 18)')).toBe(false);
+    expect(merge('A5').textContent).toBe('Segmented');
+  });
+
+  it('retains source diagonal directions and applies differential overrides to the rendered cell', async () => {
+    const { sheets: [sheet] } = clonePreviewWorkbook(await loadXlsxWorkbook(await createDiagonalBorderWorkbook()));
+    const styles = sheet.cellStyles!.formats;
+    expect(styles[1].diagonal).toEqual({ up: false, down: true, line: { width: 3, color: '#B91C1C' } });
+    expect(styles[2].diagonal).toEqual({ up: true, down: false, line: { width: 3, color: '#4F81BD', compound: 'double' } });
+    expect(styles[3].diagonal?.line).toMatchObject({ width: 2, dash: 'dash' });
+    expect(styles[4].diagonal).toBeUndefined();
+    expect(styles[5].diagonal).toEqual(styles[1].diagonal);
+    const table = createSheetTable(sheet, 2);
+    const at = (row: number, col: number) => table.querySelector<HTMLTableCellElement>(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${col + 1}"]`)!;
+    expect(at(1, 1).textContent).toBe('Label');
+    expect(at(1, 1).querySelector('.xlsxv-diagonal-clip')?.getAttribute('aria-hidden')).toBe('true');
+    expect(at(1, 1).style.borderRightWidth).toBe('1px');
+    expect(at(1, 3).querySelectorAll('.xlsxv-diagonal-source > span')).toHaveLength(2);
+    expect(at(1, 4).querySelector('.xlsxv-diagonal-source')).toBeNull();
+    expect(at(2, 2).querySelector<HTMLElement>('.xlsxv-diagonal-source > .is-up')?.style.borderTopStyle).toBe('dashed');
+    expect(at(2, 2).querySelector('.xlsxv-diagonal-source > .is-down')).toBeNull();
+    expect(at(2, 3).querySelector('.xlsxv-diagonal-source')).toBeNull();
+  });
+
+  it('retains shrink-to-fit on direct and inherited alignment in loaded and cached workbooks', async () => {
+    const workbook = await loadXlsxWorkbook(await createShrinkTextWorkbook());
+    expect(await loadXlsxWorkbook(await createShrinkTextWorkbook(true))).toEqual(workbook);
+    const [sheet, , stored] = clonePreviewWorkbook(workbook).sheets;
+    const formats = sheet.cellStyles!.formats;
+    expect(formats[1]).toMatchObject({ horizontal: 'right', shrinkToFit: true });
+    expect(formats[2]).toMatchObject({ indent: 1, shrinkToFit: true });
+    expect(formats[4]).toMatchObject({ wrap: true, shrinkToFit: true });
+    expect(formats[5]).toMatchObject({ horizontal: 'center', shrinkToFit: true });
+    expect(formats[6].shrinkToFit).toBeUndefined();
+    expect(stored.rows[0].cells.map(cell => cell.styleIndex)).toEqual([5, 3]);
+  });
+
   it('shares source styles across both parsing paths and retains only stored cells', async () => {
     const workbook = await loadXlsxWorkbook(await createStyledWorkbookFixture());
     expect(await loadXlsxWorkbook(await createStyledWorkbookFixture(true))).toEqual(workbook);

@@ -83,8 +83,9 @@ describe('archive WASM worker lifetime', () => {
     await vi.waitFor(() => expect(workers[0].postMessage).toHaveBeenCalledTimes(2));
     const [first, second] = workers[0].postMessage.mock.calls.map((call: any[]) => call[0]);
     expect(first.wasmModule).toBeDefined();
+    expect(first.wasmUrl).toBeUndefined();
     expect(second.wasmModule).toBeUndefined();
-    expect(second.wasmUrl).toEqual(first.wasmUrl);
+    expect(second.wasmUrl).toBe(moduleLoader.mock.calls[0][0]);
     expect(second.bytes).toEqual(request.bytes);
     workers[0].onmessage({ data: { result: { entries: [] } } });
     await expect(pending).resolves.toEqual({ entries: [] });

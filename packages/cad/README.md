@@ -12,6 +12,11 @@ The reader supports R14 through AC1032 (the 2018 DWG file format, also used by n
 
 See the root [support matrix](../../docs/support-matrix.md) for detailed coverage and limits.
 
+Supply local `.shx` sidecars alongside a DXF or DWG using `resourceResolver`.
+Supported horizontal glyphs from standard, Unicode, and Big Font files render as
+SVG strokes. Explicit browser font aliases take precedence, and unavailable
+glyphs retain readable browser text with diagnostics. [CAD font setup](../../docs/fonts.md#cad-shx-sidecars)
+
 ## CAD Conversion Lineage
 
 The CAD conversion work and SVG-first preview direction are derived from [`orcastor/cad2x-converter`](https://github.com/orcastor/cad2x-converter), an LGPL-2.1-licensed, compact DXF/DWG converter derived from LibreCAD. cad2x supports DXF/DWG input and DXF/PDF/PNG/SVG output, including practical handling for fonts, code pages, paper sizing, fitting, and scale.

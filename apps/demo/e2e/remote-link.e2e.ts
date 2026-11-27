@@ -24,7 +24,7 @@ test('opens an encoded signed file URL directly and keeps the source notice afte
   expect((await page.locator('.wb-preview-stage').boundingBox())!.height).toBeGreaterThan(350);
 });
 
-test('uses a supplied filename for extensionless downloads and retains the origin after prefetching', async ({ page }) => {
+test('uses a supplied filename for extensionless URLs and retains the origin', async ({ page }) => {
   const fileUrl = 'https://downloads.example.test/download?id=42&signature=a%2Fb';
   await page.route(fileUrl, route => route.fulfill({ path: 'apps/demo/public/samples/filens-cosmic-atlas.pdf', contentType: 'application/pdf' }));
   await page.goto(`./?url=${encodeURIComponent(fileUrl)}&name=report.pdf&format=step&lang=en`);
@@ -50,10 +50,11 @@ test('supports relative same-origin paths without labeling them as third-party r
 });
 
 test('shows the attempted source and no previous preview when a remote download fails', async ({ page }) => {
-  const fileUrl = 'https://files.example.test/missing.pdf';
+  const fileUrl = 'https://files.example.test/missing.pdf?signature=missing-test';
   await page.route(fileUrl, route => route.fulfill({ status: 404, body: 'Missing' }));
   await page.goto(`./?url=${encodeURIComponent(fileUrl)}&lang=zh`);
   await expect(page.getByRole('alert')).toContainText('404');
+  await expect(page.getByRole('alert')).not.toContainText('signature');
   await expect(page.locator('.wb-preview-title strong')).toHaveText('missing.pdf');
   await expect(page.getByRole('note')).toContainText('资源来自第三方站点');
   await expect(page.locator('.wb-preview-stage')).toBeEmpty();
@@ -127,7 +128,7 @@ test('does not replace a local file when an earlier remote download finishes', a
   const request = page.waitForRequest(fileUrl);
   await page.goto(`./?url=${encodeURIComponent(fileUrl)}&lang=zh`);
   await request;
-  await expect(page.locator('.wb-loading')).toBeVisible();
+  await expect(page.locator('.wb-preview-stage .pptxv-overlay')).toBeVisible();
   await expect(page.getByRole('note')).toContainText('资源来自第三方站点');
   await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'current.txt', mimeType: 'text/plain', buffer: Buffer.from('Keep this file open.') });
   await expect(page.locator('.wb-preview-stage')).toContainText('Keep this file open.');

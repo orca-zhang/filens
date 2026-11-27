@@ -57,7 +57,7 @@ filens capacity --json
 filens preview report.pdf --output report-preview.html --no-open
 ```
 
-生成包含原文件、预览引擎和许可的独立 HTML，可复制到其他电脑离线打开，不覆盖已有文件。省略 `--no-open` 可自动打开；Safari / WebKit 的 iWork 预览需使用 `--mode serve`。Lite 的资源配置见[预览指南](packages/preview/README.md#cli-preview)。
+生成包含原文件、预览引擎和许可的独立 HTML，可复制到其他电脑离线打开，不覆盖已有文件。省略 `--no-open` 可自动打开。用当前预览资源导出的 iWork 测试文件可在 Chromium、Firefox 和 WebKit 中离线预览。Lite 的资源配置见[预览指南](packages/preview/README.md#cli-preview)。
 
 ![真实 CLI 演示：OCR 坐标、关键摘录、嵌套压缩包搜索与读取、重复文件、相似图片、格式转换与离线预览](docs/assets/agent-cli/terminal-demo.zh-CN.gif)
 
@@ -152,6 +152,7 @@ npm run dev --workspace @filens/demo
 | 格式覆盖与架构 | [支持矩阵](docs/support-matrix.zh-CN.md) · [项目概览与方案对比](docs/project-overview.zh-CN.md) · [WASM 转换核心](wasm/converter-core-rust/README.md) |
 | 性能与原始数据 | [精选实测](docs/featured-performance.md) · [前端性能对比](docs/performance-comparison.zh-CN.md) · [OCR 对比](docs/macos-ocr-benchmark.zh-CN.md) |
 | 包体积与加载成本 | [预览与 SDK](docs/preview-sizes.md) · [前端分包](docs/bundle-sizes.md) · [CLI 各平台](docs/agent-cli-npm-release.json) |
+| API 兼容与升级 | [公开 API 与包版本策略](docs/api-compatibility.md) |
 | 浏览器媒体兼容 | [接入、限制与验证](docs/browser-media-engine.md) |
 
 欢迎用日常文件测试并[提交可复现问题](https://github.com/orca-zhang/filens/issues/new/choose)。[路线图](docs/roadmap.md) · [MIT 许可](LICENSE) · [第三方声明](packaging/agent-third-party.md)。

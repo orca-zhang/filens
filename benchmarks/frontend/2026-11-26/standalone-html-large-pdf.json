@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-26",
+  "platform": "darwin arm64",
+  "node": "v20.20.2",
+  "browser": "Chromium 159.0.8154.6",
+  "workload": {
+    "sourceBytes": 60737733,
+    "pages": 3600,
+    "drawingItemsPerPage": 350,
+    "sourceSha256": "2c79c68e25072af91c3baf56e29f327dfb161d613cf530752bcba162b3f19665"
+  },
+  "method": "Generate actual standalone HTML from both release CLI builds with identical preview assets, then open each file in a fresh offline Chromium context. Alternate build order and discard the first pair. Source preparation starts before reading the embedded metadata and ends after the File is constructed. Navigation to first page uses the ready event. CLI peak RSS is from macOS time(1). File parts count only constructor arguments and are not a browser peak RSS measurement. Both embedded files and first-page canvas snapshots match byte for byte.",
+  "before": {
+    "artifact": {
+      "bytes": 89536568,
+      "chunks": 0,
+      "sourceSha256": "2c79c68e25072af91c3baf56e29f327dfb161d613cf530752bcba162b3f19665",
+      "firstCanvasSha256": "0d391a38a9d90817f434e775cbfe3c25f2e45bbe647116fe4b536077b24f6dd5"
+    },
+    "samples": [
+      {
+        "exportMs": 154.7,
+        "cliPeakRssBytes": 42057728,
+        "sourceDecodeMs": 1646.2,
+        "navigationToFirstPageMs": 2060,
+        "fileParts": {
+          "rawParts": 1236,
+          "rawBytes": 60737733,
+          "blobParts": 0,
+          "size": 60737733
+        }
+      },
+      {
+        "exportMs": 164.1,
+        "cliPeakRssBytes": 42057728,
+        "sourceDecodeMs": 1627.9,
+        "navigationToFirstPageMs": 2031,
+        "fileParts": {
+          "rawParts": 1236,
+          "rawBytes": 60737733,
+          "blobParts": 0,
+          "size": 60737733
+        }
+      },
+      {
+        "exportMs": 110.1,
+        "cliPeakRssBytes": 42057728,
+        "sourceDecodeMs": 1643.7,
+        "navigationToFirstPageMs": 2058.7,
+        "fileParts": {
+          "rawParts": 1236,
+          "rawBytes": 60737733,
+          "blobParts": 0,
+          "size": 60737733
+        }
+      }
+    ],
+    "median": {
+      "exportMs": 154.7,
+      "cliPeakRssBytes": 42057728,
+      "sourceDecodeMs": 1643.7,
+      "navigationToFirstPageMs": 2058.7
+    }
+  },
+  "after": {
+    "artifact": {
+      "bytes": 89543083,
+      "chunks": 78,
+      "sourceSha256": "2c79c68e25072af91c3baf56e29f327dfb161d613cf530752bcba162b3f19665",
+      "firstCanvasSha256": "0d391a38a9d90817f434e775cbfe3c25f2e45bbe647116fe4b536077b24f6dd5"
+    },
+    "samples": [
+      {
+        "exportMs": 159.6,
+        "cliPeakRssBytes": 42024960,
+        "sourceDecodeMs": 17.7,
+        "navigationToFirstPageMs": 412.7,
+        "fileParts": {
+          "rawParts": 0,
+          "rawBytes": 0,
+          "blobParts": 78,
+          "size": 60737733
+        }
+      },
+      {
+        "exportMs": 163.9,
+        "cliPeakRssBytes": 42024960,
+        "sourceDecodeMs": 16.9,
+        "navigationToFirstPageMs": 411.7,
+        "fileParts": {
+          "rawParts": 0,
+          "rawBytes": 0,
+          "blobParts": 78,
+          "size": 60737733
+        }
+      },
+      {
+        "exportMs": 161.2,
+        "cliPeakRssBytes": 42024960,
+        "sourceDecodeMs": 17.3,
+        "navigationToFirstPageMs": 401.9,
+        "fileParts": {
+          "rawParts": 0,
+          "rawBytes": 0,
+          "blobParts": 78,
+          "size": 60737733
+        }
+      }
+    ],
+    "median": {
+      "exportMs": 161.2,
+      "cliPeakRssBytes": 42024960,
+      "sourceDecodeMs": 17.3,
+      "navigationToFirstPageMs": 411.7
+    }
+  }
+}

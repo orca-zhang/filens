@@ -1,0 +1,525 @@
+{
+  "date": "2026-11-27",
+  "platform": "macOS 26.6.2 arm64",
+  "cpu": "Apple M4 Pro",
+  "pdfjs": "5.4.624",
+  "fixture": {
+    "url": "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf",
+    "sha256": "9de0ca9e8570d6209e8bd48a355be8eb6ec376acfc3fc3ae97cd8730351417ff",
+    "bytes": 22491828,
+    "pages": 756
+  },
+  "method": "Run the same split preview against a local HTTP range server with the original PDF.js worker and the modified worker. In Chromium, a probe in the range-stream constructor exposes its byte storage through a WeakRef. Read the contiguous buffer byte length or sum the stored chunk byte lengths after the first and last pages have selectable text, and after searching all pages. Compare RGBA and selectable-text SHA-256 on both pages and the full ordered search state against the original worker in each browser. Repeat the content checks with the emitted split and all-in-one builds over HTTP ranges and local File slices. Use a 1000 × 800 viewport at device pixel ratio 1.",
+  "measure": "Source byte-array capacity only. Decoded pages, parser objects, canvas memory and temporary contiguous copies are outside this measurement. Nearby rendering can change the first-page sample by a few ranges depending on when the probe runs.",
+  "sourceSha256": {
+    "scripts/pdf-worker-asset.ts": "1da145b944de1a6e7668e06256e50561a8e8178539a371adc67147864960dba1",
+    "packages/pdf/src/range-bytes.mjs": "0fe00a4ff332cbc74af2f41cdaaca76cff4d88c69048dee33bf5cef96d2f4c94",
+    "split/pdf.worker.min.mjs": "4a91871609def6cab759133a1b3dc84e8076de959cf18ec08623d44f2d38e976",
+    "all-in-one/filens.js": "922593c20c8c83402c217ffcc6f75acf087c7cec90eb6677564f12a5711134f4"
+  },
+  "records": [
+    {
+      "engine": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "upstream",
+      "first": {
+        "sourceBytes": 22491828,
+        "transfer": 2978484,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "sourceBytes": 22491828,
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "searched": 22491828,
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "observed",
+      "local": false,
+      "first": {
+        "sourceBytes": 2962100,
+        "transfer": 2978484,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "sourceBytes": 3027636,
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "searched": 10564276,
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "split",
+      "local": false,
+      "first": {
+        "transfer": 2847412,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "split",
+      "local": true,
+      "first": {
+        "transfer": 0,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 0,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 0
+    },
+    {
+      "engine": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "all-in-one",
+      "local": false,
+      "first": {
+        "transfer": 2847412,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "all-in-one",
+      "local": true,
+      "first": {
+        "transfer": 0,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 0,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 0
+    },
+    {
+      "engine": "firefox",
+      "version": "159.0",
+      "mode": "upstream",
+      "first": {
+        "sourceBytes": 22491828,
+        "transfer": 2978484,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "sourceBytes": 22491828,
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "searched": 22491828,
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "firefox",
+      "version": "159.0",
+      "mode": "split",
+      "local": false,
+      "first": {
+        "transfer": 2912948,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "firefox",
+      "version": "159.0",
+      "mode": "split",
+      "local": true,
+      "first": {
+        "transfer": 0,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 0,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 0
+    },
+    {
+      "engine": "firefox",
+      "version": "159.0",
+      "mode": "all-in-one",
+      "local": false,
+      "first": {
+        "transfer": 2912948,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 3044020,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "firefox",
+      "version": "159.0",
+      "mode": "all-in-one",
+      "local": true,
+      "first": {
+        "transfer": 0,
+        "image": "441:624:9ae94049f2bbdf888cec0c3a08ed9801da7a4f34afce78f86768ce6234211744",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 0,
+        "image": "441:624:63a74ce52d234e1cbff395d08af457bdae2a8f2df7ec1a286ecdd5e1892bbb7e",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 0
+    },
+    {
+      "engine": "webkit",
+      "version": "27.2",
+      "mode": "upstream",
+      "first": {
+        "sourceBytes": 22491828,
+        "transfer": 2912948,
+        "image": "441:624:60dad0d0fd947944f6322d9e8d703bb637f6075ad6941511f9f3444814fadeb9",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "sourceBytes": 22491828,
+        "transfer": 3044020,
+        "image": "441:624:1c3f9115f02b818df474476e2c08826b4325f0dd460583b7c1bc3742b91ec1bc",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "searched": 22491828,
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "webkit",
+      "version": "27.2",
+      "mode": "split",
+      "local": false,
+      "first": {
+        "transfer": 2912948,
+        "image": "441:624:60dad0d0fd947944f6322d9e8d703bb637f6075ad6941511f9f3444814fadeb9",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 3044020,
+        "image": "441:624:1c3f9115f02b818df474476e2c08826b4325f0dd460583b7c1bc3742b91ec1bc",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "webkit",
+      "version": "27.2",
+      "mode": "split",
+      "local": true,
+      "first": {
+        "transfer": 0,
+        "image": "441:624:60dad0d0fd947944f6322d9e8d703bb637f6075ad6941511f9f3444814fadeb9",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 0,
+        "image": "441:624:1c3f9115f02b818df474476e2c08826b4325f0dd460583b7c1bc3742b91ec1bc",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 0
+    },
+    {
+      "engine": "webkit",
+      "version": "27.2",
+      "mode": "all-in-one",
+      "local": false,
+      "first": {
+        "transfer": 2847412,
+        "image": "441:624:60dad0d0fd947944f6322d9e8d703bb637f6075ad6941511f9f3444814fadeb9",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 3044020,
+        "image": "441:624:1c3f9115f02b818df474476e2c08826b4325f0dd460583b7c1bc3742b91ec1bc",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 10580660
+    },
+    {
+      "engine": "webkit",
+      "version": "27.2",
+      "mode": "all-in-one",
+      "local": true,
+      "first": {
+        "transfer": 0,
+        "image": "441:624:60dad0d0fd947944f6322d9e8d703bb637f6075ad6941511f9f3444814fadeb9",
+        "text": "a781125b948f774530a0e24efb43914ff40dd5f620cbe5bf219c28bd4b1a4670"
+      },
+      "final": {
+        "transfer": 0,
+        "image": "441:624:1c3f9115f02b818df474476e2c08826b4325f0dd460583b7c1bc3742b91ec1bc",
+        "text": "4f13120fb231d77489d4c9b7d1156f88bcd173aedd47b37c4667dac98da5996b"
+      },
+      "search": {
+        "query": "thumbnail shared objects section",
+        "searching": false,
+        "total": 4,
+        "activeIndex": 0,
+        "pagesScanned": 756,
+        "pageCount": 756,
+        "truncated": false
+      },
+      "transfer": 0
+    }
+  ],
+  "offlineHtml": [
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "blocked": false,
+      "workers": {
+        "started": 1,
+        "documents": 1,
+        "blocked": 0
+      },
+      "pages": 756,
+      "matches": 4
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "blocked": true,
+      "workers": {
+        "started": 0,
+        "documents": 0,
+        "blocked": 1
+      },
+      "pages": 756,
+      "matches": 4
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "blocked": false,
+      "workers": {
+        "started": 1,
+        "documents": 1,
+        "blocked": 0
+      },
+      "pages": 756,
+      "matches": 4
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "blocked": true,
+      "workers": {
+        "started": 0,
+        "documents": 0,
+        "blocked": 1
+      },
+      "pages": 756,
+      "matches": 4
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "blocked": false,
+      "workers": {
+        "started": 1,
+        "documents": 1,
+        "blocked": 0
+      },
+      "pages": 756,
+      "matches": 4
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "blocked": true,
+      "workers": {
+        "started": 0,
+        "documents": 0,
+        "blocked": 1
+      },
+      "pages": 756,
+      "matches": 4
+    }
+  ],
+  "chromiumFullDocumentRead": {
+    "exported": "9de0ca9e8570d6209e8bd48a355be8eb6ec376acfc3fc3ae97cd8730351417ff",
+    "saved": "9de0ca9e8570d6209e8bd48a355be8eb6ec376acfc3fc3ae97cd8730351417ff"
+  }
+}

@@ -218,7 +218,7 @@ test('demo upload lets diagram and mindmap SVG nodes receive touch taps', async 
     { extension: 'drawio', content: createDrawioFixture(2), selector: '.diagramv-node' },
     { extension: 'opml', content: '<opml version="2.0"><body><outline text="Root"><outline text="Touch node"/></outline></body></opml>', selector: '.mindmapv-node' }
   ]) {
-    await page.locator('input[type=file]').setInputFiles({
+    await page.getByLabel('导入文件', { exact: true }).setInputFiles({
       name: `touch.${fixture.extension}`, mimeType: 'application/xml', buffer: Buffer.from(fixture.content)
     });
     const node = page.locator(fixture.selector).last();

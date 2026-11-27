@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { readPreviewFontMetadata } from '../src/preview/font-metadata';
+import { readPreviewFontEmbeddingFlags, readPreviewFontMetadata } from '../src/preview/font-metadata';
 
 function table(length: number, write: (view: DataView) => void) {
   const bytes = new Uint8Array(length);
@@ -66,6 +66,15 @@ function names(records: Array<{ id: number; value: string; platform?: number; la
 }
 
 describe('local SFNT font metadata', () => {
+  it('reads the OS/2 embedding flags from the exact SFNT slice', () => {
+    const bytes = sfnt({ 'OS/2': table(10, view => view.setUint16(8, 0x0104)) });
+    const padded = new Uint8Array(bytes.length + 7);
+    padded.set(bytes, 5);
+    expect(readPreviewFontEmbeddingFlags(padded.subarray(5, 5 + bytes.length))).toBe(0x0104);
+    expect(readPreviewFontEmbeddingFlags(sfnt({ 'OS/2': table(8, () => {}) }))).toBeUndefined();
+    expect(readPreviewFontEmbeddingFlags(sfnt({}))).toBeUndefined();
+  });
+
   it.each(['Regular', 'Bold'])('reads real Liberation Sans %s metadata and Unicode coverage', async face => {
     const bytes = await readFile(path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-${face}.ttf`));
     const metadata = readPreviewFontMetadata(bytes);

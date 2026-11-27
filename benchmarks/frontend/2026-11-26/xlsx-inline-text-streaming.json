@@ -1,0 +1,131 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "fixtureGenerator": "openpyxl 3.1.5 write-only workbook with lxml 6.0.2",
+  "method": "Open each DEFLATE workbook as a file-backed Blob with the public loadXlsxWorkbook reader in three fresh Node processes per build. Alternate build order between pairs. Parsing includes ZIP ranges, decompression and worksheet parsing. Retained heap is heapUsed above startup after GC. Peak RSS covers startup through parsing and GC. Hash every parsed row and resolve the uncached formula after taking the measurements.",
+  "builds": {
+    "baselineEntrySha256": "ba8bd9a0c1eb0d10cc0db1b9d639ab36403999eef39a7ae2676f57394b7cefae",
+    "directInlineTextEntrySha256": "cab71061f522c85254132631eb4464102e386647587f10d3e2ec237636dee401"
+  },
+  "workload": {
+    "rows": 24000,
+    "columns": 48,
+    "cells": 1152000,
+    "baseValues": "For each one-based row and zero-based column, columns divisible by three contain row * 48 + column. Other columns contain a label with its zero-padded row and column, leading and trailing spaces, and a line break."
+  },
+  "fixtures": {
+    "plain": {
+      "description": "Numbers and plain inline strings across the entire worksheet.",
+      "archiveBytes": 4889487,
+      "archiveSha256": "22a537ff41ee16f1ab55287fbdb20dc24701af7e95548779de81763db63a316f",
+      "worksheetXmlBytes": 88437952,
+      "baseline": {
+        "samples": [
+          {
+            "parseMs": 5056.453,
+            "retainedHeapBytes": 204775176,
+            "peakRssKiB": 657600
+          },
+          {
+            "parseMs": 5098.689,
+            "retainedHeapBytes": 204575864,
+            "peakRssKiB": 621856
+          },
+          {
+            "parseMs": 4997.989,
+            "retainedHeapBytes": 204666152,
+            "peakRssKiB": 720608
+          }
+        ],
+        "median": {
+          "parseMs": 5056.453,
+          "retainedHeapBytes": 204666152,
+          "peakRssKiB": 657600
+        }
+      },
+      "directInlineText": {
+        "samples": [
+          {
+            "parseMs": 1001.973,
+            "retainedHeapBytes": 204509336,
+            "peakRssKiB": 361616
+          },
+          {
+            "parseMs": 965.933,
+            "retainedHeapBytes": 204491152,
+            "peakRssKiB": 355744
+          },
+          {
+            "parseMs": 987.297,
+            "retainedHeapBytes": 204467928,
+            "peakRssKiB": 368432
+          }
+        ],
+        "median": {
+          "parseMs": 987.297,
+          "retainedHeapBytes": 204491152,
+          "peakRssKiB": 361616
+        }
+      },
+      "verifiedRowModelSha256": "aa64cd8ddce3ceed810ffe602589e21da913021f818dfaecb9be5ee883584b09"
+    },
+    "mixed": {
+      "description": "The same worksheet with escaped literal text at B9000 and B24000 and an uncached formula at C24000.",
+      "archiveBytes": 4889647,
+      "archiveSha256": "265c90d98b1faad9c8e0c3de52f4a2e6ce992a10a79204939ec246f215cef574",
+      "worksheetXmlBytes": 88437881,
+      "baseline": {
+        "samples": [
+          {
+            "parseMs": 5000.822,
+            "retainedHeapBytes": 204717368,
+            "peakRssKiB": 712432
+          },
+          {
+            "parseMs": 4975.598,
+            "retainedHeapBytes": 204837496,
+            "peakRssKiB": 725856
+          },
+          {
+            "parseMs": 5023.538,
+            "retainedHeapBytes": 204781024,
+            "peakRssKiB": 704208
+          }
+        ],
+        "median": {
+          "parseMs": 5000.822,
+          "retainedHeapBytes": 204781024,
+          "peakRssKiB": 712432
+        }
+      },
+      "directInlineText": {
+        "samples": [
+          {
+            "parseMs": 1031.4,
+            "retainedHeapBytes": 204842088,
+            "peakRssKiB": 362208
+          },
+          {
+            "parseMs": 1039.674,
+            "retainedHeapBytes": 204856864,
+            "peakRssKiB": 361136
+          },
+          {
+            "parseMs": 1088.342,
+            "retainedHeapBytes": 204786656,
+            "peakRssKiB": 370496
+          }
+        ],
+        "median": {
+          "parseMs": 1039.674,
+          "retainedHeapBytes": 204842088,
+          "peakRssKiB": 362208
+        }
+      },
+      "verifiedRowModelSha256": "86ccf1bb6b4698dcf3eb46fd3d952337b39a67e36d7bc9fc7119e80eded69380",
+      "verifiedFormulaValue": "1152048"
+    }
+  }
+}

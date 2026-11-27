@@ -63,6 +63,16 @@ describe('XLSX column dimensions', () => {
     expect(result.sheets[0].rows[0].cells[0].value).toBe('中文 &#51;');
   });
 
+  it('doubles saved pixel widths in formula view on both worksheet parser paths', async () => {
+    const metadata = '<sheetViews><sheetView showFormulas="true"/></sheetViews><cols><col min="2" max="2" width="16" bestFit="1"/></cols>';
+    const [fast, general] = await Promise.all([false, true].map(general => workbook(metadata, { general })));
+    expect(fast).toEqual(general);
+    const sheet = clonePreviewWorkbook(fast).sheets[0];
+    expect(sheet.showFormulas).toBe(true);
+    expect(sheet.columnWidths).toEqual([122, 224, 122, 122, 122, 122]);
+    expect(sheetColumnWidths(sheet, document)).toEqual(sheet.columnWidths);
+  });
+
   it('bounds malformed declarations and cell dimensions before allocating source tracks', async () => {
     const invalid = [[0, 2, '12'], [2.5, 4, '12'], [4, 2, '12'], [1, 4294967295, '12'], [1, 2, '-3'], [1, 2, 'NaN'], [1, 2, 'Infinity'], [1, 2, '0'], [1, 2, '1e308']];
     const result = await workbook('<sheetFormatPr baseColWidth="8"/><cols>'

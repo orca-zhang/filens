@@ -1,16 +1,18 @@
-import { evaluateWorksheetFormula, readCellScalar } from './cell-value';
+import { evaluateWorksheetFormula, readCellScalar, resolveCellValue } from './cell-value';
+import { formulaClock } from './formula-clock';
 import { createRangeValueReader, numericCellValue, type ConditionalRangeValues } from './conditional-range-values';
 import { compileVisualRule, type ConditionalAppearance } from './conditional-visuals';
 import { compareFormulaValues } from './formula-reader';
+import { excelSerialFromTimestamp } from './excel-calendar';
 import { RowRangeIndex } from './row-range-index';
 import { createFormulaTranslator } from './shared-formulas';
-import type { ParsedCell, ParsedConditionalRule, ParsedMerge, ParsedSheet } from './types';
+import type { ConditionalDatePeriod, ParsedCell, ParsedConditionalRule, ParsedMerge, ParsedSheet } from './types';
 import { wildcardMatcher } from './wildcard-matcher';
 
 interface RankedRule { order: number; rule: ParsedConditionalRule }
 interface RuleArea extends ParsedMerge { rules: RankedRule[] }
 type RuleTest = (row: number, column: number, cell?: ParsedCell) => boolean | ConditionalAppearance;
-type RangeReader = () => ConditionalRangeValues;
+type RangeReader = () => ConditionalRangeValues | undefined;
 const indexes = new WeakMap<ParsedSheet, {
   index: RowRangeIndex<RuleArea>;
   tests: Map<ParsedConditionalRule, RuleTest>;
@@ -52,22 +54,35 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
     return candidates.sort((a, b) => a.rule.priority - b.rule.priority || a.order - b.order);
   };
   const visible = intersect(firstRow, lastRow, firstColumn, lastColumn);
+  let dateTests: Map<ParsedConditionalRule, RuleTest> | undefined;
+  let today: Date | undefined;
   return (row: number, column: number, cell?: ParsedCell): ConditionalAppearance | undefined => {
     // A clipped merge can display a logical anchor outside the visible window.
     const candidates = row >= firstRow && row <= lastRow && column >= firstColumn && column <= lastColumn
       ? visible : intersect(row, row, column, column);
+    if (cell && candidates.length) resolveCellValue(sheet, cell);
     let result: ConditionalAppearance | undefined;
     for (const { rule, areas } of candidates) {
       if (!areas.some(area => row >= area.firstRow && row <= area.lastRow && column >= area.firstColumn && column <= area.lastColumn)) continue;
-      let test = tests.get(rule);
-      if (!test) { test = compileRule(sheet, rule, rangeReaders.get(rule.ranges)); tests.set(rule, test); }
+      const testCache = rule.condition.type === 'timePeriod' ? dateTests ??= new Map() : tests;
+      let test = testCache.get(rule);
+      if (!test) {
+        if (rule.condition.type === 'timePeriod' && !today) {
+          const clock = formulaClock(sheet);
+          today = new Date(clock.time ?? Date.now());
+          clock.reads++;
+        }
+        test = compileRule(sheet, rule, rangeReaders.get(rule.ranges), today);
+        testCache.set(rule, test);
+      }
       const match = test(row, column, cell);
       if (!match) continue;
       const style = match === true ? rule.style : rule.style ? { ...rule.style, ...match } : match;
       if (style) {
-        const first = result;
-        result = first ? { ...style, ...first } : style;
-        if (style.borders && first?.borders) result.borders = { ...style.borders, ...first.borders };
+        const first: ConditionalAppearance | undefined = result;
+        const merged: ConditionalAppearance = first ? { ...style, ...first } : style;
+        if (style.borders && first?.borders) merged.borders = { ...style.borders, ...first.borders };
+        result = merged;
       }
       if (rule.stopIfTrue) break;
     }
@@ -75,7 +90,7 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
   };
 }
 
-function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?: RangeReader): RuleTest {
+function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?: RangeReader, today?: Date): RuleTest {
   const { condition } = rule;
   const origin = rule.ranges[0];
   const expression = (source: string) => {
@@ -127,13 +142,14 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?
       if (!condition.rank) return false;
       const value = numericCellValue(sheet, cell);
       if (value === undefined) return false;
-      const cutoff = readRange!().ranks.get(condition);
+      const cutoff = readRange!()?.ranks.get(condition);
       return cutoff !== undefined && (condition.bottom ? value <= cutoff : value >= cutoff);
     };
     case 'aboveAverage': return (_, __, cell) => {
       const value = numericCellValue(sheet, cell);
-      if (value === undefined) return false;
-      const { center, scale, mean, deviation } = readRange!().average;
+      const average = value === undefined ? undefined : readRange!()?.average;
+      if (value === undefined || !average) return false;
+      const { center, scale, mean, deviation } = average;
       const shifted = value / scale - center;
       if (condition.equal) return condition.above ? shifted >= mean : shifted <= mean;
       const distance = deviation * condition.deviations;
@@ -141,9 +157,16 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?
     };
     case 'duplicateValues': case 'uniqueValues': return (_, __, cell) => {
       if (!cell) return false;
-      const count = readRange!().frequency(cell);
+      const count = readRange!()?.frequency(cell) ?? 0;
       return condition.type === 'duplicateValues' ? count > 1 : count === 1;
     };
+    case 'timePeriod': {
+      const [start, end] = datePeriodBounds(condition.period, today!, sheet.date1904);
+      return (_, __, cell) => {
+        const value = numericCellValue(sheet, cell);
+        return value !== undefined && value >= start && value < end;
+      };
+    }
     default: {
       const text = condition.text.toLowerCase();
       const search = condition.type === 'containsText' || condition.type === 'notContainsText' ? wildcardMatcher(text, true) : undefined;
@@ -156,6 +179,27 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?
         if (condition.type === 'endsWith') return input.endsWith(text);
         return search!(input) === (condition.type === 'containsText');
       };
+    }
+  }
+}
+
+function datePeriodBounds(period: ConditionalDatePeriod, today: Date, date1904?: boolean): [number, number] {
+  const year = today.getFullYear(), month = today.getMonth(), day = today.getDate();
+  // Use the local calendar date with UTC arithmetic so DST cannot shift the serial boundaries.
+  const serial = (monthIndex: number, dayIndex: number) =>
+    excelSerialFromTimestamp(Date.UTC(year, monthIndex, dayIndex), date1904);
+  switch (period) {
+    case 'yesterday': return [serial(month, day - 1), serial(month, day)];
+    case 'today': return [serial(month, day), serial(month, day + 1)];
+    case 'tomorrow': return [serial(month, day + 1), serial(month, day + 2)];
+    case 'last7Days': return [serial(month, day - 6), serial(month, day + 1)];
+    case 'lastWeek': case 'thisWeek': case 'nextWeek': {
+      const sunday = day - today.getDay() + (period === 'lastWeek' ? -7 : period === 'nextWeek' ? 7 : 0);
+      return [serial(month, sunday), serial(month, sunday + 7)];
+    }
+    case 'lastMonth': case 'thisMonth': case 'nextMonth': {
+      const first = month + (period === 'lastMonth' ? -1 : period === 'nextMonth' ? 1 : 0);
+      return [serial(first, 1), serial(first + 1, 1)];
     }
   }
 }

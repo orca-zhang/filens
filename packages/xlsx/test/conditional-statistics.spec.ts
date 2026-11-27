@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { WorksheetCellIndex } from '../src/cell-index';
+import { displaySpillCell } from '../src/cell-value';
 import { conditionalFormattingWindow } from '../src/conditional-formatting';
+import { createRangeValueReader } from '../src/conditional-range-values';
+import { withFormulaTime } from '../src/formula-clock';
 import { loadXlsxWorkbook } from '../src/parser';
 import type { ParsedSheet } from '../src/types';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
-import { createConditionalStatisticsWorkbook } from './fixtures/conditional-statistics-workbook.mjs';
+import { createConditionalStatisticsWorkbook, createSpillConditionalStatisticsWorkbook } from './fixtures/conditional-statistics-workbook.mjs';
 
 function formatsIn(sheet: ParsedSheet) {
   const format = conditionalFormattingWindow(sheet, 1, 15, 1, 9)!;
@@ -40,6 +44,7 @@ describe('XLSX range statistics', () => {
     expect(format(1, 7)).toBeUndefined();
     expect(format(2, 7)).toEqual({ bold: true });
     expect(format(3, 7)).toMatchObject({ fill: { color: '#FFCDD2' }, bold: true });
+    expect(format(3, 8)).toEqual({ bold: true });
   });
 
   it('counts typed values, case-insensitive text and whole-cell wildcard matches', async () => {
@@ -56,5 +61,56 @@ describe('XLSX range statistics', () => {
     copy.sheets[1].rows[0].cells[0].value = '-30';
     expect(formatsIn(copy.sheets[0])(1, 1)?.bold).toBeUndefined();
     expect(formatsIn(original.sheets[0])(1, 1)?.bold).toBe(true);
+  });
+
+  it('uses weighted spill values across overlapping rule areas and saved cells', async () => {
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await createSpillConditionalStatisticsWorkbook());
+    const rules = sheet.conditionalRules!;
+    const index = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    try {
+      const stats = createRangeValueReader(sheet, rules[0].ranges, rules.map(rule => rule.condition))!();
+      expect(stats).toMatchObject({ min: -10, max: 80, percentiles: new Map([[0.01, 10], [0.02, 20]]) });
+      expect([...stats!.ranks.values()]).toEqual([30]);
+      const weighted = [
+        [-10, 1], [5, 1], [10, 2 * 1048576 - 3], [20, 16_381 * 1048576 - 3], [30, 1], [40, 1], [80, 1]
+      ];
+      const count = weighted.reduce((sum, [, weight]) => sum + weight, 0);
+      const mean = weighted.reduce((sum, [value, weight]) => sum + value * weight, 0) / count;
+      const deviation = Math.sqrt(weighted.reduce((sum, [value, weight]) => sum + (value - mean) ** 2 * weight, 0) / count);
+      const { center, scale, mean: shifted, deviation: scaledDeviation } = stats!.average;
+      expect((center + shifted) * scale).toBeCloseTo(mean, 10);
+      expect(scaledDeviation * scale).toBeCloseTo(deviation, 10);
+      expect(index.mock.calls.length).toBeLessThan(1_000);
+      expect(stats!.frequency(displaySpillCell(sheet, 3, 5, sheet.rows[2].cells[0])!)).toBe(2);
+      expect(stats!.frequency(sheet.rows[1].cells[0])).toBe(1);
+      expect(stats!.frequency(sheet.rows[1].cells[1])).toBe(1);
+      expect(stats!.frequency(sheet.rows[3].cells[0])).toBe(0);
+    } finally { index.mockRestore(); }
+  });
+
+  it('refreshes a repeated date value when its spill anchor has a saved cache', () => {
+    const sheet: ParsedSheet = { id: 'clock', name: 'Clock', rowCount: 1048576, columnCount: 2,
+      rows: [{ index: 1, cells: [{ ref: 'A1', row: 1, column: 1, value: '1', formula: 'B:B+TODAY()' }] }],
+      arrayFormulas: [{ firstRow: 1, lastRow: 1048576, firstColumn: 1, lastColumn: 1 }] };
+    const read = createRangeValueReader(sheet, [{ firstRow: 1, lastRow: 1048576, firstColumn: 1, lastColumn: 1 }],
+      [{ type: 'colorScale', colors: ['#000000', '#FFFFFF'], thresholds: [{ type: 'min' }, { type: 'max' }] }])!;
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(2024, 0, 1));
+      expect(withFormulaTime(sheet, read)).toMatchObject({ min: 1, max: 45292 });
+      vi.setSystemTime(new Date(2024, 0, 2));
+      expect(withFormulaTime(sheet, read)).toMatchObject({ min: 1, max: 45293 });
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('keeps the scan limit on generated values that vary by position', () => {
+    const sheet: ParsedSheet = { id: 'sequence', name: 'Sequence', rowCount: 1048576, columnCount: 1,
+      rows: [{ index: 1, cells: [{ ref: 'A1', row: 1, column: 1, value: '1', formula: 'SEQUENCE(1048576)' }] }],
+      arrayFormulas: [{ firstRow: 1, lastRow: 1048576, firstColumn: 1, lastColumn: 1 }] };
+    const read = (firstRow: number, lastRow: number) => createRangeValueReader(sheet,
+      [{ firstRow, lastRow, firstColumn: 1, lastColumn: 1 }],
+      [{ type: 'colorScale', colors: ['#000000', '#FFFFFF'], thresholds: [{ type: 'min' }, { type: 'max' }] }])!();
+    expect(read(1, 1048576)).toBeUndefined();
+    expect(read(1048574, 1048576)).toMatchObject({ min: 1048574, max: 1048576 });
   });
 });

@@ -1,0 +1,211 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "writer": "XlsxWriter 3.2.9 with constant_memory enabled",
+  "method": "Open each file-backed Blob in XlsxPreviewSession in three fresh Node processes per build, alternating build order. Measure the load and initial viewport, then sample peak process RSS and retained V8 heap above startup after two explicit collections. Run verification after measurement. Compare initial viewport markup and all source row indices, cell addresses, values, types, formulas and style indices. Force the Summary formula SUM(Data!A:A) to recalculate and compare it with the saved result. jsdom uses its font measurement fallback.",
+  "builds": {
+    "baseline": {
+      "bytes": 82368,
+      "sha256": "9eea70be305148001b7721658bcc2c60b0cfbd0efa54917450a68bbfb76bf51e"
+    },
+    "compact": {
+      "bytes": 82406,
+      "sha256": "8d295359d80cc13ad38b717c865aaee39485e1389101799b6b8f9c7148c371bc"
+    }
+  },
+  "workloads": {
+    "narrow": {
+      "columns": 4,
+      "contents": "Row number, alternating ready or pending string, cyclic amount, and alternating Boolean.",
+      "archive": {
+        "bytes": 4772521,
+        "sha256": "01cf9796e3a843d5fe417f5b63c02abf5ddd0835e1356d634b42ffaba64aeadc"
+      },
+      "parity": {
+        "rows": 250000,
+        "cells": 1000000,
+        "modelHash": "c28b65b6ad7c3877da73b81d4995b72f760bd91d15d3c456cccb864d5c45a8de",
+        "markupHash": "26b0141d56905c646d4decc3a385fef3858554f4e806d34fdf6aa34573ea6061",
+        "formula": "31250125000"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 896.8506669999999,
+            "peakRssKiB": 365216,
+            "heapBytes": 146876704
+          },
+          {
+            "loadMs": 885.6684579999999,
+            "peakRssKiB": 366400,
+            "heapBytes": 146770232
+          },
+          {
+            "loadMs": 900.925792,
+            "peakRssKiB": 369424,
+            "heapBytes": 146938456
+          }
+        ],
+        "compact": [
+          {
+            "loadMs": 892.7267920000002,
+            "peakRssKiB": 333792,
+            "heapBytes": 120928840
+          },
+          {
+            "loadMs": 880.447584,
+            "peakRssKiB": 360480,
+            "heapBytes": 120856336
+          },
+          {
+            "loadMs": 903.58925,
+            "peakRssKiB": 352704,
+            "heapBytes": 120931664
+          }
+        ]
+      },
+      "summary": {
+        "baseline": {
+          "loadMs": 896.9,
+          "peakRssMiB": 357.8,
+          "retainedHeapMiB": 140.1
+        },
+        "compact": {
+          "loadMs": 892.7,
+          "peakRssMiB": 344.4,
+          "retainedHeapMiB": 115.3
+        }
+      }
+    },
+    "formulas": {
+      "columns": 8,
+      "contents": "Numeric values, plain and XML-escaped strings, and one cached formula A(row)*2 per row.",
+      "archive": {
+        "bytes": 4614851,
+        "sha256": "35409a346aeed9d6b1062bd0b25e5efbca0057b10a88d1983ccf94e4a13e426a"
+      },
+      "parity": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "4d66dcf5852fbe933a533197ea320ccd4044c038c665444e9eec8e0210818c36",
+        "markupHash": "f99dddd42f0f87e73efbd8496f213516a3b1f6c12733550e43e1e32c5aa63491",
+        "formula": "7812562500"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 3824.343541,
+            "peakRssKiB": 577504,
+            "heapBytes": 137695056
+          },
+          {
+            "loadMs": 3960.67225,
+            "peakRssKiB": 652896,
+            "heapBytes": 137640616
+          },
+          {
+            "loadMs": 3948.162292,
+            "peakRssKiB": 636624,
+            "heapBytes": 137779192
+          }
+        ],
+        "compact": [
+          {
+            "loadMs": 3877.625375,
+            "peakRssKiB": 602496,
+            "heapBytes": 128676400
+          },
+          {
+            "loadMs": 3892.124792,
+            "peakRssKiB": 597232,
+            "heapBytes": 128735664
+          },
+          {
+            "loadMs": 3922.842167,
+            "peakRssKiB": 590032,
+            "heapBytes": 128618928
+          }
+        ]
+      },
+      "summary": {
+        "baseline": {
+          "loadMs": 3948.2,
+          "peakRssMiB": 621.7,
+          "retainedHeapMiB": 131.3
+        },
+        "compact": {
+          "loadMs": 3892.1,
+          "peakRssMiB": 583.2,
+          "retainedHeapMiB": 122.7
+        }
+      }
+    },
+    "wide": {
+      "columns": 96,
+      "contents": "Numeric cells containing the row number plus the zero-based column offset.",
+      "archive": {
+        "bytes": 5568598,
+        "sha256": "1503c750645192e28d2dd1d2711d793cde532ada7b722596f094eb09189feb88"
+      },
+      "parity": {
+        "rows": 16000,
+        "cells": 1536000,
+        "modelHash": "7f8999589ee4e309fec2d5da73c4f345465e5418b962cd84557785646e7a4621",
+        "markupHash": "a0eb08e76f4af0bc3c0489ad00a8d91777582bc26f19ef00316aefd01cc55a09",
+        "formula": "128008000"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1577.048666,
+            "peakRssKiB": 393168,
+            "heapBytes": 167350744
+          },
+          {
+            "loadMs": 1562.478334,
+            "peakRssKiB": 395104,
+            "heapBytes": 167522472
+          },
+          {
+            "loadMs": 1512.51925,
+            "peakRssKiB": 391936,
+            "heapBytes": 167446528
+          }
+        ],
+        "compact": [
+          {
+            "loadMs": 1521.827791,
+            "peakRssKiB": 377600,
+            "heapBytes": 161856784
+          },
+          {
+            "loadMs": 1575.642417,
+            "peakRssKiB": 379280,
+            "heapBytes": 161888784
+          },
+          {
+            "loadMs": 1520.8055000000002,
+            "peakRssKiB": 378416,
+            "heapBytes": 161739768
+          }
+        ]
+      },
+      "summary": {
+        "baseline": {
+          "loadMs": 1562.5,
+          "peakRssMiB": 384,
+          "retainedHeapMiB": 159.7
+        },
+        "compact": {
+          "loadMs": 1521.8,
+          "peakRssMiB": 369.5,
+          "retainedHeapMiB": 154.4
+        }
+      }
+    }
+  }
+}

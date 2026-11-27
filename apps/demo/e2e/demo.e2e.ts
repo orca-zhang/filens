@@ -1,16 +1,26 @@
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 
-async function selectVueOfficeRegressionDeck(page: Page): Promise<void> {
-  await page.getByLabel('导入文件', { exact: true }).setInputFiles(path.resolve('apps/demo/public/samples/vue-office-test.pptx'));
+const usesLightWeight = (weight: string) => weight === '' || (Number(weight) >= 200 && Number(weight) < 400);
+
+async function selectPptx(page: Page, file: string, count: number): Promise<void> {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByLabel('导入文件', { exact: true }).setInputFiles(path.resolve(file));
   await page.getByRole('button', { name: '显示工具栏', exact: true }).click();
-  await expect(page.locator('.pptxv-status').first()).toContainText('/ 13', { timeout: 20000 });
+  await expect(page.locator('.pptxv-status').first()).toHaveText(`1 / ${count}`, { timeout: 20000 });
+}
+
+async function selectVueOfficeRegressionDeck(page: Page): Promise<void> {
+  await selectPptx(page, 'apps/demo/public/samples/vue-office-test.pptx', 13);
+}
+
+async function selectNavigationDeck(page: Page): Promise<void> {
+  await selectPptx(page, 'apps/demo/public/samples/sample-deck.pptx', 3);
 }
 
 async function goToSlide(page: Page, index: number): Promise<void> {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
   const shell = page.locator('.pptxv-shell').first();
-  await shell.locator('.pptxv-scroll-area').evaluate((element: HTMLElement) => { element.style.scrollBehavior = 'auto'; });
   const status = page.locator('.pptxv-status').first();
   let current = Number((await status.innerText()).split('/')[0]) - 1;
   while (current !== index) {
@@ -523,14 +533,9 @@ test('renders remote bullets, shape text, and table styles on key slides', async
     const listRun = findRun('列表方形');
     const boldRun = findRun('文本测试');
 
-    const titleWeights = Array.from(element.querySelectorAll('.pptxv-run'))
-      .filter((node) => node instanceof HTMLElement && !node.classList.contains('pptxv-run--bullet'))
-      .map((node) => ({
-        fontSize: node instanceof HTMLElement ? node.style.fontSize : '',
-        fontWeight: node instanceof HTMLElement ? node.style.fontWeight : ''
-      }))
-      .filter((entry) => parseFloat(entry.fontSize || '0') > 50)
-      .map((entry) => entry.fontWeight);
+    const titles = Array.from(element.querySelectorAll<HTMLElement>('.pptxv-run:not(.pptxv-run--bullet)'))
+      .filter(node => parseFloat(node.style.fontSize) > 50)
+      .map(node => ({ family: node.style.fontFamily, weight: node.style.fontWeight }));
     const lightAutoBulletWeights = Array.from(element.querySelectorAll('.pptxv-run--bullet-auto'))
       .map((node) => {
         if (!(node instanceof HTMLElement)) {
@@ -542,12 +547,12 @@ test('renders remote bullets, shape text, and table styles on key slides', async
           return null;
         }
 
-        return style.fontWeight;
+        return node.style.fontWeight;
       })
       .filter((weight): weight is string => weight !== null);
 
     return {
-      titleWeights,
+      titles,
       lightAutoBulletWeights,
       listParagraphFontSize: listParagraph?.style.fontSize ?? null,
       listRunFontFamily: listRun?.style.fontFamily ?? null,
@@ -556,10 +561,10 @@ test('renders remote bullets, shape text, and table styles on key slides', async
     };
   });
 
-  expect(slide5Typography.titleWeights.length).toBeGreaterThanOrEqual(2);
-  expect(slide5Typography.titleWeights.every((weight) => weight === '300')).toBe(true);
+  expect(slide5Typography.titles.length).toBeGreaterThanOrEqual(2);
+  expect(slide5Typography.titles.every(({ family, weight }) => family.includes('DengXian Light') && usesLightWeight(weight))).toBe(true);
   expect(slide5Typography.lightAutoBulletWeights.length).toBeGreaterThanOrEqual(4);
-  expect(slide5Typography.lightAutoBulletWeights.every((weight) => weight === '300')).toBe(true);
+  expect(slide5Typography.lightAutoBulletWeights.every(usesLightWeight)).toBe(true);
   expect(slide5Typography.listParagraphFontSize).toBe('24px');
   expect(slide5Typography.listRunFontFamily).toContain('等线');
   expect(slide5Typography.boldRunFontSize).toBe('24px');
@@ -591,14 +596,9 @@ test('renders remote bullets, shape text, and table styles on key slides', async
         node instanceof HTMLElement ? node.dataset.resolvedLabel ?? node.textContent?.trim() ?? '' : node.textContent?.trim() ?? ''
       )
       .filter(Boolean);
-    const titleWeights = Array.from(element.querySelectorAll('.pptxv-run'))
-      .filter((node) => node instanceof HTMLElement && !node.classList.contains('pptxv-run--bullet'))
-      .map((node) => ({
-        fontSize: node instanceof HTMLElement ? node.style.fontSize : '',
-        fontWeight: node instanceof HTMLElement ? node.style.fontWeight : ''
-      }))
-      .filter((entry) => parseFloat(entry.fontSize || '0') > 50)
-      .map((entry) => entry.fontWeight);
+    const titles = Array.from(element.querySelectorAll<HTMLElement>('.pptxv-run:not(.pptxv-run--bullet)'))
+      .filter(node => parseFloat(node.style.fontSize) > 50)
+      .map(node => ({ family: node.style.fontFamily, weight: node.style.fontWeight }));
     const lightAutoBulletWeights = Array.from(element.querySelectorAll('.pptxv-run--bullet-auto'))
       .map((node) => {
         if (!(node instanceof HTMLElement)) {
@@ -610,7 +610,7 @@ test('renders remote bullets, shape text, and table styles on key slides', async
           return null;
         }
 
-        return style.fontWeight;
+        return node.style.fontWeight;
       })
       .filter((weight): weight is string => weight !== null);
 
@@ -619,19 +619,19 @@ test('renders remote bullets, shape text, and table styles on key slides', async
       dotCount: bulletTexts.filter((text) => text === '\u2022').length,
       squareCount: bulletTexts.filter((text) => text === '\u25a0').length,
       hasArrow: bulletTexts.includes('\u27a2'),
-      titleWeights,
+      titles,
       lightAutoBulletWeights
     };
   });
 
-  expect(slide6BulletSummary.titleWeights.length).toBeGreaterThanOrEqual(2);
-  expect(slide6BulletSummary.titleWeights.every((weight) => weight === '300')).toBe(true);
+  expect(slide6BulletSummary.titles.length).toBeGreaterThanOrEqual(2);
+  expect(slide6BulletSummary.titles.every(({ family, weight }) => family.includes('DengXian Light') && usesLightWeight(weight))).toBe(true);
   expect(slide6BulletSummary.bulletCount).toBeGreaterThanOrEqual(32);
   expect(slide6BulletSummary.dotCount).toBeGreaterThanOrEqual(2);
   expect(slide6BulletSummary.squareCount).toBeGreaterThanOrEqual(5);
   expect(slide6BulletSummary.hasArrow).toBe(true);
   expect(slide6BulletSummary.lightAutoBulletWeights.length).toBeGreaterThanOrEqual(8);
-  expect(slide6BulletSummary.lightAutoBulletWeights.every((weight) => weight === '300')).toBe(true);
+  expect(slide6BulletSummary.lightAutoBulletWeights.every(usesLightWeight)).toBe(true);
 
   await goToSlide(page, 7);
   await expect(status).toContainText('8 / 13');
@@ -987,21 +987,25 @@ test('renders remote 3d preset shapes with reference-like svg primitives on slid
 
 test('keeps toolbar state in sync while navigating the built-in sample deck', async ({ page }) => {
   await page.goto('./?view=preview');
-  await page.getByRole('button', { name: 'Preview built-in sample' }).click();
+  await selectNavigationDeck(page);
   const status = page.locator('.pptxv-status').first();
+  const previous = page.getByRole('button', { name: 'Prev', exact: true });
+  const next = page.getByRole('button', { name: 'Next', exact: true });
+  await expect(previous).toBeDisabled();
+  await next.click();
+  await expect(status).toHaveText('2 / 3');
+  await expect(previous).toBeEnabled();
+  await expect(page.locator('.pptxv-slide-shell[data-slide-index="1"] .pptxv-slide-stage')).toBeInViewport();
 
-  await expect(status).toContainText('1 / 3');
-  await page.getByRole('button', { name: 'Next' }).click();
-  await expect(status).toContainText('2 / 3');
-  await expect(page.locator('.pptxv-thumb-button.is-active')).toContainText('2');
-
-  await page.getByRole('button', { name: 'Width' }).click();
-  await expect(page.locator('.pptxv-slide-stage').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Width', exact: true }).click();
+  await next.click();
+  await expect(status).toHaveText('3 / 3');
+  await expect(next).toBeDisabled();
 });
 
 test('supports keyboard navigation after the preview shell is focused', async ({ page }) => {
   await page.goto('./?view=preview');
-  await page.getByRole('button', { name: 'Preview built-in sample' }).click();
+  await selectNavigationDeck(page);
   const shell = page.locator('.pptxv-shell');
   const status = page.locator('.pptxv-status').first();
 
@@ -1011,28 +1015,31 @@ test('supports keyboard navigation after the preview shell is focused', async ({
   await expect(shell).toBeFocused();
   await shell.press('ArrowRight');
   await expect(status).toContainText('2 / 3');
-  await expect(page.locator('.pptxv-thumb-button[aria-current="true"]')).toContainText('2');
+  await expect(page.locator('.pptxv-slide-shell[data-slide-index="1"] .pptxv-slide-stage')).toBeInViewport();
 
   await shell.press('Home');
-  await expect(status).toContainText('1 / 3');
+  await expect(status).toHaveText('1 / 3');
+  await shell.press('End');
+  await expect(status).toHaveText('3 / 3');
 });
 
 test('supports slide links and action links inside the presentation content', async ({ page }) => {
   await page.goto('./?view=preview');
-  await page.getByRole('button', { name: 'Preview built-in sample' }).click();
+  await selectNavigationDeck(page);
   const status = page.locator('.pptxv-status').first();
   const main = page.locator('.pptxv-main');
 
-  await main.getByText('Jump to table slide').click();
+  await main.getByRole('link', { name: 'Jump to table slide', exact: true }).click();
   await expect(status).toContainText('3 / 3');
 
-  await main.getByText('Return to last viewed slide').click();
+  await main.getByRole('link', { name: 'Return to last viewed slide', exact: true }).click();
   await expect(status).toContainText('1 / 3');
 });
 
 test('supports image links inside the presentation content', async ({ page }) => {
   await page.goto('./?view=preview');
-  await page.getByRole('button', { name: 'Preview built-in sample' }).click();
+  await selectNavigationDeck(page);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   const status = page.locator('.pptxv-status').first();
 
   await page.getByRole('button', { name: 'Next' }).click();
@@ -1040,11 +1047,12 @@ test('supports image links inside the presentation content', async ({ page }) =>
 
   await page.locator('.pptxv-main .pptxv-item--image .pptxv-item-link').click();
   await expect(status).toContainText('3 / 3');
+  await expect(page.locator('.pptxv-slide-shell[data-slide-index="2"] .pptxv-slide-stage')).toBeInViewport();
 });
 
 test('exposes external item links with accessible attributes', async ({ page }) => {
   await page.goto('./?view=preview');
-  await page.getByRole('button', { name: 'Preview built-in sample' }).click();
+  await selectNavigationDeck(page);
   await page.getByRole('button', { name: 'Next' }).click();
 
   const link = page.locator(
@@ -1059,14 +1067,13 @@ test('exposes external item links with accessible attributes', async ({ page }) 
   await expect(link).toBeFocused();
 });
 
-test('renders local qrpc sdk links with reference-like blue underlines', async ({ page }) => {
-  await page.goto('./?view=preview');
-  await page.locator('input[type="file"]').setInputFiles(path.resolve('tmp/qrpc-local.pptx'));
-  await expect(page.locator('.pptxv-status').first()).toContainText('1 / 39', {
-    timeout: 20000
-  });
+const qrpcFixture = 'tmp/qrpc-local.pptx';
 
-  await page.locator('.pptxv-thumb-button').nth(24).click();
+test('renders local qrpc sdk links with reference-like blue underlines', async ({ page }) => {
+  test.skip(!existsSync(qrpcFixture), `Optional local fixture ${qrpcFixture} is unavailable`);
+  await page.goto('./?view=preview');
+  await selectPptx(page, qrpcFixture, 39);
+  await goToSlide(page, 24);
   const slide25 = page.locator('.pptxv-slide-shell[data-slide-index="24"]');
   const androidLink = slide25.locator('.pptxv-run--link', { hasText: 'android sdk' });
   const bullet = slide25.locator('.pptxv-run--bullet').first();
@@ -1077,13 +1084,10 @@ test('renders local qrpc sdk links with reference-like blue underlines', async (
 });
 
 test('renders local qrpc slide 20 code screenshot instead of a blank page', async ({ page }) => {
+  test.skip(!existsSync(qrpcFixture), `Optional local fixture ${qrpcFixture} is unavailable`);
   await page.goto('./?view=preview');
-  await page.locator('input[type="file"]').setInputFiles(path.resolve('tmp/qrpc-local.pptx'));
-  await expect(page.locator('.pptxv-status').first()).toContainText('1 / 39', {
-    timeout: 20000
-  });
-
-  await page.locator('.pptxv-thumb-button').nth(19).click();
+  await selectPptx(page, qrpcFixture, 39);
+  await goToSlide(page, 19);
   await expect(page.locator('.pptxv-status').first()).toContainText('20 / 39');
 
   const slide20 = page.locator('.pptxv-slide-shell[data-slide-index="19"]');

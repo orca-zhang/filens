@@ -105,7 +105,7 @@ test('reports a real failed video source instead of remaining in loading state',
 test('shows an uploaded HTML file through the demo', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('./?view=preview');
-  await page.locator('input[type=file]').setInputFiles({ name: 'preview.html', mimeType: 'text/html', buffer: Buffer.from('<h1>Readable preview</h1><p>Local HTML</p>') });
+  await page.locator('.wb-upload input[type=file]').setInputFiles({ name: 'preview.html', mimeType: 'text/html', buffer: Buffer.from('<h1>Readable preview</h1><p>Local HTML</p>') });
   await expect(page.frameLocator('iframe.pptxv-native-html-frame').locator('h1')).toHaveText('Readable preview');
   await expect(page.locator('.wb-note.is-error')).toHaveCount(0); expect(errors).toEqual([]);
 });

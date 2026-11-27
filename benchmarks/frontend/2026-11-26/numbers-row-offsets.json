@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "method": "Build each revision with npm run build:iwork. Generate the fixture with createWideSparseNumbersArchive({ rowCount: 24576, columnCount: 2048 }). Alternate builds in three fresh Node processes per build. Use --expose-gc and fs.openAsBlob, call global.gc() before timing and measure loadIwork() through its resolution. Record process.resourceUsage().maxRSS after a second global.gc() and before hashing the model.",
+  "fixture": {
+    "source": "packages/iwork/test/fixtures/numbers-archive.mjs",
+    "rows": 24576,
+    "columns": 2048,
+    "storedCells": 36864,
+    "description": "Alternating v5 rows with four-byte offset units and legacy rows with byte offsets. Stored values appear at the far-right column on every row. The table references all 96 IWA tiles.",
+    "archiveBytes": 203358,
+    "archiveSha256": "0ef29333993d9fcc535b0a1b5def6b330098bd30d6a642c18e4aab353410d7ca",
+    "verifiedSheetModelAndWarningsSha256": "a41b1305279529f710ae261e7c25222b918a05fdc99a0ce83a5338a9cfc7e4ae"
+  },
+  "baseline": {
+    "entrySha256": "acab5fca82f52ef466b51f6eb2cc70994a7219986524a455224b93211e481f45",
+    "samples": [
+      {
+        "loadMs": 446.318,
+        "peakRssKiB": 836016
+      },
+      {
+        "loadMs": 561.259,
+        "peakRssKiB": 818896
+      },
+      {
+        "loadMs": 525.076,
+        "peakRssKiB": 819728
+      }
+    ],
+    "median": {
+      "loadMs": 525.076,
+      "peakRssKiB": 819728
+    }
+  },
+  "rowLocalOffsets": {
+    "entrySha256": "916aac918f722c4f9d50fa0df9ff1feddb463257f9997f9b3d55efed2494baf2",
+    "samples": [
+      {
+        "loadMs": 359.417,
+        "peakRssKiB": 405936
+      },
+      {
+        "loadMs": 335.005,
+        "peakRssKiB": 408592
+      },
+      {
+        "loadMs": 355.352,
+        "peakRssKiB": 408384
+      }
+    ],
+    "median": {
+      "loadMs": 355.352,
+      "peakRssKiB": 408384
+    }
+  },
+  "realSampleModels": [
+    {
+      "file": "apps/demo/public/samples/a.numbers",
+      "inputSha256": "be5e02bd170683345595e928a71979d3b4582ea0ca44214a35c643957a281ab0",
+      "modelAndWarningsSha256": "c41efa0b4d969c44b5e4d5c73404c391780c2872861ce6a3adeddf83e09f083b"
+    },
+    {
+      "file": "apps/demo/public/samples/a.pages",
+      "inputSha256": "4714477138d0a4090fc2ee2ba2ebb6adcd0fb6ce20a28897a6247a8e17d1ddce",
+      "modelAndWarningsSha256": "877bd8bc59e927c3e4bd2705726e787a668cb46707de3740e523c6d13a453d15"
+    },
+    {
+      "file": "apps/demo/public/samples/filens-weekend.key",
+      "inputSha256": "0d1fa06a23395434089ea24ce284fce2dfee4c7e1e51138be6038bb2ab41befb",
+      "modelAndWarningsSha256": "dfc5a4c1a5082d04ff72787846adca9366baf8283f49dd6f1b4d04030dc37a07"
+    },
+    {
+      "file": "custom-format-stress.numbers",
+      "inputSha256": "529196077312a30ffab7abb63c9e2891f2f5995ebf89f1c400ad7f0a39a93728",
+      "modelAndWarningsSha256": "adee172aab575538675f7e01396a1885827e03ab5d7907d3779fea4c742607d7"
+    },
+    {
+      "file": "standard-format-stress.numbers",
+      "inputSha256": "ac0c81fd1d62cd22cae37e1e6df732d7619ff539771bdd4ccd3a003b16478783",
+      "modelAndWarningsSha256": "debe3eda3b6218bfb746b6977891dd030ab9262098b93272fe7b66d4e4286c5d"
+    },
+    {
+      "file": "test-custom-formats.numbers",
+      "inputSha256": "76ab5ef712a5b80c363ce362c7f401290e5733459497ee70c6fc98cff4923b76",
+      "modelAndWarningsSha256": "2879ec4f3e924eeb50ef1522dd6d178072df904a96e139bd53d1a40046c0b17c"
+    },
+    {
+      "file": "date_formats.numbers",
+      "inputSha256": "d0160d91b2353203bb24a744b329d2bee5a3afb016b71cd16b360c4f6905b4be",
+      "modelAndWarningsSha256": "64a6a4ffa3cd987d359997d1ddd4779770ecae0cdeb8e6264298c012be896761"
+    },
+    {
+      "file": "date-format-nospace.numbers",
+      "inputSha256": "7cc952d78cfcf3f6fb32bc03b91c0e9198a4e833819cff0e0ad388c4d304fd7c",
+      "modelAndWarningsSha256": "bcb08c15608aeeb57fe5f500222cd1df134f4f05c051d8c75b9c0d35dbf2f542"
+    }
+  ],
+  "scope": "The RSS samples cover this serialized sparse workbook in Node. Decoded archive records and parsed table cells remain resident. Browser and device memory require separate measurement."
+}

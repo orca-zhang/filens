@@ -1,9 +1,7 @@
 import './style.css';
 
-import {
-  createPptxPreviewDriver,
-  type PreviewDriver
-} from '@filens/core';
+import type { PreviewDriver } from '@filens/core';
+import { createPptxPreviewDriver } from '@filens/pptx';
 import { createDocxPreviewDriver } from '@filens/docx';
 import { createIworkPreviewDriver } from '@filens/iwork';
 import { createPdfPreviewDriver } from '@filens/pdf';

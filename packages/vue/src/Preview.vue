@@ -106,6 +106,7 @@ const props = withDefaults(
     fontResolver?: PreviewFontResolver;
     fontLoading?: boolean | PreviewFontLoadingOptions;
     resourceResolver?: PreviewResourceResolver;
+    archiveEngine?: PreviewOptions['archiveEngine'];
     audio?: PreviewOptions['audio'];
     panoramaProcessor?: MediaPreviewDriverOptions['panoramaProcessor'];
   }>(),
@@ -229,6 +230,7 @@ const isWorkbook = computed(() => previewState.value.family === 'workbook');
 const isEbook = computed(() => previewState.value.family === 'ebook');
 const pagedState = computed(() => (isPaged.value ? (previewState.value as PagedPreviewState) : null));
 const workbookState = computed(() => (isWorkbook.value ? (previewState.value as WorkbookPreviewState) : null));
+const hasWorkbookRows = computed(() => Boolean(workbookState.value?.sheets.length));
 const ebookState = computed(() => (isEbook.value ? (previewState.value as EbookPreviewState) : null));
 const imageState = computed(() =>
   previewState.value.family === 'image' || previewState.value.family === 'panorama' || previewState.value.family === 'panorama-video'
@@ -575,6 +577,7 @@ async function recreatePreviewer(): Promise<void> {
     fontResolver: childOptions.fontResolver ?? props.fontResolver,
     fontLoading: childOptions.fontLoading ?? props.fontLoading,
     resourceResolver: childOptions.resourceResolver ?? props.resourceResolver,
+    archiveEngine: childOptions.archiveEngine ?? props.archiveEngine,
     audio: childOptions.audio ?? props.audio,
     requestPassword: childOptions.requestPassword ?? props.requestPassword ?? requestDocumentPassword,
     drivers,
@@ -880,6 +883,12 @@ function onShellKeydown(event: KeyboardEvent): void {
     return;
   }
 
+  if ((event.key === 'Home' || event.key === 'End') && previewState.value.capabilities.paged && !isLoading.value) {
+    event.preventDefault();
+    goToIndex(event.key === 'Home' ? 0 : Math.max(0, activeCount.value - 1));
+    return;
+  }
+
   if ((event.key === '+' || event.key === '=') && !event.ctrlKey && !event.metaKey) {
     event.preventDefault();
     zoomIn();
@@ -1011,7 +1020,7 @@ function onModelTabKeydown(event: KeyboardEvent): void {
 
 function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   const target = event.target as HTMLElement | null;
-  return Boolean(target?.closest('input, textarea, select, [contenteditable="true"], button'));
+  return Boolean(target?.closest('input, textarea, select, [contenteditable="true"], button, .pptxv-slide-panel, .pptxv-comment-source'));
 }
 
 function formatCompactNumber(value: number): string {
@@ -1193,6 +1202,7 @@ defineExpose({
   find: (query: string) => previewer.value?.find?.(query),
   findNext: (backward = false) => previewer.value?.findNext?.(backward),
   setWrap: (wrap: boolean) => previewer.value?.setWrap?.(wrap),
+  refreshFonts: () => previewer.value?.refreshFonts?.(),
   fullscreen: toggleFullscreen,
   goToIndex,
   next: nextPage,
@@ -1244,6 +1254,7 @@ watch(
     props.fontResolver,
     props.fontLoading,
     props.resourceResolver,
+    props.archiveEngine,
     props.audio,
     props.requestPassword,
     props.panoramaProcessor
@@ -1628,7 +1639,7 @@ onUnmounted(() => {
               </div>
             </form>
           </div>
-          <div v-else-if="isLoading" class="pptxv-overlay">{{ t('Loading preview...') }}</div>
+          <div v-else-if="isLoading" class="pptxv-overlay" :class="{ 'is-progress': hasWorkbookRows }" :role="hasWorkbookRows ? 'status' : undefined">{{ t('Loading preview...') }}</div>
           <div v-else-if="errorMessage" class="pptxv-overlay is-error">
             <div v-if="passwordCancelled" class="pptxv-password-form"><p>{{ t('Opening cancelled.') }}</p><button type="button" class="pptxv-button" @click="loadSource">{{ t('Enter password again') }}</button></div>
             <template v-else>{{ errorMessage }}</template>

@@ -14,6 +14,7 @@ use wasmi_wasi::{
         file::{FdFlags, FileType, Filestat, OFlags},
     },
 };
+use zeroize::Zeroize;
 
 pub const LIMIT: usize = 512 << 20;
 const MAX_FILES: usize = 4096;
@@ -25,6 +26,7 @@ struct Budget {
 struct Data {
     bytes: Vec<u8>,
     budget: Arc<Budget>,
+    wipe: bool,
 }
 impl Data {
     fn resize(&mut self, size: usize) -> Result<(), Error> {
@@ -39,6 +41,9 @@ impl Data {
                 .try_reserve_exact(size - self.bytes.len())
                 .map_err(|_| Error::too_big())?;
         }
+        if self.wipe && size < self.bytes.len() {
+            self.bytes[size..].zeroize();
+        }
         self.bytes.resize(size, 0);
         // Release the allocation as well as the quota on truncation.
         if size < self.bytes.capacity() / 2 {
@@ -51,6 +56,9 @@ impl Data {
 impl Drop for Data {
     fn drop(&mut self) {
         *self.budget.used.lock().unwrap() -= self.bytes.len();
+        if self.wipe {
+            self.bytes.zeroize();
+        }
     }
 }
 
@@ -58,22 +66,30 @@ impl Drop for Data {
 pub(super) struct MemoryFs {
     files: Arc<Mutex<BTreeMap<String, Arc<Mutex<Data>>>>>,
     budget: Arc<Budget>,
+    wipe: bool,
 }
 impl MemoryFs {
     pub fn new() -> Self {
-        Self::with_budget(Arc::new(Budget {
-            used: Mutex::new(0),
-            limit: LIMIT,
-        }))
+        Self::with_budget(
+            Arc::new(Budget {
+                used: Mutex::new(0),
+                limit: LIMIT,
+            }),
+            false,
+        )
     }
-    fn with_budget(budget: Arc<Budget>) -> Self {
+    fn with_budget(budget: Arc<Budget>, wipe: bool) -> Self {
         Self {
             files: Arc::default(),
             budget,
+            wipe,
         }
     }
     pub fn fork(&self) -> Self {
-        Self::with_budget(self.budget.clone())
+        Self::with_budget(self.budget.clone(), self.wipe)
+    }
+    pub fn wiping_fork(&self) -> Self {
+        Self::with_budget(self.budget.clone(), true)
     }
     pub(super) fn name(path: &str) -> Result<&str, Error> {
         // The conversion ABI only uses a flat /work directory. No aliases,
@@ -167,6 +183,7 @@ impl MemoryFs {
             let data = Arc::new(Mutex::new(Data {
                 bytes: Vec::new(),
                 budget: self.budget.clone(),
+                wipe: self.wipe || name == "options.json",
             }));
             files.insert(name.into(), data.clone());
             data
@@ -445,21 +462,25 @@ mod tests {
     }
     #[test]
     fn workers_share_budget_and_unlinked_open_files_keep_their_charge() {
-        let work = MemoryFs::with_budget(Arc::new(Budget {
-            used: Mutex::new(0),
-            limit: 10,
-        }));
+        let work = MemoryFs::with_budget(
+            Arc::new(Budget {
+                used: Mutex::new(0),
+                limit: 10,
+            }),
+            false,
+        );
         work.write("a", b"123456").unwrap();
         let file = work
             .open("a", OFlags::empty(), true, false, FdFlags::empty())
             .unwrap();
-        let child = work.fork();
+        let child = work.wiping_fork();
         assert!(child.read("a").is_err());
         work.remove("a");
         assert!(child.write("a", b"12345").is_err());
         assert!(ready(file.set_filestat_size(0)).is_err());
         drop(file);
         child.write("a", b"12345").unwrap();
+        assert!(child.file("a").unwrap().lock().unwrap().wipe);
         assert_eq!(*work.budget.used.lock().unwrap(), 5);
         drop(child);
         assert_eq!(*work.budget.used.lock().unwrap(), 0);

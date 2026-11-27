@@ -1,0 +1,473 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "browser": "Chromium 159.0.8154.6",
+  "pdfjs": "5.4.624",
+  "fixture": {
+    "description": "One unrotated page with 12,000 selectable runs and two occurrences of the search phrase.",
+    "bytes": 604298,
+    "sha256": "583d56699f58a4d50561fc38c6c10c637744bcceba7a09f0e09a08daaa175f86",
+    "textRuns": 12000,
+    "query": "Matched anchor"
+  },
+  "method": "Use three new demo browser pages per build. Wait for the selection layer, search for the phrase, navigate to the next hit eight times, then clear. Measure each public call and count child-list and class-attribute mutation records in the selection layer. Verify both hits, alternating active markers and complete clearing.",
+  "builds": {
+    "baselineSearchSourceSha256": "062c43e2fc78e6a75f7d1684e6f684df9149876f79626d7ba9d4bdbc884db196",
+    "sparseHighlightSourceSha256": "b7082cf800bb945e7dfe85b144686de7e3381217f24acb621c9f13a8a26f719f"
+  },
+  "results": {
+    "baseline": {
+      "summary": {
+        "paint": {
+          "samples": 3,
+          "medianMs": 61.7,
+          "childListMutationCounts": [
+            12000
+          ],
+          "classMutationCounts": [
+            0
+          ]
+        },
+        "next": {
+          "samples": 24,
+          "medianMs": 44.5,
+          "childListMutationCounts": [
+            12000
+          ],
+          "classMutationCounts": [
+            0
+          ],
+          "keptSameMarkNodes": false
+        },
+        "clear": {
+          "samples": 3,
+          "medianMs": 10.7,
+          "childListMutationCounts": [
+            12000
+          ],
+          "classMutationCounts": [
+            0
+          ]
+        }
+      },
+      "samples": [
+        {
+          "textRuns": 12000,
+          "paint": {
+            "durationMs": 57.200000047683716,
+            "childList": 12000,
+            "class": 0
+          },
+          "next": [
+            {
+              "durationMs": 48.30000019073486,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44.80000019073486,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44.30000019073486,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 45.299999952316284,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 62.799999952316284,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 46.200000047683716,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 43.09999990463257,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 40.39999985694885,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            }
+          ],
+          "clear": {
+            "durationMs": 9.5,
+            "childList": 12000,
+            "class": 0
+          }
+        },
+        {
+          "textRuns": 12000,
+          "paint": {
+            "durationMs": 61.700000047683716,
+            "childList": 12000,
+            "class": 0
+          },
+          "next": [
+            {
+              "durationMs": 43.799999952316284,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44.40000009536743,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44.799999952316284,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 43.40000009536743,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 43.60000014305115,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 43.200000047683716,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 66.20000004768372,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            }
+          ],
+          "clear": {
+            "durationMs": 10.700000047683716,
+            "childList": 12000,
+            "class": 0
+          }
+        },
+        {
+          "textRuns": 12000,
+          "paint": {
+            "durationMs": 62.5,
+            "childList": 12000,
+            "class": 0
+          },
+          "next": [
+            {
+              "durationMs": 46,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 62.59999990463257,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 48.39999985694885,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 41.799999952316284,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 40.5,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 44.59999990463257,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            },
+            {
+              "durationMs": 46.80000019073486,
+              "childList": 12000,
+              "class": 0,
+              "sameMarks": false
+            }
+          ],
+          "clear": {
+            "durationMs": 10.800000190734863,
+            "childList": 12000,
+            "class": 0
+          }
+        }
+      ]
+    },
+    "sparseHighlights": {
+      "summary": {
+        "paint": {
+          "samples": 3,
+          "medianMs": 16.2,
+          "childListMutationCounts": [
+            2
+          ],
+          "classMutationCounts": [
+            0
+          ]
+        },
+        "next": {
+          "samples": 24,
+          "medianMs": 0.1,
+          "childListMutationCounts": [
+            0
+          ],
+          "classMutationCounts": [
+            2
+          ],
+          "keptSameMarkNodes": true
+        },
+        "clear": {
+          "samples": 3,
+          "medianMs": 0,
+          "childListMutationCounts": [
+            2
+          ],
+          "classMutationCounts": [
+            0
+          ]
+        }
+      },
+      "samples": [
+        {
+          "textRuns": 12000,
+          "paint": {
+            "durationMs": 18.699999809265137,
+            "childList": 2,
+            "class": 0
+          },
+          "next": [
+            {
+              "durationMs": 0.20000004768371582,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.10000014305114746,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.19999980926513672,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            }
+          ],
+          "clear": {
+            "durationMs": 0,
+            "childList": 2,
+            "class": 0
+          }
+        },
+        {
+          "textRuns": 12000,
+          "paint": {
+            "durationMs": 16.200000047683716,
+            "childList": 2,
+            "class": 0
+          },
+          "next": [
+            {
+              "durationMs": 0.2999999523162842,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.20000004768371582,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.20000004768371582,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.10000014305114746,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.10000014305114746,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            }
+          ],
+          "clear": {
+            "durationMs": 0.09999990463256836,
+            "childList": 2,
+            "class": 0
+          }
+        },
+        {
+          "textRuns": 12000,
+          "paint": {
+            "durationMs": 15.600000143051147,
+            "childList": 2,
+            "class": 0
+          },
+          "next": [
+            {
+              "durationMs": 0.20000004768371582,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.19999980926513672,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.09999990463256836,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            },
+            {
+              "durationMs": 0.19999980926513672,
+              "childList": 0,
+              "class": 2,
+              "sameMarks": true
+            }
+          ],
+          "clear": {
+            "durationMs": 0,
+            "childList": 2,
+            "class": 0
+          }
+        }
+      ]
+    }
+  }
+}

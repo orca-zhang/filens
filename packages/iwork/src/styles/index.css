@@ -18,6 +18,7 @@
   place-items: center;
   background: rgba(221, 227, 234, 0.72);
   z-index: 10;
+  pointer-events: none;
   font: 600 14px/1.4 system-ui, sans-serif;
   content: attr(data-status);
 }
@@ -26,6 +27,15 @@
   min-height: 100%;
   padding: 16px;
   box-sizing: border-box;
+}
+
+.iworkv-body-flow {
+  position: absolute;
+  left: 0;
+  width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .iworkv-stage.iworkv-numbers-stage {
@@ -53,6 +63,10 @@
   content-visibility: visible;
 }
 
+.iworkv-numbers-source-borders .xlsxv-cell {
+  border-width: 0;
+}
+
 .iworkv-cell-image {
   display: block;
   width: 100%;
@@ -65,6 +79,24 @@
   max-height: min(180px, var(--xlsxv-merge-image-height, 180px));
 }
 
+.iworkv-picture-fill .xlsxv-merged-clip:not(.is-single-row) .xlsxv-merged-content {
+  min-height: var(--xlsxv-merge-paint-height);
+}
+
+.iworkv-picture-fill .xlsxv-merged-clip.is-single-row,
+.iworkv-picture-fill .xlsxv-merged-clip.is-single-row .xlsxv-merged-content {
+  /* The cell clips the paint without feeding its height back into the row measurement. */
+  overflow: visible;
+}
+
+.iworkv-picture-fill .xlsxv-merged-clip.is-single-row .pptxv-fill-layer {
+  height: var(--xlsxv-merge-paint-height);
+}
+
+.iworkv-picture-fill .pptxv-text-frame {
+  position: relative;
+}
+
 .xlsxv-cell.iworkv-rich-cell {
   white-space: normal;
 }
@@ -73,6 +105,15 @@
 .iworkv-rich-cell .xlsxv-merged-content > .pptxv-text-frame {
   height: auto;
   min-height: var(--xlsxv-merge-source-height, 0px);
+}
+
+.iworkv-accounting > .pptxv-paragraph {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .iworkv-numbers-objects {

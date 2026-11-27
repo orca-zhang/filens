@@ -8,6 +8,7 @@ export default defineConfig({
     cssCodeSplit: false,
     lib: {
       entry: { index: './src/index.ts', routes: './src/routes.ts' },
+      cssFileName: 'style',
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`
     },

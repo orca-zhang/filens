@@ -1,4 +1,7 @@
-import { forEachWorksheetRangeCell, readCellScalar, resolveCellValue } from './cell-value';
+import { forEachWorksheetRangeValue, resolvedCellScalar } from './cell-value';
+import { weightedRankReader } from './formula-array';
+import { memoizeWithFormulaTime } from './formula-clock';
+import type { Scalar } from './formula-reader';
 import type { ParsedCell, ParsedCondition, ParsedMerge, ParsedSheet } from './types';
 import { wildcardMatcher } from './wildcard-matcher';
 
@@ -15,15 +18,8 @@ export interface ConditionalRangeValues {
 }
 
 export function numericCellValue(sheet: ParsedSheet, cell?: ParsedCell): number | undefined {
-  if (!cell) return undefined;
-  if (cell.needsCalculation) resolveCellValue(sheet, cell);
-  if (cell.valueType && cell.valueType !== 'date') return undefined;
-  try {
-    const value = readCellScalar(sheet, cell);
-    return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
-  } catch {
-    return undefined;
-  }
+  const value = cell && resolvedCellScalar(sheet, cell);
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 export function createRangeValueReader(sheet: ParsedSheet, ranges: readonly ParsedMerge[], conditions: readonly ParsedCondition[]) {
@@ -43,87 +39,89 @@ export function createRangeValueReader(sheet: ParsedSheet, ranges: readonly Pars
   const needsSort = percentiles.size > 0 || rankRules.length > 0;
   const needsNumbers = extrema || average || needsSort;
   if (!needsNumbers && !frequency) return undefined;
-  let result: ConditionalRangeValues | undefined;
-  return () => {
-    if (result) return result;
+  return memoizeWithFormulaTime(sheet, (): ConditionalRangeValues | undefined => {
     let min = Infinity, max = -Infinity, count = 0;
-    let scale = 0, center = 0, mean = 0, squaredDistance = 0;
+    let scale = 0, center = 0, sum = 0, correction = 0, mean = 0, squaredDistance = 0;
     let values = needsSort ? new Float64Array(256) : undefined;
+    let stored = 0;
+    const repeated = needsSort ? new Map<number, number>() : undefined;
     const counts = frequency ? new Map<FrequencyKey, number>() : undefined;
-    const visit = (cell: ParsedCell) => {
+    const visit = (value: Scalar, weight: number) => {
       if (counts) {
-        const key = frequencyKey(sheet, cell);
-        if (key !== undefined) counts.set(key, Math.min(2, (counts.get(key) ?? 0) + 1));
+        const key = frequencyKey(value);
+        if (key !== undefined) counts.set(key, Math.min(2, (counts.get(key) ?? 0) + weight));
       }
-      if (!needsNumbers) return;
-      const value = numericCellValue(sheet, cell);
-      if (value === undefined) return;
+      if (!needsNumbers || typeof value !== 'number' || !Number.isFinite(value)) return;
       if (value < min) min = value;
       if (value > max) max = value;
-      if (values) {
-        if (count === values.length) {
-          const next = new Float64Array(values.length * 2);
-          next.set(values);
-          values = next;
+      if (values && repeated) {
+        if (weight > 1) repeated.set(value, (repeated.get(value) ?? 0) + weight);
+        else {
+          if (stored === values.length) {
+            const next = new Float64Array(values.length * 2);
+            next.set(values);
+            values = next;
+          }
+          values[stored++] = value;
         }
-        values[count] = value;
       }
-      count++;
+      count += weight;
       if (average) {
-        // Centering preserves small differences. A power-of-two scale keeps the variance finite.
+        // Center and scale the running statistics to preserve small differences and keep the variance finite.
         const magnitude = Math.abs(value);
         if (magnitude && (!scale || magnitude / 2 >= scale)) {
           const next = 2 ** Math.min(1023, Math.floor(Math.log2(magnitude)));
           const factor = scale / next;
           center *= factor;
+          sum *= factor;
+          correction *= factor;
           mean *= factor;
           squaredDistance *= factor * factor;
           scale = next;
         }
         const normalized = scale ? value / scale : 0;
-        if (count === 1) center = normalized;
+        if (count === weight) center = normalized;
         const shifted = normalized - center, delta = shifted - mean;
-        mean += delta / count;
-        squaredDistance += delta * (shifted - mean);
+        // Compensated summation keeps cells at the mean eligible for inclusive rules.
+        const adjusted = shifted * weight - correction, next = sum + adjusted;
+        correction = (next - sum) - adjusted;
+        sum = next;
+        mean = sum / count;
+        squaredDistance += weight * delta * (shifted - mean);
       }
     };
-    visitDisjointAreas(ranges, range => forEachWorksheetRangeCell(sheet, range, visit));
+    let complete = true;
+    visitDisjointAreas(ranges, range => { if (complete) complete = forEachWorksheetRangeValue(sheet, range, visit); });
+    if (!complete) return undefined;
     const percentileValues = new Map<number, number>();
     const ranks = new Map<RankCondition, number>();
-    if (values && count) {
-      const sorted = values.subarray(0, count).sort();
+    if (values && repeated && count) {
+      const at = weightedRankReader(values.subarray(0, stored).sort(), repeated);
       for (const percentile of percentiles) {
         const position = percentile / 100 * (count - 1), lower = Math.floor(position);
-        percentileValues.set(percentile, interpolate(sorted[lower], sorted[Math.ceil(position)], position - lower));
+        percentileValues.set(percentile, interpolate(at(lower), at(Math.ceil(position)), position - lower));
       }
       for (const rule of rankRules) {
         // Match Calc's whole-cell rounding for percentage ranks.
         const limit = rule.percent ? Math.floor(count * rule.rank / 100) : Math.min(count, rule.rank);
-        if (limit) ranks.set(rule, sorted[rule.bottom ? limit - 1 : count - limit]);
+        if (limit) ranks.set(rule, at(rule.bottom ? limit - 1 : count - limit));
       }
     }
     // Keep the requested order statistics and release the numeric buffer.
-    result = { min, max, percentiles: percentileValues, ranks, frequency: frequencyReader(sheet, counts),
+    return { min, max, percentiles: percentileValues, ranks, frequency: frequencyReader(sheet, counts),
       average: { center, scale: scale || 1, mean, deviation: count ? Math.sqrt(Math.max(0, squaredDistance / count)) : 0 } };
-    return result;
-  };
+  });
 }
 
-function frequencyKey(sheet: ParsedSheet, cell: ParsedCell): FrequencyKey | undefined {
-  if (cell.needsCalculation) resolveCellValue(sheet, cell);
-  try {
-    const value = readCellScalar(sheet, cell);
-    if (value === null || value === '') return undefined;
-    return typeof value === 'string' ? value.toLowerCase() : value;
-  } catch {
-    return undefined;
-  }
+function frequencyKey(value: Scalar | undefined): FrequencyKey | undefined {
+  if (value == null || value === '') return undefined;
+  return typeof value === 'string' ? value.toLowerCase() : value;
 }
 
 function frequencyReader(sheet: ParsedSheet, counts?: ReadonlyMap<FrequencyKey, number>) {
   const wildcardCounts = new Map<string, number>();
   return (cell: ParsedCell) => {
-    const key = frequencyKey(sheet, cell);
+    const key = frequencyKey(resolvedCellScalar(sheet, cell));
     if (key === undefined || !counts) return 0;
     if (typeof key !== 'string' || !/[*?]|~[~*?]/.test(key)) return counts.get(key) ?? 0;
     const cached = wildcardCounts.get(key);

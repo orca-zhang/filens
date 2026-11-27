@@ -46,6 +46,57 @@ describe('XLSX preview driver', () => {
     expect(sheet.rows.at(-1)?.cells[0]).toEqual({ ref: 'A91', row: 91, column: 1, value: '' });
   });
 
+  it('decodes split UTF-8, quotes and CRLF without reading a complete HTTP body', async () => {
+    const text = '\uFEFF"中文😀","say ""hello""\r\n你好",\r\n\r\nplain"quote,""\r"last","unterminated';
+    const bytes = new TextEncoder().encode(text);
+    let offset = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (offset === bytes.length) controller.close();
+        else controller.enqueue(bytes.subarray(offset, ++offset));
+      }
+    });
+    const response = new Response(body), readText = vi.spyOn(response, 'text');
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(response);
+    try {
+      const sheet = (await loadCsvWorkbook('https://files.example.test/stream.csv')).sheets[0];
+      expect(sheet.rows.map(row => row.cells.map(cell => cell.value))).toEqual([
+        ['中文😀', 'say "hello"\r\n你好', ''], [''], ['plain"quote', ''], ['last', 'unterminated']
+      ]);
+      expect(sheet.columnCount).toBe(3);
+      expect(readText).not.toHaveBeenCalled();
+      expect(body.locked).toBe(false);
+      expect(await loadCsvWorkbook(`data:text/csv,${encodeURIComponent(text)}`)).toEqual({
+        sheets: [sheet], warnings: []
+      });
+    } finally { fetch.mockRestore(); }
+  });
+
+  it('cancels a pending CSV body read and releases its reader', async () => {
+    let waiting!: () => void, pulls = 0;
+    const pendingRead = new Promise<void>(resolve => { waiting = resolve; });
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (pulls++ === 0) controller.enqueue(new TextEncoder().encode('"Incomplete,'));
+        else waiting();
+      },
+      cancel
+    }, { highWaterMark: 0 });
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(body));
+    const controller = new AbortController();
+    try {
+      const source = 'https://files.example.test/held.csv';
+      const pending = expect(loadCsvWorkbook(source, { descriptor: { source }, signal: controller.signal }))
+        .rejects.toMatchObject({ name: 'AbortError' });
+      await pendingRead;
+      controller.abort();
+      await pending;
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(body.locked).toBe(false);
+    } finally { fetch.mockRestore(); }
+  });
+
   it('exposes direct XLSX routes and driver support', () => {
     const routes = createXlsxPreviewRoutes();
     const xlsxRoute = routes.find((route) => route.extensions.includes('xlsx'));

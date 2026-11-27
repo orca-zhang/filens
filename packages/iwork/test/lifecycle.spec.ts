@@ -1,9 +1,10 @@
 import { webcrypto } from 'node:crypto';
-import { previewModelCache } from '@filens/core';
+import { PreviewPasswordError, previewModelCache } from '@filens/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createIworkViewer } from '../src/viewer/create-iwork-viewer';
 import { IworkPreviewSession } from '../src/preview-driver';
-import type { ParsedIworkDocument, ParsedNumbersDocument, ParsedNumbersSheet, ParsedPagesDocument } from '../src/types';
+import type { ParsedIworkDocument, ParsedNumbersDocument, ParsedPagesDocument } from '../src/types';
+import type { NumbersSheetResult } from '../src/worker/client';
 
 const mocks = vi.hoisted(() => ({ create: vi.fn(), parse: vi.fn(), parseSheet: vi.fn(), cancel: vi.fn(), destroy: vi.fn() }));
 vi.mock('../src/worker/client', () => ({ IworkWorkerClient: class {
@@ -53,7 +54,7 @@ describe('iWork parsed model reuse', () => {
     const second = createIworkViewer(host()); await second.preview(zip());
     expect(mocks.create).toHaveBeenCalledOnce(); expect(mocks.parse).toHaveBeenCalledOnce();
     const doc = second.getState().document as ParsedNumbersDocument;
-    mocks.parseSheet.mockResolvedValue({ ...numbers().sheets[1], loaded: true }); second.goToSheet(1);
+    mocks.parseSheet.mockResolvedValue({ sheet: { ...numbers().sheets[1], loaded: true } }); second.goToSheet(1);
     await vi.waitFor(() => expect(second.getState().document?.kind === 'numbers' && second.getState().document.sheets[1].loaded).toBe(true));
     expect(mocks.create).toHaveBeenCalledTimes(2); expect(mocks.parseSheet).toHaveBeenCalledWith(1, doc);
     second.destroy();
@@ -62,9 +63,26 @@ describe('iWork parsed model reuse', () => {
     mocks.parse.mockResolvedValue(pages()); const viewer = createIworkViewer(host());
     await viewer.preview(zip()); const changed = zip(); changed[4] = 2; await viewer.preview(changed);
     await viewer.preview(zip(), { cache: false }); expect(mocks.parse).toHaveBeenCalledTimes(3);
+    const protectedSession = new IworkPreviewSession(host());
+    const source = zip();
+    try {
+      await protectedSession.load(source, { descriptor: { source, sensitive: true } });
+      expect(mocks.parse).toHaveBeenCalledTimes(4);
+    } finally { protectedSession.destroy(); }
     const controller = new AbortController(); controller.abort();
     await expect(viewer.preview(zip(), { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
     viewer.destroy();
+  });
+  it('requires the worker to reopen a document previously unlocked with a password', async () => {
+    mocks.parse.mockResolvedValueOnce(pages()).mockRejectedValueOnce(new PreviewPasswordError('password_required'));
+    const viewer = createIworkViewer(host());
+    try {
+      await viewer.preview(zip(), { password: 'test' });
+      expect(mocks.parse).toHaveBeenLastCalledWith(expect.any(Uint8Array), undefined, undefined, 'test');
+      await expect(viewer.preview(zip())).rejects.toMatchObject({ code: 'password_required' });
+      expect(viewer.getState().document).toBeNull();
+      expect(mocks.parse).toHaveBeenCalledTimes(2);
+    } finally { viewer.destroy(); }
   });
 });
 
@@ -107,12 +125,19 @@ describe('iWork load ownership', () => {
     expect(arrayBuffer).not.toHaveBeenCalled(); expect(mocks.parse).not.toHaveBeenCalled();
     expect(session.getState()).toMatchObject({ loading: false, error: null, pageCount: 0 }); session.destroy();
   });
-  it('aborts the old network request when replaced', async () => {
-    let signal!: AbortSignal;
-    vi.stubGlobal('fetch', vi.fn((_source, options) => { signal = options.signal; return new Promise(() => {}); }));
-    mocks.parse.mockResolvedValue(pages()); const viewer = createIworkViewer(host());
-    const old = viewer.preview('/old.pages'); expect(signal.aborted).toBe(false);
-    await viewer.preview(bytes); await old; expect(signal.aborted).toBe(true); viewer.destroy();
+  it('passes an absolute remote URL to the worker and cancels the previous load on replacement', async () => {
+    const pending = deferred<ParsedIworkDocument>(), fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    mocks.parse.mockReturnValueOnce(pending.promise).mockResolvedValue(pages());
+    const viewer = createIworkViewer(host());
+    const old = viewer.preview('/old.pages?token=a%2Fb');
+    expect(mocks.parse).toHaveBeenCalledWith(new URL('/old.pages?token=a%2Fb', document.baseURI).href,
+      undefined, 'old.pages', undefined);
+    await viewer.preview(bytes);
+    await old;
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mocks.cancel).toHaveBeenCalledOnce();
+    viewer.destroy();
   });
   it('snapshots caller-owned ArrayBuffers before the first await', async () => {
     mocks.parse.mockResolvedValue(pages()); const viewer = createIworkViewer(host()), source = new Uint8Array([9, 8, 7]);
@@ -192,14 +217,14 @@ describe('Numbers render and lazy-sheet ownership', () => {
     doc.sheets[0].tables[0].item.cells[0].textFrame.paragraphs[0].runs[0].fontFamily = 'Initial Font';
     sheet.tables[0].item.cells[0].textFrame.paragraphs[0].runs[0].fontFamily = 'Lazy Font';
     sheet.loaded = true;
-    const pending = deferred<ParsedNumbersSheet>();
+    const pending = deferred<NumbersSheetResult>();
     mocks.parse.mockResolvedValue(doc); mocks.parseSheet.mockReturnValue(pending.promise);
     const container = host(), session = new IworkPreviewSession(container), warnings = vi.fn(), changes = vi.fn();
     session.on('warnings', warnings); session.on('statechange', changes);
     try {
       await session.load(bytes, { descriptor: { source: bytes } });
       expect(session.getState().fonts).toMatchObject([{ fontFamily: 'Initial Font', status: 'missing', source: 'fallback' }]);
-      session.goToPage(1); pending.resolve(sheet); await flush();
+      session.goToPage(1); pending.resolve({ sheet }); await flush();
       expect(session.getState().fonts?.map((font) => font.fontFamily)).toEqual(['Initial Font', 'Lazy Font']);
       expect(warnings).toHaveBeenLastCalledWith(session.getState().warnings);
       expect(changes.mock.lastCall?.[0].fonts).toEqual(session.getState().fonts);
@@ -207,22 +232,28 @@ describe('Numbers render and lazy-sheet ownership', () => {
     } finally { session.destroy(); container.remove(); }
   });
 
-  it('detaches old tab and row-scroll listeners on rerender and replacement', async () => {
+  it('preserves sheet controls on rerender and detaches them on replacement', async () => {
     mocks.parse.mockResolvedValue(numbers()); const container = host(), viewer = createIworkViewer(container); await viewer.preview(bytes);
-    const tabs = [...container.querySelectorAll<HTMLButtonElement>('.xlsxv-sheet-tab')], grid = container.querySelector('.xlsxv-grid')!, table = container.querySelector<HTMLTableElement>('table')!;
+    const tab = container.querySelectorAll<HTMLButtonElement>('.xlsxv-sheet-tab')[1];
+    const grid = container.querySelector('.xlsxv-grid')!, table = container.querySelector<HTMLTableElement>('table')!;
     viewer.goToSheet(0);
-    tabs[1].click(); grid.dispatchEvent(new Event('scroll'));
-    expect(viewer.getState().currentSheet).toBe(0); expect(mocks.parseSheet).not.toHaveBeenCalled(); expect(table.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
-    await viewer.preview(bytes); tabs[1].click(); expect(viewer.getState().currentSheet).toBe(0); viewer.destroy();
+    expect(container.querySelectorAll('.xlsxv-sheet-tab')[1]).toBe(tab);
+    grid.dispatchEvent(new Event('scroll'));
+    expect(table.querySelectorAll('tbody tr[aria-rowindex]')).toHaveLength(100);
+    await viewer.preview(bytes);
+    tab.click();
+    expect(viewer.getState().currentSheet).toBe(0);
+    expect(mocks.parseSheet).not.toHaveBeenCalled();
+    viewer.destroy();
   });
   it('does not let old sheet completion delete the new document sheet request', async () => {
-    const oldSheet = deferred<ParsedNumbersSheet>(), newSheet = deferred<ParsedNumbersSheet>(), oldDoc = numbers(), newDoc = numbers();
+    const oldSheet = deferred<NumbersSheetResult>(), newSheet = deferred<NumbersSheetResult>(), oldDoc = numbers(), newDoc = numbers();
     mocks.parse.mockResolvedValueOnce(oldDoc).mockResolvedValueOnce(newDoc);
     mocks.parseSheet.mockReturnValueOnce(oldSheet.promise).mockReturnValueOnce(newSheet.promise);
     const viewer = createIworkViewer(host()); await viewer.preview(bytes); viewer.goToSheet(1);
-    await viewer.preview(bytes); viewer.goToSheet(1); oldSheet.resolve({ ...oldDoc.sheets[1], loaded: true, name: 'Obsolete' }); await flush();
+    await viewer.preview(bytes); viewer.goToSheet(1); oldSheet.resolve({ sheet: { ...oldDoc.sheets[1], loaded: true, name: 'Obsolete' } }); await flush();
     viewer.goToSheet(1); expect(mocks.parseSheet).toHaveBeenCalledTimes(2);
-    newSheet.resolve({ ...newDoc.sheets[1], loaded: true, name: 'Current sheet' }); await flush();
+    newSheet.resolve({ sheet: { ...newDoc.sheets[1], loaded: true, name: 'Current sheet' } }); await flush();
     expect(viewer.getState().document).toMatchObject({ sheets: [{}, { name: 'Current sheet', loaded: true }] }); viewer.destroy();
   });
 });

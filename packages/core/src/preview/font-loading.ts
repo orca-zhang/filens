@@ -1,6 +1,8 @@
 import { analyzePreviewFonts, getPreviewFontWarnings } from './fonts';
 import { classifyPreviewFont, rankPreviewFontCandidates } from './font-matching';
 import { createWebFontPacks } from './font-packs';
+import { fontFamilyKey, observeHostFontLoads, ownPreviewFontFace, readHostFontFamilies } from './host-fonts';
+import { fontsourceSubsetIndexes, fontSubsetPoints, parseFontsourceSubsets, selectFontsourceSubsets, type FontsourceSubsetIndex } from './font-subsets';
 import type {
   PreviewFontAsset, PreviewFontAssetSource,
   PreviewFontLoadingOptions, PreviewFontReference, PreviewFontRefresh, PreviewOptions, PreviewSession
@@ -8,6 +10,7 @@ import type {
 
 const defaults: PreviewFontLoadingOptions = {};
 const services = new WeakMap<Document, WeakMap<PreviewFontLoadingOptions, FontService>>();
+const managedFamilies = new WeakMap<Document, Map<string, number>>();
 const abortError = () => new DOMException('Font loading aborted.', 'AbortError');
 const check = (signal: AbortSignal) => { if (signal.aborted) throw abortError(); };
 const bounded = (value: number | undefined, fallback: number, min: number, max: number) =>
@@ -34,12 +37,18 @@ function delay(ms: number, signal: AbortSignal): Promise<void> {
 interface RouteHealth { latency?: number; failures: number; retryAt: number }
 interface Entry { users: number; controller: AbortController; promise: Promise<FontFace>; face?: FontFace }
 interface Lease { asset: PreviewFontAsset; release(): void }
+type SubsetIndex = ReturnType<typeof parseFontsourceSubsets>;
+interface SubsetRequest { users: number; controller: AbortController; promise: Promise<SubsetIndex> }
+interface FontLoadWarning { message: string; resolvedBy?: string[] }
 
 /** Shared per document/options: active-face leases, request deduplication and adaptive routing. */
 class FontService {
   private entries = new Map<PreviewFontAsset, Entry>();
   private routes = new Map<string, RouteHealth>();
   private origins = new Map<string, number>();
+  private subsetIndexes = new WeakMap<FontsourceSubsetIndex, SubsetIndex>();
+  private subsetRequests = new WeakMap<FontsourceSubsetIndex, SubsetRequest>();
+  private subsetAssets = new WeakMap<PreviewFontAsset, Map<string, PreviewFontAsset>>();
   readonly assets: readonly PreviewFontAsset[];
   constructor(private document: Document, readonly options: PreviewFontLoadingOptions) {
     this.assets = (options.packs ?? createWebFontPacks()).flatMap(pack => pack.fonts);
@@ -54,7 +63,9 @@ class FontService {
       const current = entry;
       current.promise = this.load(asset, controller.signal).then(face => {
         check(controller.signal);
+        ownPreviewFontFace(face);
         this.document.fonts.add(face);
+        this.trackManagedFace(asset, 1);
         current.face = face;
         return face;
       });
@@ -69,7 +80,10 @@ class FontService {
       signal.removeEventListener('abort', release);
       if (--current.users === 0) {
         current.controller.abort();
-        if (current.face) this.document.fonts.delete(current.face);
+        if (current.face) {
+          this.document.fonts.delete(current.face);
+          this.trackManagedFace(asset, -1);
+        }
         if (this.entries.get(asset) === current) this.entries.delete(asset);
       }
     };
@@ -78,17 +92,109 @@ class FontService {
     catch (error) { release(); throw error; }
   }
 
+  private trackManagedFace(asset: PreviewFontAsset, delta: 1 | -1): void {
+    let families = managedFamilies.get(this.document);
+    if (!families) managedFamilies.set(this.document, families = new Map());
+    const family = asset.fontFamily.toLowerCase();
+    const count = (families.get(family) ?? 0) + delta;
+    if (count) families.set(family, count);
+    else families.delete(family);
+  }
+
+  async acquireSubsets(asset: PreviewFontAsset, reference: PreviewFontReference, signal: AbortSignal): Promise<Lease[] | undefined> {
+    const manifest = fontsourceSubsetIndexes.get(asset);
+    if (!manifest || this.entries.has(asset)) return undefined;
+    const view = this.document.defaultView as (Window & typeof globalThis) | null;
+    // The full Emoji face includes COLR, while the pinned slices only have SVG outlines.
+    if (manifest.requiresSvg && !(view?.CSS ?? globalThis.CSS)?.supports?.('font-tech(color-SVG)')) return undefined;
+    const points = fontSubsetPoints(reference);
+    if (!points) return undefined;
+    check(signal);
+    const batch = new AbortController();
+    const abort = () => batch.abort();
+    signal.addEventListener('abort', abort, { once: true });
+    const timer = setTimeout(abort, Math.min(6000, bounded(this.options.budgetMs, 12000, 10, 60000) / 2));
+    const leases: Lease[] = [];
+    try {
+      const index = await this.readSubsetIndex(manifest, batch.signal);
+      const subsets = selectFontsourceSubsets(index, points);
+      if (!subsets) return undefined;
+      let assets = this.subsetAssets.get(asset);
+      if (!assets) this.subsetAssets.set(asset, assets = new Map());
+      for (const subset of subsets) {
+        let part = assets.get(subset.name);
+        if (!part) {
+          const { weight, style } = asset.descriptors ?? {};
+          const file = `files/${manifest.packageId}-${subset.name}-${weight}-${style}.woff2`;
+          part = {
+            id: `${asset.id}:${subset.name}`, fontFamily: asset.fontFamily, traits: asset.traits,
+            coverage: subset.coverage, descriptors: { ...asset.descriptors, unicodeRange: subset.unicodeRange },
+            sources: manifest.sources.map(source => ({ ...source, url: source.url.replace(/unicode\.json$/, file) }))
+          };
+          assets.set(subset.name, part);
+        }
+        leases.push(await this.acquire(part, batch.signal));
+      }
+      check(batch.signal);
+      return leases;
+    } catch {
+      leases.forEach(lease => lease.release());
+      check(signal);
+      return undefined;
+    } finally {
+      clearTimeout(timer);
+      signal.removeEventListener('abort', abort);
+    }
+  }
+
+  private async readSubsetIndex(manifest: FontsourceSubsetIndex, signal: AbortSignal): Promise<SubsetIndex> {
+    check(signal);
+    const cached = this.subsetIndexes.get(manifest);
+    if (cached) return cached;
+    let request = this.subsetRequests.get(manifest);
+    if (!request) {
+      const controller = new AbortController();
+      const deadline = Date.now() + Math.min(1500, bounded(this.options.timeoutMs, 4000, 10, 30000));
+      const attempts = Math.floor(bounded(this.options.maxAttempts, 2, 1, 2));
+      const promise = this.loadFromSources(manifest.sources, controller.signal, deadline, 256 * 1024, attempts,
+        bytes => parseFontsourceSubsets(bytes)).then(index => {
+        check(controller.signal);
+        this.subsetIndexes.set(manifest, index);
+        return index;
+      });
+      request = { users: 0, controller, promise };
+      this.subsetRequests.set(manifest, request);
+    }
+    request.users++;
+    try { return await waitFor(request.promise, signal); }
+    finally {
+      if (--request.users === 0) {
+        request.controller.abort();
+        this.subsetRequests.delete(manifest);
+      }
+    }
+  }
+
   private async load(asset: PreviewFontAsset, signal: AbortSignal): Promise<FontFace> {
     const Constructor = this.document.defaultView?.FontFace ?? globalThis.FontFace;
     if (!Constructor || !this.document.fonts?.add) throw new Error('FontFace API unavailable.');
     const deadline = Date.now() + bounded(this.options.budgetMs, 12000, 10, 60000);
     const attempts = Math.floor(bounded(this.options.maxAttempts, 3, 1, 8));
+    const limit = bounded(this.options.maxFontBytes, 16 * 1024 * 1024, 1024, 64 * 1024 * 1024);
     if (asset.data) {
-      if (asset.data.byteLength > bounded(this.options.maxFontBytes, 16 * 1024 * 1024, 1024, 64 * 1024 * 1024)) throw new Error('Font exceeds size limit.');
+      if (asset.data.byteLength > limit) throw new Error('Font exceeds size limit.');
       const bytes = asset.data instanceof Uint8Array ? asset.data.slice().buffer : asset.data.slice(0);
       return this.decode(Constructor, asset, bytes, signal, deadline);
     }
-    const sources = (asset.sources ?? []).flatMap(source => {
+    return this.loadFromSources(asset.sources ?? [], signal, deadline, limit, attempts,
+      (bytes, requestSignal) => this.decode(Constructor, asset, bytes, requestSignal, deadline));
+  }
+
+  private async loadFromSources<T>(
+    configuredSources: readonly PreviewFontAssetSource[], signal: AbortSignal, deadline: number, limit: number, attempts: number,
+    consume: (bytes: ArrayBuffer, signal: AbortSignal) => T | Promise<T>
+  ): Promise<T> {
+    const sources = configuredSources.flatMap(source => {
       try {
         const url = new URL(source.url, this.document.baseURI);
         return /^https?:$/i.test(url.protocol) ? [{ ...source, url: url.href }] : [];
@@ -111,14 +217,14 @@ class FontService {
       try {
         return await this.raceRoutes(round, signal, async (source, requestSignal) => {
           used++;
-          return this.request(Constructor, asset, source, requestSignal, deadline);
+          return this.request(source, requestSignal, deadline, limit, consume);
         });
       } catch { check(signal); }
     }
-    throw new Error(`Font "${asset.fontFamily}" could not be loaded; local fallbacks remain active.`);
+    throw new Error('Font sources could not be loaded.');
   }
 
-  private raceRoutes(sources: PreviewFontAssetSource[], signal: AbortSignal, request: (source: PreviewFontAssetSource, signal: AbortSignal) => Promise<FontFace>): Promise<FontFace> {
+  private raceRoutes<T>(sources: PreviewFontAssetSource[], signal: AbortSignal, request: (source: PreviewFontAssetSource, signal: AbortSignal) => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       let settled = false, started = 0, failed = 0;
       const routes: Array<{ source: PreviewFontAssetSource; controller: AbortController; started: number }> = [];
@@ -132,7 +238,7 @@ class FontService {
         if (settled || started >= sources.length) return;
         const source = sources[started++], controller = new AbortController();
         const route = { source, controller, started: Date.now() }; routes.push(route);
-        request(source, controller.signal).then(face => {
+        request(source, controller.signal).then(result => {
           if (settled) return;
           settled = true; clean();
           for (const other of routes) if (other !== route) {
@@ -144,7 +250,7 @@ class FontService {
             }
             other.controller.abort();
           }
-          resolve(face);
+          resolve(result);
         }, error => {
           if (settled) return;
           failed++;
@@ -159,7 +265,10 @@ class FontService {
     });
   }
 
-  private async request(Constructor: typeof FontFace, asset: PreviewFontAsset, source: PreviewFontAssetSource, signal: AbortSignal, deadline: number): Promise<FontFace> {
+  private async request<T>(
+    source: PreviewFontAssetSource, signal: AbortSignal, deadline: number, limit: number,
+    consume: (bytes: ArrayBuffer, signal: AbortSignal) => T | Promise<T>
+  ): Promise<T> {
     const started = Date.now();
     const controller = new AbortController();
     const abort = () => controller.abort();
@@ -178,17 +287,16 @@ class FontService {
         void response.body?.cancel().catch(() => {});
         throw new Error('Font source returned an error.');
       }
-      const limit = bounded(this.options.maxFontBytes, 16 * 1024 * 1024, 1024, 64 * 1024 * 1024);
       if (Number(response.headers.get('Content-Length')) > limit) { void response.body?.cancel().catch(() => {}); throw new Error('Font exceeds size limit.'); }
       const bytes = await waitFor(readBounded(response, limit, controller.signal), controller.signal);
-      const face = await this.decode(Constructor, asset, bytes, controller.signal, deadline);
+      const result = await consume(bytes, controller.signal);
       check(signal);
       const health = this.health(source);
       const elapsed = Math.max(1, Date.now() - started);
       health.latency = health.latency === undefined ? elapsed : health.latency * 0.7 + elapsed * 0.3;
       this.origins.set(new URL(source.url).origin, health.latency);
       health.failures = 0; health.retryAt = 0;
-      return face;
+      return result;
     } catch (error) {
       check(signal);
       const health = this.health(source);
@@ -256,22 +364,39 @@ async function readBounded(response: Response, limit: number, signal: AbortSigna
 }
 
 /** Start after first render. The owning driver must destroy this binding on teardown. */
-export function bindPreviewFontLoading(session: PreviewSession, document: Document, options: PreviewOptions): { reset(signal?: AbortSignal, sourceFormat?: string): void; destroy(): void } {
+export function bindPreviewFontLoading(session: PreviewSession, document: Document, options: PreviewOptions): {
+  reset(signal?: AbortSignal, sourceFormat?: string): void; refresh(): void; destroy(): void;
+} {
   const configuration = options.fontLoading === true ? defaults : options.fontLoading || undefined;
-  if (!configuration || !session.refreshFonts) return { reset() {}, destroy() {} };
-  let byOptions = services.get(document);
-  if (!byOptions) services.set(document, byOptions = new WeakMap());
-  let service = byOptions.get(configuration);
-  if (!service) byOptions.set(configuration, service = new FontService(document, configuration));
+  if (!session.refreshFonts) return { reset() {}, refresh() {}, destroy() {} };
+  let service: FontService | undefined;
+  if (configuration) {
+    let byOptions = services.get(document);
+    if (!byOptions) services.set(document, byOptions = new WeakMap());
+    service = byOptions.get(configuration);
+    if (!service) byOptions.set(configuration, service = new FontService(document, configuration));
+  }
   let controller = new AbortController(), destroyed = false, running = false, queued = false;
   const seen = new Set<string>(), leases: Lease[] = [], loaded: PreviewFontAsset[] = [];
+  const mappings = new Map<string, Pick<PreviewFontReference, 'resolvedFontFamily' | 'source'>>();
+  const hostAliases = new Map<string, string>();
+  const changedFamilies = new Set<string>();
+  let refreshRequested = false;
+  let lastWarnings: FontLoadWarning[] = [];
   let removeAbort: (() => void) | undefined;
   let sourceFormat: string | undefined;
+  const keyOf = (ref: PreviewFontReference) => JSON.stringify([ref.fontFamily, ref.fontFile, ref.styleName, ref.traits, ref.fontStyle]);
+  const currentReferences = (state: ReturnType<PreviewSession['getState']>): readonly PreviewFontReference[] =>
+    session.getFontReferences?.() ?? (state.fonts ?? []).map(font => ({ ...font, traits: font.classification }));
+  // The canvas can detect a sibling's face before this preview owns a lease,
+  // or find a different weight of the same family.
+  const ignoreManagedFamily = (family: string) => managedFamilies.get(document)?.has(family.toLowerCase()) ?? false;
   const reset = (signal?: AbortSignal, format?: string) => {
     sourceFormat = format;
     removeAbort?.(); removeAbort = undefined;
     controller.abort(); controller = new AbortController();
     leases.splice(0).forEach(lease => lease.release()); loaded.length = 0; seen.clear();
+    mappings.clear(); hostAliases.clear(); changedFamilies.clear(); refreshRequested = false; lastWarnings = [];
     running = false;
     if (signal) {
       const abort = () => { controller.abort(); leases.splice(0).forEach(lease => lease.release()); };
@@ -286,19 +411,31 @@ export function bindPreviewFontLoading(session: PreviewSession, document: Docume
     queueMicrotask(() => { queued = false; void run(); });
   };
   const run = async () => {
+    if (destroyed || running || controller.signal.aborted) return;
     const state = session.getState();
-    if (destroyed || running || controller.signal.aborted || state.loading || state.error) return;
+    if (state.loading || state.error) return;
     const signal = controller.signal;
-    const references: readonly PreviewFontReference[] = session.getFontReferences?.() ?? (state.fonts ?? []).map(font => ({ ...font, traits: font.classification }));
-    const keyOf = (ref: PreviewFontReference) => JSON.stringify([ref.fontFamily, ref.fontFile, ref.traits, ref.resolvedFontFamily, ref.fontStyle]);
-    const pending = references.filter(ref => {
+    const references = currentReferences(state);
+    let hostRefresh = refreshRequested;
+    if (!hostRefresh && changedFamilies.size) {
+      const requestedFamilies = new Set(references.map(ref => fontFamilyKey(ref.fontFamily)));
+      hostRefresh = references.some(ref => changedFamilies.has(fontFamilyKey(ref.fontFamily))
+        || changedFamilies.has(fontFamilyKey(hostAliases.get(keyOf(ref))))
+        || changedFamilies.has(fontFamilyKey(mappings.get(keyOf(ref))?.resolvedFontFamily ?? ref.resolvedFontFamily)))
+        || (state.fonts ?? []).some(font => requestedFamilies.has(fontFamilyKey(font.fontFamily))
+          && changedFamilies.has(fontFamilyKey(font.resolvedFontFamily)));
+    }
+    refreshRequested = false;
+    changedFamilies.clear();
+    const pending = service ? references.filter(ref => {
       const key = keyOf(ref);
       if (seen.has(key)) return false;
       seen.add(key); return true;
-    });
-    if (!pending.length) return;
+    }) : [];
+    if (!pending.length && !hostRefresh) return;
     running = true;
-    const warnings: string[] = [], resolved = new Map<PreviewFontReference, PreviewFontReference>();
+    const warnings: FontLoadWarning[] = [], resolved = new Map<PreviewFontReference, PreviewFontReference>();
+    const hostFonts = readHostFontFamilies(document.fonts);
     let index = 0;
     const worker = async () => {
       while (index < pending.length && !signal.aborted) {
@@ -309,17 +446,24 @@ export function bindPreviewFontLoading(session: PreviewSession, document: Docume
         try {
           let choice;
           try { choice = options.fontResolver?.({ family: state.family, sourceFormat, fontFamily: ref.fontFamily, fontFile: ref.fontFile, styleName: ref.styleName, fontStyle: ref.fontStyle }); }
-          catch { warnings.push(`Font resolver failed for "${ref.fontFamily}"; pack and local fallbacks remain active.`); }
+          catch { warnings.push({ message: `Font resolver failed for "${ref.fontFamily}"; pack and local fallbacks remain active.` }); }
           if (choice) {
             const family = typeof choice === 'string' ? choice : choice.fontFamily;
-            if (family) request = { ...ref, resolvedFontFamily: family, source: 'application' };
-            if (typeof choice !== 'string') { assets = [...choice.assets ?? [], ...assets]; warnings.push(...choice.warnings ?? []); }
+            if (family) {
+              request = { ...ref, resolvedFontFamily: family, source: 'application' };
+              hostAliases.set(keyOf(ref), family);
+            }
+            if (typeof choice !== 'string') {
+              assets = [...choice.assets ?? [], ...assets];
+              for (const message of choice.warnings ?? []) warnings.push({ message });
+            }
           }
-          const local = analyzePreviewFonts([request], document, { substitute: true }).fonts[0];
+          const local = analyzePreviewFonts([request], document, { substitute: true, ignoreFamily: ignoreManagedFamily, availableFamilies: hostFonts }).fonts[0];
           const installed = loaded.filter(asset => asset.fontFamily === (local?.resolvedFontFamily ?? request.resolvedFontFamily ?? request.fontFamily));
           const classification = classifyPreviewFont(request.fontFamily ?? '', request.traits);
           const weight = classification.weight ?? 400;
           const hasFace = installed.some(asset => {
+            if (asset.descriptors?.unicodeRange) return false;
             const weights = (asset.descriptors?.weight ?? String(asset.traits?.weight ?? 400)).split(/\s+/).map(Number);
             return weight >= weights[0] && weight <= (weights[1] ?? weights[0]) && (asset.descriptors?.style ?? 'normal').startsWith(ref.fontStyle ?? 'normal');
           });
@@ -337,7 +481,7 @@ export function bindPreviewFontLoading(session: PreviewSession, document: Docume
           const selected = [...exact, ...matches.map(match => match.candidate as PreviewFontAsset).filter(asset => !exact.includes(asset))];
           if (request.resolvedFontFamily) selected.splice(0, selected.length, ...exact);
           if (!selected.length) continue;
-          if (!needsFace && configuration.preferLocal !== false && local?.status === 'substituted' && !exact.length) {
+          if (!needsFace && configuration?.preferLocal !== false && local?.status === 'substituted' && !exact.length) {
             const localCandidate = { fontFamily: local.resolvedFontFamily! };
             const ranked = rankPreviewFontCandidates(ref, [localCandidate, ...selected]);
             if (ranked[0]?.candidate === localCandidate) continue;
@@ -350,39 +494,69 @@ export function bindPreviewFontLoading(session: PreviewSession, document: Docume
             families.add(family); return true;
           }).slice(0, 2)) {
             try {
-              const lease = await service!.acquire(asset, signal);
-              if (signal.aborted) { lease.release(); break; }
-              leases.push(lease); loaded.push(asset);
+              const acquired = await service!.acquireSubsets(asset, ref, signal) ?? [await service!.acquire(asset, signal)];
+              if (signal.aborted) { acquired.forEach(lease => lease.release()); break; }
+              leases.push(...acquired); loaded.push(...acquired.map(lease => lease.asset));
               resolved.set(ref, { ...request, resolvedFontFamily: asset.fontFamily, source: request.source === 'application' ? 'application' : 'fallback' });
               break;
             } catch {
               if (signal.aborted) break;
             }
           }
-          if (!signal.aborted && !resolved.has(ref)) warnings.push(`Font "${desired}" could not be loaded; local fallback fonts remain active.`);
+          if (!signal.aborted && !resolved.has(ref)) warnings.push({
+            message: `Font "${desired}" could not be loaded; local fallback fonts remain active.`,
+            resolvedBy: [fontFamilyKey(desired), fontFamilyKey(ref.fontFamily)]
+          });
         } catch {
-          if (!signal.aborted) warnings.push(`Font "${ref.fontFamily}" could not be loaded; local fallback fonts remain active.`);
+          if (!signal.aborted) warnings.push({
+            message: `Font "${ref.fontFamily}" could not be loaded; local fallback fonts remain active.`,
+            resolvedBy: [fontFamilyKey(ref.fontFamily), fontFamilyKey(request.resolvedFontFamily)]
+          });
         }
       }
     };
     try {
-      await Promise.all(Array.from({ length: Math.floor(bounded(configuration.concurrency, 3, 1, 8)) }, worker));
+      if (pending.length) await Promise.all(Array.from({ length: Math.floor(bounded(configuration?.concurrency, 3, 1, 8)) }, worker));
       if (signal.aborted || destroyed) return;
-      const next = references.map(ref => resolved.get(ref) ?? ref);
-      for (const ref of resolved.values()) seen.add(keyOf(ref));
-      if (resolved.size || warnings.length) await session.refreshFonts!({ references: next, loaded: [...loaded], warnings: [...new Set(warnings)], relayout: resolved.size > 0 });
+      for (const [ref, choice] of resolved) mappings.set(keyOf(ref), { resolvedFontFamily: choice.resolvedFontFamily, source: choice.source });
+      if (resolved.size || warnings.length) lastWarnings = warnings;
+      if (resolved.size || warnings.length || hostRefresh) {
+        const environment = readHostFontFamilies(document.fonts);
+        const relayout = resolved.size > 0 || hostRefresh;
+        if (relayout) { changedFamilies.clear(); refreshRequested = false; }
+        const next = currentReferences(session.getState()).map(ref => {
+          const key = keyOf(ref);
+          const alias = hostAliases.get(key);
+          if (alias && environment.has(fontFamilyKey(alias))) return { ...ref, resolvedFontFamily: alias, source: 'application' as const };
+          const mapping = mappings.get(key);
+          const requested = mapping ? { ...ref, ...mapping } : ref;
+          if (requested.source === 'fallback' && !requested.browserUnsupported && !/\.shx$/i.test(requested.fontFile ?? '')
+            && environment.has(fontFamilyKey(requested.fontFamily))) return { ...requested, resolvedFontFamily: undefined, source: undefined };
+          return requested;
+        });
+        const messages = lastWarnings.filter(warning => !warning.resolvedBy?.some(family => environment.has(family)))
+          .map(warning => warning.message);
+        await session.refreshFonts!({ references: next, loaded: [...loaded], environment, warnings: [...new Set(messages)], relayout });
+      }
     } catch { /* A font refresh must not turn a readable preview into an error. */ }
-    finally { if (!signal.aborted) { running = false; schedule(); } }
+    finally { if (!signal.aborted) { running = false; schedulePending(); } }
   };
-  const unsubscribes = [session.on('rendered', schedule), session.on('statechange', schedule)];
-  return { reset, destroy() { destroyed = true; unsubscribes.forEach(unsubscribe => unsubscribe()); reset(); } };
+  const schedulePending = () => { if (service || refreshRequested || changedFamilies.size) schedule(); };
+  const unsubscribes = [session.on('rendered', schedulePending), session.on('statechange', schedulePending),
+    observeHostFontLoads(document.fonts, families => { families.forEach(family => changedFamilies.add(family)); schedule(); })];
+  return {
+    reset,
+    refresh() { refreshRequested = true; schedule(); },
+    destroy() { destroyed = true; unsubscribes.forEach(unsubscribe => unsubscribe()); reset(); }
+  };
 }
 
 /** A loaded FontFace is stronger provenance than a canvas-width heuristic. */
 export function analyzeLoadedPreviewFonts(update: PreviewFontRefresh, document: Document) {
-  const analysis = analyzePreviewFonts(update.references, document, { substitute: true, candidates: update.loaded });
+  const analysis = analyzePreviewFonts(update.references, document, { substitute: true, candidates: update.loaded, availableFamilies: update.environment });
   for (const font of analysis.fonts) {
     const family = font.resolvedFontFamily ?? font.fontFamily;
+    if (font.source === 'environment' && update.environment?.has(fontFamilyKey(family))) continue;
     if (!update.loaded.some(candidate => candidate.fontFamily.toLowerCase() === family?.toLowerCase())) continue;
     font.status = font.resolvedFontFamily && font.resolvedFontFamily.toLowerCase() !== font.fontFamily?.toLowerCase() ? 'substituted' : 'available';
     font.source = update.references.find(ref => ref.fontFamily === font.fontFamily)?.source ?? 'application';

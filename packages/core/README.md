@@ -1,6 +1,7 @@
 # @filens/core
 
-ESM PPTX parsing and preview core for browser applications.
+Shared ESM preview runtime for browser applications. The PowerPoint APIs below
+are compatibility exports from [`@filens/pptx`](../pptx/README.md).
 
 ## What It Exposes
 
@@ -12,9 +13,12 @@ ESM PPTX parsing and preview core for browser applications.
 - `applyTableCellPaint(td, { fill, borders }, mediaRegistry?)`
 - `withTextMeasurementScope(render)`
 
-The package also exports the core runtime types. `renderTableCellContent()` applies
-cell fills/borders and appends a rich text frame; its returned element lets the
-host control sizing and positioning. Wrap a synchronous batch of cells in
+The package also exports the core runtime types. Table hosts can import
+`renderTableCellContent()`, `applyTableCellPaint()` and
+`withTextMeasurementScope()` from `@filens/core/rendering`. This entry loads the
+shared text and table renderer. `renderTableCellContent()` applies cell fills and
+borders and appends a rich text frame. Its returned element lets the host control
+sizing and positioning. Wrap a synchronous batch of cells in
 `withTextMeasurementScope()` to reuse font probes within that batch. Later
 batches recheck font availability, including after fonts load or are removed.
 

@@ -5,7 +5,8 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliDecompressSync } from 'node:zlib';
-import { chromium, webkit } from '@playwright/test';
+import { chromium, expect, webkit } from '@playwright/test';
+import { createRegexWorkbook } from '../packages/xlsx/test/fixtures/array-selection-workbook.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const assets = path.join(root, 'sdk/ios/Sources/FilensPreview/Resources/filens');
@@ -94,10 +95,12 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const cases = [
   { name: '中文 <script>.txt', bytes: Buffer.from('FILENS_MOBILE_LOCAL 中文\n<script>window.injected = true</script>'), text: 'FILENS_MOBILE_LOCAL' },
   { name: 'table.csv', bytes: Buffer.from('name,value\nMOBILE_WASM_TABLE,42\n'), text: 'MOBILE_WASM_TABLE' },
+  { name: 'regex.xlsx', bytes: Buffer.from(await createRegexWorkbook()) },
   { name: 'page.html', contentType: 'text/html', bytes: Buffer.from('<h1>FILENS_MOBILE_HTML</h1>'), frameText: 'FILENS_MOBILE_HTML' },
   ...[
     'apps/demo/public/samples/filens-aurora-guide.docx',
     'apps/demo/public/samples/filens-cosmic-atlas.pdf',
+    'apps/demo/public/samples/filens-observatory.xlsx',
     'apps/demo/public/samples/a.pages',
     'apps/demo/public/samples/pepper-carrot.epub',
     'apps/demo/public/samples/sample-video.mp4',
@@ -155,6 +158,17 @@ try {
         assert.equal(events.some(event => event.type === 'error'), false, `${name} ${source.name}: ${JSON.stringify(events)}; ${errors.join('\n')}`);
         assert.ok(events.some(event => event.type === 'rendered' && event.requestId === id));
         assert.ok(compressedRequests.has(`${id}/filens.js`), 'Mobile entry must load the Brotli-stored runtime');
+        const hasRegex = source.name === 'regex.xlsx';
+        assert.equal(compressedRequests.has(`${id}/xlsx/pcre2.wasm`), hasRegex);
+        if (hasRegex) {
+          const grid = page.locator('.xlsxv-grid');
+          await expect(grid.locator('tr[aria-rowindex="2"] td[aria-colindex="2"]')).toHaveText('TRUE');
+          await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill', exact: true }).click();
+          await grid.evaluate(root => { root.scrollTop = root.scrollHeight; root.scrollLeft = root.scrollWidth; });
+          const final = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+          await expect(final).toHaveText('ID');
+          await expect(final).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+        }
         if (source.text) assert.ok((await page.locator('body').innerText()).includes(source.text));
         if (source.frameText) await page.frameLocator('iframe').getByText(source.frameText).waitFor();
         assert.equal(await page.evaluate(() => window.injected), undefined);

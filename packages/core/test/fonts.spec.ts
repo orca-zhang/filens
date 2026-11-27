@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { analyzePreviewFonts, collectSlideFontReferences } from '../src/preview/fonts';
 import { applySlideFontMappings, collectSlideFontLoadingReferences } from '../src/preview/font-scenes';
 import type { SlideModel, TextFrame, TextItem } from '../src/types';
-import { createPptxPreviewDriver } from '../src/preview/pptx-driver';
+import { createPptxPreviewDriver } from '@filens/pptx';
 import { readFixture } from './helpers';
 
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
@@ -47,6 +47,16 @@ describe('font diagnostics', () => {
       { fontFamily: 'system-ui', status: 'available', source: 'fallback' }
     ]);
     expect(result.warnings).toEqual([]);
+  });
+
+  it('probes Emoji and math with their own glyphs before suggesting a substitution', () => {
+    const context = mockFonts();
+    context.measureText.mockImplementation((sample?: string) => ({ width:
+      (context.font.includes('"Apple Color Emoji"') && sample?.includes('😀')) ||
+      (context.font.includes('"Cambria Math"') && sample?.includes('∫')) ? 140 : 100
+    }));
+    const result = analyzePreviewFonts([{ fontFamily: 'Apple Color Emoji' }, { fontFamily: 'Cambria Math' }, { fontFamily: 'Missing' }]);
+    expect(result.fonts.map(font => font.status)).toEqual(['available', 'available', 'missing']);
   });
 
   it('can inspect references outside a browser without claiming availability', () => {
@@ -200,6 +210,7 @@ describe('scene font discovery', () => {
       ['BOOK', 700, 'italic'], [' "Other" ', undefined, 'normal']
     ]);
     expect(refs[1].text).toBe(('a'.repeat(4095) + '😀tail').slice(0, 4096));
+    expect(collectSlideFontLoadingReferences(slides, true).slice(0, 3).map(ref => ref.textComplete)).toEqual([true, false, true]);
     expect(collectSlideFontReferences(slides)).toEqual([{ fontFamily: 'Bullet' }, { fontFamily: 'bOoK' }, { fontFamily: 'Other' }]);
     runs[0].text = 'Changed';
     expect(collectSlideFontLoadingReferences(slides)[1].text).toBe(('Changed😀tail' + runs[2].text + 'Last').slice(0, 4096));

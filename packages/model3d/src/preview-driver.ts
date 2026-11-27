@@ -409,7 +409,8 @@ export class Model3dPreviewSession implements PreviewSession<Model3dPreviewState
       const buffer = await previewSourceToArrayBuffer(source, signal);
       checkModelLoadAborted(signal);
       if (format === 'step' || format === 'stp') {
-        const object = await loadStepObject(buffer, { signal, cache: typeof source !== 'string' && context.descriptor.password === undefined });
+        const cache = typeof source !== 'string' && !context.descriptor.sensitive && context.descriptor.password === undefined;
+        const object = await loadStepObject(buffer, { signal, cache });
         this.createObjectScene(object, signal);
         this.state = {
           ...this.state,

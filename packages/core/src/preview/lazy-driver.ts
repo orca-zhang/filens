@@ -34,7 +34,7 @@ export function createLazyPreviewDriver(
 /** The previewer fallback must not statically import the PowerPoint renderer. */
 export function createLazyCorePreviewDrivers(): PreviewDriver[] {
   return [
-    createLazyPreviewDriver('pptx', 'paged', () => import('./pptx-driver').then(({ createPptxPreviewDriver }) => createPptxPreviewDriver())),
+    createLazyPreviewDriver('pptx', 'paged', () => import('@filens/pptx').then(({ createPptxPreviewDriver }) => createPptxPreviewDriver())),
     ...(['image', 'text', 'html', 'media'] as const).map(id => createLazyPreviewDriver(
       id, id === 'media' ? 'video' : id,
       () => import('./native-drivers').then(({ createDefaultNativePreviewDrivers }) =>

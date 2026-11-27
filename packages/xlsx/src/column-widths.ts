@@ -1,20 +1,22 @@
+import { VisibleTracks } from './visible-tracks';
+
 const DEFAULT_WIDTH = 96;
 
 /** Static prefix widths keep horizontal windows and merged fragments in source coordinates. */
 export class ColumnWidths {
   private readonly offsets?: Float64Array;
 
-  constructor(readonly count: number, source?: readonly number[]) {
+  constructor(readonly count: number, source?: readonly number[], readonly tracks = new VisibleTracks(count)) {
     if (!source) return;
-    this.offsets = new Float64Array(count + 1);
-    for (let index = 0; index < count; index++) {
-      const width = source[index];
+    this.offsets = new Float64Array(tracks.count + 1);
+    for (let index = 0; index < tracks.count; index++) {
+      const width = source[tracks.source(index + 1) - 1];
       this.offsets[index + 1] = this.offsets[index] + (Number.isFinite(width) && width > 0 ? width : DEFAULT_WIDTH);
     }
   }
 
   before(column: number): number {
-    const index = Math.min(this.count, Math.max(0, column - 1));
+    const index = this.tracks.before(column);
     return this.offsets ? this.offsets[index] : index * DEFAULT_WIDTH;
   }
 
@@ -22,13 +24,15 @@ export class ColumnWidths {
 
   at(pixel: number): number {
     pixel = Math.max(0, pixel) || 0;
-    if (!this.offsets) return Math.min(this.count, Math.floor(pixel / DEFAULT_WIDTH) + 1);
-    let low = 1, high = this.count;
+    const count = this.tracks.count;
+    if (!count) return this.count + 1;
+    if (!this.offsets) return this.tracks.source(Math.min(count, Math.floor(pixel / DEFAULT_WIDTH) + 1));
+    let low = 1, high = count;
     while (low < high) {
       const middle = (low + high) >>> 1;
       if (this.offsets[middle] <= pixel) low = middle + 1;
       else high = middle;
     }
-    return low;
+    return this.tracks.source(low);
   }
 }

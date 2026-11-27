@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-27",
+  "source": {
+    "fixture": "test-styles.numbers",
+    "sha256": "6734e8dd15b77da82d8732d43d5fb2ef7552620dbe0a54758013389011949213",
+    "url": "https://github.com/masaccio/numbers-parser/blob/972e1cf0cbcba0ec5178d8889b9b410542ebce2c/tests/data/test-styles.numbers",
+    "sheet": "Headers",
+    "cell": "D2",
+    "technique": 3,
+    "reportedSourceRowHeight": 116.75993347167969
+  },
+  "method": "Compare the real untinted image on the Headers sheet. Measure its rendered row and background dimensions. For the current builds, compare 16 screenshot pixels with an independently calculated center crop using Canvas.",
+  "results": {
+    "chromium": {
+      "version": "159.0.8154.6",
+      "before": {
+        "rowHeight": 200.21875,
+        "inlineImageHeight": 177.21875
+      },
+      "split": {
+        "width": 126.125,
+        "height": 115.75,
+        "rowHeight": 116.75,
+        "size": "cover",
+        "position": "50% 50%",
+        "naturalWidth": 1771,
+        "naturalHeight": 2657,
+        "samples": 16,
+        "meanMaxChannelDelta": 5.0625,
+        "maxChannelDelta": 22
+      },
+      "all-in-one": {
+        "width": 126.125,
+        "height": 115.75,
+        "rowHeight": 116.75,
+        "size": "cover",
+        "position": "50% 50%",
+        "naturalWidth": 1771,
+        "naturalHeight": 2657,
+        "samples": 16,
+        "meanMaxChannelDelta": 5.0625,
+        "maxChannelDelta": 22
+      }
+    },
+    "firefox": {
+      "version": "159.0",
+      "split": {
+        "width": 126.13334655761719,
+        "height": 115.76666259765625,
+        "rowHeight": 116.76666259765625,
+        "size": "cover",
+        "position": "50% 50%",
+        "naturalWidth": 1771,
+        "naturalHeight": 2657,
+        "samples": 16,
+        "meanMaxChannelDelta": 9.1875,
+        "maxChannelDelta": 52
+      },
+      "all-in-one": {
+        "width": 126.13334655761719,
+        "height": 115.76666259765625,
+        "rowHeight": 116.76666259765625,
+        "size": "cover",
+        "position": "50% 50%",
+        "naturalWidth": 1771,
+        "naturalHeight": 2657,
+        "samples": 16,
+        "meanMaxChannelDelta": 9.1875,
+        "maxChannelDelta": 52
+      }
+    },
+    "webkit": {
+      "version": "27.2",
+      "split": {
+        "width": 126.125,
+        "height": 115.75,
+        "rowHeight": 116.75,
+        "size": "cover",
+        "position": "50% 50%",
+        "naturalWidth": 1771,
+        "naturalHeight": 2657,
+        "samples": 16,
+        "meanMaxChannelDelta": 10.9375,
+        "maxChannelDelta": 57
+      },
+      "all-in-one": {
+        "width": 126.125,
+        "height": 115.75,
+        "rowHeight": 116.75,
+        "size": "cover",
+        "position": "50% 50%",
+        "naturalWidth": 1771,
+        "naturalHeight": 2657,
+        "samples": 16,
+        "meanMaxChannelDelta": 10.9375,
+        "maxChannelDelta": 57
+      }
+    }
+  },
+  "syntheticChecks": {
+    "fixture": "packages/iwork/test/fixtures/numbers-archive.mjs",
+    "browserTest": "apps/demo/e2e/numbers-archive.e2e.ts",
+    "geometry": "Five authored modes on stored and inherited blank cells, overlaid text, one-row merge height, and tile alignment within a scrolled 120-row by 50-column merge.",
+    "coverage": "Chromium, Firefox and WebKit in the virtual and incremental grids. Distant two-axis clipping exercised in the virtual grid."
+  }
+}

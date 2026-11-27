@@ -38,4 +38,61 @@ describe('Pages paragraph range indexing', () => {
       block.paragraphs?.map(paragraph => paragraph.runs.map(run => run.text).join('')) ?? []
     ))).toEqual(paragraphs.map(text => [text]));
   });
+
+  it('uses the larger adjacent paragraph gap when estimating a page', () => {
+    const ref = (identifier: number) => ({ identifier });
+    const archive: IworkArchiveIndex = {
+      type: 'pages',
+      records: Object.fromEntries([
+        record(1, 'TP.DocumentArchive', { bodyStorage: ref(2), pageHeight: 195 }),
+        record(2, 'TSWP.StorageArchive', { text: ['First\nSecond'], tableParaStyle: {
+          entries: [{ characterIndex: 0, object: ref(3) }, { characterIndex: 6, object: ref(4) }]
+        } }),
+        record(3, 'TSWP.ParagraphStyleArchive', { charProperties: { fontSize: 12 },
+          paraProperties: { lineSpacing: {}, spaceBefore: 25, spaceAfter: 20 } }),
+        record(4, 'TSWP.ParagraphStyleArchive', { charProperties: { fontSize: 12 },
+          paraProperties: { lineSpacing: { mode: 2, amount: 16 }, spaceBefore: 18, spaceAfter: 25 } })
+      ].map(record => [record.id, record])),
+      references: { incoming: {}, outgoing: {} },
+      dataEntries: {},
+      warnings: []
+    };
+    const document = buildParsedDocument({ archive, media: {} });
+    if (document.kind !== 'pages') throw new Error('Expected Pages document');
+    expect(document.pages).toHaveLength(1);
+    expect(document.pages[0].canvas.slide.items).toMatchObject([{ textFrame: { paragraphs: [
+      { spaceBefore: 0, spaceAfter: 0, lineHeight: 1, lineHeightUnit: 'multiple' },
+      { spaceBefore: 20, spaceAfter: 0, lineHeight: 16, lineHeightUnit: 'px' }
+    ] } }]);
+  });
+
+  it('reserves space for drawable-only paragraphs when Pages has no saved layout', () => {
+    const ref = (identifier: number) => ({ identifier });
+    const image = (dataId: number) => ({ data: ref(dataId), super: { geometry: { size: { width: 200, height: 180 } } } });
+    const archive: IworkArchiveIndex = {
+      type: 'pages',
+      records: Object.fromEntries([
+        record(1, 'TP.DocumentArchive', { bodyStorage: ref(2), pageHeight: 400 }),
+        record(2, 'TSWP.StorageArchive', { text: ['\uFFFC\n\uFFFC\nCaption'], tableAttachment: {
+          entries: [{ characterIndex: 0, object: ref(3) }, { characterIndex: 2, object: ref(5) }]
+        } }),
+        record(3, 'TSWP.DrawableAttachmentArchive', { drawable: ref(4) }),
+        record(4, 'TSD.ImageArchive', image(10)),
+        record(5, 'TSWP.DrawableAttachmentArchive', { drawable: ref(6) }),
+        record(6, 'TSD.ImageArchive', image(11))
+      ].map(record => [record.id, record])),
+      references: { incoming: {}, outgoing: {} },
+      dataEntries: {},
+      warnings: []
+    };
+    const document = buildParsedDocument({ archive, media: {} });
+    if (document.kind !== 'pages') throw new Error('Expected Pages document');
+    expect(document.pages).toHaveLength(2);
+    const [first, second] = document.pages.map(page => page.canvas.slide.items);
+    expect(first).toMatchObject([{ kind: 'image', mediaId: '10', transform: { y: 72, height: 180 } }]);
+    expect(second).toMatchObject([
+      { kind: 'image', mediaId: '11', transform: { y: 72, height: 180 } },
+      { kind: 'text', transform: { y: 252 }, textFrame: { paragraphs: [{ runs: [{ text: 'Caption' }] }] } }
+    ]);
+  });
 });

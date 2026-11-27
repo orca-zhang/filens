@@ -117,6 +117,39 @@ export function asObject(value: unknown): AnyObject | undefined {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as AnyObject) : undefined;
 }
 
+export function readIcuQuotedLiteral(pattern: string, offset: number): { text: string; length: number } | undefined {
+  if (pattern[offset] !== "'") {
+    return undefined;
+  }
+  if (pattern[offset + 1] === "'") {
+    return { text: "'", length: 2 };
+  }
+
+  let text = '';
+  let index = offset + 1;
+  while (index < pattern.length) {
+    if (pattern[index] === "'") {
+      if (pattern[index + 1] === "'") {
+        text += "'";
+        index += 2;
+        continue;
+      }
+      return { text, length: index - offset + 1 };
+    }
+    text += pattern[index];
+    index += 1;
+  }
+  return { text, length: pattern.length - offset };
+}
+
+export function uuidToKey(value: unknown): string | undefined {
+  const uuid = asObject(value);
+  const lower = readField<number | string>(uuid, ['lower']);
+  const upper = readField<number | string>(uuid, ['upper']);
+  if (lower == null && upper == null) return undefined;
+  return `${String(upper ?? 0)}:${String(lower ?? 0)}`;
+}
+
 export function asArray<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -177,9 +210,40 @@ export function resolveMergedStyle(archive: IworkArchiveIndex, refOrId: unknown,
   // identifier-backed style. Merge both so that we don't lose base properties
   // (e.g. Keynote shape fills) when a parent ref exists but is incomplete.
   const mergedBase = deepMerge(stylesheetValue, parentValue);
-  const merged = deepMerge(mergedBase, value);
+  let merged = deepMerge(mergedBase, value);
+  if (record?.typeName === 'TSWP.ColumnStyleArchive' && merged) {
+    const layout = [value, parentValue, stylesheetValue]
+      .map(style => asObject(readField(style, ['columnProperties', 'column_properties'])))
+      .find(properties => readField(properties, ['columns']) != null || readField(properties, ['columnsNull', 'columns_null']) === true);
+    if (layout) {
+      // Equal columns, unequal columns and a reset replace the inherited layout as a unit.
+      merged = { ...merged, columnProperties: {
+        ...asObject(readField(merged, ['columnProperties', 'column_properties'])),
+        columns: readField(layout, ['columns']), columnsNull: readField(layout, ['columnsNull', 'columns_null']) === true
+      } };
+    }
+  }
+  if (archive.type === 'numbers' && merged) {
+    const properties = asObject(readField(merged, ['charProperties', 'char_properties']));
+    const authored = asObject(readField(value, ['charProperties', 'char_properties']));
+    const adjusted = resolveNumbersInheritedFont(properties, authored);
+    if (adjusted !== properties) merged.charProperties = adjusted;
+  }
   if (id != null && merged) cache?.set(id, merged);
   return merged;
+}
+
+function resolveNumbersInheritedFont(properties: AnyObject | undefined, authored: AnyObject | undefined): AnyObject | undefined {
+  const disableBold = readField(authored, ['bold']) === false;
+  const disableItalic = readField(authored, ['italic']) === false;
+  if ((!disableBold && !disableItalic) || readField(authored, ['fontName', 'font_name']) !== undefined) return properties;
+  const name = readField<string>(properties, ['fontName', 'font_name']);
+  // An explicit false clears an inherited face trait, even when the PostScript name encodes it.
+  const face = typeof name === 'string' ? /^(.*?)[- ]((?:Semi|Demi|Extra)?Bold)?(Italic|Oblique)?(?:MT)?$/i.exec(name) : null;
+  if (!face || !(disableBold && face[2]) && !(disableItalic && face[3])) return properties;
+  const family = face[1] === 'HelveticaNeue' ? 'Helvetica Neue' : face[1];
+  return { ...properties, fontName: family,
+    ...(face[2] && !disableBold ? { bold: true } : {}), ...(face[3] && !disableItalic ? { italic: true } : {}) };
 }
 
 function resolveStyleParentRef(value: AnyObject): unknown {
@@ -288,10 +352,10 @@ function toHex(value: number): string {
   return value.toString(16).padStart(2, '0');
 }
 
-export function fillFromValue(fillLike: unknown): FillStyle {
+export function fillFromValue(fillLike: unknown, usePictureFit = false): FillStyle {
   const fill = asObject(fillLike);
   const image = fill && asObject(readField(fill, ['image']));
-  const imageFill = image ? imageFillFromValue(image) : undefined;
+  const imageFill = image ? imageFillFromValue(image, usePictureFit) : undefined;
   if (imageFill) {
     return imageFill;
   }
@@ -364,7 +428,9 @@ function gradientStopFromValue(stop: AnyObject, gradientOpacity: number | undefi
   };
 }
 
-function imageFillFromValue(image: AnyObject): FillStyle | undefined {
+const pictureFits = ['natural', 'stretch', 'tile', 'cover', 'contain'] as const;
+
+function imageFillFromValue(image: AnyObject, usePictureFit: boolean): FillStyle | undefined {
   const mediaId = readOptionalIdentifier(
     readField(image, ['imagedata', 'databaseImagedata', 'originalimagedata', 'databaseOriginalimagedata'])
   );
@@ -372,14 +438,43 @@ function imageFillFromValue(image: AnyObject): FillStyle | undefined {
     return undefined;
   }
 
-  const technique = Number(readField<number>(image, ['technique']) ?? 0);
+  const technique = readField<number>(image, ['technique']);
   const alpha = readFiniteUnitFloat(readField<number>(image, ['opacity']));
+  const pictureFit = usePictureFit && typeof technique === 'number' ? pictureFits[technique] : undefined;
+  const size = pictureFit === 'natural' || pictureFit === 'tile' ? asObject(readField(image, ['fillsize'])) : undefined;
+  const width = readFinitePositiveNumber(readField<number>(size, ['width']));
+  const height = readFinitePositiveNumber(readField<number>(size, ['height']));
+  const pictureTint = usePictureFit ? pictureTintFromValue(readField(image, ['tint'])) : undefined;
   return {
     type: 'picture',
     mediaId,
     alpha,
-    tile: technique === 2
+    tile: Number(technique) === 2,
+    ...(pictureFit ? { pictureFit } : {}),
+    ...(width && height ? { pictureSize: { width, height } } : {}),
+    ...(pictureTint ? { pictureTint } : {})
   };
+}
+
+function pictureTintFromValue(value: unknown): FillStyle['pictureTint'] {
+  const tint = asObject(value);
+  if (!tint) return;
+  const alpha = readFiniteUnitFloat(readField<number>(tint, ['a']) ?? 1);
+  if (!alpha) return;
+  const channel = (key: string) => readFiniteUnitFloat(readField<number>(tint, [key])) ?? 0;
+  const model = readField<number>(tint, ['model']);
+  if (model === 3) {
+    const white = channel('w');
+    return { color: colorToHex({ r: white, g: white, b: white }), alpha };
+  }
+  if (model === 2) {
+    const light = 1 - channel('k');
+    return { color: colorToHex({ r: (1 - channel('c')) * light, g: (1 - channel('m')) * light, b: (1 - channel('y')) * light }), alpha };
+  }
+  if (model !== 1) return;
+  const r = channel('r'), g = channel('g'), b = channel('b');
+  const color = readField<number>(tint, ['rgbspace']) === 2 ? `color(display-p3 ${r} ${g} ${b})` : colorToHex({ r, g, b });
+  return { color, alpha };
 }
 
 function readOptionalIdentifier(value: unknown): string | undefined {
@@ -975,11 +1070,14 @@ interface TextFrameOptions {
   verticalAlign?: TextFrame['verticalAlign'];
   padding?: PaddingBox;
   shapeProperties?: AnyObject;
+  attachmentTextMap?: ReadonlyMap<number, string[]>;
   attachmentContext?: {
     pageNumber?: number;
+    pageNumberAt?: (characterIndex: number) => number | undefined;
     pageCount?: number;
     pageNumberText?: string;
     pageCountText?: string;
+    updatePageNumbers?: boolean;
     documentName?: string;
   };
 }
@@ -999,7 +1097,7 @@ export function buildTextFrameFromStorage(
   }
 
   const text = asArray<string>(readField(storage, ['text'])).join('').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const attachmentTextMap = buildAttachmentTextMap(archive, storage, options.attachmentContext);
+  const attachmentTextMap = options.attachmentTextMap ?? buildAttachmentTextMap(archive, storage, options.attachmentContext);
   const paragraphStarts = computeParagraphStarts(text);
   const paraStyleEntries = normalizeStyleEntries(readField(storage, ['tableParaStyle', 'table_para_style']), options.defaultParagraphStyleRef);
   const listStyleEntries = normalizeStyleEntries(readField(storage, ['tableListStyle', 'table_list_style']));
@@ -1047,7 +1145,7 @@ export function buildTextFrameFromStorage(
       indent,
       spaceBefore: Number(readField<number>(paraProps, ['spaceBefore', 'space_before']) ?? 0),
       spaceAfter: bullet && explicitSpaceAfter <= 0 ? 6 : explicitSpaceAfter,
-      ...(archive.type === 'pages' ? { lineHeight: 1.2, lineHeightUnit: 'multiple' as const } : {}),
+      ...(archive.type === 'pages' ? pagesParagraphLineHeight(paraProps) : {}),
       runs: runs.length ? runs : [{ text: paragraphText }]
     });
   }
@@ -1064,6 +1162,21 @@ export function buildTextFrameFromStorage(
     ...(columns != null ? { columns } : {}),
     ...(autofit ? { autofit } : {})
   };
+}
+
+function pagesParagraphLineHeight(properties: AnyObject | undefined): Pick<TextParagraph, 'lineHeight' | 'lineHeightUnit'> {
+  const spacing = readField<boolean>(properties, ['lineSpacingNull', 'line_spacing_null']) ? undefined
+    : asObject(readField(properties, ['lineSpacing', 'line_spacing']));
+  if (spacing) {
+    const mode = readField<number>(spacing, ['mode']) ?? 0;
+    const amount = readField<number>(spacing, ['amount']);
+    if (mode === 0 && amount == null) return { lineHeight: 1, lineHeightUnit: 'multiple' };
+    if (typeof amount === 'number' && Number.isFinite(amount) && amount > 0) {
+      if (mode === 0) return { lineHeight: amount, lineHeightUnit: 'multiple' };
+      if (mode === 2) return { lineHeight: amount, lineHeightUnit: 'px' };
+    }
+  }
+  return { lineHeight: 1.2, lineHeightUnit: 'multiple' };
 }
 
 function textDirectionFromShapeProperties(shapeProperties: AnyObject | undefined): TextFrame['direction'] | undefined {
@@ -1180,10 +1293,13 @@ function buildRunsForParagraph(
   paragraphStart: number,
   entries: StyleEntries,
   baseCharProps: AnyObject | undefined,
-  attachmentTextMap: Map<number, string[]>
+  attachmentTextMap: ReadonlyMap<number, string[]>
 ): TextRun[] {
   if (!paragraphText.length) {
-    return [{ text: '' }];
+    if (archive.type !== 'pages') return [{ text: '' }];
+    const style = resolveMergedStyle(archive, resolveActiveStyleRef(entries, paragraphStart));
+    const authored = asObject(readField(style, ['charProperties', 'char_properties']));
+    return [buildTextRun('', deepMerge(baseCharProps, authored))];
   }
   if (!entries.entries.length) {
     const text = expandAttachmentText(paragraphText, paragraphStart, attachmentTextMap);
@@ -1214,7 +1330,9 @@ function buildRunsForParagraph(
     );
     const refId = resolveActiveStyleRef(entries, start);
     const charStyle = resolveMergedStyle(archive, refId);
-    const charProps = deepMerge(baseCharProps, asObject(readField(charStyle, ['charProperties', 'char_properties'])));
+    const authored = asObject(readField(charStyle, ['charProperties', 'char_properties']));
+    const merged = deepMerge(baseCharProps, authored);
+    const charProps = archive.type === 'numbers' ? resolveNumbersInheritedFont(merged, authored) : merged;
     if (!text.length && paragraphText.length) {
       continue;
     }
@@ -1483,7 +1601,7 @@ function isMeaningfulColorValue(colorValue: unknown): boolean {
   return Boolean(color && colorAlpha(color) !== 0);
 }
 
-function buildAttachmentTextMap(
+export function buildAttachmentTextMap(
   archive: IworkArchiveIndex,
   storage: AnyObject,
   context: TextFrameOptions['attachmentContext']
@@ -1505,7 +1623,7 @@ function buildAttachmentTextMap(
     if (characterIndex < 0) {
       continue;
     }
-    const text = resolveAttachmentText(archive, readField(entry, ['object']), context);
+    const text = resolveAttachmentText(archive, readField(entry, ['object']), context, characterIndex);
     if (text == null) {
       continue;
     }
@@ -1530,7 +1648,8 @@ export function collectStorageObjectAttributeEntries(
 function resolveAttachmentText(
   archive: IworkArchiveIndex,
   refOrId: unknown,
-  context: TextFrameOptions['attachmentContext']
+  context: TextFrameOptions['attachmentContext'],
+  characterIndex: number
 ): string | undefined {
   const record = getRecord(archive, refOrId);
   const value = asObject(record?.value);
@@ -1539,12 +1658,26 @@ function resolveAttachmentText(
   }
 
   switch (record.typeName) {
-    case 'TSWP.NumberAttachmentArchive':
+    case 'TSWP.NumberAttachmentArchive': {
+      const attachment = asObject(readField(value, ['super']));
+      if (context?.updatePageNumbers) {
+        const name = readField<string>(value, ['numberFormatName', 'number_format_name']);
+        const format = readField<number>(value, ['numberFormat', 'number_format']);
+        if (name === 'decimal' || (!name && format === 0)) {
+          const kind = readField<number>(attachment, ['kind']) ?? 0;
+          if (kind === 0) {
+            const number = context.pageNumberAt?.(characterIndex) ?? context.pageNumber;
+            if (number != null) return String(number);
+          }
+          if (kind === 1 && context.pageCount != null) return String(context.pageCount);
+        }
+      }
       return resolveTextualAttachmentText(
-        asObject(readField(value, ['super'])),
+        attachment,
         context,
         readField<string>(value, ['stringValue', 'string_value'])
       );
+    }
     case 'TSWP.FootnoteReferenceAttachmentArchive':
       return (
         normalizeAttachmentText(readField<string>(value, ['customMarkString', 'custom_mark_string'])) ??
@@ -2084,7 +2217,7 @@ function defaultUtcDateTimeText(date: Date): string {
   return hasTime ? `${year}-${month}-${day} ${hour}:${minute}:${second}` : `${year}-${month}-${day}`;
 }
 
-function expandAttachmentText(text: string, absoluteStart: number, attachmentTextMap: Map<number, string[]>): string {
+function expandAttachmentText(text: string, absoluteStart: number, attachmentTextMap: ReadonlyMap<number, string[]>): string {
   if (!text.includes('\uFFFC')) {
     return text;
   }

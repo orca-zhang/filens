@@ -80,8 +80,12 @@ describe('STEP CPU mesh reuse', () => {
     mocks.read.mockReturnValueOnce({ success: false }); await expect(lib.loadStepObject(source, { cache: true })).rejects.toThrow('could not read');
     expect(previewModelCache.size).toBe(0);
     await lib.loadStepObject(source, { cache: false }); expect(previewModelCache.size).toBe(0);
+    const { session, rendered } = setup();
+    await session.load(source, { descriptor: { ...context(source, 'protected.step').descriptor, sensitive: true } });
+    expect(rendered).toHaveBeenCalledOnce();
+    expect(previewModelCache.size).toBe(0);
     const held = deferred<any>(), controller = new AbortController(); mocks.read.mockReturnValueOnce(held.promise);
-    const task = lib.loadStepObject(source, { cache: true, signal: controller.signal }); await vi.waitFor(() => expect(mocks.read).toHaveBeenCalledTimes(3));
+    const task = lib.loadStepObject(source, { cache: true, signal: controller.signal }); await vi.waitFor(() => expect(mocks.read).toHaveBeenCalledTimes(4));
     const rejected = expect(task).rejects.toMatchObject({ name: 'AbortError' }); controller.abort(); await rejected;
     held.resolve(stepResult()); await flush(); expect(previewModelCache.size).toBe(0);
   });

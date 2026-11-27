@@ -63,9 +63,12 @@ def extract(cli, wasm, sample, path, cache, label, timeout):
         count = sample['repairedFonts']
         checks['fontRecovery'] = (f'Recovered PDF Unicode mappings for {count} font(s)' in warnings
                                   if count else not any(w.startswith('Recovered PDF Unicode') for w in warnings))
-    if sample.get('ocr') and ('pages' in sample or 'ocrWarning' in sample):
-        expected_warning = sample.get('ocrWarning', f"PDF text mapping unavailable; using OCR for {sample['pages']} page(s)")
-        checks['ocrRouting'] = expected_warning in warnings
+    if sample.get('ocr') and 'pages' in sample:
+        recognized = [item.get('page') for item in content.get('ocr', {}).get('results', [])
+                      if item.get('status') in ('complete', 'partial') and item.get('acceptedLines', 0) > 0]
+        checks['ocrRouting'] = recognized == list(range(1, sample['pages'] + 1))
+    if sample.get('ocr') and 'ocrWarning' in sample:
+        checks['ocrWarning'] = sample['ocrWarning'] in warnings
     return {
         'exit': result.returncode, 'ok': response.get('ok', False),
         'complete': content.get('complete', False), 'truncated': content.get('truncated', False),
@@ -84,7 +87,9 @@ def evaluate_sample(sample, path, args):
     original = digest(path)
     if 'sha256' in sample and original != sample['sha256']:
         raise ValueError(f"input SHA-256 mismatch: {sample['file']}")
-    item = {k: sample[k] for k in ['file', 'issue', 'url', 'pages', 'problem', 'limitations'] if k in sample}
+    item = {k: sample[k] for k in
+            ['file', 'issue', 'url', 'pages', 'problem', 'limitations', 'allowedPartialError']
+            if k in sample}
     item['sha256'] = original
     if args.baseline_wasm:
         item['before'] = extract(args.cli.resolve(), args.baseline_wasm.resolve(), sample, path,
@@ -98,12 +103,22 @@ def evaluate_sample(sample, path, args):
                                 env=dict(os.environ, FILENS_TEXT_WASM=str(args.wasm.resolve())),
                                 capture_output=True, text=True, timeout=args.timeout + 30)
         unavailable = json.loads(no_ocr.stdout)
-        # Only known OCR regressions must fail when OCR is unavailable.
         if 'pages' in sample or 'ocrWarning' in sample:
-            after['checks']['missingOCRFails'] = (no_ocr.returncode == 3 and not unavailable.get('ok')
-                                                  and unavailable.get('error', {}).get('code') == 'ocr_failed')
+            native = unavailable.get('content', {})
+            skipped = [item.get('page') for item in native.get('ocr', {}).get('results', [])
+                       if item.get('status') == 'skipped' and item.get('reason') == 'ocr=never']
+            after['checks']['nativeOnlySkipsOCR'] = (
+                no_ocr.returncode == 0 and unavailable.get('ok') is True
+                and native.get('textScope') == 'native-text'
+                and (skipped == list(range(1, sample['pages'] + 1)) if 'pages' in sample else bool(skipped))
+            )
     item['after'] = after
-    item['passed'] = after['ok'] and after['complete'] and not after['truncated'] and all(after['checks'].values())
+    complete = after['exit'] == 0 and after['ok'] and after['complete']
+    partial_error = sample.get('allowedPartialError')
+    expected_partial = (partial_error is not None and after['exit'] == 3
+                        and not after['ok'] and not after['complete']
+                        and (after['error'] or {}).get('code') == partial_error)
+    item['passed'] = (complete or expected_partial) and not after['truncated'] and all(after['checks'].values())
     return item
 
 

@@ -1,7 +1,7 @@
 {
   "name": "@filens/core",
-  "version": "0.1.5",
-  "description": "Front-end PPTX parsing and preview core for modern ESM applications.",
+  "version": "0.1.6",
+  "description": "Shared front-end preview runtime and PowerPoint compatibility API for modern ESM applications.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -23,6 +23,10 @@
       "import": "./dist/index.js"
     },
     "./style.css": "./dist/index.css",
+    "./rendering": {
+      "types": "./dist/rendering.d.ts",
+      "import": "./dist/rendering.js"
+    },
     "./archive-volumes": {
       "types": "./dist/archive-volumes.d.ts",
       "import": "./dist/archive-volumes.js"
@@ -34,6 +38,10 @@
     "./preview-runtime": {
       "types": "./dist/preview-runtime.d.ts",
       "import": "./dist/preview-runtime.js"
+    },
+    "./presentation-support": {
+      "types": "./dist/presentation-support.d.ts",
+      "import": "./dist/presentation-support.js"
     }
   },
   "files": [
@@ -47,9 +55,9 @@
     "test:unit": "node ../../scripts/generate-fixtures.mjs && vitest run"
   },
   "dependencies": {
+    "@filens/pptx": "^0.1.0",
     "@zip.js/zip.js": "^2.24.0",
     "cfb": "^1.2.2",
-    "fast-xml-parser": "^5.12.1",
     "fflate": "^0.8.3",
     "jszip": "^3.10.1",
     "utif": "^3.1.0"

@@ -1,0 +1,131 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "jsdom": "25.0.1",
+  "method": "Load a file-backed Blob into XlsxPreviewSession in three fresh Node processes per build and fixture, alternating build order. Load time includes range reads, parsing both worksheets and rendering the initial sheet in jsdom. Measure retained JS heap above startup after GC and process peak RSS after hashing the initial viewport. Switch sheets to verify the uncached cross-sheet calculation, then hash the displayed result. jsdom uses the font measurement fallback without a canvas runtime.",
+  "builds": {
+    "baselineEntrySha256": "c1f75efcc7344d13423980b3e0bb183673d9973970eb07ddf383154c0a12bf53",
+    "derivedAddressEntrySha256": "401a73be7fc92442b4847f536ca5e0cfc00c29b1a1e65ac29ddabf47a2410adc"
+  },
+  "workload": {
+    "dataRows": 16000,
+    "dataColumns": 128,
+    "numericCells": 2048000,
+    "numericValue": 1,
+    "firstSheetMerge": "A1:B1",
+    "secondSheetFormula": "SUM(Numbers!A1:DX16000)+Numbers!D16000",
+    "verifiedResult": "2048001"
+  },
+  "fixtures": {
+    "dense": {
+      "description": "Numeric rows with no workbook styles.",
+      "archiveBytes": 4162723,
+      "archiveSha256": "7d47ff6f100bb2131636913679aeb90ffaac67c2c4dbf04f69dbd69da8de8bad",
+      "baseline": {
+        "samples": [
+          {
+            "loadMs": 929.794,
+            "retainedHeapBytes": 216777400,
+            "peakRssKiB": 393872
+          },
+          {
+            "loadMs": 934.399,
+            "retainedHeapBytes": 216765968,
+            "peakRssKiB": 392512
+          },
+          {
+            "loadMs": 943.232,
+            "retainedHeapBytes": 216766496,
+            "peakRssKiB": 392736
+          }
+        ],
+        "median": {
+          "loadMs": 934.399,
+          "retainedHeapBytes": 216766496,
+          "peakRssKiB": 392736
+        }
+      },
+      "derivedAddress": {
+        "samples": [
+          {
+            "loadMs": 973.436,
+            "retainedHeapBytes": 151277920,
+            "peakRssKiB": 325600
+          },
+          {
+            "loadMs": 976.912,
+            "retainedHeapBytes": 151275128,
+            "peakRssKiB": 331040
+          },
+          {
+            "loadMs": 978.721,
+            "retainedHeapBytes": 151315632,
+            "peakRssKiB": 331488
+          }
+        ],
+        "median": {
+          "loadMs": 976.912,
+          "retainedHeapBytes": 151277920,
+          "peakRssKiB": 331040
+        }
+      },
+      "verifiedViewportSha256": "8fb448a6df69f450dc7acd2255f15acdb75ebfaea112585ff3b36c36b48c150f"
+    },
+    "styled": {
+      "description": "Odd rows have an explicit Courier New style and a built-in two-decimal number format. Even rows use the default style.",
+      "archiveBytes": 4633697,
+      "archiveSha256": "c77ba147ac42cc276dff576edc92f02a4ca1d1de631694de6a09b73b423c8c4c",
+      "baseline": {
+        "samples": [
+          {
+            "loadMs": 1173.78,
+            "retainedHeapBytes": 301712808,
+            "peakRssKiB": 460176
+          },
+          {
+            "loadMs": 1167.241,
+            "retainedHeapBytes": 301728160,
+            "peakRssKiB": 452384
+          },
+          {
+            "loadMs": 1169.812,
+            "retainedHeapBytes": 301742400,
+            "peakRssKiB": 457904
+          }
+        ],
+        "median": {
+          "loadMs": 1169.812,
+          "retainedHeapBytes": 301728160,
+          "peakRssKiB": 457904
+        }
+      },
+      "derivedAddress": {
+        "samples": [
+          {
+            "loadMs": 1151.345,
+            "retainedHeapBytes": 187082120,
+            "peakRssKiB": 367792
+          },
+          {
+            "loadMs": 1162.182,
+            "retainedHeapBytes": 187053848,
+            "peakRssKiB": 374192
+          },
+          {
+            "loadMs": 1162.2,
+            "retainedHeapBytes": 187043840,
+            "peakRssKiB": 371936
+          }
+        ],
+        "median": {
+          "loadMs": 1162.182,
+          "retainedHeapBytes": 187053848,
+          "peakRssKiB": 371936
+        }
+      },
+      "verifiedViewportSha256": "c7ce0b74932aa480d740a8bbad3ac0a76209becfa84b125be9beb6667789ece2"
+    }
+  }
+}

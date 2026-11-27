@@ -18,7 +18,8 @@ const table = [
   '| Runtime | Raw MB | gzip MB | Brotli MB |', '| --- | ---: | ---: | ---: |',
   ...[['Split main runtime', split.main], ['All-in-one main JS (precompressed)', single.main],
     ['Optional archive WASM + worker (either build)', split.archive],
-    ['Split with archive assets', split.total], ['All-in-one with archive assets', single.total]]
+    ['On-demand XLSX regex WASM (either build)', split.xlsxRegex],
+    ['Split with on-demand assets', split.total], ['All-in-one with on-demand assets', single.total]]
     .map(([label, sizes]) => `| ${label} | ${mb(sizes.raw)} | ${mb(sizes.gzip)} | ${mb(sizes.brotli)} |`)
 ].join('\n');
 const previewPath = path.join(root, 'packages/preview/README.md');
@@ -29,10 +30,10 @@ if (a < 0 || b < a) throw new Error('Missing runtime size table markers');
 preview = preview.slice(0, a) + `${start}\n${table}\n${end}` + preview.slice(b + end.length);
 await writeFile(previewPath, preview);
 
-let report = `# Preview ${version} runtime and package sizes\n\nSource runtimes measured ${build.date}; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. Archive sidecars always stay external. Runtime rows exclude HTML, types, README and notices.\n\n${table}\n\n[Exact runtime bytes](preview-build-sizes.json).\n`;
+let report = `# Preview ${version} runtime and package sizes\n\nSource runtimes measured ${build.date}; these include current checkout changes and can differ from the published package with the same base version. Runtime rows use **MB = 1,000,000 bytes**. All-in-one rows use the supplied Zopfli gzip and Brotli quality 11 files; other rows use gzip level 9 and Brotli quality 11. Serve the precompressed files with Content-Encoding to obtain these transfer sizes. Main runtimes include Vue, styles, workers and document/image/STEP WASM. The archive worker and WASM and the XLSX regex WASM load on demand. Runtime rows exclude HTML, types, README and notices.\n\n${table}\n\n[Exact runtime bytes](preview-build-sizes.json).\n`;
 const packed = await read('docs/preview-package-sizes.json');
 if (packed.version === version) {
-  report += `\n## Measured npm pack artifact\n\n| Package | Compressed download | Installed file bytes |\n| --- | ---: | ---: |\n| filens-preview ${version} | ${mib(packed.bytes)} MiB | ${mib(packed.unpackedBytes)} MiB |\n\nThis local npm pack receipt does not establish registry publication. The npm package includes **both** complete runtime directories, archive assets, types, documentation and license notices. MiB = 1,048,576 bytes; excludes the npm cache and filesystem allocation overhead. [Exact package bytes and SHA-256](preview-package-sizes.json).\n`;
+  report += `\n## Measured npm pack artifact\n\n| Package | Compressed download | Installed file bytes |\n| --- | ---: | ---: |\n| filens-preview ${version} | ${mib(packed.bytes)} MiB | ${mib(packed.unpackedBytes)} MiB |\n\nThis local npm pack receipt does not establish registry publication. The npm package includes **both** complete runtime directories, on-demand assets, types, documentation and license notices. MiB = 1,048,576 bytes; excludes the npm cache and filesystem allocation overhead. [Exact package bytes and SHA-256](preview-package-sizes.json).\n`;
 }
 try {
   const splitPackage = await read('docs/preview-split-package-sizes.json');

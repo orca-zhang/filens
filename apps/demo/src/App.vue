@@ -1211,7 +1211,7 @@ const staticSamples: DemoSource[] = [
 ];
 
 const defaultRemoteUrl = computed(() => new URL(resolvePublicSamplePath(presentationSample.value.source), window.location.href).href);
-const remotePrefetchKinds = new Set<DemoKind>(['pptx', 'key', 'pages', 'numbers', 'pdf', 'docx', 'xlsx', 'csv', 'ppt']);
+const remotePrefetchKinds = new Set<DemoKind>(['ppt']);
 let sdkLoadRanges: Array<TimeRange & { selection?: number }> = [];
 let resourceTimings: PerformanceResourceTiming[] = [];
 const resourceObserver = typeof PerformanceObserver === 'undefined' ? undefined : new PerformanceObserver(list => {
@@ -1462,6 +1462,7 @@ const thirdPartySource = computed(() => {
 });
 const renderedState = ref<PreviewItemState | null>(null);
 const lastError = ref<string | null>(null);
+const uploadError = ref<string | null>(null);
 const workbenchSection = ref<'preview' | 'agent'>(initialParams.get('view') === 'agent' ? 'agent' : 'preview');
 const showWorkbench = ref(initialParams.has('url') || ['preview', 'agent'].includes(initialParams.get('view') ?? ''));
 const showPreviewToolbar = ref(false);
@@ -1474,6 +1475,7 @@ function startSourceSelection(): number {
   remoteRequest?.abort();
   remoteRequest = undefined;
   remoteLoadState.value = 'idle';
+  uploadError.value = null;
   previewStartedAt.value = null;
   renderTimeMs.value = null;
   downloadTimeMs.value = null;
@@ -1651,8 +1653,9 @@ function demoKindForConversionTarget(targetFormat: string): DemoKind {
   }
 }
 watch(() => showWorkbench.value && workbenchSection.value === 'preview', (enabled) => {
-  if (!enabled) return;
+  if (!enabled || demoDrivers.value) return;
   void loadPreviewSdk().then(({ createVueDefaultPreviewRoutes, createVueDefaultPreviewDrivers }) => {
+    if (demoDrivers.value) return;
     demoRoutes.value = createVueDefaultPreviewRoutes();
     demoDrivers.value = createVueDefaultPreviewDrivers({ converter, panoramaProcessor }).map(driver => ({
       ...driver,
@@ -1873,7 +1876,7 @@ async function previewRemote(nameOverride?: string, updateUrl = true): Promise<v
     remoteLoadState.value = 'error';
     remoteRequest = undefined;
     lastError.value = error instanceof TypeError
-      ? t('无法加载远程文件，请检查文件地址及来源站点的跨域访问（CORS）设置。', 'Unable to load the remote file. Check its URL and the source site’s cross-origin access (CORS) settings.')
+      ? remoteNetworkMessage()
       : error instanceof Error ? error.message : String(error);
   }
 }
@@ -1935,7 +1938,7 @@ async function previewFiles(files: File[]): Promise<void> {
     uploadResourceResolver.value = files.length > 1 ? createFileSetResourceResolver(files) : undefined;
   } catch (error) {
     if (selection !== sourceSelection) return;
-    lastError.value = error instanceof Error ? error.message : String(error);
+    uploadError.value = error instanceof Error ? error.message : String(error);
   }
 }
 
@@ -1964,7 +1967,21 @@ function onRendered(state: PreviewItemState): void {
 }
 
 function onError(error: Error): void {
+  if (sourceMode.value === 'url' && ['pdf', 'docx', 'xlsx', 'csv', 'pptx', 'key', 'pages', 'numbers'].includes(current.value.kind)) {
+    const status = ['ResponseException', 'ZipSourceHttpError', 'CsvSourceHttpError'].includes(error.name) && 'status' in error && typeof error.status === 'number' ? error.status : undefined;
+    const network = error instanceof TypeError || (error.name === 'UnknownErrorException'
+      && 'details' in error && typeof error.details === 'string' && error.details.startsWith('TypeError:'));
+    if (status !== undefined || network) {
+      if (renderTimeMs.value === null) remoteLoadState.value = 'error';
+      lastError.value = status === undefined ? remoteNetworkMessage() : `Failed to load ${current.value.name}: HTTP ${status}`;
+      return;
+    }
+  }
   lastError.value = previewPasswordErrorCode(error) === 'password_cancelled' ? null : error.message;
+}
+
+function remoteNetworkMessage(): string {
+  return t('无法加载远程文件，请检查文件地址及来源站点的跨域访问（CORS）设置。', 'Unable to load the remote file. Check its URL and the source site’s cross-origin access (CORS) settings.');
 }
 
 function formatCompactNumber(value: number): string {
@@ -3480,7 +3497,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
     :timings="runtimeTimings"
     :model-summary="model3dSummary"
     :ready="remoteLoadState === 'idle' && (renderTimeMs !== null || !!current.livePhoto)"
-    :error="lastError"
+    :error="uploadError ?? lastError"
     :warning-count="warningCount"
     :has-toolbar="!current.livePhoto && familyLabel !== 'model3d'"
     @home="returnHome"
@@ -3505,7 +3522,7 @@ const compatibilitySnippet = `<PptxPreview :src="'/samples/sample-deck.pptx'" fi
             :title="current.label"
           />
           <Preview
-            v-else-if="remoteLoadState === 'idle'"
+            v-else-if="remoteLoadState === 'idle' && demoDrivers"
             :key="current.name"
             :src="previewInput"
             :name="current.name"

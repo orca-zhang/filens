@@ -1,6 +1,8 @@
 import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import { createPngFixture, createRasterDxfFixture, lineDxfFixture } from '../../../packages/cad/test/fixtures/resources.mjs';
+import { createShxDxf, testShxFont } from '../../../packages/cad/test/fixtures/shx.mjs';
 
 async function prepare(page: Page) {
   await page.goto('./');
@@ -116,3 +118,59 @@ test('opens DXF and PNG sidecars through the demo upload flow', async ({ page })
     return sizes;
   })).toEqual([32, 32]); expect(errors).toEqual([]);
 });
+
+test('fits rotated SHX paths and aborts a later unresolved font request', async ({ page }) => {
+  await prepare(page);
+  const result = await page.evaluate(async ({ dxf, font }) => {
+    const { lib, host, urls } = (window as any).cadTest;
+    const source = new TextEncoder().encode(dxf);
+    let requested: () => void;
+    const started = new Promise<void>(resolve => { requested = resolve; });
+    let resolveCount = 0;
+    const session = lib.createCadPreviewDriver().createSession(host, { resourceResolver: () => {
+      if (++resolveCount === 1) return new Blob([new Uint8Array(font)]);
+      requested();
+      return new Promise(() => {});
+    } });
+    await session.load(source, { descriptor: { source, extension: 'dxf' } });
+    const svg = host.querySelector('svg') as SVGSVGElement, path = host.querySelector('[data-shx-text]') as SVGPathElement;
+    const box = path.getBBox();
+    const matrix = svg.getScreenCTM()!.inverse().multiply(path.getScreenCTM()!), view = svg.viewBox.baseVal;
+    const inside = [box.x, box.x + box.width].every(x => [box.y, box.y + box.height].every(y => {
+      const point = new DOMPoint(x, y).matrixTransform(matrix);
+      return point.x >= view.x && point.x <= view.x + view.width && point.y >= view.y && point.y <= view.y + view.height;
+    }));
+    const label = path.getAttribute('aria-label');
+    const controller = new AbortController();
+    const pending = session.load(source, { descriptor: { source, extension: 'dxf' }, signal: controller.signal })
+      .then(() => 'rendered', error => error.name);
+    await started;
+    controller.abort();
+    const settled = await pending;
+    const state = session.getState();
+    session.destroy();
+    return { inside, label, settled, urls: urls.size, loading: state.loading, fonts: state.fonts.length };
+  }, { dxf: createShxDxf({ labels: ['AAAAAAAA'] }), font: [...testShxFont] });
+  expect(result).toEqual({ inside: true, label: 'AAAAAAAA', settled: 'AbortError', urls: 0, loading: false, fonts: 0 });
+});
+
+for (const extension of ['dxf', 'dwg']) {
+  test(`opens ${extension.toUpperCase()} with a local SHX sidecar through the demo`, async ({ page }) => {
+    const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+    const requests: string[] = []; page.on('request', request => requests.push(request.url()));
+    const drawing = extension === 'dwg' ? await readFile('apps/demo/public/samples/graphics/filens-cafe-2018.dwg')
+      : Buffer.from(createShxDxf());
+    await page.goto('./?view=preview');
+    await page.locator('.wb-upload input[type=file]').setInputFiles([
+      { name: `stroke.${extension}`, mimeType: 'application/octet-stream', buffer: drawing },
+      { name: extension === 'dwg' ? 'txt.shx' : 'stroke.shx', mimeType: 'application/octet-stream', buffer: Buffer.from(testShxFont) }
+    ]);
+    const label = extension === 'dwg' ? 'FIELD NOTES / CAFE' : 'AA';
+    const outline = page.locator(`svg.cadv-canvas path[data-shx-text][aria-label="${label}"]`);
+    await expect(outline).toHaveAttribute('d', /^M.+L/);
+    await expect(page.locator('.wb-note.is-error')).toHaveCount(0);
+    expect(requests.filter(url => url.endsWith('.shx'))).toEqual([]);
+    if (extension === 'dwg') expect(requests.filter(url => url.includes('converter-cad.wasm'))).toHaveLength(1);
+    expect(errors).toEqual([]);
+  });
+}

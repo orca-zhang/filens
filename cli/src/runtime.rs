@@ -1,5 +1,5 @@
 //! WASI plumbing and capability dispatch only; no document parsers live here.
-use crate::workspace::Workspace;
+use crate::workspace::{Mode, Workspace};
 use crate::{ocr::Provider, pdf::Pdf};
 use anyhow::{Result, ensure};
 use serde_json::{Value, json};
@@ -8,18 +8,20 @@ use std::{
     path::{Path, PathBuf},
 };
 use wasmi::{
-    Caller, CompilationMode, Config, Engine, Instance, Linker, Module, Store, StoreLimits,
-    StoreLimitsBuilder,
+    Caller, CompilationMode, Config, Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder,
 };
 use wasmi_wasi::{WasiCtx, WasiCtxBuilder};
+use zeroize::{Zeroize, Zeroizing};
 
 pub struct State {
     pub wasi: WasiCtx,
     pub limits: StoreLimits,
     pub work: Workspace,
+    scratch: Option<Workspace>,
     pub ocr: Provider,
     pub pdf: Option<Pdf>,
     pub pdf_path: PathBuf,
+    sensitive: bool,
 }
 pub fn limits() -> StoreLimits {
     StoreLimitsBuilder::new()
@@ -50,12 +52,20 @@ pub fn read_wasm(path: &Path) -> Result<Vec<u8>> {
 }
 
 impl State {
-    fn path(&self, value: &Value) -> Result<String> {
-        let relative = value
-            .as_str()
-            .unwrap_or("")
-            .strip_prefix("/work/")
-            .ok_or_else(|| anyhow::anyhow!("capability path must be inside /work"))?;
+    fn path<'a>(&self, value: &'a Value) -> Result<(Workspace, &'a str)> {
+        let path = value.as_str().unwrap_or("");
+        let (mount, relative) = path
+            .strip_prefix('/')
+            .and_then(|p| p.split_once('/'))
+            .ok_or_else(|| anyhow::anyhow!("capability path must be inside /work or /scratch"))?;
+        let work = match mount {
+            "work" => &self.work,
+            "scratch" => self
+                .scratch
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("memory scratch is not mounted"))?,
+            _ => anyhow::bail!("capability path must be inside /work or /scratch"),
+        };
         ensure!(
             !relative.is_empty()
                 && relative != "."
@@ -63,35 +73,68 @@ impl State {
                 && !relative.contains(['/', '\\', '\0']),
             "capability paths must be flat"
         );
-        Ok(relative.to_owned())
+        Ok((work.clone(), relative))
+    }
+    fn close_pdf(&mut self) -> Result<()> {
+        if let Some(pdf) = &mut self.pdf {
+            if pdf.protected() {
+                self.pdf = None;
+                self.ocr.discard_worker();
+            } else if let Err(error) = pdf.close_document() {
+                self.pdf = None;
+                return Err(error);
+            }
+        }
+        Ok(())
     }
     fn call(&mut self, request: Value) -> Result<Value> {
         let operation = request["operation"].as_str().unwrap_or("").to_owned();
-        let path = if request.get("path").is_some() {
-            Some(self.path(&request["path"])?)
+        if operation == "pdf_close" {
+            self.close_pdf()?;
+            return Ok(json!({"ok":true}));
+        }
+        let (work, path) = if let Some(path) = request.get("path") {
+            let (work, relative) = self.path(path)?;
+            (work, Some(relative))
         } else {
-            None
+            (self.work.clone(), None)
         };
         if operation == "ocr" {
-            let bytes = self
-                .work
-                .read(path.ok_or_else(|| anyhow::anyhow!("OCR path required"))?)?;
+            let bytes = Zeroizing::new(
+                work.read(path.ok_or_else(|| anyhow::anyhow!("OCR path required"))?)?,
+            );
             return self.ocr.call(request, &bytes);
         }
         ensure!(
             ["pdf_open", "pdf_text", "pdf_layout", "pdf_render"].contains(&operation.as_str()),
             "unknown extraction capability"
         );
-        if self.pdf.is_none() {
-            self.pdf = Some(Pdf::new(&self.pdf_path)?);
+        if operation == "pdf_open" {
+            self.close_pdf()?;
+            if self.pdf.is_none() {
+                self.pdf = Some(Pdf::new(&self.pdf_path)?);
+            }
         }
-        self.pdf.as_mut().unwrap().call(
+        let pdf = self
+            .pdf
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("PDF is not open"))?;
+        ensure!(
+            operation != "pdf_render" || !pdf.protected() || work.mode() == Mode::Memory,
+            "protected PDF rendering requires memory scratch"
+        );
+        let result = pdf.call(
             &operation,
-            &self.work,
-            path.as_deref(),
+            &work,
+            path,
             request["page"].as_i64().unwrap_or(0) as i32,
             request["dpi"].as_i64().unwrap_or(0) as i32,
-        )
+        );
+        self.sensitive |= pdf.protected();
+        if operation == "pdf_open" && result.is_err() {
+            let _ = self.close_pdf();
+        }
+        result
     }
 }
 
@@ -157,8 +200,10 @@ impl Runtime {
             wasi: WasiCtxBuilder::new().build(),
             limits: limits(),
             work: work.clone(),
+            scratch: None,
             ocr,
             pdf: None,
+            sensitive: false,
             pdf_path: std::env::var_os("FILENS_PDFIUM_WASM")
                 .map(PathBuf::from)
                 .unwrap_or_else(|| bundle.join("pdfium.wasm")),
@@ -191,9 +236,11 @@ impl Runtime {
                 wasi: WasiCtxBuilder::new().build(),
                 limits: limits(),
                 work: work.clone(),
+                scratch: None,
                 ocr: parent.ocr.fork_disabled(),
                 pdf: None,
                 pdf_path: parent.pdf_path.clone(),
+                sensitive: false,
             }),
         })
     }
@@ -201,9 +248,25 @@ impl Runtime {
         self.run_with_directory(args, None)
     }
     pub fn run_with_directory(&mut self, args: &[String], input: Option<&Path>) -> Result<Value> {
+        self.run_with_mounts(args, input, None)
+    }
+    pub fn run_with_conversion_options(
+        &mut self,
+        args: &[String],
+        options: &Workspace,
+    ) -> Result<Value> {
+        self.run_with_mounts(args, None, Some(options))
+    }
+    fn run_with_mounts(
+        &mut self,
+        args: &[String],
+        input: Option<&Path>,
+        options: Option<&Workspace>,
+    ) -> Result<Value> {
         self.ensure_loaded()?;
         let engine = self.engine.as_ref().unwrap();
         let work = self.state.as_ref().unwrap().work.clone();
+        let scratch = work.memory_scratch();
         let mut builder = WasiCtxBuilder::new();
         builder.args(args)?.inherit_stderr();
         if let Some(root) = input {
@@ -214,10 +277,10 @@ impl Runtime {
         }
         let wasi = builder.build();
         wasi.push_preopened_dir(work.directory()?, "/work")?;
-        let mut state = self.state.take().unwrap();
-        state.wasi = wasi;
-        let mut store = Store::new(engine, state);
-        store.limiter(|s| &mut s.limits);
+        wasi.push_preopened_dir(scratch.directory()?, "/scratch")?;
+        if let Some(options) = options {
+            wasi.push_preopened_dir(options.directory()?, "/convert-options")?;
+        }
         let mut linker = Linker::<State>::new(engine);
         wasmi_wasi::add_to_linker(&mut linker, |s| &mut s.wasi)?;
         linker.func_wrap(
@@ -250,7 +313,7 @@ impl Runtime {
                         };
                         json!({"error":e.to_string(),"errorCode":code})
                     });
-                let Ok(bytes) = serde_json::to_vec(&result) else {
+                let Ok(bytes) = serde_json::to_vec(&result).map(Zeroizing::new) else {
                     return 0;
                 };
                 if bytes.len() > cap as usize
@@ -263,11 +326,18 @@ impl Runtime {
                 bytes.len() as i32
             },
         )?;
+        let mut state = self.state.take().unwrap();
+        state.wasi = wasi;
+        state.scratch = Some(scratch.clone());
+        let mut store = Store::new(engine, state);
+        store.limiter(|s| &mut s.limits);
         let mut status = 0;
-        let result = (|| -> Result<Instance> {
+        let mut instance_memory = None;
+        let result = (|| -> Result<()> {
             let instance = linker
                 .instantiate(&mut store, self.module.as_ref().unwrap())?
                 .start(&mut store)?;
+            instance_memory = instance.get_memory(&store, "memory");
             let start = instance.get_typed_func::<(), ()>(&store, "_start")?;
             if let Err(e) = start.call(&mut store, ()) {
                 match e.i32_exit_status() {
@@ -275,11 +345,31 @@ impl Runtime {
                     None => return Err(e.into()),
                 }
             }
-            Ok(instance)
+            Ok(())
         })();
-        self.state = Some(store.into_data());
+        if store.data().sensitive {
+            if let Some(memory) = instance_memory {
+                memory.data_mut(&mut store).zeroize();
+            }
+        }
+        let mut state = store.into_data();
+        // Old text modules do not close PDFs. A trap can also bypass guest
+        // cleanup, so release the document and WASI file handles here.
+        let _ = state.close_pdf();
+        state.wasi = WasiCtxBuilder::new().build();
+        state.scratch = None;
+        state.sensitive = false;
+        self.state = Some(state);
         result?;
-        let result = work.read_bounded("result.json", 128 << 20)?;
+        let result_work = if args
+            .windows(2)
+            .any(|p| p == ["--result", "/scratch/result.json"])
+        {
+            scratch
+        } else {
+            work
+        };
+        let result = Zeroizing::new(result_work.read_bounded("result.json", 128 << 20)?);
         let value: Value = serde_json::from_slice(&result)?;
         ensure!(
             status == 0 || value["ok"] != true,

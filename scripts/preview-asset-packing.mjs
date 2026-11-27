@@ -1,20 +1,34 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { runInNewContext } from 'node:vm';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { gunzipSync, gzipSync, brotliCompressSync } from 'node:zlib';
 import { transform } from 'esbuild';
 import { minify } from 'terser';
 import ts from 'typescript';
-import lzma from 'lzma';
 import { createPackedAssetReader, createGroupedPackedAssetReader } from '../packages/preview/src/packed-assets.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const decoderFile = path.join(root, 'packages/preview/vendor/lzma/decoder.wasm');
 const decoderSha256 = '2c899b6e3e5dee43d7326348f5a411e2097ef900272132e28ec97df3de91c3f1';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const encoderProfile = 'lzma-2.3.2-9-pb0';
+const require = createRequire(import.meta.url);
+let encoder;
+
+async function loadAssetEncoder() {
+  const file = require.resolve('lzma/src/lzma_worker.js');
+  const source = await readFile(file, 'utf8');
+  const bits = 'encoder._posStateBits = 2;', mask = 'encoder._posStateMask = 3;';
+  assert(source.includes(bits) && source.includes(mask), 'Pinned LZMA encoder preset changed.');
+  // These unaligned asset streams compress better with a single position context.
+  return runInNewContext(source.replace(bits, 'encoder._posStateBits = 0;')
+    .replace(mask, 'encoder._posStateMask = 0;'), { setImmediate }, { filename: file });
+}
 
 function crc32(bytes) {
   const table = new Uint32Array(256);
@@ -37,11 +51,12 @@ export async function packAssetGroups(assets, cacheDirectory = path.join(root, '
   for (const members of [assets.filter(asset => asset.kind !== 2 && !large(asset)),
     ...assets.filter(large).map(asset => [asset]), ...wasm.map(asset => [asset])].filter(group => group.length)) {
     const input = Buffer.concat(members.map(asset => asset.bytes)), checksum = crc32(input), key = sha(input);
-    const cache = path.join(cacheDirectory, `${key}-lzma-2.3.2-9.bin`);
+    const cache = path.join(cacheDirectory, `${key}-${encoderProfile}.bin`);
     let compressed;
     try { compressed = await readFile(cache); }
     catch (error) {
       if (error.code !== 'ENOENT') throw error;
+      const lzma = await (encoder ??= loadAssetEncoder());
       compressed = await new Promise((resolve, reject) => lzma.compress(input, 9,
         (result, failure) => failure ? reject(failure) : resolve(Buffer.from(result))));
       await mkdir(cacheDirectory, { recursive: true });
@@ -61,19 +76,44 @@ export function deferredPreviewWorkers() {
     name: 'filens-deferred-inline-workers', enforce: 'post', apply: 'build',
     transform(code, id) {
       if (!/[?&]worker(?:&|$)/.test(id) || !/[?&]inline(?:&|$)/.test(id)) return;
-      // Vite's inline wrapper eagerly creates the source string and Blob.
-      // Keep its URL fallback/revocation logic, moving setup into construction.
+      // Keep the source and Blob lazy. WebKit may load the worker after construction returns.
       const signature = 'export default function WorkerWrapper(options) {';
-      const offset = code.indexOf(signature);
-      assert(code.startsWith('const jsContent = ') && offset > 0,
+      const sourceEnd = code.indexOf('\n');
+      assert(code.startsWith('const jsContent = ') && sourceEnd > 0 && code.includes(signature)
+        && code.includes('new Worker(objURL, {') && code.includes('objURL && (self.URL || self.webkitURL).revokeObjectURL(objURL);'),
         'Vite inline worker wrapper changed; check deferred worker initialization.');
-      const start = offset + signature.length;
-      return { code: code.slice(offset, start) + '\n' + code.slice(0, offset) + code.slice(start), map: { mappings: '' } };
+      return {
+        code: `${signature}
+          ${code.slice(0, sourceEnd)}
+          let url;
+          const release = () => {
+            if (!url) return;
+            (self.URL || self.webkitURL).revokeObjectURL(url);
+            url = undefined;
+          };
+          try {
+            if (typeof self !== 'undefined' && self.Blob) {
+              url = (self.URL || self.webkitURL).createObjectURL(new Blob([jsContent], { type: 'text/javascript;charset=utf-8' }));
+            }
+            if (!url) throw new Error('Blob workers are unavailable.');
+            const worker = new Worker(url, { name: options?.name });
+            worker.addEventListener('message', release, { once: true });
+            worker.addEventListener('error', release, { once: true });
+            const terminate = worker.terminate.bind(worker);
+            worker.terminate = () => { release(); terminate(); };
+            return worker;
+          } catch {
+            release();
+            return new Worker('data:text/javascript;charset=utf-8,' + encodeURIComponent(jsContent), { name: options?.name });
+          }
+        }`,
+        map: { mappings: '' }
+      };
     }
   };
 }
 
-export async function packPreviewAssets(code, { cacheDirectory = path.join(root, 'node_modules/.cache/filens-assets'), threshold = 1024 } = {}) {
+export async function packPreviewAssets(code, { cacheDirectory = path.join(root, 'node_modules/.cache/filens-assets'), threshold = 256 } = {}) {
   const ast = ts.createSourceFile('filens.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   const assets = [], edits = [], byHash = new Map();
   const helper = '__filensPackedAsset';
@@ -146,7 +186,7 @@ export async function packPreviewAssets(code, { cacheDirectory = path.join(root,
   // Keep resolution lazy: ordinary documents also work from blob-based HTML.
   const sidecars = [];
   assert(!code.includes('__filensSidecarUrl'), 'Sidecar URL helper collides with runtime code.');
-  const body = minified.code.replace(/new URL\((['"])(?:\.\/)?(archive\/7zz\.wasm|assets\/archive-worker-[^'"]+\.js)\1,\s*import\.meta\.url\)\.href/g,
+  const body = minified.code.replace(/new URL\((['"])(?:\.\/)?(archive\/7zz\.wasm|assets\/archive-worker-[^'"]+\.js|xlsx\/pcre2\.wasm)\1,\s*import\.meta\.url\)\.href/g,
     (_match, _quote, file) => {
       const name = `__filensSidecarUrl${sidecars.length}`;
       sidecars.push(`const ${name}=()=>new URL(${JSON.stringify(`./${file}`)},import.meta.url).href;`);
@@ -156,7 +196,7 @@ export async function packPreviewAssets(code, { cacheDirectory = path.join(root,
   return {
     code: packed,
     report: {
-      format: 'lzma-alone-static-asset-groups-v2', sourceSha256: sha(code), outputSha256: sha(packed),
+      format: 'lzma-alone-static-asset-groups-v2', encoder: encoderProfile, sourceSha256: sha(code), outputSha256: sha(packed),
       decoder: { bytes: decoder.length, sha256: decoderSha256 },
       compressed: { bytes: compressed.length, sha256: sha(compressed) },
       groups: groups.map(group => ({ assets: group.assets,
@@ -201,7 +241,7 @@ export function packedPreviewAssets() {
       assert(brotli.length <= 4_000_000, `Merged preview Brotli ${brotli.length} exceeds 4 MB.`);
       assert.deepEqual(gunzipSync(gzip), bytes);
       packed.report.delivery = {
-        gzip: { bytes: gzip.length, sha256: sha(gzip), encoder: 'Zopfli 15 iterations' },
+        gzip: { bytes: gzip.length, sha256: sha(gzip), encoder: 'Zopfli 15 iterations, unrestricted block splitting' },
         brotli: { bytes: brotli.length, sha256: sha(brotli), encoder: 'Brotli quality 11' },
         limit: 4_000_000
       };

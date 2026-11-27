@@ -18,6 +18,8 @@ describe('font classification and similar substitutes', () => {
     ['Comic Sans MS', { style: 'handwriting', evidence: 'known' }],
     ['Papyrus', { style: 'decorative', evidence: 'known' }],
     ['微软雅黑', { serif: false, script: 'cjk-sc', evidence: 'known' }],
+    ['Noto Sans TC', { serif: false, script: 'cjk-tc', evidence: 'known' }],
+    ['Noto Serif JP', { serif: true, script: 'japanese', evidence: 'known' }],
     ['游ゴシック', { serif: false, script: 'japanese', evidence: 'known' }],
     ['Unknown Serif', { serif: true, evidence: 'name' }],
     ['Unknown', { evidence: 'unknown' }]
@@ -141,6 +143,17 @@ describe('font classification and similar substitutes', () => {
     expect(rankPreviewFontCandidates({ fontFamily: 'Brush Script' }, [{ fontFamily: 'Unknown', traits: { weight: 400 } }])).toEqual([]);
     expect(rankPreviewFontCandidates({ fontFamily: 'Wingdings' }, [{ fontFamily: 'Noto Sans Symbols' }])).toEqual([]);
     expect(rankPreviewFontCandidates({ fontFamily: 'Segoe UI Emoji' }, [{ fontFamily: 'Apple Color Emoji' }])).toHaveLength(1);
+  });
+
+  it('matches Emoji and math fonts only to their own declared categories', () => {
+    const candidates = ['Noto Color Emoji', 'STIX Two Math', 'Calibri'].map(fontFamily => ({ fontFamily }));
+    const matches = (fontFamily: string) => rankPreviewFontCandidates({ fontFamily }, candidates).map(match => match.candidate.fontFamily);
+    expect(matches('Segoe UI Emoji')).toEqual(['Noto Color Emoji']);
+    expect(matches('Cambria Math')).toEqual(['STIX Two Math']);
+    expect(matches('Missing Sans')).toEqual(['Calibri']);
+    expect(matches('Wingdings')).toEqual([]);
+    expect(getFontFallbackCandidates('Cambria Math')).toContain('STIX Two Math');
+    expect(classifyPreviewFont('Noto Emoji Bold')).toMatchObject({ script: 'emoji', weight: 700 });
   });
 
   it('uses ranked locally available candidates without exporting the local text sample', () => {

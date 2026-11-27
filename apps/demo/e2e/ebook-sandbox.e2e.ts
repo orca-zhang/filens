@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { build } from 'esbuild';
-import { createComicFixture, createStyledBookFixture } from '../../../packages/ebook/test/fixtures/books.mjs';
+import { createComicFixture, createNavigationBookFixture, createStyledBookFixture } from '../../../packages/ebook/test/fixtures/books.mjs';
 
 let runtime: string;
 let styles: string;
@@ -90,4 +90,17 @@ test('renders CBZ pages inside an opaque sandbox', async ({ page }) => {
     expect(size[0]! / size[1]!).toBeCloseTo(600 / 800);
     await sandbox.getByRole('button', { name: 'Page 2', exact: true }).click();
   }
+});
+
+test('keeps contents targets and reading themes usable in an opaque sandbox', async ({ page }) => {
+  const sandbox = await openSandbox(page, await createNavigationBookFixture());
+  const chapter = sandbox.frameLocator('.ebookv-frame');
+  await sandbox.getByText('Table of contents', { exact: true }).click();
+  await sandbox.getByRole('button', { name: 'Winter sky', exact: true }).click();
+  const target = chapter.locator('#p79');
+  await expect(target).toBeInViewport();
+  await sandbox.getByRole('combobox', { name: 'Reading theme' }).selectOption('dark');
+  await expect(chapter.locator('body')).toHaveCSS('background-color', 'rgb(24, 26, 30)');
+  await expect(target).toBeInViewport();
+  await expect(sandbox.locator('iframe.ebookv-frame')).toHaveAttribute('sandbox', 'allow-same-origin allow-popups');
 });

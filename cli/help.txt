@@ -23,6 +23,7 @@ filens — local document reading and conversion for agents
   filens similar-images ./photos --threshold 8 --json
   echo '{"input":"report.pdf","op":"understand"}' | filens
   filens convert report.doc --output report.docx --json
+  filens convert locked.docx unlocked.docx --ask-password
   filens convert data.csv result.xlsx
   filens convert photo.dng --to jpg
   filens preview report.pdf
@@ -42,7 +43,7 @@ Optional flags: --json, --format text|json|markdown|html|yaml|xml|csv|tsv,
 Workspace mode also accepts the JSON field "workspace". Memory never spills to disk.
 Conversion outputs still require write permission in either mode.
 Conversion flags: --output/-o PATH, --to/--target EXT, --from/--source EXT,
-                  --password VALUE, --locale VALUE, --force.
+                  --ask-password (hidden terminal input), --password VALUE, --locale VALUE, --force.
 Summary flags: --query TEXT, --summary-chars N (default 2000, max 20000),
                --summary-ratio R (default 0.3; >0 and <=1).
 Capacity defaults to short signatures and counts. Conversion lists use one

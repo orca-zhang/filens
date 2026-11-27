@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
 
-export async function createNumberFormatWorkbook({ date1904 = false, general = false, formulas = false, percentCode = '0.0%' } = {}) {
+export async function createNumberFormatWorkbook({
+  date1904 = false, general = false, formulas = false, percentCode = '0.0%', paletteColor = 'FF157A6E',
+} = {}) {
   const zip = new JSZip();
   zip.file('xl/workbook.xml', '<workbook>' + (date1904 ? '<workbookPr date1904="true"/>' : '')
     + '<sheets><sheet name="Formats" sheetId="1" r:id="sheet"/></sheets></workbook>');
@@ -12,15 +14,21 @@ export async function createNumberFormatWorkbook({ date1904 = false, general = f
     [166, '#,##0.00;[Red](#,##0.00);"—";"ID "@'],
     [167, '"unterminated'],
     [168, ';;;'],
-    [169, '[$€-407]#,##0.00']
+    [169, '[$€-407]#,##0.00'],
+    [170, '[$-40C]dddd d mmmm yyyy'],
+    [171, '[Magenta]yyyy"年"mmmm" "dddd[$-411] AM/PM h:mm'],
+    [172, '[Color 10][>=100]0.0;[Blue][<0](0.0);[Yellow]0.0;[Cyan]"ID "@'],
   ];
-  const ids = [0, 4, 164, 165, 46, 166, 167, 168, 49, 0, 7, 12, 11, 169, 250];
+  const ids = [0, 4, 164, 165, 46, 166, 167, 168, 49, 0, 7, 12, 11, 169, 250, 170, 171, 172, 40];
   zip.file('xl/styles.xml', '<styleSheet><numFmts>'
     + formats.map(([id, code]) => '<numFmt numFmtId="' + id + '" formatCode="'
       + code.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;') + '"/>').join('')
     + '</numFmts><cellStyleXfs><xf numFmtId="164"/></cellStyleXfs><cellXfs>'
     + ids.map((id, index) => index === 9 ? '<xf numFmtId="14" xfId="0" applyNumberFormat="0"/>' : '<xf numFmtId="' + id + '"/>').join('')
-    + '</cellXfs></styleSheet>');
+    + '</cellXfs><dxfs><dxf><numFmt numFmtId="173" formatCode="[Green]0.0%"/></dxf>'
+    + '<dxf><font><color rgb="FF663399"/></font><numFmt numFmtId="174" formatCode="[Red]0.00"/></dxf></dxfs>'
+    + '<colors><indexedColors>' + '<rgbColor rgb="FF000000"/>'.repeat(17) + '<rgbColor rgb="' + paletteColor + '"/>'
+    + '</indexedColors></colors></styleSheet>');
   const cells = ([column, style, value, type]) => '<c r="' + column + '" s="' + style + '"' + (type ? ' t="' + type + '"' : '')
     + '>' + (value === undefined ? '' : '<v>' + value + '</v>') + '</c>';
   const first = [
@@ -40,9 +48,17 @@ export async function createNumberFormatWorkbook({ date1904 = false, general = f
     + '<cols><col min="16" max="16" style="2" width="21"/></cols><sheetData>'
     + (general ? '<!-- force the general worksheet parser -->' : '')
     + '<row r="1">' + first + '</row>'
-    + '<row r="2" s="9" customFormat="1"><c r="A2"><v>0.35</v></c><c r="P2" s="0"><v>0.5</v></c>' + second + '</row>'
+    + '<row r="2" s="9" customFormat="1"><c r="A2"><v>0.35</v></c>' + second
+    + cells(['I2', 15, '2024-02-29T14:30:00', 'd']) + (formulas ? '<c r="J2" s="16"><f>I2+1</f></c>' : '')
+    + [['K2', 17, '100'], ['L2', 17, '-5'], ['M2', 17, '0']].map(cells).join('')
+    + (formulas ? '<c r="N2" s="17" t="inlineStr"><is><r><rPr><b/><color rgb="FFFF0000"/></rPr><t>Ab</t></r>'
+      + '<r><t>cd</t></r></is></c>' : '')
+    + cells(['O2', 18, '-2']) + '<c r="P2" s="0"><v>0.5</v></c></row>'
     + '<row r="500"><c r="A500" s="5"><v>-1234.5</v></c></row>'
     + '<row r="2000"><c r="BL2000" s="1">' + (formulas ? '<f>A1*2+B1*8</f>' : '<v>2470</v>') + '</c></row>'
-    + '</sheetData><mergeCells><mergeCell ref="A500:BL1700"/></mergeCells></worksheet>');
+    + '</sheetData><mergeCells><mergeCell ref="A500:BL1700"/></mergeCells>'
+    + '<conditionalFormatting sqref="B2"><cfRule type="cellIs" operator="greaterThan" priority="1" dxfId="0"><formula>0</formula></cfRule></conditionalFormatting>'
+    + '<conditionalFormatting sqref="M2"><cfRule type="cellIs" operator="equal" priority="2" dxfId="1"><formula>0</formula></cfRule></conditionalFormatting>'
+    + '</worksheet>');
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 }

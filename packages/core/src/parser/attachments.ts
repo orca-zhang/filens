@@ -1,15 +1,18 @@
-import { openZipArchive } from './zip';
+import { openZipArchive, type ZipEntry } from './zip';
 import { PREVIEW_CONTAINER_LIMITS, readPreviewContainerEntry } from '../preview/containers';
 import { inferExtensionFromName } from '../preview/formats';
 import type { PreviewAttachment, PreviewContainerContext, SourceDescriptor } from '../preview/types';
 
 /** Only embedded payloads are indexed. Images, styles and external links are
  * handled by the document renderer, and are never treated as attachments. */
-export async function readOfficeAttachments(bytes: Uint8Array, context: PreviewContainerContext, signal?: AbortSignal): Promise<PreviewAttachment[]> {
-  const zip = await openZipArchive(bytes, { signal, maxEntryBytes: PREVIEW_CONTAINER_LIMITS.maxEntryBytes });
+export async function readOfficeAttachments(source: Uint8Array | ReadonlyMap<string, ZipEntry>, context: PreviewContainerContext, signal?: AbortSignal,
+  referencedPart?: string): Promise<PreviewAttachment[]> {
+  const zip = ArrayBuffer.isView(source) ? await openZipArchive(source, { signal, maxEntryBytes: PREVIEW_CONTAINER_LIMITS.maxEntryBytes }) : source;
   signal?.throwIfAborted();
   if (zip.size > PREVIEW_CONTAINER_LIMITS.maxEntries) throw new Error('Document contains too many package entries.');
-  return [...zip.values()].filter(entry => !entry.directory && /^(word|xl|ppt)\/embeddings\/[^/]+$/i.test(entry.name)).map(entry => {
+  const entries = referencedPart ? [zip.get(referencedPart)] : [...zip.values()];
+  return entries.filter((entry): entry is ZipEntry => !!entry && !entry.directory &&
+    (!!referencedPart || /^(word|xl|ppt)\/embeddings\/[^/]+$/i.test(entry.name))).map(entry => {
     const readRaw: NonNullable<PreviewAttachment['readRaw']> = async readSignal => {
       signal?.throwIfAborted();
       const activeSignal = readSignal ?? signal;

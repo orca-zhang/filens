@@ -2,7 +2,7 @@
 // including its OCR child, must work with all filesystem writes denied.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,11 +13,12 @@ const binary = process.env.FILENS_AGENT_BINARY ?? path.join(root, 'dist', proces
 const work = await mkdtemp(path.join(os.tmpdir(), 'filens-workspace-test-'));
 const strict = process.platform === 'darwin';
 const policy = '(version 1)(allow default)(deny file-write*)(allow file-write* (literal "/dev/null"))';
+const pdfPolicy = '(version 1)(allow default)(deny file-write* (regex #"/filens-work-[^/]+/(pdf-page[.]png|pdf-unicode-recovered[.]pdf|image-[^/]+|result[.]json|search-corpus[.]json)$"))';
 const env = { ...process.env, TMPDIR: path.join(work, 'absent-tmp'), TMP: path.join(work, 'absent-tmp'), TEMP: path.join(work, 'absent-tmp'), FILENS_SEARCH_JOBS: '4' };
 const checks = [];
-function run(label, args, { expected = 0, extraEnv = {}, confined = strict, input } = {}) {
-  const result = spawnSync(confined ? '/usr/bin/sandbox-exec' : binary,
-    confined ? ['-p', policy, binary, ...args] : args,
+function run(label, args, { expected = 0, extraEnv = {}, confined = strict, sandbox = confined ? policy : null, input } = {}) {
+  const result = spawnSync(sandbox ? '/usr/bin/sandbox-exec' : binary,
+    sandbox ? ['-p', sandbox, binary, ...args] : args,
     { cwd: work, env: { ...env, ...extraEnv }, input, encoding: 'utf8', timeout: 120000, maxBuffer: 32 << 20 });
   assert.ifError(result.error);
   assert.equal(result.status, expected, `${label}: ${result.stderr}\n${result.stdout}`);
@@ -70,8 +71,8 @@ try {
   const diskTmp = path.join(work, 'disk-tmp');
   await mkdir(diskTmp);
   const diskEnv = { TMPDIR: diskTmp, TMP: diskTmp, TEMP: diskTmp };
-  const onDisk = (label, args, expected = 0) => {
-    const value = run(label, [...args, '--workspace', 'disk'], { confined: false, extraEnv: diskEnv, expected });
+  const onDisk = (label, args, expected = 0, sandbox = null) => {
+    const value = run(label, [...args, '--workspace', 'disk'], { sandbox, extraEnv: diskEnv, expected });
     return value;
   };
   const diskCapacity = onDisk('disk capacity', ['capacity', '--json']);
@@ -80,6 +81,32 @@ try {
   assert.equal(onDisk('disk document read', ['read', path.join(root, 'apps/demo/public/samples/filens-aurora-guide.docx'), '--ocr', 'never', '--json']).ok, true);
   assert.match(onDisk('disk scanned PDF OCR', ['read', path.join(fixtures, 'scan.pdf'), '--json']).content.text, /FILENS2026[\s\S]*BRIGHT2027/);
   assert.match(onDisk('disk nested archive OCR', ['read', `${archive}!/inner.zip!/scan.png`, '--json']).content.text, /FILENS2026/);
+  const protectedCorpus = path.join(work, 'protected-pdfs');
+  await mkdir(protectedCorpus);
+  const protectedFixtures = path.join(root, 'packages/converter-client/test/fixtures/password');
+  const ownerOnly = path.join(protectedCorpus, '01-permissions.pdf');
+  const locked = path.join(protectedCorpus, '02-locked.pdf');
+  await copyFile(path.join(protectedFixtures, 'permissions-only.pdf'), ownerOnly);
+  await copyFile(path.join(protectedFixtures, 'encrypted.pdf'), locked);
+  await copyFile(path.join(fixtures, 'scan.pdf'), path.join(protectedCorpus, '03-scan.pdf'));
+  const pdfSandbox = strict ? pdfPolicy : null;
+  const native = onDisk('permission-restricted PDF native text', ['read', ownerOnly, '--ocr', 'never', '--json'], 0, pdfSandbox);
+  assert.match(native.content.text, /Permission restricted PDF/);
+  const forced = onDisk('permission-restricted PDF OCR in memory', ['read', ownerOnly, '--ocr', 'always', '--layout', '--json'], 0, pdfSandbox);
+  assert.match(forced.content.text, /Permission restricted PDF/i);
+  assert.ok(forced.content.document.blocks.some(block => block.source === 'ocr' && block.page === 1));
+  assert.equal(onDisk('locked PDF still requires a password', ['read', locked, '--json'], 3, pdfSandbox).error.code, 'password_required');
+  const protectedSearch = onDisk('disk batch searches protected and ordinary PDFs', [
+    'search', protectedCorpus, '--query', 'FILENS2026', '--ocr', 'always', '--layout', '--json',
+  ], 3, pdfSandbox);
+  assert.equal(protectedSearch.search.matchedFiles, 1);
+  assert.match(protectedSearch.search.results[0].path, /03-scan[.]pdf$/);
+  assert.deepEqual(protectedSearch.search.scan.extractionErrors.map(item => item.error.code), ['password_required']);
+  const protectedHit = onDisk('permission-restricted PDF search evidence', [
+    'search', protectedCorpus, '--query', 'Permission restricted PDF', '--search-mode', 'exact', '--ocr', 'never', '--json',
+  ], 3, pdfSandbox);
+  assert.equal(protectedHit.search.matchedFiles, 1);
+  assert.match(protectedHit.search.results[0].path, /01-permissions[.]pdf$/);
   const diskSearch = onDisk('disk parallel workers', ['search', corpus, '--query', 'MEMORY2026', '--layout', '--json']);
   assert.equal(diskSearch.ok, true, JSON.stringify(diskSearch));
   assert.equal(diskSearch.search.matchedFiles, 40);

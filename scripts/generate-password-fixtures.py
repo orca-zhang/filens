@@ -11,6 +11,7 @@ from zipfile import ZipFile, ZIP_STORED
 import msoffcrypto
 import olefile
 from pypdf import PdfWriter
+from pypdf.constants import UserAccessPermissions
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,12 +34,26 @@ with olefile.OleFileIO(DEST / "tampered.docx", write_mode=True) as file:
     encrypted[-1] ^= 1
     file.write_stream("EncryptedPackage", bytes(encrypted))
 
-writer = PdfWriter()
-page = writer.add_blank_page(width=400, height=300)
-font = DictionaryObject({NameObject("/Type"): NameObject("/Font"), NameObject("/Subtype"): NameObject("/Type1"), NameObject("/BaseFont"): NameObject("/Helvetica")})
-page[NameObject("/Resources")] = DictionaryObject({NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})})
-stream = DecodedStreamObject()
-stream.set_data(b"BT /F1 20 Tf 40 200 Td (Password protected PDF) Tj ET")
-page[NameObject("/Contents")] = writer._add_object(stream)
+
+def create_pdf(text: bytes) -> PdfWriter:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=400, height=300)
+    font = DictionaryObject({NameObject("/Type"): NameObject("/Font"), NameObject("/Subtype"): NameObject("/Type1"), NameObject("/BaseFont"): NameObject("/Helvetica")})
+    page[NameObject("/Resources")] = DictionaryObject({NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})})
+    stream = DecodedStreamObject()
+    stream.set_data(b"BT /F1 20 Tf 40 200 Td (" + text + b") Tj ET")
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    return writer
+
+
+writer = create_pdf(b"Password protected PDF")
 writer.encrypt("test123", algorithm="AES-256")
 writer.write(DEST / "encrypted.pdf")
+
+writer = create_pdf(b"Permission restricted PDF")
+writer.pdf_header = "%PDF-1.6"
+attachment = BytesIO()
+create_pdf(b"Permission restricted attachment").write(attachment)
+writer.add_attachment("private-notes.pdf", attachment.getvalue())
+writer.encrypt("", "fixture-owner", permissions_flag=UserAccessPermissions.from_dict({"print": True}), algorithm="AES-128")
+writer.write(DEST / "permissions-only.pdf")

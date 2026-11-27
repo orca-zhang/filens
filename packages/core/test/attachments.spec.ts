@@ -6,7 +6,7 @@ import { createPreviewContainerContext, descendPreviewContainer, PREVIEW_CONTAIN
 import { PreviewPasswordError } from '../src/preview/password';
 import { createPreviewer, createDefaultPreviewRoutes, createTextPreviewDriver } from '../src/preview';
 import { createAttachmentPreviewSession } from '../src/preview/attachment-session';
-import type { PreviewDriver, PreviewerInstance, PreviewItemState } from '../src/preview';
+import type { PreviewDriver, PreviewerInstance, PreviewItemState, PreviewLoadContext } from '../src/preview';
 
 const encode = (text: string) => new TextEncoder().encode(text);
 
@@ -117,12 +117,12 @@ describe('document attachment navigation', () => {
 
   function setup() {
     const host = document.createElement('div'); document.body.append(host);
-    const load = vi.fn();
+    const load = vi.fn((_context: PreviewLoadContext) => {});
     const driver: PreviewDriver = {
       id: 'document', family: 'flow', supports: format => format === 'docx',
       createSession(documentHost) {
         const state: PreviewItemState = { loading: false, error: null, family: 'flow', warnings: [], capabilities: {} };
-        return { load: async () => { load(); documentHost.textContent = 'Parent document'; }, destroy: () => documentHost.replaceChildren(),
+        return { load: async (_source, context) => { load(context); documentHost.textContent = 'Parent document'; }, destroy: () => documentHost.replaceChildren(),
           getState: () => state, on: () => () => {} };
       }
     };
@@ -165,6 +165,17 @@ describe('document attachment navigation', () => {
     click(host, 'Back to document');
     expect(host.querySelector('.filens-attachment-panel')).toBeNull();
     expect(host.textContent).toContain('Parent document');
+  });
+
+  it('loads a protected document attachment as sensitive without its parent credential', async () => {
+    const { host, previewer, load } = setup();
+    const document = await office({ 'child.docx': await office({}) });
+    await previewer.preview(document, { name: 'parent.docx', password: 'parent credential' });
+    click(host, 'child.docx');
+    await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+    const descriptor = load.mock.calls[1][0].descriptor;
+    expect(descriptor).toMatchObject({ name: 'child.docx', sensitive: true });
+    expect(descriptor).not.toHaveProperty('password');
   });
 
   it('aborts a held attachment read on return and ignores a late payload', async () => {

@@ -11,6 +11,7 @@ import postscriptWasm from '../../../wasm/converter-core/dist/converter-postscri
 import graphicsWasm from '../../../wasm/converter-core/dist/converter-raster.wasm?url';
 import cadWasm from '../../../wasm/converter-core/dist/converter-cad.wasm?url';
 export { isArchiveVolumeName, selectArchiveVolumes } from '@filens/core/archive-volumes';
+export { createFileSetResourceResolver } from '@filens/core';
 
 export interface BrowserPreviewOptions extends PreviewOptions {
   src: PreviewSource | SourceDescriptor;
@@ -50,6 +51,7 @@ export function createPreview(element: Element | string, options: BrowserPreview
     find(query: string) { return preview.value?.find(query); },
     findNext(backward = false) { preview.value?.findNext(backward); },
     setWrap(wrap: boolean) { preview.value?.setWrap(wrap); },
+    refreshFonts() { preview.value?.refreshFonts(); },
     setScale(scale: number) { preview.value?.setScale(scale); },
     fullscreen() { return preview.value?.fullscreen(); },
     destroy() { app.unmount(); }

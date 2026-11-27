@@ -888,6 +888,13 @@
   color: #8a1f1f;
 }
 
+.pptxv-overlay.is-progress {
+  inset: 12px 12px auto auto;
+  z-index: 3;
+  padding: 4px 8px;
+  pointer-events: none;
+}
+
 .pptxv-tabs {
   display: flex;
   gap: 8px;

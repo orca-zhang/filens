@@ -1,0 +1,442 @@
+@import "../../../core/src/styles/rich-text.css";
+
+.pptxv-viewer {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: #e6e9ef;
+  overflow: hidden;
+}
+
+.pptxv-scroll-area {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  scroll-behavior: smooth;
+  scroll-padding: 12px;
+  scroll-snap-type: y proximity;
+}
+
+.pptxv-scroll-area--comment-location {
+  scroll-snap-type: none;
+}
+
+.pptxv-viewer--slide-panels {
+  flex-direction: column;
+}
+
+.pptxv-slide-panel {
+  flex: none;
+  min-width: 0;
+  border-top: 1px solid #c7cfdb;
+  background: #f8fafc;
+  color: #1f2937;
+  font: 14px/1.45 system-ui, sans-serif;
+}
+
+.pptxv-animation-controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-top: 1px solid #c7cfdb;
+  padding: 6px 12px;
+  background: #f8fafc;
+  color: #1f2937;
+  font: 14px/1.45 system-ui, sans-serif;
+}
+
+.pptxv-animation-controls[hidden] {
+  display: none;
+}
+
+.pptxv-slide-panel > summary {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.pptxv-slide-panel-body {
+  box-sizing: border-box;
+  block-size: clamp(5rem, 22vh, 11rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px 10px;
+  overflow-wrap: anywhere;
+}
+
+.pptxv-speaker-notes-text,
+.pptxv-comment-text {
+  white-space: pre-wrap;
+  unicode-bidi: plaintext;
+}
+
+.pptxv-slide-panel > summary:focus-visible,
+.pptxv-slide-panel-body:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.pptxv-comment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pptxv-comment + .pptxv-comment {
+  border-top: 1px solid #dbe2eb;
+  margin-block-start: 8px;
+  padding-block-start: 8px;
+}
+
+.pptxv-comment > header,
+.pptxv-comment-attribution {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin-block-end: 2px;
+}
+
+.pptxv-comment-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 4px 8px;
+  margin-block: 4px;
+}
+
+.pptxv-comment-detail > summary {
+  padding-inline: 4px;
+  background: #e8edf5;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pptxv-comment-detail > .pptxv-comment-list {
+  padding-inline: 6px;
+}
+
+.pptxv-comment-history li {
+  margin-block: 4px;
+}
+
+.pptxv-comment-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 8px;
+  margin-block: 4px;
+}
+
+.pptxv-comment-task > dd {
+  margin: 0;
+}
+
+.pptxv-comment time {
+  font-size: 12px;
+  color: #475569;
+}
+
+.pptxv-comment-status {
+  color: #334155;
+  background: #e2e8f0;
+  border-radius: 4px;
+  padding-inline: 5px;
+  font-size: 12px;
+}
+
+.pptxv-comment-locate,
+.pptxv-animation-controls button {
+  margin-block-start: 4px;
+  border: 1px solid #93b4e5;
+  border-radius: 4px;
+  padding: 2px 8px;
+  background: #fff;
+  color: #1d4ed8;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pptxv-animation-controls button {
+  margin: 0;
+}
+
+.pptxv-comment-locate:hover,
+.pptxv-comment-locate[aria-pressed="true"] {
+  background: #dbeafe;
+}
+
+.pptxv-comment-locate + .pptxv-comment-locate {
+  margin-inline-start: 0.35em;
+}
+
+.pptxv-comment-locate:focus-visible,
+.pptxv-animation-controls button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.pptxv-comment-source {
+  box-sizing: border-box;
+  width: min(60rem, calc(100% - 1rem));
+  max-height: calc(100% - 1rem);
+  padding: 1rem;
+  border: 1px solid #c7cfdb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1f2937;
+  font: 14px/1.45 system-ui, sans-serif;
+}
+
+.pptxv-comment-source::backdrop {
+  background: #0f172a99;
+}
+
+.pptxv-comment-source .pptxv-slide-stage {
+  width: min(100%, var(--slide-width), calc(max(1px, 100dvh - 7rem) * var(--slide-ratio)));
+  margin: 1rem auto 0;
+}
+
+.pptxv-comment-replies {
+  border-inline-start: 2px solid #c7cfdb;
+  padding-inline-start: 12px;
+  margin-block-start: 8px;
+}
+
+.pptxv-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  color: #395170;
+  font: 600 15px/1.4 system-ui, sans-serif;
+}
+
+.pptxv-loading--error {
+  color: #8a1f1f;
+}
+
+.pptxv-slide-shell {
+  position: relative;
+  contain: layout style;
+  margin: 0 auto 18px;
+  scroll-snap-align: start;
+}
+
+.pptxv-slide-stage {
+  position: relative;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.pptxv-slide-transition {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pptxv-slide {
+  position: relative;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
+
+.pptxv-comment-highlight {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pptxv-comment-highlight > span {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #b45309;
+  box-shadow: inset 0 0 0 1px #fff;
+}
+
+.pptxv-comment-highlight[data-kind="text"] > span {
+  border: 0;
+  min-width: 2px;
+  background: #fbbf2466;
+  box-shadow: inset 0 -2px #b45309;
+}
+
+.pptxv-comment-highlight[data-kind="point"] > span {
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fbbf24;
+}
+
+@media (forced-colors: active) {
+  .pptxv-comment-highlight[data-kind="text"] > span {
+    border-bottom: 2px solid Highlight;
+  }
+}
+
+.pptxv-slide--thumbnail {
+  box-shadow: none;
+}
+
+.pptxv-item {
+  box-sizing: border-box;
+}
+
+.pptxv-item--table,
+.pptxv-item--chart,
+.pptxv-item--unsupported {
+  overflow: hidden;
+}
+
+.pptxv-item--shape {
+  overflow: visible;
+}
+
+.pptxv-item--media {
+  overflow: visible;
+}
+
+.pptxv-shape-svg {
+  display: block;
+  overflow: visible;
+}
+
+.pptxv-image {
+  display: block;
+  user-select: none;
+}
+
+.pptxv-item--ole {
+  overflow: hidden;
+}
+
+.pptxv-ole-label:not([hidden]) {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: 8px;
+  border: 1px solid #9cacc2;
+  background: #f4f7fb;
+  color: #1f2937;
+  overflow-wrap: anywhere;
+  text-align: center;
+  font: 600 14px/1.3 system-ui, sans-serif;
+}
+
+.pptxv-ole-open {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pptxv-ole-open > span {
+  visibility: hidden;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #1d4ed8;
+  color: white;
+  font: 600 11px/1.2 system-ui, sans-serif;
+}
+
+.pptxv-ole-open:hover > span,
+.pptxv-ole-open:focus-visible > span,
+.pptxv-ole-label:not([hidden]) ~ .pptxv-ole-open > span {
+  visibility: visible;
+}
+
+.pptxv-ole-open:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: -3px;
+}
+
+.pptxv-media-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.pptxv-media-poster-frame {
+  position: absolute;
+}
+
+.pptxv-media-poster,
+.pptxv-media-player {
+  display: block;
+}
+
+.pptxv-media-poster {
+  user-select: none;
+  pointer-events: none;
+}
+
+.pptxv-media-player--video {
+  background: transparent;
+}
+
+.pptxv-media-player--audio {
+  min-width: 220px;
+}
+
+.pptxv-table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: transparent;
+}
+
+.pptxv-table-cell {
+  border: 0 solid transparent;
+  vertical-align: top;
+  padding: 0;
+}
+
+.pptxv-chart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Aptos, Calibri, "Segoe UI", sans-serif;
+  fill: #595959;
+  font-weight: 400;
+}
+
+.pptxv-chart-gridline {
+  stroke: #bfbfbf;
+  stroke-width: 1;
+}
+
+.pptxv-chart-gridline--minor {
+  stroke: #dedede;
+  stroke-width: 0.8;
+}
+
+.pptxv-chart-axis {
+  stroke: #000000;
+  stroke-width: 1.25;
+}
+
+.pptxv-item--unsupported {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(57, 81, 112, 0.35);
+  background: rgba(255, 255, 255, 0.72);
+  color: #395170;
+  font: 600 12px/1.3 system-ui, sans-serif;
+}

@@ -65,6 +65,7 @@
     window.addEventListener('unhandledrejection', function (event) { window.filensPreviewError(event.reason); });
   </script>
   <!--FILENS_SOURCE-->
+  <!--FILENS_ARCHIVE_ENGINE-->
   <template id="filens-runtime"><!--FILENS_RUNTIME--></template>
   <script type="module">
     async function checkBrowser() {
@@ -91,6 +92,14 @@
       }
     }
 
+    function decodeSourceChunk(encoded) {
+      if (typeof Uint8Array.fromBase64 === 'function') return Uint8Array.fromBase64(encoded);
+      const binary = atob(encoded);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+      return bytes;
+    }
+
     try {
       await checkBrowser();
       const sourceElement = document.getElementById('filens-source');
@@ -99,22 +108,41 @@
       document.getElementById('name').textContent = source.name;
       document.title = source.name + ' · FiLens';
       const parts = [];
-      // Decode in chunks so a large file does not also need one large binary string.
-      for (let start = 0; start < source.data.length; start += 65536) {
-        const binary = atob(source.data.slice(start, start + 65536));
-        parts.push(Uint8Array.from(binary, character => character.charCodeAt(0)));
+      if (source.data !== undefined) parts.push(decodeSourceChunk(source.data));
+      else for (const chunk of document.querySelectorAll('.filens-source-chunk')) {
+        // Snapshot each decoded block once so File can reuse the Blob parts.
+        parts.push(new Blob([decodeSourceChunk(chunk.textContent)]));
+        chunk.textContent = '';
+        chunk.remove();
       }
-      source.data = '';
       const file = new File(parts, source.name);
       parts.length = 0;
+      if (source.size !== undefined && source.size !== file.size) throw new Error('Embedded file data is incomplete.');
       const runtimeElement = document.getElementById('filens-runtime');
       const runtimeUrl = URL.createObjectURL(new Blob([runtimeElement.content.textContent], { type: 'text/javascript' }));
       runtimeElement.remove();
       let createPreview;
       try { ({ createPreview } = await import(runtimeUrl)); }
       finally { URL.revokeObjectURL(runtimeUrl); }
+      const archiveWorker = document.getElementById('filens-archive-worker');
+      const archiveWasm = document.getElementById('filens-archive-wasm');
+      let archiveAssets;
+      const archiveEngine = archiveWorker && archiveWasm ? () => {
+        if (!archiveAssets) {
+          // Data URLs remain usable by workers on file: pages with opaque origins.
+          archiveAssets = {
+            workerUrl: 'data:text/javascript;base64,' + archiveWorker.textContent,
+            wasmUrl: 'data:application/wasm;base64,' + archiveWasm.textContent
+          };
+          for (const element of [archiveWorker, archiveWasm]) {
+            element.textContent = '';
+            element.remove();
+          }
+        }
+        return archiveAssets;
+      } : undefined;
       createPreview('#preview', {
-        src: file, name: file.name,
+        src: file, name: file.name, archiveEngine,
         // This is a filename, so literal #/? characters are not URL delimiters.
         extension: file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.') + 1) : undefined,
         onRendered: () => {

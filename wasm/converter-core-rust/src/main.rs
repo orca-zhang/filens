@@ -9,6 +9,7 @@ use std::io::{Read, Write};
 use std::path::Path;
 use std::process;
 use std::time::Instant;
+use zeroize::Zeroizing;
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipWriter};
 #[cfg(any(test, feature = "text-extraction"))]
@@ -77,7 +78,7 @@ struct Request {
     source: String,
     target: String,
     options: String,
-    password: String,
+    password: Zeroizing<String>,
     result: String,
     options_json: serde_json::Value,
 }
@@ -527,7 +528,7 @@ fn converter_main() {
         }
     } else if let Err(error) = validate_input(&request, input_size) {
         failure(&request, error.code, error.message, input_size, None)
-    } else if let Some(conversion) = office::convert_encrypted(&request) {
+    } else if let Some(conversion) = office::convert_encrypted(&mut request) {
         let warning = if is_openxml_source(&request.source) {
             OPENXML_WARNING
         } else if is_word_binary_source(&request.source) {
@@ -665,7 +666,9 @@ fn converter_main() {
     };
 
     let ok = result.ok;
-    if let Err(error) = write_result(&request.result, result, started.elapsed().as_millis()) {
+    let written = write_result(&request.result, result, started.elapsed().as_millis());
+    drop(request);
+    if let Err(error) = written {
         eprintln!("{error}");
         process::exit(1);
     }
@@ -726,16 +729,16 @@ fn parse_request(request: &mut Request) -> Result<(), String> {
         }
     }
     if !request.options.is_empty() {
-        match fs::read_to_string(&request.options) {
+        match fs::read_to_string(&request.options).map(Zeroizing::new) {
             Ok(text) if !text.trim().is_empty() => {
-                let options = serde_json::from_str::<serde_json::Value>(&text)
+                let mut options = serde_json::from_str::<serde_json::Value>(&text)
                     .map_err(|error| format!("parse options: {error}"))?;
-                request.options_json = options.clone();
-                request.password = options
-                    .get("password")
-                    .and_then(serde_json::Value::as_str)
-                    .unwrap_or_default()
-                    .to_string();
+                if let Some(serde_json::Value::String(secret)) =
+                    options.as_object_mut().and_then(|map| map.remove("password"))
+                {
+                    request.password = Zeroizing::new(secret);
+                }
+                request.options_json = options;
             }
             Ok(_) => {}
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}

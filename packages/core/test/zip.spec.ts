@@ -30,7 +30,19 @@ describe('Shared ZIP reader', () => {
     const zip = new JSZip();
     zip.file('large.bin', data);
     const archive = await openZipArchive(await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' }));
-    expect(await archive.get('large.bin')?.bytes()).toEqual(data);
+    expect(Buffer.compare(await archive.get('large.bin')!.bytes(), data)).toBe(0);
+  });
+
+  it.each(['archive', 'entry'])('cancels a streamed DEFLATE read through the %s signal', async owner => {
+    const zip = new JSZip().file('large.bin', new Uint8Array(400_000));
+    const bytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const archive = new AbortController(), read = new AbortController();
+    const entry = (await openZipArchive(bytes, { signal: archive.signal })).get('large.bin')!;
+    const chunks = entry.chunks!(read.signal)![Symbol.asyncIterator]();
+    expect((await chunks.next()).value.byteLength).toBeLessThan(400_000);
+    (owner === 'archive' ? archive : read).abort();
+    await expect(chunks.next()).rejects.toMatchObject({ name: 'AbortError' });
+    if (owner === 'entry') await expect(entry.bytes()).resolves.toHaveLength(400_000);
   });
 
   it('lists without inflating corrupt content and fails when that entry is opened', async () => {
@@ -129,5 +141,8 @@ describe('Shared ZIP reader', () => {
     view.setUint32(directory + 24, size, true);
     const entry = (await openZipArchive(bytes)).get('large.bin')!;
     await expect(entry.bytes()).rejects.toThrow('Invalid ZIP entry size');
+    await expect((async () => {
+      for await (const _chunk of entry.chunks!()!) { /* Consume to validate the declared length. */ }
+    })()).rejects.toThrow('Invalid ZIP entry size');
   });
 });

@@ -5,10 +5,13 @@ import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { minify } from 'terser';
 import { sharedCompression } from '../../scripts/shared-compression';
+import { docxPreviewZip } from '../../scripts/docx-preview-zip';
 import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 import { optionalEngineChunk } from '../../scripts/optional-engine-chunks';
 import { deferredPreviewWorkers, packedPreviewAssets } from '../../scripts/preview-asset-packing.mjs';
+import { isPdfWorker, readPdfWorker } from '../../scripts/pdf-worker-asset';
+import { xlsxRegexAsset } from '../../scripts/xlsx-regex-asset';
 
 const root = path.resolve(__dirname, '../..');
 const single = process.env.FILENS_PREVIEW_BUILD === 'all-in-one';
@@ -17,7 +20,7 @@ const mobile = process.env.FILENS_PREVIEW_BUILD === 'mobile';
 // Keep CSS separate for host-owned lifetime and use Blob workers in that case.
 const embeddedHost = process.env.FILENS_PREVIEW_BUILD === 'embedded';
 const packages = ['archive', 'cad', 'core', 'converter-client', 'design', 'diagram', 'docx',
-  'ebook', 'iwork', 'media', 'mindmap', 'model3d', 'office', 'panorama', 'pdf', 'text', 'vue', 'xlsx'];
+  'ebook', 'iwork', 'media', 'mindmap', 'model3d', 'office', 'panorama', 'pdf', 'pptx', 'text', 'vue', 'xlsx'];
 const alias = packages.flatMap(directory => {
   const name = directory === 'ebook' ? 'books' : directory;
   return [
@@ -25,20 +28,30 @@ const alias = packages.flatMap(directory => {
     ...(name === 'xlsx' ? [{ find: '@filens/xlsx/table', replacement: path.join(root, 'packages/xlsx/src/table.ts') }] : []),
     ...(name === 'media' ? [{ find: '@filens/media/codecs', replacement: path.join(root, 'packages/media/src/codec-preview-driver.ts') }] : []),
     ...(name === 'core' ? [{ find: '@filens/core/preview-runtime', replacement: path.join(root, 'packages/core/src/preview-runtime.ts') }] : []),
+    ...(name === 'core' ? [{ find: '@filens/core/presentation-support', replacement: path.join(root, 'packages/core/src/presentation-support.ts') }] : []),
+    ...(name === 'core' ? [{ find: '@filens/core/rendering', replacement: path.join(root, 'packages/core/src/rendering.ts') }] : []),
     ...(name === 'core' ? [{ find: '@filens/core/zip', replacement: path.join(root, 'packages/core/src/zip.ts') }] : []),
     ...(name === 'core' ? [{ find: '@filens/core/archive-volumes', replacement: path.join(root, 'packages/core/src/archive-volumes.ts') }] : []),
-    ...(name !== 'core' && name !== 'converter-client' && name !== 'vue' ? [{ find: `@filens/${name}/routes`, replacement: path.join(root, `packages/${directory}/src/routes.ts`) }] : []),
+    ...(!['core', 'converter-client', 'pptx', 'vue'].includes(name) ? [{ find: `@filens/${name}/routes`, replacement: path.join(root, `packages/${directory}/src/routes.ts`) }] : []),
     { find: `@filens/${name}`, replacement: path.join(root, `packages/${directory}/src/index.ts`) }
   ];
 });
 alias.push({ find: 'filens-step', replacement: path.join(root, 'packages/step/src/index.ts') });
 
+async function minifyWorker(code: string, module: boolean) {
+  return (await minify(code, {
+    module, ecma: 2020, compress: { passes: 3 }, mangle: true,
+    format: { comments: /@license|@licstart|@preserve|^!|pdfjsVersion/ }
+  })).code!;
+}
+
 function embeddedAssets() {
   return {
     name: 'filens-preview-assets', enforce: 'pre' as const,
     async load(id: string) {
-      if (!id.endsWith('?url')) return;
-      const file = path.normalize(id.slice(0, -4));
+      const query = id.endsWith('/metafile.wasm?url&inline') ? '?url&inline' : '?url';
+      if (!id.endsWith(query)) return;
+      const file = path.normalize(id.slice(0, -query.length));
       if (!/\.(wasm|mjs)$/.test(file)) return;
       // Offline mobile bundles and single-file builds share one complete core
       // to avoid shipping duplicate WASI/CFB and conversion code.
@@ -50,7 +63,7 @@ function embeddedAssets() {
         ? path.join(converterDir, 'converter-core-full.wasm') : file;
       if (mobile && file === path.join(converterDir, 'converter-core.wasm')) asset = path.join(converterDir, 'converter-core-mobile.wasm');
       if (mobile && file === path.join(root, 'wasm/converter-image/dist/converter-image.wasm')) asset = path.join(root, 'wasm/converter-image/dist/converter-image-mobile.wasm');
-      let bytes = await readFile(asset);
+      let bytes = isPdfWorker(asset) ? await readPdfWorker(!single && !mobile) : await readFile(asset);
       if (mobile && file.endsWith(path.join('vendor', 'libheif', 'libheif.wasm'))) {
         const { default: binaryen } = await import('binaryen');
         const api = await readFile(path.join(root, 'packages/converter-client/src/heif-decoder.ts'), 'utf8');
@@ -70,9 +83,7 @@ function embeddedAssets() {
           bytes = Buffer.from(module.emitBinary());
         } finally { module.dispose(); }
       }
-      if (mobile && file.endsWith('.mjs')) bytes = Buffer.from((await minify(bytes.toString(), {
-        module: true, ecma: 2020, compress: { passes: 3 }, mangle: true, format: { comments: /@license|@preserve|^!/ }
-      })).code!);
+      if ((single || mobile) && file.endsWith('.mjs')) bytes = Buffer.from(await minifyWorker(bytes.toString(), true));
       if (single) {
         const mime = file.endsWith('.wasm') ? 'application/wasm' : 'text/javascript';
         // Compress before base64 to avoid its large transfer and parse overhead.
@@ -97,6 +108,8 @@ function embeddedAssets() {
     },
     async generateBundle() {
       const notices = ['LICENSE', 'packages/step/vendor/THIRD-PARTY-NOTICES.txt', 'packages/archive/THIRD-PARTY-NOTICES.txt',
+        'packages/pptx/vendor/libeot/NOTICE.txt', 'packages/xlsx/vendor/pcre2/NOTICE.txt', 'packages/xlsx/vendor/pcre2/LICENCE.md',
+        'packages/core/vendor/metafile/NOTICE.txt',
         'wasm/converter-core/THIRD-PARTY-NOTICES.txt',
         'wasm/converter-image/THIRD-PARTY-NOTICES.txt', 'packages/media/src/engine-snapshot/MP4Box-LICENSE.txt',
         'packages/converter-client/vendor/libheif/NOTICE.txt', 'packages/converter-client/vendor/libheif/COPYING.libheif',
@@ -156,15 +169,49 @@ function minifiedRuntime() {
   };
 }
 
+function packedLocaleDictionaries() {
+  const directory = path.join(root, 'packages/vue/src/locales');
+  const id = 'virtual:filens-preview-locale-dictionary';
+  let english: Promise<string[]> | undefined;
+  const keys = () => english ??= readFile(path.join(directory, 'en_US.json'), 'utf8').then(text => Object.keys(JSON.parse(text)));
+  return {
+    name: 'filens-packed-locale-dictionaries', enforce: 'post' as const, apply: 'build' as const,
+    resolveId(source: string) { if (source === id) return `\0${id}`; },
+    async load(source: string) {
+      if (source === `\0${id}`) return `const keys=${JSON.stringify(await keys())};
+        export default values => Object.fromEntries(keys.map((key, index) => [key, values[index]]));`;
+    },
+    async transform(_code: string, source: string) {
+      if (!source.endsWith('.json') || path.dirname(path.resolve(source)) !== directory) return;
+      const dictionary = JSON.parse(await readFile(source, 'utf8'));
+      const expected = await keys();
+      const actual = Object.keys(dictionary);
+      const sharedKeys = actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+      const data = JSON.stringify(JSON.stringify(sharedKeys ? Object.values(dictionary) : dictionary));
+      // Keep locale data as strings for lossless compression by the all-in-one asset packer.
+      const code = sharedKeys
+        ? `import dictionary from ${JSON.stringify(id)}; export default dictionary(JSON.parse(${data}));`
+        : `export default JSON.parse(${data});`;
+      return { code, map: null };
+    }
+  };
+}
+
 export default defineConfig({
   base: './',
-  worker: { plugins: () => [archiveEngineAssets(), ...(mobile ? [{
-    name: 'filens-mobile-worker-minify',
-    async renderChunk(code: string) { return { code: (await minify(code, {
-      module: false, ecma: 2020, compress: { passes: 3 }, mangle: true, format: { comments: /@license|@preserve|^!/ }
-    })).code!, map: null }; }
+  worker: { plugins: () => [archiveEngineAssets(), ...(single || mobile ? [{
+    name: 'filens-preview-worker-minify',
+    renderChunk: {
+      // Embedded workers compress better with LZMA when Terser runs last.
+      order: single ? 'post' as const : null,
+      async handler(code: string, chunk: { facadeModuleId: string | null }) {
+        if (single && chunk.facadeModuleId?.replaceAll('\\', '/').endsWith('/archive/src/sevenzip/archive-worker.ts')) return;
+        return { code: await minifyWorker(code, false), map: null };
+      }
+    }
   }] : [])], rollupOptions: { output: { inlineDynamicImports: true } } },
-  plugins: [archiveEngineAssets(), sharedCompression(), xmlParserOnly(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(), ...(single ? [deferredPreviewWorkers(), packedPreviewAssets()] : [])],
+  plugins: [archiveEngineAssets(), sharedCompression(), docxPreviewZip(), xmlParserOnly(), xlsxRegexAsset(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(),
+    ...(single ? [packedLocaleDictionaries(), deferredPreviewWorkers(), packedPreviewAssets()] : [])],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
   build: {

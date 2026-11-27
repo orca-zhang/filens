@@ -4,7 +4,7 @@ use msoffice_crypto::{Family, classify};
 #[cfg(feature = "office-crypto")]
 use msoffice_crypto::{Error, decrypt_binary_office, decrypt_ooxml};
 
-pub(super) fn convert_encrypted(request: &Request) -> Option<Result<(), ConvertError>> {
+pub(super) fn convert_encrypted(request: &mut Request) -> Option<Result<(), ConvertError>> {
     decrypt(request).map(|result| {
         let (decrypted, envelope) = result?;
         if envelope {
@@ -23,7 +23,8 @@ pub(super) fn convert_encrypted(request: &Request) -> Option<Result<(), ConvertE
     })
 }
 
-fn decrypt(request: &Request) -> Option<Result<(Vec<u8>, bool), ConvertError>> {
+fn decrypt(request: &mut Request) -> Option<Result<(Zeroizing<Vec<u8>>, bool), ConvertError>> {
+    let password = std::mem::take(&mut request.password);
     if !(is_openxml_source(&request.source)
         || is_word_binary_source(&request.source)
         || is_biff_source(&request.source)
@@ -67,7 +68,7 @@ fn decrypt(request: &Request) -> Option<Result<(Vec<u8>, bool), ConvertError>> {
                 message: "This document's encryption method is not supported.".into(),
             });
         }
-        if request.password.is_empty() {
+        if password.is_empty() {
             return Err(ConvertError {
                 code: "password_required",
                 message: "This document requires a password.".into(),
@@ -117,10 +118,11 @@ fn decrypt(request: &Request) -> Option<Result<(Vec<u8>, bool), ConvertError>> {
         #[cfg(feature = "office-crypto")]
         {
             let decrypted = if envelope {
-                decrypt_ooxml(&input, &request.password)
+                decrypt_ooxml(&input, &password)
             } else {
-                decrypt_binary_office(&input, &request.password)
+                decrypt_binary_office(&input, &password)
             }
+            .map(Zeroizing::new)
             .map_err(map_error)?;
             if decrypted.len() as u64 > MAX_PACKAGE_BYTES {
                 return Err(parse_error(
@@ -165,12 +167,12 @@ pub(super) fn decrypt_main() {
     let input_size = fs::metadata(&request.input).map_or(0, |metadata| metadata.len());
     let converted = match parsed {
         Err(message) => Err(io_error(message)),
-        Ok(()) => decrypt(&request)
+        Ok(()) => decrypt(&mut request)
             .unwrap_or_else(|| Err(ConvertError {
                 code: "unsupported_format",
                 message: "The Office decryption module requires an encrypted Office document.".into(),
             }))
-            .and_then(|(bytes, _)| fs::write(&request.output, bytes)
+            .and_then(|(bytes, _)| fs::write(&request.output, bytes.as_slice())
                 .map_err(|_| io_error("Could not write decrypted document.".into()))),
     };
     let result = match converted {
@@ -178,7 +180,9 @@ pub(super) fn decrypt_main() {
         Err(error) => failure(&request, error.code, error.message, input_size, Some("office-encryption")),
     };
     let ok = result.ok;
-    if let Err(error) = write_result(&request.result, result, started.elapsed().as_millis()) {
+    let written = write_result(&request.result, result, started.elapsed().as_millis());
+    drop(request);
+    if let Err(error) = written {
         eprintln!("{error}");
         process::exit(1);
     }

@@ -3,11 +3,14 @@ import type {
   ParsedPresentation,
   SlideItem,
   SlideModel,
+  TableCell,
   TableItem,
   TextParagraph,
   TextRun,
   ViewerOptions as CoreViewerOptions
 } from '@filens/core';
+import type { NumbersBlankCellStyles } from './table-paint';
+import type { TableStrokeEdges } from './table-strokes';
 
 export type IworkType = 'key' | 'pages' | 'numbers';
 export type IworkSource = string | ArrayBuffer | Uint8Array | Blob | File;
@@ -15,15 +18,14 @@ export type IworkTypeHint = IworkType | 'auto';
 export type IworkFitMode = CoreViewerOptions['fit'] | 'height';
 export type IworkViewerEventName = keyof IworkViewerEventMap;
 
-export interface LoadIworkOptions {
-  hint?: IworkTypeHint;
-  signal?: AbortSignal;
+export interface LoadIworkOptions extends DetectIworkTypeOptions {
   sourceName?: string;
 }
 
 export interface DetectIworkTypeOptions {
   hint?: IworkTypeHint;
   signal?: AbortSignal;
+  password?: string;
 }
 
 export interface IworkArchiveMessageInfo {
@@ -101,9 +103,13 @@ export interface IworkLine {
   item: SlideItem;
 }
 
+export interface IworkTableCell extends TableCell {
+  textFrame: TableCell['textFrame'] & { accounting?: true };
+}
+
 export interface IworkTable {
   id: string;
-  item: TableItem;
+  item: TableItem & { cells: IworkTableCell[]; blankCellStyles?: NumbersBlankCellStyles; strokeEdges?: TableStrokeEdges };
 }
 
 export interface IworkCanvasModel {
@@ -112,6 +118,14 @@ export interface IworkCanvasModel {
   width: number;
   height: number;
   slide: SlideModel;
+  bodyFlows?: ReadonlyArray<readonly [startItem: number, endItemExclusive: number, savedBottom?: number]>;
+  savedBodyText?: ReadonlyArray<readonly [itemIndex: number, bottom: number, source?: PagesBodyTextSource[]]>;
+}
+
+export interface PagesBodyTextSource {
+  start: number;
+  visibleStart: number;
+  markers?: ReadonlyArray<{ offset: number; delta: number }>;
 }
 
 export interface ParsedKeynoteDocument {
@@ -137,6 +151,14 @@ export interface ParsedPagesPage {
   height: number;
   canvas: IworkCanvasModel;
   blocks: PagesBodyBlock[];
+  savedPageIndex?: number;
+}
+
+export interface PagesTableMeasurement {
+  width: number;
+  height: number;
+  rows: number[];
+  textCutoff?: number;
 }
 
 export interface ParsedPagesDocument {
@@ -206,7 +228,7 @@ export interface IworkViewerEventMap {
 
 export interface IworkViewerInstance {
   refreshFonts?(): void;
-  preview(source: IworkSource, options?: { signal?: AbortSignal; cache?: boolean }): Promise<void>;
+  preview(source: IworkSource, options?: { signal?: AbortSignal; cache?: boolean; password?: string }): Promise<void>;
   destroy(): void;
   setScale(scale: number): void;
   fit(mode?: IworkFitMode): void;

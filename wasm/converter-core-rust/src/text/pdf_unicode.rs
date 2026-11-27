@@ -15,6 +15,14 @@ pub(super) struct Prepared {
     pub path: Option<PathBuf>,
     pub ocr_pages: BTreeSet<u64>,
     pub repaired_fonts: usize,
+    pub unencrypted: bool,
+}
+impl Drop for Prepared {
+    fn drop(&mut self) {
+        if let Some(path) = &self.path {
+            let _ = std::fs::remove_file(path);
+        }
+    }
 }
 
 // Recovery is optional. Unsupported, encrypted and damaged PDFs still go to
@@ -45,10 +53,16 @@ fn prepare_inner(input: &str, work: &Path) -> Option<Prepared> {
     let mut doc =
         Document::load_with_options(input, LoadOptions::with_max_decompressed_size(MAX_STREAM))
             .ok()?;
-    if doc.is_encrypted() || doc.objects.len() > 100_000 {
+    // lopdf removes /Encrypt when it can open with an empty user password.
+    // A repaired copy must never be written from those decrypted objects.
+    if doc.was_encrypted() || doc.trailer.has(b"Encrypt") {
         return None;
     }
     let mut result = Prepared::default();
+    result.unencrypted = true;
+    if doc.objects.len() > 100_000 {
+        return Some(result);
+    }
     for (number, id) in doc.get_pages() {
         if page_needs_ocr(&doc, id) {
             result.ocr_pages.insert(u64::from(number - 1));
@@ -82,8 +96,12 @@ fn prepare_inner(input: &str, work: &Path) -> Option<Prepared> {
     }
     if result.repaired_fonts > 0 {
         let path = work.join("pdf-unicode-recovered.pdf");
-        doc.save(&path).ok()?;
-        result.path = Some(path);
+        if doc.save(&path).is_ok() {
+            result.path = Some(path);
+        } else {
+            let _ = std::fs::remove_file(path);
+            result.repaired_fonts = 0;
+        }
     }
     Some(result)
 }
@@ -517,6 +535,17 @@ fn encode_cmap(pairs: &[(u16, Vec<u16>)]) -> Vec<u8> {
 mod tests {
     use super::*;
     use lopdf::{Encoding, dictionary};
+
+    #[test]
+    fn empty_user_password_does_not_make_a_pdf_eligible_for_repair() {
+        let fixtures = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../packages/converter-client/test/fixtures/password");
+        let path = fixtures.join("permissions-only.pdf");
+        let doc = Document::load(&path).unwrap();
+        assert!(doc.was_encrypted());
+        assert!(!doc.trailer.has(b"Encrypt"));
+        assert!(prepare_inner(path.to_str().unwrap(), &fixtures).is_none());
+    }
 
     fn fixture_font(
         doc: &mut Document,

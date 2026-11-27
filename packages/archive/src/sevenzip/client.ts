@@ -1,23 +1,25 @@
 import ArchiveWorker from './archive-worker.ts?worker';
 import archiveWasmUrl from '../../vendor/7zip/7zz.wasm?archive-url';
-import { PREVIEW_CONTAINER_LIMITS, PreviewPasswordError } from '@filens/core';
+import { PREVIEW_CONTAINER_LIMITS, PreviewPasswordError, type PreviewOptions } from '@filens/core';
 import type { SevenZipRequest, SevenZipResult } from './runtime';
 import { ARCHIVE_VOLUME_LIMITS } from '../volumes';
 import { loadArchiveModule } from './module';
 
 export function runArchiveWorker(
-  request: Omit<SevenZipRequest, 'maxEntries' | 'maxEntryBytes' | 'wasmUrl' | 'wasmModule'>, signal?: AbortSignal
+  request: Omit<SevenZipRequest, 'maxEntries' | 'maxEntryBytes' | 'wasmUrl' | 'wasmModule'>,
+  signal?: AbortSignal, archiveEngine?: PreviewOptions['archiveEngine']
 ): Promise<SevenZipResult> {
   signal?.throwIfAborted();
-  if (/^(blob|data):/.test(import.meta.url) || globalThis.location?.protocol === 'file:') {
+  if (!archiveEngine && (/^(blob|data):/.test(import.meta.url) || globalThis.location?.protocol === 'file:')) {
     throw new Error('This format needs separate archive engine files. Use filens preview FILE --mode serve, or deploy the archive assets over HTTP(S).');
   }
   if (1 + (request.volumes?.length ?? 0) > ARCHIVE_VOLUME_LIMITS.maxVolumes ||
       request.bytes.byteLength + (request.volumes ?? []).reduce((sum, file) => sum + file.bytes.byteLength, 0) > ARCHIVE_VOLUME_LIMITS.maxBytes) {
     throw new Error('Archive volumes exceed the preview input limit.');
   }
+  const assets = archiveEngine?.();
   return new Promise((resolve, reject) => {
-    const worker = new ArchiveWorker();
+    const worker = assets ? new Worker(assets.workerUrl) : new ArchiveWorker();
     let settled = false;
     const finish = (result?: SevenZipResult, error?: Error) => {
       if (settled) return;
@@ -38,14 +40,14 @@ export function runArchiveWorker(
     worker.onerror = () => finish(undefined, new Error('The archive WASM worker could not be loaded or stopped unexpectedly.'));
     worker.onmessageerror = () => finish(undefined, new Error('The archive worker returned an invalid response.'));
     void (async () => {
-      const wasmUrl = archiveWasmUrl();
+      const wasmUrl = assets?.wasmUrl ?? archiveWasmUrl();
       const wasmModule = await loadArchiveModule(wasmUrl);
       if (settled) return;
       // Preserve the source for entry reads and password retries. Only this copy
       // is transferred; extracted output transfers back without another copy.
       const bytes = request.bytes.slice();
       const volumes = request.volumes?.map(file => ({ name: file.name, bytes: file.bytes.slice() }));
-      const message = { ...request, bytes, volumes, wasmUrl, maxEntries: PREVIEW_CONTAINER_LIMITS.maxEntries,
+      const message = { ...request, bytes, volumes, maxEntries: PREVIEW_CONTAINER_LIMITS.maxEntries,
         maxEntryBytes: PREVIEW_CONTAINER_LIMITS.maxEntryBytes };
       const transfer = [bytes.buffer, ...(volumes ?? []).map(file => file.bytes.buffer)];
       try { worker.postMessage({ ...message, wasmModule }, transfer); }
@@ -53,7 +55,7 @@ export function runArchiveWorker(
         // Older browsers may not clone compiled modules. A failed clone leaves
         // transfer buffers attached; preserve their existing URL-loading path.
         if (!(error instanceof DOMException) || error.name !== 'DataCloneError') throw error;
-        worker.postMessage(message, transfer);
+        worker.postMessage({ ...message, wasmUrl }, transfer);
       }
     })().catch(error => finish(undefined, error instanceof Error ? error : new Error(String(error))));
   });

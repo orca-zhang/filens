@@ -1,5 +1,5 @@
 import { createDefaultNativePreviewDrivers } from './native-drivers';
-import { createPptxPreviewDriver } from './pptx-driver';
+import { createPptxPreviewDriver } from '@filens/pptx';
 import type { PreviewDriver } from './types';
 
 /** Eager factory retained for applications creating sessions directly. */

@@ -1,0 +1,232 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Search a generated, HTTP range-loaded PDF with one short text line per page using the split preview runtime in Chromium on macOS arm64. Each query ran in three fresh browser pages per build, with alternating build order. Timing begins after the first page text layer is ready and ends when find() resolves. Count searching state-change events delivered by the Vue host and aria-busy writes on the search output. For the two-hit query, verify the first hit on page 6, navigate to the last page, and clear the search.",
+  "browser": "159.0.8154.6",
+  "pageCount": 3500,
+  "bytes": 1155094,
+  "sha256": "080c5bb63205b90995b5063adbb2aea1f9e27c375c72b2cb21bb7660f2b3f118",
+  "measurements": {
+    "Missing phrase": {
+      "baseline": {
+        "median": {
+          "ms": 385.1,
+          "writes": 3503,
+          "updates": 3501
+        },
+        "samples": [
+          {
+            "ms": 369.4,
+            "writes": 3503,
+            "updates": 3501,
+            "search": {
+              "query": "Missing phrase",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 0
+          },
+          {
+            "ms": 389.4,
+            "writes": 3503,
+            "updates": 3501,
+            "search": {
+              "query": "Missing phrase",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 0
+          },
+          {
+            "ms": 385.1,
+            "writes": 3503,
+            "updates": 3501,
+            "search": {
+              "query": "Missing phrase",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 0
+          }
+        ]
+      },
+      "batched": {
+        "median": {
+          "ms": 367.4,
+          "writes": 25,
+          "updates": 23
+        },
+        "samples": [
+          {
+            "ms": 367.2,
+            "writes": 25,
+            "updates": 23,
+            "search": {
+              "query": "Missing phrase",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 0
+          },
+          {
+            "ms": 367.4,
+            "writes": 25,
+            "updates": 23,
+            "search": {
+              "query": "Missing phrase",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 0
+          },
+          {
+            "ms": 378.5,
+            "writes": 26,
+            "updates": 24,
+            "search": {
+              "query": "Missing phrase",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 0
+          }
+        ]
+      }
+    },
+    "Finding marker": {
+      "baseline": {
+        "median": {
+          "ms": 390.7,
+          "writes": 3503,
+          "updates": 3502
+        },
+        "samples": [
+          {
+            "ms": 389.3,
+            "writes": 3503,
+            "updates": 3502,
+            "search": {
+              "query": "Finding marker",
+              "searching": false,
+              "total": 2,
+              "activeIndex": 0,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 5
+          },
+          {
+            "ms": 410.5,
+            "writes": 3503,
+            "updates": 3502,
+            "search": {
+              "query": "Finding marker",
+              "searching": false,
+              "total": 2,
+              "activeIndex": 0,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 5
+          },
+          {
+            "ms": 390.7,
+            "writes": 3503,
+            "updates": 3502,
+            "search": {
+              "query": "Finding marker",
+              "searching": false,
+              "total": 2,
+              "activeIndex": 0,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 5
+          }
+        ]
+      },
+      "batched": {
+        "median": {
+          "ms": 380.7,
+          "writes": 26,
+          "updates": 25
+        },
+        "samples": [
+          {
+            "ms": 382.5,
+            "writes": 26,
+            "updates": 25,
+            "search": {
+              "query": "Finding marker",
+              "searching": false,
+              "total": 2,
+              "activeIndex": 0,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 5
+          },
+          {
+            "ms": 374.4,
+            "writes": 26,
+            "updates": 25,
+            "search": {
+              "query": "Finding marker",
+              "searching": false,
+              "total": 2,
+              "activeIndex": 0,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 5
+          },
+          {
+            "ms": 380.7,
+            "writes": 26,
+            "updates": 25,
+            "search": {
+              "query": "Finding marker",
+              "searching": false,
+              "total": 2,
+              "activeIndex": 0,
+              "pagesScanned": 3500,
+              "pageCount": 3500,
+              "truncated": false
+            },
+            "pageIndex": 5
+          }
+        ]
+      }
+    }
+  }
+}

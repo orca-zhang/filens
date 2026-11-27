@@ -6,6 +6,7 @@ const props = defineProps<{
   slide: SlideModel;
   presentation: ParsedPresentation;
   mediaRegistry: { getUrl(mediaId: string): string } | null;
+  layoutRevision?: number;
 }>();
 
 const host = ref<HTMLDivElement | null>(null);
@@ -81,7 +82,7 @@ function watchVisibility(): void {
 onMounted(watchVisibility);
 
 watch(
-  () => [props.slide, props.presentation, props.mediaRegistry],
+  () => [props.slide, props.presentation, props.mediaRegistry, props.layoutRevision],
   () => {
     if (!props.mediaRegistry) {
       clearThumbnail();

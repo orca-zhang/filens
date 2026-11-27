@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "browser": "Chromium 159.0.8154.6",
+  "pdfjs": "5.4.624",
+  "fixture": {
+    "generator": "packages/pdf/test/fixtures/document.mjs",
+    "description": "One unrotated 600 by 800 page with a solid background. 12,000 Helvetica 12-point runs positioned at x=40 and y=750 minus 18 times the line index modulo 26. Labels are Ordinary line followed by the zero-based index, except lines 7 and 572 use Matching item.",
+    "bytes": 601485,
+    "sha256": "15beb0dd00a20f57e18a3471dbddce379ee39b88d1f9d38adc6567915471767d"
+  },
+  "method": "Use three fresh Chromium pages per split build with a 1280 by 800 viewport at device pixel ratio 1 and an 800 by 600 preview host in contain mode. Wait for all text and both search hits. Measure each setScale call until a new canvas is painted and the active text mark is present. Count GetTextContent worker messages and newly added text spans.",
+  "zooms": [1.25, 1.75, 1.1],
+  "baseline": {
+    "pdfDriverChunkSha256": "dccfba04df2e5b137f7ccaa0e358c7e8cf02494ac57995f689f59e4fa4fee5a5",
+    "readyMs": [[6099.3, 6335.9, 6467.3], [5936.2, 5925, 5995.7], [5862.6, 6125.2, 6248.6]],
+    "medianReadyMs": 6099.3,
+    "textReadsPerZoom": 1,
+    "addedSpansPerZoom": 12000,
+    "retainedTextAndActiveMarkNodes": false
+  },
+  "reuse": {
+    "pdfDriverChunkSha256": "b9a5d907122cffbf77f9469c530fe03adba0c17207825a49d535028b89bb616b",
+    "readyMs": [[362.3, 451.4, 427.2], [362, 435.4, 443.2], [366.4, 439.8, 437.1]],
+    "medianReadyMs": 435.4,
+    "textReadsPerZoom": 0,
+    "addedSpansPerZoom": 0,
+    "retainedTextAndActiveMarkNodes": true
+  }
+}

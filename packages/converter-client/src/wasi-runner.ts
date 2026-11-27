@@ -28,6 +28,8 @@ export interface WasmCoreInvocation {
   readFiles?: string[];
   signal?: AbortSignal;
   captureStdio?: boolean;
+  /** Clear invocation-owned scratch files and guest memory on completion. */
+  sensitive?: boolean;
 }
 
 export interface WasmCoreInvocationResult {
@@ -56,34 +58,36 @@ export function createWasmCoreRunner(options: WasmCoreRunnerOptions) {
     const wasi = new InMemoryWasiHost({
       args: invocation.args,
       files: invocation.files,
-      captureStdio: invocation.captureStdio
+      captureStdio: invocation.captureStdio,
+      sensitive: invocation.sensitive
     });
-    const module = await waitForConversion(loadModule(), signal);
-    throwIfAborted(signal);
-    const instance = await waitForConversion(WebAssembly.instantiate(module, {
-      ...options.imports,
-      wasi_snapshot_preview1: wasi.imports
-    }), signal);
-    throwIfAborted(signal);
-    wasi.setInstance(instance);
-    let exitCode = 0;
     try {
-      (instance.exports._start as () => void)();
-    } catch (error) {
-      if (error instanceof WasiExit) {
+      const module = await waitForConversion(loadModule(), signal);
+      throwIfAborted(signal);
+      const instance = await waitForConversion(WebAssembly.instantiate(module, {
+        ...options.imports,
+        wasi_snapshot_preview1: wasi.imports
+      }), signal);
+      wasi.setInstance(instance);
+      throwIfAborted(signal);
+      let exitCode = 0;
+      try {
+        (instance.exports._start as () => void)();
+      } catch (error) {
+        if (!(error instanceof WasiExit)) throw error;
         exitCode = error.code;
-      } else {
-        throw error;
       }
+      return {
+        exitCode,
+        ...(invocation.captureStdio ? { stdout: wasi.readStdio(1), stderr: wasi.readStdio(2) } : {}),
+        files: Object.fromEntries((invocation.readFiles ?? []).flatMap((path) => {
+          const bytes = wasi.readFileIfPresent(path);
+          return bytes ? [[path, bytes]] : [];
+        }))
+      };
+    } finally {
+      if (invocation.sensitive) wasi.clearSensitiveData();
     }
-    return {
-      exitCode,
-      ...(invocation.captureStdio ? { stdout: wasi.readStdio(1), stderr: wasi.readStdio(2) } : {}),
-      files: Object.fromEntries((invocation.readFiles ?? []).flatMap((path) => {
-        const bytes = wasi.readFileIfPresent(path);
-        return bytes ? [[path, bytes]] : [];
-      }))
-    };
   };
 }
 
@@ -129,6 +133,7 @@ interface InMemoryWasiHostOptions {
   args: string[];
   files: Record<string, Uint8Array>;
   captureStdio?: boolean;
+  sensitive?: boolean;
 }
 
 type FileDescriptor =
@@ -204,6 +209,7 @@ export class InMemoryWasiHost {
 
   private instance?: WebAssembly.Instance;
   private readonly captureStdio: boolean;
+  private readonly sensitive: boolean;
   private readonly stdio: Record<number, number[]> = { 1: [], 2: [] };
   private readonly args: string[];
   private readonly files = new Map<string, Uint8Array>();
@@ -219,6 +225,7 @@ export class InMemoryWasiHost {
   constructor(options: InMemoryWasiHostOptions) {
     this.args = options.args;
     this.captureStdio = options.captureStdio ?? false;
+    this.sensitive = options.sensitive ?? false;
     for (const [path, bytes] of Object.entries(options.files)) {
       this.writeInitialFile(path, bytes);
     }
@@ -226,6 +233,17 @@ export class InMemoryWasiHost {
 
   setInstance(instance: WebAssembly.Instance): void {
     this.instance = instance;
+  }
+
+  clearSensitiveData(): void {
+    for (const bytes of this.files.values()) bytes.fill(0);
+    this.files.clear();
+    this.fds.clear();
+    this.stdio[1].fill(0);
+    this.stdio[2].fill(0);
+    const memory = this.instance?.exports.memory;
+    if (memory instanceof WebAssembly.Memory) new Uint8Array(memory.buffer).fill(0);
+    this.instance = undefined;
   }
 
   readStdio(fd: 1 | 2): string {
@@ -486,6 +504,7 @@ export class InMemoryWasiHost {
       this.ensureParentDir(path);
       this.files.set(path, new Uint8Array());
     } else if (oflags & OFLAGS_TRUNC) {
+      this.removeFile(path);
       this.files.set(path, new Uint8Array());
     }
 
@@ -526,7 +545,12 @@ export class InMemoryWasiHost {
     if (!path) {
       return ERRNO_BADF;
     }
-    return this.files.delete(path) ? ERRNO_SUCCESS : ERRNO_NOENT;
+    return this.removeFile(path) ? ERRNO_SUCCESS : ERRNO_NOENT;
+  }
+
+  private removeFile(path: string): boolean {
+    if (this.sensitive) this.files.get(path)?.fill(0);
+    return this.files.delete(path);
   }
 
   private pollOneoff(nevents: number): number {
@@ -596,6 +620,7 @@ export class InMemoryWasiHost {
     this.ensureParentDir(normalized);
     const copy = new Uint8Array(bytes.byteLength);
     copy.set(bytes);
+    if (this.sensitive) this.files.get(normalized)?.fill(0);
     this.files.set(normalized, copy);
   }
 
@@ -622,6 +647,7 @@ export class InMemoryWasiHost {
     } else {
       const storage = new Uint8Array(Math.max(nextLength, previous.buffer.byteLength * 2));
       storage.set(previous);
+      if (this.sensitive) previous.fill(0);
       next = storage.subarray(0, nextLength);
     }
     next.set(chunk, position);

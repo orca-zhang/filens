@@ -1,6 +1,7 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createWasmCoreRunner } from '../src';
+import { InMemoryWasiHost } from '../src/wasi-runner';
 import { call, createWasiProgram, createWasiWriteFixture, get32, iov, open, write } from './fixtures/wasi.mjs';
 
 const text = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
@@ -15,6 +16,56 @@ async function execute(commands: number[][], data: Array<[number, string | Uint8
 }
 
 describe('WASI file writes through actual WebAssembly imports', () => {
+  it.each([false, true])('clears sensitive owned files and guest memory (traps: %s)', async trap => {
+    const input = new TextEncoder().encode('sensitive input');
+    const wasm = createWasiProgram({ data: [[1024, 'input.bin'], [1088, 'output.bin']], commands: [
+      open(1024, 'input.bin', 128, 0), iov(4096, input.length), call('fd_read', [get32(128), 64, 1, 200]),
+      call('path_unlink_file', [3, 1024, 9]), open(1088, 'output.bin', 132), write(132),
+      ...(trap ? [[0x00]] : [])
+    ] });
+    const setInstance = InMemoryWasiHost.prototype.setInstance;
+    let memory!: WebAssembly.Memory;
+    let ownedInput!: Uint8Array;
+    let scratch!: Map<string, Uint8Array>;
+    const instances = vi.spyOn(InMemoryWasiHost.prototype, 'setInstance').mockImplementation(function (this: InMemoryWasiHost, instance) {
+      memory = instance.exports.memory as WebAssembly.Memory;
+      scratch = (this as unknown as { files: Map<string, Uint8Array> }).files;
+      ownedInput = scratch.get('/work/input.bin')!;
+      setInstance.call(this, instance);
+    });
+    try {
+      const pending = createWasmCoreRunner({ wasm })({ args: [], files: { '/work/input.bin': input }, readFiles: ['/work/output.bin'], sensitive: true });
+      if (trap) await expect(pending).rejects.toBeInstanceOf(WebAssembly.RuntimeError);
+      else expect(text((await pending).files['/work/output.bin'])).toBe('sensitive input');
+      expect(text(input)).toBe('sensitive input');
+      expect(ownedInput.every(byte => byte === 0)).toBe(true);
+      expect(scratch.size).toBe(0);
+      expect(new Uint8Array(memory.buffer).every(byte => byte === 0)).toBe(true);
+    } finally { instances.mockRestore(); }
+  });
+
+  it('clears sensitive scratch even when cancellation precedes instantiation', async () => {
+    const wasm = await WebAssembly.compile(createWasiProgram());
+    let loaded!: (module: WebAssembly.Module) => void;
+    const loading = new Promise<WebAssembly.Module>(resolve => { loaded = resolve; });
+    const controller = new AbortController();
+    const cleanup = InMemoryWasiHost.prototype.clearSensitiveData;
+    let owned!: Uint8Array;
+    const clear = vi.spyOn(InMemoryWasiHost.prototype, 'clearSensitiveData').mockImplementation(function (this: InMemoryWasiHost) {
+      owned = (this as unknown as { files: Map<string, Uint8Array> }).files.get('/work/input.bin')!;
+      cleanup.call(this);
+    });
+    try {
+      const run = createWasmCoreRunner({ wasm: loading });
+      const input = new Uint8Array([7, 8, 9]);
+      const pending = run({ args: [], files: { '/work/input.bin': input }, sensitive: true, signal: controller.signal });
+      controller.abort();
+      await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+      expect(owned).toEqual(new Uint8Array(3));
+      expect(input).toEqual(new Uint8Array([7, 8, 9]));
+    } finally { loaded(wasm); clear.mockRestore(); }
+  });
+
   it('captures split UTF-8 stdout/stderr only when requested and resets them per invocation', async () => {
     const bytes = new TextEncoder().encode('几何已完成');
     const wasm = await WebAssembly.compile(createWasiProgram({ data: [[4096, bytes], [4200, 'diagnostic']], commands: [

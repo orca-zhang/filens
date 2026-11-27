@@ -11,13 +11,19 @@ import {
   type PreviewSession,
   type PreviewSource
 } from '@filens/core';
+import type { ZipEntry } from '@filens/core/zip';
 import { prepareDocxFonts, readDocxFontTraits } from './fonts';
+import { sampleDocxFonts } from './font-usage';
+import { createDocxEmbeddedFonts } from './embedded-fonts';
+import { createDocxPagination } from './pagination';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
 
 export { DOCX_FORMAT_ROUTES, createDocxPreviewRoutes } from './routes';
+
+let nextDocxRender = 0;
 
 export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -35,7 +41,7 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
   private fontReferences: PreviewFontReference[] = [];
   private refreshDocumentFonts?: (update: PreviewFontRefresh) => Promise<void>;
 
-  constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
+  constructor(private readonly host: HTMLElement, private readonly options: PreviewOptions = {}) {
     this.root = document.createElement('div');
     this.root.className = 'docxv-preview';
     this.documentHost = document.createElement('div');
@@ -101,7 +107,8 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
     try {
       if (context.signal?.aborted) controller.abort();
       checkAborted(signal);
-      const data = await sourceToData(source, { ...context, signal });
+      const entries = context.zipEntries;
+      const data = entries ? undefined : await sourceToData(source, { ...context, signal });
       if (signal.aborted) {
         if (context.signal?.aborted) checkAborted(signal);
         return;
@@ -111,8 +118,9 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
         if (context.signal?.aborted) checkAborted(signal);
         return;
       }
-      const options = { breakPages: true, ignoreLastRenderedPageBreak: false, className: 'docx' };
-      const document = await parseAsync(data, options);
+      const renderOptions = { breakPages: true, ignoreLastRenderedPageBreak: false, ignoreFonts: true };
+      const parseOptions = entries ? { ...renderOptions, filensZip: indexedDocxZip(entries, signal) } : renderOptions;
+      const document = await parseAsync(data, parseOptions);
       if (signal.aborted) {
         if (context.signal?.aborted) checkAborted(signal);
         return;
@@ -123,10 +131,24 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
         if (context.signal?.aborted) checkAborted(signal);
         return;
       }
-      const fontAnalysis = prepareDocxFonts(document, this.host.ownerDocument, fontTraits);
+      const embedded = createDocxEmbeddedFonts(document, this.host.ownerDocument, signal);
+      const filensPaginate = createDocxPagination(document);
+      const fontAnalysis = prepareDocxFonts(document, this.host.ownerDocument, fontTraits, undefined, embedded.aliases);
+      const render = async (target: HTMLDivElement) => {
+        // docx-preview emits global selectors. Keep named styles and counters
+        // from other sessions and from the staging render out of this view.
+        const className = `filens-docx-${++nextDocxRender}`;
+        const options = { ...renderOptions, className, filensPaginate };
+        const rendering = renderDocument(document, target, undefined, options);
+        const wrapper = target.querySelector(`:scope > .${className}-wrapper`);
+        wrapper?.classList.add('docx-wrapper');
+        for (const page of wrapper?.children ?? []) page.classList.add('docx');
+        await rendering;
+        return { wrapper, className };
+      };
       // Keep the container attached for renderer layout work, but give every
       // load its own container so late tasks cannot write into a new document.
-      await renderDocument(document, container, undefined, options);
+      const { wrapper, className } = await render(container);
       if (signal.aborted) {
         if (context.signal?.aborted) checkAborted(signal);
         return;
@@ -134,11 +156,12 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
       this.state.loading = false;
       this.state.error = null;
       this.state.fonts = fontAnalysis.fonts;
-      this.fontReferences = fontAnalysis.loadingReferences;
+      this.fontReferences = this.options.fontLoading
+        ? sampleDocxFonts(wrapper, fontAnalysis.loadingReferences, className) : fontAnalysis.loadingReferences;
       this.state.warnings = fontAnalysis.warnings;
       this.refreshDocumentFonts = async update => {
         if (signal.aborted || this.loadController !== controller) return;
-        const analysis = prepareDocxFonts(document, this.host.ownerDocument, fontTraits, update);
+        const analysis = prepareDocxFonts(document, this.host.ownerDocument, fontTraits, update, embedded.aliases);
         if (update.loaded.length || update.relayout) {
           const next = this.host.ownerDocument.createElement('div');
           next.className = 'docxv-document';
@@ -146,7 +169,7 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
           next.style.visibility = 'hidden';
           this.root.appendChild(next);
           try {
-            await renderDocument(document, next, undefined, options);
+            await render(next);
             if (signal.aborted || this.loadController !== controller) return;
             const top = this.root.scrollTop, left = this.root.scrollLeft;
             next.style.visibility = '';
@@ -157,7 +180,7 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
         }
         if (signal.aborted || this.loadController !== controller) return;
         this.fontReferences = analysis.loadingReferences;
-        this.state.fonts = analysis.fonts; this.state.warnings = analysis.warnings;
+        this.state.fonts = embedded.diagnostics(analysis.fonts); this.state.warnings = analysis.warnings;
         this.emit('warnings', this.state.warnings);
         this.emit('rendered', this.getState());
         this.emit('statechange', this.getState());
@@ -165,6 +188,12 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
       if (this.state.warnings.length) this.emit('warnings', this.state.warnings);
       this.emit('rendered', this.state);
       this.emit('statechange', this.state);
+      void embedded.load().then(loaded => {
+        if (!loaded || signal.aborted || this.loadController !== controller) return;
+        this.state.fonts = embedded.diagnostics(this.state.fonts ?? []);
+        this.emit('rendered', this.getState());
+        this.emit('statechange', this.getState());
+      });
     } catch (error) {
       if (signal.aborted) {
         if (context.signal?.aborted) checkAborted(signal);
@@ -214,6 +243,7 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
   }
 
   getFontReferences(): readonly PreviewFontReference[] { return this.fontReferences; }
+  refreshFontLayout(): void { this.fontLoading.refresh(); }
   async refreshFonts(update: PreviewFontRefresh): Promise<void> { await this.refreshDocumentFonts?.(update); }
 
   on<T extends PreviewEventName>(event: T, handler: (payload: PreviewEventMap[T]) => void): () => void {
@@ -256,6 +286,31 @@ async function sourceToData(source: PreviewSource, context: PreviewLoadContext):
   return source.slice(0);
 }
 
+function indexedDocxZip(entries: ReadonlyMap<string, ZipEntry>, signal: AbortSignal) {
+  const decoder = new TextDecoder();
+  return { files: new Proxy(Object.create(null), {
+    get(_target, path) {
+      if (typeof path !== 'string') return undefined;
+      const entry = entries.get(path);
+      if (!entry || entry.directory) return undefined;
+      return {
+        async async(type: string) {
+          const bytes = await entry.bytes(undefined, signal);
+          signal.throwIfAborted();
+          if (type === 'string') return decoder.decode(bytes);
+          if (type === 'blob') {
+            const data = bytes.buffer instanceof ArrayBuffer
+              ? new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength) : new Uint8Array(bytes);
+            return new Blob([data]);
+          }
+          if (type === 'uint8array') return bytes;
+          throw new Error(`Unsupported DOCX ZIP output type: ${type}.`);
+        }
+      };
+    }
+  }) };
+}
+
 function normalizeFormat(format: string): string {
   return format.trim().replace(/^\./, '').toLowerCase();
 }
@@ -269,20 +324,19 @@ type ResourceDocument = {
   documentPart?: unknown;
   loadDocumentImage?: ResourceLoader;
   loadNumberingImage?: ResourceLoader;
-  loadFont?: ResourceLoader;
 };
 
 function manageDocumentResources(document: ResourceDocument, signal: AbortSignal, urls: Set<string>): void {
   // docx-preview exposes no disposal API. Scope its resource loaders to this
   // parsed document; never intercept the global URL API or another session.
-  for (const name of ['loadDocumentImage', 'loadNumberingImage', 'loadFont'] as const) {
+  for (const name of ['loadDocumentImage', 'loadNumberingImage'] as const) {
     const load = document[name];
     if (!load) continue;
     const parts = new Map<unknown, Map<string, Promise<string | null>>>();
     document[name] = (...args) => {
       if (signal.aborted) return Promise.reject(new DOMException('DOCX preview aborted.', 'AbortError'));
       const part = name === 'loadDocumentImage' ? args[1] ?? document.documentPart : undefined;
-      const key = name === 'loadFont' ? JSON.stringify(args.slice(0, 2)) : String(args[0]);
+      const key = String(args[0]);
       let cache = parts.get(part);
       if (!cache) parts.set(part, cache = new Map());
       let result = cache.get(key);

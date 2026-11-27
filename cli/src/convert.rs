@@ -8,6 +8,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicU32},
 };
+use zeroize::Zeroizing;
 
 pub fn capabilities(engine: &mut Runtime) -> Result<Value> {
     let wire = engine.run(
@@ -31,7 +32,7 @@ pub fn capabilities(engine: &mut Runtime) -> Result<Value> {
 }
 
 pub fn execute(
-    o: &Options,
+    o: &mut Options,
     mut response: Value,
     mut engine: Runtime,
     bundle: &Path,
@@ -39,7 +40,7 @@ pub fn execute(
     pid: Arc<AtomicU32>,
 ) -> Result<(Value, i32)> {
     let capacity = capabilities(&mut engine)?;
-    let r = &o.request;
+    let r = &mut o.request;
     let pair =
         |p: &Value| p["sourceFormat"] == r.source_format && p["targetFormat"] == r.target_format;
     if !capacity["pairs"].as_array().unwrap().iter().any(pair) {
@@ -84,12 +85,15 @@ pub fn execute(
         Path::new(&r.input),
         256 << 20,
     )?;
-    let options = if r.options.is_null() {
-        json!({})
+    let serialized = if r.options.is_null() {
+        Ok(b"{}".to_vec())
     } else {
-        r.options.clone()
+        serde_json::to_vec(&r.options)
     };
-    work.write("options.json", serde_json::to_vec(&options)?)?;
+    r.clear_conversion_password();
+    // A disk workspace may hold request files, but never the conversion options.
+    let options = Workspace::new();
+    options.write("options.json", Zeroizing::new(serialized?).as_slice())?;
     let args = [
         if image {
             "converter-image"
@@ -105,13 +109,15 @@ pub fn execute(
         "--target",
         &r.target_format,
         "--options",
-        "/work/options.json",
+        "/convert-options/options.json",
         "--result",
         "/work/result.json",
     ]
     .map(String::from);
     work.remove("result.json")?;
-    let result = engine.run(&args)?;
+    let result = engine.run_with_conversion_options(&args, &options);
+    options.remove("options.json")?;
+    let result = result?;
     response["conversion"] = result.clone();
     if result["ok"] != true {
         let code = result["errorCode"].as_str().unwrap_or("conversion_failed");

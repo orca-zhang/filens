@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { gzipSync, gunzipSync, brotliDecompressSync } from 'node:zlib';
 import { chromium, expect } from '@playwright/test';
 import { transform } from 'esbuild';
+import { createRegexWorkbook } from '../packages/xlsx/test/fixtures/array-selection-workbook.mjs';
 
 const directoryIndex = process.argv.indexOf('--directory');
 const directory = directoryIndex < 0 ? 'packages/preview/dist/all-in-one' : process.argv[directoryIndex + 1];
@@ -26,6 +27,8 @@ await transform(code.toString(), { loader: 'js', target: 'es2020', format: 'esm'
 const baselineIndex = process.argv.indexOf('--baseline');
 if (baselineIndex >= 0) representations.baseline = gzipSync(await readFile(process.argv[baselineIndex + 1]), { level: 9 });
 const step = [...await readFile('packages/model3d/test/fixtures/occt/cube.stp')];
+const regexWorkbook = Buffer.from(await createRegexWorkbook()).toString('base64');
+const regexEngine = await readFile(`${directory}/xlsx/pcre2.wasm`);
 const fixtures = await Promise.all([
   ['apps/demo/public/samples/filens-cosmic-atlas.pdf', 'atlas.pdf'],
   ['apps/demo/public/samples/legacy-project-workflow.doc', 'legacy.doc'],
@@ -40,6 +43,10 @@ const isIwork = fixture => /\.(pages|numbers|key)$/.test(fixture.name);
 const csp = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; connect-src 'self' blob: data:; worker-src 'self' blob:; img-src 'self' blob: data:; font-src 'self' blob: data:";
 const server = createServer((request, response) => {
   const url = new URL(request.url, 'http://localhost');
+  if (/^\/(gzip|br)\/xlsx\/pcre2\.wasm$/.test(url.pathname)) {
+    response.writeHead(200, { 'content-type': 'application/wasm' });
+    response.end(regexEngine); return;
+  }
   if (url.pathname.endsWith('/filens.js')) {
     const kind = url.pathname.split('/')[1], bytes = representations[kind];
     if (!bytes) { response.writeHead(404); response.end(); return; }
@@ -102,6 +109,13 @@ try {
             await page.evaluate(({ base64, name }) => window.viewer.update({ src: Uint8Array.fromBase64(base64), name }), fixture);
             await expect.poll(() => page.evaluate(() => window.lastRendered?.title), { timeout: 60_000 }).toBe(fixture.name);
           }
+          const regexRequests = () => requests.filter(url => url.endsWith('/xlsx/pcre2.wasm'));
+          assert.equal(regexRequests().length, 0);
+          if (kind !== 'baseline') {
+            await page.evaluate(base64 => window.viewer.update({ src: Uint8Array.fromBase64(base64), name: 'regex.xlsx' }), regexWorkbook);
+            await expect(page.locator('.xlsxv-grid tr[aria-rowindex="2"] td[aria-colindex="2"]')).toHaveText('TRUE');
+            assert.equal(regexRequests().length, 1);
+          }
           assert.equal(requests.filter(url => /\/filens\.js$/.test(url)).length, 1);
           assert.deepEqual(await page.evaluate(() => window.previewErrors), []);
           await page.evaluate(() => window.viewer.destroy());
@@ -140,6 +154,19 @@ try {
         onRendered:state=>window.lastRendered=state,onError:error=>window.previewErrors.push(error.message)});
       </script>`);
     const page = await context.newPage(), network = [], errors = [];
+    await page.addInitScript(() => {
+      const workers = window.localPdfWorkers = { started: 0, stopped: 0 };
+      window.Worker = new Proxy(Worker, {
+        construct(Worker, args) {
+          const worker = new Worker(...args);
+          if (args[1]?.name !== 'FiLens PDF') return worker;
+          workers.started++;
+          const terminate = worker.terminate.bind(worker);
+          worker.terminate = () => { workers.stopped++; terminate(); };
+          return worker;
+        }
+      });
+    });
     page.on('request', request => { if (/^https?:/.test(request.url())) network.push(request.url()); });
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(pathToFileURL(html).href);
@@ -156,8 +183,10 @@ try {
     assert.deepEqual(network, []);
     assert.deepEqual(errors, []);
     assert.deepEqual(await page.evaluate(() => window.previewErrors), []);
+    await expect.poll(() => page.evaluate(() => window.localPdfWorkers)).toEqual({ started: 2, stopped: 1 });
     await page.evaluate(() => { window.viewer.destroy(); URL.revokeObjectURL(window.runtimeUrl); });
     await expect(page.locator('#host')).toBeEmpty();
+    await expect.poll(() => page.evaluate(() => window.localPdfWorkers)).toEqual({ started: 2, stopped: 2 });
   } finally { await context.close(); await rm(offlineDirectory, { recursive: true }); }
   console.log(JSON.stringify({ browser: browser.version(), limit: 4_000_000, exactEncodings: true, es2020: true,
     offlineFileHtml: true, iworkCsp: 'Existing protobuf fallback requires unsafe-eval; tested separately from strict-CSP formats.', cases }, null, 2));

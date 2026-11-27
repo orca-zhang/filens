@@ -20506,6 +20506,10 @@
             "templateIdentifier": {
               "type": "string",
               "id": 9
+            },
+            "customFormatList": {
+              "type": ".TSP.Reference",
+              "id": 12
             }
           }
         },

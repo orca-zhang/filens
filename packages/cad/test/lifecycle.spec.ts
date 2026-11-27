@@ -28,13 +28,13 @@ afterEach(() => { sessions.splice(0).forEach(session => session.destroy()); vi.u
 
 describe('DXF load and raster resource lifetime', () => {
   it.each(['success', 'failure'])('discards a late source %s after replacement', async outcome => {
-    const { host, session } = setup(), old = deferred<string>(), source = new Blob();
-    Object.defineProperty(source, 'text', { value: () => old.promise });
+    const { host, session } = setup(), old = deferred<ArrayBuffer>(), source = new Blob();
+    Object.defineProperty(source, 'arrayBuffer', { value: () => old.promise });
     const error = vi.fn(); session.on('error', error);
     const pending = session.load(source, context(source, 'old.dxf')).catch(() => 'rejected');
     await session.load(bytes(), context(bytes(), 'current.dxf'));
     const html = host.innerHTML, state = session.getState();
-    if (outcome === 'success') old.resolve(createRasterDxfFixture()); else old.reject(new Error('Obsolete failure'));
+    if (outcome === 'success') old.resolve(bytes(createRasterDxfFixture()).buffer as ArrayBuffer); else old.reject(new Error('Obsolete failure'));
     expect(await pending).toBeUndefined(); expect(host.innerHTML).toBe(html); expect(session.getState()).toEqual(state);
     expect(error).not.toHaveBeenCalled();
   });
@@ -64,7 +64,7 @@ describe('DXF load and raster resource lifetime', () => {
 
   it('rejects pre-aborted input before reading and clears the displayed drawing on cancellation', async () => {
     const { host, session } = setup(), controller = new AbortController(), source = new Blob(), read = vi.fn();
-    Object.defineProperty(source, 'text', { value: read }); controller.abort();
+    Object.defineProperty(source, 'arrayBuffer', { value: read }); controller.abort();
     await expect(session.load(source, context(source, 'abort.dxf', controller.signal))).rejects.toMatchObject({ name: 'AbortError' });
     expect(read).not.toHaveBeenCalled();
     const active = new AbortController(); await session.load(bytes(), context(bytes(), 'current.dxf', active.signal)); active.abort();

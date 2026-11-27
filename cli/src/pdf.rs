@@ -8,6 +8,7 @@ use wasmi::{
     Caller, Engine, ExternType, Instance, Linker, Memory, Module, Store, StoreLimits, Val,
 };
 use wasmi_wasi::{WasiCtx, WasiCtxBuilder};
+use zeroize::{Zeroize, Zeroizing};
 
 struct State {
     wasi: WasiCtx,
@@ -19,6 +20,7 @@ pub struct Pdf {
     memory: Memory,
     document: i32,
     data: i32,
+    protected: bool,
 }
 
 impl Pdf {
@@ -100,6 +102,7 @@ impl Pdf {
             memory,
             document: 0,
             data: 0,
+            protected: false,
         };
         pdf.call_raw("_initialize", &[])?;
         pdf.call_raw("FPDF_InitLibrary", &[])?;
@@ -174,7 +177,9 @@ impl Pdf {
         dpi: i32,
     ) -> Result<Value> {
         if op == "pdf_open" {
-            self.close_document();
+            // Until PDFium identifies the security handler, the instance
+            // must be discarded even when loading fails.
+            self.protected = true;
             let data = work.read(path.ok_or_else(|| anyhow::anyhow!("PDF path required"))?)?;
             self.data = self.alloc(data.len())?;
             self.memory
@@ -192,7 +197,14 @@ impl Pdf {
                     }
                 );
             }
-            return Ok(json!({"pages":self.ints("FPDF_GetPageCount", &[self.document])?}));
+            self.protected = self
+                .ints("FPDF_GetSecurityHandlerRevision", &[self.document])
+                .ok()
+                != Some(-1);
+            return Ok(json!({
+                "pages":self.ints("FPDF_GetPageCount", &[self.document])?,
+                "protected":self.protected
+            }));
         }
         ensure!(self.document != 0, "PDF is not open");
         let page = self.ints("FPDF_LoadPage", &[self.document, index])?;
@@ -396,22 +408,22 @@ impl Pdf {
                 stride >= w * 4 && stride <= w * 4 + 1024,
                 "invalid PDF bitmap stride"
             );
-            let bgra = self.read(ptr, stride as usize * h as usize)?;
-            let mut rgb = Vec::with_capacity(w as usize * h as usize * 3);
+            let bgra = Zeroizing::new(self.read(ptr, stride as usize * h as usize)?);
+            let mut rgb = Zeroizing::new(Vec::with_capacity(w as usize * h as usize * 3));
             for row in bgra.chunks_exact(stride as usize) {
                 for pixel in row[..w as usize * 4].chunks_exact(4) {
                     rgb.extend_from_slice(&[pixel[2], pixel[1], pixel[0]]);
                 }
             }
-            let mut encoded = Vec::new();
-            let mut encoder = png::Encoder::new(&mut encoded, w as u32, h as u32);
+            let mut encoded = Zeroizing::new(Vec::new());
+            let mut encoder = png::Encoder::new(&mut *encoded, w as u32, h as u32);
             encoder.set_color(png::ColorType::Rgb);
             encoder.set_depth(png::BitDepth::Eight);
             encoder.set_compression(png::Compression::Fastest);
             let mut writer = encoder.write_header()?;
             writer.write_image_data(&rgb)?;
             writer.finish()?;
-            work.write(path, encoded)?;
+            work.write(path, encoded.as_slice())?;
             Ok(json!({"ok":true}))
         })();
         let closed = self.ints("FPDFBitmap_Destroy", &[bitmap]);
@@ -419,20 +431,26 @@ impl Pdf {
         closed?;
         Ok(value)
     }
-    fn close_document(&mut self) {
-        if self.document != 0 {
-            let _ = self.ints("FPDF_CloseDocument", &[self.document]);
-            self.document = 0;
-        }
-        if self.data != 0 {
-            let _ = self.ints("free", &[self.data]);
-            self.data = 0;
-        }
+    pub fn protected(&self) -> bool {
+        self.protected
+    }
+
+    pub fn close_document(&mut self) -> Result<()> {
+        let document = std::mem::take(&mut self.document);
+        let data = std::mem::take(&mut self.data);
+        let close = (document != 0)
+            .then(|| self.ints("FPDF_CloseDocument", &[document]))
+            .transpose();
+        let free = (data != 0).then(|| self.ints("free", &[data])).transpose();
+        close.and(free).map(|_| ())
     }
 }
 impl Drop for Pdf {
     fn drop(&mut self) {
-        self.close_document();
+        let _ = self.close_document();
         let _ = self.call_raw("FPDF_DestroyLibrary", &[]);
+        if self.protected {
+            self.memory.data_mut(&mut self.store).zeroize();
+        }
     }
 }

@@ -1,0 +1,153 @@
+{
+  "date": "2026-11-26",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Load the same DEFLATE XLSX via loadXlsxWorkbook, collect garbage, then resolve a previously uncached cross-sheet formula. Run each build in three fresh Node processes per fixture, alternating build order. Retained bytes are the increase in heapUsed plus arrayBuffers after GC. Peak RSS is the process high-water mark through the first formula calculation, including input and parsing.",
+  "builds": {
+    "baseline": {
+      "tableChunkSha256": "25d1a86f931faa2f3a5d4540358548fde816f6d8b58e5d40cb297ed50daf56bc"
+    },
+    "row-local": {
+      "tableChunkSha256": "f3c2b8b95697f412391678ef52c34a705fd192936f28d64fc2867ce521229084"
+    }
+  },
+  "workloads": {
+    "dense": {
+      "description": "16,000 consecutive rows with 128 numeric cells equal to 1 in each row.",
+      "archiveBytes": 4162676,
+      "archiveSha256": "a026014d9c5453b27fe5c6e9b94e4a47e2ac803a247969c1b22d90b04d13babf",
+      "formula": "SUM(Numbers!A1:DX16000)+Numbers!D16000",
+      "verifiedResult": "2048001",
+      "baseline": {
+        "samples": [
+          {
+            "retainedBytes": 24812336,
+            "peakRssAfterParseKiB": 337360,
+            "peakRssAfterFormulaKiB": 384224,
+            "firstFormulaMs": 72.963
+          },
+          {
+            "retainedBytes": 24814608,
+            "peakRssAfterParseKiB": 344528,
+            "peakRssAfterFormulaKiB": 396160,
+            "firstFormulaMs": 72.501
+          },
+          {
+            "retainedBytes": 24793880,
+            "peakRssAfterParseKiB": 318816,
+            "peakRssAfterFormulaKiB": 378832,
+            "firstFormulaMs": 69.528
+          }
+        ],
+        "median": {
+          "retainedBytes": 24812336,
+          "peakRssAfterParseKiB": 337360,
+          "peakRssAfterFormulaKiB": 384224,
+          "firstFormulaMs": 72.501
+        }
+      },
+      "row-local": {
+        "samples": [
+          {
+            "retainedBytes": 1479244,
+            "peakRssAfterParseKiB": 346672,
+            "peakRssAfterFormulaKiB": 346832,
+            "firstFormulaMs": 65.822
+          },
+          {
+            "retainedBytes": 1538220,
+            "peakRssAfterParseKiB": 353408,
+            "peakRssAfterFormulaKiB": 353632,
+            "firstFormulaMs": 65.132
+          },
+          {
+            "retainedBytes": 1535548,
+            "peakRssAfterParseKiB": 338304,
+            "peakRssAfterFormulaKiB": 338496,
+            "firstFormulaMs": 63.083
+          }
+        ],
+        "median": {
+          "retainedBytes": 1535548,
+          "peakRssAfterParseKiB": 346672,
+          "peakRssAfterFormulaKiB": 346832,
+          "firstFormulaMs": 65.132
+        }
+      }
+    },
+    "sparse": {
+      "description": "4,096 rows at multiples of 256, ending at row 1,048,576. Columns A, MZ and XFD each contain 1.",
+      "archiveBytes": 44833,
+      "archiveSha256": "cb73f0ad0a3af1f29a23eac3b3cb73c10a96183cd5c2b6e8126f712d1d1e6803",
+      "formula": "SUM(Numbers!XFD256:XFD1048576)+Numbers!XFD1048576",
+      "verifiedResult": "4097",
+      "pointLookups": "After indexing, run 5 rounds of 100,000 scalar formulas, each with one XFD hit and one XFC miss. Cycle rows using index times 997 modulo 4,096. The checksum must be 100,000 in each round. Record the fastest round per process.",
+      "baseline": {
+        "samples": [
+          {
+            "retainedBytes": 1213168,
+            "peakRssAfterParseKiB": 85216,
+            "peakRssAfterFormulaKiB": 85424,
+            "firstFormulaMs": 5.58,
+            "lookupMs": 109.729
+          },
+          {
+            "retainedBytes": 776176,
+            "peakRssAfterParseKiB": 84880,
+            "peakRssAfterFormulaKiB": 84912,
+            "firstFormulaMs": 5.597,
+            "lookupMs": 109.701
+          },
+          {
+            "retainedBytes": 958920,
+            "peakRssAfterParseKiB": 83648,
+            "peakRssAfterFormulaKiB": 83712,
+            "firstFormulaMs": 5.637,
+            "lookupMs": 110.685
+          }
+        ],
+        "median": {
+          "retainedBytes": 958920,
+          "peakRssAfterParseKiB": 84880,
+          "peakRssAfterFormulaKiB": 84912,
+          "firstFormulaMs": 5.597,
+          "lookupMs": 109.729
+        }
+      },
+      "row-local": {
+        "samples": [
+          {
+            "retainedBytes": 835724,
+            "peakRssAfterParseKiB": 85328,
+            "peakRssAfterFormulaKiB": 85328,
+            "firstFormulaMs": 5.642,
+            "lookupMs": 110.376
+          },
+          {
+            "retainedBytes": 433628,
+            "peakRssAfterParseKiB": 82272,
+            "peakRssAfterFormulaKiB": 82288,
+            "firstFormulaMs": 5.616,
+            "lookupMs": 107.232
+          },
+          {
+            "retainedBytes": 421196,
+            "peakRssAfterParseKiB": 84768,
+            "peakRssAfterFormulaKiB": 84848,
+            "firstFormulaMs": 5.715,
+            "lookupMs": 109.255
+          }
+        ],
+        "median": {
+          "retainedBytes": 433628,
+          "peakRssAfterParseKiB": 84768,
+          "peakRssAfterFormulaKiB": 84848,
+          "firstFormulaMs": 5.642,
+          "lookupMs": 109.255
+        }
+      }
+    }
+  }
+}

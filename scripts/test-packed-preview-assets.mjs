@@ -67,7 +67,8 @@ try {
   assert.equal(report.groups.length, 4);
   const reader = (bytes, ...rest) => createPackedAssetReader(decoder, bytes.toString('base64'), ...rest);
   for (const group of report.groups) {
-    const compressed = await readFile(path.join(directory, `${group.decoded.sha256}-lzma-2.3.2-9.bin`));
+    const compressed = await readFile(path.join(directory, `${group.decoded.sha256}-${report.encoder}.bin`));
+    assert.equal(compressed[0], 3, 'The LZMA header must encode lc=3, lp=0 and pb=0.');
     const layout = group.assets.map(index => [['text', 'base64', 'wasm'].indexOf(report.assets[index].kind), report.assets[index].bytes]);
     const options = [layout, group.decoded.bytes, group.decoded.crc32];
     assert.throws(() => reader(compressed.subarray(0, 12), ...options)(0), /Invalid packed/);

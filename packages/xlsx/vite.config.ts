@@ -1,6 +1,7 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import { packageDeclarations } from '../../scripts/package-declarations';
+import { xlsxRegexAsset } from '../../scripts/xlsx-regex-asset';
 
 export default defineConfig({
   base: './',
@@ -23,6 +24,7 @@ export default defineConfig({
     globals: true
   },
   plugins: [
+    xlsxRegexAsset(),
     packageDeclarations({
       include: ['src/**/*.ts'],
       outDir: 'dist',

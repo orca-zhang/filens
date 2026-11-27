@@ -194,9 +194,10 @@ describe('iWork viewer', () => {
     document.body.appendChild(container);
 
     const viewer = createIworkViewer(container);
-    await viewer.preview('https://example.com/files/Quarterly%20Report.pages?download=1');
+    const url = 'https://example.com/files/Quarterly%20Report.pages?download=1';
+    await viewer.preview(url);
 
-    expect(parseMock).toHaveBeenCalledWith(expect.any(Uint8Array), undefined, 'Quarterly Report.pages');
+    expect(parseMock).toHaveBeenCalledWith(url, undefined, 'Quarterly Report.pages', undefined);
     expect(viewer.getState().fit).toBe('width');
     viewer.destroy();
   });
@@ -393,7 +394,7 @@ describe('iWork viewer', () => {
     expect(table.querySelector('tr[aria-rowindex="201"]')?.textContent).toContain('Last');
     expect(grid.scrollTop).toBe(5200);
     const shell = container.querySelector<HTMLElement>('.iworkv-numbers-objects .iworkv-page-shell')!;
-    expect(shell.style.width).toBe('400px');
+    await vi.waitFor(() => expect(shell.style.width).toBe('400px'));
     expect((shell.firstElementChild as HTMLElement).style.transform).toBe('scale(0.5)');
     viewer.destroy();
   });
@@ -421,7 +422,7 @@ describe('iWork viewer', () => {
     expect(viewer.getState().currentPage).toBe(2);
     expect(shells[2].firstElementChild).toBe(content);
     expect(shells.map(shell => shell.childElementCount)).toEqual([0, 0, 1]);
-    expect(shells[2].style.width).toBe('400px');
+    await vi.waitFor(() => expect(shells[2].style.width).toBe('400px'));
     expect(content.style.transform).toBe('scale(0.5)');
     expect(viewer.getState().scale).toBe(0.5);
     viewer.destroy();
@@ -447,16 +448,21 @@ describe('iWork viewer', () => {
     const secondSheet = buildNumbersSheetAt(context, 1);
     expect(numbersDocument.sheets.map((sheet) => sheet.loaded)).toEqual([true, false]);
     parseMock.mockResolvedValue(numbersDocument);
-    parseSheetMock.mockResolvedValue(secondSheet);
+    parseSheetMock.mockResolvedValue({ sheet: secondSheet });
 
     const container = document.body.appendChild(document.createElement('div'));
     const viewer = createIworkViewer(container);
     await viewer.preview(new Uint8Array([1, 2, 3]));
     expect(parseSheetMock).not.toHaveBeenCalled();
-    container.querySelectorAll<HTMLButtonElement>('.xlsxv-sheet-tab')[1]!.click();
+    const tab = container.querySelectorAll<HTMLButtonElement>('.xlsxv-sheet-tab')[1]!;
+    tab.focus();
+    tab.click();
     await vi.waitFor(() => expect(viewer.getState().document?.kind === 'numbers' && viewer.getState().document.sheets[1]?.loaded).toBe(true));
 
     expect(parseSheetMock).toHaveBeenCalledWith(1);
+    viewer.refreshFonts();
+    expect(container.querySelector('.xlsxv-sheet-tab.is-active')).toBe(tab);
+    expect(document.activeElement).toBe(tab);
     viewer.destroy();
   });
 

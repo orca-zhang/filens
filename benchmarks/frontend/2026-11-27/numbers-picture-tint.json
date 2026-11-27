@@ -1,0 +1,213 @@
+{
+  "date": "2026-11-27",
+  "source": {
+    "fixture": "test-styles.numbers",
+    "sha256": "6734e8dd15b77da82d8732d43d5fb2ef7552620dbe0a54758013389011949213",
+    "url": "https://github.com/masaccio/numbers-parser/blob/972e1cf0cbcba0ec5178d8889b9b410542ebce2c/tests/data/test-styles.numbers",
+    "sheet": "Headers",
+    "cells": [
+      "D2",
+      "E2"
+    ],
+    "encodedSrgb": [
+      0.3363492488861084,
+      0.7577200531959534,
+      1
+    ],
+    "tintOpacity": 0.5
+  },
+  "method": "Use the original asset rendered by D2 as the reference source. Compare the derived E2 asset to independently computed sRGB alpha compositing at matching photo coordinates. Check the rendered cell fit and row height.",
+  "browsers": {
+    "chromium": {
+      "version": "159.0.8154.6",
+      "split": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.75,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 4068242
+      },
+      "all-in-one": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.75,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 4068242
+      },
+      "offline-html": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.75,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 4068242
+      }
+    },
+    "firefox": {
+      "version": "159.0",
+      "split": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.76666259765625,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 4002255
+      },
+      "all-in-one": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.76666259765625,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 4002255
+      },
+      "offline-html": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.76666259765625,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 4002227
+      }
+    },
+    "webkit": {
+      "version": "27.2",
+      "split": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.75,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 3730515
+      },
+      "all-in-one": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.75,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 3730515
+      },
+      "offline-html": {
+        "samples": 80,
+        "maxChannelDelta": 1,
+        "rowHeight": 116.75,
+        "imageSizes": [
+          [
+            1771,
+            2657
+          ],
+          [
+            1771,
+            2657
+          ]
+        ],
+        "fit": [
+          "cover",
+          "cover"
+        ],
+        "pngBytes": 3730515
+      }
+    }
+  },
+  "syntheticChecks": "Chromium, Firefox and WebKit checked opaque, translucent and transparent tile pixels in stored cells, inherited blanks and a clipped 120-row by 50-column merge. The preview reused one generated Blob URL and revoked it on replacement. Closing during a second PNG encode discarded its result.",
+  "outputLimits": "The tint raster has an 8,388,608-pixel budget and an 8,192-pixel side limit. One raster is generated at a time for each preview. The reported PNG sizes are encoded bytes for one source and tint."
+}

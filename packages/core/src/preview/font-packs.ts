@@ -1,4 +1,5 @@
-import type { PreviewFontPack, PreviewFontTraits } from './types';
+import { fontsourceSubsetIndexes } from './font-subsets';
+import type { PreviewFontAsset, PreviewFontPack, PreviewFontTraits } from './types';
 
 const VERSION = '5.2.6';
 const MIRRORS = ['https://cdn.jsdelivr.net/npm', 'https://unpkg.com'];
@@ -7,7 +8,10 @@ const LATIN: Array<readonly [number, number]> = [[0, 255], [305, 305], [338, 339
 /** Small manifests only. Font files are fetched lazily, with pinned versions and mirrors. */
 export function createWebFontPacks(options: { mirrors?: readonly string[] } = {}): PreviewFontPack[] {
   const mirrors = options.mirrors ?? MIRRORS;
-  const definitions: Array<[string, string, string, PreviewFontTraits]> = [
+  const definitions: Array<[
+    id: string, family: string, subset: string, traits: PreviewFontTraits,
+    release?: { version: string; weights: number[] }
+  ]> = [
     ['carlito', 'Carlito', 'latin', { serif: false, script: 'latin' }],
     ['caladea', 'Caladea', 'latin', { serif: true, script: 'latin' }],
     ['arimo', 'Arimo', 'latin', { serif: false, script: 'latin' }],
@@ -23,16 +27,33 @@ export function createWebFontPacks(options: { mirrors?: readonly string[] } = {}
     ['noto-serif-sc', 'Noto Serif SC', 'chinese-simplified', { serif: true, script: 'cjk-sc' }],
     ['noto-serif-tc', 'Noto Serif TC', 'chinese-traditional', { serif: true, script: 'cjk-tc' }],
     ['noto-serif-jp', 'Noto Serif JP', 'japanese', { serif: true, script: 'japanese' }],
-    ['noto-serif-kr', 'Noto Serif KR', 'korean', { serif: true, script: 'korean' }]
+    ['noto-serif-kr', 'Noto Serif KR', 'korean', { serif: true, script: 'korean' }],
+    ['noto-color-emoji', 'Noto Color Emoji', 'emoji', { style: 'symbol', script: 'emoji' }, { version: '5.3.2', weights: [400] }],
+    ['noto-emoji', 'Noto Emoji', 'emoji', { style: 'symbol', script: 'emoji' }, { version: '5.3.2', weights: [400, 700] }],
+    ['stix-two-math', 'STIX Two Math', 'latin', { style: 'text', script: 'math' }, { version: '5.3.0', weights: [400] }],
+    ['noto-sans-math', 'Noto Sans Math', 'latin', { style: 'text', script: 'math' }, { version: '5.3.0', weights: [400] }]
   ];
-  return definitions.map(([id, fontFamily, subset, traits]) => ({
-    id, version: VERSION, license: `https://cdn.jsdelivr.net/npm/@fontsource/${id}@${VERSION}/LICENSE`,
-    fonts: [400, 700].flatMap(weight => (subset === 'latin' && id !== 'noto-sans-mono' ? ['normal', 'italic'] : ['normal']).map(style => ({
-      id: `${id}-${subset}-${weight}-${style}`, fontFamily,
-      traits: { style: 'text' as const, monospace: false, stretch: 100, ...traits, weight },
-      coverage: subset === 'latin' ? LATIN : undefined,
-      descriptors: { weight: String(weight), style },
-      sources: mirrors.map(base => ({ url: `${base.replace(/\/$/, '')}/@fontsource/${id}@${VERSION}/files/${id}-${subset}-${weight}-${style}.woff2` }))
-    })))
-  }));
+  return definitions.map(([id, fontFamily, subset, traits, release]) => {
+    const version = release?.version ?? VERSION;
+    const packageName = `@fontsource/${id}@${version}`;
+    const styles = traits.script === 'latin' && id !== 'noto-sans-mono' ? ['normal', 'italic'] : ['normal'];
+    const source = (file: string) => mirrors.map(base => ({ url: `${base.replace(/\/$/, '')}/${packageName}/${file}` }));
+    const subsetIndex = subset !== 'latin' ? {
+      packageId: id, sources: source('unicode.json'), requiresSvg: id === 'noto-color-emoji'
+    } : undefined;
+    return {
+      id, version, license: `https://cdn.jsdelivr.net/npm/${packageName}/LICENSE`,
+      fonts: (release?.weights ?? [400, 700]).flatMap(weight => styles.map(style => {
+        const asset: PreviewFontAsset = {
+          id: `${id}-${subset}-${weight}-${style}`, fontFamily,
+          traits: { style: 'text', monospace: false, stretch: 100, ...traits, weight },
+          coverage: traits.script === 'latin' ? LATIN : undefined,
+          descriptors: { weight: String(weight), style },
+          sources: source(`files/${id}-${subset}-${weight}-${style}.woff2`)
+        };
+        if (subsetIndex) fontsourceSubsetIndexes.set(asset, subsetIndex);
+        return asset;
+      }))
+    };
+  });
 }

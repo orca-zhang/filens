@@ -23,16 +23,19 @@ const work = path.dirname(output);
 await mkdir(work, { recursive: true });
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const sourceBaseline = JSON.parse(await readFile(path.join(baseline, 'sources.json'), 'utf8')).files;
+const xmlPath = 'packages/pptx/src/parser/xml.ts';
+const legacyXmlPath = 'packages/core/src/parser/xml.ts';
 const engines = {}, artifacts = {};
 for (const name of ['baseline', 'current']) {
   const directory = name === 'baseline' ? path.join(baseline, 'core-dist') : 'packages/core/dist';
   const xmlFile = path.resolve(work, `xml-${name}.mjs`);
   await build({
-    stdin: { contents: "export { parseXmlFile, parseXmlFileOrdered } from './packages/core/src/parser/xml.ts';", resolveDir: process.cwd() },
+    stdin: { contents: `export { parseXmlFile, parseXmlFileOrdered } from './${xmlPath}';`, resolveDir: process.cwd() },
     outfile: xmlFile, bundle: true, format: 'esm', platform: 'node', target: 'es2022', external: ['fast-xml-parser'],
     plugins: name === 'baseline' ? [{ name: 'source-baseline', setup(builder) {
       builder.onLoad({ filter: /\.ts$/ }, args => {
-        const source = sourceBaseline[path.relative(process.cwd(), args.path)];
+        const relative = path.relative(process.cwd(), args.path);
+        const source = sourceBaseline[relative] ?? (relative === xmlPath ? sourceBaseline[legacyXmlPath] : undefined);
         return source === undefined ? undefined : { contents: source, loader: 'ts' };
       });
     } }] : []
@@ -40,16 +43,23 @@ for (const name of ['baseline', 'current']) {
   engines[name] = { ...await import(pathToFileURL(path.resolve(directory, 'index.js')).href),
     xml: await import(pathToFileURL(xmlFile).href) };
   artifacts[name] = {};
-  for (const file of (await readdir(directory)).filter(file => file.endsWith('.js'))) {
-    const bytes = await readFile(path.join(directory, file));
-    artifacts[name][file] = { sha256: hash(bytes), bytes: bytes.length,
-      gzip9Bytes: gzipSync(bytes, { level: 9 }).length, brotliBytes: brotliCompressSync(bytes).length };
+  const directories = name === 'baseline' ? [directory] : [directory, 'packages/pptx/dist'];
+  for (const dist of directories) {
+    for (const file of (await readdir(dist)).filter(file => file.endsWith('.js'))) {
+      const bytes = await readFile(path.join(dist, file));
+      const key = dist === directory ? file : `pptx/${file}`;
+      artifacts[name][key] = { sha256: hash(bytes), bytes: bytes.length,
+        gzip9Bytes: gzipSync(bytes, { level: 9 }).length, brotliBytes: brotliCompressSync(bytes).length };
+    }
   }
   artifacts[name].xmlBenchmark = { sha256: hash(await readFile(xmlFile)) };
 }
 const result = { date: '2026-11-04', node: process.version, cpu: os.cpus()[0].model,
   warmupIterations: 3, measuredIterations: 9, artifacts, sourceSha256: {}, cases: {} };
-for (const file of Object.keys(sourceBaseline)) result.sourceSha256[file] = hash(await readFile(file));
+for (const file of Object.keys(sourceBaseline)) {
+  const currentFile = file === legacyXmlPath ? xmlPath : file;
+  result.sourceSha256[currentFile] = hash(await readFile(currentFile));
+}
 const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 async function measure(name, input, run, metadata = {}, prepare) {
   const samples = { baseline: [], current: [] };
@@ -110,7 +120,7 @@ for (const file of ['sample-deck.pptx', 'rich-pptx-shapes.pptx']) {
   await measure(`pptx-${file}`, bytes, (engine, bytes) => engine.loadPptx(bytes),
     { archiveBytes: bytes.length, archiveSha256: hash(bytes), includes: 'complete loadPptx model; no rendering or module import; fresh entry module resets generated IDs before each timed invocation' },
     (name, iteration) => {
-      const directory = name === 'baseline' ? path.join(baseline, 'core-dist') : 'packages/core/dist';
+      const directory = name === 'baseline' ? path.join(baseline, 'core-dist') : 'packages/pptx/dist';
       return import(`${pathToFileURL(path.resolve(directory, 'index.js')).href}?shared-readers=${file}-${iteration}`);
     });
 }

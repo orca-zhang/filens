@@ -21,6 +21,7 @@ const work = path.dirname(output);
 await mkdir(work, { recursive: true });
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sources = JSON.parse(await readFile(baseline, 'utf8')).files;
+const pdfStyle = await readFile('packages/pdf/src/styles/index.css', 'utf8');
 const result = { date: new Date().toISOString(), node: process.version, cpu: os.cpus()[0].model,
   method: 'Identical esbuild source bundles, shared current dependencies, actual Chromium DOM geometry. Two warmups and seven alternating measured runs. Timers cover visibility queries or complete font collection/diagnostics only. Inputs, imports, DOM creation, scroll/layout preparation, serialization, hashes and validation are outside timers. Separate actual mixed-page PDF pixel/lifecycle validation is untimed.',
   warmups: 2, iterations: 7, sourceSha256: {}, baselineSourceSha256: {}, entrySha256: {}, cases: {}, errors: [] };
@@ -28,10 +29,12 @@ for (const [file, source] of Object.entries(sources)) {
   result.sourceSha256[file] = sha(await readFile(file));
   result.baselineSourceSha256[file] = sha(source);
 }
+result.sourceSha256['packages/pdf/src/page-layout.ts'] = sha(await readFile('packages/pdf/src/page-layout.ts'));
 for (const engine of ['baseline', 'current']) {
   const entry = path.join(work, `runtime-${engine}.mjs`);
   await build({ stdin: { resolveDir: process.cwd(), contents:
     "export { PdfPreviewSession } from './packages/pdf/src/preview-driver.ts';" +
+    "export { PdfPageLayout } from './packages/pdf/src/page-layout.ts';" +
     "export { collectSlideFontReferences, analyzePreviewFonts } from './packages/core/src/preview/fonts.ts';" +
     "export { collectSlideFontLoadingReferences } from './packages/core/src/preview/font-scenes.ts';" },
   outfile: entry, bundle: true, platform: 'browser', format: 'esm', target: 'es2020',
@@ -68,12 +71,12 @@ try {
     page.on('pageerror', error => result.errors.push(error.message));
     await page.route(origin + '/', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html>' }));
     await page.goto(origin);
-    await page.evaluate(async entry => {
+    await page.evaluate(async ({ entry, pdfStyle }) => {
       window.lib = await import(entry);
       const style = document.createElement('style');
-      style.textContent = 'body{margin:0}.pdfv-preview{position:relative;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;gap:16px;width:100%;height:100%;min-height:360px;overflow:auto}.pdfv-page-slot{justify-self:start;margin-inline:auto}.pdfv-page{display:block;box-sizing:border-box;border:1px solid #d7dee8}';
+      style.textContent = `body{margin:0}${pdfStyle}`;
       document.head.append(style);
-    }, '/' + path.join(work, `runtime-${engine}.mjs`));
+    }, { entry: '/' + path.join(work, `runtime-${engine}.mjs`), pdfStyle });
   }
   for (const spec of specs) {
     for (const page of Object.values(pages)) await page.evaluate(spec => {
@@ -83,11 +86,17 @@ try {
       document.body.append(host);
       if (spec.kind === 'visibility') {
         const session = new window.lib.PdfPreviewSession(host, { fit: 'none' });
-        const root = host.firstElementChild;
-        session.pages = Array.from({ length: spec.count }, (_, index) => {
+        const root = session.root;
+        const heightAt = index => [80, 800, 1600][index % 3];
+        if (session.pageTrack) {
+          session.layout = new window.lib.PdfPageLayout(spec.count, { width: 600, height: heightAt(0) });
+          for (let index = 0; index < spec.count; index++) session.layout.measure(index, 600, heightAt(index));
+          root.append(session.pageTrack);
+          session.layoutPages();
+        } else session.pages = Array.from({ length: spec.count }, (_, index) => {
           const element = document.createElement('div');
           element.className = 'pdfv-page-slot';
-          const height = [80, 800, 1600][index % 3];
+          const height = heightAt(index);
           element.style.cssText = `height:${height}px;width:600px`;
           root.append(element);
           return { index, element, width: 600, height };
@@ -118,7 +127,7 @@ try {
             try {
               for (let i = 0; i < input.scrolls.length; i++) {
                 input.root.scrollTop = input.scrolls[i];
-                input.root.getBoundingClientRect(); // Flush scroll/layout before timing.
+                original.call(input.root); // Flush scroll/layout before timing.
                 input.session.state.loading = i % 2 === 0;
                 input.session.state.pageIndex = 0;
                 const start = performance.now();
@@ -181,15 +190,18 @@ try {
           const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
           const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))].map(byte => byte.toString(16).padStart(2, '0')).join('');
           hashes.push({ index, scale, fit, width: canvas.width, height: canvas.height, hash,
-            pageIndex: session.getState().pageIndex, canvases: host.querySelectorAll('canvas').length });
+            pageIndex: session.getState().pageIndex, canvases: host.querySelectorAll('canvas').length,
+            slots: host.querySelectorAll('.pdfv-page-slot').length });
         }
         const canvases = [...host.querySelectorAll('canvas')];
         session.destroy();
         return { hashes, removed: !host.childElementCount, buffersReleased: canvases.every(canvas => !canvas.width && !canvas.height) };
       } finally { session.destroy(); }
     }, [...pdf]);
-    expected ??= validation;
-    assert.deepEqual(validation, expected, 'Mixed-page PDF pixels/navigation/lifecycle changed');
+    const output = { ...validation, hashes: validation.hashes.map(({ canvases, slots, ...page }) => page) };
+    expected ??= output;
+    assert.deepEqual(output, expected, 'Mixed-page PDF pixels/navigation/lifecycle changed');
+    assert(validation.hashes.every(({ canvases, slots }) => canvases <= 4 && (engine === 'baseline' || slots <= 4)));
     assert(validation.removed && validation.buffersReleased);
     result.pdfValidation.engines[engine] = validation;
   }

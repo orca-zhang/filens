@@ -1,16 +1,69 @@
+import { openZipArchive } from '@filens/core';
 import JSZip from 'jszip';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { conditionalFormattingWindow } from '../src/conditional-formatting';
 import { createRangeValueReader } from '../src/conditional-range-values';
 import { loadXlsxWorkbook } from '../src/parser';
 import type { ParsedSheet } from '../src/types';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
+import { createConditionalExtensionWorkbook } from './fixtures/conditional-extension-workbook.mjs';
 import { createConditionalVisualWorkbook } from './fixtures/conditional-visual-workbook.mjs';
 
 const cellAt = (sheet: ParsedSheet, row: number, column: number) =>
   sheet.rows.find(entry => entry.index === row)?.cells.find(cell => cell.column === column);
 
 describe('conditional visual rules', () => {
+  it.each([
+    { streamed: false, prefixed: false }, { streamed: true, prefixed: false },
+    { streamed: false, prefixed: true }, { streamed: true, prefixed: true }
+  ])('reads standalone Office 2010 rules and styles (%o)', async ({ streamed, prefixed }) => {
+    const source = await createConditionalExtensionWorkbook({ streamed, prefixed });
+    const entries = new Map(await openZipArchive(source));
+    const entry = entries.get('xl/worksheets/s1.xml')!;
+    const read = vi.fn(entry.bytes.bind(entry));
+    entries.set(entry.name, { ...entry, bytes: read, chunks: streamed ? entry.chunks : undefined });
+    const workbook = await loadXlsxWorkbook(source, { descriptor: { source }, zipEntries: entries });
+    expect(read).toHaveBeenCalledTimes(streamed ? 0 : 1);
+    const [sheet] = workbook.sheets;
+    expect(workbook.warnings).toEqual([
+      'Ignored 2 invalid conditional formatting rules in sheet Extended Rules.',
+      'Skipped 1 unsupported conditional formatting rules in sheet Extended Rules.'
+    ]);
+    expect(sheet.conditionalRules?.map(rule => rule.priority)).toEqual([1, 2, 3, 4, 5, 6, 9, 11, 12, 13, 14, 15, 16, 17, 18]);
+    expect(sheet.conditionalRules?.[4].ranges).toBe(sheet.conditionalRules?.[5].ranges);
+    const format = conditionalFormattingWindow(sheet, 1, 3, 1, 10)!;
+    const at = (row: number, column: number) => format(row, column, cellAt(sheet, row, column));
+    expect(at(1, 1)).toBeUndefined();
+    expect(at(2, 1)?.fill?.color).toBe('#555555');
+    expect(at(1_048_576, 16_384)?.fill?.color).toBe('#FFFFFF');
+    expect(at(1_048_576, 16_383)?.fill?.color).toBe('#CCFFEE');
+    expect(at(1, 2)).toEqual({ bold: true, color: '#006644', fill: { type: 'solid', color: '#CCFFCC' },
+      numberFormat: '0.00" units"', borders: { top: { color: '#112233', width: 1 } } });
+    expect(at(2, 2)).toEqual({ italic: true, color: '#990099' });
+    expect(at(3, 2)?.color).toBe('#006644');
+    expect(at(1, 4)).toBeUndefined();
+    expect(at(2, 4)?.fill?.color).toBe('#FFEEDD');
+    expect(at(1, 5)?.fill?.color).toBe('#DDFFEE');
+    expect(at(2, 5)).toBeUndefined();
+    expect(at(3, 5)?.fill?.color).toBe('#DDFFEE');
+    expect(at(1, 6)).toBeUndefined();
+    expect(at(2, 6)).toEqual({ bold: true, fill: { type: 'solid', color: '#CCDDFF' } });
+    expect([1, 2, 3].map(row => at(row, 8)?.fill?.color)).toEqual(['#CCFFEE', '#FFEECC', '#FFEECC']);
+    expect(at(1, 9)).toEqual({ bold: true });
+    expect(at(2, 9)).toEqual({ fill: { type: 'solid', color: '#DDCCFF' } });
+    expect(at(3, 9)).toEqual({ bold: true, fill: { type: 'solid', color: '#DDCCFF' } });
+    expect([1, 2, 3].map(row => at(row, 10)?.fill?.color)).toEqual(['#FFCCCC', '#CCFFCC', '#FFCCCC']);
+    expect([1, 2, 3].map(row => at(row, 10)?.bold)).toEqual([true, undefined, undefined]);
+    expect([1, 2, 3].map(row => at(row, 10)?.color)).toEqual(['#990099', undefined, undefined]);
+    expect(at(1_048_576, 16_382)).toEqual({ bold: true });
+    expect(cellAt(sheet, 1, 10)).toMatchObject({ value: '#N/A', valueType: 'error', needsCalculation: false });
+
+    const [copy, settings] = clonePreviewWorkbook(workbook).sheets;
+    cellAt(settings, 1, 1)!.value = '60';
+    expect(conditionalFormattingWindow(copy, 1, 3, 1, 7)!(2, 1, cellAt(copy, 2, 1))?.fill?.color).toBe('#333333');
+    expect(at(2, 1)?.fill?.color).toBe('#555555');
+  });
+
   it('evaluates two and three stops using thresholds, unique sparse values and offscreen formulas', async () => {
     const workbook = await loadXlsxWorkbook(await createConditionalVisualWorkbook());
     const [sheet] = workbook.sheets;

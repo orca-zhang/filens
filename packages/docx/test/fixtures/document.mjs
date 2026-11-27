@@ -38,3 +38,69 @@ export function createDocxFixture(images = 400) {
   return zipSync(Object.fromEntries([...Object.entries(files).map(([name, text]) => [name, [strToU8(text), { mtime: new Date(2020, 0, 1) }]]),
     ['word/media/noise.png', [png(), { mtime: new Date(2020, 0, 1) }]]]), { level: 6 });
 }
+
+export function createDocxPaginationFixture() {
+  const ns = 'http://schemas.openxmlformats.org', rel = `${ns}/officeDocument/2006/relationships`;
+  const word = `xmlns:w="${ns}/wordprocessingml/2006/main"`;
+  const p = (text, properties = '') => `<w:p>${properties && `<w:pPr>${properties}</w:pPr>`}<w:r><w:t>${text}</w:t></w:r></w:p>`;
+  const newPage = '<w:pStyle w:val="NewPage"/>';
+  const parts = {
+    '[Content_Types].xml': `<Types xmlns="${ns}/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`,
+    '_rels/.rels': `<Relationships xmlns="${ns}/package/2006/relationships"><Relationship Id="body" Type="${rel}/officeDocument" Target="word/document.xml"/></Relationships>`,
+    'word/_rels/document.xml.rels': `<Relationships xmlns="${ns}/package/2006/relationships"><Relationship Id="styles" Type="${rel}/styles" Target="styles.xml"/></Relationships>`,
+    'word/styles.xml': `<w:styles ${word}><w:style w:type="paragraph" w:styleId="BreakBase"><w:pPr><w:pageBreakBefore/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="BreakMiddle"><w:basedOn w:val="BreakBase"/></w:style><w:style w:type="paragraph" w:styleId="NewPage"><w:basedOn w:val="BreakMiddle"/></w:style><w:style w:type="paragraph" w:styleId="NoBreak"><w:basedOn w:val="BreakBase"/><w:pPr><w:pageBreakBefore w:val="0"/></w:pPr></w:style></w:styles>`,
+    'word/document.xml': `<w:document ${word}><w:body>${p('First paragraph', newPage)}${p('Before jump')}`
+      + p('Inherited', newPage) + p('Direct override', newPage + '<w:pageBreakBefore w:val="0"/>') + p('Style override', '<w:pStyle w:val="NoBreak"/>')
+      + '<w:p><w:pPr><w:pageBreakBefore/></w:pPr><w:r><w:rPr><w:b/></w:rPr><w:t>Direct start</w:t><w:br w:type="page"/><w:t>After explicit</w:t><w:lastRenderedPageBreak/><w:t>After saved</w:t></w:r></w:p>'
+      + '<w:p><w:hyperlink w:anchor="tail"><w:r><w:t>Link before</w:t><w:lastRenderedPageBreak/><w:t>Link after</w:t></w:r></w:hyperlink></w:p>'
+      + '<w:p><w:bookmarkStart w:id="0" w:name="tail"/><w:r><w:t>Tail</w:t></w:r><w:bookmarkEnd w:id="0"/></w:p>'
+      + '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr></w:body></w:document>'
+  };
+  return zipSync(Object.fromEntries(Object.entries(parts).map(([name, xml]) => [name, strToU8(xml)])));
+}
+
+export function createDocxSectionsFixture(evenAndOddHeaders) {
+  const ns = 'http://schemas.openxmlformats.org', rel = `${ns}/officeDocument/2006/relationships`;
+  const word = `xmlns:w="${ns}/wordprocessingml/2006/main"`;
+  const portrait = '<w:pgSz w:w="12240" w:h="15840"/>';
+  const landscape = '<w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/>';
+  const margins = '<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720"/>';
+  const ref = (kind, type, id) => `<w:${kind}Reference w:type="${type}" r:id="${id}"/>`;
+  const type = value => `<w:type w:val="${value}"/>`;
+  const sect = contents => `<w:sectPr>${contents}</w:sectPr>`;
+  const p = (text, properties = '', before = '') =>
+    `<w:p>${properties && `<w:pPr>${properties}</w:pPr>`}<w:r>${before}<w:t>${text}</w:t></w:r></w:p>`;
+  const parts = {
+    '_rels/.rels': `<Relationships xmlns="${ns}/package/2006/relationships"><Relationship Id="body" Type="${rel}/officeDocument" Target="word/document.xml"/></Relationships>`,
+    'word/settings.xml': `<w:settings ${word}><w:evenAndOddHeaders w:val="${evenAndOddHeaders ? 1 : 0}"/></w:settings>`,
+    'word/document.xml': `<w:document ${word} xmlns:r="${rel}"><w:body>`
+      + p('Portrait opening', sect(ref('header', 'default', 'main') + ref('header', 'first', 'first')
+        + ref('header', 'even', 'even') + ref('footer', 'default', 'base') + ref('footer', 'even', 'alternate') + portrait + margins))
+      + p('Next section', sect(ref('footer', 'default', 'replacement') + portrait + margins + '<w:titlePg/>'))
+      + p('Continuous on the same page')
+      + p('Continuous after a hard break', sect(ref('header', 'default', 'continuous') + type('continuous') + portrait + margins + '<w:cols w:num="2" w:space="360"/>'), '<w:br w:type="page"/>')
+      + p('Landscape section', sect(type('continuous')))
+      + p('Even section', '<w:pageBreakBefore/>', '<w:lastRenderedPageBreak/>')
+      + p('End of even section', sect(type('evenPage') + landscape + margins))
+      + p('Continuous after a saved break', sect(type('continuous') + landscape + margins), '<w:lastRenderedPageBreak/>')
+      + p('Odd section', sect(type('oddPage') + landscape + margins + '<w:titlePg/>'))
+      + p('Restart at page 21') + p('Page 22', '<w:pageBreakBefore/>')
+      + sect(type('nextPage') + landscape + margins + '<w:pgNumType w:start="21"/><w:titlePg w:val="0"/>')
+      + '</w:body></w:document>'
+  };
+  const relationships = [['settings', 'settings']];
+  for (const [id, kind, name] of [
+    ['main', 'header', 'Default header'], ['first', 'header', 'First-page header'],
+    ['even', 'header', 'Even header'], ['continuous', 'header', 'Continuous header'],
+    ['base', 'footer', 'Default footer'], ['replacement', 'footer', 'Replacement footer'], ['alternate', 'footer', 'Even footer']
+  ]) {
+    relationships.push([id, kind]);
+    parts[`word/${id}.xml`] = `<w:${kind === 'header' ? 'hdr' : 'ftr'} ${word}>${p(name)}</w:${kind === 'header' ? 'hdr' : 'ftr'}>`;
+  }
+  parts['word/_rels/document.xml.rels'] = `<Relationships xmlns="${ns}/package/2006/relationships">`
+    + relationships.map(([id, kind]) => `<Relationship Id="${id}" Type="${rel}/${kind}" Target="${id}.xml"/>`).join('') + '</Relationships>';
+  const types = [['document', 'document.main'], ...relationships];
+  parts['[Content_Types].xml'] = `<Types xmlns="${ns}/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`
+    + types.map(([id, kind]) => `<Override PartName="/word/${id}.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}+xml"/>`).join('') + '</Types>';
+  return zipSync(Object.fromEntries(Object.entries(parts).map(([name, xml]) => [name, strToU8(xml)])));
+}

@@ -49,11 +49,11 @@ export interface ModelEntity extends ModelStyle {
 }
 export interface CadModel {
   schema_version: number;
-  source: { format: string; version: string };
+  source: { format: string; version: string; codepage?: string | null };
   units: { unit: string };
   layers: (ModelStyle & { name: string; frozen: boolean; locked: boolean })[];
   linetypes: { name: string; description?: string | null; pattern: number[] }[];
-  text_styles: { name: string; font?: string | null }[];
+  text_styles: { name: string; font?: string | null; props?: Record<string, unknown> }[];
   blocks: { name: string; base_point: ModelPoint; entities: ModelEntity[] }[];
   models: { kind: string; entities: ModelEntity[] }[];
   warnings: { message: string }[];

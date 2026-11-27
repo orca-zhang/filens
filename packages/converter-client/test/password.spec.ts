@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import JSZip from 'jszip';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createWasmConverterClient } from '../src';
+import { InMemoryWasiHost } from '../src/wasi-runner';
 import type { ConverterClient } from '@filens/core';
 
 const password = ' filens 密码🔐 ';
@@ -73,6 +74,60 @@ describe('optional Office WASM loading', () => {
     await expect(split.convert(request, context)).rejects.toThrow('Network unavailable');
     expect((await split.convert(request, context)).format).toBe('docx');
     expect(load).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears WASI scratch for conversion of an already unlocked attachment', async () => {
+    const clear = vi.spyOn(InMemoryWasiHost.prototype, 'clearSensitiveData');
+    const source = new TextEncoder().encode('A decrypted document');
+    try {
+      const result = await client.convert({ source, sourceFormat: 'txt', targetFormat: 'docx' },
+        { descriptor: { source, sensitive: true } });
+      const zip = await JSZip.loadAsync(result.source as Uint8Array);
+      expect(await zip.file('word/document.xml')?.async('string')).toContain('A decrypted document');
+      expect(clear).toHaveBeenCalledOnce();
+    } finally { clear.mockRestore(); }
+  });
+
+  it.each(['success', 'abort'])('clears intermediate Office plaintext after %s', async outcome => {
+    const split = createWasmConverterClient({ wasm: coreWasm, officeWasm });
+    const request = await encryptedRequest();
+    const controller = new AbortController();
+    const source = request.source.slice();
+    const written: Uint8Array[] = [];
+    const sentPasswords: (string | undefined)[] = [];
+    const readFile = InMemoryWasiHost.prototype.readFile;
+    const setInstance = InMemoryWasiHost.prototype.setInstance;
+    const files = vi.spyOn(InMemoryWasiHost.prototype, 'readFile').mockImplementation(function (this: InMemoryWasiHost, path) {
+      const bytes = readFile.call(this, path);
+      if (path === '/work/output.docx') {
+        written.push(bytes);
+        if (outcome === 'abort' && written.length === 1) controller.abort();
+      }
+      return bytes;
+    });
+    const invocations = vi.spyOn(InMemoryWasiHost.prototype, 'setInstance').mockImplementation(function (this: InMemoryWasiHost, instance) {
+      const payload = readFile.call(this, '/work/options.json');
+      sentPasswords.push(JSON.parse(new TextDecoder().decode(payload)).password);
+      payload.fill(0);
+      setInstance.call(this, instance);
+    });
+    try {
+      const pending = split.convert(request, { descriptor: { source: request.source }, signal: controller.signal });
+      if (outcome === 'abort') {
+        await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+        expect(written).toHaveLength(1);
+        expect(sentPasswords).toEqual([password, password]);
+      } else {
+        const result = await pending;
+        expect(written).toHaveLength(2);
+        expect(sentPasswords).toEqual([password, password, undefined]);
+        const zip = await JSZip.loadAsync(result.source as Uint8Array);
+        expect(await zip.file('word/document.xml')?.async('string')).toContain('Fixture DOCX document');
+      }
+      expect(written[0].length).toBeGreaterThan(0);
+      expect(written[0].every(byte => byte === 0)).toBe(true);
+      expect(request.source).toEqual(source);
+    } finally { files.mockRestore(); invocations.mockRestore(); }
   });
 
   it('cancels while loading Office WASM without breaking a later conversion', async () => {

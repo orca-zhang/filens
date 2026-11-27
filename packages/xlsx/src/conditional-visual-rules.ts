@@ -29,9 +29,10 @@ function readThreshold(node: unknown, extension = false): ConditionalThreshold |
   }
 }
 
-export function readColorScale(node: unknown, color: ReadColor): ParsedConditionalVisual | undefined {
-  const thresholds = toArray(readPath(node, ['cfvo'])).map(entry => readThreshold(entry));
-  const colors = toArray(readPath(node, ['color'])).map(color);
+export function readColorScale(node: unknown, color: ReadColor, extension = false): ParsedConditionalVisual | undefined {
+  const read = extension ? readLocalPath : readPath;
+  const thresholds = toArray(read(node, ['cfvo'])).map(entry => readThreshold(entry, extension));
+  const colors = toArray(read(node, ['color'])).map(color);
   if ((thresholds.length !== 2 && thresholds.length !== 3) || thresholds.length !== colors.length
     || !thresholds.every(value => value !== undefined) || !colors.every(value => value !== undefined)) return undefined;
   return { type: 'colorScale', thresholds, colors };

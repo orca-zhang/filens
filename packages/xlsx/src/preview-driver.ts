@@ -15,9 +15,11 @@ import {
   type WorkbookPreviewState
 } from '@filens/core';
 import { loadPreviewWorkbook } from './workbook-cache';
+import { formulaClock, type FormulaClock } from './formula-clock';
+import { workbookFontReferences } from './font-usage';
 import { createSheetTable, ROW_BATCH_SIZE, COLUMN_BATCH_SIZE, SheetRowWindow } from './table';
 export { appendSheetRows, createSheetTable, ROW_BATCH_SIZE } from './table';
-import type { ParsedRichText, ParsedWorkbook } from './types';
+import type { ParsedSheet, ParsedWorkbook } from './types';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -42,9 +44,17 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
   private removeAbortListener?: () => void;
   private state: WorkbookPreviewState;
   private readonly fontLoading: ReturnType<typeof bindPreviewFontLoading>;
+  private readonly sampleFonts: boolean;
   private fontReferences: PreviewFontReference[] = [];
   private allFontReferences: PreviewFontReference[] = [];
   private rowWindow?: SheetRowWindow;
+  private csvUpdateFrame: number | null = null;
+  private pendingCsvSheet?: ParsedSheet;
+  private worksheetPending = false;
+  private worksheetUpdateFrame: number | null = null;
+  private pendingWorksheetRows?: ParsedSheet;
+  private clock?: FormulaClock;
+  private midnightTimer?: ReturnType<typeof setTimeout>;
 
   constructor(private readonly host: HTMLElement, options: PreviewOptions = {}) {
     this.root = document.createElement('div');
@@ -72,6 +82,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
       scale: options.initialScale ?? 1
     };
     this.fontLoading = bindPreviewFontLoading(this, host.ownerDocument, options);
+    this.sampleFonts = Boolean(options.fontLoading);
   }
 
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
@@ -105,35 +116,32 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
 
     try {
       if (signal?.aborted) abort();
-      const workbook = await loadPreviewWorkbook(source, { ...context, signal: controller.signal });
+      const canPublish = () => generation === this.loadGeneration && !controller.signal.aborted;
+      const workbook = await loadPreviewWorkbook(source, { ...context, signal: controller.signal }, {
+        csvRows: sheet => { if (canPublish()) this.previewCsvRows(sheet); },
+        worksheet: sheet => { if (canPublish()) this.previewWorksheet(sheet); },
+        worksheetRows: sheet => { if (canPublish()) this.previewWorksheet(sheet, true); }
+      });
       if (generation !== this.loadGeneration) return;
       if (controller.signal.aborted) throw new DOMException('Workbook preview aborted.', 'AbortError');
-      this.workbook = workbook;
-      const used = new Set<PreviewFontReference>();
-      const richTexts = new Set<ParsedRichText>();
-      for (const sheet of workbook.sheets) {
-        if (sheet.columnWidthSource?.font) used.add(sheet.columnWidthSource.font);
-        const formats = sheet.cellStyles?.formats;
-        const addStyleFont = (index: number) => {
-          const font = formats?.[index]?.font;
-          if (font) used.add(font);
-        };
-        addStyleFont(0);
-        for (const range of sheet.cellStyles?.columns ?? []) {
-          if (range.firstColumn <= sheet.columnCount && range.lastColumn >= 1) addStyleFont(range.styleIndex);
-        }
-        for (const row of sheet.rows) {
-          if (row.styleIndex !== undefined) addStyleFont(row.styleIndex);
-          for (const cell of row.cells) {
-            if (cell.font) used.add(cell.font);
-            if (!cell.richText || richTexts.has(cell.richText)) continue;
-            richTexts.add(cell.richText);
-            for (const run of cell.richText.runs) if (run.font?.fontFamily) used.add(run.font);
-          }
-        }
+      const partialWorkbook = this.workbook;
+      const isCsv = normalizeFormat(context.route?.sourceFormat ?? context.descriptor.extension ?? '') === 'csv';
+      const csvSheet = isCsv ? partialWorkbook?.sheets[0] : undefined;
+      if (csvSheet) {
+        this.cancelCsvUpdate();
+        this.updateCsvDimensions(csvSheet, workbook.sheets[0]);
+        workbook.sheets[0] = csvSheet;
       }
-      this.allFontReferences = (workbook.fonts ?? []).map(ref => ({ ...ref }));
-      this.fontReferences = this.allFontReferences.filter((_, index) => used.has(workbook.fonts![index]));
+      this.workbook = workbook;
+      if (workbook.sheets.length) {
+        this.clock = formulaClock(workbook.sheets[0]);
+        this.clock.time = Date.now();
+        this.host.ownerDocument.addEventListener('visibilitychange', this.resumeClock);
+        this.scheduleMidnight();
+      }
+      const fontReferences = workbookFontReferences(workbook, this.sampleFonts);
+      this.allFontReferences = fontReferences.all;
+      this.fontReferences = fontReferences.loading;
       const fontAnalysis = analyzePreviewFonts(workbook.fonts ?? [], this.host.ownerDocument, { substitute: true });
       // These references belong to this parsed workbook and are shared by its cells.
       const targets = new Map(fontAnalysis.fonts.map(font => [JSON.stringify([font.fontFamily, font.classification]), font.resolvedFontFamily]));
@@ -147,13 +155,13 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
         error: null,
         warnings: [...new Set([...this.workbook.warnings, ...fontAnalysis.warnings])],
         fonts: fontAnalysis.fonts,
-        activeSheetIndex: 0,
         sheets: this.workbook.sheets.map((sheet, index) => ({
           id: sheet.id || String(index + 1),
           name: sheet.name
         }))
       };
-      this.render();
+      if (!partialWorkbook) this.render();
+      else if (!csvSheet) this.rowWindow?.refresh('fonts');
       if (this.state.warnings.length) {
         this.emit('warnings', this.state.warnings);
       }
@@ -197,29 +205,24 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
 
   getFontReferences(): readonly PreviewFontReference[] { return this.fontReferences; }
 
+  refreshFontLayout(): void { this.fontLoading.refresh(); }
+
   refreshFonts(update: PreviewFontRefresh): void {
-    if (!this.workbook || this.loadController?.signal.aborted) return;
+    if (!this.workbook || this.state.loading || this.loadController?.signal.aborted) return;
     this.fontReferences = update.references;
     const replacementFor = (ref: PreviewFontReference) => update.references.find(item => item.fontFamily === ref.fontFamily
       && item.traits?.weight === ref.traits?.weight && (item.fontStyle ?? 'normal') === (ref.fontStyle ?? 'normal'));
     this.allFontReferences = this.allFontReferences.map(ref => replacementFor(ref) ?? ref);
     const analysis = analyzeLoadedPreviewFonts({ ...update, references: this.allFontReferences }, this.host.ownerDocument);
+    const targets = new Map(analysis.fonts.map(font => [JSON.stringify([font.fontFamily, font.classification]), font.resolvedFontFamily]));
     for (const ref of this.workbook.fonts ?? []) {
       const replacement = replacementFor(ref);
-      if (replacement?.resolvedFontFamily) ref.resolvedFontFamily = replacement.resolvedFontFamily;
+      if (replacement) ref.resolvedFontFamily = replacement.resolvedFontFamily
+        ?? targets.get(JSON.stringify([ref.fontFamily, classifyPreviewFont(ref.fontFamily ?? '', ref.traits)]));
     }
     this.state.fonts = analysis.fonts;
     this.state.warnings = [...new Set([...this.workbook.warnings, ...analysis.warnings])];
-    if (update.loaded.length || update.relayout) {
-      const sheet = this.workbook.sheets[this.state.activeSheetIndex];
-      if (this.rowWindow) this.rowWindow.refresh();
-      else if (sheet) {
-        const top = this.grid.scrollTop, left = this.grid.scrollLeft;
-        this.grid.replaceChildren(createSheetTable(sheet));
-        this.grid.scrollTop = top;
-        this.grid.scrollLeft = left;
-      }
-    }
+    if (update.loaded.length || update.relayout) this.refreshActiveSheet('fonts');
     this.emit('warnings', this.state.warnings);
     this.emit('rendered', this.getState()); this.emit('statechange', this.getState());
   }
@@ -250,6 +253,10 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
       return;
     }
     this.state.activeSheetIndex = nextIndex;
+    if (this.clock) {
+      this.clock.time = Date.now();
+      this.scheduleMidnight();
+    }
     this.render();
     this.emit('statechange', this.state);
   }
@@ -259,17 +266,97 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     this.renderActiveSheet();
   }
 
+  private previewCsvRows(sheet: ParsedSheet): void {
+    const visible = this.workbook?.sheets[0];
+    if (!visible) {
+      this.workbook = { sheets: [sheet], warnings: [] };
+      this.state.sheets = [{ id: sheet.id, name: sheet.name }];
+      this.renderTabs();
+      this.rowWindow = new SheetRowWindow(sheet, this.grid);
+      this.emit('statechange', this.state);
+      return;
+    }
+    this.pendingCsvSheet = sheet;
+    if (this.csvUpdateFrame !== null) return;
+    this.csvUpdateFrame = requestAnimationFrame(() => {
+      this.csvUpdateFrame = null;
+      const pending = this.pendingCsvSheet;
+      this.pendingCsvSheet = undefined;
+      if (pending) this.updateCsvDimensions(visible, pending);
+    });
+  }
+
+  private previewWorksheet(sheet: ParsedSheet, pending = false): void {
+    const workbook = this.workbook ??= { sheets: [], warnings: [] };
+    if (this.worksheetPending) {
+      const index = workbook.sheets.length - 1;
+      if (pending) {
+        this.pendingWorksheetRows = sheet;
+        if (this.worksheetUpdateFrame === null) {
+          this.worksheetUpdateFrame = requestAnimationFrame(() => {
+            this.worksheetUpdateFrame = null;
+            const latest = this.pendingWorksheetRows;
+            this.pendingWorksheetRows = undefined;
+            if (latest) this.replaceWorksheet(workbook, index, latest);
+          });
+        }
+      } else {
+        this.cancelWorksheetUpdate();
+        this.worksheetPending = false;
+        this.replaceWorksheet(workbook, index, sheet);
+      }
+      return;
+    }
+    this.worksheetPending = pending;
+    const index = workbook.sheets.length;
+    workbook.sheets.push(sheet);
+    this.state.sheets = [...this.state.sheets, { id: sheet.id || String(index + 1), name: sheet.name }];
+    this.appendSheetTab(sheet.name, index);
+    if (index === 0) this.renderActiveSheet();
+    this.emit('statechange', this.state);
+  }
+
+  private replaceWorksheet(workbook: ParsedWorkbook, index: number, sheet: ParsedSheet): void {
+    workbook.sheets[index] = sheet;
+    if (index !== this.state.activeSheetIndex) return;
+    const position = this.rowWindow?.scrollPosition();
+    this.renderActiveSheet();
+    if (position) this.rowWindow?.restoreScrollPosition(position);
+  }
+
+  private cancelWorksheetUpdate(): void {
+    if (this.worksheetUpdateFrame !== null) cancelAnimationFrame(this.worksheetUpdateFrame);
+    this.worksheetUpdateFrame = null;
+    this.pendingWorksheetRows = undefined;
+  }
+
+  private updateCsvDimensions(visible: ParsedSheet, latest: ParsedSheet): void {
+    visible.rowCount = latest.rowCount;
+    visible.columnCount = latest.columnCount;
+    this.rowWindow?.refreshCsvDimensions();
+  }
+
+  private cancelCsvUpdate(): void {
+    if (this.csvUpdateFrame !== null) cancelAnimationFrame(this.csvUpdateFrame);
+    this.csvUpdateFrame = null;
+    this.pendingCsvSheet = undefined;
+  }
+
   private renderTabs(): void {
     this.tabs.replaceChildren();
     for (const [index, sheet] of this.state.sheets.entries()) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'xlsxv-sheet-tab';
-      button.classList.toggle('is-active', index === this.state.activeSheetIndex);
-      button.textContent = sheet.name;
-      button.addEventListener('click', () => this.goToSheet(index));
-      this.tabs.appendChild(button);
+      this.appendSheetTab(sheet.name, index);
     }
+  }
+
+  private appendSheetTab(name: string, index: number): void {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'xlsxv-sheet-tab';
+    button.classList.toggle('is-active', index === this.state.activeSheetIndex);
+    button.textContent = name;
+    button.addEventListener('click', () => this.goToSheet(index));
+    this.tabs.appendChild(button);
   }
 
   private renderActiveSheet(): void {
@@ -281,11 +368,51 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     if (!sheet) {
       return;
     }
-    if (sheet.columnWidthSource || sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE) this.rowWindow = new SheetRowWindow(sheet, this.grid);
-    else this.grid.appendChild(createSheetTable(sheet));
+    if (this.state.loading || sheet.columnWidthSource || sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE) {
+      this.rowWindow = new SheetRowWindow(sheet, this.grid, this.grid, { calculationPending: () => this.state.loading });
+    } else this.grid.appendChild(createSheetTable(sheet));
   }
 
+  private refreshActiveSheet(reason: 'fonts' | 'values'): void {
+    const sheet = this.workbook?.sheets[this.state.activeSheetIndex];
+    if (this.rowWindow) this.rowWindow.refresh(reason);
+    else if (sheet) {
+      const top = this.grid.scrollTop, left = this.grid.scrollLeft;
+      this.grid.replaceChildren(createSheetTable(sheet));
+      this.grid.scrollTop = top;
+      this.grid.scrollLeft = left;
+    }
+  }
+
+  private scheduleMidnight(): void {
+    clearTimeout(this.midnightTimer);
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    this.midnightTimer = setTimeout(this.refreshClock, Math.max(1, next.getTime() - now.getTime()));
+  }
+
+  private readonly refreshClock = () => {
+    if (!this.clock) return;
+    const time = Date.now();
+    if (time !== this.clock.time) {
+      this.clock.time = time;
+      if (this.clock.reads) this.refreshActiveSheet('values');
+    }
+    this.scheduleMidnight();
+  };
+
+  private readonly resumeClock = () => {
+    if (this.host.ownerDocument.visibilityState === 'visible') this.refreshClock();
+  };
+
   private releaseWorkbook(): void {
+    clearTimeout(this.midnightTimer);
+    this.midnightTimer = undefined;
+    if (this.clock) this.host.ownerDocument.removeEventListener('visibilitychange', this.resumeClock);
+    this.clock = undefined;
+    this.cancelCsvUpdate();
+    this.cancelWorksheetUpdate();
+    this.worksheetPending = false;
     this.rowWindow?.destroy();
     this.rowWindow = undefined;
     this.fontReferences = [];

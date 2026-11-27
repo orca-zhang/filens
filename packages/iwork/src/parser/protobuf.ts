@@ -61,6 +61,7 @@ interface FieldLayout {
   scalar?: ScalarType;
   message?: Type;
   repeated: boolean;
+  uuidPart?: boolean;
 }
 
 type ScalarType = 'double' | 'float' | 'int32' | 'uint32' | 'sint32' | 'fixed32' | 'sfixed32'
@@ -77,6 +78,7 @@ function messageLayout(type: Type): MessageLayout {
     fields: {}, repeated: [], required: [],
     fallback: Boolean((type as Type & { group?: boolean }).group)
   };
+  const uuidPart = type.fullName === '.TSP.UUID';
   for (const field of type.fieldsArray) {
     field.resolve();
     layout.fallback ||= field.map;
@@ -84,7 +86,7 @@ function messageLayout(type: Type): MessageLayout {
     if (field.required) layout.required.push(field.name);
     const message = field.resolvedType instanceof ProtobufType ? field.resolvedType : undefined;
     layout.fields[field.id] = {
-      name: field.name, repeated: field.repeated, message,
+      name: field.name, repeated: field.repeated, message, uuidPart,
       scalar: message ? undefined : field.resolvedType ? 'int32' : field.type as ScalarType
     };
   }
@@ -126,20 +128,22 @@ function decodeMessage(type: Type, reader: Reader, end: number, depth = 0): Reco
 }
 
 function readFieldValue(reader: Reader, field: FieldLayout, depth: number): unknown {
-  if (!field.message) return readScalar(reader, field.scalar!);
+  if (!field.message) return readScalar(reader, field.scalar!, field.uuidPart);
   const length = reader.uint32(), end = reader.pos + length;
   if (end > reader.len) throw new RangeError('Truncated iWork message.');
   return decodeMessage(field.message, reader, end, depth + 1);
 }
 
-function readScalar(reader: Reader, type: ScalarType): unknown {
+function readScalar(reader: Reader, type: ScalarType, uuidPart = false): unknown {
   if (type === 'uint64' || type === 'int64' || type === 'sint64') {
     const value = readSmallVarint(reader);
     if (value !== undefined) return type === 'sint64' ? (value >>> 1) ^ -(value & 1) : value;
   }
   const value = reader[type]();
   if (type === 'bytes') return new Uint8Array(value as Uint8Array);
-  return isLongLike(value) ? value.toNumber() : value;
+  if (!isLongLike(value)) return value;
+  const number = value.toNumber();
+  return uuidPart && !Number.isSafeInteger(number) ? value.toString() : number;
 }
 
 // Archive IDs and references usually fit in four bytes. Decode those directly
@@ -198,8 +202,10 @@ function normalizeDecodedValue(value: unknown): unknown {
 
   if (typeof value === 'object') {
     const normalized: Record<string, unknown> = {};
+    const uuid = (value as { $type?: Type }).$type?.fullName === '.TSP.UUID';
     for (const [key, entry] of Object.entries(value)) {
-      normalized[key] = normalizeDecodedValue(entry);
+      normalized[key] = uuid && isLongLike(entry) && !Number.isSafeInteger(entry.toNumber())
+        ? entry.toString() : normalizeDecodedValue(entry);
     }
     return normalized;
   }

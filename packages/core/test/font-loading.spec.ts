@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { analyzePreviewFonts } from '../src/preview/fonts';
 import { analyzeLoadedPreviewFonts, bindPreviewFontLoading } from '../src/preview/font-loading';
 import { createWebFontPacks } from '../src/preview/font-packs';
-import { createPptxPreviewDriver } from '../src/preview/pptx-driver';
+import { createPptxPreviewDriver } from '@filens/pptx';
 import { readFixture } from './helpers';
 import type { PreviewFontAsset, PreviewFontLoadingOptions, PreviewFontReference, PreviewFontRefresh, PreviewItemState, PreviewOptions, PreviewSession } from '../src/preview/types';
 
@@ -12,9 +12,17 @@ let active: Set<FakeFace>;
 let bindings: Array<ReturnType<typeof bindPreviewFontLoading>>;
 let fetcher: ReturnType<typeof vi.fn>;
 class FakeFace {
+  status: FontFaceLoadStatus = 'unloaded';
   constructor(readonly family: string, readonly bytes: ArrayBuffer, readonly descriptors: FontFaceDescriptors) {}
-  async load() { if (!new Uint8Array(this.bytes)[0]) throw new Error('Invalid font'); return this; }
+  async load() { if (!new Uint8Array(this.bytes)[0]) throw new Error('Invalid font'); this.status = 'loaded'; return this; }
 }
+
+const loadHostFace = async (family: string) => {
+  const face = await new FakeFace(family, new Uint8Array([1]).buffer, {}).load();
+  active.add(face);
+  return face;
+};
+const fontLoadEvent = (...fontfaces: FakeFace[]) => document.fonts.dispatchEvent(Object.assign(new Event('loadingdone'), { fontfaces }));
 
 const asset = (family = 'Web Book', sources = ['https://first.example/font.woff2', 'https://second.example/font.woff2']): PreviewFontAsset => ({
   id: family, fontFamily: family, traits: { serif: true, style: 'text', weight: 400 }, sources: sources.map(url => ({ url }))
@@ -46,9 +54,10 @@ function session(options: PreviewFontLoadingOptions | boolean | undefined, refs:
 
 beforeEach(() => {
   active = new Set(); bindings = [];
-  Object.defineProperty(document, 'fonts', { configurable: true, value: {
-    add: vi.fn((face: FakeFace) => active.add(face)), delete: vi.fn((face: FakeFace) => active.delete(face))
-  } });
+  Object.defineProperty(document, 'fonts', { configurable: true, value: Object.assign(new EventTarget(), {
+    add: vi.fn((face: FakeFace) => active.add(face)), delete: vi.fn((face: FakeFace) => active.delete(face)),
+    forEach: (handler: (face: FakeFace) => void) => active.forEach(handler)
+  }) });
   vi.stubGlobal('FontFace', FakeFace);
   fetcher = vi.fn(async () => response()); vi.stubGlobal('fetch', fetcher);
   const context = { font: '', measureText: () => ({ width: [...active].some(face => context.font.includes(`"${face.family}"`)) ? 140 : 100 }) };
@@ -60,6 +69,72 @@ afterEach(() => {
   vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals();
 });
 
+describe('host font readiness', () => {
+  it('coalesces relevant faces without downloads and discards obsolete events', async () => {
+    const view = session(undefined, [{ fontFamily: 'Host Book' }, { fontFamily: 'Host Sans' }]);
+    fontLoadEvent(await loadHostFace('Unused Face'));
+    await Promise.resolve();
+    expect(view.refresh).not.toHaveBeenCalled();
+    const first = await loadHostFace('Host Book');
+    const second = await loadHostFace('Host Sans');
+    fontLoadEvent(first); fontLoadEvent(second);
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(view.state.fonts?.map(font => [font.status, font.source])).toEqual([['available', 'environment'], ['available', 'environment']]);
+    fontLoadEvent(await loadHostFace('Host Book'));
+    view.binding.reset();
+    await Promise.resolve();
+    expect(view.refresh).toHaveBeenCalledTimes(1);
+    view.binding.destroy();
+    expect(active.has(first)).toBe(true);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('restores an original host face and retains explicit aliases and leased fallbacks', async () => {
+    const view = session(config([asset()], { preferLocal: false }), [
+      { fontFamily: 'Missing Serif' }, { fontFamily: 'Explicit Serif' }
+    ], { fontResolver: ({ fontFamily }) => fontFamily === 'Explicit Serif' ? 'Web Book' : undefined });
+    view.emit();
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(view.state.fonts?.map(font => font.resolvedFontFamily)).toEqual(['Web Book', 'Web Book']);
+    fontLoadEvent(...active);
+    await Promise.resolve();
+    expect(view.refresh).toHaveBeenCalledTimes(1);
+    const original = await loadHostFace('Missing Serif');
+    const alternate = await loadHostFace('Explicit Serif');
+    fontLoadEvent(original, alternate);
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(2));
+    expect(view.state.fonts?.[0]).toMatchObject({ status: 'available', source: 'environment', resolvedFontFamily: undefined });
+    expect(view.state.fonts?.[1]).toMatchObject({ status: 'substituted', source: 'application', resolvedFontFamily: 'Web Book' });
+    active.delete(original);
+    view.binding.refresh();
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(3));
+    expect(view.state.fonts?.[0]).toMatchObject({ status: 'substituted', source: 'fallback', resolvedFontFamily: 'Web Book' });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('activates a resolver alias when its host face becomes available later', async () => {
+    const fontResolver = vi.fn(() => 'Late Alias');
+    const view = session({ packs: [] }, [{ fontFamily: 'Requested Face' }], { fontResolver });
+    view.emit();
+    await vi.waitFor(() => expect(fontResolver).toHaveBeenCalledTimes(1));
+    expect(view.refresh).not.toHaveBeenCalled();
+    fontLoadEvent(await loadHostFace('Late Alias'));
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(view.state.fonts?.[0]).toMatchObject({ status: 'substituted', source: 'application', resolvedFontFamily: 'Late Alias' });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('clears a failed webfont warning when the host supplies the authored face', async () => {
+    fetcher.mockResolvedValue(new Response('', { status: 404 }));
+    const view = session(config([asset()], { preferLocal: false, maxAttempts: 1 }), [{ fontFamily: 'Missing Serif' }]);
+    view.emit();
+    await vi.waitFor(() => expect(view.state.warnings.some(warning => warning.includes('could not be loaded'))).toBe(true));
+    fontLoadEvent(await loadHostFace('Missing Serif'));
+    await vi.waitFor(() => expect(view.state.fonts?.[0]).toMatchObject({ status: 'available', source: 'environment' }));
+    expect(view.state.warnings).toEqual([]);
+  });
+});
+
 describe('background font packs and adaptive source routing', () => {
   it('keeps network use opt-in and manifests free of font payloads', async () => {
     session(undefined).emit(); session(false).emit(); await Promise.resolve();
@@ -67,6 +142,108 @@ describe('background font packs and adaptive source routing', () => {
     const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm'] });
     expect(packs.find(pack => pack.id === 'carlito')?.fonts[0].sources?.[0].url).toContain('@fontsource/carlito@5.2.6/files/');
     expect(packs.every(pack => pack.fonts.every(font => !font.data))).toBe(true);
+  });
+
+  it('loads pinned Emoji and math faces for matching requests, including the authored Emoji weight', async () => {
+    const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm/'] }).filter(pack =>
+      ['noto-color-emoji', 'noto-emoji', 'stix-two-math', 'noto-sans-math'].includes(pack.id));
+    const view = session({ packs, concurrency: 1, preferLocal: false }, [
+      { fontFamily: 'Segoe UI Emoji', text: '👩🏽‍🚀' },
+      { fontFamily: 'Cambria Math', text: '∑∫√𝛼πℝ⨌' },
+      { fontFamily: 'Segoe UI Emoji', text: '😀', traits: { weight: 700 } },
+      { fontFamily: 'Missing Sans', text: 'Regular text 😀 ∑' },
+      { fontFamily: 'Wingdings', text: '\uf0fc' }
+    ]);
+    view.emit();
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      'https://fonts.example/npm/@fontsource/noto-color-emoji@5.3.2/files/noto-color-emoji-emoji-400-normal.woff2',
+      'https://fonts.example/npm/@fontsource/stix-two-math@5.3.0/files/stix-two-math-latin-400-normal.woff2',
+      'https://fonts.example/npm/@fontsource/noto-emoji@5.3.2/files/noto-emoji-emoji-700-normal.woff2'
+    ]);
+    expect(view.state.fonts?.map(font => [font.fontFamily, font.resolvedFontFamily, font.status])).toEqual([
+      ['Segoe UI Emoji', 'Noto Color Emoji', 'substituted'], ['Cambria Math', 'STIX Two Math', 'substituted'],
+      ['Segoe UI Emoji', 'Noto Emoji', 'substituted'], ['Missing Sans', undefined, 'missing'], ['Wingdings', undefined, 'missing']
+    ]);
+    view.binding.destroy();
+    expect(active.size).toBe(0);
+  });
+
+  it('selects only needed regional subsets and leases an overlapping subset for a later preview', async () => {
+    const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm'] }).filter(pack => pack.id === 'noto-sans-jp');
+    const options = { packs, maxAttempts: 1 };
+    const load = (value: string) => session(options, [{ fontFamily: 'Noto Sans JP', text: value, textComplete: true }]);
+    fetcher.mockImplementation(async (url: string) => url.endsWith('unicode.json')
+      ? Response.json({ '[1]': 'U+6F22', '[2]': 'U+5B57', '[3]': 'U+6F22,U+20B9F', latin: 'U+0000-00FF' }) : response());
+    const first = load('A漢𠮟');
+    first.emit();
+    await vi.waitFor(() => expect(first.refresh).toHaveBeenCalledTimes(1));
+    expect([...active].map(face => face.descriptors.unicodeRange)).toEqual(['U+6F22,U+20B9F', 'U+0000-00FF']);
+    const second = load('漢字');
+    second.emit();
+    await vi.waitFor(() => expect(second.refresh).toHaveBeenCalledTimes(1));
+    expect(fetcher.mock.calls.map(([url]) => String(url).split('/').at(-1))).toEqual([
+      'unicode.json', 'noto-sans-jp-3-400-normal.woff2', 'noto-sans-jp-latin-400-normal.woff2', 'noto-sans-jp-2-400-normal.woff2'
+    ]);
+    first.binding.destroy();
+    expect([...active].map(face => face.descriptors.unicodeRange)).toEqual(['U+6F22,U+20B9F', 'U+5B57']);
+    second.binding.destroy();
+    expect(active.size).toBe(0);
+  });
+
+  it('uses the full face and releases an incomplete batch if a selected subset fails', async () => {
+    const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm'] }).filter(pack => pack.id === 'noto-sans-tc');
+    fetcher.mockImplementation(async (url: string) => {
+      if (url.endsWith('unicode.json')) return Response.json({ '[1]': 'U+6F22', latin: 'U+0041' });
+      return url.endsWith('noto-sans-tc-latin-400-normal.woff2') ? new Response('', { status: 404 }) : response();
+    });
+    const view = session({ packs, maxAttempts: 1 }, [{ fontFamily: 'Noto Sans TC', text: 'A漢', textComplete: true }]);
+    view.emit();
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(fetcher.mock.calls.map(([url]) => String(url).split('/').at(-1))).toEqual([
+      'unicode.json', 'noto-sans-tc-1-400-normal.woff2', 'noto-sans-tc-latin-400-normal.woff2', 'noto-sans-tc-chinese-traditional-400-normal.woff2'
+    ]);
+    expect([...active].map(face => face.descriptors.unicodeRange)).toEqual([undefined]);
+    expect(view.state.fonts?.[0]?.status).toBe('available');
+  });
+
+  it.each([
+    { text: '👩🏽‍🚀', textComplete: true }, { text: '🇯🇵', textComplete: true },
+    { text: '❤️', textComplete: true }, { text: '😀', textComplete: false }
+  ])('keeps a full Emoji face for $text when subset coverage is uncertain', async reference => {
+    const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm'] }).filter(pack => pack.id === 'noto-emoji');
+    const view = session({ packs }, [{ fontFamily: 'Noto Emoji', ...reference }]);
+    view.emit();
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(fetcher.mock.calls.map(([url]) => String(url).split('/').at(-1))).toEqual(['noto-emoji-emoji-400-normal.woff2']);
+  });
+
+  it('uses the full color face when SVG fonts are unavailable', async () => {
+    const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm'] }).filter(pack => pack.id === 'noto-color-emoji');
+    const view = session({ packs }, [{ fontFamily: 'Noto Color Emoji', text: '😀', textComplete: true }]);
+    view.emit();
+    await vi.waitFor(() => expect(view.refresh).toHaveBeenCalledTimes(1));
+    expect(fetcher.mock.calls.map(([url]) => String(url).split('/').at(-1))).toEqual(['noto-color-emoji-emoji-400-normal.woff2']);
+  });
+
+  it('cancels a pending subset index when the last preview closes', async () => {
+    const packs = createWebFontPacks({ mirrors: ['https://fonts.example/npm'] }).filter(pack => pack.id === 'noto-emoji');
+    const pending = deferred<Response>();
+    fetcher.mockReturnValueOnce(pending.promise);
+    const options = { packs, maxAttempts: 1 };
+    const reference = { fontFamily: 'Noto Emoji', text: '😀', textComplete: true };
+    const first = session(options, [reference]), second = session(options, [reference]);
+    first.emit(); second.emit();
+    await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    first.binding.destroy();
+    expect(fetcher.mock.calls[0][1].signal.aborted).toBe(false);
+    second.binding.destroy();
+    await vi.waitFor(() => expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true));
+    pending.resolve(Response.json({ '[9]': 'U+1F600' }));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(first.refresh).not.toHaveBeenCalled();
+    expect(second.refresh).not.toHaveBeenCalled();
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
   it('does not block first preview, then publishes the loaded family and relayout update', async () => {
@@ -209,6 +386,18 @@ describe('background font packs and adaptive source routing', () => {
     first.binding.destroy(); expect(fetcher.mock.calls[0][1].signal.aborted).toBe(false);
     pending.resolve(response()); await vi.waitFor(() => expect(second.refresh).toHaveBeenCalled());
     expect(first.refresh).not.toHaveBeenCalled(); expect(active.size).toBe(1);
+    second.binding.destroy(); expect(active.size).toBe(0);
+  });
+
+  it('retains a loaded full face when another preview opens and the first one closes', async () => {
+    const options = config();
+    const reference = [{ fontFamily: 'Web Book', traits: { weight: 400 } }];
+    const first = session(options, reference);
+    first.emit(); await vi.waitFor(() => expect(first.refresh).toHaveBeenCalled());
+    const second = session(options, reference);
+    second.emit(); await vi.waitFor(() => expect(second.refresh).toHaveBeenCalled());
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    first.binding.destroy(); expect(active.size).toBe(1);
     second.binding.destroy(); expect(active.size).toBe(0);
   });
 

@@ -1,17 +1,9 @@
 import { applyLumMod, applyTint, fontTraitsFromPanose, officeFontTraits, type BorderBox, type FillStyle, type LineStyle, type PreviewFontReference } from '@filens/core';
 import type { ParsedCellStyle, ParsedConditionalStyle } from './types';
-import { readLocalPath, readPath, toArray } from './xml-values';
+import { decodeSpreadsheetText, readLocalPath, readPath, toArray } from './xml-values';
 import { builtinNumberFormat } from './number-formats';
+import { indexedColor } from './indexed-colors';
 
-// SpreadsheetML's standard indexed palette and theme slot order.
-const indexedColors = ('000000 FFFFFF FF0000 00FF00 0000FF FFFF00 FF00FF 00FFFF '
-  + '000000 FFFFFF FF0000 00FF00 0000FF FFFF00 FF00FF 00FFFF '
-  + '800000 008000 000080 808000 800080 008080 C0C0C0 808080 '
-  + '9999FF 993366 FFFFCC CCFFFF 660066 FF8080 0066CC CCCCFF '
-  + '000080 FF00FF FFFF00 00FFFF 800080 800000 008080 0000FF '
-  + '00CCFF CCFFFF CCFFCC FFFF99 99CCFF FF99CC CC99FF FFCC99 '
-  + '3366FF 33CCCC 99CC00 FFCC00 FF9900 FF6600 666699 969696 '
-  + '003366 339966 003300 333300 993300 993366 333399 333333 000000 FFFFFF').split(' ');
 const themeSlots = ['lt1', 'dk1', 'lt2', 'dk2', 'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6', 'hlink', 'folHlink'];
 const fallbackTheme = 'FFFFFF 000000 EEECE1 1F497D 4F81BD C0504D 9BBB59 8064A2 4BACC6 F79646 0000FF 800080'.split(' ');
 
@@ -24,8 +16,11 @@ function rgb(value: unknown): string | undefined {
   return typeof value === 'string' && /^(?:[\da-f]{2})?[\da-f]{6}$/i.test(value) ? '#' + value.slice(-6).toUpperCase() : undefined;
 }
 
-export function colorReader(styleSheet: unknown, theme: unknown) {
-  const custom = toArray(readPath(styleSheet, ['colors', 'indexedColors', 'rgbColor'])).map(entry => rgb(readPath(entry, ['rgb'])));
+export function readIndexedColors(styleSheet: unknown): (string | undefined)[] {
+  return toArray(readPath(styleSheet, ['colors', 'indexedColors', 'rgbColor'])).map(entry => rgb(readPath(entry, ['rgb'])));
+}
+
+export function colorReader(custom: readonly (string | undefined)[], theme: unknown) {
   const scheme = readLocalPath(theme, ['theme', 'themeElements', 'clrScheme']);
   const themed = themeSlots.map((slot, i) => {
     const value = readLocalPath(scheme, [slot]);
@@ -34,8 +29,7 @@ export function colorReader(styleSheet: unknown, theme: unknown) {
   return (node: unknown): string | undefined => {
     const themeIndex = Number(readPath(node, ['theme']));
     const index = Number(readPath(node, ['indexed']));
-    const color = rgb(readPath(node, ['rgb'])) ?? themed[themeIndex] ?? custom[index]
-      ?? (indexedColors[index] ? '#' + indexedColors[index] : undefined)
+    const color = rgb(readPath(node, ['rgb'])) ?? themed[themeIndex] ?? indexedColor(index, custom)
       ?? (isTrue(readPath(node, ['auto'])) ? '#000000' : undefined);
     const tint = Number(readPath(node, ['tint']));
     if (!color || !Number.isFinite(tint) || !tint) return color;
@@ -70,16 +64,16 @@ export function readFontReference(entry: unknown, theme: unknown, rich = false):
   };
 }
 
-export function readFontAppearance(entry: unknown, color: ReturnType<typeof colorReader>) {
-  const size = Number(readPath(entry, ['sz', 'val']));
-  const underline = readPath(entry, ['u']);
+export function readFontAppearance(entry: unknown, color: ReturnType<typeof colorReader>, read = readPath) {
+  const size = Number(read(entry, ['sz', 'val']));
+  const underline = read(entry, ['u']);
   const kind = readPath(underline, ['val']);
   return {
     fontSize: Number.isFinite(size) && size > 0 ? Math.min(size, 409) * 4 / 3 : undefined,
-    color: color(readPath(entry, ['color'])),
+    color: color(read(entry, ['color'])),
     underline: underline === undefined ? undefined : !toggle(underline) || kind === 'none' ? 'none' as const
       : kind === 'double' || kind === 'doubleAccounting' ? 'double' as const : 'single' as const,
-    strike: toggle(readPath(entry, ['strike']))
+    strike: toggle(read(entry, ['strike']))
   };
 }
 
@@ -90,11 +84,11 @@ const patterns = new Map(Object.entries({
   darkGrid: 'lgGrid', lightGrid: 'smGrid', darkTrellis: 'diagCross', lightTrellis: 'diagCross'
 }));
 
-function readFill(entry: unknown, color: ReturnType<typeof colorReader>, differential = false): FillStyle | undefined {
-  const pattern = readPath(entry, ['patternFill']);
+function readFill(entry: unknown, color: ReturnType<typeof colorReader>, differential = false, read = readPath): FillStyle | undefined {
+  const pattern = read(entry, ['patternFill']);
   const kind = String(readPath(pattern, ['patternType']) ?? '');
-  const foregroundColor = color(readPath(pattern, ['fgColor']));
-  const backgroundColor = color(readPath(pattern, ['bgColor']));
+  const foregroundColor = color(read(pattern, ['fgColor']));
+  const backgroundColor = color(read(pattern, ['bgColor']));
   if (differential && pattern !== undefined) {
     if (kind === 'none') return { type: 'none' };
     const solid = backgroundColor ?? foregroundColor;
@@ -103,10 +97,10 @@ function readFill(entry: unknown, color: ReturnType<typeof colorReader>, differe
   if (kind === 'solid' && foregroundColor) return { type: 'solid', color: foregroundColor };
   const supportedPattern = patterns.get(kind);
   if (supportedPattern) return { type: 'pattern', pattern: supportedPattern, foregroundColor, backgroundColor };
-  const gradient = readPath(entry, ['gradientFill']);
-  const stops = toArray(readPath(gradient, ['stop'])).flatMap(stop => {
+  const gradient = read(entry, ['gradientFill']);
+  const stops = toArray(read(gradient, ['stop'])).flatMap(stop => {
     const position = Number(readPath(stop, ['position']));
-    const value = color(readPath(stop, ['color']));
+    const value = color(read(stop, ['color']));
     return value && position >= 0 && position <= 1 ? [{ position, color: value }] : [];
   }).sort((a, b) => a.position - b.position);
   if (stops.length === 1) return { type: 'solid', color: stops[0].color };
@@ -116,59 +110,80 @@ function readFill(entry: unknown, color: ReturnType<typeof colorReader>, differe
     ...(readPath(gradient, ['type']) === 'path' ? { gradientType: 'path' } : {}) };
 }
 
-function readBorders(entry: unknown, color: ReturnType<typeof colorReader>, differential = false): BorderBox | undefined {
+function readBorders(entry: unknown, color: ReturnType<typeof colorReader>, differential = false, read = readPath): BorderBox | undefined {
   const borders: BorderBox = {};
   for (const side of ['top', 'left', 'bottom', 'right'] as const) {
     const alias = side === 'left' ? 'start' : side === 'right' ? 'end' : side;
-    const node = readPath(entry, [side]) ?? readPath(entry, [alias]);
-    const style = readPath(node, ['style']);
-    if (typeof style !== 'string') continue;
-    if (style === 'none') {
-      if (differential) borders[side] = { width: 0, color: 'transparent' };
-      continue;
-    }
-    const line: LineStyle = { color: color(readPath(node, ['color'])) ?? '#000000', width: 1 };
-    if (style === 'double') { line.compound = 'double'; line.width = 3; }
-    else if (style === 'thick') line.width = 3;
-    else if (style.startsWith('medium')) line.width = 2;
-    if (style === 'dotted' || style === 'hair') line.dash = 'dot';
-    else if (/dash/i.test(style)) line.dash = 'dash';
-    borders[side] = line;
+    const line = readBorderLine(read(entry, [side]) ?? read(entry, [alias]), color, differential, read);
+    if (line) borders[side] = line;
   }
   return Object.keys(borders).length ? borders : undefined;
 }
 
-export function readDifferentialStyles(styleSheet: unknown, color: ReturnType<typeof colorReader>): ParsedConditionalStyle[] {
-  return toArray(readPath(styleSheet, ['dxfs', 'dxf'])).map(entry => {
-    const font = readPath(entry, ['font']);
-    const appearance = readFontAppearance(font, color);
-    const bold = toggle(readPath(font, ['b'])), italic = toggle(readPath(font, ['i']));
-    const fill = readFill(readPath(entry, ['fill']), color, true);
-    const borders = readBorders(readPath(entry, ['border']), color, true);
-    const number = readPath(entry, ['numFmt']);
-    const id = Number(readPath(number, ['numFmtId']));
-    const code = readPath(number, ['formatCode']);
-    const numberFormat = typeof code === 'string' && code ? code : id === 0 ? 'General' : builtinNumberFormat(id);
-    return {
-      ...(bold !== undefined ? { bold } : {}), ...(italic !== undefined ? { italic } : {}),
-      ...(appearance.underline ? { underline: appearance.underline } : {}),
-      ...(appearance.strike !== undefined ? { strike: appearance.strike } : {}),
-      ...(appearance.color ? { color: appearance.color } : {}),
-      ...(fill ? { fill } : {}), ...(borders ? { borders } : {}),
-      ...(numberFormat !== undefined ? { numberFormat } : {})
-    };
-  });
+function readBorderLine(node: unknown, color: ReturnType<typeof colorReader>, differential: boolean, read: typeof readPath): LineStyle | undefined {
+  const style = readPath(node, ['style']);
+  if (typeof style !== 'string') return undefined;
+  if (style === 'none') return differential ? { width: 0, color: 'transparent' } : undefined;
+  const line: LineStyle = { color: color(read(node, ['color'])) ?? '#000000', width: 1 };
+  if (style === 'double') { line.compound = 'double'; line.width = 3; }
+  else if (style === 'thick') line.width = 3;
+  else if (style.startsWith('medium')) line.width = 2;
+  if (style === 'dotted' || style === 'hair') line.dash = 'dot';
+  else if (/dash/i.test(style)) line.dash = 'dash';
+  return line;
 }
 
-function readAlignment(value: unknown): Pick<ParsedCellStyle, 'horizontal' | 'vertical' | 'wrap' | 'indent'> {
+function readDiagonal(entry: unknown, color: ReturnType<typeof colorReader>, differential = false, read = readPath): ParsedCellStyle['diagonal'] {
+  const up = isTrue(readPath(entry, ['diagonalUp'])), down = isTrue(readPath(entry, ['diagonalDown']));
+  const line = readBorderLine(read(entry, ['diagonal']), color, differential, read);
+  return line && (up || down || line.width === 0) ? { line, up, down } : undefined;
+}
+
+export function readDifferentialStyles(styleSheet: unknown, color: ReturnType<typeof colorReader>): ParsedConditionalStyle[] {
+  return toArray(readPath(styleSheet, ['dxfs', 'dxf'])).map(entry => readDifferentialStyle(entry, color));
+}
+
+function readNumberFormatCode(entry: unknown): string | undefined {
+  const code = readPath(entry, ['formatCode16']) ?? readPath(entry, ['formatCode']);
+  return typeof code === 'string' ? decodeSpreadsheetText(code) : undefined;
+}
+
+export function readDifferentialStyle(entry: unknown, color: ReturnType<typeof colorReader>, read = readPath): ParsedConditionalStyle {
+  const font = read(entry, ['font']);
+  const appearance = readFontAppearance(font, color, read);
+  const bold = toggle(read(font, ['b'])), italic = toggle(read(font, ['i']));
+  const fill = readFill(read(entry, ['fill']), color, true, read);
+  const border = read(entry, ['border']);
+  const borders = readBorders(border, color, true, read), diagonal = readDiagonal(border, color, true, read);
+  const number = read(entry, ['numFmt']);
+  const id = Number(readPath(number, ['numFmtId']));
+  const code = readNumberFormatCode(number);
+  const numberFormat = code || (id === 0 ? 'General' : builtinNumberFormat(id));
+  return {
+    ...(bold !== undefined ? { bold } : {}), ...(italic !== undefined ? { italic } : {}),
+    ...(appearance.underline ? { underline: appearance.underline } : {}),
+    ...(appearance.strike !== undefined ? { strike: appearance.strike } : {}),
+    ...(appearance.color ? { color: appearance.color } : {}),
+    ...(fill ? { fill } : {}), ...(borders ? { borders } : {}), ...(diagonal ? { diagonal } : {}),
+    ...(numberFormat !== undefined ? { numberFormat } : {})
+  };
+}
+
+function readAlignment(value: unknown): Pick<ParsedCellStyle, 'horizontal' | 'centerAcross' | 'vertical' | 'wrap' | 'shrinkToFit' | 'textRotation' | 'indent'> {
   const horizontal = readPath(value, ['horizontal']);
   const vertical = readPath(value, ['vertical']);
   const indent = Number(readPath(value, ['indent']));
+  const rotation = Number(readPath(value, ['textRotation']));
+  const textRotation = rotation === 255 ? rotation : Number.isInteger(rotation) && rotation > 0 && rotation <= 180
+    ? rotation <= 90 ? -rotation : rotation - 90 : undefined;
   return {
     horizontal: horizontal === 'left' || horizontal === 'center' || horizontal === 'right' || horizontal === 'justify' ? horizontal
       : horizontal === 'centerContinuous' ? 'center' : undefined,
+    ...(horizontal === 'centerContinuous' ? { centerAcross: true } : {}),
     vertical: vertical === 'top' || vertical === 'bottom' ? vertical : vertical === 'center' ? 'middle' : undefined,
     wrap: isTrue(readPath(value, ['wrapText'])),
+    ...(isTrue(readPath(value, ['shrinkToFit'])) ? { shrinkToFit: true } : {}),
+    ...(textRotation !== undefined ? { textRotation } : {}),
     indent: Number.isInteger(indent) && indent > 0 ? Math.min(indent, 250) : undefined
   };
 }
@@ -178,11 +193,13 @@ export function readStyleAppearance(styleSheet: unknown, color: ReturnType<typeo
   const customFormats = new Map<number, string>();
   for (const entry of toArray(readPath(styleSheet, ['numFmts', 'numFmt']))) {
     const id = Number(readPath(entry, ['numFmtId']));
-    const code = readPath(entry, ['formatCode']);
-    if (Number.isSafeInteger(id) && id >= 0 && typeof code === 'string') customFormats.set(id, code);
+    const code = readNumberFormatCode(entry);
+    if (Number.isSafeInteger(id) && id >= 0 && code !== undefined) customFormats.set(id, code);
   }
   const fills = toArray(readPath(styleSheet, ['fills', 'fill'])).map(entry => readFill(entry, color));
-  const borders = toArray(readPath(styleSheet, ['borders', 'border'])).map(entry => readBorders(entry, color));
+  const borders = toArray(readPath(styleSheet, ['borders', 'border'])).map(entry => ({
+    borders: readBorders(entry, color), diagonal: readDiagonal(entry, color)
+  }));
   const typography = fontEntries.map(entry => {
     const font = readFontAppearance(entry, color);
     return { ...font, underline: font.underline === 'none' ? undefined : font.underline, strike: font.strike ?? false };
@@ -199,7 +216,7 @@ export function readStyleAppearance(styleSheet: unknown, color: ReturnType<typeo
       font: fonts[fontId],
       ...typography[fontId],
       fill: fills[Number(property('fillId', 'applyFill') ?? 0)],
-      borders: borders[Number(property('borderId', 'applyBorder') ?? 0)],
+      ...borders[Number(property('borderId', 'applyBorder') ?? 0)],
       numberFormat: customFormats.get(formatId) ?? builtinNumberFormat(formatId),
       ...readAlignment(property('alignment', 'applyAlignment'))
     };

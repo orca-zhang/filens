@@ -5,9 +5,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import JSZip from 'jszip';
+import { build } from 'esbuild';
 
 // Real browser/FontFace/metrics check; builds core and xlsx before running this file.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const { outputFiles: [bundle] } = await build({
+  stdin: { contents: "export { createXlsxPreviewDriver } from '@filens/xlsx';", resolveDir: root },
+  bundle: true, format: 'esm', platform: 'browser', write: false
+});
 const font = await readFile(path.join(root, 'node_modules/pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf'));
 const zip = new JSZip();
 zip.file('xl/workbook.xml', '<workbook><sheets><sheet name="Fonts" sheetId="1" r:id="sheet"/></sheets></workbook>');
@@ -25,9 +30,10 @@ const server = createServer(async (request, response) => {
     if (url.pathname === '/font.ttf') { requests.push('font'); await pending; response.writeHead(200, { 'Content-Type': 'font/ttf' }).end(font); return; }
     if (url.pathname === '/release') { release(); response.end('released'); return; }
     if (url.pathname === '/book.xlsx') { response.end(workbook); return; }
+    if (url.pathname === '/xlsx.js') { response.setHeader('Content-Type', 'text/javascript').end(bundle.contents); return; }
     if (url.pathname === '/') {
       response.setHeader('Content-Type', 'text/html');
-      response.end('<html><head><script type="importmap">{"imports":{"@filens/core":"/packages/core/dist/index.js"}}</script><style>.xlsxv-grid{height:180px;overflow:auto}td,th{height:26px}</style></head><body><div id="host"></div></body></html>');
+      response.end('<html><head><style>.xlsxv-grid{height:180px;overflow:auto}td,th{height:26px}</style></head><body><div id="host"></div></body></html>');
       return;
     }
     const file = path.resolve(root, `.${url.pathname}`);
@@ -44,7 +50,7 @@ try {
   const origin = `http://127.0.0.1:${server.address().port}`;
   await page.goto(origin);
   const before = await page.evaluate(async () => {
-    const { createXlsxPreviewDriver } = await import('/packages/xlsx/dist/index.js');
+    const { createXlsxPreviewDriver } = await import('/xlsx.js');
     window.session = createXlsxPreviewDriver().createSession(document.querySelector('#host'), {
       fontLoading: { packs: [{ id: 'browser-test', version: '1', fonts: [{
         id: 'browser-font', fontFamily: 'FilensBrowserFont', sources: [{ url: '/missing-font.ttf' }, { url: '/font.ttf' }]
@@ -56,10 +62,11 @@ try {
     const grid = document.querySelector('.xlsxv-grid');
     grid.scrollTop = grid.scrollHeight; grid.dispatchEvent(new Event('scroll')); grid.scrollTop = 84;
     window.originalTable = document.querySelector('table');
+    window.originalBody = window.originalTable.tBodies[0];
     const context = document.createElement('canvas').getContext('2d'); context.font = '32px FilensBrowserFont';
     return { width: context.measureText('MMMMWWWWiiii1111').width, rows: document.querySelector('tbody').rows.length, status: window.state.fonts[0].status, scroll: grid.scrollTop };
   });
-  assert.equal(before.status, 'missing'); assert.equal(before.rows, 200);
+  assert.equal(before.status, 'missing'); assert.ok(before.rows > 0 && before.rows < 300);
   await page.request.get(origin + '/release');
   try {
     await page.waitForFunction(() => window.state?.fonts?.[0]?.status === 'available', undefined, { timeout: 15000 });
@@ -75,10 +82,13 @@ try {
   const after = await page.evaluate(() => {
     const context = document.createElement('canvas').getContext('2d'); context.font = '32px FilensBrowserFont';
     const grid = document.querySelector('.xlsxv-grid');
+    const table = grid.querySelector('table');
     return { width: context.measureText('MMMMWWWWiiii1111').width, rows: document.querySelector('tbody').rows.length, scroll: grid.scrollTop,
-      replaced: window.originalTable !== document.querySelector('table'), loaded: [...document.fonts].some(font => font.family === 'FilensBrowserFont' && font.status === 'loaded') };
+      tablePreserved: table === window.originalTable, rowsRefreshed: table.tBodies[0] !== window.originalBody,
+      loaded: [...document.fonts].some(font => font.family === 'FilensBrowserFont' && font.status === 'loaded') };
   });
-  assert.equal(after.rows, before.rows); assert.equal(after.scroll, before.scroll); assert.equal(after.replaced, true); assert.equal(after.loaded, true);
+  assert.equal(after.rows, before.rows); assert.equal(after.scroll, before.scroll);
+  assert.ok(after.tablePreserved && after.rowsRefreshed && after.loaded);
   assert.ok(Math.abs(before.width - after.width) > 1, 'Real font metrics must change after the download.');
   assert.deepEqual(requests, ['missing', 'font']); assert.deepEqual(errors, []);
   await page.evaluate(() => window.session.destroy());

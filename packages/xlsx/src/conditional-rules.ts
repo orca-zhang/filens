@@ -2,7 +2,7 @@ import { parseSheetRange } from './columns';
 import { readColorScale, readDataBar, readIconSet } from './conditional-visual-rules';
 import { MAX_FORMULA_LENGTH } from './formula-reader';
 import { readTextValue } from './rich-text';
-import type { colorReader } from './style-appearance';
+import { readDifferentialStyle, type colorReader } from './style-appearance';
 import type { ConditionalComparison, ParsedCondition, ParsedConditionalRule, ParsedConditionalStyle } from './types';
 import { readLocalPath, readPath, toArray } from './xml-values';
 
@@ -15,12 +15,18 @@ type ReadColor = ReturnType<typeof colorReader>;
 const extensionUri = '{78c0d931-6437-407d-a8ee-f0aad7539e65}';
 const ruleExtensionUri = '{b025f937-c7b1-47d3-b67f-a62eff666e3e}';
 const isTrue = (value: unknown) => value === '1' || value === 'true';
+const visualTypes = new Set(['colorScale', 'dataBar', 'iconSet']);
+const extendedFormulaTypes = new Set(['containsText', 'notContainsText', 'beginsWith', 'endsWith',
+  'containsBlanks', 'notContainsBlanks', 'containsErrors', 'notContainsErrors']);
 
-function readCondition(entry: unknown, color: ReadColor, rightToLeft: boolean): ParsedCondition | 'unsupported' | undefined {
-  const type = readPath(entry, ['type']);
+function readCondition(entry: unknown, color: ReadColor, rightToLeft: boolean,
+  extension = false): ParsedCondition | 'unsupported' | undefined {
+  const savedType = readPath(entry, ['type']);
+  const type = extension && typeof savedType === 'string' && extendedFormulaTypes.has(savedType) ? 'expression' : savedType;
+  const read = extension ? readLocalPath : readPath;
   switch (type) {
     case 'cellIs': case 'expression': {
-      const formulas = toArray(readPath(entry, ['formula'])).map(formula => readTextValue(formula).trim());
+      const formulas = toArray(read(entry, [extension ? 'f' : 'formula'])).map(formula => readTextValue(formula).trim());
       if (formulas.some(formula => !formula || formula.length > MAX_FORMULA_LENGTH)) return undefined;
       if (type === 'expression') return formulas.length === 1 ? { type, formula: formulas[0] } : undefined;
       const operator = comparisons.get(String(readPath(entry, ['operator'])));
@@ -46,32 +52,39 @@ function readCondition(entry: unknown, color: ReadColor, rightToLeft: boolean): 
       return { type, above: above === undefined || isTrue(above), equal: isTrue(readPath(entry, ['equalAverage'])),
         deviations: Number(raw) };
     }
+    case 'timePeriod': {
+      const period = readPath(entry, ['timePeriod']);
+      switch (period) {
+        case 'yesterday': case 'today': case 'tomorrow': case 'last7Days':
+        case 'lastWeek': case 'thisWeek': case 'nextWeek': case 'lastMonth': case 'thisMonth': case 'nextMonth':
+          return { type, period };
+        default: return undefined;
+      }
+    }
     case 'containsBlanks': case 'notContainsBlanks': case 'containsErrors': case 'notContainsErrors':
     case 'duplicateValues': case 'uniqueValues':
       return { type };
-    case 'colorScale': return readColorScale(readPath(entry, ['colorScale']), color);
-    case 'dataBar': return readDataBar(readPath(entry, ['dataBar']), color, rightToLeft);
-    case 'iconSet': return readIconSet(readPath(entry, ['iconSet']));
+    case 'colorScale': return readColorScale(read(entry, ['colorScale']), color, extension);
+    case 'dataBar': return readDataBar(read(entry, ['dataBar']), color, rightToLeft, extension);
+    case 'iconSet': return readIconSet(read(entry, ['iconSet']), extension);
     default: return type ? 'unsupported' : undefined;
   }
 }
 
 function readConditionalExtensions(worksheet: unknown) {
   const linkedBars = new Map<string, unknown>();
-  const standalone: { entry: unknown; references: string }[] = [];
+  const standalone: { entry: unknown; ranges: ReturnType<typeof readRanges> }[] = [];
   for (const ext of toArray(readPath(worksheet, ['extLst', 'ext']))) {
     if (String(readPath(ext, ['uri'])).toLowerCase() !== extensionUri) continue;
     for (const group of toArray(readLocalPath(ext, ['conditionalFormattings', 'conditionalFormatting']))) {
-      const references = readTextValue(readLocalPath(group, ['sqref']));
+      const ranges = readRanges(readTextValue(readLocalPath(group, ['sqref'])));
       for (const entry of toArray(readLocalPath(group, ['cfRule']))) {
-        const type = readPath(entry, ['type']);
-        if (type !== 'dataBar' && type !== 'iconSet') continue;
         if (readPath(entry, ['priority']) !== undefined) {
-          standalone.push({ entry, references });
+          standalone.push({ entry, ranges });
           continue;
         }
         const id = readPath(entry, ['id']);
-        if (type === 'dataBar' && typeof id === 'string' && id) linkedBars.set(id.toLowerCase(), entry);
+        if (readPath(entry, ['type']) === 'dataBar' && typeof id === 'string' && id) linkedBars.set(id.toLowerCase(), entry);
       }
     }
   }
@@ -135,14 +148,18 @@ export function readConditionalRules(document: unknown, styles: readonly ParsedC
       rules.push({ ranges, priority, condition, stopIfTrue: isTrue(stop), ...(style ? { style } : {}), ...(activeFormula ? { activeFormula } : {}) });
     }
   }
-  for (const { entry, references } of standalone) {
-    const priority = Number(readPath(entry, ['priority'])), ranges = readRanges(references);
-    const condition = readPath(entry, ['type']) === 'iconSet'
-      ? readIconSet(readLocalPath(entry, ['iconSet']), true)
-      : readDataBar(readLocalPath(entry, ['dataBar']), color, rightToLeft, true);
-    const activeFormula = readActiveFormula(entry);
-    if (!ranges || !condition || activeFormula === false || !Number.isSafeInteger(priority) || priority < 1) { invalid++; continue; }
-    rules.push({ ranges, priority, condition, stopIfTrue: isTrue(readPath(entry, ['stopIfTrue'])), ...(activeFormula ? { activeFormula } : {}) });
+  for (const { entry, ranges } of standalone) {
+    const priority = Number(readPath(entry, ['priority']));
+    const condition = readCondition(entry, color, rightToLeft, true);
+    if (condition === 'unsupported') { unsupported++; continue; }
+    const visual = condition && visualTypes.has(condition.type);
+    const activeFormula = visual ? readActiveFormula(entry) : undefined;
+    const dxf = readLocalPath(entry, ['dxf']);
+    if (!ranges || !condition || activeFormula === false || !Number.isSafeInteger(priority) || priority < 1
+      || (visual && dxf !== undefined)) { invalid++; continue; }
+    const style = dxf === undefined ? undefined : readDifferentialStyle(dxf, color, readLocalPath);
+    rules.push({ ranges, priority, condition, stopIfTrue: isTrue(readPath(entry, ['stopIfTrue'])),
+      ...(style ? { style } : {}), ...(activeFormula ? { activeFormula } : {}) });
   }
   if (invalid) warnings.push(`Ignored ${invalid} invalid conditional formatting rules in sheet ${sheet}.`);
   if (unsupported) warnings.push(`Skipped ${unsupported} unsupported conditional formatting rules in sheet ${sheet}.`);

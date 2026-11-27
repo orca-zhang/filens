@@ -1,0 +1,165 @@
+{
+  "date": "2026-11-25",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Fresh Node processes, alternating build order. 1024 MiB V8 old-space for the three measured runs per build. Parse times cover opening the ZIP, decoding XML and building the full model, including lazy parser initialization. They exclude fixture generation, reading the input file, static package imports, rendering and network. Peak process RSS includes the process baseline and compressed input and is sampled after parsing, before model hashing or formula evaluation. Capped runs limit V8 old space.",
+  "coreZipChunkSha256": "b44718d4cb5d2274f38c00cd0a19db29351b4e6f5f1a41af00cf38aa1caf99b3",
+  "variants": {
+    "baseline": {
+      "description": "Decode the expanded worksheet XML before parsing row batches.",
+      "xlsxEntrySha256": "d1af756755da9ea34ea82184f288aae2c9987b9f1ecaf53487689d1d8aa2d99f"
+    },
+    "streamed": {
+      "description": "Decode worksheet XML incrementally and build the model from complete row batches.",
+      "xlsxEntrySha256": "df13f137912cf177b5f3138d5f444e78d177cbc420e91580cafb01c9fe93d896"
+    }
+  },
+  "workloads": [
+    {
+      "workload": "120,000 worksheet rows with inline strings and formulas",
+      "archiveBytes": 3208374,
+      "archiveSha256": "1e42e47a0f42028b6d34c219e8628925ff2e64c52e496adb24e94b8c1fdf6341",
+      "model": {
+        "cells": 479998,
+        "rows": 120001,
+        "last": "120030",
+        "modelSha256": "7831dc4a3af978fbe00a4bd5d84b5f71e3eda5fe1460df8bcfec91ccc015899c"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "result": "complete",
+            "parseMs": 2134.51475,
+            "peakRssKiB": 458592
+          },
+          {
+            "result": "complete",
+            "parseMs": 2171.355042,
+            "peakRssKiB": 460704
+          },
+          {
+            "result": "complete",
+            "parseMs": 2149.837375,
+            "peakRssKiB": 451488
+          }
+        ],
+        "streamed": [
+          {
+            "result": "complete",
+            "parseMs": 2130.143125,
+            "peakRssKiB": 297296
+          },
+          {
+            "result": "complete",
+            "parseMs": 2171.749042,
+            "peakRssKiB": 305472
+          },
+          {
+            "result": "complete",
+            "parseMs": 2156.4680000000003,
+            "peakRssKiB": 304832
+          }
+        ]
+      },
+      "capped": {
+        "128": {
+          "baseline": {
+            "result": "V8 heap exhausted",
+            "parsed": false
+          },
+          "streamed": {
+            "result": "complete",
+            "parseMs": 3095.915,
+            "peakRssKiB": 221968
+          }
+        },
+        "256": {
+          "baseline": {
+            "result": "complete",
+            "parseMs": 2542.0735,
+            "peakRssKiB": 375216
+          },
+          "streamed": {
+            "result": "complete",
+            "parseMs": 2288.726917,
+            "peakRssKiB": 277248
+          }
+        }
+      }
+    },
+    {
+      "workload": "220,000 shared strings referenced by worksheets",
+      "archiveBytes": 2303547,
+      "archiveSha256": "05428025967701d96e78f925febf550be20b307bd07a9b74776dfec31026bced",
+      "model": {
+        "cells": 220002,
+        "rows": 220000,
+        "last": "  Batch & 星表 ²",
+        "modelSha256": "c7c452a16565f08f7184421735174f9b98e8952913805da2a2957670c833c9dc"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "result": "complete",
+            "parseMs": 910.893208,
+            "peakRssKiB": 271072
+          },
+          {
+            "result": "complete",
+            "parseMs": 979.816375,
+            "peakRssKiB": 259520
+          },
+          {
+            "result": "complete",
+            "parseMs": 1428.438417,
+            "peakRssKiB": 224240
+          }
+        ],
+        "streamed": [
+          {
+            "result": "complete",
+            "parseMs": 1070.220166,
+            "peakRssKiB": 228880
+          },
+          {
+            "result": "complete",
+            "parseMs": 1004.3491249999998,
+            "peakRssKiB": 224496
+          },
+          {
+            "result": "complete",
+            "parseMs": 1014.5,
+            "peakRssKiB": 223216
+          }
+        ]
+      },
+      "capped": {
+        "128": {
+          "baseline": {
+            "result": "V8 heap exhausted",
+            "parsed": false
+          },
+          "streamed": {
+            "result": "complete",
+            "parseMs": 1129.1043750000001,
+            "peakRssKiB": 219680
+          }
+        },
+        "256": {
+          "baseline": {
+            "result": "complete",
+            "parseMs": 1037.299792,
+            "peakRssKiB": 264448
+          },
+          "streamed": {
+            "result": "complete",
+            "parseMs": 1089.3299579999998,
+            "peakRssKiB": 221856
+          }
+        }
+      }
+    }
+  ]
+}

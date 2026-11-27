@@ -140,7 +140,11 @@ Agent CLI 的发布版本独立记录在 `packaging/agent-release.json`，不改
 文件 URL 和路径。默认临时 HTML 会保留，内含原文件副本，使用后可自行删除。
 页面检查 WASM / Worker 能力，显示 GitHub 链接，并通过 CSP 禁止外部连接及资源加载。
 浏览器内部失败会显示 `--mode serve` 兼容模式提示，CLI 无法仅凭启动成功判断渲染成功。
-Safari / WebKit 的 iWork 预览需使用 HTTP 兼容模式。较大文件可使用兼容模式，避免 Base64 嵌入产生的额外体积与内存占用。
+用当前预览资源导出的 Keynote、Pages 和 Numbers 测试文件可在 Chromium、Firefox 和 WebKit 中离线打开。
+独立 HTML 将超过 768 KiB 的文件分块嵌入，浏览器在预览前还原为本地文件。HTTP 模式下，支持区间读取的预览可按需读取原文件。
+独立 HTML 中的 PDF 由本地 PDF.js Worker 解析。浏览器阻止该 Worker 启动时，可回退到主线程解析。
+
+使用配套的 CLI 和预览资源时，导出的 HTML 会内嵌归档 Worker 和 WASM，支持离线浏览 RAR、7z 及嵌套归档、打开条目和输入密码。引擎按需启动，每份 HTML 增加约 1.56 MB。缺少内嵌引擎时，可用完整预览资源和 `--mode serve` 打开。
 
 `--mode serve --no-open --json` 保留原来的 HTTP 地址、常驻服务及 Ctrl-C 退出行为；
 `--port` 未配合显式 `--mode` 时也使用 HTTP 模式。

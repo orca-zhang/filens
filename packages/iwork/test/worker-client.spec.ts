@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IworkWorkerClient } from '../src/worker/client';
+import { readWorkerFile } from '../src/worker/file-source';
 
 class FakeWorker extends EventTarget {
   static instances: FakeWorker[] = [];
@@ -21,14 +22,56 @@ beforeEach(() => { FakeWorker.instances = []; vi.stubGlobal('Worker', FakeWorker
 afterEach(() => vi.unstubAllGlobals());
 
 describe('iWork worker lifecycle', () => {
+  it('serves bounded file URL reads through the worker channel and aborts pending reads on replacement', async () => {
+    vi.stubGlobal('location', { protocol: 'file:' });
+    const held = vi.fn(), abort = vi.fn();
+    let pause = false;
+    vi.stubGlobal('FileReader', class {
+      result?: ArrayBuffer;
+      onload?: () => void;
+      onerror?: () => void;
+      readAsArrayBuffer(blob: Blob) {
+        if (pause) { held(blob.size); return; }
+        void blob.arrayBuffer().then(result => { this.result = result; this.onload?.(); });
+      }
+      abort = abort;
+    });
+    const client = new IworkWorkerClient(), worker = FakeWorker.instances[0];
+    const task = client.parse(new Blob([input()]));
+    const { source, id } = worker.messages[0];
+    try {
+      const remote = readWorkerFile(source);
+      expect(remote.size).toBe(3);
+      expect([...new Uint8Array(await remote.slice(1, 3).arrayBuffer())]).toEqual([2, 3]);
+      await expect(remote.slice(0, 4).arrayBuffer()).rejects.toThrow('Could not read');
+      worker.reply({ id, document: { kind: 'numbers' } });
+      await task;
+      expect([...new Uint8Array(await remote.slice(0, 1).arrayBuffer())]).toEqual([1]);
+
+      pause = true;
+      const sheet = client.parseSheet(1);
+      const cancelled = expect(sheet).rejects.toMatchObject({ name: 'AbortError' });
+      source.port.postMessage({ id: 100, start: 1, end: 2 });
+      await vi.waitFor(() => expect(held).toHaveBeenCalledWith(1));
+      const replacement = client.parse(input());
+      await cancelled;
+      expect(abort).toHaveBeenCalledOnce();
+      expect(worker.terminated).toBe(true);
+      const next = FakeWorker.instances[1];
+      next.reply({ id: next.messages[0].id, document: { kind: 'pages' } });
+      await expect(replacement).resolves.toEqual({ kind: 'pages' });
+    } finally { source.port.close(); client.destroy(); }
+  });
+
   it('restores a cached Numbers archive without transferring the viewer buffers', async () => {
     const client = new IworkWorkerClient(), worker = FakeWorker.instances[0];
     const document = { archive: { type: 'numbers', records: {} }, media: { data: new Uint8Array([1, 2]) } } as any;
     const task = client.parseSheet(1, document), request = worker.messages[0];
     expect(request.context).toEqual({ archive: document.archive, media: document.media });
     expect(document.media.data.byteLength).toBe(2);
-    worker.reply({ id: request.id, sheet: { index: 1, loaded: true } });
-    await expect(task).resolves.toEqual({ index: 1, loaded: true }); client.destroy();
+    const sheetResult = { sheet: { index: 1, loaded: true } };
+    worker.reply({ id: request.id, sheetResult });
+    await expect(task).resolves.toEqual(sheetResult); client.destroy();
   });
   it('terminates busy parsing immediately and recreates the worker on the next request', async () => {
     const client = new IworkWorkerClient(), first = FakeWorker.instances[0], task = client.parse(input());
@@ -69,7 +112,7 @@ describe('iWork worker lifecycle', () => {
     const client = new IworkWorkerClient(), worker = FakeWorker.instances[0];
     const backing = kind === 'slice' ? new ArrayBuffer(8) : new SharedArrayBuffer(8), original = new Uint8Array(backing);
     original.set([9, 1, 2, 3, 8]); const task = client.parse(original.subarray(1, 4));
-    expect([...new Uint8Array(worker.messages[0].bytes)]).toEqual([1, 2, 3]); expect(original.byteLength).toBe(8);
+    expect([...new Uint8Array(worker.messages[0].source)]).toEqual([1, 2, 3]); expect(original.byteLength).toBe(8);
     worker.reply({ id: worker.messages[0].id, document: { kind: 'pages' } }); await task; client.destroy();
   });
   it('clears a failed idle worker when releasing an archive fails', () => {

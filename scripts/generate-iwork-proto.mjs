@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import protobuf from 'protobufjs/light.js';
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const protoDir = join(rootDir, 'packages', 'iwork', 'vendor', 'iwork-converter', 'proto');
@@ -29,11 +30,6 @@ if (!statSync(outputJsonFile).size) {
   throw new Error(`Failed to generate protobuf descriptor at ${outputJsonFile}`);
 }
 
-const descriptor = JSON.parse(readFileSync(outputJsonFile, 'utf8'));
-// Keep generated declarations small; consumers need the schema interface,
-// rather than a literal TypeScript type for every protobuf field.
-writeFileSync(outputTsFile, `import type { INamespace } from 'protobufjs/light.js';\nconst descriptor = ${JSON.stringify(descriptor)} as INamespace;\nexport default descriptor;\n`);
-
 const commonTypeMap = JSON.parse(
   readFileSync(join(rootDir, 'packages', 'iwork', 'vendor', 'iwork-converter', 'codegen', 'Common.json'), 'utf8')
 );
@@ -46,6 +42,39 @@ const numbersTypeMap = JSON.parse(
 const pagesTypeMap = JSON.parse(
   readFileSync(join(rootDir, 'packages', 'iwork', 'vendor', 'iwork-converter', 'codegen', 'Pages.json'), 'utf8')
 );
+
+const descriptor = JSON.parse(readFileSync(outputJsonFile, 'utf8'));
+const schema = protobuf.Root.fromJSON(descriptor);
+const included = new Set();
+
+function include(node) {
+  if (!node || included.has(node.fullName)) return;
+  included.add(node.fullName);
+  include(node.parent);
+  if (node instanceof protobuf.Type) {
+    for (const field of node.fieldsArray) {
+      include(field.resolve().resolvedType);
+      include(field.declaringField);
+    }
+  }
+}
+
+include(schema.lookupType('TSP.ArchiveInfo'));
+for (const mapping of [commonTypeMap, keynoteTypeMap, numbersTypeMap, pagesTypeMap]) {
+  for (const name of Object.values(mapping)) include(schema.lookup(name));
+}
+
+// Keep the full descriptor JSON for tooling. Preview only needs registered
+// archives, their field dependencies and the namespaces that resolve names.
+function previewDescriptor(node, path = '') {
+  if (!node.nested) return node;
+  const entries = Object.entries(node.nested).flatMap(([name, child]) => {
+    const childPath = `${path}.${name}`;
+    return included.has(childPath) ? [[name, previewDescriptor(child, childPath)]] : [];
+  });
+  return { ...node, nested: Object.fromEntries(entries) };
+}
+writeFileSync(outputTsFile, `import type { INamespace } from 'protobufjs/light.js';\nconst descriptor = ${JSON.stringify(previewDescriptor(descriptor))} as INamespace;\nexport default descriptor;\n`);
 
 writeFileSync(
   typeMapsTsFile,

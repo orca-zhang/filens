@@ -22,6 +22,8 @@ for (const mode of ['split', 'all-in-one']) {
   const runtime = files.filter(file => /\.(js|mjs|wasm)$/.test(file.file));
   const archiveAssets = runtime.filter(file => file.file === 'archive/7zz.wasm' || /^assets\/archive-worker-[^/]+\.js$/.test(file.file));
   if (archiveAssets.length !== 2) throw new Error('Archive WASM and worker must remain separate runtime assets in every build.');
+  const regexAssets = runtime.filter(file => file.file === 'xlsx/pcre2.wasm');
+  if (regexAssets.length !== 1) throw new Error('XLSX regex WASM must remain an on-demand asset.');
   const archiveMagic = (await readFile(path.join(dist, 'archive/7zz.wasm'))).subarray(0, 96).toString('base64');
   for (const file of runtime) {
     const code = /\.js$/.test(file.file) ? await readFile(path.join(dist, file.file), 'utf8') : '';
@@ -33,12 +35,12 @@ for (const mode of ['split', 'all-in-one']) {
       throw new Error(`Archive WASM must never be embedded: ${mode}/${file.file}`);
     }
   }
-  const mainRuntime = runtime.filter(file => !archiveAssets.includes(file));
+  const mainRuntime = runtime.filter(file => !archiveAssets.includes(file) && !regexAssets.includes(file));
   if (mode === 'all-in-one' && (mainRuntime.length !== 1 || mainRuntime[0].file !== 'filens.js')) {
     throw new Error('All-in-one build contains unexpected external runtime files');
   }
   const sum = group => Object.fromEntries(['raw', 'gzip', 'brotli'].map(key => [key, group.reduce((n, f) => n + f[key], 0)]));
-  measurements[mode] = { files, main: sum(mainRuntime), archive: sum(archiveAssets), total: sum(runtime) };
+  measurements[mode] = { files, main: sum(mainRuntime), archive: sum(archiveAssets), xlsxRegex: sum(regexAssets), total: sum(runtime) };
   if (mode === 'all-in-one') {
     const packing = JSON.parse(await readFile(path.join(dist, 'asset-packing.json'), 'utf8'));
     measurements[mode].delivery = { raw: measurements[mode].main.raw,
@@ -50,20 +52,22 @@ for (const mode of ['split', 'all-in-one']) {
 <style>html,body,#preview{height:100%;margin:0}body{font-family:system-ui}#picker{position:fixed;z-index:100;top:12px;right:16px;background:white;padding:8px;border:1px solid #ddd;border-radius:6px}#picker input{max-width:220px}</style>
 <label id="picker">Open file(s) <input type="file" id="file" multiple><span id="source-error" role="alert" hidden></span></label><div id="preview"></div>
 <script type="module">
-import { createPreview, isArchiveVolumeName, selectArchiveVolumes } from './filens.js';
+import { createPreview, isArchiveVolumeName, selectArchiveVolumes, createFileSetResourceResolver } from './filens.js';
 let preview;
 const open = options => { document.body.dataset.state='loading'; delete document.body.dataset.error; preview?.destroy(); preview = createPreview('#preview', {
   ...options, onRendered: () => { document.body.dataset.state='ready'; },
   onError: error => { document.body.dataset.state='error'; document.body.dataset.error=error.message; }
 }); };
 document.querySelector('#file').onchange = event => {
-  const files=Array.from(event.target.files), file=files.find(part=>isArchiveVolumeName(part.name))??files[0];
+  const files=Array.from(event.target.files);
+  const drawing=files.some(part=>/\\.shx$/i.test(part.name))?files.find(part=>/\\.(dxf|dwg)$/i.test(part.name)):undefined;
+  const file=files.find(part=>isArchiveVolumeName(part.name))??drawing??files[0];
   const error=document.querySelector('#source-error'); error.hidden=true;
   if(!file) return;
   try {
     const set=selectArchiveVolumes(file.name,files);
     open(set ? {src:{source:set.primary,archiveVolumes:set.files.slice(1).map(part=>({name:part.name,source:part}))},name:set.primary.name}
-      : {src:file,name:file.name});
+      : {src:file,name:file.name,resourceResolver:files.length>1?createFileSetResourceResolver(files):undefined});
   } catch (cause) { error.textContent=cause.message; error.hidden=false; }
 };
 // The CLI serves metadata and file bytes from its local, token-scoped HTTP server.
@@ -77,13 +81,13 @@ if (new URL(location.href).searchParams.has('cli')) {
 await rm(path.join(root, 'dist/preview'), { recursive: true, force: true });
 await mkdir(path.join(root, 'dist/preview'), { recursive: true });
 await cp(path.join(directory, 'dist/split'), path.join(root, 'dist/preview'), { recursive: true });
-// Keep archive assets external even beside the HTML-compatible main runtime.
+// The split tree supplies the archive and XLSX WASM beside the HTML-compatible runtime.
 await cp(path.join(directory, 'dist/all-in-one/filens.js'), path.join(root, 'dist/preview/filens-all-in-one.js'));
 await cp(path.join(directory, 'dist/all-in-one/asset-packing.json'), path.join(root, 'dist/preview/asset-packing.json'));
 await cp(path.join(directory, 'dist/all-in-one/assets'), path.join(root, 'dist/preview/assets'), { recursive: true });
 await cp(path.join(directory, 'src/public.d.ts'), path.join(directory, 'dist/index.d.ts'));
 await cp(path.join(root, 'LICENSE'), path.join(directory, 'LICENSE'));
-await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), version, unit:'bytes', scope:'Current source checkout runtime build (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. Main runtime and always-external archive worker/WASM are recorded separately; total includes both. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
+await writeFile(path.join(root, 'docs/preview-build-sizes.json'), `${JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai'}).format(new Date()), version, unit:'bytes', scope:'Current source checkout runtime build (can differ from the published archive with the same base version), including Vue, CSS, workers and document/image/truck STEP WASM. The main runtime, archive worker/WASM and XLSX regex WASM are recorded separately and included in the total. Excludes OCCT, HTML, notices, maps and source files. MB = 1000000 bytes. Package version and registry verification are recorded separately.', builds:measurements }, null, 2)}\n`);
 
 async function measure(directory, prefix = '') {
   const files = [];

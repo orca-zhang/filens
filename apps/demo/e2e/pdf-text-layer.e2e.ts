@@ -4,7 +4,7 @@ import { createPdfFixture } from '../../../packages/pdf/test/fixtures/document.m
 
 test.use({ deviceScaleFactor: 2 });
 
-for (const rotation of [0, 90, 180, 270]) test(`selects PDF text at rotation ${rotation} and keeps it aligned after zoom`, async ({ page }) => {
+for (const [rotation, userUnit] of [[0, 1], [90, 1], [180, 1], [270, 1], [90, 2]]) test(`selects PDF text at rotation ${rotation} and user unit ${userUnit} through zoom and fit`, async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('./');
@@ -18,12 +18,16 @@ for (const rotation of [0, 90, 180, 270]) test(`selects PDF text at rotation ${r
     (window as any).pdfTextTest = { session, host };
     const source = new Uint8Array(bytes);
     await session.load(source, { descriptor: { source, name: 'selectable.pdf' } });
-  }, { moduleUrl, bytes: [...createPdfFixture(100, false, rotation)] });
-  const text = page.locator('.pdfv-page-slot[data-page-index="0"] .pdfv-text-layer[data-rendered="true"] span').first();
+  }, { moduleUrl, bytes: [...createPdfFixture(100, false, rotation, undefined, 0, 60, userUnit)] });
+  const layer = page.locator('.pdfv-page-slot[data-page-index="0"] .pdfv-text-layer[data-rendered="true"]');
+  const text = layer.locator('span').first();
   await expect(text).toHaveText('Document page 1');
   const before = await text.boundingBox();
   expect(before).not.toBeNull();
   const canvas = await page.locator('canvas[data-page-index="0"]').boundingBox();
+  const layerBox = await layer.boundingBox();
+  expect(Math.abs(layerBox!.width - canvas!.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(layerBox!.height - canvas!.height)).toBeLessThanOrEqual(1);
   expect(before!.x).toBeGreaterThanOrEqual(canvas!.x);
   expect(before!.y).toBeGreaterThanOrEqual(canvas!.y);
   expect(before!.x + before!.width).toBeLessThanOrEqual(canvas!.x + canvas!.width + 1);
@@ -41,12 +45,37 @@ for (const rotation of [0, 90, 180, 270]) test(`selects PDF text at rotation ${r
   await page.mouse.move(end[0], end[1], { steps: 10 });
   await page.mouse.up();
   expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('Document page 1');
+  const original = (await text.elementHandle())!;
+  await page.evaluate(async () => {
+    const state = (window as any).pdfTextTest;
+    const proxy = await state.session.document.getPage(1);
+    const stream = proxy.streamTextContent.bind(proxy);
+    state.reads = 0;
+    proxy.streamTextContent = () => { state.reads++; return stream(); };
+  });
   await page.evaluate(() => (window as any).pdfTextTest.session.setScale(1.5));
   await expect.poll(async () => (await text.boundingBox())?.width ?? 0).toBeCloseTo(before!.width * 1.5, 0);
+  const painted = page.locator('canvas[data-page-index="0"][data-rendered="true"]');
+  await expect(painted).toHaveCount(1);
+  await page.evaluate(() => (window as any).pdfTextTest.session.fit('width'));
+  await expect(painted).toHaveCount(1);
+  const fittedWidth = (await painted.boundingBox())!.width;
+  await page.evaluate(() => { (window as any).pdfTextTest.host.style.width = '640px'; });
+  await expect.poll(async () => (await painted.boundingBox())?.width ?? Infinity).toBeLessThan(fittedWidth);
+  const resized = (await painted.boundingBox())!;
+  const reflowed = (await layer.boundingBox())!;
+  expect(Math.abs(resized.width - reflowed.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(resized.height - reflowed.height)).toBeLessThanOrEqual(1);
+  expect(await text.evaluate((span, original) => ({
+    sameNode: span === original,
+    selection: window.getSelection()?.toString(),
+    reads: (window as any).pdfTextTest.reads
+  }), original)).toEqual({ sameNode: true, selection: 'Document page 1', reads: 0 });
   await page.evaluate(() => (window as any).pdfTextTest.session.goToPage(50));
   await expect(page.locator('.pdfv-page-slot[data-page-index="50"] .pdfv-text-layer[data-rendered="true"]')).toHaveText('Document page 51');
   expect(await page.locator('.pdfv-text-layer').count()).toBeLessThanOrEqual(4);
   await expect(page.locator('.pdfv-page-slot[data-page-index="0"] .pdfv-text-layer')).toHaveCount(0);
+  expect(await original.evaluate(node => node.isConnected)).toBe(false);
   expect(await page.evaluate(() => (window as any).pdfTextTest.session.getState().warnings)).toEqual([]);
   await page.evaluate(() => (window as any).pdfTextTest.session.destroy());
   await expect(page.locator('.pdfv-text-layer')).toHaveCount(0);

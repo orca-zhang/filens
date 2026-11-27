@@ -1,0 +1,126 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "method": "Open each DEFLATE XLSX from a file-backed Blob and call the public loadXlsxWorkbook reader. Run each build in three fresh Node processes per fixture, alternating build order. Parse time covers ZIP reads, decompression and workbook parsing. Retained heap is heapUsed above startup after GC. Peak RSS covers startup through parsing and GC, before hashing each parsed row to verify the full cell model.",
+  "builds": {
+    "baselineEntrySha256": "401a73be7fc92442b4847f536ca5e0cfc00c29b1a1e65ac29ddabf47a2410adc",
+    "detachedNumericValueEntrySha256": "666e5160e302e964284d4cc99db6524bec068cafbe63988423e709a1266b711e"
+  },
+  "workload": {
+    "rows": 24000,
+    "columns": 48,
+    "cells": 1152000
+  },
+  "fixtures": {
+    "numeric": {
+      "description": "Every cell contains a signed 21-code-unit exponent string. The value includes the row padded to five digits and the zero-based column offset padded to two digits. This fixture uses the direct worksheet reader.",
+      "archiveBytes": 3605982,
+      "archiveSha256": "66cd11e9efbe7fb09c7209fa4469f5dcbaa094f22241b8e7387c0a93b484d88f",
+      "baseline": {
+        "samples": [
+          {
+            "parseMs": 686.977,
+            "retainedHeapBytes": 205529232,
+            "peakRssKiB": 337136
+          },
+          {
+            "parseMs": 698.437,
+            "retainedHeapBytes": 205782096,
+            "peakRssKiB": 334800
+          },
+          {
+            "parseMs": 695.577,
+            "retainedHeapBytes": 205780216,
+            "peakRssKiB": 338272
+          }
+        ],
+        "median": {
+          "parseMs": 695.577,
+          "retainedHeapBytes": 205780216,
+          "peakRssKiB": 337136
+        }
+      },
+      "detachedNumericValue": {
+        "samples": [
+          {
+            "parseMs": 770.996,
+            "retainedHeapBytes": 158324952,
+            "peakRssKiB": 309360
+          },
+          {
+            "parseMs": 802.945,
+            "retainedHeapBytes": 157892952,
+            "peakRssKiB": 314448
+          },
+          {
+            "parseMs": 791.678,
+            "retainedHeapBytes": 157887432,
+            "peakRssKiB": 303024
+          }
+        ],
+        "median": {
+          "parseMs": 791.678,
+          "retainedHeapBytes": 157892952,
+          "peakRssKiB": 309360
+        }
+      },
+      "verifiedRowModelSha256": "1178e1f97d75b42aa3285a229eff01668378109c01620caf3d590a8217ae564d"
+    },
+    "mixed": {
+      "description": "The same numeric data, with three cells in each consecutive 12-column group replaced by an ISO date, an inline Chinese and English string with an XML entity, and a formula with a cached long decimal value. This fixture uses the general XML reader.",
+      "archiveBytes": 4131825,
+      "archiveSha256": "6daf79b45a19c66804d044d856d64f92f7019e420384663370a7795ef99f56a6",
+      "baseline": {
+        "samples": [
+          {
+            "parseMs": 3723.644,
+            "retainedHeapBytes": 185594696,
+            "peakRssKiB": 676368
+          },
+          {
+            "parseMs": 3739.727,
+            "retainedHeapBytes": 185659272,
+            "peakRssKiB": 709328
+          },
+          {
+            "parseMs": 3627.506,
+            "retainedHeapBytes": 185633776,
+            "peakRssKiB": 693280
+          }
+        ],
+        "median": {
+          "parseMs": 3723.644,
+          "retainedHeapBytes": 185633776,
+          "peakRssKiB": 693280
+        }
+      },
+      "detachedNumericValue": {
+        "samples": [
+          {
+            "parseMs": 3802.844,
+            "retainedHeapBytes": 185559136,
+            "peakRssKiB": 702752
+          },
+          {
+            "parseMs": 3727.348,
+            "retainedHeapBytes": 185285360,
+            "peakRssKiB": 695104
+          },
+          {
+            "parseMs": 3458.358,
+            "retainedHeapBytes": 185530088,
+            "peakRssKiB": 701232
+          }
+        ],
+        "median": {
+          "parseMs": 3727.348,
+          "retainedHeapBytes": 185530088,
+          "peakRssKiB": 701232
+        }
+      },
+      "verifiedRowModelSha256": "2d01f1f8a10d74690eb571c0f0ed3b27c1f50915096f14fd35a4b07473f4ffa1"
+    }
+  }
+}

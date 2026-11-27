@@ -727,7 +727,10 @@ describe('iWork table parser', () => {
     expect(coveredCells.map((cell) => `${cell.row}:${cell.column}`)).toEqual(['1:1']);
   });
 
-  it('supports merge ranges stored through expanded coordinates and packed table sizes', () => {
+  it.each([
+    ['expanded', { packedData: 0, expandedCoord: { row: 0, column: 1 } }],
+    ['packed', { packedData: 1 << 16 }]
+  ])('supports %s merge coordinates with packed table sizes', (_encoding, origin) => {
     const archive = createNumbersArchive();
 
     archive.records['1'] = {
@@ -813,14 +816,9 @@ describe('iWork table parser', () => {
       value: {
         cellRange: [
           {
-            origin: {
-              expandedCoord: {
-                row: 0,
-                column: 1
-              }
-            },
+            origin,
             size: {
-              packedData: (2 << 16) | 1
+              packedData: (1 << 16) | 2
             }
           }
         ]

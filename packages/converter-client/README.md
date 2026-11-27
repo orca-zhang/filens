@@ -46,7 +46,14 @@ Invoke `search-text` with the usual corpus JSON and WASI arguments; a complete
 example and schema are in the [SIMD search report](../../docs/batch-matching-round9-performance.zh-CN.md).
 The runner loads SIMD when supported and uses scalar when SIMD is unsupported or
 its asset fails to load or compile. Execution errors propagate without repeating
-the operation. Each call owns its WASI files and instance; module loading is cached.
+the operation. Each call owns its WASI files and instance. Module loading is cached.
+
+Set `sensitive: true` on a WASI invocation to clear its owned scratch files
+and linear memory when it finishes, including after a trap or cancellation.
+The runner returns separate copies of requested files. Office conversions
+with a password use this cleanup automatically. With the optional Office module,
+the client clears the intermediate plaintext after the conversion attempt and
+passes the document to the normalizer without the password.
 The text core's extraction capability import is unused by `search-text`.
 
 `search-simd` accelerates ASCII normalization and word-boundary scanning. Unicode

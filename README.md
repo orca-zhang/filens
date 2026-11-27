@@ -57,7 +57,7 @@ filens capacity --json
 filens preview report.pdf --output report-preview.html --no-open
 ```
 
-Creates a self-contained HTML with the original file, preview engine and licenses. Copy it to another computer to open offline; existing files are never overwritten. Omit `--no-open` to open it automatically. Safari/WebKit iWork previews require `--mode serve`. See [preview setup](packages/preview/README.md#cli-preview) for Lite assets.
+Creates a self-contained HTML with the original file, preview engine and licenses. Copy it to another computer to open offline; existing files are never overwritten. Omit `--no-open` to open it automatically. The current preview assets render the tested iWork files offline in Chromium, Firefox and WebKit. See [preview setup](packages/preview/README.md#cli-preview) for Lite assets.
 
 ![Actual CLI results: OCR geometry, key excerpts, nested archive search and reading, duplicates, similar images, conversion and offline previews](docs/assets/agent-cli/terminal-demo.gif)
 
@@ -152,6 +152,7 @@ Open [the local demo](http://localhost:5173/modules/filens/?lang=en), then choos
 | Format coverage and architecture | [Support matrix](docs/support-matrix.md) · [Architecture and comparisons](docs/project-overview.md) · [WASM conversion core](wasm/converter-core-rust/README.md) |
 | Performance and raw data | [Selected measurements](docs/featured-performance.md) · [Frontend comparisons](docs/performance-comparison.md) · [OCR comparison](docs/macos-ocr-benchmark.zh-CN.md) |
 | Package sizes and loading costs | [Preview and SDKs](docs/preview-sizes.md) · [Frontend bundles](docs/bundle-sizes.md) · [CLI platforms](docs/agent-cli-npm-release.json) |
+| API compatibility and upgrades | [Public API and package versioning policy](docs/api-compatibility.md) |
 | Browser media compatibility | [Integration, limits and validation](docs/browser-media-engine.md) |
 
 Try your files and [report a reproducible issue](https://github.com/orca-zhang/filens/issues/new/choose). [Roadmap](docs/roadmap.md) · [MIT license](LICENSE) · [Third-party notices](packaging/agent-third-party.md).

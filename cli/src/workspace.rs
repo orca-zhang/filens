@@ -76,6 +76,12 @@ impl Workspace {
     pub fn cleanup_guard(&self) -> CleanupGuard {
         CleanupGuard(self.clone())
     }
+    pub fn memory_scratch(&self) -> Self {
+        Self(Backend::Memory(match &self.0 {
+            Backend::Memory(fs) => fs.wiping_fork(),
+            Backend::Disk(_) => MemoryFs::new().wiping_fork(),
+        }))
+    }
     pub fn fork(&self) -> Result<Self> {
         Ok(Self(match &self.0 {
             Backend::Memory(fs) => Backend::Memory(fs.fork()),

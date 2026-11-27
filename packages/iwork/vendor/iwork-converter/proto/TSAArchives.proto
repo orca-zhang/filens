@@ -16,6 +16,7 @@ message DocumentArchive {
   optional .TSP.Reference tables_custom_format_list = 7;
   optional bool needs_movie_compatibility_upgrade = 8;
   optional string template_identifier = 9;
+  optional .TSP.Reference custom_format_list = 12;
 }
 
 message FunctionBrowserStateArchive {

@@ -93,15 +93,45 @@ describe('DOCX asynchronous loading and resource lifetime', () => {
     expect(mocks.parse).not.toHaveBeenCalled(); expect(session.getState()).toMatchObject({ loading: false, error: null });
   });
 
-  it('releases embedded image, numbering and font URLs when a load is replaced', async () => {
+  it('releases embedded image and numbering URLs when a load is replaced', async () => {
     const { session } = setup();
-    const doc = { loadDocumentImage: vi.fn(async () => 'blob:image'), loadNumberingImage: vi.fn(async () => 'blob:bullet'), loadFont: vi.fn(async () => 'blob:font') };
+    const doc = { loadDocumentImage: vi.fn(async () => 'blob:image'), loadNumberingImage: vi.fn(async () => 'blob:bullet') };
     mocks.parse.mockResolvedValueOnce(doc);
-    const renderResources = async (doc: any) => { await doc.loadDocumentImage('image'); await doc.loadNumberingImage('bullet'); await doc.loadFont('font', 'key'); };
+    const renderResources = async (doc: any) => { await doc.loadDocumentImage('image'); await doc.loadNumberingImage('bullet'); };
     mocks.render.mockImplementationOnce(renderResources); mocks.legacyRender.mockImplementationOnce(async source => renderResources(await mocks.parse(source)));
     await session.load(new Blob(), context(new Blob(), 'old.docx'));
     await session.load(new Blob(), context(new Blob(), 'current.docx'));
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:image'); expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:bullet'); expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:font');
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:image'); expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:bullet');
+  });
+
+  it('does not register an embedded face that finishes decoding after replacement', async () => {
+    const { session } = setup(), decode = pending<void>(), loadFace = vi.fn(() => decode.promise);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const add = vi.fn(), descriptor = Object.getOwnPropertyDescriptor(document, 'fonts');
+    Object.defineProperty(document, 'fonts', { configurable: true, value: { add, delete: vi.fn() } });
+    vi.stubGlobal('FontFace', class { async load() { await loadFace(); return this; } });
+    const bytes = new Uint8Array(38), view = new DataView(bytes.buffer);
+    view.setUint32(0, 0x00010000); view.setUint16(4, 1); view.setUint32(12, 0x4f532f32);
+    view.setUint32(20, 28); view.setUint32(24, 10);
+    const fontTablePart = {
+      fonts: [{ name: 'Late Embedded Face', embedFontRefs: [{ id: 'font', type: 'regular' }] }],
+      rels: [{ id: 'font', type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/font' }]
+    };
+    mocks.parse.mockResolvedValueOnce({ text: 'Old', fontTablePart, loadResource: async () => bytes });
+    try {
+      await session.load(new Blob(), context(new Blob(), 'old.docx'));
+      await vi.waitFor(() => expect(loadFace).toHaveBeenCalledTimes(1));
+      await session.load(new Blob(), context(new Blob(), 'current.docx'));
+      decode.resolve();
+      await decode.promise;
+      await Promise.resolve();
+      expect(add).not.toHaveBeenCalled();
+      expect(session.getState()).toMatchObject({ title: 'current.docx', fonts: [] });
+    } finally {
+      decode.resolve();
+      if (descriptor) Object.defineProperty(document, 'fonts', descriptor);
+      else Reflect.deleteProperty(document, 'fonts');
+    }
   });
 
   it('deduplicates repeated image references but keeps header/body parts distinct', async () => {

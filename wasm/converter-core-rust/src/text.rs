@@ -279,6 +279,11 @@ fn host(request: Value) -> Result<Value, ConvertError> {
     }
 }
 
+fn scratch_directory() -> Option<&'static Path> {
+    let path = Path::new("/scratch");
+    fs::metadata(path).is_ok_and(|m| m.is_dir()).then_some(path)
+}
+
 fn image(bytes: &[u8], extension: &str) -> Result<(), ConvertError> {
     if full() {
         return Ok(());
@@ -299,10 +304,9 @@ fn image(bytes: &[u8], extension: &str) -> Result<(), ConvertError> {
         .take(8)
         .collect();
     let path = STATE.with(|s| {
-        s.borrow()
-            .as_ref()
-            .unwrap()
-            .work
+        let s = s.borrow();
+        scratch_directory()
+            .unwrap_or(&s.as_ref().unwrap().work)
             .join(format!("image-{hash}.{ext}"))
     });
     // The same preprocessing applies to standalone images, PDF renders and
@@ -315,7 +319,10 @@ fn image(bytes: &[u8], extension: &str) -> Result<(), ConvertError> {
             return Ok(());
         }
     };
-    fs::write(&path, prepared.as_ref()).map_err(|e| io_error(format!("write OCR image: {e}")))?;
+    if let Err(error) = fs::write(&path, prepared.as_ref()) {
+        let _ = fs::remove_file(&path);
+        return Err(io_error(format!("write OCR image: {error}")));
+    }
     let result = host(json!({
         "operation":"ocr", "path":path,"layout":true,"maxSideLen":max_side_len
     }));
@@ -1699,7 +1706,8 @@ fn xps_references(
 }
 fn pdf(input: &str) -> Result<(), ConvertError> {
     let work = STATE.with(|s| s.borrow().as_ref().unwrap().work.clone());
-    let prepared = pdf_unicode::prepare(input, &work);
+    let scratch = scratch_directory();
+    let prepared = pdf_unicode::prepare(input, scratch.unwrap_or(&work));
     let pdf_input = prepared.path.as_deref().unwrap_or(Path::new(input));
     if prepared.repaired_fonts > 0 {
         STATE.with(|s| {
@@ -1727,7 +1735,22 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
                 ))
         });
     }
-    let pages = host(json!({"operation":"pdf_open","path":pdf_input}))?["pages"]
+    let opened = host(json!({"operation":"pdf_open","path":pdf_input}));
+    let result = opened.and_then(|opened| {
+        let protected = opened["protected"].as_bool().unwrap_or(!prepared.unencrypted);
+        let raster_directory = scratch.or((!protected).then_some(work.as_path()));
+        pdf_pages(&opened, &prepared, raster_directory)
+    });
+    // Older hosts ignore this capability. Current hosts also close on traps.
+    let _ = host(json!({"operation":"pdf_close"}));
+    result
+}
+fn pdf_pages(
+    opened: &Value,
+    prepared: &pdf_unicode::Prepared,
+    raster_directory: Option<&Path>,
+) -> Result<(), ConvertError> {
+    let pages = opened["pages"]
         .as_u64()
         .ok_or_else(|| parse_error("missing PDF page count".into()))?;
     let (range, policy) = STATE.with(|s| {
@@ -1806,13 +1829,23 @@ fn pdf(input: &str) -> Result<(), ConvertError> {
         if !ocr_page() {
             break;
         }
-        let path = STATE.with(|s| s.borrow().as_ref().unwrap().work.join("pdf-page.png"));
-        match host(json!({"operation":"pdf_render","page":page,"path":path,"dpi":200})) {
-            Ok(_) => {
-                let bytes = fs::read(&path).map_err(|e| io_error(e.to_string()))?;
-                let _ = fs::remove_file(path);
-                image(&bytes, "png")?;
-            }
+        let Some(directory) = raster_directory else {
+            let message = "PDF OCR requires memory scratch for a protected PDF or unknown encryption status";
+            provenance::ocr_result("failed", 0, 0, Some(message));
+            partial("ocr_failed", provenance::scoped(message));
+            provenance::finish_page(index, "page", page_start, None);
+            continue;
+        };
+        let path = directory.join("pdf-page.png");
+        let raster = host(json!({"operation":"pdf_render","page":page,"path":path,"dpi":200}))
+            .and_then(|_| {
+                fs::read(&path)
+                    .map(zeroize::Zeroizing::new)
+                    .map_err(|e| io_error(e.to_string()))
+            });
+        let _ = fs::remove_file(&path);
+        match raster {
+            Ok(bytes) => image(&bytes, "png")?,
             Err(e) => partial("page_failed", e.message),
         }
         provenance::finish_page(index, "page", page_start, None);

@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-27",
+  "environment": {
+    "os": "darwin 25.6.0",
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro",
+    "deviceScaleFactor": 1,
+    "headless": true
+  },
+  "pdfjs": "5.4.624",
+  "fixture": {
+    "bytes": 27520,
+    "sha256": "1610a29b4496668cc3135dcdf0429b4e04346d25a787327d68dd3b81f66b5310",
+    "pages": 12,
+    "linesOnFirstPage": 101,
+    "occurrencesOnFirstPage": 10100,
+    "resultLimit": 10000
+  },
+  "method": "Same demo build for both modes. Disable window.Highlight for the DOM mark fallback. One warmup and five fresh pages per mode per engine, alternating the order of each pair. Start with the first text and canvas layers rendered. Wait for two animation frames after measuring each public call. Six alternating previous and next steps wrap between the first and last result. Counts come from the first measured search. Compare the Chromium range path with the forced marker fallback. Firefox and WebKit use markers by default. The two-frame timing covers the operation and browser frame scheduling. Browser regression screenshots sample active orange and inactive yellow pixels.",
+  "browsers": {
+    "chromium": {
+      "version": "159.0.8154.6",
+      "marks": {
+        "marks": 10000,
+        "matches": 0,
+        "active": 0,
+        "keptSelection": true,
+        "keptTextNode": false,
+        "childList": 100,
+        "search": {
+          "samples": 5,
+          "medianOperationMs": 37.7,
+          "medianTwoFramesMs": 52.1
+        },
+        "next": {
+          "samples": 30,
+          "medianOperationMs": 0.1,
+          "medianTwoFramesMs": 32.6
+        },
+        "clear": {
+          "samples": 5,
+          "medianOperationMs": 9.7,
+          "medianTwoFramesMs": 32.4
+        }
+      },
+      "default": {
+        "marks": 0,
+        "matches": 9999,
+        "active": 1,
+        "keptSelection": true,
+        "keptTextNode": true,
+        "childList": 0,
+        "search": {
+          "samples": 5,
+          "medianOperationMs": 4.6,
+          "medianTwoFramesMs": 38
+        },
+        "next": {
+          "samples": 30,
+          "medianOperationMs": 0.1,
+          "medianTwoFramesMs": 32.7
+        },
+        "clear": {
+          "samples": 5,
+          "medianOperationMs": 0.1,
+          "medianTwoFramesMs": 30.2
+        }
+      }
+    },
+    "firefox": {
+      "version": "159.0",
+      "default": {
+        "marks": 10000,
+        "matches": 0,
+        "active": 0,
+        "keptSelection": true,
+        "keptTextNode": false,
+        "childList": 100,
+        "search": {
+          "samples": 5,
+          "medianOperationMs": 29,
+          "medianTwoFramesMs": 33
+        },
+        "next": {
+          "samples": 30,
+          "medianOperationMs": 0,
+          "medianTwoFramesMs": 32
+        },
+        "clear": {
+          "samples": 5,
+          "medianOperationMs": 13,
+          "medianTwoFramesMs": 33
+        }
+      }
+    },
+    "webkit": {
+      "version": "27.2",
+      "default": {
+        "marks": 10000,
+        "matches": 0,
+        "active": 0,
+        "keptSelection": true,
+        "keptTextNode": false,
+        "childList": 100,
+        "search": {
+          "samples": 5,
+          "medianOperationMs": 42,
+          "medianTwoFramesMs": 80
+        },
+        "next": {
+          "samples": 30,
+          "medianOperationMs": 0,
+          "medianTwoFramesMs": 32
+        },
+        "clear": {
+          "samples": 5,
+          "medianOperationMs": 19,
+          "medianTwoFramesMs": 32
+        }
+      }
+    }
+  },
+  "sourceSha256": "fe4227ac0cbe6e0666f850ca76fdd3bfab07c93bd0ac137d99438e054ff9c6c0",
+  "rangeExperiment": {
+    "method": "An earlier build enabled the same range highlighter for all engines. Its marker path replaced the selected text nodes. Five samples per mode in the same environment. These results informed the browser-specific choice.",
+    "search": {
+      "firefox": {
+        "markers": {
+          "medianOperationMs": 29,
+          "medianTwoFramesMs": 33
+        },
+        "ranges": {
+          "medianOperationMs": 52,
+          "medianTwoFramesMs": 66
+        }
+      },
+      "webkit": {
+        "markers": {
+          "medianOperationMs": 42,
+          "medianTwoFramesMs": 80
+        },
+        "ranges": {
+          "medianOperationMs": 44,
+          "medianTwoFramesMs": 348
+        }
+      }
+    }
+  }
+}

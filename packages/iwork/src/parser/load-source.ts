@@ -1,4 +1,14 @@
+import type { ZipBlobSource } from '@filens/core/zip';
 import type { IworkSource } from '../types';
+
+export type IworkPackageSource = Uint8Array | string | Blob;
+export type IworkArchiveSource = Uint8Array | string | ZipBlobSource;
+
+export async function loadIworkPackageSource(source: IworkSource, options: LoadSourceOptions): Promise<IworkPackageSource> {
+  throwIfAborted(options.signal);
+  if (typeof source === 'string' || (typeof Blob !== 'undefined' && source instanceof Blob)) return source;
+  return loadSourceBytes(source, options);
+}
 
 export interface LoadSourceOptions {
   signal?: AbortSignal;

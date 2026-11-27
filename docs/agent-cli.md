@@ -97,6 +97,8 @@ Historical [Rust migration measurements](agent-cli-rust-size.json) and [similari
 
 CLI reads, searches, PDF/OCR intermediate images and WASM input/output use an in-process workspace by default. Parallel workers share a 512 MiB file-data quota; exceeding it returns an error. Use `--workspace disk` or the stdin JSON field `"workspace":"disk"` to select disk scratch explicitly. There is no automatic disk fallback. WASM linear memory, native OCR memory and transport copies are separate allocations; operating-system swapping is outside this setting.
 
+In either workspace mode, the CLI keeps PDF Unicode repair output, PDF page rasters, OCR inputs, extraction results, and the WASM search corpus in request-local memory. An empty user password can allow extraction from an owner-restricted PDF. The CLI releases that document's PDFium instance and OCR worker at document close. PDFs requiring a nonempty user password return `password_required` in extraction. Requested text and evidence are returned to the calling process, which controls its own history and attachments.
+
 The directory walker exchanges options and results through stdin/stdout and mounts only `/scan`. Memory mode still needs write permission for requested conversion outputs or exported HTML previews. Existing outputs are refused; conversion commits remain atomic. CLI 0.5.2 requires its matching OCR platform package with the byte-input ABI.
 
 For DeepSeek Harness, install the combined tools/sidebar plugin with `dsh plugin --profile desktop add dsh-filens@0.1.0`. See the [plugin guide](../integrations/deepseek-harness/README.md) for tested versions, permissions and configuration.
@@ -152,7 +154,20 @@ HTML files remain after exit and contain a copy of the source; delete them when
 no longer needed. The page checks WASM/Worker support, includes a GitHub link and
 blocks external resource loads/connections with CSP. Rendering failures display
 instructions to use `--mode serve`; successful browser launch does not certify
-rendering. Safari/WebKit iWork previews require HTTP compatibility mode. Large files may be better suited to HTTP mode to avoid base64 copying.
+rendering. The current preview assets render the tested Keynote, Pages and
+Numbers files offline in Chromium, Firefox and WebKit. The
+standalone HTML stores files over 768 KiB in independently encoded blocks. The
+browser reconstructs a local File before starting the preview. Range-capable
+previews in HTTP mode can read the original file on demand.
+
+Standalone PDF previews parse in a dedicated local PDF.js worker and can fall
+back to main-thread parsing if the browser blocks that worker.
+
+With matching CLI and preview assets, the HTML also embeds the archive worker
+and WASM for offline archive browsing, including RAR and 7z entry previews and
+password prompts. The engine starts on demand. The embedded pair adds about
+1.56 MB per export and supports archives inside the selected file. Use
+`--mode serve` with complete assets if the HTML lacks the engine.
 
 `--mode serve` retains the loopback server and Ctrl-C lifecycle; `--port` also
 selects serve mode unless `--mode` is explicit.
@@ -220,6 +235,7 @@ Results are in `similarity.groups`, with member paths relative to `source.path`.
 filens convert report.doc report.docx
 filens convert data.csv --to xlsx
 filens convert photo.dng --output photo.jpg --json
+filens convert locked.docx unlocked.docx --ask-password
 echo '{"op":"convert","input":"report.rtf","output":"report.docx","options":{"locale":"zh-CN"}}' | filens
 ```
 
@@ -236,8 +252,20 @@ Read `fidelity` and warnings before relying on source formatting.
 Outputs are committed atomically after success. Existing destinations require
 `--force` / `force:true`; source overwrite is rejected. Failed or canceled
 conversions preserve existing files. Exit categories remain 0/1/2/3, while
-`error.code` preserves specific core errors. `--password` and `--locale` pass
-options to WASM; JSON requests can supply an `options` object.
+`error.code` preserves specific core errors. Use `--ask-password` for hidden
+interactive input. The prompt uses the terminal and keeps stdout available for
+JSON. A missing terminal produces `password_input_unavailable`. Ctrl+C or terminal
+EOF cancels the operation. The conversion timeout starts after password entry.
+A wrong password produces
+`password_invalid`. Run the command again to retry. Scripts can pass
+`options.password` through a stdin JSON request. `--password VALUE` is also accepted
+and exposes the value to the shell and process arguments. Use a single password
+input method per request. `--locale` and JSON conversion options continue to
+flow to WASM.
+
+The CLI passes conversion options to WASM through request-local memory even
+with `--workspace disk`. Disk mode can still hold input data and converted
+output while the operation runs.
 
 The [FiLens skill](../skills/filens/SKILL.md) ships with both npm entry packages
 under `skills/filens/`, and with source bundles under `dist/skills/filens/`
@@ -253,7 +281,7 @@ cp -R skills/filens ~/.codex/skills/
 
 RapidOCR uses NCNN with PP-OCRv6 small detection, mobile v2 orientation classification and PP-OCRv3 Chinese/English recognition. Defaults are **max side 960, padding 50, OpenMP threads 2**, classification enabled. The image is scaled proportionally for detection with network-aligned dimensions; text-line crops are prepared separately for recognition. The Photos runtime handles EXIF orientation, white padding, channel/normalization preparation and 0/180-degree text-line classification. WASM composites transparent PNG pixels onto white before calling OCR and allows up to 1600 pixels on the long side for those scans. The 960 setting is the practical default; larger images can still lose tiny text.
 
-Standalone images and embedded document images use the same callback path. The WASM core controls image extraction, reading order, duplicate-image reuse and whether a PDF page needs OCR; the Rust host forwards temporary image paths to an isolated native worker. Repeated embedded images are recognized once per document and their text is inserted at each occurrence. A PDF text layer is preferred; scanned pages are rendered by the pinned PDFium WASM engine. Wasmi runs both engines with 512 MiB memory limits. Document extraction mounts only the request's temporary directory into the text engine; similarity scans additionally mount the selected root so the core can read the discovered files.
+Standalone images and embedded document images use the same callback path. The WASM core controls image extraction, reading order, duplicate-image reuse and whether a PDF page needs OCR. The Rust host reads the image from the memory workspace and sends its bytes to an isolated native worker. Repeated embedded images are recognized once per document and their text is inserted at each occurrence. A PDF text layer is preferred; scanned pages are rendered by the pinned PDFium WASM engine. Wasmi runs both engines with 512 MiB memory limits. The text engine has request workspace and memory scratch mounts. Directory searches and similarity scans also mount the selected root.
 
 A persistent copy of the CLI hosts the NCNN JSON ABI and is started lazily. It loads adjacent or injected native libraries and models; there is no separate interpreter. Cancellation or timeout kills the worker, and a later OCR unit can start a fresh process. Thread limits are applied before worker startup and through native load/infer requests. The CPU companions use bundled SimpleOMP, without external libomp/libgomp.
 

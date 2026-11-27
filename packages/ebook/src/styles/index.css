@@ -2,6 +2,8 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'toolbar toolbar' 'sidebar stage';
   width: 100%;
   height: 100%;
   min-height: 360px;
@@ -11,10 +13,84 @@
   font-family: system-ui, sans-serif;
 }
 
-.ebookv-chapters {
+.ebookv-toolbar {
+  grid-area: toolbar;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #d7dee8;
+  font-size: 12px;
+}
+
+.ebookv-toolbar[hidden] {
+  display: none;
+}
+
+.ebookv-toolbar form,
+.ebookv-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ebookv-toolbar input,
+.ebookv-toolbar select,
+.ebookv-toolbar button {
+  min-height: 28px;
+  color: inherit;
+  font: inherit;
+}
+
+.ebookv-toolbar input {
+  width: 6ch;
+}
+
+.ebookv-sidebar {
+  grid-area: sidebar;
+  min-height: 0;
   overflow: auto;
-  border-right: 1px solid #d7dee8;
+  border-inline-end: 1px solid #d7dee8;
   background: #ffffff;
+}
+
+.ebookv-contents {
+  border-bottom: 1px solid #d7dee8;
+  font: 600 12px/1.4 system-ui, sans-serif;
+}
+
+.ebookv-contents summary {
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.ebookv-contents ol {
+  margin: 0;
+  padding-inline-start: 1.4em;
+}
+
+.ebookv-contents > ol {
+  margin-block-end: 8px;
+}
+
+.ebookv-contents button {
+  box-sizing: border-box;
+  padding: 5px;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  overflow-wrap: anywhere;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ebookv-contents button:hover,
+.ebookv-contents button[aria-current] {
+  background: #eaf2ff;
+  color: #1f4f94;
 }
 
 .ebookv-chapter-tab {
@@ -41,6 +117,7 @@
 }
 
 .ebookv-stage {
+  grid-area: stage;
   position: relative;
   min-width: 0;
   min-height: 0;
@@ -63,20 +140,29 @@
   height: 100%;
   min-height: inherit;
   border: 0;
-  background: #ffffff;
+  background: inherit;
 }
 
 @media (max-width: 760px) {
   .ebookv-preview {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: 'toolbar' 'sidebar' 'stage';
+  }
+
+  .ebookv-sidebar {
+    border-inline-end: 0;
+  }
+
+  .ebookv-contents > ol {
+    max-height: min(32vh, 16rem);
+    overflow: auto;
   }
 
   .ebookv-chapters {
     display: flex;
     gap: 0;
     overflow-x: auto;
-    border-right: 0;
     border-bottom: 1px solid #d7dee8;
   }
 

@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-27",
+  "source": {
+    "file": "apps/demo/public/samples/a.pages",
+    "sha256": "4714477138d0a4090fc2ee2ba2ebb6adcd0fb6ce20a28897a6247a8e17d1ddce",
+    "physicalPages": 3,
+    "sectionRangeStarts": [
+      0,
+      1133
+    ],
+    "headerMargin": 36,
+    "footerMargin": 36
+  },
+  "method": "Open the checked-in Pages document and scroll to each page. Compare the rendered header and footer text and alignment with the source template storages. The source demo regression also checks that the parsed placement honors both saved page-edge margins.",
+  "browsers": {
+    "chromium": {
+      "version": "159.0.8154.6",
+      "before": [
+        [],
+        [
+          {
+            "text": "Fixture coverage: headings, styles, lists, table, image, link, section break, unicode text",
+            "align": "center"
+          }
+        ],
+        [
+          {
+            "text": "Fixture coverage: headings, styles, lists, table, image, link, section break, unicode text",
+            "align": "center"
+          }
+        ]
+      ],
+      "split": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      },
+      "all-in-one": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      },
+      "offline-html": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      }
+    },
+    "firefox": {
+      "version": "159.0",
+      "split": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      },
+      "all-in-one": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      },
+      "offline-html": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      }
+    },
+    "webkit": {
+      "version": "27.2",
+      "split": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      },
+      "all-in-one": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      },
+      "offline-html": {
+        "matchedPages": 3,
+        "matchedHeaderFooterFields": 6
+      }
+    }
+  },
+  "expectedByPage": [
+    [
+      {
+        "text": "Apple Pages Import Fixture • generated source DOCX",
+        "align": "center"
+      },
+      {
+        "text": "Fixture coverage: headings, styles, lists, table, image, link, section break, unicode text",
+        "align": "center"
+      }
+    ],
+    [
+      {
+        "text": "Apple Pages Import Fixture • generated source DOCX",
+        "align": "center"
+      },
+      {
+        "text": "Fixture coverage: headings, styles, lists, table, image, link, section break, unicode text",
+        "align": "center"
+      }
+    ],
+    [
+      {
+        "text": "Landscape section",
+        "align": "center"
+      },
+      {
+        "text": "End of fixture",
+        "align": "center"
+      }
+    ]
+  ],
+  "sourceTemplateRecords": {
+    "sectionTemplate": 10143,
+    "guideMap": 10016,
+    "pageTemplate": 10017
+  },
+  "chromiumMatchedFieldsBefore": 1
+}

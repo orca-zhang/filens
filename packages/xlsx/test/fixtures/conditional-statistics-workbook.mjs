@@ -17,12 +17,12 @@ export async function createConditionalStatisticsWorkbook() {
     + '<dxf><font><b/></font></dxf>' + fill('DCFCE7') + fill('FED7AA') + '</dxfs></styleSheet>');
   const rows = [
     row(1, value('A1', 10), value('B1', 1), value('C1', 0), value('D1', 'Apple', 'str'),
-      value('F1', '1e308'), value('G1', '1000000000000000'), value('I1', 27)),
+      value('F1', '1e308'), value('G1', '1000000000000000'), value('H1', -1), value('I1', 27)),
     row(2, value('A2', 20), value('B2', 2), value('C2', 1), formula('D2', '"aPPLE"'),
-      value('F2', '-1e308'), value('G2', '1000000000000000.125')),
+      value('F2', '-1e308'), value('G2', '1000000000000000.125'), value('H2', 1)),
     row(3, value('A3', 20), value('B3', 3), value('C3', 2), value('D3', 'pear', 'str'),
-      value('F3', 0), value('G3', '1000000000000000.25')),
-    row(4, value('A4', 30), value('B4', 4), formula('C4', '""'), value('D4', 'p*', 'str')),
+      value('F3', 0), value('G3', '1000000000000000.25'), value('H3', -2)),
+    row(4, value('A4', 30), value('B4', 4), formula('C4', '""'), value('D4', 'p*', 'str'), value('H4', -6)),
     row(5, value('A5', '20', 'str'), value('B5', 5), value('C5', '#N/A', 'e'), value('D5', 'x?', 'str')),
     row(6, value('A6', 1, 'b'), value('D6', 'AXY', 'str')),
     row(7, value('D7', 'apple!', 'str')),
@@ -45,9 +45,35 @@ export async function createConditionalStatisticsWorkbook() {
     area('D1:D1048576 D5:D6', rule('duplicateValues', 10, 0, 'stopIfTrue="1"'), rule('uniqueValues', 11, 3)),
     area('F1:F3', rule('aboveAverage', 12, 0, 'stdDev="1"')),
     area('G1:G3', rule('aboveAverage', 13, 2, 'equalAverage="1"'), rule('aboveAverage', 14, 0)),
-    area('I1', rule('top10', 15, 0, 'rank="0" percent="1"'))
+    area('I1', rule('top10', 15, 0, 'rank="0" percent="1"')),
+    area('H1:H4', rule('aboveAverage', 16, 2, 'equalAverage="1"'), rule('aboveAverage', 17, 0))
   ];
   zip.file('xl/worksheets/s1.xml', `<worksheet><sheetData>${rows.join('')}</sheetData>${formats.join('')}</worksheet>`);
   zip.file('xl/worksheets/s2.xml', '<worksheet><sheetData>' + row(1, value('A1', 20)) + '</sheetData></worksheet>');
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
+export async function createSpillConditionalStatisticsWorkbook() {
+  const zip = await JSZip.loadAsync(await createConditionalStatisticsWorkbook());
+  const spill = (ref, range, expression) => `<c r="${ref}"><f t="array" ref="${range}">${expression}</f></c>`;
+  zip.file('xl/styles.xml', '<styleSheet><dxfs><dxf><font><b/></font></dxf><dxf><font><i/></font></dxf>'
+    + '<dxf><font><color rgb="FF663399"/></font></dxf><dxf><font><color rgb="FF005577"/></font></dxf></dxfs></styleSheet>');
+  const formats = area('A1:XFD1048576 B2:E100',
+    '<cfRule type="colorScale" priority="1"><colorScale><cfvo type="percentile" val="0.01"/>'
+      + '<cfvo type="percentile" val="0.02"/><cfvo type="max"/>'
+      + '<color rgb="FF0000FF"/><color rgb="FF00FF00"/><color rgb="FFFF0000"/></colorScale></cfRule>',
+    rule('top10', 2, 0, 'rank="3"'), rule('aboveAverage', 3, 1, 'stdDev="1"'),
+    rule('duplicateValues', 4, 2), rule('uniqueValues', 5, 3));
+  zip.file('xl/worksheets/s1.xml', '<worksheet><sheetData>'
+    + row(1, value('A1', 5), spill('B1', 'B1:C1048576', 'Input!A:B+10'), spill('D1', 'D1:XFD1048576', 'Input!D:XFD+20'))
+    + row(2, value('B2', 30), value('D2', 'saved', 'str'))
+    + row(3, '<c r="E3" s="0"/>')
+    + row(4, value('F4', '#N/A', 'e'))
+    + '</sheetData>' + formats + '</worksheet>');
+  zip.file('xl/worksheets/s2.xml', '<worksheet><sheetData>'
+    + row(1, value('A1', -20))
+    + row(2, value('A2', -9), value('B2', 30))
+    + row(1048576, value('XFD1048576', 60))
+    + '</sheetData></worksheet>');
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 }

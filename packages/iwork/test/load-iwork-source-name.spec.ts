@@ -1,19 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  detectIworkType: vi.fn(),
-  loadSourceBytes: vi.fn(),
   loadArchivePackage: vi.fn(),
   buildParsedDocument: vi.fn()
-}));
-
-vi.mock('../src/parser/detect', () => ({
-  detectIworkType: mocks.detectIworkType,
-  detectIworkTypeByName: () => null
-}));
-
-vi.mock('../src/parser/load-source', () => ({
-  loadSourceBytes: mocks.loadSourceBytes
 }));
 
 vi.mock('../src/parser/archive', () => ({
@@ -28,15 +17,11 @@ import { loadIwork } from '../src/parser/load-iwork';
 
 describe('loadIwork source name propagation', () => {
   beforeEach(() => {
-    mocks.detectIworkType.mockReset();
-    mocks.loadSourceBytes.mockReset();
     mocks.loadArchivePackage.mockReset();
     mocks.buildParsedDocument.mockReset();
   });
 
   it('passes basename-derived sourceName into archive loading', async () => {
-    mocks.detectIworkType.mockResolvedValue('pages');
-    mocks.loadSourceBytes.mockResolvedValue(new Uint8Array([1, 2, 3]));
     mocks.loadArchivePackage.mockResolvedValue({
       archive: {
         type: 'pages',
@@ -69,16 +54,15 @@ describe('loadIwork source name propagation', () => {
       media: {}
     });
 
-    await loadIwork('https://example.com/files/Quarterly%20Report.pages?download=1');
+    const url = 'https://example.com/files/Quarterly%20Report.pages?download=1';
+    await loadIwork(url);
 
-    expect(mocks.loadArchivePackage).toHaveBeenCalledWith(expect.any(Uint8Array), 'pages', {
+    expect(mocks.loadArchivePackage).toHaveBeenCalledWith(url, 'pages', {
       sourceName: 'Quarterly Report.pages'
     });
   });
 
   it('lets explicit sourceName override inferred names', async () => {
-    mocks.detectIworkType.mockResolvedValue('pages');
-    mocks.loadSourceBytes.mockResolvedValue(new Uint8Array([1, 2, 3]));
     mocks.loadArchivePackage.mockResolvedValue({
       archive: {
         type: 'pages',
@@ -111,11 +95,12 @@ describe('loadIwork source name propagation', () => {
       media: {}
     });
 
-    await loadIwork('https://example.com/files/ignored.pages', {
+    const url = 'https://example.com/files/ignored.pages';
+    await loadIwork(url, {
       sourceName: 'Custom Name.pages'
     });
 
-    expect(mocks.loadArchivePackage).toHaveBeenLastCalledWith(expect.any(Uint8Array), 'pages', {
+    expect(mocks.loadArchivePackage).toHaveBeenLastCalledWith(url, 'pages', {
       sourceName: 'Custom Name.pages'
     });
   });

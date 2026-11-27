@@ -1,0 +1,199 @@
+{
+  "date": "2026-11-26",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "browser": "Chromium 159.0.8154.6",
+  "pdfjs": "5.4.624",
+  "fixture": {
+    "description": "One unrotated page with 12,000 selectable invoice entries using Helvetica at 12 points.",
+    "bytes": 604273,
+    "sha256": "d556cece58538e48c420231bcb194429412360d595af32ac4c65e17b53acb54d"
+  },
+  "method": "Open the PDF in the demo runtime and wait for the selection layer. In each of three fresh browser pages, run the same absent literal query once as a warmup per mode, then six times per mode in alternating order. Temporarily omit the complete-layer length marker to exercise the PDF.js stream path in the same build. Timings measure the resolved find call, including the search state updates. The query has no hits, so the samples cover matching without highlight DOM updates or page navigation.",
+  "query": "No matching item",
+  "verifiedMatches": 0,
+  "sourceSha256": {
+    "preview-driver.ts": "aa16e1f4ffc7b779f57c9b6ee3ab7c2681572e2d4db74299804507ed95dedb42",
+    "search.ts": "062c43e2fc78e6a75f7d1684e6f684df9149876f79626d7ba9d4bdbc884db196"
+  },
+  "samples": [
+    {
+      "runs": 12000,
+      "utf16Length": 228889,
+      "worker": [
+        {
+          "searchMs": 32.60000014305115,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30.5,
+          "extractions": 1
+        },
+        {
+          "searchMs": 28.799999952316284,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30.299999952316284,
+          "extractions": 1
+        },
+        {
+          "searchMs": 28.90000009536743,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30,
+          "extractions": 1
+        }
+      ],
+      "selection": [
+        {
+          "searchMs": 0.5999999046325684,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.2999999523162842,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.40000009536743164,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.2999999523162842,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.5,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.19999980926513672,
+          "extractions": 0
+        }
+      ]
+    },
+    {
+      "runs": 12000,
+      "utf16Length": 228889,
+      "worker": [
+        {
+          "searchMs": 34.5,
+          "extractions": 1
+        },
+        {
+          "searchMs": 31.200000047683716,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30.59999990463257,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30.200000047683716,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30.09999990463257,
+          "extractions": 1
+        },
+        {
+          "searchMs": 29.399999856948853,
+          "extractions": 1
+        }
+      ],
+      "selection": [
+        {
+          "searchMs": 0.6000001430511475,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.2999999523162842,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.2999999523162842,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.40000009536743164,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.2999999523162842,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.3000001907348633,
+          "extractions": 0
+        }
+      ]
+    },
+    {
+      "runs": 12000,
+      "utf16Length": 228889,
+      "worker": [
+        {
+          "searchMs": 34.09999990463257,
+          "extractions": 1
+        },
+        {
+          "searchMs": 31.299999952316284,
+          "extractions": 1
+        },
+        {
+          "searchMs": 29.700000047683716,
+          "extractions": 1
+        },
+        {
+          "searchMs": 30.300000190734863,
+          "extractions": 1
+        },
+        {
+          "searchMs": 29.09999990463257,
+          "extractions": 1
+        },
+        {
+          "searchMs": 29.90000009536743,
+          "extractions": 1
+        }
+      ],
+      "selection": [
+        {
+          "searchMs": 0.5,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.40000009536743164,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.5,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.19999980926513672,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.40000009536743164,
+          "extractions": 0
+        },
+        {
+          "searchMs": 0.19999980926513672,
+          "extractions": 0
+        }
+      ]
+    }
+  ],
+  "median": {
+    "worker": {
+      "searchMs": 30.25,
+      "extractions": 1
+    },
+    "selection": {
+      "searchMs": 0.35,
+      "extractions": 0
+    }
+  }
+}

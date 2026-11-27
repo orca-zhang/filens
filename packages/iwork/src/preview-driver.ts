@@ -99,7 +99,11 @@ export class IworkPreviewSession implements PreviewSession<IworkPreviewState> {
   async load(source: PreviewSource, context: PreviewLoadContext): Promise<void> {
     this.fontLoading.reset(context.signal, context.route?.targetFormat ?? context.descriptor.extension ?? 'key');
     this.fontUpdate = null;
-    await this.viewer.preview(source, { signal: context.signal, cache: context.descriptor.password === undefined });
+    await this.viewer.preview(source, {
+      signal: context.signal,
+      password: context.descriptor.password,
+      cache: !context.descriptor.sensitive
+    });
   }
 
   destroy(): void {
@@ -129,6 +133,8 @@ export class IworkPreviewSession implements PreviewSession<IworkPreviewState> {
   }
 
   getFontReferences() { return collectSlideFontLoadingReferences(this.fontSlides()); }
+
+  refreshFontLayout(): void { this.fontLoading.refresh(); }
 
   refreshFonts(update: PreviewFontRefresh): void {
     if (this.destroyed || !this.fontDocument) return;

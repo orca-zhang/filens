@@ -1,19 +1,69 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { Root, Reader, Writer } from 'protobufjs';
+import { Enum, Root, Type, Reader, Writer, type ReflectionObject } from 'protobufjs';
 import { uncompress } from 'snappyjs';
 import descriptor from '../src/generated/iwork-proto';
+import fullDescriptor from '../src/generated/iwork-proto.json';
+import { commonTypeMap, keynoteTypeMap, numbersTypeMap, pagesTypeMap } from '../src/generated/type-maps';
 import { decodeTypedMessage, getTypeName } from '../src/parser/protobuf';
 import { readFixture } from './helpers';
 import type { IworkType } from '../src/types';
 
-const reference = Root.fromJSON(descriptor);
+const reference = Root.fromJSON(fullDescriptor);
 const normalize = (name: string, bytes: Uint8Array) => {
   const type = reference.lookupType(name);
-  return type.toObject(type.decode(bytes), { longs: Number, arrays: true, objects: true });
+  const decoded = type.decode(bytes);
+  const normalized = type.toObject(decoded, { longs: Number, arrays: true, objects: true });
+  preserveUuidParts(decoded, normalized);
+  return normalized;
 };
 
+function preserveUuidParts(decoded: unknown, normalized: unknown): void {
+  if (!decoded || typeof decoded !== 'object' || !normalized || typeof normalized !== 'object') return;
+  const source = decoded as Record<string, unknown>;
+  const output = normalized as Record<string, unknown>;
+  const uuid = (source.$type as { fullName?: string } | undefined)?.fullName === '.TSP.UUID';
+  for (const key of Object.keys(output)) {
+    if (uuid && typeof output[key] === 'number' && !Number.isSafeInteger(output[key])) {
+      output[key] = String(source[key]);
+    } else {
+      preserveUuidParts(source[key], output[key]);
+    }
+  }
+}
+
 describe('schema-directed iWork protobuf decoding', () => {
+  it('keeps every registered message, dependency and extension from the full descriptor', () => {
+    const preview = Root.fromJSON(descriptor);
+    const checked = new Set<string>();
+    function compare(original: ReflectionObject) {
+      if (checked.has(original.fullName)) return;
+      checked.add(original.fullName);
+      const projected = preview.lookup(original.fullName);
+      expect(projected?.fullName).toBe(original.fullName);
+      if (original instanceof Enum) {
+        expect(projected?.toJSON()).toEqual(original.toJSON());
+      } else if (original instanceof Type) {
+        const fieldMetadata = (type: Type) => type.fieldsArray.map(field => {
+          field.resolve();
+          return [field.name, field.toJSON(), field.required, field.repeated, field.resolvedType?.fullName, field.declaringField?.fullName];
+        });
+        expect(projected instanceof Type).toBe(true);
+        expect(fieldMetadata(projected as Type)).toEqual(fieldMetadata(original));
+        for (const field of original.fieldsArray) if (field.resolvedType) compare(field.resolvedType);
+      }
+    }
+    compare(reference.lookupType('TSP.ArchiveInfo'));
+    for (const mapping of [commonTypeMap, keynoteTypeMap, numbersTypeMap, pagesTypeMap]) {
+      for (const name of Object.values(mapping)) {
+        const original = reference.lookup(name);
+        if (original) compare(original);
+        else expect(preview.lookup(name)).toBeNull();
+      }
+    }
+    expect(checked.size).toBeGreaterThan(600);
+  });
+
   it('matches protobufjs across complete Numbers, Pages and Keynote archives', async () => {
     let checked = 0;
     const fixtures: Array<[string, IworkType]> = [
@@ -93,6 +143,13 @@ describe('schema-directed iWork protobuf decoding', () => {
         continue;
       }
       expect(decodeTypedMessage('TSP.Reference', payload)).toEqual(expected);
+    }
+  });
+
+  it('keeps UUID halves distinct when their number representations collide', () => {
+    for (const lower of ['18446744073709551614', '18446744073709551615']) {
+      const payload = Writer.create().uint32(8).uint64(lower).uint32(16).uint64(2).finish();
+      expect(decodeTypedMessage('TSP.UUID', payload)).toEqual({ lower, upper: 2 });
     }
   });
 

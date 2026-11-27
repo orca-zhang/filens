@@ -29,6 +29,34 @@ export async function createBookFixture(count = 40, paragraphs = 150) {
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 }
 
+export async function createNavigationBookFixture(kind = 'epub3') {
+  const zip = await JSZip.loadAsync(await createBookFixture(3, 100));
+  const ncx = kind === 'ncx';
+  const navFile = ncx ? 'toc/chapters.ncx' : 'toc/chapters.xhtml';
+  const manifest = ncx ? 'media-type="application/x-dtbncx+xml"' : 'media-type="application/xhtml+xml" properties="nav"';
+  let opf = await zip.file('OPS/package.opf').async('string');
+  opf = opf.replace('</manifest>', `<item id="contents" href="${navFile}" ${manifest}/></manifest>`)
+    .replace('href="chapter-2.xhtml"', 'href="chapter%202.xhtml"');
+  if (ncx) opf = opf.replace('<spine>', '<spine toc="contents">');
+  zip.file('OPS/package.opf', opf, { date });
+  const chapter = await zip.file('OPS/chapter-2.xhtml').async('string');
+  zip.remove('OPS/chapter-2.xhtml');
+  zip.file('OPS/chapter 2.xhtml', chapter.replace('id="p49"', 'id="café" style="color: black; background-color: white"')
+    .replace('<p id="p50">', '<a href="chapter-3.xhtml#p79">Jump to the last chapter</a><p id="p50">'), { date });
+  zip.file(`OPS/${navFile}`, ncx ? `<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+    <navPoint><navLabel><text>Part One</text></navLabel><content src="../chapter-1.xhtml"/>
+      <navPoint><navLabel><text>Deep sky</text></navLabel><content src="../chapter%202.xhtml#caf%C3%A9"/></navPoint>
+      <navPoint><navLabel><text>Winter sky</text></navLabel><content src="../chapter%202.xhtml#p79"/></navPoint>
+    </navPoint></navMap></ncx>` : `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><body>
+    <nav epub:type="landmarks"><ol><li><a href="../chapter-3.xhtml">Landmark</a></li></ol></nav>
+    <nav epub:type="toc"><ol><li><span>Part One</span><ol>
+      <li><a href="../chapter%202.xhtml#caf%C3%A9">Deep sky</a></li>
+      <li><a href="../chapter%202.xhtml#p79">Winter sky</a></li>
+      <li><a href="https://example.invalid/">External destination</a></li>
+    </ol></li></ol></nav></body></html>`, { date });
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
 // Original test font: .notdef plus a rectangular A, generated with FontBuilder.
 export async function createStyledBookFixture() {
   const zip = new JSZip();

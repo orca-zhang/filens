@@ -1,11 +1,21 @@
 import { PreviewPasswordError } from '../preview/password';
-import { openUnencryptedZipArchive, type ZipEntry, type ZipArchiveOptions } from './zip-reader';
+import { openUnencryptedZipArchive as openUnencryptedZipBytes, type ZipEntry, type ZipArchiveOptions } from './zip-reader';
+import { openZipSource, type ZipBlobSource } from './zip-source';
 
 export type { ZipEntry, ZipArchiveOptions } from './zip-reader';
+export type { ZipBlobSource } from './zip-source';
+
+/** Open a ZIP whose encryption, if any, is handled by the document format. */
+export async function openUnencryptedZipArchive(source: Uint8Array | string | ZipBlobSource, options: ZipArchiveOptions = {}): Promise<Map<string, ZipEntry>> {
+  const bytes = ArrayBuffer.isView(source) ? source : await openZipSource(source, options);
+  return bytes instanceof Map ? bytes : openUnencryptedZipBytes(bytes, options);
+}
 
 /** Add lazy password support to the shared ordinary document ZIP reader. */
-export async function openZipArchive(bytes: Uint8Array, options: ZipArchiveOptions = {}): Promise<Map<string, ZipEntry>> {
-  try { return await openUnencryptedZipArchive(bytes, options); }
+export async function openZipArchive(source: Uint8Array | string | Blob, options: ZipArchiveOptions = {}): Promise<Map<string, ZipEntry>> {
+  const bytes = ArrayBuffer.isView(source) ? source : await openZipSource(source, options);
+  if (bytes instanceof Map) return bytes;
+  try { return await openUnencryptedZipBytes(bytes, options); }
   catch (error) {
     if (!(error instanceof PreviewPasswordError) || error.code !== 'password_required') throw error;
     return openEncryptedZip(bytes, options);

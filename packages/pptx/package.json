@@ -1,0 +1,40 @@
+{
+  "name": "@filens/pptx",
+  "version": "0.1.0",
+  "description": "Browser-local PowerPoint parsing, slide rendering, and preview driver.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": ["./dist/style.css"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": ["dist", "!dist/**/*.map"],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "node ../../scripts/generate-fixtures.mjs && vitest run"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.12.1",
+    "ssf": "0.11.2"
+  },
+  "peerDependencies": {
+    "@filens/core": "^0.1.6"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orca-zhang/filens.git",
+    "directory": "packages/pptx"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

@@ -1,6 +1,6 @@
 import { Blob as NodeBlob, Buffer } from 'node:buffer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MediaRegistry } from '../src/render/dom';
+import { MediaRegistry } from '../src/render/media-registry';
 import type { ParsedPresentation } from '../src/types';
 import { createMultipageTiff } from './fixtures/multipage-tiff.mjs';
 

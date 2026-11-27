@@ -1,14 +1,13 @@
 import './styles/index.css';
 
-export { createViewer, init, PptxViewer } from './viewer';
-export { loadPptx } from './parser/load-pptx';
+export { createViewer, init, loadPptx, PptxViewer, renderSlideToElement, type RenderSlideOptions } from '@filens/pptx';
 export { openZipArchive } from './parser/zip';
 export type { ZipEntry, ZipArchiveOptions } from './parser/zip';
 export { attachmentFilename, readOfficeAttachments, unwrapOfficeAttachment } from './parser/attachments';
 export * from './archive-volumes';
-export { MediaRegistry, renderSlideToElement, renderTableCellContent, applyTableCellPaint, withTextMeasurementScope } from './render/dom';
+export { MediaRegistry } from './render/media-registry';
+export * from './rendering';
 export { applyTint, applyLumMod } from './utils/colors';
-export type { MediaResolver, RenderSlideOptions } from './render/dom';
 export * from './preview';
 export { bindPreviewTouchGestures, type PreviewTouchGestureOptions } from './preview/touch-gestures';
 export { bindPreviewSvgSelection } from './preview/svg-selection';

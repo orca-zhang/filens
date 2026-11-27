@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { createDocxFixture } from '../../../packages/docx/test/fixtures/document.mjs';
+import { createDocxFixture, createDocxPaginationFixture, createDocxSectionsFixture } from '../../../packages/docx/test/fixtures/document.mjs';
 
 const prepare = async (page: import('@playwright/test').Page) => {
   await page.goto('./');
@@ -15,6 +15,61 @@ const prepare = async (page: import('@playwright/test').Page) => {
     state.session = lib.createDocxPreviewDriver().createSession(host); (window as any).docxTest = state;
   }, url);
 };
+
+test('preserves DOCX paragraph page breaks and text through font refreshes', async ({ page }) => {
+  await prepare(page);
+  await page.evaluate(async bytes => {
+    const { session } = (window as any).docxTest;
+    const source = new Uint8Array(bytes);
+    await session.load(source, { descriptor: { source, name: 'pagination.docx', extension: 'docx' } });
+  }, [...createDocxPaginationFixture()]);
+  const pages = page.locator('section.docx');
+  const expected = ['First paragraphBefore jump', 'InheritedDirect overrideStyle override', 'Direct start', 'After explicit', 'After savedLink before', 'Link afterTail'];
+  for (let render = 0; render < 3; render++) {
+    await expect(pages).toHaveText(expected);
+    await expect(pages.nth(3).getByText('After explicit')).toHaveCSS('font-weight', '700');
+    await expect(pages.nth(4).getByRole('link')).toHaveAttribute('href', '#tail');
+    await expect(pages.nth(5).getByRole('link')).toHaveAttribute('href', '#tail');
+    if (render < 2) await page.evaluate(() => (window as any).docxTest.session.refreshFonts({ references: [], loaded: [], warnings: [], relayout: true }));
+  }
+});
+
+for (const evenHeaders of [false, true]) {
+  test(`paginates DOCX sections with even headers ${evenHeaders ? 'enabled' : 'disabled'}`, async ({ page }) => {
+    await prepare(page);
+    await page.evaluate(async bytes => {
+      const { session } = (window as any).docxTest;
+      const source = new Uint8Array(bytes);
+      await session.load(source, { descriptor: { source, name: 'sections.docx', extension: 'docx' } });
+    }, [...createDocxSectionsFixture(evenHeaders)]);
+    const pages = page.locator('section.docx');
+    const expected = [
+      [['Portrait opening'], 'Default header', 'Default footer', '816px', '1056px'],
+      [['Next section', 'Continuous on the same page'], 'First-page header', null, '816px', '1056px'],
+      [['Continuous after a hard break'], 'Continuous header', 'Replacement footer', '816px', '1056px'],
+      [['Landscape section'], evenHeaders ? 'Even header' : 'Continuous header', evenHeaders ? 'Even footer' : 'Replacement footer', '1056px', '816px'],
+      [[], null, null, '1056px', '816px'],
+      [['Even sectionEnd of even section'], evenHeaders ? 'Even header' : 'Continuous header', evenHeaders ? 'Even footer' : 'Replacement footer', '1056px', '816px'],
+      [['Continuous after a saved break'], 'Continuous header', 'Replacement footer', '1056px', '816px'],
+      [[], null, null, '1056px', '816px'],
+      [['Odd section'], 'First-page header', null, '1056px', '816px'],
+      [['Restart at page 21'], 'Continuous header', 'Replacement footer', '1056px', '816px'],
+      [['Page 22'], evenHeaders ? 'Even header' : 'Continuous header', evenHeaders ? 'Even footer' : 'Replacement footer', '1056px', '816px']
+    ];
+    for (let render = 0; render < 3; render++) {
+      expect(await pages.evaluateAll(elements => elements.map(page => [
+        [...page.querySelectorAll(':scope > article')].map(article => article.textContent),
+        page.querySelector(':scope > header')?.textContent ?? null,
+        page.querySelector(':scope > footer')?.textContent ?? null,
+        getComputedStyle(page).width,
+        getComputedStyle(page).minHeight
+      ]))).toEqual(expected);
+      await expect(pages.nth(1).locator('article').nth(1)).toHaveCSS('column-count', '2');
+      await expect(pages.nth(3)).toHaveCSS('padding-left', '96px');
+      if (render < 2) await page.evaluate(() => (window as any).docxTest.session.refreshFonts({ references: [], loaded: [], warnings: [], relayout: true }));
+    }
+  });
+}
 
 test('opens real DOCX tables and images and releases embedded resources when switching or destroying', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await prepare(page);
@@ -69,7 +124,7 @@ test('releases a real image URL created while an in-flight DOCX is cancelled', a
 test('opens a DOCX upload through the demo with every repeated image intact', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('./?view=preview');
-  await page.locator('input[type=file]').setInputFiles({ name: 'images.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer: Buffer.from(createDocxFixture(3)) });
+  await page.locator('.wb-upload input[type=file]').setInputFiles({ name: 'images.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer: Buffer.from(createDocxFixture(3)) });
   await expect(page.locator('.docxv-document img')).toHaveCount(3);
   await expect(page.getByText('Image 3', { exact: true })).toBeVisible();
   expect(await page.locator('.docxv-document img').evaluateAll(async images => { await Promise.all((images as HTMLImageElement[]).map(image => image.decode())); return images.every(image => (image as HTMLImageElement).naturalWidth === 256); })).toBe(true);

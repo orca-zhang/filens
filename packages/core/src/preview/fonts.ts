@@ -1,13 +1,18 @@
-import type { SlideModel, TextFrame } from '../types';
+import type { SlideModel } from '../types';
 import { normalizeFontFamilyName, normalizeLocalizedFontAlias } from '../utils/fonts';
 import type { PreviewFontCandidate, PreviewFontClassification, PreviewFontDiagnostic, PreviewFontReference } from './types';
 import { classifyPreviewFont, getFontFallbackCandidates, rankPreviewFontCandidates } from './font-matching';
-import { originalSceneFontFamily } from './font-scenes';
+import { originalSceneFontFamily, visitSlideFontNodes } from './font-scenes';
 
 const GENERIC_FAMILY = /^(serif|sans-serif|monospace|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded|cursive|fantasy|emoji|math|fangsong)$/i;
-const PROBE_TEXT = 'BESbswy1234567890汉字かな한글';
+const FONT_PROBE_TEXT = {
+  text: 'BESbswy1234567890汉字かな한글',
+  emoji: '❤♥⚙⛅✈⏱0123😀🧪',
+  math: 'BESδ∫∑√ℝ𝛼𝔻123'
+};
+type FontProbeKind = keyof typeof FONT_PROBE_TEXT;
 
-/** Collect resolved scene references, including inherited runs and table/bullet text. */
+/** Collect resolved scene references for runs, tables, bullets and charts. */
 export function collectSlideFontReferences(slides: readonly Pick<SlideModel, 'items'>[]): PreviewFontReference[] {
   const references = new Map<string, PreviewFontReference>();
   const families = new Map<string, { key: string; reference: PreviewFontReference }>();
@@ -20,20 +25,7 @@ export function collectSlideFontReferences(slides: readonly Pick<SlideModel, 'it
     }
     if (family.key) references.set(family.key, family.reference);
   };
-  const collectFrame = (frame: TextFrame | undefined) => {
-    for (const paragraph of frame?.paragraphs ?? []) {
-      if (paragraph.bullet) add(originalSceneFontFamily(paragraph.bullet));
-      for (const run of paragraph.runs) add(originalSceneFontFamily(run));
-    }
-  };
-  for (const slide of slides) {
-    for (const item of slide.items) {
-      if (item.kind === 'text' || item.kind === 'shape') collectFrame(item.textFrame);
-      else if (item.kind === 'table') {
-        for (const cell of item.cells) collectFrame(cell.textFrame);
-      }
-    }
-  }
+  visitSlideFontNodes(slides, node => add(originalSceneFontFamily(node)));
   return [...references.values()];
 }
 
@@ -41,26 +33,28 @@ export function collectSlideFontReferences(slides: readonly Pick<SlideModel, 'it
 export function analyzePreviewFonts(
   references: readonly PreviewFontReference[],
   documentLike: Document | undefined = typeof document === 'undefined' ? undefined : document,
-  options: { substitute?: boolean; candidates?: readonly PreviewFontCandidate[] } = {}
+  options: { substitute?: boolean; candidates?: readonly PreviewFontCandidate[]; ignoreFamily?: (family: string) => boolean; availableFamilies?: ReadonlySet<string> } = {}
 ): { fonts: PreviewFontDiagnostic[]; warnings: string[] } {
   const fonts = new Map<string, PreviewFontDiagnostic>();
   const classifications = new Map<string, Map<PreviewFontReference['traits'], PreviewFontClassification>>();
   const availability = new Map<string, boolean | undefined>();
   let context: CanvasRenderingContext2D | null | undefined;
-  const measure = (family: string): number | undefined => {
+  const measure = (family: string, kind: FontProbeKind): number | undefined => {
     try {
       if (context === undefined) context = documentLike?.createElement('canvas').getContext('2d') ?? null;
       if (!context) return undefined;
       context.font = `normal 400 32px ${family}`;
-      const width = context.measureText(PROBE_TEXT).width;
+      const width = context.measureText(FONT_PROBE_TEXT[kind]).width;
       return Number.isFinite(width) && width > 0 ? width : undefined;
     } catch {
       return undefined;
     }
   };
   const baselines = new Map<string, number | undefined>();
-  const probe = (family: string): boolean | undefined => {
-    const key = family.toLowerCase();
+  const probe = (family: string, kind: FontProbeKind): boolean | undefined => {
+    if (options.availableFamilies?.has(family.toLowerCase())) return true;
+    if (options.ignoreFamily?.(family)) return false;
+    const key = `${kind}:${family.toLowerCase()}`;
     if (availability.has(key)) return availability.get(key);
     // A CSS stack is not one font. The browser may silently choose any member.
     if (family.includes(',') || /[\x00-\x1f\x7f]/.test(family)) return undefined;
@@ -68,10 +62,11 @@ export function analyzePreviewFonts(
     let result: boolean | undefined = false;
     const candidates = new Set([family, normalizeLocalizedFontAlias(family)]);
     for (const baseline of ['monospace', 'serif', 'sans-serif']) {
-      if (!baselines.has(baseline)) baselines.set(baseline, measure(baseline));
-      const baselineWidth = baselines.get(baseline);
+      const baselineKey = `${kind}:${baseline}`;
+      if (!baselines.has(baselineKey)) baselines.set(baselineKey, measure(baseline, kind));
+      const baselineWidth = baselines.get(baselineKey);
       for (const candidate of candidates) {
-        const width = measure(`${quoteFamily(candidate)}, ${baseline}`);
+        const width = measure(`${quoteFamily(candidate)}, ${baseline}`, kind);
         if (width == null || baselineWidth == null) result = undefined;
         else if (Math.abs(width - baselineWidth) > 0.1) {
           availability.set(key, true);
@@ -90,7 +85,6 @@ export function analyzePreviewFonts(
     let resolvedFontFamily = normalizeFontFamilyName(reference.resolvedFontFamily ?? '') || undefined;
     let target = resolvedFontFamily ?? fontFamily;
     const unsupported = reference.browserUnsupported || /\.shx$/i.test(fontFile ?? '');
-    let found = target && (!unsupported || resolvedFontFamily) ? probe(target) : undefined;
     const familyKey = fontFamily ?? '';
     let variants = classifications.get(familyKey);
     if (!variants) classifications.set(familyKey, variants = new Map());
@@ -99,6 +93,9 @@ export function analyzePreviewFonts(
       classification = classifyPreviewFont(familyKey, reference.traits);
       variants.set(reference.traits, classification);
     }
+    const script = classification.script;
+    const probeKind = script === 'emoji' || script === 'math' ? script : 'text';
+    let found = target && (!unsupported || resolvedFontFamily) ? probe(target, probeKind) : undefined;
     let substitutionReason: string | undefined;
     let matchScore: number | undefined;
     let coverage: PreviewFontDiagnostic['coverage'];
@@ -107,14 +104,14 @@ export function analyzePreviewFonts(
       for (const family of getFontFallbackCandidates(fontFamily, reference.traits)) candidates.set(family.toLowerCase(), { fontFamily: family });
       for (const candidate of options.candidates ?? []) candidates.set(candidate.fontFamily.toLowerCase(), candidate);
       const replacement = rankPreviewFontCandidates(reference, [...candidates.values()])
-        .find(match => !GENERIC_FAMILY.test(match.candidate.fontFamily) && probe(match.candidate.fontFamily) === true);
+        .find(match => !GENERIC_FAMILY.test(match.candidate.fontFamily) && probe(match.candidate.fontFamily, probeKind) === true);
       if (replacement) {
         resolvedFontFamily = target = replacement.candidate.fontFamily;
         found = true;
         matchScore = replacement.score;
         coverage = replacement.coverage;
         substitutionReason = classification.monospace ? 'monospace' : classification.style === 'handwriting' ? 'handwriting'
-          : classification.style === 'decorative' ? 'decorative' : classification.script === 'emoji' ? 'emoji'
+          : classification.style === 'decorative' ? 'decorative' : probeKind !== 'text' ? probeKind
             : classification.serif === true ? 'serif' : classification.serif === false ? 'sans-serif' : 'similar-traits';
         const details = replacement.reasons.filter(reason => ['weight', 'stretch', 'average-width', 'PANOSE', 'glyph-coverage'].includes(reason));
         if (details.length) substitutionReason += `, ${details.join(', ')}`;

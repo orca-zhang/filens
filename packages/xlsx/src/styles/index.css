@@ -45,6 +45,8 @@
 }
 
 .xlsxv-table {
+  --xlsxv-row-padding-height: 8px;
+  --xlsxv-row-border-height: 1px;
   width: 100%;
   border-collapse: collapse;
   min-width: 100%;
@@ -70,10 +72,50 @@
   max-width: none;
 }
 
+.xlsxv-merge-border-segment {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
 .xlsxv-merged-clip {
   position: absolute;
   inset: 0;
   overflow: hidden;
+}
+
+.xlsxv-has-diagonal {
+  position: relative;
+  isolation: isolate;
+}
+
+.xlsxv-diagonal-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.xlsxv-diagonal-source {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  container-type: size;
+}
+
+.xlsxv-diagonal-source > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: hypot(100cqw, 100cqh);
+  transform: translate(-50%, -50%) rotate(atan2(100cqh, 100cqw));
+}
+
+.xlsxv-diagonal-source > .is-up {
+  transform: translate(-50%, -50%) rotate(atan2(-100cqh, 100cqw));
 }
 
 .xlsxv-merged-content {
@@ -87,6 +129,10 @@
 .xlsxv-merged-clip.is-single-row,
 .xlsxv-merged-clip.is-single-row .xlsxv-merged-content {
   position: relative;
+}
+
+.xlsxv-merged-clip.is-single-row .xlsxv-merged-content {
+  max-height: calc(var(--xlsxv-max-row-height) - var(--xlsxv-row-border-height));
 }
 
 .xlsxv-merged-content.is-vertically-aligned {
@@ -135,13 +181,185 @@
   max-width: none;
 }
 
-.xlsxv-cell.xlsxv-formatted-value {
+.xlsxv-cell.xlsxv-formatted-value,
+.xlsxv-center-across-content.xlsxv-formatted-value {
   white-space: pre;
 }
 
-.xlsxv-cell.xlsxv-wrap {
+.xlsxv-cell.xlsxv-wrap,
+.xlsxv-center-across-content.xlsxv-wrap {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.xlsxv-rotated-text {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+}
+
+.xlsxv-rotated-value {
+  position: absolute;
+  top: 50%;
+  width: max-content;
+  white-space: pre;
+}
+
+.xlsxv-overflow-host {
+  position: relative;
+  overflow: visible;
+}
+
+.xlsxv-center-across {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.xlsxv-auto-row-clip,
+.xlsxv-center-across:not(.is-fixed) {
+  max-height: calc(var(--xlsxv-max-row-height) - var(--xlsxv-row-padding-height) - var(--xlsxv-row-border-height));
+  overflow: hidden;
+  text-overflow: inherit;
+}
+
+.xlsxv-center-across.is-fixed {
+  position: absolute;
+  inset-block: 0;
+  display: grid;
+  align-content: start;
+  box-sizing: border-box;
+  padding-block: 2px;
+}
+
+.xlsxv-center-across-content {
+  box-sizing: border-box;
+  padding-inline: 8px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.xlsxv-rotated-overflow {
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.xlsxv-rotated-overflow .xlsxv-rotated-value {
+  pointer-events: auto;
+}
+
+.xlsxv-table:not(.xlsxv-custom-borders) .xlsxv-overflow-edge {
+  border-right-color: transparent;
+}
+
+.xlsxv-table:not(.xlsxv-custom-borders) .xlsxv-overflow-edge + .xlsxv-cell {
+  border-left-color: transparent;
+}
+
+.xlsxv-custom-borders .xlsxv-overflow-edge {
+  --xlsxv-grid-right: transparent;
+}
+
+.xlsxv-shrink-text {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+}
+
+.xlsxv-shrink-text > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  text-align: left;
+  transform-origin: top left;
+}
+
+.xlsxv-number-pad {
+  display: inline-block;
+  flex: none;
+  white-space: pre;
+}
+
+.xlsxv-number-tabular {
+  font-variant-numeric: tabular-nums;
+  font-kerning: none;
+}
+
+.xlsxv-number-layout {
+  display: flex;
+  align-items: baseline;
+  white-space: pre;
+}
+
+.xlsxv-number-layout > :not(.xlsxv-number-fill) {
+  flex-shrink: 0;
+}
+
+.xlsxv-number-fill {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 0;
+  align-self: stretch;
+}
+
+.xlsxv-number-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  width: round(down, 100%, var(--xlsxv-glyph-width));
+  background: var(--xlsxv-glyph-image, none) left center / var(--xlsxv-glyph-width, auto) var(--xlsxv-glyph-height, auto) repeat-x;
+}
+
+.xlsxv-source-row {
+  --xlsxv-row-padding-height: 2px;
+}
+
+.xlsxv-source-row > .xlsxv-cell,
+.xlsxv-source-row > .xlsxv-row-header {
+  height: 0;
+  padding-block: 1px;
+  line-height: 1.15;
+}
+
+.xlsxv-source-row > .xlsxv-row-header,
+.xlsxv-source-row > .xlsxv-merged-cell,
+.xlsxv-fixed-row > .xlsxv-cell {
+  padding-block: 0;
+}
+
+.xlsxv-source-row > .xlsxv-row-header > span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.xlsxv-fixed-row > .xlsxv-cell {
+  position: relative;
+}
+
+.xlsxv-fixed-clip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: start;
+  padding: 2px 8px;
+  overflow: hidden;
+}
+
+.xlsxv-fixed-clip > div {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .xlsxv-data-bar-cell {
@@ -298,6 +516,10 @@
 }
 
 /* Draw default gridlines without letting them win over authored thin borders. */
+.xlsxv-custom-borders {
+  --xlsxv-row-border-height: 3px;
+}
+
 .xlsxv-custom-borders .xlsxv-cell {
   border-width: 0;
   box-shadow: inset -1px 0 var(--xlsxv-grid-right, #d8dee8), inset 0 -1px var(--xlsxv-grid-bottom, #d8dee8);

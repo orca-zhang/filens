@@ -47,6 +47,7 @@ export interface ArchiveResourceResolverOptions {
   contentTypes?: Record<string, string>;
   preferBlob?: boolean;
   requestPassword?: PreviewOptions['requestPassword'];
+  archiveEngine?: PreviewOptions['archiveEngine'];
   containerContext?: PreviewContainerContext;
 }
 
@@ -86,6 +87,7 @@ type ArchiveEntryRecord = {
 
 type ArchiveFrame = {
   label: string;
+  sensitive: boolean;
   entries: ArchiveEntryRecord[];
   containerContext: PreviewContainerContext;
   resources?: Map<string, ArchiveEntryRecord>;
@@ -174,6 +176,7 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       const archive = await readArchive(bytes, format, label, signal, this.options,
         this.options.containerContext ?? createPreviewContainerContext(), context.descriptor.password, volumes);
       checkArchiveLoadAborted(signal);
+      archive.sensitive ||= Boolean(context.descriptor.sensitive || context.descriptor.password !== undefined);
       this.archiveStack = [archive];
 
       this.state = {
@@ -218,6 +221,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
     this.renderVersion++;
     this.root.replaceChildren();
   }
+
+  refreshFontLayout(): void { this.entryPreviewer?.refreshFonts?.(); }
 
   getState(): ArchivePreviewState {
     return {
@@ -601,7 +606,8 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
         await waitForArchiveLoad(previewer.preview(source, {
           name,
           extension: extensionFromName(name),
-          contentType: this.activeEntry.contentType
+          contentType: this.activeEntry.contentType,
+          ...(frame.sensitive || entry.encrypted ? { sensitive: true } : {})
         }), signal);
         checkArchiveLoadAborted(signal);
       } else {
@@ -832,8 +838,9 @@ export class ArchivePreviewSession implements PreviewSession<ArchivePreviewState
       }
       checkArchiveLoadAborted(signal);
       const archive = await readArchive(bytes, detectArchiveFormat(label), label, signal,
-        this.options, nestedContext, undefined, volumes);
+        this.options, nestedContext, undefined, volumes, this.loadController?.signal);
       checkArchiveLoadAborted(signal);
+      archive.sensitive ||= Boolean(current.sensitive || primary.encrypted || set?.files.some(part => part.encrypted));
       this.closeEntryPreview(false);
       this.archiveStack.push(archive);
       this.state = {
@@ -951,14 +958,14 @@ export async function createZipResourceResolver(
 
 async function readArchive(
   bytes: Uint8Array, format: string, label: string, signal: AbortSignal | undefined,
-  options: Pick<PreviewOptions, 'requestPassword'>, containerContext: PreviewContainerContext, password?: string,
-  volumes: readonly ArchiveVolumeBytes[] = []
+  options: Pick<PreviewOptions, 'requestPassword' | 'archiveEngine'>, containerContext: PreviewContainerContext, password?: string,
+  volumes: readonly ArchiveVolumeBytes[] = [], archiveSignal = signal
 ): Promise<ArchiveFrame> {
   checkArchiveLoadAborted(signal);
-  const frame = (entries: ArchiveEntryRecord[]): ArchiveFrame => {
+  const frame = (entries: ArchiveEntryRecord[], sensitive = false): ArchiveFrame => {
     if (entries.length > PREVIEW_CONTAINER_LIMITS.maxEntries) throw new Error('Archive contains too many entries.');
-    return { label, containerContext, entries: entries.map(entry => ({ ...entry,
-      read: (readSignal = signal) => readPreviewContainerEntry(() => entry.read(readSignal), entry.size, containerContext, readSignal)
+    return { label, sensitive, containerContext, entries: entries.map(entry => ({ ...entry,
+      read: (readSignal = archiveSignal) => readPreviewContainerEntry(() => entry.read(readSignal), entry.size, containerContext, readSignal)
     })) };
   };
   const volumeSet = selectArchiveVolumes(label, [{ name: label, bytes }, ...volumes]);
@@ -966,7 +973,7 @@ async function readArchive(
   if (streamFormat) {
     const { runArchiveWorker } = await import('./sevenzip/client');
     const expanded = await readPreviewContainerEntry(async () => {
-      const result = await runArchiveWorker({ bytes, format: streamFormat, stream: true }, signal);
+      const result = await runArchiveWorker({ bytes, format: streamFormat, stream: true }, signal, options.archiveEngine);
       return result.bytes!;
     }, undefined, containerContext, signal);
     checkArchiveLoadAborted(signal);
@@ -988,12 +995,12 @@ async function readArchive(
     let archivePassword = password;
     const result = await readWithPreviewPassword(async value => {
       let listing;
-      try { listing = await runArchiveWorker({ ...input, password: value }, signal); }
+      try { listing = await runArchiveWorker({ ...input, password: value }, signal, options.archiveEngine); }
       catch (error) {
         if (format !== 'iso' || input.format !== 'iso' || signal?.aborted || previewPasswordErrorCode(error)) throw error;
         // Disc images named .iso can contain a UDF-only filesystem. Keep the
         // selected reader for entry extraction after the successful fallback.
-        listing = await runArchiveWorker({ ...input, format: 'udf', password: value }, signal);
+        listing = await runArchiveWorker({ ...input, format: 'udf', password: value }, signal, options.archiveEngine);
         input.format = 'udf';
       }
       archivePassword = value;
@@ -1006,14 +1013,15 @@ async function readArchive(
       modified: entry.modified,
       encrypted: entry.encrypted,
       read: (readSignal = signal) => readWithPreviewPassword(async value => {
-        const extracted = await runArchiveWorker({ ...input, entry, password: value }, readSignal);
+        const extracted = await runArchiveWorker({ ...input, entry, password: value }, readSignal, options.archiveEngine);
         return extracted.bytes!;
       }, options, `${label} › ${entry.path}`, readSignal, archivePassword)
-    })).sort(compareArchiveEntries));
+    })).sort(compareArchiveEntries), archivePassword !== undefined);
   }
   if (isZipFormat(format)) {
+    // Indexed ZIP entries outlive the navigation operation that opened their frame.
     const zip = await waitForArchiveLoad(openZipArchive(bytes, {
-      password, signal, maxEntryBytes: PREVIEW_CONTAINER_LIMITS.maxEntryBytes
+      password, signal: archiveSignal, maxEntryBytes: PREVIEW_CONTAINER_LIMITS.maxEntryBytes
     }).catch(error => {
       if (error instanceof Error && /multi.?volume|multi.?disk/i.test(error.message)) {
         throw new Error('Archive volumes are missing. Select the .zip file and all .z01, .z02 parts together.');

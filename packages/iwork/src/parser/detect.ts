@@ -1,8 +1,8 @@
-import { openUnencryptedZipArchive, type ZipEntry } from '@filens/core/zip';
-import { uncompress as snappyUncompress } from 'snappyjs';
+import type { ZipEntry } from '@filens/core/zip';
 import type { DetectIworkTypeOptions, IworkSource, IworkType } from '../types';
-import { loadSourceBytes } from './load-source';
-import { decodeTypedMessage } from './protobuf';
+import { loadIworkPackageSource } from './load-source';
+import { openIworkPackage } from './encryption';
+import { DOCUMENT_IWA_PATH, readIwaMessages, type IwaMessage } from './iwa';
 
 const EXTENSION_MAP: Record<string, IworkType> = {
   '.key': 'key',
@@ -20,13 +20,15 @@ export async function detectIworkType(source: IworkSource, options: DetectIworkT
     return byName;
   }
 
-  const bytes = await loadSourceBytes(source, {
-    signal: options.signal
-  });
-  const zip = await openUnencryptedZipArchive(bytes);
+  const input = await loadIworkPackageSource(source, options);
+  return detectIworkTypeFromZip(await openIworkPackage(input, options), options.signal);
+}
+
+export async function detectIworkTypeFromZip(zip: Map<string, ZipEntry>, signal?: AbortSignal,
+  onDocumentMessage?: (message: IwaMessage) => void): Promise<IworkType> {
   const entryNames = [...zip.keys()];
 
-  const byArchiveTypes = await detectIworkTypeByArchiveTypes(zip);
+  const byArchiveTypes = await detectIworkTypeByArchiveTypes(zip, signal, onDocumentMessage);
   if (byArchiveTypes) {
     return byArchiveTypes;
   }
@@ -71,14 +73,19 @@ function detectIworkTypeFromPath(path: string): IworkType | null {
   return null;
 }
 
-async function detectIworkTypeByArchiveTypes(zip: Map<string, ZipEntry>): Promise<IworkType | null> {
-  const file = zip.get('Index/Document.iwa');
+async function detectIworkTypeByArchiveTypes(zip: Map<string, ZipEntry>, signal?: AbortSignal,
+  onDocumentMessage?: (message: IwaMessage) => void): Promise<IworkType | null> {
+  const file = zip.get(DOCUMENT_IWA_PATH);
   if (!file) {
     return null;
   }
 
-  const bytes = await file.bytes();
-  const typeIds = peekMessageTypesFromIwa(bytes);
+  const seenTypes = new Set<number>();
+  await readIwaMessages(file, message => {
+    if (typeof message.info.type === 'number') seenTypes.add(message.info.type);
+    onDocumentMessage?.(message);
+  }, { signal, readPayload: Boolean(onDocumentMessage) });
+  const typeIds = [...seenTypes];
   if (typeIds.some((typeId) => typeId >= 10000 && typeId < 11000)) {
     return 'pages';
   }
@@ -89,69 +96,4 @@ async function detectIworkTypeByArchiveTypes(zip: Map<string, ZipEntry>): Promis
     return 'key';
   }
   return null;
-}
-
-function peekMessageTypesFromIwa(source: Uint8Array): number[] {
-  const bytes = unsnap(source);
-  const types: number[] = [];
-  let cursor = 0;
-
-  while (cursor < bytes.length) {
-    const lengthInfo = readVarUint(bytes, cursor);
-    cursor = lengthInfo.nextOffset;
-    const archiveChunk = bytes.subarray(cursor, cursor + lengthInfo.value);
-    cursor += lengthInfo.value;
-    const info = decodeTypedMessage('TSP.ArchiveInfo', archiveChunk) as { messageInfos?: Array<{ type?: number; length?: number }> };
-    for (const messageInfo of info.messageInfos ?? []) {
-      if (typeof messageInfo.type === 'number') {
-        types.push(messageInfo.type);
-      }
-      cursor += Number(messageInfo.length ?? 0);
-    }
-  }
-
-  return types;
-}
-
-function unsnap(source: Uint8Array): Uint8Array {
-  const chunks: Uint8Array[] = [];
-  let totalLength = 0;
-  let cursor = 0;
-  while (cursor < source.length) {
-    const compressedLength = source[cursor + 1] | (source[cursor + 2] << 8) | (source[cursor + 3] << 16);
-    cursor += 4;
-    const compressed = source.subarray(cursor, cursor + compressedLength);
-    cursor += compressedLength;
-    const uncompressed = snappyUncompress(compressed);
-    chunks.push(uncompressed);
-    totalLength += uncompressed.length;
-  }
-
-  if (chunks.length === 1) return chunks[0];
-  const output = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    output.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return output;
-}
-
-function readVarUint(bytes: Uint8Array, startOffset: number): { value: number; nextOffset: number } {
-  let value = 0;
-  let shift = 0;
-  let offset = startOffset;
-  while (offset < bytes.length) {
-    const byte = bytes[offset];
-    value |= (byte & 0x7f) << shift;
-    offset += 1;
-    if ((byte & 0x80) === 0) {
-      return {
-        value,
-        nextOffset: offset
-      };
-    }
-    shift += 7;
-  }
-  throw new Error('Unexpected end of iWork archive while reading varint.');
 }
