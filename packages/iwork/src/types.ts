@@ -118,8 +118,16 @@ export interface IworkCanvasModel {
   width: number;
   height: number;
   slide: SlideModel;
-  bodyFlows?: ReadonlyArray<readonly [startItem: number, endItemExclusive: number, savedBottom?: number]>;
+  bodyFlows?: ReadonlyArray<readonly [startItem: number, endItemExclusive: number, bottom?: number]>;
   savedBodyText?: ReadonlyArray<readonly [itemIndex: number, bottom: number, source?: PagesBodyTextSource[]]>;
+  tableSourceRows?: ReadonlyArray<readonly [itemIndex: number, source: PagesTableSourceRows | null]>;
+}
+
+export interface PagesTableSourceRows {
+  tableId: string;
+  repeatedHeaders: number;
+  rows: number[];
+  savedPartition?: true;
 }
 
 export interface PagesBodyTextSource {
@@ -159,6 +167,16 @@ export interface PagesTableMeasurement {
   height: number;
   rows: number[];
   textCutoff?: number;
+}
+
+export interface PagesMeasuredSourceRows {
+  width: number;
+  heights: Map<number, number>;
+}
+
+export interface PagesLayoutMeasurements {
+  tables: ReadonlyMap<string, PagesTableMeasurement>;
+  sourceRows: ReadonlyMap<string, PagesMeasuredSourceRows>;
 }
 
 export interface ParsedPagesDocument {

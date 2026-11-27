@@ -2,7 +2,7 @@ import { previewPasswordErrorCode, type PreviewPasswordErrorCode } from '@filens
 import { indexArchiveMedia, indexArchivePackage, readArchiveMedia } from '../parser/archive';
 import { buildNumbersSheetAt, buildParsedDocument, type SemanticBuildContext } from '../parser/semantic';
 import type { IworkArchiveSource } from '../parser/load-source';
-import type { IworkTypeHint, PagesTableMeasurement, ParsedIworkDocument } from '../types';
+import type { IworkTypeHint, PagesLayoutMeasurements, ParsedIworkDocument } from '../types';
 import type { NumbersSheetResult, PagesLayoutResult } from './client';
 import { readWorkerFile, type WorkerFileSource } from './file-source';
 import { NumbersPreviewMedia } from './numbers-media';
@@ -26,7 +26,7 @@ interface SheetRequest {
 interface PagesLayoutRequest {
   kind: 'pages-layout';
   id: number;
-  measurements: Map<string, PagesTableMeasurement>;
+  measurements: PagesLayoutMeasurements;
   context?: SemanticBuildContext;
 }
 
@@ -64,7 +64,7 @@ self.addEventListener('message', async (event: MessageEvent<WorkerRequest>) => {
     if (request.kind === 'pages-layout') {
       if (request.context) context = request.context;
       if (context?.archive.type !== 'pages') throw new Error('No Pages document is loaded.');
-      const document = buildParsedDocument(context, { pagesTableMeasurements: request.measurements });
+      const document = buildParsedDocument(context, { pagesLayoutMeasurements: request.measurements });
       if (document.kind !== 'pages') throw new Error('The Pages layout could not be rebuilt.');
       const { pages, title, warnings } = document;
       self.postMessage({ id: request.id, pagesResult: { pages, title, warnings } } satisfies ParseResponse);

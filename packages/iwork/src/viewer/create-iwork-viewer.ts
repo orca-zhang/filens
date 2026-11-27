@@ -11,6 +11,8 @@ import type {
   IworkViewerInstance,
   IworkViewerOptions,
   IworkViewerState,
+  PagesLayoutMeasurements,
+  PagesMeasuredSourceRows,
   PagesTableMeasurement,
   ParsedIworkDocument
 } from '../types';
@@ -18,7 +20,7 @@ import { loadSourceBytes } from '../parser/load-source';
 import { IworkWorkerClient } from '../worker/client';
 import { blankCellPaint } from '../table-paint';
 import { cellStrokeBorders, visibleStrokeRuns } from '../table-strokes';
-import { createCanvasElement, createMediaRegistry, documentCanvases, fitSavedPagesText, observeSavedPagesTableGrowth, samePagesTableGeometry } from './render';
+import { createCanvasElement, createMediaRegistry, documentCanvases, fitSavedPagesText, observePagesTableGrowth, samePagesTableGeometry } from './render';
 
 type EventHandler<T extends IworkViewerEventName> = (payload: IworkViewerEventMap[T]) => void;
 
@@ -55,7 +57,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
   let pageShells: HTMLDivElement[] = [];
   const mountedPages = new Map<number, HTMLElement>();
   const tableWatchers = new Map<number, () => void>();
-  const pagesTableMeasurements = new Map<string, PagesTableMeasurement>();
+  const pagesMeasurements = { tables: new Map<string, PagesTableMeasurement>(), sourceRows: new Map<string, PagesMeasuredSourceRows>() };
   let pagesLayoutPending = false;
   let pagesLayoutDirty = false;
   const visiblePages = new Set<number>();
@@ -110,7 +112,8 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     scrollFrame = 0;
     clearRowWindows(); rowMeasurements = new WeakMap();
     clearTableWatchers();
-    pagesTableMeasurements.clear();
+    pagesMeasurements.tables.clear();
+    pagesMeasurements.sourceRows.clear();
     pagesLayoutPending = pagesLayoutDirty = false;
     stage.replaceChildren();
     stage.classList.remove('iworkv-numbers-stage');
@@ -285,14 +288,20 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
       const document = state.document;
       if (loadController !== controller || document?.kind !== 'pages') return;
       pagesLayoutDirty = false;
-      const result = await getWorker().reflowPages(pagesTableMeasurements, workerHasDocument ? undefined : document);
+      const result = await getWorker().reflowPages(pagesMeasurements, workerHasDocument ? undefined : document);
       if (loadController !== controller) return;
       workerHasDocument = true;
       if (pagesLayoutDirty) return;
 
       const top = pageShells[state.currentPage]?.getBoundingClientRect().top;
-      const saved = document.pages[state.currentPage]?.savedPageIndex;
-      const corresponding = saved == null ? -1 : result.pages.findIndex(page => page.savedPageIndex === saved);
+      const active = document.pages[state.currentPage];
+      const saved = active?.savedPageIndex;
+      const table = active?.canvas.tableSourceRows?.find(([, source]) => source)?.[1];
+      const row = table?.rows.find((row, index) => index >= table.repeatedHeaders && row >= 0);
+      const corresponding = saved == null ? result.pages.findIndex(page => table && row != null &&
+        page.canvas.tableSourceRows?.some(([, source]) => source?.tableId === table.tableId &&
+          source.rows.some((value, index) => index >= source.repeatedHeaders && value === row)))
+        : result.pages.findIndex(page => page.savedPageIndex === saved);
       state.document = { ...document, ...result };
       state.pageCount = result.pages.length;
       state.currentPage = corresponding >= 0 ? corresponding : Math.min(state.currentPage, state.pageCount - 1);
@@ -313,13 +322,35 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     });
   };
 
-  const updatePagesTableMeasurements = (measurements: Map<string, PagesTableMeasurement>) => {
+  const updatePagesMeasurements = (measurements: PagesLayoutMeasurements) => {
     let changed = false;
-    for (const [id, measured] of measurements) {
-      const previous = pagesTableMeasurements.get(id);
+    for (const [id, measured] of measurements.tables) {
+      const previous = pagesMeasurements.tables.get(id);
       if (samePagesTableGeometry(measured, previous) && previous?.textCutoff === measured.textCutoff) continue;
-      pagesTableMeasurements.set(id, measured);
+      pagesMeasurements.tables.set(id, measured);
       changed = true;
+    }
+    for (const [id, measured] of measurements.sourceRows) {
+      const previous = pagesMeasurements.sourceRows.get(id);
+      const heights = previous && Math.abs(previous.width - measured.width) <= 0.5 ? previous.heights : new Map<number, number>();
+      const table = pagesMeasurements.tables.get(id);
+      const exact = table && Math.abs(table.width - measured.width) <= 0.5 ? table : undefined;
+      let exactRows: number[] | undefined;
+      let heightDelta = 0;
+      for (const [row, height] of measured.heights) {
+        const prior = exact?.rows[row] ?? heights.get(row);
+        if (prior != null && Math.abs(prior - height) <= 0.25) continue;
+        heights.set(row, height);
+        pagesMeasurements.sourceRows.set(id, { width: measured.width, heights });
+        changed = true;
+        if (exact && row < exact.rows.length) {
+          exactRows ??= exact.rows.slice();
+          heightDelta += height - exactRows[row];
+          exactRows[row] = height;
+        }
+      }
+      // An originally whole table can remain measurable after repagination splits it.
+      if (exact && exactRows) pagesMeasurements.tables.set(id, { width: exact.width, rows: exactRows, height: exact.height + heightDelta });
     }
     if (changed) requestPagesLayout();
   };
@@ -357,7 +388,7 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
         applyCanvasScale(shell, canvas.width, canvas.height, state.scale);
         const mounted = content as HTMLElement;
         mountedPages.set(index, mounted);
-        const disconnect = observeSavedPagesTableGrowth(mounted, canvas, pagesTableMeasurements, updatePagesTableMeasurements);
+        const disconnect = observePagesTableGrowth(mounted, canvas, pagesMeasurements, updatePagesMeasurements);
         if (disconnect) tableWatchers.set(index, disconnect);
       }
     }
@@ -666,8 +697,9 @@ export function createIworkViewer(container: HTMLElement, options: IworkViewerOp
     preview,
     refreshFonts() {
       if (destroyed || state.loading || !state.document) return;
-      if (state.document.kind === 'pages' && pagesTableMeasurements.size) {
-        pagesTableMeasurements.clear();
+      if (state.document.kind === 'pages' && (pagesMeasurements.tables.size || pagesMeasurements.sourceRows.size)) {
+        pagesMeasurements.tables.clear();
+        pagesMeasurements.sourceRows.clear();
         requestPagesLayout();
       }
       const top = container.scrollTop, left = container.scrollLeft;

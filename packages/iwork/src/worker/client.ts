@@ -1,6 +1,6 @@
 import { PreviewPasswordError, type PreviewPasswordErrorCode } from '@filens/core';
 import type { IworkPackageSource } from '../parser/load-source';
-import type { IworkImageAsset, IworkTypeHint, PagesTableMeasurement, ParsedIworkDocument, ParsedNumbersDocument,
+import type { IworkImageAsset, IworkTypeHint, PagesLayoutMeasurements, ParsedIworkDocument, ParsedNumbersDocument,
   ParsedNumbersSheet, ParsedPagesDocument } from '../types';
 import { serveWorkerFile } from './file-source';
 
@@ -95,7 +95,7 @@ export class IworkWorkerClient {
     });
   }
 
-  reflowPages(measurements: ReadonlyMap<string, PagesTableMeasurement>, document?: ParsedPagesDocument): Promise<PagesLayoutResult> {
+  reflowPages(measurements: PagesLayoutMeasurements, document?: ParsedPagesDocument): Promise<PagesLayoutResult> {
     const id = ++this.requestId;
     return new Promise<PagesLayoutResult>((resolve, reject) => {
       this.pending.set(id, { resolve: resolve as (value: WorkerResult) => void, reject });

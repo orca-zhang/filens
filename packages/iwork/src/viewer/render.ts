@@ -1,6 +1,7 @@
 /// <reference lib="es2022.intl" />
 import { MediaRegistry, renderSlideToElement, type ParsedPresentation, type SlideModel, type TextParagraph } from '@filens/core';
-import type { IworkCanvasModel, PagesBodyTextSource, PagesTableMeasurement, ParsedIworkDocument } from '../types';
+import type { IworkCanvasModel, PagesBodyTextSource, PagesLayoutMeasurements, PagesMeasuredSourceRows, PagesTableMeasurement,
+  ParsedIworkDocument } from '../types';
 
 const DEFAULT_THEME: ParsedPresentation['theme'] = {
   colors: {},
@@ -124,21 +125,24 @@ function renderPagesBodyFlows(content: HTMLElement, canvas: IworkCanvasModel): v
   }
 }
 
-export function observeSavedPagesTableGrowth(
-  content: HTMLElement, canvas: IworkCanvasModel, previous: ReadonlyMap<string, PagesTableMeasurement>,
-  update: (measurements: Map<string, PagesTableMeasurement>) => void
+export function observePagesTableGrowth(
+  content: HTMLElement, canvas: IworkCanvasModel, previous: PagesLayoutMeasurements,
+  update: (measurements: PagesLayoutMeasurements) => void
 ): (() => void) | undefined {
-  if (!canvas.bodyFlows?.some(([, , bottom]) => bottom != null)) return undefined;
+  if (!canvas.bodyFlows?.length) return undefined;
   const elements = Array.from(content.querySelectorAll<HTMLElement>(':scope > .iworkv-body-flow'));
   const bodySources = new Map(canvas.savedBodyText?.map(([index, , source]) => [index, source]));
+  const tableSources = new Map(canvas.tableSourceRows);
   const flows = canvas.bodyFlows.flatMap(([start, end, bottom], index) => {
     if (bottom == null || !elements[index]) return [];
     const items = canvas.slide.items.slice(start, end);
     const children = Array.from(elements[index].children);
     const tables = items.flatMap((item, offset) => {
       if (item.kind !== 'table' || !item.autoFitRows || item.transform.rotation) return [];
+      const source = tableSources.get(start + offset);
+      if (source === null) return [];
       const element = children[offset]?.querySelector('table');
-      return element ? [{ item, element, offset }] : [];
+      return element ? [{ item, element, offset, source }] : [];
     });
     return tables.length ? [{ start, bottom, items, children, tables }] : [];
   });
@@ -148,6 +152,7 @@ export function observeSavedPagesTableGrowth(
     const scale = paper.height / canvas.height;
     if (!content.isConnected || !Number.isFinite(scale) || scale <= 0) return;
     const measured = new Map<string, PagesTableMeasurement>();
+    const measuredRows = new Map<string, PagesMeasuredSourceRows>();
     for (const { start, bottom, items, children, tables } of flows) {
       const boundary = paper.top + bottom * scale;
       const boxes = tables.map(table => ({ ...table, box: table.element.getBoundingClientRect() }));
@@ -161,7 +166,12 @@ export function observeSavedPagesTableGrowth(
         const source = bodySources.get(start + offset);
         const frame = element.querySelector('.pptxv-text-frame');
         if (source && frame) cutoff = findClippedPagesText(frame, item.textFrame.paragraphs, source, boundary + 0.25 * scale);
-        if (cutoff == null && element.getBoundingClientRect().top < boundary - 0.01 * scale) continue;
+        if (cutoff == null && element.getBoundingClientRect().top < boundary - 0.01 * scale) {
+          if (!firstGrowth?.source || !frame) continue;
+          const range = content.ownerDocument.createRange();
+          range.selectNodeContents(frame);
+          if (range.getBoundingClientRect().bottom <= boundary + 0.25 * scale) continue;
+        }
         overflow = offset;
         break;
       }
@@ -171,27 +181,43 @@ export function observeSavedPagesTableGrowth(
       }
       const batch: Array<[string, PagesTableMeasurement]> = [];
       let owner: PagesTableMeasurement | undefined;
-      for (const { item, element, offset, box } of boxes) {
-        const tracked = previous.has(item.id);
-        if (offset >= overflow && !tracked) continue;
+      for (const { item, element, offset, box, source } of boxes) {
+        const width = item.transform.width;
+        const affected = offset < overflow;
+        const knownSource = source && previous.sourceRows.get(source.tableId);
+        const knownRows = knownSource && Math.abs(knownSource.width - width) <= 0.5 ? knownSource.heights : undefined;
+        const exact = source && previous.tables.get(source.tableId);
+        const exactRows = exact && Math.abs(exact.width - width) <= 0.5 ? exact.rows : undefined;
+        const knownRow = (row: number) => knownRows?.has(row) || (exactRows != null && row >= 0 && row < exactRows.length);
+        const tracked = source ? source.rows.some(knownRow) : previous.tables.has(item.id);
+        if (!affected && !tracked) continue;
         const height = box.height / scale;
         if (height <= 0 || (!tracked && height <= item.transform.height + 0.5)) continue;
-        const rows = Array.from(element.tBodies[0]?.rows ?? [], row => row.getBoundingClientRect().height / scale);
+        // Normalize the float error introduced by the scaled DOM rectangle.
+        const rows = Array.from(element.tBodies[0]?.rows ?? [], row => Math.round(row.getBoundingClientRect().height / scale * 64) / 64);
         if (rows.length !== item.rows.length) continue;
-        const result = { width: item.transform.width, height, rows };
+        if (source && !(source.savedPartition && source.tableId === item.id)) {
+          const result = measuredRows.get(source.tableId) ?? { width, heights: new Map() };
+          source.rows.forEach((row, index) => {
+            if (row >= 0 && (affected || knownRow(row))) result.heights.set(row, rows[index]);
+          });
+          if (result.heights.size) measuredRows.set(source.tableId, result);
+          continue;
+        }
+        const result = { width, height: source?.savedPartition ? rows.reduce((sum, row) => sum + row, 0) : height, rows };
         batch.push([item.id, result]);
         if (offset < overflow) owner = result;
       }
-      const stable = batch.every(([id, current]) => samePagesTableGeometry(current, previous.get(id)));
+      const stable = batch.every(([id, current]) => samePagesTableGeometry(current, previous.tables.get(id)));
       for (const [id, current] of batch) {
         // A rendered prefix no longer contains the clipped text, so keep its break until the geometry changes.
-        const earlier = stable ? previous.get(id)?.textCutoff : undefined;
+        const earlier = stable ? previous.tables.get(id)?.textCutoff : undefined;
         const currentCutoff = current === owner ? cutoff : undefined;
         current.textCutoff = earlier == null ? currentCutoff : Math.min(earlier, currentCutoff ?? earlier);
         measured.set(id, current);
       }
     }
-    if (measured.size) update(measured);
+    if (measured.size || measuredRows.size) update({ tables: measured, sourceRows: measuredRows });
   };
   measure();
   if (typeof ResizeObserver === 'undefined') return undefined;
@@ -226,7 +252,7 @@ function findClippedPagesText(
       const runIndex = ends.findIndex(end => end >= middle);
       const run = runs[runIndex];
       const node = run.firstChild;
-      if (node?.nodeType === 3 && node.textContent?.length === paragraph.runs[runIndex].text.length) {
+      if (node?.nodeType === Node.TEXT_NODE && node.textContent?.length === paragraph.runs[runIndex].text.length) {
         range.setEnd(node, middle - (ends[runIndex - 1] ?? 0));
       } else range.setEndAfter(run);
       if (range.getBoundingClientRect().bottom <= bottom) low = middle;

@@ -3,7 +3,7 @@ import { createIworkArchive } from './iwa-archive.mjs';
 export const pagesTallCellText = Array.from({ length: 80 }, (_, i) => `Entry ${i + 1} 中文 e\u0301 👩‍💻. `).join('') +
   '分页👩‍💻e\u0301'.repeat(60);
 export const pagesTallMergeText = Array.from({ length: 28 }, (_, i) => `Merged ${i + 1} 文. `).join('') + 'W'.repeat(220);
-export const pagesWrappedTableTail = 'A visible line starts here. 中文 e\u0301 👩‍💻 ' +
+export const pagesWrappedTableTail = 'A visible line VIII starts here. 中文 e\u0301 👩‍💻 ' +
   'The text wraps across the bottom of the saved body region and continues';
 
 export const pagesLongBodyText = Array.from({ length: 90 }, (_, i) =>
@@ -191,19 +191,22 @@ export function createPagesLongTableArchive({
 } = {}) {
   const ref = identifier => ({ identifier });
   const tail = savedFlow === 'long' ? `\n${pagesLongBodyText.replaceAll('\uFFFC', '')}` : '';
-  const partitioned = savedFlow === 'partition';
+  const partitionOnly = savedFlow === 'partition-only';
+  const partitioned = savedFlow === 'partition' || partitionOnly;
   const lead = savedFlow === 'leading' ? 'Saved lead ' : '';
   const image = savedFlow === 'image';
   const separator = savedFlow === 'split' ? ' ' : '\n';
-  const afterObject = savedFlow === 'wrapped-growth' ? pagesWrappedTableTail : `After ${image ? 'image' : 'table'}`;
+  const wrappedGrowth = savedFlow === 'wrapped-growth';
+  const afterObject = wrappedGrowth ? pagesWrappedTableTail.replace('VIII', '\uFFFC') : `After ${image ? 'image' : 'table'}`;
+  const finalParagraph = savedFlow === 'single-growth' ? '' : '\nFinal paragraph.';
   const body = partitioned
     ? 'Saved lead \uFFFC\nAfter table on page \uFFFC of \uFFFC.\nFinal paragraph.\nSaved next on page \uFFFC of \uFFFC.'
     : savedFlow
-    ? `${lead}\uFFFC ${afterObject} on page \uFFFC of \uFFFC.${tail}\nFinal paragraph.${separator}Saved next on page \uFFFC of \uFFFC.`
+    ? `${lead}\uFFFC ${afterObject} on page \uFFFC of \uFFFC.${tail}${finalParagraph}${separator}Saved next on page \uFFFC of \uFFFC.`
     : 'Before table \uFFFC after table on page \uFFFC of \uFFFC.\nFinal paragraph.';
   const nextPage = body.indexOf('Saved next on page');
   const partitionText = body.indexOf('After table');
-  const attachmentIds = [3, 9, 10, 9, 10];
+  const attachmentIds = wrappedGrowth ? [3, 28, 9, 10, 9, 10] : [3, 9, 10, 9, 10];
   const labels = ['Heading', ...Array.from({ length: dataRows }, (_, index) => `Row ${index + 1}`),
     tallMerge ? pagesTallMergeText : 'Merged rows'];
   if (tallRow) labels[1] = pagesTallCellText;
@@ -231,7 +234,7 @@ export function createPagesLongTableArchive({
       topMargin: 40, bottomMargin: 40, leftMargin: 40, rightMargin: 40,
       ...(savedFlow ? { deprecatedLayoutState: ref(20), floatingDrawables: ref(21) } : {}) }, savedFlow ? [2, 20, 21] : [2]],
     [2, 2001, 'TSWP.StorageArchive', { text: [body], tableAttachment: { entries: Array.from(body.matchAll(/\uFFFC/g),
-      ({ index }, i) => ({ characterIndex: index, object: ref(attachmentIds[i]) })) } }, [3, 9, 10]],
+      ({ index }, i) => ({ characterIndex: index, object: ref(attachmentIds[i]) })) } }, [3, 9, 10, ...(wrappedGrowth ? [28] : [])]],
     [3, 2003, 'TSWP.DrawableAttachmentArchive', { drawable: ref(4) }, [4]],
     image ? [4, 3005, 'TSD.ImageArchive', { data: ref(25), super: { geometry: { size: { width: 320, height: 240 } } } }, []]
     : [4, 6000, 'TST.TableInfoArchive', { super: { geometry: { position: { x: 0, y: 0 }, size: { width: 320, height: rowInfos.length * rowHeight } } },
@@ -251,6 +254,7 @@ export function createPagesLongTableArchive({
       size: { packedData: 0, numRows: 2, numColumns: 1 } }] }, []],
     [9, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormat: 0 }, []],
     [10, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 1 }, numberFormat: 0 }, []],
+    ...(wrappedGrowth ? [[28, 2043, 'TSWP.NumberAttachmentArchive', { super: { kind: 0 }, numberFormat: 123, stringValue: 'VIII' }, []]] : []),
     ...(tallMerge ? [
       [11, 6305, 'TST.StrokeSidecarArchive', { rowCount: rowInfos.length, columnCount: 2, rightColumnStrokeLayers: [ref(12)] }, [12]],
       [12, 6306, 'TST.StrokeLayerArchive', { rowColumnIndex: 1, strokeRuns: [{ origin: mergeRow, length: 2, order: 1,
@@ -279,17 +283,19 @@ export function createPagesLongTableArchive({
     ...(savedFlow ? [[20, 10131, 'TP.LayoutStateArchive', { sectionHints: [{ startPageIndex: 0, pageHints: [
       { ...(partitioned ? { childHints: [ref(26)] } : {}), targetHints: [{ range: { location: 0, length: partitioned ? partitionText : nextPage },
         doubleOrigin: { x: 0, y: 0 }, doubleSize: { width: 320, height: 240 } }] },
-      ...(partitioned ? [{ childHints: [ref(27)], targetHints: [{ range: { location: partitionText, length: nextPage - partitionText },
-        doubleOrigin: { x: 13, y: 0 }, doubleSize: { width: 287, height: 240 } }] }] : []),
+      ...(partitioned ? [{ childHints: [ref(27)], ...(!partitionOnly ? { targetHints: [{
+        range: { location: partitionText, length: nextPage - partitionText },
+        doubleOrigin: { x: 13, y: 0 }, doubleSize: { width: 287, height: 240 }
+      }] } : {}) }] : []),
       { pageKind: 2 },
-      { targetHints: [{ range: { location: nextPage, length: body.length - nextPage },
+      { targetHints: [{ range: { location: partitionOnly ? partitionText : nextPage, length: body.length - (partitionOnly ? partitionText : nextPage) },
         doubleOrigin: { x: 17, y: 23 }, doubleSize: { width: 268, height: 190 } }] }
     ] }] }, partitioned ? [26, 27] : []],
     [21, 10010, 'TP.FloatingDrawablesArchive', { pageGroups: [{ pageIndex: partitioned ? 3 : 2, foregroundDrawables: [{ drawable: ref(22) }] }] }, [22]],
     [22, 3005, 'TSD.ImageArchive', { data: ref(23), super: { geometry: {
       position: { x: 332, y: 55 }, size: { width: 20, height: 24 }
     } } }, []]] : []),
-    ...(savedFlow ? [[24, 11006, 'TSP.PackageMetadata', { lastObjectIdentifier: partitioned ? 27 : 24, datas: [
+    ...(savedFlow ? [[24, 11006, 'TSP.PackageMetadata', { lastObjectIdentifier: wrappedGrowth ? 28 : partitioned ? 27 : 24, datas: [
       { identifier: 23, digest: new Uint8Array(), preferredFileName: 'Badge.svg', fileName: 'Badge.svg' },
       ...(image ? [{ identifier: 25, digest: new Uint8Array(), preferredFileName: 'Figure.svg', fileName: 'Figure.svg' }] : [])
     ] }, []]] : [])
