@@ -34,6 +34,27 @@
 
 .pdfv-page-detail { position: absolute; pointer-events: none; }
 
+.pdfv-page-links { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.pdfv-page-links :is(a, button) {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.pdfv-page-links span { position: absolute; pointer-events: auto; cursor: pointer; }
+.pdfv-page-links span:hover { background: rgb(47 107 255 / 12%); }
+.pdfv-page-links :is(a, button):focus-visible { outline: 2px solid #2f6bff; outline-offset: 1px; }
+
+.pdfv-page-retry {
+  position: sticky;
+  top: 4px;
+  left: 4px;
+  max-width: calc(100% - 8px);
+  margin: 4px;
+  cursor: pointer;
+}
+
 /* Layout variables follow the public PDF.js TextLayer contract. */
 .pdfv-text-layer {
   --scale-round-x: 1px;
@@ -84,3 +105,45 @@
 .pdfv-text-layer ::highlight(filens-pdf-search-match) { color: transparent; background-color: rgb(255 211 61 / 50%); }
 .pdfv-text-layer ::highlight(filens-pdf-search-active) { color: transparent; background-color: rgb(255 136 0 / 65%); }
 .pdfv-container > .pdfv-search-controls { position: absolute; top: 8px; right: 8px; z-index: 4; }
+
+.pdfv-outline {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  z-index: 3;
+  max-width: calc(100% - 56px);
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  background: #fff;
+  color: #182234;
+  font: 14px/1.4 system-ui, sans-serif;
+}
+.pdfv-outline > summary { cursor: pointer; padding: 6px 10px; }
+.pdfv-outline-panel {
+  width: min(20rem, 76vw);
+  max-width: 100%;
+  max-height: min(60vh, 32rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0 6px 6px;
+}
+.pdfv-outline-panel p { margin: 4px; }
+.pdfv-outline-panel ul { list-style: none; margin: 0; padding-inline-start: 0; }
+.pdfv-outline-panel li > ul { padding-inline-start: 14px; }
+.pdfv-outline-panel li > div { display: flex; align-items: flex-start; }
+.pdfv-outline-panel :is(button, a, li span) {
+  border: 0;
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.pdfv-outline-panel :is(button, a) { cursor: pointer; }
+.pdfv-outline-panel :is(button, a):hover { background: #eef2f7; }
+.pdfv-outline-expand[aria-expanded='true'] { transform: rotate(90deg); }
+
+@media print { .pdfv-outline, .pdfv-page-links { display: none; } }

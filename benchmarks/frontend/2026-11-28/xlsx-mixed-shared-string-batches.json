@@ -1,0 +1,605 @@
+{
+  "date": "2026-11-28",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Four fresh Node processes per build and workload, alternating build order. Open a file-backed Blob in XlsxPreviewSession with jsdom. Measure complete load time, process peak RSS, and retained V8 heap above startup after collection. Count shared-string characters handed to the XML parser, excluding the added root tags. Compare all cell values, rich-text runs and font references, first viewport markup, sampled row formulas, and the recalculated cross-sheet sum.",
+  "builds": {
+    "baseline": "d1cc39e6a25ae02410472173e3e6edaf5b5115a32f884014286e567dbe890b47",
+    "direct": "cb2c68d79a24140e5cf750f5430764f6ee20d922dc610c73fea027edc219a443"
+  },
+  "workloads": {
+    "mixed": {
+      "contents": "125,000 unique shared strings in a 125,000 by eight XlsxWriter 3.2.9 workbook. One of every 31 shared strings contains three runs, a named font, bold text and explicit color. Each row also has numbers, a Boolean and a formula with a saved value.",
+      "archiveBytes": 5848827,
+      "sha256": "f69c8ddcdb9bed9e18ce171d175f1da7d28a090f6d263a01d44e201f465a1584",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1923.2508339999997,
+            "peakRssKiB": 405760,
+            "heapBytes": 153847536,
+            "tableXml": {
+              "calls": 22,
+              "chars": 11484075
+            }
+          },
+          {
+            "loadMs": 1922.790958,
+            "peakRssKiB": 414880,
+            "heapBytes": 153974520,
+            "tableXml": {
+              "calls": 22,
+              "chars": 11484075
+            }
+          },
+          {
+            "loadMs": 1902.1120420000002,
+            "peakRssKiB": 423552,
+            "heapBytes": 153829320,
+            "tableXml": {
+              "calls": 22,
+              "chars": 11484075
+            }
+          },
+          {
+            "loadMs": 1911.2456249999998,
+            "peakRssKiB": 424976,
+            "heapBytes": 153854584,
+            "tableXml": {
+              "calls": 22,
+              "chars": 11484075
+            }
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1646.012542,
+            "peakRssKiB": 376576,
+            "heapBytes": 155565104,
+            "tableXml": {
+              "calls": 22,
+              "chars": 1443836
+            }
+          },
+          {
+            "loadMs": 1661.115375,
+            "peakRssKiB": 377216,
+            "heapBytes": 155495120,
+            "tableXml": {
+              "calls": 22,
+              "chars": 1443836
+            }
+          },
+          {
+            "loadMs": 1649.9105,
+            "peakRssKiB": 371760,
+            "heapBytes": 155571496,
+            "tableXml": {
+              "calls": 22,
+              "chars": 1443836
+            }
+          },
+          {
+            "loadMs": 1652.60825,
+            "peakRssKiB": 375024,
+            "heapBytes": 155657856,
+            "tableXml": {
+              "calls": 22,
+              "chars": 1443836
+            }
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1917,
+          "peakRssMiB": 409.4,
+          "retainedHeapMiB": 146.7,
+          "generalXmlChars": 11484075
+        },
+        "direct": {
+          "loadMs": 1651.3,
+          "peakRssMiB": 367,
+          "retainedHeapMiB": 148.4,
+          "generalXmlChars": 1443836
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "08840b37a942d09c7561026376e5f92deeedee46eab7b7f1575c32adc2571f29",
+        "markupHash": "3546c6522a2107343a60c78ae7b80789804412c2ccf6cfb1039efeb91ea4cebd",
+        "formula": "7812562500",
+        "resolved": [
+          "2",
+          "64",
+          "250000"
+        ]
+      }
+    },
+    "dense": {
+      "contents": "The same data with rich text in all 125,000 shared strings.",
+      "archiveBytes": 5895920,
+      "sha256": "6e7243e404389842367a2d6d9991ea8681ac525a6ce99af9e1444b914a9e60ed",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 5194.851542,
+            "peakRssKiB": 671936,
+            "heapBytes": 234360936,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          },
+          {
+            "loadMs": 5171.687208,
+            "peakRssKiB": 659296,
+            "heapBytes": 234378552,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          },
+          {
+            "loadMs": 5222.739166,
+            "peakRssKiB": 659168,
+            "heapBytes": 234397912,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          },
+          {
+            "loadMs": 5167.291458,
+            "peakRssKiB": 663792,
+            "heapBytes": 234395664,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 5221.432708,
+            "peakRssKiB": 679280,
+            "heapBytes": 234458320,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          },
+          {
+            "loadMs": 5201.274874999999,
+            "peakRssKiB": 672304,
+            "heapBytes": 234409912,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          },
+          {
+            "loadMs": 5184.9595420000005,
+            "peakRssKiB": 643600,
+            "heapBytes": 234354192,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          },
+          {
+            "loadMs": 5213.811417,
+            "peakRssKiB": 673952,
+            "heapBytes": 234365880,
+            "tableXml": {
+              "calls": 86,
+              "chars": 44750000
+            }
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 5183.3,
+          "peakRssMiB": 646,
+          "retainedHeapMiB": 223.5,
+          "generalXmlChars": 44750000
+        },
+        "direct": {
+          "loadMs": 5207.5,
+          "peakRssMiB": 657.4,
+          "retainedHeapMiB": 223.5,
+          "generalXmlChars": 44750000
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "2ef3376d61139739745023a5762fc30a9b81f9313c548db052eb3ddc68c6c524",
+        "markupHash": "0c2095ba68315317b9fcd6bc8e3e4929a94bb621dff2358ac41b52e10967c2c2",
+        "formula": "7812562500",
+        "resolved": [
+          "2",
+          "64",
+          "250000"
+        ]
+      }
+    },
+    "plain": {
+      "contents": "The same data with plain text in all 125,000 shared strings.",
+      "archiveBytes": 5818328,
+      "sha256": "0092012f0cd2cac7378a6ac132f7fee28bce10b079c5f9f410a87f45db3275a4",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1499.1216250000002,
+            "peakRssKiB": 397440,
+            "heapBytes": 149536808,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          },
+          {
+            "loadMs": 1462.949542,
+            "peakRssKiB": 393744,
+            "heapBytes": 149513232,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          },
+          {
+            "loadMs": 1475.442542,
+            "peakRssKiB": 397888,
+            "heapBytes": 149511120,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          },
+          {
+            "loadMs": 1467.353083,
+            "peakRssKiB": 405488,
+            "heapBytes": 149521464,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1473.554041,
+            "peakRssKiB": 403888,
+            "heapBytes": 149511216,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          },
+          {
+            "loadMs": 1480.236083,
+            "peakRssKiB": 397696,
+            "heapBytes": 149573432,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          },
+          {
+            "loadMs": 1472.800791,
+            "peakRssKiB": 403072,
+            "heapBytes": 149536536,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          },
+          {
+            "loadMs": 1472.03675,
+            "peakRssKiB": 400032,
+            "heapBytes": 149517528,
+            "tableXml": {
+              "calls": 0,
+              "chars": 0
+            }
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1471.4,
+          "peakRssMiB": 388.3,
+          "retainedHeapMiB": 142.6,
+          "generalXmlChars": 0
+        },
+        "direct": {
+          "loadMs": 1473.2,
+          "peakRssMiB": 392.1,
+          "retainedHeapMiB": 142.6,
+          "generalXmlChars": 0
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "b15011ae1b0d05fecd51789ec7087ab52437cd617095e6bac8502261efc0761c",
+        "markupHash": "6e52515e65cfe2ae2f2348714dd81912f9e3bfe7b47607cdfda271db3ddb4b67",
+        "formula": "7812562500",
+        "resolved": [
+          "2",
+          "64",
+          "250000"
+        ]
+      }
+    }
+  },
+  "workbookModelComparison": {
+    "files": [
+      {
+        "path": "tmp/xlsx-calendar-formats/exported-calendar-codes.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-flatten/tocol.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-flatten/torow.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/monthly.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/survey.xlsx",
+        "baselineBatches": 1,
+        "directBatches": 1
+      },
+      {
+        "path": "tmp/xlsx-groupby/weather.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-makearray/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-map/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-map/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-pivotby/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-pivotby/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-pivotby/percentof.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/groupby.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/regexextract.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/regexreplace.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/regextest.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/exceljet-reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/exceljet-scan.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/scan.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/byrow.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/row-numbers.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-wrap/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-wrap/exceljet-rows.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-wrap/expand.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/filens-observatory.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/filens-observatory.zh-CN.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/rich-xlsx-data-types.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/rich-xlsx-formulas.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/rich-xlsx-many-columns.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      }
+    ],
+    "cells": 206374,
+    "baselineRowBatches": 1,
+    "directRowBatches": 1
+  },
+  "verification": {
+    "xlsxUnitTests": 1381,
+    "packagedPreviewChecks": "Show the first plain and rich shared strings, their saved formatting, and the cached formula while the second shared-string HTTP range sends zero bytes. Resume to show the missing shared string, recalculate the formula, and reach XFD1048576. Verify the same completed workbook in offline HTML without HTTP requests.",
+    "packagedPreviews": [
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "split",
+        "scenario": "deferred",
+        "earlyRows": 3,
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "all-in-one",
+        "scenario": "deferred",
+        "earlyRows": 3,
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "offline",
+        "scenario": "deferred",
+        "ranges": 0
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "split",
+        "scenario": "deferred",
+        "earlyRows": 3,
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "all-in-one",
+        "scenario": "deferred",
+        "earlyRows": 3,
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "offline",
+        "scenario": "deferred",
+        "ranges": 0
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "split",
+        "scenario": "deferred",
+        "earlyRows": 3,
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "all-in-one",
+        "scenario": "deferred",
+        "earlyRows": 3,
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "offline",
+        "scenario": "deferred",
+        "ranges": 0
+      }
+    ],
+    "browserRegressions": 213
+  }
+}

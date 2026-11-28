@@ -16,7 +16,8 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const decoderFile = path.join(root, 'packages/preview/vendor/lzma/decoder.wasm');
 const decoderSha256 = '2c899b6e3e5dee43d7326348f5a411e2097ef900272132e28ec97df3de91c3f1';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-const encoderProfile = 'lzma-2.3.2-9-pb0';
+const encoderProfile = 'lzma-2.3.2-9-pb0-cut384';
+const gzipIterations = 50;
 const require = createRequire(import.meta.url);
 let encoder;
 
@@ -24,10 +25,13 @@ async function loadAssetEncoder() {
   const file = require.resolve('lzma/src/lzma_worker.js');
   const source = await readFile(file, 'utf8');
   const bits = 'encoder._posStateBits = 2;', mask = 'encoder._posStateMask = 3;';
-  assert(source.includes(bits) && source.includes(mask), 'Pinned LZMA encoder preset changed.');
+  const depth = 'this$static._cutValue = 16 + (matchMaxLen >> 1);';
+  assert(source.includes(bits) && source.includes(mask) && source.includes(depth), 'Pinned LZMA encoder preset changed.');
   // These unaligned asset streams compress better with a single position context.
+  // A deeper match search also reduces the largest embedded WASM group.
   return runInNewContext(source.replace(bits, 'encoder._posStateBits = 0;')
-    .replace(mask, 'encoder._posStateMask = 0;'), { setImmediate }, { filename: file });
+    .replace(mask, 'encoder._posStateMask = 0;')
+    .replace(depth, 'this$static._cutValue = 384 + (matchMaxLen >> 1);'), { setImmediate }, { filename: file });
 }
 
 function crc32(bytes) {
@@ -113,15 +117,17 @@ export function deferredPreviewWorkers() {
   };
 }
 
-export async function packPreviewAssets(code, { cacheDirectory = path.join(root, 'node_modules/.cache/filens-assets'), threshold = 256 } = {}) {
+export async function packPreviewAssets(code, { cacheDirectory = path.join(root, 'node_modules/.cache/filens-assets'), threshold = 208 } = {}) {
   const ast = ts.createSourceFile('filens.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   const assets = [], edits = [], byHash = new Map();
   const helper = '__filensPackedAsset';
+  const wasmDataPrefix = 'data:application/wasm;base64,';
   assert(!code.includes(helper), 'Packed asset helper collides with runtime code.');
   function visit(node) {
     if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) && node.text.length > threshold) {
       const original = node.text;
       let kind = 0;
+      let prefix = '';
       // Names, static module specifiers and tagged templates require syntax,
       // rather than an ordinary string value expression.
       if (node.parent.name === node || ts.isImportDeclaration(node.parent) || ts.isExportDeclaration(node.parent) ||
@@ -132,18 +138,24 @@ export async function packPreviewAssets(code, { cacheDirectory = path.join(root,
       if (kind === 0 && original.startsWith('data:application/wasm+gzip;base64,')) {
         kind = 2;
         bytes = gunzipSync(Buffer.from(original.slice(original.indexOf(',') + 1), 'base64'));
-      } else if (kind === 0 && /^[A-Za-z0-9+/=]{100000,}$/.test(original)) {
-        const decoded = Buffer.from(original, 'base64');
-        if (decoded.toString('base64') === original) { kind = 1; bytes = decoded; }
+      } else if (original.startsWith(wasmDataPrefix) || /^[A-Za-z0-9+/=]{100000,}$/.test(original)) {
+        const data = original.startsWith(wasmDataPrefix) ? original.slice(wasmDataPrefix.length) : original;
+        const decoded = Buffer.from(data, 'base64');
+        if (decoded.toString('base64') === data) {
+          kind = 1;
+          bytes = decoded;
+          prefix = original.slice(0, original.length - data.length);
+        }
       }
       const key = `${kind}:${sha(bytes)}`;
       let index = byHash.get(key);
       if (index === undefined) {
         index = assets.length;
-        assets.push({ kind, bytes, original });
+        assets.push({ kind, bytes, original: original.slice(prefix.length) });
         byHash.set(key, index);
       }
-      edits.push([node.getStart(ast), node.end, `${helper}(${index})`]);
+      const read = `${helper}(${index})`;
+      edits.push([node.getStart(ast), node.end, prefix ? `(${JSON.stringify(prefix)}+${read})` : read]);
       return;
     }
     ts.forEachChild(node, visit);
@@ -232,7 +244,7 @@ export function packedPreviewAssets() {
         });
         worker.once('error', reject);
         worker.once('exit', code => { if (!settled) reject(new Error(`Preview gzip worker exited with ${code}.`)); });
-        worker.postMessage(bytes);
+        worker.postMessage({ bytes, iterations: gzipIterations });
       });
       const brotli = brotliCompressSync(bytes);
       // These exact deployable bytes, rather than an estimated zlib size, are
@@ -241,7 +253,7 @@ export function packedPreviewAssets() {
       assert(brotli.length <= 4_000_000, `Merged preview Brotli ${brotli.length} exceeds 4 MB.`);
       assert.deepEqual(gunzipSync(gzip), bytes);
       packed.report.delivery = {
-        gzip: { bytes: gzip.length, sha256: sha(gzip), encoder: 'Zopfli 15 iterations, unrestricted block splitting' },
+        gzip: { bytes: gzip.length, sha256: sha(gzip), encoder: `Zopfli ${gzipIterations} iterations, unrestricted block splitting` },
         brotli: { bytes: brotli.length, sha256: sha(brotli), encoder: 'Brotli quality 11' },
         limit: 4_000_000
       };

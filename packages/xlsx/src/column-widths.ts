@@ -6,12 +6,15 @@ const DEFAULT_WIDTH = 96;
 export class ColumnWidths {
   private readonly offsets?: Float64Array;
 
-  constructor(readonly count: number, source?: readonly number[], readonly tracks = new VisibleTracks(count)) {
+  constructor(readonly count: number, source?: readonly number[], readonly tracks = new VisibleTracks(count),
+    minimums?: ReadonlyMap<number, number>) {
     if (!source) return;
     this.offsets = new Float64Array(tracks.count + 1);
     for (let index = 0; index < tracks.count; index++) {
-      const width = source[tracks.source(index + 1) - 1];
-      this.offsets[index + 1] = this.offsets[index] + (Number.isFinite(width) && width > 0 ? width : DEFAULT_WIDTH);
+      const column = tracks.source(index + 1);
+      const width = source[column - 1];
+      this.offsets[index + 1] = this.offsets[index]
+        + Math.max(Number.isFinite(width) && width > 0 ? width : DEFAULT_WIDTH, minimums?.get(column) ?? 0);
     }
   }
 

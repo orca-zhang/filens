@@ -15,7 +15,9 @@ import type { ZipEntry } from '@filens/core/zip';
 import { prepareDocxFonts, readDocxFontTraits } from './fonts';
 import { sampleDocxFonts } from './font-usage';
 import { createDocxEmbeddedFonts } from './embedded-fonts';
-import { createDocxPagination } from './pagination';
+import { createDocxPagination, renderDocxColumns, renderDocxFootnoteColumns, someDocxElement, type DocxMeasuredPages, type HeaderFooterType, type PageSection } from './pagination';
+import { indexDocxFlow, measureDocxFlow, recordDocxFlow, type DocxFlowAreas, type DocxPageFrames } from './flow-pagination';
+import { findEndnoteBreaks, paginateNotes, type DocxNotes, type NotePart } from './notes';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
@@ -24,6 +26,25 @@ type PreviewListenerMap = {
 export { DOCX_FORMAT_ROUTES, createDocxPreviewRoutes } from './routes';
 
 let nextDocxRender = 0;
+
+function changesPageFrame(sections: PageSection[], evenAndOdd: boolean): boolean {
+  const geometry = ({ sectProps: props }: PageSection) => JSON.stringify([props.pageMargins, props.headerRefs, props.footerRefs]);
+  const first = geometry(sections[0]);
+  return sections.some(section => {
+    const { titlePage, headerRefs, footerRefs } = section.sectProps;
+    return geometry(section) !== first || Boolean(titlePage && (headerRefs?.length || footerRefs?.length))
+      || (evenAndOdd && [...headerRefs ?? [], ...footerRefs ?? []].some(ref => ref.type !== 'first'));
+  });
+}
+
+function canMeasureSharedPage(sections: PageSection[], evenAndOdd: boolean): boolean {
+  if (sections.length < 2) return false;
+  const usesPageFit = changesPageFrame(sections, evenAndOdd) || sections.some(section =>
+    (section.columnParts ?? [section.elements]).some(elements =>
+      someDocxElement(elements, element => element.type === 'footnoteReference')));
+  return !usesPageFit || sections.every(section => !section.authoredColumns && (section.columnParts ?? [section.elements])
+    .every(elements => elements.every(element => element.type === 'paragraph' || element.type === 'table')));
+}
 
 export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
   private readonly listeners: PreviewListenerMap = {
@@ -132,23 +153,110 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
         return;
       }
       const embedded = createDocxEmbeddedFonts(document, this.host.ownerDocument, signal);
-      const filensPaginate = createDocxPagination(document);
+      const paginator = createDocxPagination(document);
+      const body = document.documentPart?.body?.children ?? [];
+      const measureFlow = !someDocxElement(body, element => element.break === 'lastRenderedPageBreak');
+      const evenAndOdd = Boolean(document.settingsPart?.settings?.evenAndOddHeaders);
       const fontAnalysis = prepareDocxFonts(document, this.host.ownerDocument, fontTraits, undefined, embedded.aliases);
-      const render = async (target: HTMLDivElement) => {
+      const renderOnce = async (target: HTMLDivElement, afterEndnotes: Set<number>, measured?: DocxMeasuredPages) => {
         // docx-preview emits global selectors. Keep named styles and counters
         // from other sessions and from the staging render out of this view.
         const className = `filens-docx-${++nextDocxRender}`;
-        const options = { ...renderOptions, className, filensPaginate };
+        const areas: DocxFlowAreas | undefined = measureFlow ? new Map() : undefined;
+        const frames = new Map<HTMLElement, DocxPageFrames>();
+        const templates: NonNullable<DocxPageFrames['templates']> = new Map();
+        const endnotes: DocxNotes[] = [];
+        const footnotes: DocxNotes[] = [];
+        const options = {
+          ...renderOptions, className,
+          filensPaginate: (...[elements, props, process]: Parameters<typeof paginator.paginate>) =>
+            paginator.paginate(elements, props, process, measured, afterEndnotes),
+          filensSharedFlow: (sections: PageSection[]) => measureFlow && canMeasureSharedPage(sections, evenAndOdd),
+          filensPageFrames: (page: HTMLElement, sections: PageSection[], number: number, sharedFlow: boolean,
+            create: (props: PageSection['sectProps'], type: HeaderFooterType) => HTMLElement) => {
+            if (measured || !areas) return;
+            const context: DocxPageFrames = { number, first: sections[0], evenAndOdd };
+            frames.set(page, context);
+            if (!sharedFlow || !changesPageFrame(sections, evenAndOdd)) return;
+            for (const { sectProps: props } of sections) {
+              if (templates.has(props)) continue;
+              const variants: Partial<Record<HeaderFooterType, HTMLElement>> = { default: create(props, 'default') };
+              if (evenAndOdd) variants.even = create(props, 'even');
+              if (props.titlePage) variants.first = create(props, 'first');
+              templates.set(props, variants);
+            }
+            context.templates = templates;
+          },
+          filensRenderColumns: (...[article, section, render, measure]: Parameters<typeof renderDocxColumns>) => {
+            renderDocxColumns(article, section, render, measureFlow && measure);
+            if (areas) recordDocxFlow(areas, article, section);
+          },
+          filensFootnoteColumns: renderDocxFootnoteColumns,
+          filensLongFootnotes: measured?.longFootnotes,
+          filensFootnotes: (list: HTMLOListElement, templates: HTMLElement[], notes: DocxNotes['notes']) => {
+            footnotes.push({ list, templates, notes });
+          },
+          filensEndnotes: (list: HTMLOListElement, templates: HTMLElement[], notes: DocxNotes['notes'], section?: number) => {
+            endnotes.push({ list, templates, notes, section });
+          }
+        };
         const rendering = renderDocument(document, target, undefined, options);
         const wrapper = target.querySelector(`:scope > .${className}-wrapper`);
         wrapper?.classList.add('docx-wrapper');
-        for (const page of wrapper?.children ?? []) page.classList.add('docx');
+        const candidates: DocxFlowAreas = new Map();
+        for (const page of wrapper?.querySelectorAll<HTMLElement>(':scope > section') ?? []) {
+          page.classList.add('docx');
+          // The renderer's border-box minimum already includes the page margins.
+          if (page.style.minHeight) page.style.containIntrinsicHeight = 'auto 0px';
+          if (areas && !measured && page.style.minHeight) {
+            for (const article of page.querySelectorAll<HTMLElement>(':scope > article')) {
+              const area = areas.get(article);
+              if (area) {
+                page.style.contentVisibility = 'visible';
+                candidates.set(article, area);
+              }
+              if (!page.classList.contains('docxv-shared-page')) break;
+            }
+          }
+        }
         await rendering;
-        return { wrapper, className };
+        const separateEndnotes = endnotes.filter(({ list }) =>
+          !list.parentElement?.classList.contains('docxv-shared-page') || !candidates.has(list.nextElementSibling as HTMLElement));
+        const needsSectionBreak = !signal.aborted && !measured && findEndnoteBreaks(separateEndnotes, afterEndnotes);
+        let plan: DocxMeasuredPages | undefined;
+        if (!signal.aborted && !needsSectionBreak && candidates.size) {
+          const lists = separateEndnotes.map(({ list }) => ({ list, parent: list.parentElement!, sibling: list.nextSibling }));
+          for (const { list } of lists) list.remove();
+          try { plan = measureDocxFlow(candidates, paginator, frames); }
+          finally { for (const { list, parent, sibling } of lists.reverse()) parent.insertBefore(list, sibling); }
+        }
+        for (const article of candidates.keys()) article.parentElement!.style.contentVisibility = '';
+        return { wrapper, className, areas, plan, endnotes, footnotes, needsSectionBreak };
+      };
+      const render = async (target: HTMLDivElement) => {
+        const afterEndnotes = new Set<number>();
+        let result = await renderOnce(target, afterEndnotes);
+        while (result.needsSectionBreak) result = await renderOnce(target, afterEndnotes);
+        if (!signal.aborted && result.plan && (result.plan.before.size || result.plan.lines.size || result.plan.longFootnotes?.size)) {
+          result = await renderOnce(target, afterEndnotes, result.plan);
+        }
+        const notes: NotePart[] = [];
+        if (!signal.aborted) {
+          const documentEnd = result.endnotes.find(note => note.section === undefined)?.list;
+          if (result.footnotes.length) {
+            documentEnd?.remove();
+            for (const area of result.footnotes) for (const part of paginateNotes(area, paginator)) notes.push(part);
+            const last = result.wrapper?.lastElementChild;
+            if (documentEnd && last) last.insertBefore(documentEnd, last.querySelector(':scope > footer'));
+          }
+          for (const area of result.endnotes) for (const part of paginateNotes(area, paginator)) notes.push(part);
+        }
+        const flow = result.areas || notes.length ? indexDocxFlow(result.areas ?? new Map(), notes) : undefined;
+        return { ...result, flow };
       };
       // Keep the container attached for renderer layout work, but give every
       // load its own container so late tasks cannot write into a new document.
-      const { wrapper, className } = await render(container);
+      const { wrapper, className, flow } = await render(container);
       if (signal.aborted) {
         if (context.signal?.aborted) checkAborted(signal);
         return;
@@ -159,24 +267,49 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
       this.fontReferences = this.options.fontLoading
         ? sampleDocxFonts(wrapper, fontAnalysis.loadingReferences, className) : fontAnalysis.loadingReferences;
       this.state.warnings = fontAnalysis.warnings;
+      let activeFlow = flow;
+      let fontLayout = 0;
       this.refreshDocumentFonts = async update => {
         if (signal.aborted || this.loadController !== controller) return;
         const analysis = prepareDocxFonts(document, this.host.ownerDocument, fontTraits, update, embedded.aliases);
         if (update.loaded.length || update.relayout) {
+          const layout = ++fontLayout;
           const next = this.host.ownerDocument.createElement('div');
           next.className = 'docxv-document';
           // Layout in an attached staging container; keep the current preview readable.
           next.style.visibility = 'hidden';
           this.root.appendChild(next);
           try {
-            await render(next);
-            if (signal.aborted || this.loadController !== controller) return;
+            const rendered = await render(next);
+            if (signal.aborted || this.loadController !== controller || fontLayout !== layout) return;
             const top = this.root.scrollTop, left = this.root.scrollLeft;
+            const position = docxReadingPosition(this.root, activeContainer);
+            const viewportTop = this.root.getBoundingClientRect().top + this.root.clientTop;
+            const anchor = position && activeFlow?.anchor(position.page, viewportTop);
+            const reading = anchor && rendered.flow?.locate(anchor);
             next.style.visibility = '';
             activeContainer = this.documentHost = next;
+            activeFlow = rendered.flow;
             this.root.replaceChildren(next);
-            this.root.scrollTop = top; this.root.scrollLeft = left;
-          } finally { if (activeContainer !== next) next.remove(); }
+            const page = reading?.node.closest('section.docx') ?? (position && rendered.wrapper?.children.item(position.index));
+            if (position && page instanceof HTMLElement) {
+              // Lay out the reading page before clamping its inset to the new text height.
+              const previous = page.style.contentVisibility;
+              page.style.contentVisibility = 'visible';
+              const box = page.getBoundingClientRect();
+              // Keep the measured height until auto visibility can recognize this page at its new offset.
+              const style = getComputedStyle(page);
+              const contentHeight = Math.max(0, page.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom));
+              page.style.containIntrinsicHeight = `auto ${contentHeight}px`;
+              const readingBox = reading?.box() ?? box;
+              const inset = Math.min(reading && anchor ? anchor.inset : position.inset, Math.max(0, readingBox.height - 1));
+              this.root.scrollTop += readingBox.top - this.root.getBoundingClientRect().top - this.root.clientTop + inset;
+              page.style.contentVisibility = previous;
+            } else this.root.scrollTop = top;
+            this.root.scrollLeft = left;
+          } finally {
+            if (activeContainer !== next) next.remove();
+          }
         }
         if (signal.aborted || this.loadController !== controller) return;
         this.fontReferences = analysis.loadingReferences;
@@ -191,6 +324,7 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
       void embedded.load().then(loaded => {
         if (!loaded || signal.aborted || this.loadController !== controller) return;
         this.state.fonts = embedded.diagnostics(this.state.fonts ?? []);
+        if (measureFlow) this.refreshFontLayout();
         this.emit('rendered', this.getState());
         this.emit('statechange', this.getState());
       });
@@ -260,6 +394,20 @@ export class DocxPreviewSession implements PreviewSession<FlowPreviewState> {
   }
 }
 
+function docxReadingPosition(root: HTMLElement, container: HTMLElement): { index: number; inset: number; page: Element } | undefined {
+  const pages = container.querySelector('.docx-wrapper')?.children;
+  if (!root.scrollTop || !pages?.length) return undefined;
+  const top = root.getBoundingClientRect().top + root.clientTop;
+  let first = 0, end = pages.length;
+  while (first < end) {
+    const middle = (first + end) >>> 1;
+    if (pages[middle].getBoundingClientRect().bottom <= top) first = middle + 1;
+    else end = middle;
+  }
+  const page = pages[first];
+  return page ? { index: first, inset: top - page.getBoundingClientRect().top, page } : undefined;
+}
+
 export function createDocxPreviewDriver(): PreviewDriver<FlowPreviewState> {
   return {
     id: 'docx',
@@ -325,8 +473,33 @@ type ResourceDocument = {
   loadDocumentImage?: ResourceLoader;
   loadNumberingImage?: ResourceLoader;
 };
+const MAX_DOCX_IMAGE_READS = 4;
 
 function manageDocumentResources(document: ResourceDocument, signal: AbortSignal, urls: Set<string>): void {
+  let reading = 0;
+  const waiting = new Set<{ start(): void; reject(error: DOMException): void }>();
+  signal.addEventListener('abort', () => {
+    const error = new DOMException('DOCX preview aborted.', 'AbortError');
+    for (const job of waiting) job.reject(error);
+    waiting.clear();
+  }, { once: true });
+
+  const readImage = (load: () => Promise<string | null>) => new Promise<string | null>((resolve, reject) => {
+    const start = () => {
+      reading++;
+      void Promise.resolve().then(() => {
+        checkAborted(signal);
+        return load();
+      }).then(resolve, reject).finally(() => {
+        reading--;
+        const next = waiting.values().next().value;
+        if (next) { waiting.delete(next); next.start(); }
+      });
+    };
+    if (reading < MAX_DOCX_IMAGE_READS) start();
+    else waiting.add({ start, reject });
+  });
+
   // docx-preview exposes no disposal API. Scope its resource loaders to this
   // parsed document; never intercept the global URL API or another session.
   for (const name of ['loadDocumentImage', 'loadNumberingImage'] as const) {
@@ -341,7 +514,7 @@ function manageDocumentResources(document: ResourceDocument, signal: AbortSignal
       if (!cache) parts.set(part, cache = new Map());
       let result = cache.get(key);
       if (!result) {
-        result = Promise.resolve(load.apply(document, args)).then(url => {
+        result = readImage(() => load.apply(document, args)).then(url => {
           if (url?.startsWith('blob:')) {
             if (signal.aborted) {
               URL.revokeObjectURL(url);

@@ -36,6 +36,7 @@ const fixtures = await Promise.all([
   ['apps/demo/public/samples/a.numbers', 'sample.numbers'],
   ['apps/demo/public/samples/filens-weekend.key', 'weekend.key'],
   ['packages/converter-client/test/fixtures/heif/420-srgb8-full.heic', 'color.heic'],
+  ['packages/converter-client/test/fixtures/heif/grid-linear10-icc-alpha-nested-vui.heic', 'grid-alpha.heic'],
   ['apps/demo/public/samples/raw/pentax-k-r.dng', 'camera.dng'],
   ['apps/demo/public/samples/filens-cosmic-atlas.pdf', 'atlas-again.pdf']
 ].map(async ([file, name]) => ({ name, base64: (await readFile(file)).toString('base64') })));

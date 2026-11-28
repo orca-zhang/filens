@@ -13,6 +13,7 @@ import SevenZip from '7z-wasm';
 import { createNumbersMediaArchive } from '../packages/iwork/test/fixtures/numbers-archive.mjs';
 import { createPdfFixture } from '../packages/pdf/test/fixtures/document.mjs';
 import { createWorksheetBatchWorkbook } from '../packages/xlsx/test/fixtures/worksheet-batches.mjs';
+import { createRepeatedConditionalWorkbook } from '../packages/xlsx/test/fixtures/repeated-conditional-workbook.mjs';
 import { createSharedStringsWorkbook, sharedStringsLastValue } from '../packages/xlsx/test/fixtures/shared-strings.mjs';
 import { createRegexWorkbook } from '../packages/xlsx/test/fixtures/array-selection-workbook.mjs';
 
@@ -145,12 +146,14 @@ try {
     'packages/converter-client/test/fixtures/password/agile.xlsx',
     'packages/converter-client/test/fixtures/password/agile.pptx'
   ];
-  const largeSources = [path.join(work, 'chunked-preview.pdf'), path.join(work, 'chunked-workbook.xlsx')];
+  const largeSources = [path.join(work, 'chunked-preview.pdf'), path.join(work, 'chunked-workbook.xlsx'), path.join(work, 'conditional-groups.xlsx')];
   await Promise.all([
     writeFile(largeSources[0], createPdfFixture(600, false, 0, undefined, 20)),
-    createWorksheetBatchWorkbook(45_000).then(bytes => writeFile(largeSources[1], bytes))
+    createWorksheetBatchWorkbook(45_000).then(bytes => writeFile(largeSources[1], bytes)),
+    createRepeatedConditionalWorkbook(8000, { separateGroups: true, linkedBar: true, storeWorksheet: true })
+      .then(bytes => writeFile(largeSources[2], bytes))
   ]);
-  const [largePdf, largeWorkbook] = largeSources.map(file => generate(file));
+  const [largePdf, largeWorkbook, conditionalWorkbook] = largeSources.map(file => generate(file));
   const sharedStringsSource = path.join(work, 'shared-strings.xlsx');
   await writeFile(sharedStringsSource, await createSharedStringsWorkbook());
   const sharedStringsWorkbook = generate(sharedStringsSource);
@@ -195,7 +198,7 @@ try {
   const nestedSource = path.join(work, 'nested-encrypted.zip');
   await writeFile(nestedSource, zipSync(Object.fromEntries(volumes.map(name => [name, engine.FS.readFile(`/${name}`)]))));
   const nestedArchive = generate(nestedSource);
-  const documents = [saved, largePdf, largeWorkbook, sharedStringsWorkbook, regexWorkbook, largeNumbers, protectedNumbers,
+  const documents = [saved, largePdf, largeWorkbook, conditionalWorkbook, sharedStringsWorkbook, regexWorkbook, largeNumbers, protectedNumbers,
     ...fixtures.map(file => generate(path.join(root, file))), rar, nestedArchive, missingEngine];
   // Artifacts remain usable after the source file disappears.
   await Promise.all([source, ...largeSources, sharedStringsSource, regexSource, numbersSource, protectedSource, nestedSource].map(file => rm(file)));
@@ -212,6 +215,7 @@ try {
       if (browserName === 'webkit') await context.route(/^https?:\/\//, route => route.abort());
       for (const document of documents) {
         const page = await context.newPage();
+        if (document === largePdf) await page.setViewportSize({ width: 1000, height: 650 });
         const network = [], errors = [];
         const isPdf = document.source.name.endsWith('.pdf');
         const isEncryptedPdf = document.source.name === 'encrypted.pdf';
@@ -335,9 +339,29 @@ try {
           }
           if (document === largePdf) {
             assert.equal(await page.locator('.filens-source-chunk').count(), 0);
+            const search = page.locator('.pdfv-search-controls');
+            await search.locator('summary').click();
+            const query = search.getByRole('searchbox');
+            await query.fill('Document page');
+            await query.press('Enter');
+            await expect(search.locator('output')).toHaveText('1 / 600');
+            await query.press('Shift+Enter');
+            const lastPage = page.locator('.pdfv-page-slot[data-page-index="599"]');
+            const active = lastPage.locator('mark.is-active');
+            const canvas = lastPage.locator('canvas[data-rendered="true"]');
+            await expect(active).toHaveText('Document page');
+            const width = await canvas.evaluate(element => element.getBoundingClientRect().width);
+            await page.setViewportSize({ width: 850, height: 520 });
+            await expect.poll(async () => (await canvas.boundingBox())?.width ?? width).toBeLessThan(width);
+            await expect(active).toHaveText('Document page');
+            await query.fill('');
+            await query.press('Enter');
+            await page.locator('.pdfv-preview').evaluate(viewport => { viewport.scrollTop = 0; });
+            await expect(page.locator('canvas[data-page-index="0"][data-rendered="true"]')).toBeInViewport();
             await page.locator('.pdfv-preview').evaluate(viewport => { viewport.scrollTop = viewport.scrollHeight; });
             await page.locator('canvas[data-page-index="599"][data-rendered="true"]').waitFor();
             await page.getByText('Document page 600', { exact: true }).waitFor({ state: 'attached' });
+            await expect(page.locator('body')).toHaveAttribute('data-state', 'ready');
             assert.deepEqual(network, []);
             assert.deepEqual(errors, []);
           }
@@ -349,6 +373,16 @@ try {
             });
             const final = page.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
             await final.getByText('45030.00', { exact: true }).waitFor();
+            assert.deepEqual(network, []);
+            assert.deepEqual(errors, []);
+          }
+          if (document === conditionalWorkbook) {
+            const grid = page.locator('.xlsxv-grid');
+            await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+            const last = grid.locator('tr[aria-rowindex="1048577"] td[aria-colindex="16385"]');
+            await expect(last).toHaveText('9.0');
+            await expect(last).toHaveCSS('background-color', 'rgb(255, 205, 210)');
+            await expect(last.locator('.xlsxv-data-bar-fill')).toHaveCSS('background-color', 'rgb(0, 255, 0)');
             assert.deepEqual(network, []);
             assert.deepEqual(errors, []);
           }
@@ -423,6 +457,9 @@ try {
         } finally { await page.close(); }
       }
       const fallback = await context.newPage();
+      const fallbackErrors = [];
+      fallback.on('pageerror', error => fallbackErrors.push(error.message));
+      await fallback.setViewportSize({ width: 1000, height: 650 });
       await fallback.addInitScript(() => {
         window.Worker = new Proxy(Worker, {
           construct(target, [url, options]) {
@@ -438,6 +475,9 @@ try {
       await fallback.waitForFunction(() => document.body.dataset.state === 'ready');
       await fallback.locator('canvas[data-page-index="0"][data-rendered="true"]').waitFor();
       assert.equal(await fallback.evaluate(() => window.pdfWorkerBlocked), true);
+      await fallback.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await expect(fallback.locator('body')).toHaveAttribute('data-state', 'ready');
+      assert.deepEqual(fallbackErrors, []);
       await fallback.close();
       // Missing capabilities produce visible fallback instructions, not a blank page.
       for (const feature of ['Worker', 'WebAssembly']) {

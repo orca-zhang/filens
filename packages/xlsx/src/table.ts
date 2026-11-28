@@ -1,21 +1,25 @@
 // Shared by XLSX and iWork; importing tables never imports a workbook parser.
-import { applyTableCellPaint, applyTint, buildPreviewFontStack, lineStyleToBorder, withTextMeasurementScope } from '@filens/core';
+import { applyTableCellPaint, applyTint, buildPreviewFontStack, lineStyleToBorder, withTextMeasurementScope, type BorderBox } from '@filens/core';
 import { displaySpillCell, hasSourceValue, resolveCellValue } from './cell-value';
 import { withFormulaTime } from './formula-clock';
 import { resolveSharedFormula } from './shared-formulas';
 import { createShrinkTextFitter } from './shrink-text';
-import { createRotatedTextLayout } from './text-rotation';
-import { canOverflowRotation, rotatedOverflowRow } from './rotated-overflow';
-import { centeredRanges, paintCenteredRange } from './center-across';
-import { formatCellValue, type FormattedCellValue } from './number-formats';
+import { createCellTextLayout } from './text-rotation';
+import { createVerticalCellSpacing } from './vertical-cell-spacing';
+import { canOverflowRotation, canOverflowText, horizontalOverflowRow } from './horizontal-overflow';
+import { alignedRanges, paintAlignedRange } from './across-alignment';
+import { formatCellValue, formatGeneralNumber, type FormattedCellValue } from './number-formats';
 import { createNumberLayout } from './number-format-layout';
 import { RowHeights } from './row-heights';
 import { fixedRowHeight, sourceRowHeight, XLSX_MAX_ROW_HEIGHT } from './xlsx-row-heights';
 import { ColumnWidths } from './column-widths';
-import { sheetColumnWidths } from './xlsx-column-widths';
+import { normalSpaceWidth, sheetColumnWidths } from './xlsx-column-widths';
+import { createBestFitMeasurer, type FitColumn } from './best-fit-columns';
 import { columnIndexToName } from './columns';
 import { sheetMerges } from './merged-cells';
 import { paintMergeBorders } from './merge-borders';
+import { cellBorders } from './cell-borders';
+import { clipPathGradient, pathGradientImage } from './path-gradient';
 import { columnStyleLookup } from './column-styles';
 import { conditionalFormattingWindow } from './conditional-formatting';
 import { createConditionalIcon } from './conditional-icons';
@@ -33,6 +37,7 @@ export interface SheetRowWindowOptions {
   renderCell?: SheetCellRenderer;
   renderBlankCell?: SheetBlankCellRenderer;
   measurements?: SheetRowMeasurements;
+  bestFitWidths?: Map<number, number>;
   calculationPending?: () => boolean;
 }
 
@@ -52,6 +57,12 @@ interface ColumnWindow {
   first: number;
   last: number;
   cells(row: ParsedRow): ParsedCell[];
+}
+
+interface FrozenPane {
+  rowEnd: number;
+  columnEnd: number;
+  pinnedColumns?: boolean;
 }
 
 interface RowHeightMeasurement {
@@ -182,22 +193,34 @@ function applyConditionalIcon(cell: HTMLTableCellElement, reference: ParsedCondi
   cell.append(content);
 }
 
-function applyCellStyle(element: HTMLTableCellElement, style: ParsedCellStyle, merged: boolean, rich: boolean, indent: number): void {
-  applyTableCellPaint(element, style);
-  if (style.borders?.right) element.style.setProperty('--xlsxv-grid-right', 'transparent');
-  if (style.borders?.bottom) element.style.setProperty('--xlsxv-grid-bottom', 'transparent');
+function applyCellStyle(element: HTMLTableCellElement, style: ParsedCellStyle, borders: BorderBox | undefined,
+  merged: boolean, rich: boolean, indent: number, pathImage?: string): void {
+  applyTableCellPaint(element, { fill: pathImage ? undefined : style.fill, borders });
+  if (pathImage) {
+    element.style.backgroundImage = pathImage;
+    element.style.backgroundSize = '100% 100%';
+  }
+  if (borders?.right) element.style.setProperty('--xlsxv-grid-right', 'transparent');
+  if (borders?.left) element.style.setProperty('--xlsxv-grid-left', 'transparent');
+  if (borders?.bottom) element.style.setProperty('--xlsxv-grid-bottom', 'transparent');
   if (style.fill?.type === 'gradient') element.style.backgroundRepeat = 'no-repeat';
   if (style.fontSize) element.style.fontSize = style.fontSize + 'px';
   if (style.color) element.style.color = style.color;
-  if (style.horizontal) element.style.textAlign = style.horizontal;
+  const distributed = style.horizontal === 'distributed';
+  if (style.horizontal) element.style.textAlign = distributed ? 'justify' : style.horizontal;
+  if (distributed || style.justifyLastLine) element.style.textAlignLast = 'justify';
+  if (distributed || style.horizontal === 'justify') element.style.setProperty('text-justify', 'inter-word');
   if (style.vertical) element.style.verticalAlign = style.vertical;
   if (style.wrap) element.classList.add('xlsxv-wrap');
   if (!rich) applyDecoration(element, style.underline, style.strike);
   if (indent) {
     const padding = `${8 + indent}px`;
     if (merged) {
-      element.style.setProperty('--xlsxv-merge-padding-inline', 'calc(' + padding + ' + 8px)');
-      if (style.horizontal === 'left') element.style.setProperty('--xlsxv-merge-padding-left', padding);
+      element.style.setProperty('--xlsxv-merge-padding-inline', `${16 + indent * (distributed ? 2 : 1)}px`);
+      if (distributed || style.horizontal === 'left') element.style.setProperty('--xlsxv-merge-padding-left', padding);
+    } else if (distributed) {
+      element.style.paddingLeft = padding;
+      element.style.paddingRight = padding;
     } else if (style.horizontal === 'right') element.style.paddingRight = padding;
     else element.style.paddingLeft = padding;
   }
@@ -222,14 +245,15 @@ export function createSheetTable(sheet: ParsedSheet, rowCount = Math.max(sheet.r
   return table;
 }
 
-function columnWidthsFor(sheet: ParsedSheet, document: Document, count?: number): ColumnWidths {
+function columnWidthsFor(sheet: ParsedSheet, document: Document, count?: number, minimums?: ReadonlyMap<number, number>): ColumnWidths {
   const { columns } = sheetTracks(sheet);
   const tracks = count === undefined || count === columns.sourceCount ? columns : new VisibleTracks(count, sheet.hiddenColumns);
-  return new ColumnWidths(tracks.sourceCount, sheetColumnWidths(sheet, document, tracks.sourceCount), tracks);
+  return new ColumnWidths(tracks.sourceCount, sheetColumnWidths(sheet, document, tracks.sourceCount), tracks, minimums);
 }
 
 function sizeTable(table: HTMLTableElement, sheet: ParsedSheet, widths: ColumnWidths, wide = false): void {
   table.style.minWidth = `${widths.before(widths.count + 1) + 48}px`;
+  if (sheet.columnWidthSource || sheet.rightToLeft) table.dir = sheet.rightToLeft ? 'rtl' : 'ltr';
   if (sheet.columnWidthSource) table.style.setProperty('--xlsxv-max-row-height', `${XLSX_MAX_ROW_HEIGHT}px`);
   if (sheet.columnWidths) table.classList.add('xlsxv-source-columns');
   if (sheet.cellStyles?.formats.some(style => style.borders) || sheet.conditionalRules?.some(rule => rule.style?.borders)) {
@@ -238,7 +262,8 @@ function sizeTable(table: HTMLTableElement, sheet: ParsedSheet, widths: ColumnWi
   if (sheet.columnWidths || wide) table.style.width = table.style.minWidth;
 }
 
-function createSheetHeader(sheet: ParsedSheet, widths: ColumnWidths, columns?: Pick<ColumnWindow, 'first' | 'last'>): HTMLTableSectionElement {
+function createSheetHeader(sheet: ParsedSheet, widths: ColumnWidths, columns?: Pick<ColumnWindow, 'first' | 'last'>,
+  frozenEnd = 1): HTMLTableSectionElement {
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
   const corner = document.createElement('th');
@@ -247,9 +272,15 @@ function createSheetHeader(sheet: ParsedSheet, widths: ColumnWidths, columns?: P
   headerRow.appendChild(corner);
   const { tracks } = widths;
   const first = tracks.before(columns?.first ?? 1), last = tracks.before((columns?.last ?? widths.count) + 1);
-  const left = widths.before(columns?.first ?? 1), right = widths.before(widths.count + 1) - widths.before((columns?.last ?? widths.count) + 1);
-  if (left) headerRow.append(columnSpacer(left, 'th'));
-  for (let ordinal = first + 1; ordinal <= last; ordinal++) {
+  const frozen = tracks.before(frozenEnd);
+  const left = widths.before(columns?.first ?? 1) - widths.before(frozenEnd);
+  const right = widths.before(widths.count + 1) - widths.before((columns?.last ?? widths.count) + 1);
+  for (let ordinal = 1; ordinal <= last; ordinal++) {
+    if (ordinal === frozen + 1) {
+      if (left || frozen) headerRow.append(columnSpacer(left, 'th'));
+      ordinal = first + 1;
+      if (ordinal > last) break;
+    }
     const column = tracks.source(ordinal);
     const header = document.createElement('th');
     header.className = 'xlsxv-col-header';
@@ -257,11 +288,18 @@ function createSheetHeader(sheet: ParsedSheet, widths: ColumnWidths, columns?: P
     header.setAttribute('aria-colindex', String(column + 1));
     header.scope = 'col';
     if (columns || sheet.columnWidths) header.style.width = `${widths.width(column)}px`;
+    if (ordinal <= frozen) pinColumn(header, widths, column, ordinal === frozen);
     headerRow.appendChild(header);
   }
   if (right) headerRow.append(columnSpacer(right, 'th'));
   thead.appendChild(headerRow);
   return thead;
+}
+
+function pinColumn(cell: HTMLTableCellElement, widths: ColumnWidths, column: number, edge: boolean): void {
+  cell.classList.add('xlsxv-frozen-column');
+  if (edge) cell.classList.add('xlsxv-frozen-column-edge');
+  cell.style.setProperty('--xlsxv-frozen-inset', `${48 + widths.before(column)}px`);
 }
 
 function columnSpacer(pixels: number, tag: 'td' | 'th'): HTMLTableCellElement {
@@ -280,19 +318,27 @@ export function appendSheetRows(tbody: HTMLTableSectionElement, sheet: ParsedShe
     appendRows(tbody, sheet, firstRow, lastRow, sheet.rows, { renderCell, renderBlankCell, widths })));
 }
 
+type AppendRowsOptions = Pick<SheetRowWindowOptions, 'renderCell' | 'renderBlankCell'> & {
+  widths: ColumnWidths; columns?: ColumnWindow; rowHeight?(row: number): number; rowOffset?(row: number): number;
+  clipMerges?: boolean; calculationPending?: boolean; extendColumns?(end: number): void; pane?: FrozenPane;
+  fitColumn?(...args: Parameters<FitColumn>): void;
+};
+
 function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow: number, lastRow: number, rows: Iterable<ParsedRow>,
-  options: Pick<SheetRowWindowOptions, 'renderCell' | 'renderBlankCell'> & {
-    widths: ColumnWidths; columns?: ColumnWindow; rowHeight?(row: number): number; rowOffset?(row: number): number;
-    clipMerges?: boolean; calculationPending?: boolean; extendColumns?(end: number): void
-  }): void {
+  options: AppendRowsOptions): void {
   const { columns, renderCell, renderBlankCell, widths } = options;
+  const rtl = Boolean(sheet.rightToLeft);
   if (firstRow > lastRow) return;
   const { rows: rowTracks } = sheetTracks(sheet), columnTracks = widths.tracks;
   const first = rowTracks.before(firstRow), last = rowTracks.before(lastRow + 1);
   if (first === last) return;
   const leftSource = columns?.first ?? 1, rightSource = columns?.last ?? widths.count;
   const left = columnTracks.before(leftSource), right = columnTracks.before(rightSource + 1);
-  const beforeWidth = widths.before(leftSource), afterWidth = widths.before(widths.count + 1) - widths.before(rightSource + 1);
+  const { pane } = options;
+  const paneStart = pane?.pinnedColumns ? 1 : pane?.columnEnd ?? 1;
+  const paneEnd = pane?.pinnedColumns ? pane.columnEnd - 1 : widths.count;
+  const paneStartWidth = widths.before(paneStart);
+  const beforeWidth = widths.before(leftSource) - paneStartWidth, afterWidth = widths.before(paneEnd + 1) - widths.before(rightSource + 1);
   const csv = csvPreviewData.get(sheet);
   const mergeIndex = sheetMerges(sheet);
   const mergedRows = mergeIndex?.window(firstRow, lastRow, leftSource, rightSource, !options.clipMerges);
@@ -302,10 +348,14 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
   const fontStacks = new Map<ParsedCell['font'], string>();
   let fitText: ReturnType<typeof createShrinkTextFitter> | null;
   let layoutNumber: ReturnType<typeof createNumberLayout> | undefined;
-  let layoutRotation: ReturnType<typeof createRotatedTextLayout> | undefined;
+  let textLayout: ReturnType<typeof createCellTextLayout> | undefined;
+  let verticalLayout: ReturnType<typeof createVerticalCellSpacing> | undefined;
+  let bidiProbe: HTMLSpanElement | undefined;
+  let rtlCharacters: Map<number, boolean> | undefined;
+  let spaceWidth: number | undefined;
   const formats = sheet.cellStyles?.formats;
-  const rotatedOverflow = sheet.columnWidths && formats?.some(canOverflowRotation);
-  const centerAcross = sheet.columnWidths && formats?.some(style => style.centerAcross);
+  const textOverflow = sheet.columnWidths && (!sheet.showFormulas || formats?.some(canOverflowRotation));
+  const acrossColumns = sheet.columnWidths && formats?.some(style => style.centerAcross || (style.fillAlignment && !sheet.showFormulas));
   let columnStyle = columnStyles.get(sheet);
   if (!columnStyle && sheet.cellStyles) {
     columnStyle = columnStyleLookup(sheet.cellStyles.columns);
@@ -340,18 +390,24 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
     label.textContent = String(rowIndex);
     if (rowHeightSource) rowHeader.append(label);
     tr.appendChild(rowHeader);
-    const beforeSpacer = beforeWidth ? columnSpacer(beforeWidth, 'td') : undefined;
+    // A Center Across or Fill range can carry paint into the scrolling side of the split.
+    const beforeSpacer = beforeWidth || (paneStartWidth && left < right) ? columnSpacer(beforeWidth, 'td') : undefined;
     const afterSpacer = afterWidth ? columnSpacer(afterWidth, 'td') : undefined;
     if (beforeSpacer) tr.append(beforeSpacer);
     const ordered = row && (columns?.cells(row) ?? row.cells);
     const visible = ordered && columns
       ? ordered.slice(lowerBound(ordered, leftSource, cellColumn), lowerBound(ordered, rightSource + 1, cellColumn)) : ordered;
     const cells = visible && new Map(visible.map(cell => [cell.column, cell]));
-    const overflow = rotatedOverflow && ordered?.length ? rotatedOverflowRow(sheet, tr, rowIndex,
-      columns ? ordered : [...ordered].sort((a, b) => a.column - b.column), widths, leftSource, rightSource, options.extendColumns) : undefined;
-    const centered = centerAcross && row ? centeredRanges(sheet, row, widths) : [];
-    let centerAt = lowerBound(centered, leftSource, range => range.last);
-    const carried = beforeSpacer && centered[centerAt]?.anchor.column < leftSource ? centered[centerAt].anchor : undefined;
+    const aligned = acrossColumns && row ? alignedRanges(sheet, row, widths) : [];
+    const overflow = textOverflow && ordered?.length ? horizontalOverflowRow(sheet, tr, rowIndex,
+      columns || ordered.every((cell, index) => !index || cell.column >= ordered[index - 1].column)
+        ? ordered : [...ordered].sort((a, b) => a.column - b.column),
+      widths, leftSource, rightSource, pane?.pinnedColumns ? undefined : options.extendColumns, aligned.length ? column => {
+        const range = aligned[lowerBound(aligned, column, entry => entry.last)];
+        return range?.anchor.column === column ? range.last : column;
+      } : undefined, paneStart, paneEnd) : undefined;
+    let alignedAt = lowerBound(aligned, leftSource, range => range.last);
+    const carried = beforeSpacer && aligned[alignedAt]?.anchor.column < leftSource ? aligned[alignedAt].anchor : undefined;
     const beforeAnchor = carried ?? (beforeSpacer && overflow?.offscreen(-1));
     const afterAnchor = afterSpacer && overflow?.offscreen(1);
     const merges = mergedRows?.get(rowIndex) ?? [];
@@ -363,10 +419,14 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
       while (mergeAt < merges.length && merges[mergeAt].lastColumn < column) mergeAt++;
       const merge = !outside && merges[mergeAt]?.firstColumn <= column ? merges[mergeAt] : undefined;
       if (merge && (rowIndex !== merge.firstRow || column !== merge.firstColumn)) continue;
-      while (centered[centerAt]?.last < column) centerAt++;
-      const center = !merge && centered[centerAt]?.anchor.column === column ? centered[centerAt] : undefined;
+      while (aligned[alignedAt]?.last < column) alignedAt++;
+      const across = !merge && aligned[alignedAt]?.anchor.column === column ? aligned[alignedAt] : undefined;
       const td = document.createElement('td');
       td.className = 'xlsxv-cell';
+      if (!outside && pane?.pinnedColumns) {
+        pinColumn(td, widths, column, columnTracks.before((merge?.lastColumn ?? column) + 1) === right);
+      }
+      if (rtl) td.dir = 'ltr';
       td.setAttribute('aria-colindex', String(column + 1));
       if (columns || sheet.columnWidths) td.style.width = `${widths.before((merge?.lastColumn ?? column) + 1) - widths.before(column)}px`;
       if (csv) {
@@ -386,19 +446,43 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
       const value = cell && (!formula || conditionalStyle) && (!cell.missingValue || hasSourceValue(cell))
         ? options.calculationPending ? cell.value : resolveCellValue(sheet, cell) : '';
       const conditional = conditionalStyle?.(merge?.source.firstRow ?? rowIndex, merge?.source.firstColumn ?? column, cell);
-      const style = conditional ? { ...baseStyle, ...conditional,
-        ...(conditional.borders && baseStyle?.borders ? { borders: { ...baseStyle.borders, ...conditional.borders } } : {}) } : baseStyle;
-      const indent = style?.indent && (style.horizontal === 'left' || style.horizontal === 'right')
-        ? style.indent * 3 * (style.fontSize ?? 12) / 2 : 0;
+      const style = conditional ? { ...baseStyle, ...conditional } : baseStyle;
+      const distributed = style?.horizontal === 'distributed';
+      const indent = style?.indent && (distributed || style.horizontal === 'left' || style.horizontal === 'right')
+        ? style.indent * 3 * (distributed ? (spaceWidth ??= normalSpaceWidth(sheet, td.ownerDocument)) : (style.fontSize ?? 12) / 2) : 0;
       const rich = !formula && cell?.richText?.value === value ? cell.richText : undefined;
       // SpreadsheetML cannot contain a literal NUL in a format code; use it to locate @ substitutions.
       const formatted = cell && !formula && (value || rich) && style?.numberFormat !== undefined
         ? formatCellValue(rich ? '\0' : value, rich ? 'text' : cell.valueType, style.numberFormat, sheet.date1904, sheet.numberFormatPalette)
         : undefined;
-      const rotation = style?.textRotation;
-      const vertical = style?.vertical ?? (rotation || center ? 'bottom' : undefined);
-      const shrink = style?.shrinkToFit && !style.wrap && !formula;
-      const spanEnd = center?.last ?? merge?.source.lastColumn ?? column;
+      const order = style?.readingOrder;
+      if (order === 1 || order === 2) td.dir = order === 2 ? 'rtl' : 'ltr';
+      else if (sheet.columnWidthSource && value && !formula && !(options.calculationPending && cell?.needsCalculation)) {
+        const displayed = rich && formatted ? formatted.text.split('\0').join(value) : formatted?.text ?? value;
+        const first = displayed.codePointAt(displayed.search(/\P{White_Space}/u));
+        if (first !== undefined && first > 127) {
+          rtlCharacters ??= new Map();
+          let rtl = rtlCharacters.get(first);
+          if (rtl === undefined) {
+            bidiProbe ??= td.ownerDocument.createElement('span');
+            bidiProbe.dir = 'auto';
+            // HTML auto would scan past leading digits if given the whole value.
+            bidiProbe.textContent = String.fromCodePoint(first);
+            rtl = bidiProbe.matches(':is(:dir(rtl))');
+            rtlCharacters.set(first, rtl);
+          }
+          if (rtl) td.dir = 'rtl';
+        }
+      }
+      const textRtl = td.dir === 'rtl';
+      const baseBorders = cellBorders(baseStyle, textRtl), differential = cellBorders(conditional, textRtl);
+      const borders = baseBorders && differential ? { ...baseBorders, ...differential } : differential ?? baseBorders;
+      const rotation = style?.fillAlignment ? undefined : style?.textRotation;
+      const inlineRotation = rotation === 255 || Math.abs(rotation ?? 0) === 90 ? rotation : undefined;
+      const spacing = (!rotation || inlineRotation) && style?.verticalSpacing;
+      const vertical = spacing ? 'top' : style?.vertical ?? (rotation || across ? 'bottom' : undefined);
+      const shrink = style?.shrinkToFit && !style.wrap && !formula && !style.fillAlignment;
+      const spanEnd = across?.last ?? merge?.source.lastColumn ?? column;
       if (formula) {
         td.textContent = '=' + formula.replace(/^=/, '');
         td.classList.add('xlsxv-formatted-value');
@@ -411,17 +495,22 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
           if (rich) appendRichText(td, rich, style, fontStacks, conditional, formatted);
           else if (formatted) td.textContent = formatted.text;
         }
-      } else td.textContent = value;
+      } else td.textContent = cell && sheet.columnWidthSource ? formatGeneralNumber(value, cell.valueType) : value;
       applyFont(td, cell?.font ?? style?.font, fontStacks);
       if (conditional) applyConditionalFont(td, conditional);
-      if (style) applyCellStyle(td, style, Boolean(merge), Boolean(rich), indent);
+      const pathImage = pathGradientImage(style?.fill);
+      if (style) applyCellStyle(td, style, borders, Boolean(merge), Boolean(rich), indent, pathImage);
       if (formatted?.alignRight) {
         td.classList.add('xlsxv-number-tabular');
-        if (!style?.horizontal) td.style.textAlign = 'right';
+        if (!style?.horizontal && !style?.fillAlignment) td.style.textAlign = 'right';
       }
       if (formatted?.color && !conditional?.color) td.style.color = formatted.color;
       const dataBar = conditional?.dataBar;
       const iconSet = conditional?.iconSet;
+      if (options.fitColumn && cell && !outside && !merge && !across && !style?.wrap && !rotation && !spacing
+        && !shrink && !style?.fillAlignment && dataBar?.showValue !== false && iconSet?.showValue !== false) {
+        options.fitColumn(column, td, value, formatted, Boolean(iconSet?.icon), cell.valueType);
+      }
       let shrunk = false;
       if (shrink && !rotation && td.hasChildNodes() && dataBar?.showValue !== false && iconSet?.showValue !== false) {
         if (fitText === undefined) fitText = createShrinkTextFitter(td.ownerDocument) ?? null;
@@ -436,43 +525,85 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
       }
       if (cell) renderCell?.(td, cell);
       else renderBlankCell?.(td, merge?.source.firstRow ?? rowIndex, merge?.source.firstColumn ?? column);
+      if (distributed && !/\S[ \t]+\S/.test(td.textContent ?? '')) {
+        td.style.textAlign = 'center';
+        td.style.textAlignLast = '';
+      }
+      if (style?.fillAlignment && !sheet.showFormulas && !style.wrap && !td.hasAttribute('aria-busy')
+        && dataBar?.showValue !== false && iconSet?.showValue !== false && !formatted?.spacing?.some(item => item.kind === 'fill')
+        && td.textContent && !/[\r\n]/.test(td.textContent)) {
+        const start = widths.before(merge?.source.firstColumn ?? column);
+        const end = widths.before(spanEnd + 1);
+        const padding = 8 + (iconSet?.icon ? 1.3 * (style.fontSize ?? 12) : 0);
+        const left = widths.before(merge?.firstColumn ?? leftSource);
+        const right = widths.before((merge?.lastColumn ?? rightSource) + 1);
+        (textLayout ??= createCellTextLayout(td.ownerDocument)).addFill(td, end - start - padding - (merge || across ? 8 : 9),
+          Math.max(0, (rtl ? end - right : left - start) - padding),
+          (rtl ? end - Math.max(start, left) : Math.min(end, right) - start) - padding);
+      }
       if (iconSet) applyConditionalIcon(td, iconSet.icon, Boolean(formula) || (iconSet.showValue && dataBar?.showValue !== false));
       else if (dataBar && !dataBar.showValue && !formula) {
         const value = td.ownerDocument.createElement('span');
         value.className = 'xlsxv-data-bar-hidden-value';
         value.append(...td.childNodes); td.append(value);
       }
-      if (rotation && td.hasChildNodes()) {
-        td.style.verticalAlign = vertical!;
-        if (!td.style.textAlign && !formula && cell) {
-          if (cell.valueType === 'boolean' || cell.valueType === 'error') td.style.textAlign = 'center';
-          else if (cell.valueType === 'date' || (!cell.valueType && value.trim() && Number.isFinite(Number(value)))) {
-            td.style.textAlign = 'right';
-          }
+      if (rotation && !td.style.textAlign && !formula && cell && td.hasChildNodes()) {
+        if (cell.valueType === 'boolean' || cell.valueType === 'error') td.style.textAlign = 'center';
+        else if (cell.valueType === 'date' || (!cell.valueType && value.trim() && Number.isFinite(Number(value)))) {
+          td.style.textAlign = 'right';
         }
+      }
+      if (rotation && !spacing && td.hasChildNodes()) {
+        td.style.verticalAlign = vertical!;
         const width = widths.before(spanEnd + 1) - widths.before(merge?.source.firstColumn ?? column);
         const source = merge?.source;
         const sourceHeight = source && rowTracks.before(source.lastRow + 1) - rowTracks.before(source.firstRow) > 1
           ? before(source.lastRow + 1) - before(source.firstRow) : fixed ? height ?? 26 : undefined;
         const host = slot === left ? beforeSpacer! : slot > right ? afterSpacer! : td;
-        const overflowPlacement = overflow && !merge && !center && canOverflowRotation(style) && (formula || cell?.valueType === 'text')
+        const overflowPlacement = overflow && !merge && !across && canOverflowRotation(style) && (formula || cell?.valueType === 'text')
           && !dataBar && !iconSet ? overflow.at(column, host, indent) : undefined;
-        (layoutRotation ??= createRotatedTextLayout(td.ownerDocument)).add(td, {
-          rotation, width: Math.max(1, width - 16 - indent),
+        (textLayout ??= createCellTextLayout(td.ownerDocument)).add(td, {
+          rotation, width: Math.max(1, width - 16 - indent * (distributed ? 2 : 1)),
           height: sourceHeight === undefined ? undefined : Math.max(1, sourceHeight - (merge ? 8 : 4)),
           compact: Boolean(rowHeightSource), wrap: style?.wrap, shrink: Boolean(shrink) && !/[\r\n]/.test(td.textContent ?? ''),
           overflow: overflowPlacement
         });
+      } else if (overflow && !sheet.showFormulas && !merge && !across && cell?.valueType === 'text' && canOverflowText(style)
+        && !dataBar && !iconSet && !formatted?.spacing && td.hasChildNodes() && !/[\r\n]/.test(td.textContent ?? '')) {
+        const host = slot === left ? beforeSpacer! : slot > right ? afterSpacer! : td;
+        const placement = overflow.plain(column, host, indent, style?.horizontal);
+        if (placement) {
+          (textLayout ??= createCellTextLayout(td.ownerDocument)).add(td, {
+            rotation: 0, width: widths.width(column), height: fixed ? height ?? 26 : undefined,
+            compact: Boolean(rowHeightSource), shrink: false, overflow: placement
+          });
+        }
       }
-      if (center && td.hasChildNodes()) {
+      if (across && td.hasChildNodes()) {
         td.style.verticalAlign = vertical!;
-        paintCenteredRange(td, outside ? beforeSpacer! : td, center, widths, leftSource, rightSource, fixed, Boolean(rowHeightSource));
+        const host = outside ? beforeSpacer! : td;
+        const { clip, content, left: clipLeft } = paintAlignedRange(td, host, across, widths, leftSource, rightSource,
+          fixed, Boolean(rowHeightSource), rtl, paneStart);
+        if (spacing) {
+          Object.assign(clip.style, { position: 'absolute', insetBlock: '0', left: `${clipLeft}px`, marginLeft: '0', display: 'block', paddingBlock: '0' });
+          Object.assign(content.style, { position: 'relative', height: '100%' });
+          (verticalLayout ??= createVerticalCellSpacing(td.ownerDocument)).add(td, content, {
+            width: widths.before(spanEnd + 1) - widths.before(across.anchor.column) - 16,
+            left: 8, padding: fixed ? 2 : rowHeightSource ? 1 : 4, compact: Boolean(rowHeightSource),
+            centerSingle: spacing === 'distributed', natural: fixed ? undefined : host,
+            inlineRotation, height: fixed ? height : undefined
+          });
+        }
       }
       if (outside) continue;
       if (merge) {
         td.classList.add('xlsxv-merged-cell');
         const top = rowTracks.before(merge.firstRow), bottom = rowTracks.before(merge.lastRow + 1);
         const sourceTop = rowTracks.before(merge.source.firstRow), sourceBottom = rowTracks.before(merge.source.lastRow + 1);
+        if (pane && ((rowIndex >= pane.rowEnd && sourceTop < rowTracks.before(pane.rowEnd))
+          || (column >= pane.columnEnd && columnTracks.before(merge.source.firstColumn) < columnTracks.before(pane.columnEnd)))) {
+          td.setAttribute('aria-hidden', 'true');
+        }
         const lastColumn = columnTracks.before(merge.lastColumn + 1);
         td.rowSpan = bottom - top; td.colSpan = lastColumn - col + 1;
         td.dataset.mergeRef = cell?.ref ?? `${columnIndexToName(merge.source.firstColumn)}${merge.source.firstRow}`;
@@ -480,13 +611,20 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
         const content = document.createElement('div'); content.className = 'xlsxv-merged-content';
         const sourceWidth = widths.before(merge.source.lastColumn + 1) - widths.before(merge.source.firstColumn);
         const visibleWidth = widths.before(merge.lastColumn + 1) - widths.before(merge.firstColumn);
-        const sourceLeft = widths.before(merge.source.firstColumn) - widths.before(merge.firstColumn);
+        const sourceLeft = rtl ? widths.before(merge.lastColumn + 1) - widths.before(merge.source.lastColumn + 1)
+          : widths.before(merge.source.firstColumn) - widths.before(merge.firstColumn);
         const unit = sheet.columnWidths ? 'px' : '%', scale = sheet.columnWidths ? 1 : 100 / visibleWidth;
         content.style.width = `calc(${scale * sourceWidth}${unit} - var(--xlsxv-merge-padding-inline, 16px))`;
         content.style.left = `calc(${scale * sourceLeft}${unit} + var(--xlsxv-merge-padding-left, 8px))`;
         const height = before(merge.source.lastRow + 1) - before(merge.source.firstRow);
         content.style.setProperty('--xlsxv-merge-paint-height', `${height}px`);
-        if (td.style.backgroundImage && td.style.backgroundRepeat === 'no-repeat') {
+        if (pathImage) {
+          if (sourceWidth !== visibleWidth || top !== sourceTop || bottom !== sourceBottom) {
+            const visibleHeight = before(merge.lastRow + 1) - before(merge.firstRow);
+            td.style.backgroundImage = clipPathGradient(pathImage, -sourceLeft / sourceWidth,
+              (before(merge.firstRow) - before(merge.source.firstRow)) / height, visibleWidth / sourceWidth, visibleHeight / height);
+          }
+        } else if (td.style.backgroundImage && td.style.backgroundRepeat === 'no-repeat') {
           td.style.backgroundSize = `${scale * sourceWidth}${unit} ${height}px`;
           td.style.backgroundPosition = `${sheet.columnWidths ? sourceLeft : sourceWidth > visibleWidth ? -100 * sourceLeft / (sourceWidth - visibleWidth) : 0}${unit} ${before(merge.source.firstRow) - before(merge.firstRow)}px`;
           td.style.backgroundRepeat = 'no-repeat';
@@ -502,6 +640,19 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
           }
         } else clip.classList.add('is-single-row');
         content.append(...td.childNodes); clip.append(content); td.append(clip);
+        if (spacing && content.hasChildNodes()) {
+          const natural = sourceBottom - sourceTop === 1 && !fixed;
+          if (natural) {
+            clip.classList.remove('is-single-row');
+            content.style.top = '0';
+            content.style.bottom = '0';
+          } else content.style.height = `${height}px`;
+          (verticalLayout ??= createVerticalCellSpacing(td.ownerDocument)).add(td, content, {
+            width: sourceWidth - 16 - indent * (distributed ? 2 : 1), left: 0, padding: 4, compact: Boolean(rowHeightSource),
+            centerSingle: spacing === 'distributed', natural: natural ? td : undefined, extraHeight: 8,
+            inlineRotation, height: natural ? undefined : height
+          });
+        }
         if (dataBar) appendDataBar(td, dataBar, {
           left: `calc(${scale * sourceLeft}${unit} + 2px)`, width: `calc(${scale * sourceWidth}${unit} - 4px)`,
           top: `${before(merge.source.firstRow) - before(merge.firstRow) + 2}px`, height: `${Math.max(0, height - 4)}px`
@@ -510,10 +661,18 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
           ...(sourceWidth !== visibleWidth ? { left: `${scale * sourceLeft}${unit}`, width: `${scale * sourceWidth}${unit}` } : {}),
           ...(top !== sourceTop || bottom !== sourceBottom ? { top: `${before(merge.source.firstRow) - before(merge.firstRow)}px`, height: `${height}px` } : {})
         });
-        paintMergeBorders(td, merge, mergeIndex!, style?.borders, conditional?.borders, widths, rowTracks, before, sheet.mergeBorderRuns);
+        paintMergeBorders(td, merge, mergeIndex!, borders, differential, widths, rowTracks, before, sheet.mergeBorderRuns, rtl, textRtl);
       } else {
-        if (fixed && !center && td.hasChildNodes()) clipFixedCell(td, vertical);
-        else if (sheet.columnWidthSource && !center && !rotation && td.hasChildNodes() && (style?.wrap
+        if (spacing && !across && td.hasChildNodes()) {
+          td.classList.add('xlsxv-vertical-cell');
+          const left = parseFloat(td.style.paddingLeft) || 8, right = parseFloat(td.style.paddingRight) || 8;
+          (verticalLayout ??= createVerticalCellSpacing(td.ownerDocument)).add(td, td, {
+            width: widths.width(column) - left - right, left, padding: fixed ? 2 : rowHeightSource ? 1 : 4,
+            compact: Boolean(rowHeightSource), centerSingle: spacing === 'distributed', natural: fixed ? undefined : td,
+            inlineRotation, height: fixed ? height : undefined
+          });
+        } else if (fixed && !across && td.hasChildNodes()) clipFixedCell(td, vertical);
+        else if (sheet.columnWidthSource && !across && !rotation && td.hasChildNodes() && (style?.wrap
           || ((formula || formatted) && /[\r\n]/.test(formatted?.text ?? formula ?? value))
           || (style?.fontSize ?? 0) > XLSX_MAX_ROW_HEIGHT / 2
           || rich?.runs.some(run => (run.fontSize ?? 0) > XLSX_MAX_ROW_HEIGHT / 2))) {
@@ -530,7 +689,8 @@ function appendRows(tbody: HTMLTableSectionElement, sheet: ParsedSheet, firstRow
     if (afterSpacer) tr.append(afterSpacer);
     fragment.appendChild(tr);
   }
-  layoutRotation?.finish();
+  textLayout?.finish();
+  verticalLayout?.finish();
   tbody.appendChild(fragment);
 }
 
@@ -578,10 +738,15 @@ export class SheetRowWindow {
   private rowHeight = 26;
   private columnFirst = 0;
   private columnLast = 0;
+  private frozenRowEnd = 1;
+  private frozenColumnEnd = 1;
+  private pendingPosition?: { row?: number; column?: number; top: number; left: number };
   private wide: boolean;
   private rowTracks: VisibleTracks;
   private widths: ColumnWidths;
   private overflowWidths?: ColumnWidths;
+  private readonly bestFitWidths?: Map<number, number>;
+  private measureBestFit?: FitColumn;
   private readonly cellRows = new WeakMap<ParsedRow, ParsedCell[]>();
   private heights?: RowHeights;
   private readonly measurements: SheetRowMeasurements;
@@ -600,14 +765,18 @@ export class SheetRowWindow {
     const rows = this.rowTracks.count < this.rowTracks.sourceCount ? sheet.rows.filter(row => this.rowTracks.includes(row.index)) : sheet.rows;
     this.rows = rows.every((row, index) => !index || row.index >= rows[index - 1].index)
       ? rows : [...rows].sort((a, b) => a.index - b.index);
-    this.widths = columnWidthsFor(sheet, grid.ownerDocument);
+    this.measureBestFit = createBestFitMeasurer(sheet, grid.ownerDocument, options.bestFitWidths);
+    if (this.measureBestFit) this.bestFitWidths = options.bestFitWidths ?? new Map();
+    this.widths = columnWidthsFor(sheet, grid.ownerDocument, undefined, this.bestFitWidths);
     this.wide = this.widths.tracks.count > COLUMN_BATCH_SIZE;
+    if (mount === grid && (sheet.columnWidthSource || sheet.rightToLeft)) grid.dir = sheet.rightToLeft ? 'rtl' : 'ltr';
     if (this.wide) {
       this.table = document.createElement('table');
       this.table.className = 'xlsxv-table';
       sizeTable(this.table, sheet, this.widths, true);
       this.table.append(document.createElement('thead'), document.createElement('tbody'));
     } else this.table = createSheetTable(sheet, 0);
+    if (sheet.frozenPane) this.table.classList.add('xlsxv-has-panes', 'xlsxv-custom-borders');
     this.table.setAttribute('aria-rowcount', String(Math.max(sheet.rowCount, 1) + 1));
     this.table.setAttribute('aria-colcount', String(Math.max(sheet.columnCount, 1) + 1));
     this.table.style.overflowAnchor = 'none';
@@ -633,15 +802,17 @@ export class SheetRowWindow {
   refresh(reason: 'fonts' | 'values' = 'fonts'): void {
     if (this.destroyed) return;
     if (reason === 'fonts' && this.sheet.columnWidthSource) {
-      const column = this.widths.at(this.grid.scrollLeft);
+      const left = this.columnOffset + this.widths.before(this.frozenColumnEnd);
+      const column = this.widths.at(left);
       const width = this.widths.width(column);
-      const fraction = width ? (this.grid.scrollLeft - this.widths.before(column)) / width : 0;
-      this.widths = columnWidthsFor(this.sheet, this.grid.ownerDocument, this.widths.count);
+      const fraction = width ? (left - this.widths.before(column)) / width : 0;
+      if (this.measureBestFit) this.measureBestFit = createBestFitMeasurer(this.sheet, this.grid.ownerDocument, this.bestFitWidths);
+      this.widths = columnWidthsFor(this.sheet, this.grid.ownerDocument, this.widths.count, this.bestFitWidths);
       this.overflowWidths = undefined;
       sizeTable(this.table, this.sheet, this.widths, this.wide);
       this.table.tHead!.replaceWith(createSheetHeader(this.sheet, this.widths,
-        this.wide ? { first: this.columnFirst, last: this.columnLast } : undefined));
-      this.grid.scrollLeft = this.widths.before(column) + fraction * this.widths.width(column);
+        this.wide || this.frozenColumnEnd > 1 ? { first: this.columnFirst, last: this.columnLast } : undefined, this.frozenColumnEnd));
+      this.columnOffset = this.widths.before(column) + fraction * this.widths.width(column) - this.widths.before(this.firstScrollingColumn());
     }
     if (this.sheet.columnWidthSource && reason === 'fonts' && this.measurements.width !== undefined
       && this.sheet.cellStyles?.formats.some(style => style.wrap || style.textRotation)) {
@@ -673,12 +844,16 @@ export class SheetRowWindow {
   scrollPosition(): SheetScrollPosition {
     const headerHeight = this.table.tHead!.getBoundingClientRect().height || 26;
     const { scale } = this.scrollTrack(headerHeight);
-    // Use the content directly below the sticky header in either scroll track.
-    const y = Math.max(0, this.grid.scrollTop * scale);
+    // Read the scrolling content directly below and beside the pinned tracks.
+    const y = Math.max(0, this.grid.scrollTop * scale) + this.rowOffset(this.frozenRowEnd);
+    const x = this.columnOffset + this.widths.before(this.frozenColumnEnd);
     const row = this.heights?.at(y) ?? this.rowTracks.source(Math.floor(y / this.rowHeight) + 1);
-    const column = this.widths.at(this.grid.scrollLeft);
-    return { row, rowOffset: y - this.rowOffset(row), column, columnOffset: this.grid.scrollLeft - this.widths.before(column),
-      columnCount: this.widths.count };
+    const column = this.widths.at(x);
+    const pending = this.pendingPosition;
+    const savedRow = pending && Math.abs(pending.top - this.grid.scrollTop) < 1 ? pending.row : undefined;
+    const savedColumn = pending && Math.abs(pending.left - this.columnOffset) < 1 ? pending.column : undefined;
+    return { row: savedRow ?? row, rowOffset: savedRow ? 0 : y - this.rowOffset(row), column: savedColumn ?? column,
+      columnOffset: savedColumn ? 0 : x - this.widths.before(column), columnCount: this.widths.count };
   }
 
   restoreScrollPosition({ row, rowOffset, column, columnOffset, columnCount }: SheetScrollPosition): void {
@@ -688,9 +863,20 @@ export class SheetRowWindow {
     const headerHeight = this.table.tHead!.getBoundingClientRect().height || 26;
     const { scale } = this.scrollTrack(headerHeight);
     const y = this.rowOffset(row) + Math.min(rowOffset, Math.max(0, this.rowOffset(row + 1) - this.rowOffset(row) - 1));
-    this.grid.scrollTop = y / scale;
-    this.grid.scrollLeft = this.widths.before(column) + Math.min(columnOffset, Math.max(0, this.widths.width(column) - 1));
+    const top = Math.max(0, y - this.rowOffset(this.frozenRowEnd)) / scale;
+    const x = this.widths.before(column) + Math.min(columnOffset, Math.max(0, this.widths.width(column) - 1));
+    const left = Math.max(0, x - this.widths.before(this.frozenColumnEnd));
+    this.grid.scrollTop = top;
+    this.columnOffset = left;
     this.update();
+    if (this.sheet.frozenPane || this.sheet.topLeft) {
+      // A later worksheet batch may extend a saved origin that currently clamps at the edge.
+      this.pendingPosition = {
+        row: row > this.rowTracks.sourceCount || top - this.grid.scrollTop > 1 ? row : undefined,
+        column: column > this.widths.count || left - this.columnOffset > 1 ? column : undefined,
+        top: this.grid.scrollTop, left: this.columnOffset
+      };
+    }
   }
 
   destroy(): void {
@@ -723,14 +909,14 @@ export class SheetRowWindow {
   private measureRows(): boolean {
     const heights = this.heights;
     if (!heights) return false;
-    const body = this.table.tBodies[0];
+    const bodies = this.table.tBodies, body = bodies[bodies.length - 1];
     const xlsx = this.sheet.columnWidthSource && this.columnFirst > 0;
     const measureNatural = xlsx && this.measuredBody !== body;
     this.measuredBody = xlsx ? body : undefined;
     const xlsxLayout = this.sheet.rowHeightSource || this.sheet.cellStyles?.variableHeight;
     const view = this.table.ownerDocument.defaultView;
     const reset: Array<[HTMLTableRowElement, number]> = [];
-    const rows = body.querySelectorAll<HTMLTableRowElement>('tr[aria-rowindex]');
+    const rows = (bodies.length > 1 ? this.table : body).querySelectorAll<HTMLTableRowElement>('tr[aria-rowindex]');
     if (measureNatural) {
       // Clear the saved DOM floor for this pass while retaining heights from other columns in the index.
       for (const row of rows) {
@@ -795,17 +981,43 @@ export class SheetRowWindow {
     return this.heights?.before(row) ?? this.rowTracks.before(row) * this.rowHeight;
   }
 
+  private firstScrollingRow(headerHeight: number): number {
+    const count = this.sheet.frozenPane?.rows;
+    if (!count) return 1;
+    // Preserve space for scrollable content in a small viewport.
+    const available = Math.max(0, this.grid.clientHeight - headerHeight - this.rowHeight);
+    const row = this.heights?.at(available) ?? this.rowTracks.source(Math.floor(available / this.rowHeight) + 1);
+    return Math.min(count + 1, this.rowTracks.sourceCount + 1, row + Number(this.rowOffset(row + 1) <= available));
+  }
+
+  private firstScrollingColumn(): number {
+    const count = this.sheet.frozenPane?.columns;
+    if (!count) return 1;
+    const available = Math.max(0, this.grid.clientWidth - 96);
+    const column = this.widths.at(available);
+    return Math.min(count + 1, this.widths.count + 1, column + Number(this.widths.before(column + 1) <= available));
+  }
+
+  private get columnOffset(): number {
+    return Math.max(0, this.grid.scrollLeft * (this.sheet.rightToLeft ? -1 : 1));
+  }
+
+  private set columnOffset(offset: number) {
+    this.grid.scrollLeft = this.sheet.rightToLeft ? -offset : offset;
+  }
+
   private setColumnExtent(count: number): void {
-    this.widths = count === this.overflowWidths?.count ? this.overflowWidths : columnWidthsFor(this.sheet, this.grid.ownerDocument, count);
+    this.widths = count === this.overflowWidths?.count ? this.overflowWidths
+      : columnWidthsFor(this.sheet, this.grid.ownerDocument, count, this.bestFitWidths);
     this.wide = this.widths.tracks.count > COLUMN_BATCH_SIZE;
     this.columnFirst = this.columnLast = 0;
     sizeTable(this.table, this.sheet, this.widths, this.wide);
     this.table.setAttribute('aria-colcount', String(count + 1));
   }
 
-  private extendRotatedText(right: number): boolean {
+  private extendTextColumns(right: number): boolean {
     if (!right || !this.sheet.columnWidthSource || this.widths.count >= MAX_XLSX_COLUMNS || right <= this.widths.before(this.widths.count + 1)) return false;
-    const all = this.overflowWidths ??= columnWidthsFor(this.sheet, this.grid.ownerDocument, MAX_XLSX_COLUMNS);
+    const all = this.overflowWidths ??= columnWidthsFor(this.sheet, this.grid.ownerDocument, MAX_XLSX_COLUMNS, this.bestFitWidths);
     const count = all.at(Math.ceil(right) - 1);
     if (count <= this.widths.count || count > MAX_XLSX_COLUMNS) return false;
     this.setColumnExtent(count);
@@ -815,7 +1027,9 @@ export class SheetRowWindow {
   private scrollTrack(headerHeight: number): { height: number; scale: number } {
     const logicalHeight = this.rowOffset(this.rowTracks.sourceCount + 1);
     const limit = this.mount === this.grid && logicalHeight > 1_000_000 ? scrollHeightLimit(this.grid.ownerDocument) : Infinity;
-    const height = Math.min(logicalHeight, limit);
+    // Sticky table sections and hit testing saturate before the scroll height does.
+    const stickyLimit = this.sheet.frozenPane || this.sheet.topLeft ? 8_000_000 : Infinity;
+    const height = Math.min(logicalHeight, limit, stickyLimit);
     const visible = Math.max(0, this.grid.clientHeight - headerHeight);
     return { height, scale: height < logicalHeight ? (logicalHeight - visible) / Math.max(1, height - visible) : 1 };
   }
@@ -831,13 +1045,18 @@ export class SheetRowWindow {
     const viewport = this.mount === this.grid ? undefined : this.grid.getBoundingClientRect();
     const bounds = viewport || this.heights ? this.table.getBoundingClientRect() : undefined;
     const top = viewport && bounds ? viewport.top + this.grid.clientTop - bounds.top : this.grid.scrollTop;
-    const left = viewport && bounds ? viewport.left + this.grid.clientLeft - bounds.left : this.grid.scrollLeft;
+    let left = viewport && bounds ? viewport.left + this.grid.clientLeft - bounds.left : this.columnOffset;
+    let restoreLeft = false;
+    const atRight = this.measureBestFit && left > 0 && left + this.grid.clientWidth >= this.grid.scrollWidth - 1;
     const rowTracks = this.rowTracks;
     const total = rowTracks.count, end = rowTracks.sourceCount + 1;
     const headerHeight = this.table.tHead!.getBoundingClientRect().height || 26;
+    const frozen = Boolean(this.sheet.frozenPane);
+    const savedView = frozen || Boolean(this.sheet.topLeft);
     let track = this.scrollTrack(headerHeight);
     const logicalTop = topInRows === undefined ? undefined : topInRows * this.rowHeight;
-    let rowTop = logicalTop ?? (track.scale > 1 ? top * track.scale : top - (this.heights ? headerHeight : 0));
+    let rowTop = logicalTop ?? (frozen ? top * track.scale + this.rowOffset(this.frozenRowEnd)
+      : track.scale > 1 ? top * track.scale : top - (this.heights ? headerHeight : 0));
     let restoreTop = logicalTop === undefined ? undefined : logicalTop / track.scale;
     const atBottom = this.grid.scrollTop > 0 && this.grid.clientHeight > 0 && this.previousScrollHeight > 0
       && this.grid.scrollTop + this.grid.clientHeight >= this.previousScrollHeight - 2;
@@ -866,7 +1085,10 @@ export class SheetRowWindow {
         const delta = this.heights.before(anchor) - oldOffset
           + (anchor < end ? Math.min(within, Math.max(0, this.heights.height(anchor) - 1)) - within : 0);
         const nextTrack = this.scrollTrack(headerHeight);
-        if (track.scale > 1 || nextTrack.scale > 1) {
+        if (frozen) {
+          rowTop = Math.max(this.rowOffset(this.frozenRowEnd), y + delta);
+          restoreTop = (rowTop - this.rowOffset(this.frozenRowEnd)) / nextTrack.scale;
+        } else if (track.scale > 1 || nextTrack.scale > 1) {
           rowTop = Math.max(0, y + delta);
           restoreTop = nextTrack.scale > 1 ? rowTop / nextTrack.scale : rowTop + headerHeight;
         } else {
@@ -876,73 +1098,146 @@ export class SheetRowWindow {
         track = nextTrack; this.first = 0;
       }
     }
+    const rowEnd = this.firstScrollingRow(headerHeight), pinnedRows = rowTracks.before(rowEnd);
+    const pinnedHeight = this.rowOffset(rowEnd);
+    if (savedView && track.scale > 1 && atBottom && logicalTop === undefined) {
+      // A row can grow while the thumb stays at the physical end of the track.
+      restoreTop = Math.max(0, track.height - Math.max(0, this.grid.clientHeight - headerHeight));
+      rowTop = restoreTop * track.scale + this.rowOffset(this.frozenRowEnd);
+    }
+    if (frozen) rowTop += pinnedHeight - this.rowOffset(this.frozenRowEnd);
+    const visibleHeight = Math.max(0, this.grid.clientHeight - (frozen ? headerHeight + pinnedHeight : 0));
+    const rowAt = (pixel: number) => this.heights?.at(pixel) ?? rowTracks.source(Math.floor(pixel / this.rowHeight) + 1);
     const rowAtTop = this.heights ? rowTracks.before(this.heights.at(Math.max(0, rowTop))) + 1 : Math.floor(rowTop / this.rowHeight) + 1;
     const visibleCount = this.sheet.rowHeightSource && this.heights
-      ? rowTracks.before(this.heights.at(Math.max(0, rowTop) + this.grid.clientHeight)) - rowAtTop + 2
-      : Math.ceil(this.grid.clientHeight / this.rowHeight);
+      ? rowTracks.before(this.heights.at(Math.max(0, rowTop) + visibleHeight)) - rowAtTop + 2
+      : Math.ceil(visibleHeight / this.rowHeight);
     const count = Math.max(ROW_BATCH_SIZE, visibleCount + 20);
-    const firstOrdinal = Math.min(Math.max(1, rowAtTop - 10), Math.max(1, total - count + 1));
-    const first = rowTracks.source(firstOrdinal), last = total ? rowTracks.source(Math.min(total, firstOrdinal + count - 1)) : 0;
-    let before = this.rowOffset(first), after = this.rowOffset(end) - this.rowOffset(last + 1);
+    let firstOrdinal = Math.min(Math.max(pinnedRows + 1, rowAtTop - 10), Math.max(pinnedRows + 1, total - count + 1));
+    const physicalTop = restoreTop ?? top;
+    const start = rowTop - physicalTop;
+    if (savedView && track.scale > 1 && this.rowOffset(rowTracks.source(firstOrdinal)) < start) {
+      const row = rowAt(start);
+      firstOrdinal = Math.min(rowAtTop, rowTracks.before(row) + 1 + Number(this.rowOffset(row) < start));
+    }
+    let lastOrdinal = Math.min(total, firstOrdinal + count - 1);
+    const lastOffset = start + track.height - pinnedHeight;
+    if (savedView && track.scale > 1 && this.rowOffset(rowTracks.source(lastOrdinal) + 1) > lastOffset + 1) {
+      // Remove trailing overscan before it displaces visible rows on the compressed track.
+      const row = rowAt(lastOffset);
+      lastOrdinal = Math.min(total, Math.max(rowAtTop, rowTracks.before(row) + Number(this.rowOffset(row + 1) <= lastOffset + 1)));
+    }
+    const first = rowTracks.source(firstOrdinal), last = total ? rowTracks.source(lastOrdinal) : 0;
+    let before = this.rowOffset(first) - pinnedHeight, after = this.rowOffset(end) - this.rowOffset(last + 1);
     if (track.scale > 1) {
       // Compress only unmounted rows. Align full-height visible rows to the logical scroll position.
       const empty = Math.max(0, track.height - (this.rowOffset(last + 1) - before));
-      before = Math.max(0, Math.min(empty, before + (restoreTop ?? top) - rowTop));
+      before = Math.max(0, Math.min(empty, before + physicalTop - (rowTop - pinnedHeight)));
       after = empty - before;
     }
     for (;;) {
       const columnTracks = this.widths.tracks;
-      const visibleFirst = columnTracks.before(this.widths.at(left)) + 1;
+      const columnEnd = this.firstScrollingColumn(), pinnedColumns = columnTracks.before(columnEnd);
+      const visibleFirst = columnTracks.before(this.widths.at(left + this.widths.before(columnEnd))) + 1;
       const visibleLast = columnTracks.before(this.widths.at(left + Math.max(0, this.grid.clientWidth - 48))) + 1;
       const columnCount = Math.max(COLUMN_BATCH_SIZE, visibleLast - visibleFirst + 1 + 8);
-      const firstColumnOrdinal = this.wide ? Math.min(Math.max(1, visibleFirst - 4), Math.max(1, columnTracks.count - columnCount + 1)) : 1;
-      const firstColumn = this.wide ? columnTracks.source(firstColumnOrdinal) : 1;
+      const firstColumnOrdinal = this.wide ? Math.min(Math.max(pinnedColumns + 1, visibleFirst - 4),
+        Math.max(pinnedColumns + 1, columnTracks.count - columnCount + 1)) : pinnedColumns + 1;
+      const firstColumn = this.wide || pinnedColumns ? columnTracks.source(firstColumnOrdinal) : 1;
       const lastColumn = this.wide ? columnTracks.source(Math.min(columnTracks.count, firstColumnOrdinal + columnCount - 1)) : columnTracks.sourceCount;
-      if (first === this.first && last === this.last && firstColumn === this.columnFirst && lastColumn === this.columnLast) {
+      if (first === this.first && last === this.last && firstColumn === this.columnFirst && lastColumn === this.columnLast
+        && rowEnd === this.frozenRowEnd && columnEnd === this.frozenColumnEnd) {
         if (track.scale > 1 || logicalTop !== undefined) {
-          const rows = this.table.tBodies[0].rows;
+          const bodies = this.table.tBodies, rows = bodies[bodies.length - 1].rows;
           rows[0].cells[0].style.height = `${before}px`;
           rows[rows.length - 1].cells[0].style.height = `${after}px`;
         }
         break;
       }
-      const columns: ColumnWindow | undefined = this.wide || columnTracks.count < columnTracks.sourceCount
+      const columns: ColumnWindow | undefined = this.wide || pinnedColumns || columnTracks.count < columnTracks.sourceCount
         ? { first: firstColumn, last: lastColumn, cells: row => this.orderedCells(row) } : undefined;
       const body = document.createElement('tbody');
+      const pinned = pinnedRows ? document.createElement('tbody') : undefined;
       const xlsxHeights = this.sheet.columnWidthSource && this.heights;
       let right = 0;
-      withFormulaTime(this.sheet, () => withTextMeasurementScope(() => appendRows(body, this.sheet, first, last,
-        this.rows.slice(lowerBound(this.rows, first, row => row.index), lowerBound(this.rows, last + 1, row => row.index)),
-        { widths: this.widths, columns, renderCell: this.options.renderCell, renderBlankCell: this.options.renderBlankCell,
+      const fitWidths = this.bestFitWidths, measure = this.measureBestFit;
+      let widened = false;
+      const calculationPending = this.options.calculationPending?.();
+      const fitColumn: AppendRowsOptions['fitColumn'] = !calculationPending && fitWidths && measure ? (...args) => {
+        const [column] = args;
+        const width = measure(...args);
+        if (width <= this.widths.width(column) || width <= (fitWidths.get(column) ?? 0)) return;
+        fitWidths.set(column, width);
+        widened = true;
+      } : undefined;
+      const append = (body: HTMLTableSectionElement, first: number, last: number) => {
+        const rows = this.rows.slice(lowerBound(this.rows, first, row => row.index), lowerBound(this.rows, last + 1, row => row.index));
+        const options: AppendRowsOptions = { widths: this.widths, columns, renderCell: this.options.renderCell, renderBlankCell: this.options.renderBlankCell,
           rowHeight: xlsxHeights ? row => xlsxHeights.minimum(row) : this.heights ? row => this.heights!.height(row) : undefined,
-          rowOffset: row => this.rowOffset(row), clipMerges: true, calculationPending: this.options.calculationPending?.(),
-          extendColumns: end => { right = Math.max(right, end); } })));
+          rowOffset: row => this.rowOffset(row), clipMerges: true, calculationPending,
+          extendColumns: end => { right = Math.max(right, end); }, pane: frozen ? { rowEnd, columnEnd } : undefined, fitColumn };
+        appendRows(body, this.sheet, first, last, rows, options);
+        if (pinnedColumns && columns) {
+          const start = document.createElement('tbody');
+          appendRows(start, this.sheet, first, last, rows, { ...options, columns: { ...columns, first: 1, last: columnEnd - 1 },
+            pane: { rowEnd, columnEnd, pinnedColumns: true } });
+          // One native row keeps both column ranges aligned as its content reflows.
+          for (const [index, row] of Array.from(start.rows).entries()) {
+            const target = body.rows[index];
+            if (parseFloat(row.style.height) > (parseFloat(target.style.height) || 0)) target.style.height = row.style.height;
+            target.cells[0].after(...Array.from(row.cells).slice(1));
+          }
+        }
+      };
+      withFormulaTime(this.sheet, () => withTextMeasurementScope(() => {
+        if (pinned) append(pinned, 1, rowEnd - 1);
+        append(body, first, last);
+      }));
+      if (widened) {
+        const x = left + this.widths.before(columnEnd);
+        const column = this.widths.at(x), inset = x - this.widths.before(column);
+        this.overflowWidths = undefined;
+        this.setColumnExtent(this.widths.count);
+        left = Math.max(0, atRight ? 48 + this.widths.before(this.widths.count + 1) - this.grid.clientWidth
+          : this.widths.before(column) + inset - this.widths.before(this.firstScrollingColumn()));
+        restoreLeft = true;
+        continue;
+      }
       // Measure source labels before committing the horizontal window. Growth adds only blank columns at the end.
-      if (this.extendRotatedText(right)) continue;
+      if (this.extendTextColumns(right)) continue;
       if (xlsxHeights) {
-        for (const row of body.rows) {
+        for (const row of pinned ? [...pinned.rows, ...body.rows] : body.rows) {
           const index = Number(row.getAttribute('aria-rowindex')) - 1;
           const previous = this.measurements.heights.get(index);
           if (previous === undefined || previous <= (Number.parseFloat(row.style.height) || 0)) continue;
-          // Rotated overflow can set a row minimum during rendering.
+          // Offscreen labels can set a row minimum during rendering.
           this.naturalRowHeights.set(row, row.style.height);
           row.style.height = `${previous}px`;
         }
       }
-      if (firstColumn !== this.columnFirst || lastColumn !== this.columnLast) {
-        this.table.tHead!.replaceWith(createSheetHeader(this.sheet, this.widths, columns));
+      if (firstColumn !== this.columnFirst || lastColumn !== this.columnLast || columnEnd !== this.frozenColumnEnd) {
+        this.table.tHead!.replaceWith(createSheetHeader(this.sheet, this.widths, columns, columnEnd));
       }
       this.first = first; this.last = last;
       this.columnFirst = firstColumn; this.columnLast = lastColumn;
+      this.frozenRowEnd = rowEnd; this.frozenColumnEnd = columnEnd;
       body.prepend(this.spacer(before));
       body.append(this.spacer(after));
-      this.table.tBodies[0].replaceWith(body);
+      const bodies = this.table.tBodies;
+      if (bodies.length > 1) bodies[0].remove();
+      bodies[0].replaceWith(body);
+      if (pinned) {
+        pinned.className = 'xlsxv-frozen-rows';
+        pinned.style.top = `${this.table.tHead!.getBoundingClientRect().height || headerHeight}px`;
+        body.before(pinned);
+      }
       if (xlsxHeights) this.schedule();
       break;
     }
     // The browser can clamp to a fractional endpoint even when scrollHeight is rounded.
     if (logicalTop === undefined && atBottom && (this.heights || track.scale > 1)) this.grid.scrollTop = this.grid.scrollHeight;
     else if (restoreTop !== undefined) this.grid.scrollTop = restoreTop;
+    if (restoreLeft) this.columnOffset = atRight ? this.grid.scrollWidth : left;
     this.previousScrollHeight = this.grid.scrollHeight;
   }
 

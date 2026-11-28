@@ -124,9 +124,13 @@ test('recovers from a failed document through the demo upload flow', async ({ pa
 
 test('loads the PDF engine only when opening a PDF through the demo', async ({ page }) => {
   const engines: string[] = [], errors: string[] = [];
+  await page.addInitScript(() => {
+    const hostPdfGlobals = { pdfjsLib: {}, _pdfjsTestingUtils: {} };
+    Object.assign(window, hostPdfGlobals, { hostPdfGlobals });
+  });
   page.on('request', request => {
     const path = new URL(request.url()).pathname;
-    if (/\/assets\/pdf-runtime-[^/]+\.js$/.test(path) || /\/deps\/pdfjs-dist\.js$/.test(path)) engines.push(path);
+    if (/\/assets\/pdf-runtime-[^/]+\.js$/.test(path) || path.endsWith('/pdfjs-dist/build/pdf.mjs')) engines.push(path);
   });
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('./?view=preview&lang=zh');
@@ -138,6 +142,12 @@ test('loads the PDF engine only when opening a PDF through the demo', async ({ p
   const canvas = page.locator('canvas.pdfv-page[data-page-index="0"][data-rendered="true"]');
   await expect(canvas).toHaveCount(1);
   expect(engines).toHaveLength(1);
+  expect(await page.evaluate(() => {
+    const host = window as typeof window & {
+      hostPdfGlobals: Record<string, unknown>;
+    };
+    return Object.entries(host.hostPdfGlobals).every(([key, value]) => Reflect.get(host, key) === value);
+  })).toBe(true);
   expect(await canvas.evaluate(node => {
     const canvas = node as HTMLCanvasElement;
     const pixels = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;

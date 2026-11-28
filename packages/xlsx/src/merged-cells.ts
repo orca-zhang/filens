@@ -3,16 +3,16 @@ import type { ParsedCell, ParsedMerge, ParsedRow, ParsedSheet } from './types';
 import { RowHeights } from './row-heights';
 import { RowRangeIndex } from './row-range-index';
 import { sheetTracks } from './visible-tracks';
+import { cellBorders } from './cell-borders';
 
 export interface MergeFragment extends ParsedMerge { source: ParsedMerge; cell?: ParsedCell; rowStyle?: number }
 export type MergeBorderSide = keyof BorderBox;
 
-/** Index row intervals without allocating the cells covered by a merge. */
+/** Index merge ranges without allocating their covered cells. */
 export class SheetMerges {
   private readonly ranges: RowRangeIndex<ParsedMerge>;
   private readonly rows: ParsedRow[];
   private readonly tracks: ReturnType<typeof sheetTracks>;
-  private readonly anchors = new Map<ParsedMerge, { cell?: ParsedCell; rowStyle?: number }>();
   private readonly sortedCells = new WeakMap<ParsedRow, ParsedCell[]>();
   readonly hasStoredBorders: boolean;
   private sourceHeights?: RowHeights;
@@ -40,7 +40,6 @@ export class SheetMerges {
     const rows = new Map<number, MergeFragment[]>();
     const { rows: rowTracks, columns: columnTracks } = this.tracks;
     this.ranges.forEach(firstRow, lastRow, source => {
-      if (source.lastColumn < firstColumn || source.firstColumn > lastColumn) return;
       const first = rowTracks.before(Math.max(source.firstRow, firstRow)) + 1;
       const last = rowTracks.before(Math.min(source.lastRow, lastRow) + 1);
       const left = columnTracks.before(Math.max(source.firstColumn, firstColumn)) + 1;
@@ -51,40 +50,28 @@ export class SheetMerges {
       for (let row = first; row <= last; row++) {
         if (rows.get(rowTracks.source(row))?.some(range => range.firstColumn <= sourceRight && range.lastColumn >= sourceLeft)) return;
       }
+      const anchor = this.rowAt(source.firstRow);
+      const cell = anchor && this.cellAt(anchor, source.firstColumn);
+      const rowStyle = anchor?.styleIndex;
       const sourceStart = rowTracks.before(source.firstRow) + 1, sourceEnd = rowTracks.before(source.lastRow + 1);
       for (let row = first; row <= last; row++) {
         const start = incremental ? sourceStart + Math.floor((row - sourceStart) / 65_534) * 65_534 : first;
         const rowIndex = rowTracks.source(row);
         const ranges = rows.get(rowIndex) ?? [];
         for (let column = left; column <= right; column += 1000) {
-          ranges.push({ source, ...this.anchor(source), firstRow: rowTracks.source(start),
+          ranges.push({ source, cell, rowStyle, firstRow: rowTracks.source(start),
             lastRow: rowTracks.source(incremental ? Math.min(sourceEnd, start + 65_533) : last),
             firstColumn: columnTracks.source(column), lastColumn: columnTracks.source(Math.min(right, column + 999)) });
         }
         rows.set(rowIndex, ranges);
       }
-    });
+    }, [firstColumn, lastColumn]);
     for (const ranges of rows.values()) ranges.sort((a, b) => a.firstColumn - b.firstColumn);
     return rows;
   }
 
-  private anchor(range: ParsedMerge): { cell?: ParsedCell; rowStyle?: number } {
-    const cached = this.anchors.get(range);
-    if (cached) return cached;
-    const row = this.rowAt(range.firstRow);
-    let cell: ParsedCell | undefined;
-    if (row) {
-      for (let at = row.cells.length - 1; at >= 0; at--) {
-        if (row.cells[at].column === range.firstColumn) { cell = row.cells[at]; break; }
-      }
-    }
-    const anchor = { cell, rowStyle: row?.styleIndex };
-    this.anchors.set(range, anchor);
-    return anchor;
-  }
-
   /** Only stored cells on this part of the source perimeter can add border segments. */
-  *edgeBorders(merge: MergeFragment, side: MergeBorderSide): Iterable<readonly [number, number, LineStyle]> {
+  *edgeBorders(merge: MergeFragment, side: MergeBorderSide, textRtl: boolean): Iterable<readonly [number, number, LineStyle]> {
     if (side === 'top' || side === 'bottom') {
       const row = this.rowAt(side === 'top' ? merge.source.firstRow : merge.source.lastRow);
       if (!row) return;
@@ -92,28 +79,28 @@ export class SheetMerges {
       for (let i = lowerBound(cells, merge.firstColumn, cellColumn); i < cells.length && cells[i].column <= merge.lastColumn; i++) {
         const cell = cells[i];
         if (cells[i + 1]?.column === cell.column || cell === merge.cell) continue;
-        const border = this.borders(cell)?.[side];
+        const border = this.borders(cell, textRtl)?.[side];
         if (border) yield [cell.column, cell.column, border];
       }
     } else {
-      const column = side === 'left' ? merge.source.firstColumn : merge.source.lastColumn;
+      const column = (side === 'left') !== Boolean(this.sheet.rightToLeft) ? merge.source.firstColumn : merge.source.lastColumn;
       for (let i = lowerBound(this.rows, merge.firstRow, rowCoordinate); i < this.rows.length && this.rows[i].index <= merge.lastRow; i++) {
         const row = this.rows[i];
         if (this.rows[i + 1]?.index === row.index) continue;
         const cell = this.cellAt(row, column);
-        const border = cell !== merge.cell ? this.borders(cell)?.[side] : undefined;
+        const border = cell !== merge.cell ? this.borders(cell, textRtl)?.[side] : undefined;
         if (border) yield [row.index, row.index, border];
       }
     }
   }
 
-  terminalBorders(range: ParsedMerge): BorderBox | undefined {
+  terminalBorders(range: ParsedMerge, textRtl: boolean): BorderBox | undefined {
     const row = this.rowAt(range.lastRow);
-    return row && this.borders(this.cellAt(row, range.lastColumn));
+    return row && this.borders(this.cellAt(row, range.lastColumn), textRtl);
   }
 
-  private borders(cell?: ParsedCell): BorderBox | undefined {
-    return cell && this.sheet.cellStyles?.formats[cell.styleIndex ?? 0]?.borders;
+  private borders(cell: ParsedCell | undefined, textRtl: boolean): BorderBox | undefined {
+    return cell && cellBorders(this.sheet.cellStyles?.formats[cell.styleIndex ?? 0], textRtl);
   }
 
   private rowAt(index: number): ParsedRow | undefined {

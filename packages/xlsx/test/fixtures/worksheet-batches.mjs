@@ -5,7 +5,9 @@ export function prefixXmlElements(xml, namespace = 'http://schemas.openxmlformat
     .replace(/(<main:[\w.-]+)(?: xmlns="[^"]+")?/, `$1 xmlns:main="${namespace}"`);
 }
 
-export async function createWorksheetBatchWorkbook(rowCount = 6400, { forceGeneral = false } = {}) {
+export async function createWorksheetBatchWorkbook(rowCount = 6400, {
+  forceGeneral = false, sheetDataAttributes = ' custom="a>b"', extraInlineRuns = false
+} = {}) {
   const zip = new JSZip(), date = new Date('2020-01-01T00:00:00Z');
   const add = (name, xml) => zip.file(name, xml, { date });
   add('xl/workbook.xml', '<workbook><sheets><sheet name="Batches" sheetId="1" r:id="rows"/></sheets></workbook>');
@@ -14,7 +16,8 @@ export async function createWorksheetBatchWorkbook(rowCount = 6400, { forceGener
     + '<cellXfs><xf/><xf fontId="1" numFmtId="2"/></cellXfs></styleSheet>');
   const first = '<row r="1"><c r="A1"><v>2</v></c><c r="B1" t="inlineStr"><is><r><rPr><b/></rPr>'
     + '<t>North &amp; 南</t></r><r><t xml:space="preserve"> branch</t></r></is></c>'
-    + '<c r="C1"><f t="shared" si="7"/></c></row>';
+    + '<c r="C1"><f t="shared" si="7"/></c>'
+    + (extraInlineRuns ? '<c r="D1" t="inlineStr"><is><r><rPr><i/></rPr><t>First detail</t></r></is></c>' : '') + '</row>';
   const rows = Array.from({ length: rowCount - 1 }, (_, index) => {
     const r = index + 2;
     if (r === 17) return '<row r="17" hidden="1" ht="22" customHeight="1"/>';
@@ -25,11 +28,12 @@ export async function createWorksheetBatchWorkbook(rowCount = 6400, { forceGener
   });
   const last = '<row r="1048576"><c r="A1048576"><v>12</v></c>'
     + '<c r="C1048576"><f t="shared" si="7" ref="C1:C1048576">A1048576*2</f></c>'
+    + (extraInlineRuns ? '<c r="E1048576" t="inlineStr"><is><r><rPr><b/><color rgb="FF336699"/></rPr><t>Last &amp; 南</t></r></is></c>' : '')
     + `<c r="XFD1048576" s="1"><f>A1+A${rowCount}+C1+C1048576</f></c></row>`;
   add('xl/worksheets/rows.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
     + '<sheetFormatPr defaultColWidth="14"/><cols><col min="2" max="2" width="20" style="1"/></cols>'
-    + '<sheetData custom="a>b">' + (forceGeneral ? '<!-- full worksheet parser -->' : '')
+    + `<sheetData${sheetDataAttributes}>` + (forceGeneral ? '<!-- full worksheet parser -->' : '')
     + first + rows.join('\r\n') + last + '</sheetData>'
     + '<mergeCells><mergeCell ref="B1:B2"/></mergeCells></worksheet>');
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });

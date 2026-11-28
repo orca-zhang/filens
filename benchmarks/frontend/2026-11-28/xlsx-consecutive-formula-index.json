@@ -1,0 +1,748 @@
+{
+  "date": "2026-11-28",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Four fresh Node processes per build and workbook, alternating build order. Open a file-backed Blob into XlsxPreviewSession with jsdom and measure the first uncached cross-sheet calculation after load. Retained memory is the increase in heapUsed plus arrayBuffers from immediately before calculation, following two collections at each stage. The process peak includes workbook load. Compare every cell, first viewport markup, and the cross-sheet result.",
+  "builds": {
+    "baseline": {
+      "index.js": "c8682bd030f44ef032f5b0b787252a335d20f5ac76f99a7bc614e5ec3a5c4c2a",
+      "routes.js": "c3d7886fd8e739163ce52666193b1a08734556e905dddd28043ea0df714e0883",
+      "table-CVe9tWKJ.js": "4e2620a952a4617908d68699e35e505f88348796d286be1fa96ecb03821cb733",
+      "table.js": "95cb0daac1f0f767529f1722d27587ac1b1eb613fe78022f90e3508f52a8a3d4"
+    },
+    "offsets": {
+      "index.js": "71561a04fb67ac2e4299cf55ed401161c3411f5822b23c9fd7cd41dfe5398765",
+      "routes.js": "c3d7886fd8e739163ce52666193b1a08734556e905dddd28043ea0df714e0883",
+      "table-tjzOuOvo.js": "fb9648348e1d345dad3d16b6cbec5a857e0c263030aad182b36d051fab2ff58c",
+      "table.js": "2460b6b7b99f9a3b63b51131128b9d22c2562a10cbd8a74538c149cec3b14180"
+    }
+  },
+  "workloads": {
+    "tall": {
+      "contents": "1,000,000 numeric rows with one cell per row. The summary formula sums the entire source column.",
+      "archiveBytes": 7537396,
+      "sha256": "cfadd010943283841612e5a8af013709c86b81f62813c6ecc27f40fb0fe0cfd7",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1503.059916,
+            "peakLoadRssKiB": 412688,
+            "heapBytes": 195484064,
+            "calcMs": 100.40187500000002,
+            "peakCalcRssKiB": 558816,
+            "calcHeapBytes": 11027088,
+            "calcBufferBytes": 28000004
+          },
+          {
+            "loadMs": 1480.740458,
+            "peakLoadRssKiB": 455824,
+            "heapBytes": 195587712,
+            "calcMs": 99.59658300000001,
+            "peakCalcRssKiB": 567904,
+            "calcHeapBytes": 11030528,
+            "calcBufferBytes": 28000004
+          },
+          {
+            "loadMs": 1438.442541,
+            "peakLoadRssKiB": 400336,
+            "heapBytes": 195556072,
+            "calcMs": 98.15837499999998,
+            "peakCalcRssKiB": 557184,
+            "calcHeapBytes": 11031448,
+            "calcBufferBytes": 28000004
+          },
+          {
+            "loadMs": 1486.2773750000001,
+            "peakLoadRssKiB": 410016,
+            "heapBytes": 195624128,
+            "calcMs": 99.60008300000004,
+            "peakCalcRssKiB": 552928,
+            "calcHeapBytes": 10998608,
+            "calcBufferBytes": 28000004
+          }
+        ],
+        "offsets": [
+          {
+            "loadMs": 1464.798875,
+            "peakLoadRssKiB": 409952,
+            "heapBytes": 195611064,
+            "calcMs": 69.38241600000015,
+            "peakCalcRssKiB": 412176,
+            "calcHeapBytes": 11017432,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1454.175042,
+            "peakLoadRssKiB": 418832,
+            "heapBytes": 195641968,
+            "calcMs": 69.14220799999998,
+            "peakCalcRssKiB": 418832,
+            "calcHeapBytes": 11025984,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1452.812333,
+            "peakLoadRssKiB": 436752,
+            "heapBytes": 195590520,
+            "calcMs": 68.93441699999994,
+            "peakCalcRssKiB": 436752,
+            "calcHeapBytes": 11034736,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1450.17775,
+            "peakLoadRssKiB": 420656,
+            "heapBytes": 195662640,
+            "calcMs": 69.21679199999994,
+            "peakCalcRssKiB": 420656,
+            "calcHeapBytes": 11001640,
+            "calcBufferBytes": 0
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1483.5,
+          "firstCalculationMs": 99.6,
+          "peakThroughCalculationMiB": 544.9,
+          "addedRetainedMiB": 37.22,
+          "addedArrayBufferBytes": 28000004
+        },
+        "offsets": {
+          "loadMs": 1453.5,
+          "firstCalculationMs": 69.2,
+          "peakThroughCalculationMiB": 409.9,
+          "addedRetainedMiB": 10.51,
+          "addedArrayBufferBytes": 0
+        }
+      },
+      "model": {
+        "rows": 1000000,
+        "cells": 1000000,
+        "modelHash": "b597f4e0329308f2f8fa5cd5c96c309ff9c1f7af6f541f646e78e838e266baed",
+        "markupHash": "5a2e0502fffd3c9b9342212e86505f176fdd31d48d4b48b5c79f56d93db3c414",
+        "formula": "500000500000"
+      }
+    },
+    "wide": {
+      "contents": "16,000 consecutive numeric rows with 96 consecutive cells per row. The summary formula sums column A.",
+      "archiveBytes": 5568598,
+      "sha256": "1503c750645192e28d2dd1d2711d793cde532ada7b722596f094eb09189feb88",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1995.0084590000001,
+            "peakLoadRssKiB": 396624,
+            "heapBytes": 162138408,
+            "calcMs": 21.97900000000027,
+            "peakCalcRssKiB": 397232,
+            "calcHeapBytes": 5251888,
+            "calcBufferBytes": 960004
+          },
+          {
+            "loadMs": 1935.5133750000002,
+            "peakLoadRssKiB": 408912,
+            "heapBytes": 162115312,
+            "calcMs": 18.58745799999997,
+            "peakCalcRssKiB": 409312,
+            "calcHeapBytes": 5256616,
+            "calcBufferBytes": 960004
+          },
+          {
+            "loadMs": 1952.3265,
+            "peakLoadRssKiB": 400848,
+            "heapBytes": 162127664,
+            "calcMs": 22.218624999999975,
+            "peakCalcRssKiB": 401296,
+            "calcHeapBytes": 5260440,
+            "calcBufferBytes": 960004
+          },
+          {
+            "loadMs": 1959.6205410000002,
+            "peakLoadRssKiB": 405696,
+            "heapBytes": 162029872,
+            "calcMs": 21.641415999999936,
+            "peakCalcRssKiB": 406208,
+            "calcHeapBytes": 5256088,
+            "calcBufferBytes": 960004
+          }
+        ],
+        "offsets": [
+          {
+            "loadMs": 1963.1478749999999,
+            "peakLoadRssKiB": 405936,
+            "heapBytes": 162126744,
+            "calcMs": 12.921499999999924,
+            "peakCalcRssKiB": 406368,
+            "calcHeapBytes": 5252288,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2058.293583,
+            "peakLoadRssKiB": 402144,
+            "heapBytes": 162124808,
+            "calcMs": 13.100374999999985,
+            "peakCalcRssKiB": 402784,
+            "calcHeapBytes": 5252224,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1954.1482920000003,
+            "peakLoadRssKiB": 395744,
+            "heapBytes": 162123168,
+            "calcMs": 13.081083000000035,
+            "peakCalcRssKiB": 396160,
+            "calcHeapBytes": 5252704,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2017.3279170000003,
+            "peakLoadRssKiB": 416672,
+            "heapBytes": 162110648,
+            "calcMs": 12.914999999999964,
+            "peakCalcRssKiB": 417264,
+            "calcHeapBytes": 5261952,
+            "calcBufferBytes": 0
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1956,
+          "firstCalculationMs": 21.8,
+          "peakThroughCalculationMiB": 394.3,
+          "addedRetainedMiB": 5.93,
+          "addedArrayBufferBytes": 960004
+        },
+        "offsets": {
+          "loadMs": 1990.2,
+          "firstCalculationMs": 13,
+          "peakThroughCalculationMiB": 395.1,
+          "addedRetainedMiB": 5.01,
+          "addedArrayBufferBytes": 0
+        }
+      },
+      "model": {
+        "rows": 16000,
+        "cells": 1536000,
+        "modelHash": "7f8999589ee4e309fec2d5da73c4f345465e5418b962cd84557785646e7a4621",
+        "markupHash": "a0eb08e76f4af0bc3c0489ad00a8d91777582bc26f19ef00316aefd01cc55a09",
+        "formula": "128008000"
+      }
+    },
+    "sparse": {
+      "contents": "125,000 rows spaced four tracks apart, with values in four nonadjacent columns. The summary formula sums column A.",
+      "archiveBytes": 2588451,
+      "sha256": "69d09babf50f1822d5131aef0cea221093422727a587629c03ee33917297d5ee",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1081.139416,
+            "peakLoadRssKiB": 360608,
+            "heapBytes": 87807032,
+            "calcMs": 31.98458299999993,
+            "peakCalcRssKiB": 361728,
+            "calcHeapBytes": 6423720,
+            "calcBufferBytes": 9500004
+          },
+          {
+            "loadMs": 1085.7805,
+            "peakLoadRssKiB": 359648,
+            "heapBytes": 87786200,
+            "calcMs": 31.975875000000087,
+            "peakCalcRssKiB": 360768,
+            "calcHeapBytes": 6441376,
+            "calcBufferBytes": 9500004
+          },
+          {
+            "loadMs": 1058.6732499999998,
+            "peakLoadRssKiB": 356416,
+            "heapBytes": 87680400,
+            "calcMs": 32.06166699999994,
+            "peakCalcRssKiB": 357536,
+            "calcHeapBytes": 6437544,
+            "calcBufferBytes": 9500004
+          },
+          {
+            "loadMs": 1072.4955,
+            "peakLoadRssKiB": 358336,
+            "heapBytes": 87792976,
+            "calcMs": 33.156791999999996,
+            "peakCalcRssKiB": 359488,
+            "calcHeapBytes": 6435144,
+            "calcBufferBytes": 9500004
+          }
+        ],
+        "offsets": [
+          {
+            "loadMs": 1112.10275,
+            "peakLoadRssKiB": 358752,
+            "heapBytes": 87786312,
+            "calcMs": 33.20100000000002,
+            "peakCalcRssKiB": 359824,
+            "calcHeapBytes": 6449776,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1060.405,
+            "peakLoadRssKiB": 368864,
+            "heapBytes": 87689792,
+            "calcMs": 31.773832999999968,
+            "peakCalcRssKiB": 370048,
+            "calcHeapBytes": 6457392,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1080.51175,
+            "peakLoadRssKiB": 360592,
+            "heapBytes": 87779000,
+            "calcMs": 32.83195800000021,
+            "peakCalcRssKiB": 361760,
+            "calcHeapBytes": 6459320,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1064.090125,
+            "peakLoadRssKiB": 356384,
+            "heapBytes": 87810856,
+            "calcMs": 32.264834000000064,
+            "peakCalcRssKiB": 357664,
+            "calcHeapBytes": 6431736,
+            "calcBufferBytes": 9000004
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1076.8,
+          "firstCalculationMs": 32,
+          "peakThroughCalculationMiB": 351.7,
+          "addedRetainedMiB": 15.2,
+          "addedArrayBufferBytes": 9500004
+        },
+        "offsets": {
+          "loadMs": 1072.3,
+          "firstCalculationMs": 32.5,
+          "peakThroughCalculationMiB": 352.3,
+          "addedRetainedMiB": 14.74,
+          "addedArrayBufferBytes": 9000004
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 500000,
+        "modelHash": "428624ecdd4f9d599517064204e086a7c0a5de1ee69430e55e2c412c55855a5e",
+        "markupHash": "626c96b02ce8377b2df3dd00bc2057c73159f07701f3a88cc517dc18a66dee4f",
+        "formula": "7812562500"
+      }
+    }
+  },
+  "syntheticFormulaChecks": {
+    "node": "v20.20.2",
+    "cpu": "Apple M4 Pro",
+    "platform": "darwin-arm64",
+    "warmupIterations": 2,
+    "measuredIterations": 7,
+    "bindings": {
+      "current": "71561a04fb67ac2e4299cf55ed401161c3411f5822b23c9fd7cd41dfe5398765",
+      "baseline": "c8682bd030f44ef032f5b0b787252a335d20f5ac76f99a7bc614e5ec3a5c4c2a"
+    },
+    "cases": {
+      "sparse-rectangle-cold": {
+        "occupiedSourceCells": 256,
+        "rangeCoordinates": 1048576,
+        "formulaCount": 8,
+        "warmIndex": false,
+        "pointReference": false,
+        "inputSha256": "5559a3f95954df3c219928539beb016448a228a22c38f79fa2412efaff84bbe8",
+        "outputSha256": "c33a38ef01f3e9a792021dc15460eb295166e0ea32c985baff2864304144fdb2",
+        "timings": {
+          "current": {
+            "medianMs": 0.19395800000000918,
+            "samplesMs": [
+              0.6839999999999975,
+              0.23358299999999588,
+              0.2014999999999958,
+              0.18737499999998875,
+              0.15037499999999682,
+              0.19395800000000918,
+              0.14816700000000083
+            ]
+          },
+          "baseline": {
+            "medianMs": 0.19966700000000515,
+            "samplesMs": [
+              0.5454999999999899,
+              0.19966700000000515,
+              0.14658400000000427,
+              0.22270799999999724,
+              0.14420899999998937,
+              0.2114169999999973,
+              0.190291000000002
+            ]
+          }
+        }
+      },
+      "sparse-rectangle-warm": {
+        "occupiedSourceCells": 256,
+        "rangeCoordinates": 1048576,
+        "formulaCount": 8,
+        "warmIndex": true,
+        "pointReference": false,
+        "inputSha256": "cb81e41584b849f0711a3ccfefa119626a200d6841221641ed4d3ed249f6f4a1",
+        "outputSha256": "716dcc29e1600e5d8e8eb0a40bcc07a4e2e1c6a70e5e4f0ccd2bebb56a1f8774",
+        "timings": {
+          "current": {
+            "medianMs": 0.10949999999999704,
+            "samplesMs": [
+              0.11195800000000133,
+              0.10500000000000398,
+              0.11195900000001302,
+              0.10341599999999573,
+              0.14470900000000597,
+              0.10949999999999704,
+              0.09908400000000483
+            ]
+          },
+          "baseline": {
+            "medianMs": 0.10254100000000221,
+            "samplesMs": [
+              0.10516599999999698,
+              0.101333000000011,
+              0.11275000000000546,
+              0.10254100000000221,
+              0.13333300000000747,
+              0.1014160000000004,
+              0.10154200000002334
+            ]
+          }
+        }
+      },
+      "dense-wide-cold": {
+        "occupiedSourceCells": 65536,
+        "rangeCoordinates": 65536,
+        "formulaCount": 8,
+        "warmIndex": false,
+        "pointReference": false,
+        "inputSha256": "b790213abe96c3e4bd9f246b9ae180503c93e8ed5f4a6516342aa8d9eb757f00",
+        "outputSha256": "71423f4fb9f2c97e08fa32b12ff0eb92be6f8d8028f33586fef8fb558688772b",
+        "timings": {
+          "current": {
+            "medianMs": 12.353707999999983,
+            "samplesMs": [
+              11.96954199999999,
+              13.920667000000037,
+              12.688083000000006,
+              12.353707999999983,
+              12.061958000000004,
+              12.385083000000009,
+              12.296875
+            ]
+          },
+          "baseline": {
+            "medianMs": 13.116457999999966,
+            "samplesMs": [
+              14.856499999999983,
+              13.116457999999966,
+              14.173167000000035,
+              12.840291999999977,
+              12.986041999999998,
+              12.629458999999997,
+              13.18729099999996
+            ]
+          }
+        }
+      },
+      "dense-tall-cold": {
+        "occupiedSourceCells": 8192,
+        "rangeCoordinates": 8192,
+        "formulaCount": 32,
+        "warmIndex": false,
+        "pointReference": false,
+        "inputSha256": "ddbab1708b6cb684927ae52968a95ea5b1768d9ce42aba0a50f21cf6aa2ab117",
+        "outputSha256": "3e7f48876179450ecca046ab3ec962acfb622dfc24ae19ee0b77aa039e484d37",
+        "timings": {
+          "current": {
+            "medianMs": 7.149000000000115,
+            "samplesMs": [
+              8.45595800000001,
+              7.221083000000135,
+              6.998542000000043,
+              7.033415999999988,
+              7.0102079999999205,
+              7.322875000000067,
+              7.149000000000115
+            ]
+          },
+          "baseline": {
+            "medianMs": 7.586042000000134,
+            "samplesMs": [
+              7.502707999999984,
+              7.601624999999785,
+              7.409750000000031,
+              7.580207999999857,
+              7.756333999999924,
+              7.586042000000134,
+              7.663209000000052
+            ]
+          }
+        }
+      },
+      "dense-tall-warm": {
+        "occupiedSourceCells": 8192,
+        "rangeCoordinates": 8192,
+        "formulaCount": 32,
+        "warmIndex": true,
+        "pointReference": false,
+        "inputSha256": "a5705102011acf8aed9ae624e56886a33298b1a83d29fe00a160563c98ccd0fa",
+        "outputSha256": "a3029c400eb5ca4627897504ba3c5e78627884292d3696621d0c4f1495ab5f11",
+        "timings": {
+          "current": {
+            "medianMs": 7.0650419999999485,
+            "samplesMs": [
+              6.913124999999809,
+              6.976499999999987,
+              7.024249999999938,
+              7.4294159999999465,
+              7.303916000000072,
+              7.342833000000155,
+              7.0650419999999485
+            ]
+          },
+          "baseline": {
+            "medianMs": 7.361791999999923,
+            "samplesMs": [
+              7.316041999999925,
+              7.30358299999989,
+              7.361791999999923,
+              7.526875000000018,
+              7.517667000000074,
+              7.169957999999951,
+              7.621124999999893
+            ]
+          }
+        }
+      },
+      "tiny-range-control": {
+        "occupiedSourceCells": 4,
+        "rangeCoordinates": 4,
+        "formulaCount": 1,
+        "warmIndex": false,
+        "pointReference": false,
+        "inputSha256": "f549ec89be57b39e53f6cd7e8529d9119cfcb8dde60ceeef55d1b4515b56a773",
+        "outputSha256": "92250e04c9a5409d7b0581fe66c120b5955a5266f1fae143a8a22f346ea9fc19",
+        "timings": {
+          "current": {
+            "medianMs": 0.006583000000091488,
+            "samplesMs": [
+              0.0073749999999108695,
+              0.006833999999798834,
+              0.006750000000010914,
+              0.006583000000091488,
+              0.005957999999964159,
+              0.00637500000016189,
+              0.006124999999883585
+            ]
+          },
+          "baseline": {
+            "medianMs": 0.007249999999885404,
+            "samplesMs": [
+              0.008417000000008557,
+              0.007333000000016909,
+              0.007458000000042375,
+              0.007249999999885404,
+              0.006666999999879408,
+              0.00620800000001509,
+              0.006582999999864114
+            ]
+          }
+        }
+      },
+      "index-build-wide": {
+        "occupiedSourceCells": 131072,
+        "rangeCoordinates": 131072,
+        "formulaCount": 1,
+        "warmIndex": false,
+        "pointReference": true,
+        "inputSha256": "be4c3d856ecfb7c7c54775e3735a7926bc43bdb52c71e0600909afd8e1487633",
+        "outputSha256": "f1dfccb040e97ef899764d3f70ead0465086f1a6f0e100011d27ac9770bf3030",
+        "timings": {
+          "current": {
+            "medianMs": 0.2485830000000533,
+            "samplesMs": [
+              0.2538750000001073,
+              0.24870800000007875,
+              0.24241600000004837,
+              0.23941700000023047,
+              0.22541700000010678,
+              0.2485830000000533,
+              0.2739579999997659
+            ]
+          },
+          "baseline": {
+            "medianMs": 0.5090000000000146,
+            "samplesMs": [
+              0.5090000000000146,
+              0.5437079999999241,
+              0.5350829999997586,
+              0.5051249999996799,
+              0.48745800000006057,
+              0.5729999999998654,
+              0.4851250000001528
+            ]
+          }
+        }
+      },
+      "index-build-tall": {
+        "occupiedSourceCells": 131072,
+        "rangeCoordinates": 131072,
+        "formulaCount": 1,
+        "warmIndex": false,
+        "pointReference": true,
+        "inputSha256": "21d16542cbc1da5806d39abf7ef3d732d204295f345f12898f29aead3834c1d5",
+        "outputSha256": "481bdc31516c271010e1e21e807c468f1d002def01c79f22e5937cc8c04b50a6",
+        "timings": {
+          "current": {
+            "medianMs": 0.6252500000000509,
+            "samplesMs": [
+              0.596625000000131,
+              0.6252500000000509,
+              0.5847499999999854,
+              0.6626249999999345,
+              0.6295000000000073,
+              0.6060000000002219,
+              0.6400409999996555
+            ]
+          },
+          "baseline": {
+            "medianMs": 1.183458999999857,
+            "samplesMs": [
+              1.183458999999857,
+              1.1172919999999067,
+              1.2065829999996822,
+              1.2336669999999685,
+              1.2948750000000473,
+              1.1126250000002074,
+              1.1424999999999272
+            ]
+          }
+        }
+      },
+      "index-build-unordered-tall": {
+        "occupiedSourceCells": 131072,
+        "rangeCoordinates": 131072,
+        "formulaCount": 1,
+        "warmIndex": false,
+        "pointReference": true,
+        "inputSha256": "fb35cd9cf7b1d930224620ec38cf985afb232a923cbc859816fb64540d3711d5",
+        "outputSha256": "0998d7e1474920cc923702d3519b74483a007ccf9c9cf0bc33b4fb08ed30f336",
+        "timings": {
+          "current": {
+            "medianMs": 1.2857079999994312,
+            "samplesMs": [
+              3.416334000000461,
+              1.246499999999287,
+              1.4174999999995634,
+              1.2857079999994312,
+              1.3513749999992797,
+              1.1343749999996362,
+              1.0464579999998023
+            ]
+          },
+          "baseline": {
+            "medianMs": 1.8805419999998776,
+            "samplesMs": [
+              5.032333999999537,
+              8.932541999999557,
+              2.848500000000058,
+              1.8203749999993306,
+              1.7737090000000535,
+              1.7406670000000304,
+              1.8805419999998776
+            ]
+          }
+        }
+      }
+    },
+    "timingScope": "Formula evaluation and lazy index construction (except warm cases); excludes model cloning, imports, verification and hashing. Same-project synthetic comparison; not full preview or peak memory."
+  },
+  "verification": {
+    "xlsxUnitTests": 1387,
+    "packagedPreviewChecks": "Check the first numeric row while the second worksheet HTTP range is held. Resume, scroll to row 1,000,000, and open the summary sheet with its saved formula values removed. Verify the cross-sheet sum (500000500000) and two final-row references (1999999) in split, all-in-one and offline HTML.",
+    "packagedPreviews": [
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "split",
+        "scenario": "tall-recalculate",
+        "earlyRows": 112970,
+        "ranges": 13
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "all-in-one",
+        "scenario": "tall-recalculate",
+        "earlyRows": 112970,
+        "ranges": 13
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "offline",
+        "scenario": "tall-recalculate",
+        "ranges": 0
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "split",
+        "scenario": "tall-recalculate",
+        "earlyRows": 112970,
+        "ranges": 13
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "all-in-one",
+        "scenario": "tall-recalculate",
+        "earlyRows": 112970,
+        "ranges": 13
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "offline",
+        "scenario": "tall-recalculate",
+        "ranges": 0
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "split",
+        "scenario": "tall-recalculate",
+        "earlyRows": 112970,
+        "ranges": 13
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "all-in-one",
+        "scenario": "tall-recalculate",
+        "earlyRows": 112970,
+        "ranges": 13
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "offline",
+        "scenario": "tall-recalculate",
+        "ranges": 0
+      }
+    ],
+    "browserRegressions": 270
+  }
+}

@@ -69,6 +69,7 @@ describe('XLSX column dimensions', () => {
     expect(fast).toEqual(general);
     const sheet = clonePreviewWorkbook(fast).sheets[0];
     expect(sheet.showFormulas).toBe(true);
+    expect(sheet.columnWidthSource?.ranges).toEqual([{ firstColumn: 2, lastColumn: 2, width: 16, bestFit: true }]);
     expect(sheet.columnWidths).toEqual([122, 224, 122, 122, 122, 122]);
     expect(sheetColumnWidths(sheet, document)).toEqual(sheet.columnWidths);
   });

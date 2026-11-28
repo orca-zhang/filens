@@ -4,6 +4,7 @@ import { expect, test } from '@playwright/test';
 import JSZip from 'jszip';
 import { createColumnStyledWorkbookFixture, createMergedWorkbookFixture, createWorkbookFixture } from '../../../packages/xlsx/test/fixtures/workbook.mjs';
 import { createImplicitCoordinateWorkbook, createWorksheetBatchWorkbook } from '../../../packages/xlsx/test/fixtures/worksheet-batches.mjs';
+import { createWideMergeWorkbook } from '../../../packages/xlsx/test/fixtures/merge-batch-workbook.mjs';
 
 test('renders formulas and rich text from a large worksheet parsed in row batches', async ({ page }) => {
   await page.goto('./?view=preview');
@@ -86,6 +87,31 @@ test('retains merged-cell geometry and offscreen anchors while windowing both wo
   await expect(heading).toBeInViewport();
   expect((await heading.boundingBox())!.height).toBeCloseTo(78, 0);
   expect(errors).toEqual([]);
+});
+
+test('clips a large XLSX merge list on both axes while retaining the final offscreen anchor', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name: 'wide-merges.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await createWideMergeWorkbook()) });
+  const grid = page.locator('.xlsxv-grid'), first = grid.locator('[data-merge-ref="A1"]');
+  await expect(first).toHaveText('First merge');
+  await expect(first).toHaveAttribute('colspan', '2');
+  await grid.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+  const right = grid.locator('tr[aria-rowindex="2"] td[aria-colindex="16385"]');
+  await expect(right).toHaveText('11');
+  await expect(right).toBeInViewport();
+  await expect(grid.locator('.xlsxv-merged-cell')).toHaveCount(0);
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  const final = grid.locator('[data-merge-ref="XBT1048400"]');
+  await expect(final).toHaveText('22');
+  await expect(final).toBeInViewport();
+  expect(await final.evaluate((cell: HTMLTableCellElement) => [
+    Number(cell.parentElement!.getAttribute('aria-rowindex')) - 2 + cell.rowSpan,
+    Number(cell.getAttribute('aria-colindex')) - 2 + cell.colSpan
+  ])).toEqual([1_048_576, 16_384]);
+  expect(await final.evaluate((cell: HTMLTableCellElement) => cell.rowSpan)).toBeLessThan(177);
+  await grid.evaluate(element => { element.scrollTop = element.scrollLeft = 0; });
+  await expect(first).toBeInViewport();
 });
 
 test('reaches XFD1048576 with bounded row and column DOM and keeps the last cell visible', async ({ page }) => {

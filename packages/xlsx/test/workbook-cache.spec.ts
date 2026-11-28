@@ -5,6 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { previewModelCache, type PreviewLoadContext } from '@filens/core';
 import * as parser from '../src/parser';
 import { CsvPreviewData, csvPreviewData } from '../src/csv-preview-data';
+import { XlsxPreviewSession } from '../src/preview-driver';
+import { readCellScalar } from '../src/cell-value';
+import { WorksheetValueCell } from '../src/worksheet-cell';
 import { createSheetTable } from '../src/table';
 import { loadPreviewWorkbook } from '../src/workbook-cache';
 import { createColumnStyledWorkbookFixture, createWorkbookFixture } from './fixtures/workbook.mjs';
@@ -19,6 +22,38 @@ beforeEach(() => {
 afterEach(() => { previewModelCache.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('workbook preview reuse', () => {
+  it.each([
+    { activeTab: '1', expected: 'Second' },
+    { activeTab: '1', hidden: 'Second', expected: 'First' },
+    { activeTab: '0', hidden: 'First', expected: 'Second' },
+    { activeTab: '42', expected: 'First' },
+    { activeTab: '1', missing: true, expected: 'Second' }
+  ])('opens the saved worksheet in source order after a cache hit (%j)', async ({ activeTab, hidden, missing, expected }) => {
+    const zip = await JSZip.loadAsync(await createWorkbookFixture());
+    const path = 'xl/workbook.xml';
+    let xml = (await zip.file(path)!.async('string')).replace('<sheets>',
+      `<bookViews><workbookView activeTab="${activeTab}"/></bookViews><sheets>`);
+    if (hidden) xml = xml.replace(`<sheet name="${hidden}"`, `<sheet name="${hidden}" state="veryHidden"`);
+    if (missing) zip.remove('xl/worksheets/sheet1.xml');
+    zip.file(path, xml);
+    const bytes = await zip.generateAsync({ type: 'uint8array' });
+    const names = missing ? ['Second'] : ['First', 'Second'];
+    const parse = vi.spyOn(parser, 'readXlsxWorkbook');
+    const host = document.createElement('div');
+    const session = new XlsxPreviewSession(host);
+    try {
+      for (let pass = 0; pass < 2; pass++) {
+        await session.load(bytes, context());
+        expect(session.getState().sheets.map(sheet => sheet.name)).toEqual(names);
+        expect(session.getState().activeSheetIndex).toBe(names.indexOf(expected));
+        expect(host.querySelector('.xlsxv-sheet-tab.is-active')?.textContent).toBe(expected);
+        expect(host.querySelector('.xlsxv-grid')?.textContent).toContain(`${expected} 1`);
+        if (names.length > 1) session.goToPage(1 - names.indexOf(expected));
+      }
+      expect(parse).toHaveBeenCalledOnce();
+    } finally { session.destroy(); }
+  });
+
   it.each([false, true])('reuses parsing while isolating cells, formulas and font aliases (general XML: %s)', async general => {
     const bytes = await createColumnStyledWorkbookFixture(11, 8, { general });
     const { sheets: [publicSheet] } = await parser.loadXlsxWorkbook(bytes, context());
@@ -130,6 +165,33 @@ describe('workbook preview reuse', () => {
     expect(ownRefs(publicWorkbook.sheets[0])).toEqual([true, true, true]);
     expect(ownRefs(second.sheets[0])).toEqual([false, true, false]);
     expect(ownRefs(second.sheets[1])).toEqual([true, false, true]);
+  });
+
+  it('keeps integer text, numeric-looking strings and formula values equivalent across both worksheet readers', async () => {
+    const raw = ['0', '-1073741824', '1073741823', '1073741824', '-1073741825', '000123', '-0', ' 17 ', '1e3', '17.0', '1.25', '+123'];
+    const zip = await JSZip.loadAsync(await createWorkbookFixture());
+    const rows = raw.map((value, index) => `<row r="${index + 1}"><c r="A${index + 1}"><v>${value}</v></c></row>`).join('');
+    const xml = '<worksheet><sheetData>' + rows + '<row r="13"><c r="A13" t="s"><v>0</v></c></row></sheetData></worksheet>';
+    zip.file('xl/sharedStrings.xml', '<sst><si><t>42</t></si></sst>');
+    zip.file('xl/worksheets/sheet1.xml', xml);
+    zip.file('xl/worksheets/sheet2.xml', xml.replace('<sheetData>', '<sheetData><!-- general reader -->'));
+    const bytes = await zip.generateAsync({ type: 'uint8array' });
+    const workbook = await parser.loadXlsxWorkbook(bytes, context());
+    const preview = await loadPreviewWorkbook(bytes, context());
+    const cached = await loadPreviewWorkbook(bytes, context());
+
+    for (const model of [workbook, preview, cached]) for (const sheet of model.sheets) {
+      const cells = sheet.rows.flatMap(row => row.cells);
+      expect(cells.map(cell => cell.value)).toEqual([...raw, '42']);
+      expect(cells.map(cell => readCellScalar(sheet, cell))).toEqual([...raw.map(Number), '42']);
+    }
+    for (const model of [preview, cached]) for (const sheet of model.sheets) {
+      const cells = sheet.rows.flatMap(row => row.cells) as WorksheetValueCell[];
+      expect(cells.map(cell => cell.numericValue)).toEqual([0, -1073741824, 1073741823, ...Array(10).fill(undefined)]);
+    }
+    preview.sheets[0].rows[0].cells[0].value = '0005';
+    expect(readCellScalar(preview.sheets[0], preview.sheets[0].rows[0].cells[0])).toBe(5);
+    expect(cached.sheets[0].rows[0].cells[0].value).toBe('0');
   });
 
   it('parses a large local XLSX directly from slices without hashing its archive', async () => {

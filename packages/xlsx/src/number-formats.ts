@@ -16,15 +16,25 @@ const cjkLiteral = /[\p{Script=Han}\p{Script=Hangul}]/u;
 const dateNameFormatters = new Map<string, Intl.DateTimeFormat | undefined>();
 const groupedDecimalFormatters = new Map<string, Intl.NumberFormat>();
 const MAX_GROUPED_DECIMAL_FORMATTERS = 64;
+const regionalMasks = new Map<string, { code: string; sections: string[][]; numeric: boolean[] }>();
+let lastNumberLocale: string | undefined;
+let lastSeparators: { decimal: string; group: string } | undefined;
 const systemDateTimeDirective = /\[\$-(?:0*f[84]00|x-sys(?:date|time))\]/i;
 const systemDateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
 const formatTokens = /"[^"]*"|[\\_*][\s\S]|\[[^\]]*\]|general|am\/pm|[Ee][+-]|m+|d+|[\s\S]/giu;
 const dbDateTokens = new RegExp(String.raw`\[ss?\]\.0{1,3}(?!0)|\.0{1,3}(?!0)|y+|h+|s+|g+|e+|上午/下午|a/p|${formatTokens.source}`, 'giu');
+const textFormatTokens = new RegExp(`standard|am/pm|a/p|t+|j+|a+|${formatTokens.source}`, 'giu');
 const scientificFormat = /[Ee][+-][#0?]/;
+const spacedPercent = /[ \u00a0\u202f]%/;
 const dbNumberDirective = /\[DBNum([1-4])\]/i;
 const formatColor = /\[(black|white|red|green|blue|yellow|magenta|cyan|color *(\d{1,2}))\]/i;
 const namedColors = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 const formatCondition = /^\[(?:<=?|>=?|<>|=)-?\d+(?:\.\d*)?\]$/;
+const textFractionMarker = '\u0007';
+const textFormatColors = {
+  de: ['schwarz', 'weiß', 'rot', 'grün', 'blau', 'gelb', 'magenta', 'cyan'],
+  fr: ['noir', 'blanc', 'rouge', 'vert', 'bleu', 'jaune', 'magenta', 'cyan']
+};
 // Excel's decimal numeral IDs with ten consecutive Unicode digits.
 const decimalNumerals = new Map(
   [...'٠۰०০੦૦୦௦౦೦൦๐໐༠၀ ០᠐'].flatMap((zero, index): [number, string][] => zero === ' ' ? [] :
@@ -66,7 +76,8 @@ interface LocaleFormat { locale?: string; calendar: number; numeral: number; gan
 export function formatCellValue(raw: string, type: ParsedCell['valueType'], code: string | number,
   date1904 = false, palette?: ParsedSheet['numberFormatPalette']): FormattedCellValue {
   // Number format codes in Excel can be up to 255 characters.
-  if (!raw || type === 'boolean' || type === 'error' || (typeof code === 'string' && (!code || code.length > 255 || /^general$/i.test(code)))) return { text: raw };
+  if (code === 0 || (typeof code === 'string' && /^general$/i.test(code))) return { text: formatGeneralNumber(raw, type) };
+  if (!raw || type === 'boolean' || type === 'error' || (typeof code === 'string' && (!code || code.length > 255))) return { text: raw };
   let value: string | number = raw;
   if (type === 'date') {
     const serial = excelDateSerial(raw, date1904);
@@ -81,11 +92,116 @@ export function formatCellValue(raw: string, type: ParsedCell['valueType'], code
   return formatWorkbookValue(value, code, date1904, palette, raw) ?? { text: raw };
 }
 
+function numberSeparators() {
+  const locale = globalThis.navigator?.language;
+  if (!locale || locale === 'en-US') return;
+  if (locale !== lastNumberLocale) {
+    lastNumberLocale = locale;
+    try {
+      const parts = new Intl.NumberFormat(locale).formatToParts(123456.7);
+      const decimal = parts.find(part => part.type === 'decimal')?.value ?? '.';
+      const group = parts.find(part => part.type === 'group')?.value ?? ',';
+      lastSeparators = decimal === '.' && group === ',' ? undefined : { decimal, group };
+    } catch { lastSeparators = undefined; }
+  }
+  return lastSeparators;
+}
+
+export function formatGeneralNumber(value: string, type: ParsedCell['valueType']): string {
+  if (type !== undefined || !value.includes('.')) return value;
+  const separators = numberSeparators();
+  return separators && numericValue.test(value.trim()) ? value.replace('.', separators.decimal) : value;
+}
+
+function regionalNumericMask(code: string, value: number): string | undefined {
+  if (!code) return code;
+  let mask = regionalMasks.get(code);
+  if (!mask) {
+    const sections = formatSections(code);
+    const numeric = sections.map(tokens => !SSF.is_date(tokens.map(token =>
+      /^e[+-]$/.test(token) ? token.toUpperCase() : token).join('')));
+    // Keep authored literals separate from separators produced by the numeric mask.
+    const protect = (token: string) => token.replace(/[.,]/g, mark => mark === '.' ? '\u0005' : '\u0006');
+    const prepared = sections.map((tokens, index) => tokens.map(token => numeric[index]
+      && (token.startsWith('"') || token.startsWith('\\') || token.startsWith('[$'))
+      ? token.startsWith('[$') ? token.replace(/^\[\$[^-\]]*/, protect) : protect(token)
+      : token).join('')).join(';');
+    mask = { code: prepared, sections, numeric };
+    if (regionalMasks.size >= MAX_GROUPED_DECIMAL_FORMATTERS) regionalMasks.delete(regionalMasks.keys().next().value!);
+    regionalMasks.set(code, mask);
+  }
+  if (mask.numeric.every(Boolean)) return mask.code;
+  if (!mask.numeric.some(Boolean)) return undefined;
+  return mask.numeric[activeSection(mask.sections, value)] ? mask.code : undefined;
+}
+
+function normalizeTextFormat(code: string, locale: string, language: keyof typeof textFormatColors,
+  separators: ReturnType<typeof numberSeparators>): string {
+  const group = separators?.group;
+  const groupIsSpace = group === '\u00a0' || group === '\u202f' || group === ' ';
+  return formatSections(code, textFormatTokens).map(section => {
+    const tokens = section.map(token => {
+      if (/^standard$/i.test(token)) return 'General';
+      if (/^\[(?:<=?|>=?|<>|=)-?\d+,\d+\]$/.test(token) && separators?.decimal === ',') return token.replace(',', '.');
+      if (token[0] === '[' && token.endsWith(']')) {
+        const color = namedColors[textFormatColors[language].indexOf(token.slice(1, -1).toLowerCase())];
+        if (color) return `[${color}]`;
+      }
+      if (language === 'de' ? /^t{1,4}$/i.test(token) : /^j{1,4}$/i.test(token)) return 'd'.repeat(token.length);
+      if (language === 'de' ? /^(?:jj|jjjj)$/i.test(token) : /^(?:aa|aaaa)$/i.test(token)) return 'y'.repeat(token.length);
+      return token;
+    });
+    if (SSF.is_date(tokens.map(token => /^[Ee][+-]$/.test(token) ? token.toUpperCase() : token).join(''))) {
+      const clock = tokens.map(token => /^[\u00a0\u202f]$/.test(token) ? `"${token}"` : token).join('');
+      // Keep SSF's time rounding while preserving a comma authored before fractional seconds.
+      const format = separators?.decimal === ',' ? clock.replace(
+        /"[^"]*"|[\\_*][\s\S]|(\[ss?\]|ss?),(0{1,3})(?!0)|\[[^\]]*\]/gi,
+        (token, seconds?: string, fraction?: string) => seconds ? `${seconds}.${fraction}"${textFractionMarker}"` : token
+      ) : clock;
+      if (tokens.some(token => numberFormatLocale(token)) || !tokens.some(token => dateName.test(token))) return format;
+      // A TEXT formula uses the viewer's date names unless it requests a specific locale.
+      return `[$-${locale}]${format}`;
+    }
+    // Inspect only bare placeholders and separators. Preserve conventional workbook masks
+    // such as #,##0 and #,##0.00 when the formula can be read in either notation.
+    const mask = tokens.map(token => token.length === 1 ? token : '|').join('');
+    const canonical = /[#0?](?:,[#0?]+)+\.[#0?]/.test(mask);
+    const localGroup = group === '.' ? /#\.[#0?]{3}(?![#0?])|[#0?]\.[#0?]{3}\.[#0?]{3}|[#0?]\.(?![#0?])/.test(mask)
+      : groupIsSpace && /[#0?][ \u00a0\u202f][#0?]{3}(?![#0?])/.test(mask);
+    const localDecimal = /,[#0?]/.test(mask) && !/#(?:,[#0?]{3})+(?![#0?,])/.test(mask);
+    const regional = separators?.decimal === ',' && !canonical && (localGroup || localDecimal);
+    return tokens.map((token, index) => {
+      if (regional && token === ',') return '.';
+      if (regional && group === '.' && token === '.') return ',';
+      if (groupIsSpace && /^[ \u00a0\u202f]$/.test(token) && /[#0?]/.test(mask[index - 1] ?? '') &&
+        /^[#0?]{3}(?![#0?]| *\/)/.test(mask.slice(index + 1))) return ',';
+      if (/^[\u00a0\u202f]$/.test(token) && tokens[index + 1] !== '%') return `"${token}"`;
+      return token;
+    }).join('');
+  }).join(';');
+}
+
+export function formatFormulaText(value: string | number, code: string, date1904 = false): string | undefined {
+  const text = formatWorkbookValue(value, code, date1904, undefined, undefined, globalThis.navigator?.language)?.text;
+  if (typeof value === 'number' && text?.includes(textFractionMarker) && !code.includes(textFractionMarker)) {
+    return text.replace(/\.(.{1,3})\u0007/gu, ',$1');
+  }
+  return text;
+}
+
 export function formatWorkbookValue(value: string | number, code: string | number, date1904 = false,
-  palette?: ParsedSheet['numberFormatPalette'], invalidDateFallback?: string): FormattedCellValue | undefined {
+  palette?: ParsedSheet['numberFormatPalette'], invalidDateFallback?: string, textLocale?: string): FormattedCellValue | undefined {
   if ((typeof code === 'string' && code.length > 255) || (typeof value === 'number' && !Number.isFinite(value))) return undefined;
   try {
-    const original = typeof code === 'number' ? SSF.get_table()[code] ?? accountingFormats[code - 41] ?? code : code;
+    const separators = typeof value === 'number' ? numberSeparators() : undefined;
+    const language = textLocale?.split('-')[0];
+    if (textLocale && code && typeof code === 'string' && (language === 'de' || language === 'fr')) {
+      code = normalizeTextFormat(code, textLocale, language, separators);
+    }
+    const saved = typeof code === 'number' ? SSF.get_table()[code] ?? accountingFormats[code - 41] ?? code : code;
+    const regional = separators && typeof saved === 'string' && typeof value === 'number'
+      ? regionalNumericMask(saved, value) : undefined;
+    const original = regional ?? saved;
     const locale = typeof original === 'string' && original.includes('[$') ? activeLocale(original, value) : undefined;
     const extendedDb = locale && locale.numeral >= 0x1b && locale.numeral <= 0x27;
     const dbNumber = typeof original === 'string' && typeof value === 'number' && (extendedDb || dbNumberDirective.test(original))
@@ -94,7 +210,7 @@ export function formatWorkbookValue(value: string | number, code: string | numbe
     const prepared = dbNumber?.code ?? (nativeDigits && typeof original === 'string'
       ? original.replace(formatTokens, protectFormatDigits) : original);
     const digits = dbNumber?.digits ?? nativeDigits;
-    const layout = typeof prepared === 'string' && (/[_*?]/.test(prepared) || scientificFormat.test(prepared))
+    const layout = typeof prepared === 'string' && (/[_*?]/.test(prepared) || scientificFormat.test(prepared) || spacedPercent.test(prepared))
       ? prepareNumberLayout(prepared, value, digits) : undefined;
     const source = layout?.code ?? prepared;
     const selection = typeof source === 'string' && (formatColor.test(source) || systemDateTimeDirective.test(source))
@@ -113,6 +229,11 @@ export function formatWorkbookValue(value: string | number, code: string | numbe
         token.startsWith('[$-') && numberFormatLocale(token) ? '' : token) : format;
       text = (typeof value === 'number' && typeof numericFormat === 'string' ? formatGroupedDecimal(numericFormat, value) : undefined)
         ?? SSF.format(numericFormat, value, { date1904 });
+    }
+    // SSF resolves these legacy built-in aliases internally.
+    if (separators && (regional !== undefined || (typeof saved === 'number' && saved >= 59 && saved <= 70))) {
+      text = text.replace(/[.,\u0005\u0006]/g, mark => mark === '.' ? separators.decimal : mark === ',' ? separators.group
+        : mark === '\u0005' ? '.' : ',');
     }
     if (digits) {
       text = text.replace(/\u0002\d+\u0003|\u0004\d|\d/g, token => token.length === 1 ? digits[Number(token)]
@@ -151,20 +272,21 @@ function prepareNumberLayout(code: string, value: string | number, digits?: stri
     if (token.length < 2 || (token[0] !== '_' && token[0] !== '*')) return token;
     return `"${marker(token[0] === '_' ? 'pad' : 'fill', token.slice(1))}"`;
   });
-  if (typeof value === 'number' && (code.includes('?') || scientificFormat.test(code))) {
+  if (typeof value === 'number' && (code.includes('?') || scientificFormat.test(code) || spacedPercent.test(code))) {
     const sections = formatSections(code);
     const index = sections.length <= 4 ? activeSection(sections, value) : -1;
     const tokens = sections[index];
     const first = tokens?.findIndex(token => /^[#0?.]$/.test(token)) ?? -1;
     if (tokens && first >= 0) {
       let end = first + 1;
-      while (end < tokens.length && /^(?:[#0-9?., /%]|[Ee][+-])$/.test(tokens[end])) end++;
-      while (tokens[end - 1] === ' ') end--;
+      while (end < tokens.length && /^(?:[#0-9?., /%\u00a0\u202f]|[Ee][+-])$/.test(tokens[end])) end++;
+      while (/^[ \u00a0\u202f]$/.test(tokens[end - 1])) end--;
       const mask = tokens.slice(first, end).join('');
       const scientific = scientificFormat.test(mask);
       // SSF recognizes lowercase e as a year token, so normalize the exponent for this check.
       const dateCode = scientific ? tokens.slice(0, first).join('') + mask.toUpperCase() + tokens.slice(end).join('') : tokens.join('');
-      if ((tokens.includes('?') || scientific) && !SSF.is_date(dateCode) && !tokens.slice(end).some(token => /^[#0?]$/.test(token))) {
+      if ((tokens.includes('?') || scientific || spacedPercent.test(mask)) && !SSF.is_date(dateCode) &&
+        !tokens.slice(end).some(token => /^[#0?]$/.test(token))) {
         const number = formatLayoutNumber(mask, Math.abs(value), glyph => marker('pad', digits?.[Number(glyph)] ?? glyph));
         if (number) {
           tokens.splice(first, end - first, `"${number.text}"`);
@@ -206,6 +328,13 @@ function formatGroupedDecimal(code: string, value: number): string | undefined {
 }
 
 function normalizeFormatLiterals(code: string, value: string | number, date1904: boolean): string {
+  // In a date, a bare dot separates fields unless it introduces fractional seconds.
+  if (/[ymdhs]\.(?!0)|\.[ymdhs]/i.test(code)) {
+    code = formatSections(code, dbDateTokens).map(section => {
+      const format = section.join('');
+      return SSF.is_date(format) ? section.map(token => token === '.' ? '"."' : token).join('') : format;
+    }).join(';');
+  }
   if (!code.includes('°') && !/\[ss?\]\.0/i.test(code) && !cjkLiteral.test(code)) return code;
   return code.replace(/"[^"]*"|[\\_*][\s\S]|\[ss?\]\.0{1,3}(?!0)|\[[^\]]*\]|上午\/下午|[°\p{Script=Han}\p{Script=Hangul}]/giu, token => {
     if (token === '°' || ([...token].length === 1 && cjkLiteral.test(token))) return `"${token}"`;
@@ -444,11 +573,17 @@ function localizedDateName(locale: string, token: string, date: SSF.SSF$Date, fa
   if (/^\d+$/.test(fallback)) return fallback;
   const part = token === 'am/pm' ? 'dayPeriod' : token[0] === 'm' ? 'month' : 'weekday';
   const width = token.length === 3 ? 'short' : 'long';
-  const key = `${locale}/${part}/${width}`;
+  const monthForm = token === 'mmmm'
+    ? /^ru(?:-[a-z0-9]{1,8})*?-x-(genlower|genupper|nomlower)(?:-|$)/i.exec(locale)?.[1].toLowerCase()
+    : undefined;
+  const genitive = monthForm === 'genlower' || monthForm === 'genupper';
+  const key = `${locale}/${part}/${width}${genitive ? '/genitive' : ''}`;
   if (!dateNameFormatters.has(key)) {
     const options: Intl.DateTimeFormatOptions = {
       timeZone: 'UTC',
       calendar: 'gregory',
+      // ICU uses the contextual (genitive) month when the day is included.
+      ...(genitive ? { day: 'numeric' } : {}),
       ...(part === 'dayPeriod' ? { hour: 'numeric', hour12: true } : { [part]: width }),
     };
     dateNameFormatters.set(key, Intl.DateTimeFormat.supportedLocalesOf(locale).length
@@ -461,6 +596,11 @@ function localizedDateName(locale: string, token: string, date: SSF.SSF$Date, fa
     : part === 'weekday' ? Date.UTC(2024, 0, 7 + date.q)
     : Date.UTC(2024, 0, 1, fallback === 'PM' ? 15 : 3);
   if (part === 'dayPeriod') return formatter.formatToParts(sample).find(item => item.type === part)?.value ?? fallback;
+  if (monthForm) {
+    const month = formatter.formatToParts(sample).find(item => item.type === 'month')?.value;
+    if (!month) return fallback;
+    return monthForm === 'genupper' ? month.toUpperCase() : month.toLowerCase();
+  }
   const name = formatter.format(sample);
   return token === 'mmmmm' ? [...name][0] ?? fallback : name;
 }

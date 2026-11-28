@@ -1,0 +1,306 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "jsdom": "25.0.1",
+  "chromium": "159.0.8154.6",
+  "fixture": {
+    "generator": "XlsxWriter 3.2.9. Score is ((i * 8191) % 100000) + 1 for data row i starting at 1. Each row has RANK(Ai,$A:$A) with its actual worksheet row and no saved result.",
+    "bytes": 1503833,
+    "sha256": "1873c60827a2743c0cce5ae1e831bc6b5a41ededc7ca9f434439bff6082c1498",
+    "dataRows": 100000,
+    "formulas": 100000
+  },
+  "method": {
+    "node": "Four fresh Node processes per build with jsdom, alternating build order. Time XlsxPreviewSession.load on a file-backed Blob. Measure peak process RSS through the first viewport, and V8 heap above startup after two collections. The 198 displayed numeric values and the grid markup match.",
+    "chromium": "Four fresh contexts per split build with alternating build order. Serve the workbook over local HTTP. Time createPreview through onRendered, and setting scrollTop through the DOM mutation that displays the final ranking. Measure renderer JS heap after CDP garbage collection in both windows. All 398 displayed numeric values and both table markup hashes match.",
+    "sorts": "Count Array.sort calls on 100,000-number arrays during the measured window.",
+    "scope": "One workload with 100,000 uncached ranking formulas over the same whole-column reference. Cached samples are scoped to each render and only represent a single rectangular range."
+  },
+  "builds": {
+    "baseline": {
+      "package": {
+        "index.js": "e31a56992f6135f363e889e13cb02c8346eddbed16962ce91b6d36e67e9eed1d",
+        "table-C_3miNdH.js": "38289d2e2edc9e7e773d5afe154ff53af636baf8c303c7782a07401db7ae9345"
+      },
+      "split": {
+        "filens.js": "72b5e7cc7d7667c8171e1abce244294e2bf4d4e9cf1111e1cc63d429bbeb9724",
+        "chunks/table-VX_49IIH.js": "4ea22cd1b6f90ddee1a7404b1262dc4e1e476ee7600675aee9b1230bafa724a9"
+      }
+    },
+    "reuse": {
+      "package": {
+        "index.js": "ffbab6378e55061f37c65231156f780e67d6fcbaa6b3523744efedf3525772cb",
+        "table-D-wIFqM-.js": "7a642e26d9914dcbbcf4335510498e0024f76788642c943a37e825f175553100"
+      },
+      "split": {
+        "filens.js": "68a84f01ae84e6afc3bbd7152902f466a634bc50c4f9e06e37e4e2ecb6a6be94",
+        "chunks/table-B0I-fnZt.js": "3f1bbef1881cc4df29f4ce2f2089f61eff6186156694d0d089e349b0f7f574a6"
+      }
+    }
+  },
+  "results": {
+    "baseline": {
+      "node": {
+        "median": {
+          "openMs": 1790.1,
+          "peakRssMiB": 319,
+          "retainedHeapAboveStartupMiB": 46.2,
+          "firstWindowSorts": 99
+        },
+        "samples": [
+          {
+            "run": 0,
+            "openMs": 1791.4023750000001,
+            "peakRssKiB": 327840,
+            "retainedHeapBytes": 48463768,
+            "rankSorts": 99,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          },
+          {
+            "run": 1,
+            "openMs": 1820.413167,
+            "peakRssKiB": 325488,
+            "retainedHeapBytes": 48416912,
+            "rankSorts": 99,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          },
+          {
+            "run": 2,
+            "openMs": 1788.766083,
+            "peakRssKiB": 322816,
+            "retainedHeapBytes": 48478272,
+            "rankSorts": 99,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          },
+          {
+            "run": 3,
+            "openMs": 1726.321875,
+            "peakRssKiB": 328464,
+            "retainedHeapBytes": 48461648,
+            "rankSorts": 99,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          }
+        ]
+      },
+      "chromium": {
+        "median": {
+          "openMs": 1493.5,
+          "bottomMs": 1187.5,
+          "firstWindowPostGcHeapMiB": 38,
+          "bottomWindowPostGcHeapMiB": 38.1,
+          "firstWindowSorts": 99,
+          "bottomWindowSorts": 100
+        },
+        "samples": [
+          {
+            "run": 0,
+            "openMs": 1491.5,
+            "bottomMs": 1183.7999999523163,
+            "initialHeap": 39867396,
+            "bottomHeap": 39926852,
+            "initialSorts": 99,
+            "bottomSorts": 100
+          },
+          {
+            "run": 1,
+            "openMs": 1495.5,
+            "bottomMs": 1184.2000000476837,
+            "initialHeap": 39867584,
+            "bottomHeap": 39926880,
+            "initialSorts": 99,
+            "bottomSorts": 100
+          },
+          {
+            "run": 2,
+            "openMs": 1489.1999998092651,
+            "bottomMs": 1191.6000001430511,
+            "initialHeap": 39867432,
+            "bottomHeap": 39926872,
+            "initialSorts": 99,
+            "bottomSorts": 100
+          },
+          {
+            "run": 3,
+            "openMs": 1505.1999998092651,
+            "bottomMs": 1190.8999998569489,
+            "initialHeap": 39867296,
+            "bottomHeap": 39926880,
+            "initialSorts": 99,
+            "bottomSorts": 100
+          }
+        ]
+      }
+    },
+    "reuse": {
+      "node": {
+        "median": {
+          "openMs": 444.9,
+          "peakRssMiB": 213.7,
+          "retainedHeapAboveStartupMiB": 46.2,
+          "firstWindowSorts": 1
+        },
+        "samples": [
+          {
+            "run": 0,
+            "openMs": 451.11325000000005,
+            "peakRssKiB": 218016,
+            "retainedHeapBytes": 48424016,
+            "rankSorts": 1,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          },
+          {
+            "run": 1,
+            "openMs": 429.13775,
+            "peakRssKiB": 219584,
+            "retainedHeapBytes": 48465008,
+            "rankSorts": 1,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          },
+          {
+            "run": 2,
+            "openMs": 449.000417,
+            "peakRssKiB": 213584,
+            "retainedHeapBytes": 48528544,
+            "rankSorts": 1,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          },
+          {
+            "run": 3,
+            "openMs": 440.735,
+            "peakRssKiB": 221040,
+            "retainedHeapBytes": 48447496,
+            "rankSorts": 1,
+            "checkedCells": 198,
+            "markupSha256": "2d1bf6c31f1fff959ecdf1821b7caec5ac268eeac3cc39370152b708e683ead3"
+          }
+        ]
+      },
+      "chromium": {
+        "median": {
+          "openMs": 343.7,
+          "bottomMs": 17.6,
+          "firstWindowPostGcHeapMiB": 38,
+          "bottomWindowPostGcHeapMiB": 38.1,
+          "firstWindowSorts": 1,
+          "bottomWindowSorts": 1
+        },
+        "samples": [
+          {
+            "run": 0,
+            "openMs": 342.40000009536743,
+            "bottomMs": 17.200000047683716,
+            "initialHeap": 39844860,
+            "bottomHeap": 39920116,
+            "initialSorts": 1,
+            "bottomSorts": 1
+          },
+          {
+            "run": 1,
+            "openMs": 340.09999990463257,
+            "bottomMs": 17.5,
+            "initialHeap": 39844748,
+            "bottomHeap": 39920004,
+            "initialSorts": 1,
+            "bottomSorts": 1
+          },
+          {
+            "run": 2,
+            "openMs": 348.7000000476837,
+            "bottomMs": 35,
+            "initialHeap": 39844868,
+            "bottomHeap": 39920124,
+            "initialSorts": 1,
+            "bottomSorts": 1
+          },
+          {
+            "run": 3,
+            "openMs": 345,
+            "bottomMs": 17.700000047683716,
+            "initialHeap": 39844868,
+            "bottomHeap": 39920124,
+            "initialSorts": 1,
+            "bottomSorts": 1
+          }
+        ]
+      }
+    }
+  },
+  "chromiumTableMarkupSha256": [
+    "fd554e74d826b4af866d768e146afc6d5ffd3dfe2e910e6ea13c0d2dc2304bb5",
+    "350dd94e023dc4ffbe5716f9b3e422991ad55f8175c3a8c6339304abeca60e3e"
+  ],
+  "packageChecks": [
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "split",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "all-in-one",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "variant": "offline-html",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "split",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "all-in-one",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "variant": "offline-html",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "split",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "all-in-one",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "variant": "offline-html",
+      "initialSorts": 1,
+      "bottomSorts": 1
+    }
+  ]
+}

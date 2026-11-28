@@ -10,7 +10,7 @@ import { docxPreviewZip } from '../../scripts/docx-preview-zip';
 import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 import { optionalEngineChunk } from '../../scripts/optional-engine-chunks';
-import { pdfWorkerAsset } from '../../scripts/pdf-worker-asset';
+import { pdfDocumentPages, pdfWorkerAsset } from '../../scripts/pdf-worker-asset';
 
 const compressibleAssets = /\.(?:css|html|js|json|mjs|wasm)$/;
 
@@ -216,7 +216,7 @@ function manualChunkForModule(id: string): string | undefined {
   const optional = optionalEngineChunk(normalized);
   if (optional) return optional;
   if (normalized === '\0filens:step-wasm-url' || normalized.includes('/packages/step/') || normalized.endsWith('/packages/model3d/src/rust-step-importer.ts')) return 'step-runtime';
-  if (normalized.includes('/node_modules/pdfjs-dist/')) return 'pdf-runtime';
+  if (normalized.includes('/node_modules/pdfjs-dist/') || normalized.endsWith('/packages/pdf/src/pdf-display.ts')) return 'pdf-runtime';
   if (normalized.includes('/node_modules/')) return 'vendor';
   if (normalized.includes('/packages/iwork/')) return 'iwork';
   if (normalized.includes('/packages/model3d/')) return 'model3d';
@@ -296,7 +296,7 @@ const externalSampleProxy = {
 export default defineConfig({
   worker: { plugins: () => [archiveEngineAssets()], rollupOptions: { output: { inlineDynamicImports: true } } },
   base: process.env.VITE_BASE_PATH || '/modules/filens/',
-  plugins: [previewLinkNavigation(), archiveEngineAssets(), sharedCompression(), docxPreviewZip(), xmlParserOnly(), pdfWorkerAsset(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
+  plugins: [previewLinkNavigation(), archiveEngineAssets(), sharedCompression(), docxPreviewZip(), xmlParserOnly(), pdfDocumentPages(), pdfWorkerAsset(), vue(), stepWasmAsset(), externalConverterWasms(), agentSkillAsset(), precompressAssets()],
   // Prebundle dependencies from lazy routes before opening an uploaded file.
   optimizeDeps: { include: ['libheif-js/libheif-wasm/libheif.js', 'ssf'] },
   server: { proxy: externalSampleProxy },

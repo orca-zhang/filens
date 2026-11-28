@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Six fresh Node processes per workload, alternating build order. Load a file-backed Blob in XlsxPreviewSession with jsdom. Record load time, peak process RSS and additional V8 heap retained after two collections, before verifying every parsed cell, the first viewport, and the recalculated cross-sheet sum.",
+  "builds": {
+    "baseline": "f0b9ada4bbb67deca0b8642db1adeac203e0008f738d7457e6e475ccac1a1a68",
+    "rowStreaming": "3afd441ff02fc7835375297b1184d7499f5fa9f1bb86901eaa91a919df643f14"
+  },
+  "workloads": {
+    "wide-first": {
+      "description": "125,000 rows with 500,000 ordinary values or cached formulas plus 6,400 inline strings in the first row. XlsxWriter 3.2.9 constant_memory. First row is 965,946 UTF-8 bytes in a 27,589,100-byte worksheet XML entry.",
+      "archiveBytes": 4467303,
+      "archiveSha256": "0769eb32abb28a6ca66b385bceee2cac8000d94e267849a867dabd41a05068fe",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 2515.791291,
+            "peakRssKiB": 633648,
+            "heapBytes": 108725160
+          },
+          {
+            "loadMs": 2510.864042,
+            "peakRssKiB": 629536,
+            "heapBytes": 108743056
+          },
+          {
+            "loadMs": 2547.907458,
+            "peakRssKiB": 605488,
+            "heapBytes": 108621768
+          }
+        ],
+        "rowStreaming": [
+          {
+            "loadMs": 3220.6489579999998,
+            "peakRssKiB": 544128,
+            "heapBytes": 108626456
+          },
+          {
+            "loadMs": 3190.918291,
+            "peakRssKiB": 537456,
+            "heapBytes": 108578408
+          },
+          {
+            "loadMs": 3169.324833,
+            "peakRssKiB": 492272,
+            "heapBytes": 108675528
+          }
+        ]
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 506400,
+        "modelHash": "f9ff9033e9030e8421e5cdf5813e6af37a0f099a4df14414610c8d9d301412f6",
+        "markupHash": "4a94e1bce9d2520aa480b662fe65f77961eab2c61354194c75e6d53c78df6fbf",
+        "formula": "7812562500"
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 2515.8,
+          "peakRssMiB": 614.8,
+          "retainedHeapMiB": 103.7
+        },
+        "rowStreaming": {
+          "loadMs": 3190.9,
+          "peakRssMiB": 524.9,
+          "retainedHeapMiB": 103.6
+        }
+      }
+    },
+    "narrow": {
+      "description": "250,000 rows and four columns of mixed numeric, text and logical values. XlsxWriter 3.2.9 constant_memory.",
+      "archiveBytes": 4772521,
+      "archiveSha256": "01cf9796e3a843d5fe417f5b63c02abf5ddd0835e1356d634b42ffaba64aeadc",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1204.452792,
+            "peakRssKiB": 344816,
+            "heapBytes": 121132936
+          },
+          {
+            "loadMs": 1195.920375,
+            "peakRssKiB": 357392,
+            "heapBytes": 121181168
+          },
+          {
+            "loadMs": 1212.721625,
+            "peakRssKiB": 351680,
+            "heapBytes": 121207544
+          }
+        ],
+        "rowStreaming": [
+          {
+            "loadMs": 1194.1554580000002,
+            "peakRssKiB": 339744,
+            "heapBytes": 121187152
+          },
+          {
+            "loadMs": 1205.123417,
+            "peakRssKiB": 363744,
+            "heapBytes": 121178648
+          },
+          {
+            "loadMs": 1189.501459,
+            "peakRssKiB": 343312,
+            "heapBytes": 121081224
+          }
+        ]
+      },
+      "model": {
+        "rows": 250000,
+        "cells": 1000000,
+        "modelHash": "c28b65b6ad7c3877da73b81d4995b72f760bd91d15d3c456cccb864d5c45a8de",
+        "markupHash": "26b0141d56905c646d4decc3a385fef3858554f4e806d34fdf6aa34573ea6061",
+        "formula": "31250125000"
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1204.5,
+          "peakRssMiB": 343.4,
+          "retainedHeapMiB": 115.6
+        },
+        "rowStreaming": {
+          "loadMs": 1194.2,
+          "peakRssMiB": 335.3,
+          "retainedHeapMiB": 115.6
+        }
+      }
+    }
+  }
+}

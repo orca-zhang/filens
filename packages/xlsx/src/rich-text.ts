@@ -9,8 +9,23 @@ export function readTextValue(node: unknown): string {
   return typeof text === 'string' ? text : '';
 }
 
-export function createRichTextReader(theme: unknown, color: ReturnType<typeof colorReader>, fonts: PreviewFontReference[]) {
+interface RichTextReader {
+  (item: unknown): string | ParsedRichText;
+  checkpoint(): () => void;
+  fork(runs?: ParsedRichTextRun[]): RichTextReader;
+  commit(runs: ParsedRichTextRun[]): void;
+}
+
+export function createRichTextReader(theme: unknown, color: ReturnType<typeof colorReader>, fonts: PreviewFontReference[],
+  stagedRuns?: ParsedRichTextRun[]): RichTextReader {
   const faces = new Map(fonts.filter(font => font.fontFamily).map(font => [JSON.stringify(font), font]));
+  function intern(font: PreviewFontReference): PreviewFontReference {
+    const key = JSON.stringify(font), known = faces.get(key);
+    if (known) return known;
+    faces.set(key, font);
+    fonts.push(font);
+    return font;
+  }
   const read = (item: unknown): string | ParsedRichText => {
     const text = readPath(item, ['t']);
     if (text != null) return decodeSpreadsheetText(readTextValue(text));
@@ -21,17 +36,16 @@ export function createRichTextReader(theme: unknown, color: ReturnType<typeof co
       const properties = readPath(run, ['rPr']);
       if (!properties) return [{ text }];
       let font: PreviewFontReference | undefined = readFontReference(properties, theme, true);
-      if (font.fontFamily) {
-        const key = JSON.stringify(font), known = faces.get(key);
-        if (known) font = known;
-        else { faces.set(key, font); fonts.push(font); }
-      } else if (!font.fontStyle && font.traits?.weight === undefined) font = undefined;
+      if (font.fontFamily) font = intern(font);
+      else if (!font.fontStyle && font.traits?.weight === undefined) font = undefined;
       const appearance = readFontAppearance(properties, color);
       const alignment = readPath(properties, ['vertAlign', 'val']);
-      const verticalAlign = alignment === 'superscript' ? 'super' : alignment === 'subscript' ? 'sub'
+      const verticalAlign: ParsedRichTextRun['verticalAlign'] = alignment === 'superscript' ? 'super' : alignment === 'subscript' ? 'sub'
         : alignment === 'baseline' ? alignment : undefined;
       styled ||= Boolean(font || appearance.fontSize || appearance.color || appearance.underline || appearance.strike !== undefined || verticalAlign);
-      return [{ text, font, ...appearance, verticalAlign }];
+      const styledRun = { text, font, ...appearance, verticalAlign };
+      if (font?.fontFamily) stagedRuns?.push(styledRun);
+      return [styledRun];
     });
     const value = runs.map(run => run.text).join('');
     return styled ? { value, runs } : value;
@@ -41,6 +55,10 @@ export function createRichTextReader(theme: unknown, color: ReturnType<typeof co
     return () => {
       for (const font of fonts.splice(before)) faces.delete(JSON.stringify(font));
     };
+  };
+  read.fork = (runs?: ParsedRichTextRun[]) => createRichTextReader(theme, color, [], runs);
+  read.commit = (runs: ParsedRichTextRun[]) => {
+    for (const run of runs) run.font = intern(run.font!);
   };
   return read;
 }

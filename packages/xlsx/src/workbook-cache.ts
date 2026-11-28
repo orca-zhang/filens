@@ -1,5 +1,5 @@
 import { previewContentKey, previewModelCache, snapshotPreviewBytes, type PreviewFontReference, type PreviewLoadContext, type PreviewSource } from '@filens/core';
-import { readXlsxWorkbook, readCsvWorkbook } from './parser';
+import { readXlsxWorkbook, readCsvWorkbook, type WorksheetProgress } from './parser';
 import { registerWorkbookFormulas, wasCalculatedWithClock } from './cell-value';
 import type { ParsedCell, ParsedCellStyle, ParsedConditionalStyle, ParsedMerge, ParsedRichText, ParsedSheet, ParsedWorkbook } from './types';
 import { WorksheetValueCell } from './worksheet-cell';
@@ -32,8 +32,8 @@ export function clonePreviewWorkbook(workbook: ParsedWorkbook): ParsedWorkbook {
     return copy;
   };
   const copyCell = (cell: ParsedCell): ParsedCell => {
-    const copy = cell instanceof WorksheetValueCell
-      ? Object.assign(new WorksheetValueCell(cell.row, cell.column, cell.value), cell)
+    const copy: ParsedCell = cell instanceof WorksheetValueCell
+      ? Object.assign(new WorksheetValueCell(cell.row, cell.column, cell.numericValue ?? cell.value), cell)
       : { ...cell };
     if (wasCalculatedWithClock(cell)) copy.needsCalculation = true;
     if (cell.font) copy.font = copyFont(cell.font);
@@ -44,9 +44,11 @@ export function clonePreviewWorkbook(workbook: ParsedWorkbook): ParsedWorkbook {
     ? structuredClone(workbook.sheets.map(sheet => sheet.conditionalRules)) : undefined;
   const clone: ParsedWorkbook = {
     warnings: workbook.warnings.slice(),
+    ...(workbook.activeSheetIndex !== undefined ? { activeSheetIndex: workbook.activeSheetIndex } : {}),
     ...(workbook.definedNames ? { definedNames: workbook.definedNames.map(name => ({ ...name })) } : {}),
     ...(workbook.fonts ? { fonts: workbook.fonts.map(copyFont) } : {}),
     sheets: workbook.sheets.map((sheet, index) => ({ ...sheet,
+      ...(sheet.topLeft ? { topLeft: { ...sheet.topLeft } } : {}),
       ...(sheet.hiddenRows ? { hiddenRows: sheet.hiddenRows.map(range => ({ ...range })) } : {}),
       ...(sheet.hiddenColumns ? { hiddenColumns: sheet.hiddenColumns.map(range => ({ ...range })) } : {}),
       ...(sheet.rowHeightSource ? { rowHeightSource: structuredClone(sheet.rowHeightSource) } : {}),
@@ -95,7 +97,8 @@ function workbookBytes(workbook: ParsedWorkbook): number {
       bytes += 80;
       for (const cell of row.cells) {
         const refLength = cell instanceof WorksheetValueCell ? 0 : cell.ref.length;
-        bytes += 192 + (refLength + cell.value.length + (cell.formula?.length ?? 0)) * 2;
+        const valueLength = cell instanceof WorksheetValueCell && cell.numericValue !== undefined ? 0 : cell.value.length;
+        bytes += 192 + (refLength + valueLength + (cell.formula?.length ?? 0)) * 2;
         if (cell.richText) richTexts.add(cell.richText);
       }
     }
@@ -113,7 +116,7 @@ function workbookBytes(workbook: ParsedWorkbook): number {
 }
 
 export async function loadPreviewWorkbook(source: PreviewSource, context: PreviewLoadContext,
-  progress?: { csvRows(sheet: ParsedSheet): void; worksheet(sheet: ParsedSheet): void; worksheetRows?(sheet: ParsedSheet): void }): Promise<ParsedWorkbook> {
+  progress?: { csvRows(sheet: ParsedSheet): void; worksheet: WorksheetProgress; worksheetRows?: WorksheetProgress }): Promise<ParsedWorkbook> {
   const format = (context.route?.sourceFormat ?? context.descriptor.extension)?.trim().replace(/^\./, '').toLowerCase();
   if (format === 'csv') return readCsvWorkbook(source, context, progress?.csvRows);
   const parse = (input: PreviewSource) => readXlsxWorkbook(input, context, {
@@ -124,7 +127,7 @@ export async function loadPreviewWorkbook(source: PreviewSource, context: Previe
       context.descriptor.sensitive || context.descriptor.password !== undefined) return parse(source);
   const bytes = await snapshotPreviewBytes(source, context.signal);
   if (!bytes) return parse(source);
-  const key = await previewContentKey(bytes, 'xlsx-preview-v16', context.signal);
+  const key = await previewContentKey(bytes, 'xlsx-preview-v17', context.signal);
   const cached = previewModelCache.get<ParsedWorkbook>(key);
   if (cached) return cached;
   const workbook = await parse(bytes);

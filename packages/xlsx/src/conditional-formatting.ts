@@ -1,5 +1,5 @@
 import { evaluateWorksheetFormula, readCellScalar, resolveCellValue } from './cell-value';
-import { formulaClock } from './formula-clock';
+import { formulaClock, withFormulaTime } from './formula-clock';
 import { createRangeValueReader, numericCellValue, type ConditionalRangeValues } from './conditional-range-values';
 import { compileVisualRule, type ConditionalAppearance } from './conditional-visuals';
 import { compareFormulaValues } from './formula-reader';
@@ -8,6 +8,7 @@ import { RowRangeIndex } from './row-range-index';
 import { createFormulaTranslator } from './shared-formulas';
 import type { ConditionalDatePeriod, ParsedCell, ParsedConditionalRule, ParsedMerge, ParsedSheet } from './types';
 import { wildcardMatcher } from './wildcard-matcher';
+import { cellBorders } from './cell-borders';
 
 interface RankedRule { order: number; rule: ParsedConditionalRule }
 interface RuleArea extends ParsedMerge { rules: RankedRule[] }
@@ -44,11 +45,10 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
   const intersect = (top: number, bottom: number, left: number, right: number) => {
     const groups = new Map<RankedRule[], RuleArea[]>();
     index.forEach(top, bottom, area => {
-      if (area.firstColumn > right || area.lastColumn < left) return;
       const areas = groups.get(area.rules);
       if (areas) areas.push(area);
       else groups.set(area.rules, [area]);
-    });
+    }, [left, right]);
     const candidates: (RankedRule & { areas: RuleArea[] })[] = [];
     for (const [rules, areas] of groups) for (const rule of rules) candidates.push({ ...rule, areas });
     return candidates.sort((a, b) => a.rule.priority - b.rule.priority || a.order - b.order);
@@ -81,7 +81,11 @@ export function conditionalFormattingWindow(sheet: ParsedSheet, firstRow: number
       if (style) {
         const first: ConditionalAppearance | undefined = result;
         const merged: ConditionalAppearance = first ? { ...style, ...first } : style;
-        if (style.borders && first?.borders) merged.borders = { ...style.borders, ...first.borders };
+        if (style.borders && first?.borders) {
+          merged.borders = { ...style.borders, ...first.borders };
+          // Resolve rule priority on the physical edges for each direction.
+          if (style.rtlBorders || first.rtlBorders) merged.rtlBorders = { ...cellBorders(style, true), ...cellBorders(first, true) };
+        }
         result = merged;
       }
       if (rule.stopIfTrue) break;
@@ -145,16 +149,16 @@ function compileRule(sheet: ParsedSheet, rule: ParsedConditionalRule, readRange?
       const cutoff = readRange!()?.ranks.get(condition);
       return cutoff !== undefined && (condition.bottom ? value <= cutoff : value >= cutoff);
     };
-    case 'aboveAverage': return (_, __, cell) => {
+    case 'aboveAverage': return (_, __, cell) => withFormulaTime(sheet, () => {
       const value = numericCellValue(sheet, cell);
-      const average = value === undefined ? undefined : readRange!()?.average;
-      if (value === undefined || !average) return false;
-      const { center, scale, mean, deviation } = average;
+      const stats = value === undefined ? undefined : readRange!();
+      if (value === undefined || !stats) return false;
+      if (!condition.equal && condition.deviations) return stats.matchesDeviation!(value, condition.above, condition.deviations);
+      const { center, scale, mean } = stats.average;
       const shifted = value / scale - center;
       if (condition.equal) return condition.above ? shifted >= mean : shifted <= mean;
-      const distance = deviation * condition.deviations;
-      return condition.above ? shifted > mean + distance : shifted < mean - distance;
-    };
+      return condition.above ? shifted > mean : shifted < mean;
+    });
     case 'duplicateValues': case 'uniqueValues': return (_, __, cell) => {
       if (!cell) return false;
       const count = readRange!()?.frequency(cell) ?? 0;

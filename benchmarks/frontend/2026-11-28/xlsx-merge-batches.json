@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-28",
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "cpu": "Apple M4 Pro",
+    "node": "v20.20.2",
+    "xlsxWriter": "3.2.9"
+  },
+  "method": "Four fresh Node processes per version, alternating order. Use a file-backed Blob, an AbortSignal and the XLSX preview reader. Measure preview model construction before DOM rendering or digesting the model. Peak RSS is the process high-water mark at the end of parsing. Event loop delay uses a 5 ms monitor and includes the parse and two 10 ms settling intervals.",
+  "fixture": {
+    "description": "An XlsxWriter sheet with 120,000 populated horizontal merges, a 2 by 2 merge at B1, and a 2 by 2 styled merge anchored at B1048575. The bottom anchor contains a cached SUM and a formula-driven conditional fill.",
+    "archiveBytes": 1500592,
+    "archiveSha256": "44d1ec557218d7106204df839fa853380da256354712956ddc1eed3e1db9e08b",
+    "sheetXmlBytes": 11445606,
+    "compressedSheetBytes": 1495868
+  },
+  "matchingResults": {
+    "rows": 120004,
+    "merges": 120002,
+    "ranges": [
+      {
+        "firstRow": 1,
+        "lastRow": 2,
+        "firstColumn": 2,
+        "lastColumn": 3
+      },
+      {
+        "firstRow": 1048575,
+        "lastRow": 1048576,
+        "firstColumn": 2,
+        "lastColumn": 3
+      }
+    ],
+    "saved": "120007",
+    "shown": "120007",
+    "rules": 1,
+    "warnings": [],
+    "digest": "e5e575b803dbdbeecc62f6cda8c15c47a37bc8596461a530b6342bc8bad443fc"
+  },
+  "scenarios": {
+    "before": {
+      "parserSha256": "557efde5419ff68159f28240241ff9c73ce4d241e67ef6380614d7d11563103e",
+      "samples": [
+        {
+          "parseMs": 410.529334,
+          "peakRssKiB": 211680,
+          "maxEventLoopDelayMs": 245.891071
+        },
+        {
+          "parseMs": 425.44225,
+          "peakRssKiB": 218096,
+          "maxEventLoopDelayMs": 252.051455
+        },
+        {
+          "parseMs": 415.653417,
+          "peakRssKiB": 209584,
+          "maxEventLoopDelayMs": 246.284287
+        },
+        {
+          "parseMs": 404.111125,
+          "peakRssKiB": 214560,
+          "maxEventLoopDelayMs": 241.172479
+        }
+      ],
+      "median": {
+        "parseMs": 413.0913755,
+        "peakRssKiB": 213120.0,
+        "maxEventLoopDelayMs": 246.087679
+      }
+    },
+    "after": {
+      "parserSha256": "3302391c805cee62b0be60be91dbade451d459cd5877430d02d726e0e8a97205",
+      "samples": [
+        {
+          "parseMs": 314.018416,
+          "peakRssKiB": 175136,
+          "maxEventLoopDelayMs": 118.161407
+        },
+        {
+          "parseMs": 318.02366600000005,
+          "peakRssKiB": 176528,
+          "maxEventLoopDelayMs": 118.358015
+        },
+        {
+          "parseMs": 315.366583,
+          "peakRssKiB": 171728,
+          "maxEventLoopDelayMs": 120.979455
+        },
+        {
+          "parseMs": 307.027083,
+          "peakRssKiB": 176848,
+          "maxEventLoopDelayMs": 119.275519
+        }
+      ],
+      "median": {
+        "parseMs": 314.6924995,
+        "peakRssKiB": 175832.0,
+        "maxEventLoopDelayMs": 118.816767
+      }
+    }
+  },
+  "scope": "The preview keeps parsed merge ranges and buffers the trailing sheet XML until it arrives. Direct self-closing entries avoid the intermediate XML tree. Other supported merge entries are processed in batches of up to 524,288 source characters. RSS includes the row model and runtime."
+}

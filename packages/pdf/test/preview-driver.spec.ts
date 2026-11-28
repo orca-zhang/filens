@@ -613,6 +613,31 @@ describe('PDF preview driver', () => {
     } finally { finishLookup(page); finishDraw(); session.destroy(); }
   });
 
+  it('counts a visible detail paint against the two-paint limit', async () => {
+    mockLayout();
+    let finishLookup!: (value: unknown) => void, finishDetail!: () => void;
+    const lookup = new Promise(resolve => { finishLookup = resolve; });
+    const detail = new Promise<void>(resolve => { finishDetail = resolve; });
+    const getViewport = ({ scale }: { scale: number }) => ({ width: 12000 * scale, height: 180 * scale, scale });
+    const page = { getViewport, render };
+    const startDetail = vi.fn(() => ({ promise: detail, cancel: finishDetail }));
+    const first = { getViewport, render: ({ canvas }: { canvas: HTMLCanvasElement }) =>
+      canvas.classList.contains('pdfv-page-detail') ? startDetail() : render() };
+    const getPage = vi.fn((number: number) => number === 2 ? lookup : Promise.resolve(number === 1 ? first : page));
+    vi.mocked(getDocument).mockReturnValueOnce({ promise: Promise.resolve({ numPages: 3, destroy, getPage }), destroy } as never);
+    const host = document.body.appendChild(document.createElement('div'));
+    const session = createPdfPreviewDriver().createSession(host, { fit: 'none' });
+    try {
+      const source = new Uint8Array();
+      await session.load(source, { descriptor: { source } });
+      await vi.waitFor(() => expect(startDetail).toHaveBeenCalledOnce());
+      expect(getPage.mock.calls.map(([number]) => number)).toEqual([1, 2]);
+      finishDetail();
+      await vi.waitFor(() => expect(host.querySelector('canvas[data-page-index="2"][data-rendered="true"]')).not.toBeNull());
+      expect(host.querySelector('canvas[data-page-index="1"]')).toBeNull();
+    } finally { finishLookup(page); finishDetail(); session.destroy(); }
+  });
+
   it('renders the new window without waiting for an abandoned page request', async () => {
     mockLayout();
     let reject!: (reason: Error) => void;

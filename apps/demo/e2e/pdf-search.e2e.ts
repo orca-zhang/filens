@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { createDensePdfSearchFixture, createPdfFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
-import { servePdfFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
+import { createPdfSearchRangeFixture, servePdfFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
 import { countNearbyPixels } from './screenshot-pixels';
 
 for (const rotation of [0, 90]) test(`searches all PDF pages at rotation ${rotation} and preserves highlights through zoom`, async ({ page }) => {
@@ -235,8 +235,8 @@ for (const zoom of [false, true]) test(zoom
   : 'renders PDF text chunks before the page is complete and cancels them when leaving it', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  const index = 5;
-  const bytes = createPdfFixture(18, false, zoom ? 90 : 0, (pageIndex: number, height: number) => {
+  const index = 5, pageCount = 18;
+  const bytes = createPdfFixture(pageCount, false, zoom ? 90 : 0, (pageIndex: number, height: number) => {
     if (pageIndex !== index) return `BT /F1 18 Tf 40 ${height - 50} Td (Unrelated page) Tj ET\n`;
     return Array.from({ length: 240 }, (_, line) => {
       const label = line === 0 ? 'First streamed line' : line === 239 ? 'Last streamed line' : `Content line ${line}`;
@@ -332,17 +332,23 @@ for (const zoom of [false, true]) test(zoom
       const state = (window as any).selection;
       void (window as any).pdfSearch.find('absent query').then(() => { state.searchSettled = true; });
     });
-    await expect.poll(searching).toMatchObject({ searching: true, pagesScanned: index });
+    await expect.poll(searching).toMatchObject({ searching: true, pagesScanned: pageCount - 1 });
     await page.evaluate(() => (window as any).pdfSearch.find(''));
     await expect.poll(() => page.evaluate(() => (window as any).selection.searchSettled)).toBe(true);
     expect(await page.evaluate(() => (window as any).selection.stream.locked)).toBe(true);
-    await page.evaluate(() => { void (window as any).pdfSearch.find('Last streamed line'); });
-    await expect.poll(searching).toMatchObject({ searching: true, pagesScanned: index });
+    await page.evaluate(() => { void (window as any).pdfSearch.find('streamed line'); });
+    await expect.poll(searching).toMatchObject({ total: 1, activeIndex: 0, searching: true, pagesScanned: pageCount - 1 });
+    const active = slot.locator('.pdfv-search-match.is-active');
+    await expect(active).toHaveText('streamed line');
+    await expect(text).not.toHaveAttribute('data-rendered', 'true');
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('First streamed line');
     expect(await page.evaluate(() => (window as any).selection.opens)).toBe(1);
     await page.evaluate(() => (window as any).selection.resume());
     await expect(text).toHaveAttribute('data-rendered', 'true');
-    await expect.poll(searching).toMatchObject({ total: 1, searching: false });
-    await expect(slot.locator('.pdfv-search-match.is-active')).toHaveText('Last streamed line');
+    await expect.poll(searching).toMatchObject({ total: 2, activeIndex: 0, searching: false });
+    expect(await active.evaluate(element => element.parentElement?.textContent)).toBe('First streamed line');
+    await page.evaluate(() => (window as any).pdfSearch.findNext());
+    expect(await active.evaluate(element => element.parentElement?.textContent)).toBe('Last streamed line');
     expect(await first.evaluate((el, original) => el === original, original)).toBe(true);
     expect(await page.evaluate(() => !(window as any).selection.stream.locked)).toBe(true);
   } else {
@@ -358,31 +364,29 @@ for (const zoom of [false, true]) test(zoom
   await expect(text).toContainText('Last streamed line');
   const reads = await page.evaluate(async index => {
     const session = (window as any).pdfSearch;
-    const pages = await Promise.all([index + 1, 1].map(number => session.document.getPage(number)));
+    const messages = session.document._transport.messageHandler, send = messages.sendWithStream.bind(messages);
     const reads = [0, 0];
-    for (const [i, proxy] of pages.entries()) {
-      const open = proxy.streamTextContent.bind(proxy);
-      proxy.streamTextContent = () => { reads[i]++; return open(); };
-    }
-    await session.find('Last streamed line');
-    return reads;
+    messages.sendWithStream = (action: string, data: { pageIndex?: number }, ...rest: unknown[]) => {
+      if (action === 'GetTextContent') {
+        if (data.pageIndex === index) reads[0]++;
+        else if (data.pageIndex === 0) reads[1]++;
+      }
+      return send(action, data, ...rest);
+    };
+    try { await session.find('Last streamed line'); return reads; }
+    finally { messages.sendWithStream = send; }
   }, index);
   expect(reads).toEqual([0, zoom ? 0 : 1]);
   await expect(slot.locator('.pdfv-search-match.is-active')).toHaveText('Last streamed line');
   expect(errors).toEqual([]);
 });
 
-test('clears a PDF search while the worker waits for a page content range', async ({ page }) => {
-  const padding = '% padding inside the page stream\n'.repeat(12_000);
-  const marker = 'held content range';
-  const bytes = Buffer.from(createPdfFixture(12, false, 0, (index: number, height: number) =>
-    (index === 5 ? `${padding}% ${marker}\n${padding}` : '')
-      + `BT /F1 24 Tf 40 ${height - 60} Td (Document page ${index + 1}) Tj ET\n`));
-  const offset = bytes.indexOf(marker);
+for (const resource of [false, true]) test(`cancels the PDF search ${resource ? 'font' : 'content'} range on clear and fetches it again on retry`, async ({ page }) => {
+  const { bytes, offset, match } = createPdfSearchRangeFixture(resource);
   const server = await servePdfFixture(bytes);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  const held = () => server.requests.find(request => request.partial && request.begin <= offset && request.end > offset);
+  const ranges = () => server.requests.filter(request => request.partial && request.begin <= offset && request.end > offset);
   try {
     server.pauseRanges(offset);
     await page.goto('./');
@@ -398,26 +402,35 @@ test('clears a PDF search while the worker waits for a page content range', asyn
       Object.assign(window, { pdfSearch: session, searchProgress, searchSettled: false });
       void session.find('missing phrase').then(() => { (window as any).searchSettled = true; });
     }, { moduleUrl, url: server.url });
-    await expect.poll(() => held()?.bytesSent).toBe(0);
-    await expect.poll(() => page.evaluate(() => (window as any).searchProgress.at(-1))).toBe(5);
-    expect(await page.evaluate(() => (window as any).pdfSearch.getState().search)).toMatchObject({ pagesScanned: 5, searching: true });
+    const first = page.locator('canvas[data-page-index="0"][data-rendered="true"]');
+    await expect(first).toBeVisible();
+    await expect.poll(() => ranges()[0]?.bytesSent).toBe(0);
+    await expect.poll(() => page.evaluate(() => (window as any).searchProgress.at(-1))).toBe(11);
+    expect(await page.evaluate(() => (window as any).pdfSearch.getState().search)).toMatchObject({ pagesScanned: 11, searching: true });
     await page.evaluate(() => (window as any).pdfSearch.find(''));
     await expect.poll(() => page.evaluate(() => (window as any).searchSettled)).toBe(true);
     expect(await page.evaluate(() => (window as any).pdfSearch.getState().search)).toMatchObject({ query: '', total: 0, searching: false });
+    await expect.poll(() => ranges()[0]?.cancelled).toBe(true);
+    await expect(first).toBeVisible();
+    server.resumeRanges();
+    await page.evaluate(query => (window as any).pdfSearch.find(query), match);
+    await expect(page.locator('.pdfv-page-slot[data-page-index="5"] .pdfv-search-match.is-active')).toHaveText(match);
+    expect(ranges()).toHaveLength(2);
+    expect(ranges()[1].bytesSent).toBeGreaterThan(0);
     await page.evaluate(() => (window as any).pdfSearch.destroy());
-    await expect.poll(() => held()?.cancelled).toBe(true);
     expect(errors).toEqual([]);
   } finally { await server.close(); }
 });
 
-test('reuses offscreen text when searching an HTTP range-backed PDF again', async ({ page }) => {
+test('scans and reuses offscreen PDF text without opening page proxies for search', async ({ page }) => {
   const pages = 600;
   const server = await servePdfFixture(Buffer.from(createPdfFixture(pages, false, 0, undefined, 20, 20)));
   await page.addInitScript(() => {
-    const pageReads: number[] = [], post = Worker.prototype.postMessage;
-    Object.assign(window, { pageReads });
+    const pageReads: number[] = [], pageLookups: number[] = [], post = Worker.prototype.postMessage;
+    Object.assign(window, { pageReads, pageLookups });
     Worker.prototype.postMessage = function (message) {
       if (message?.action === 'GetTextContent') pageReads.push(message.data.pageIndex);
+      if (message?.action === 'GetPage') pageLookups.push(message.data.pageIndex);
       return Reflect.apply(post, this, arguments);
     };
   });
@@ -434,16 +447,17 @@ test('reuses offscreen text when searching an HTTP range-backed PDF again', asyn
     }, { moduleUrl, url: server.url });
     await expect(page.locator('.pdfv-text-layer[data-rendered="true"]')).toBeVisible();
     const result = await page.evaluate(async () => {
-      const { pdfSearch, pageReads } = window as any;
-      pageReads.length = 0;
+      const { pdfSearch, pageReads, pageLookups } = window as any;
+      pageReads.length = pageLookups.length = 0;
       await pdfSearch.find('first missing term');
-      const first = [...pageReads];
+      const first = [...pageReads], lookups = [...pageLookups];
       pageReads.length = 0;
       await pdfSearch.find('second missing term');
-      return { first, second: pageReads.length, search: pdfSearch.getState().search };
+      return { first, lookups, second: pageReads.length, search: pdfSearch.getState().search };
     });
     expect(result.first).toContain(pages - 1);
     expect(result.first.length).toBeGreaterThanOrEqual(pages - 2);
+    expect(result.lookups.every((index: number) => index < 2)).toBe(true);
     expect(result.second).toBe(0);
     expect(result.search).toMatchObject({ total: 0, pagesScanned: pages, searching: false });
     expect(server.requests.some(request => request.partial)).toBe(true);
@@ -478,6 +492,16 @@ test('finds visible PDF text while an earlier page is waiting for bytes', async 
     await expect(page.locator('.pdfv-page-slot[data-page-index="2"] .pdfv-text-layer[data-rendered="true"]')).toHaveText(text[2]);
     await expect(page.locator('.pdfv-page-slot[data-page-index="4"] .pdfv-text-layer[data-rendered="true"]')).toHaveText(text[4]);
     await page.evaluate(() => {
+      const session = (window as any).pdfSearch;
+      const messages = session.document._transport.messageHandler, send = messages.sendWithStream.bind(messages);
+      messages.sendWithStream = (action: string, data: { pageIndex?: number }, ...rest: unknown[]) => {
+        if (action === 'GetTextContent' && data.pageIndex === 1) (window as any).heldPageStreamOpened = true;
+        return send(action, data, ...rest);
+      };
+      void session.find('missing phrase');
+    });
+    await expect.poll(() => page.evaluate(() => (window as any).heldPageStreamOpened)).toBe(true);
+    await page.evaluate(() => {
       void (window as any).pdfSearch.find('needle').then(() => { (window as any).searchSettled = true; });
     });
     const active = page.locator('.pdfv-search-match.is-active');
@@ -489,6 +513,7 @@ test('finds visible PDF text while an earlier page is waiting for bytes', async 
     expect(held()?.bytesSent).toBe(0);
     server.resumeRanges();
     await expect.poll(() => page.evaluate(() => (window as any).searchSettled)).toBe(true);
+    expect(held()?.cancelled).toBe(false);
     expect(await search()).toMatchObject({ total: 3, activeIndex: 2, pagesScanned: text.length, searching: false });
     await expect(page.locator('.pdfv-page-slot[data-page-index="4"]').locator(active)).toHaveText('needle');
     await page.evaluate(() => (window as any).pdfSearch.findNext());
@@ -499,7 +524,7 @@ test('finds visible PDF text while an earlier page is waiting for bytes', async 
   } finally { await server.close(); }
 });
 
-test('adds PDF results after navigating while an earlier range remains paused', async ({ page }) => {
+test('finds untouched offscreen PDF pages while an earlier range remains paused', async ({ page }) => {
   const padding = `% ${'x'.repeat(8192)}\n`.repeat(12);
   const bytes = Buffer.from(createPdfFixture(12, false, 0, (index: number) => {
     const text = [1, 6, 10].includes(index) ? `Needle on page ${index + 1}` : `Document page ${index + 1}`;
@@ -521,27 +546,29 @@ test('adds PDF results after navigating while an earlier range remains paused', 
       document.body.replaceChildren(host);
       const session = new PdfPreviewSession(host, { fit: 'none', initialScale: .75 });
       Object.assign(window, { pdfSearch: session, searchSettled: false });
-      await session.load(source, { descriptor: { source, name: 'new-visible-results.pdf' } });
-      void session.find('needle').then(() => { (window as any).searchSettled = true; });
+      await session.load(source, { descriptor: { source, name: 'offscreen-search.pdf' } });
     }, { moduleUrl, source: server.url });
     const search = () => page.evaluate(() => (window as any).pdfSearch.getState().search);
     const matches = (index: number, active = false) => page.locator(
       `.pdfv-page-slot[data-page-index="${index}"] .pdfv-search-match${active ? '.is-active' : ''}`);
-    await expect.poll(() => held()?.bytesSent).toBe(0);
-    await expect.poll(search).toMatchObject({ total: 0, pagesScanned: 1, searching: true });
-    await page.evaluate(() => (window as any).pdfSearch.goToPage(10));
-    await expect(matches(10, true)).toHaveText('Needle');
+    await expect(page.locator('.pdfv-page-slot[data-page-index="6"], .pdfv-page-slot[data-page-index="10"]')).toHaveCount(0);
+    expect(server.requests.some(request => request.partial && [7, 11].some(number => {
+      const marker = bytes.indexOf(`% Page ${number} midpoint`);
+      return request.begin <= marker && marker < request.end;
+    }))).toBe(false);
     await page.evaluate(() => {
-      const session = (window as any).pdfSearch;
-      session.findNext();
-      session.goToPage(6);
+      void (window as any).pdfSearch.find('needle').then(() => { (window as any).searchSettled = true; });
     });
-    await expect(matches(6)).toHaveText('Needle');
-    await expect.poll(search).toMatchObject({ total: 2, activeIndex: 1, searching: true });
+    await expect.poll(() => held()?.bytesSent).toBe(0);
+    await expect.poll(search).toMatchObject({ total: 2, pagesScanned: 11, activeIndex: 0, searching: true });
+    await expect(matches(6, true)).toHaveText('Needle');
+    await page.evaluate(() => (window as any).pdfSearch.findNext());
+    await expect(matches(10, true)).toHaveText('Needle');
     expect(held()?.bytesSent).toBe(0);
     server.resumeRanges();
     await expect.poll(() => page.evaluate(() => (window as any).searchSettled)).toBe(true);
     expect(await search()).toMatchObject({ total: 3, activeIndex: 2, pagesScanned: 12, searching: false });
+    await expect(matches(10, true)).toHaveText('Needle');
     await page.evaluate(() => (window as any).pdfSearch.findNext());
     await expect(matches(1, true)).toHaveText('Needle');
     await page.evaluate(() => (window as any).pdfSearch.destroy());

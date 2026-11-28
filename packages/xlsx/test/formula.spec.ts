@@ -2,6 +2,7 @@ import { openZipArchive } from '@filens/core';
 import { describe, expect, it, vi } from 'vitest';
 import { WorksheetCellIndex } from '../src/cell-index';
 import { displaySpillCell, evaluateWorksheetFormula, registerWorkbookFormulas } from '../src/cell-value';
+import { formulaClock, withFormulaTime } from '../src/formula-clock';
 import { loadXlsxWorkbook, resolveCellValue } from '../src/parser';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
 import type { ParsedCell, ParsedSheet } from '../src/types';
@@ -12,7 +13,7 @@ import { createDateFormulaWorkbook } from './fixtures/date-formula-workbook.mjs'
 import { createTextFormulaWorkbook } from './fixtures/text-formula-workbook.mjs';
 import { createStructuredReferenceWorkbook } from './fixtures/structured-reference-workbook.mjs';
 import { createSumProductWorkbook } from './fixtures/sum-product-workbook.mjs';
-import { createAggregateWorkbook } from './fixtures/aggregate-workbook.mjs';
+import { createAggregateWorkbook, createPercentileWorkbook, createRankingWorkbook, createStatisticalFormulaWorkbook } from './fixtures/aggregate-workbook.mjs';
 import { createLetWorkbook } from './fixtures/let-workbook.mjs';
 import { createArraySelectionWorkbook } from './fixtures/array-selection-workbook.mjs';
 
@@ -53,6 +54,169 @@ describe('IFS and SWITCH', () => {
     expect(resolveCellValue(model, result)).toBe(expected);
     if (expected === 'TRUE' || expected === 'FALSE') expect(result.valueType).toBe('boolean');
     else if (expected.startsWith('#')) expect(result.valueType).toBe('error');
+  });
+});
+
+describe('conditional reference results', () => {
+  it.each([
+    ['SUM((A1,IF(TRUE,A2,A3)))', '7'],
+    ['SUM((A1,IFS(FALSE,NA(),TRUE,A2)))', '7'],
+    ['SUM((A1,SWITCH("x","Y",NA(),"X",A2,A3)))', '7'],
+    ['SUM(A1:IF(TRUE,A2))', '7'],
+    ['SUM(A1:IFS(TRUE,A3))', '15'],
+    ['SUM(SWITCH(1,1,A2):A3)', '13'],
+    ['SUM(IF(TRUE,A1:A3,NA()))', '15'],
+    ['SUM(IFS(TRUE,A1:A3))', '15'],
+    ['SUM(SWITCH(0,1,A1,A2:A3))', '13'],
+    ['ISREF(IF(TRUE,A2,NOTIMPLEMENTED(1)))', 'TRUE'],
+    ['ISREF(IFS(TRUE,A1:A3,FALSE,C1:C3))', 'TRUE'],
+    ['ISREF(SWITCH(2,1,A1,2,A2,A3))', 'TRUE'],
+    ['ISREF(IF(TRUE,A2+1,A3))', 'FALSE'],
+    ['ISREF(IFS({TRUE;FALSE},A1,TRUE,A2))', 'FALSE'],
+    ['SUM(IF(FALSE,A1:Missing!A2,A3))', '8'],
+    ['SUM(A1:IF(FALSE,A2))', '#VALUE!'],
+    ['SUM(A1:IFS(FALSE,A2))', '#N/A'],
+    ['SUM(A1:SWITCH(2,1,A2))', '#N/A'],
+    ['TEXTJOIN("|",FALSE,IFS(TRUE,A1,FALSE,A2:A3))', '2|2'],
+    ['COUNT(IFS(TRUE,TRUE))', '1'],
+    ['@SWITCH(1,1,A2:A3)', '#VALUE!'],
+    ['IF(TRUE,A1:A3+1,NA())', '3']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['2', '5', '8'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : /^(TRUE|FALSE)$/.test(expected) ? 'boolean' :
+      expected.includes('|') ? 'text' : undefined);
+  });
+});
+
+describe('rounding to a multiple', () => {
+  it.each([
+    ['CEILING(23.5,1)', '24'], ['CEILING(-23.5,1)', '-23'], ['CEILING(-23.5,-1)', '-24'],
+    ['CEILING(23.5,-1)', '#NUM!'], ['CEILING(23.5,0)', '0'], ['CEILING(0,-2)', '0'],
+    ['FLOOR(23.5,1)', '23'], ['FLOOR(-23.5,1)', '-24'], ['FLOOR(-23.5,-1)', '-23'],
+    ['FLOOR(23.5,-1)', '#NUM!'], ['FLOOR(-23.5,0)', '#DIV/0!'], ['FLOOR(0,0)', '0'],
+    ['_xlfn.CEILING.MATH(-5.5,-2,0)', '-4'], ['CEILING.MATH(-5.5,2,-1)', '-6'],
+    ['CEILING.MATH(5.5,-2,1)', '6'], ['CEILING.MATH(-5.5,,1)', '-6'],
+    ['FLOOR.MATH(-5.5,-2)', '-6'], ['FLOOR.MATH(-5.5,2,-1)', '-4'],
+    ['FLOOR.MATH(5.5,-2,1)', '4'], ['FLOOR.MATH(-5.5,,)', '-6'],
+    ['_xlfn.CEILING.PRECISE(-5.5,-2)', '-4'], ['FLOOR.PRECISE(-5.5,-2)', '-6'],
+    ['ISO.CEILING(-5.5)', '-5'], ['_xlfn.ISO.CEILING(5.5,-2)', '6'],
+    ['CEILING.PRECISE(5.5,)', '6'], ['FLOOR.PRECISE(5.5,D1)', '0'],
+    ['FLOOR.MATH(5.5,0,1)', '0'], ['CEILING.PRECISE(5.5,0)', '0'],
+    ['CEILING(0.15,0.05)', '0.15'], ['FLOOR(0.3,0.1)', '0.3'],
+    ['CEILING(0.1+0.2,0.1)', '0.3'], ['CEILING(0.61,0.1)', '0.7'],
+    ['FLOOR(100000000000000.125,1)', '100000000000000'],
+    ['CEILING(1e-300,1e300)', '1e+300'], ['FLOOR(-1e-300,1e300)', '-1e+300'],
+    ['CEILING(1e300,1e-300)', '1e+300'], ['CEILING(1.7e308,1e308)', '#NUM!'],
+    ['FLOOR(3)', '#VALUE!'], ['ISO.CEILING()', '#VALUE!'], ['FLOOR.PRECISE(1,2,3)', '#VALUE!'],
+    ['CEILING("bad",2)', '#VALUE!'], ['FLOOR.MATH(-5,2,NA())', '#N/A'],
+    ['TEXTJOIN("|",FALSE,IFERROR(FLOOR({3,-3,5},{2,-2,0}),"err"))', '2|-2|err'],
+    ['TEXTJOIN("|",FALSE,CEILING.MATH({-5.5,-5.5,5.5},2,{0,1,1}))', '-4|-6|6'],
+    ['INDEX(FLOOR.MATH(SEQUENCE(1048576),3),1048576)', '1048575'],
+  ])('calculates %s', (formula, expected) => {
+    const { model, result } = sheet(['1'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : expected.includes('|') ? 'text' : undefined);
+  });
+});
+
+describe('reference and value information', () => {
+  it.each([
+    ['ISREF(A1)', 'TRUE'], ['ISREF(D1)', 'TRUE'], ['ISREF(A:A)', 'TRUE'],
+    ['ISREF(OFFSET(A1,1,0))', 'TRUE'], ['ISREF(INDEX(A:A,2))', 'TRUE'],
+    ['ISREF((A1,A2))', 'TRUE'], ['ISREF(Missing!A1)', 'FALSE'],
+    ['ISREF((A1,A2%))', 'FALSE'], ['ISREF((1,A1))', 'FALSE'],
+    ['ISREF(A1+0)', 'FALSE'], ['ISREF({1,2})', 'FALSE'], ['ISREF(NA())', 'FALSE'],
+    ['ISREF(NOTIMPLEMENTED(1))', '=ISREF(NOTIMPLEMENTED(1))'],
+    ['AREAS(A:A)', '1'], ['AREAS((A1,A2,A3:A4))', '3'], ['AREAS((A1,A1))', '2'],
+    ['AREAS(1)', '#VALUE!'], ['AREAS(Missing!A1)', '#REF!'],
+    ['TYPE(A1)', '1'], ['TYPE(D1)', '1'], ['TYPE(A1:A3)', '64'],
+    ['TYPE("3")', '2'], ['TYPE(TRUE)', '4'], ['TYPE(1/0)', '16'], ['TYPE({1})', '64'],
+    ['TYPE({#N/A,2})', '64'], ['TYPE(Missing!A1)', '16'],
+    ['ERROR.TYPE(#NULL!)', '1'], ['ERROR.TYPE(1/0)', '2'], ['ERROR.TYPE(#VALUE!)', '3'],
+    ['ERROR.TYPE(#REF!)', '4'], ['ERROR.TYPE(#NAME?)', '5'], ['ERROR.TYPE(#NUM!)', '6'],
+    ['ERROR.TYPE(NA())', '7'], ['ERROR.TYPE(#GETTING_DATA)', '8'], ['ERROR.TYPE(4)', '#N/A'],
+    ['ERROR.TYPE("#N/A")', '#N/A'], ['ERROR.TYPE()', '#VALUE!'],
+    ['TEXTJOIN("|",FALSE,IFNA(ERROR.TYPE({#REF!,5,#N/A}),"none"))', '4|none|7'],
+    ['SUMSQ(A1:A3)', '14'], ['SUMSQ({1,"8";TRUE,2},3)', '14'], ['SUMSQ(A1,"2",TRUE)', '6'],
+    ['SUMSQ(A1:A3*2)', '56'], ['SUMSQ(D:D)', '0'], ['SUMSQ("bad")', '#VALUE!'],
+    ['SUMSQ({1,#N/A})', '#N/A'], ['SUMSQ(1e200)', '#NUM!'], ['SUMSQ()', '#VALUE!']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['1', '2', '3'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected === 'TRUE' || expected === 'FALSE' ? 'boolean' :
+      expected.startsWith('#') ? 'error' : expected.includes('|') ? 'text' : undefined);
+  });
+});
+
+describe('reference operators', () => {
+  it.each([
+    ['SUM(A1:A3  A2:B3)', '5'],
+    ['(A1:A3 A2:B2)*2', '4'],
+    ['SUM(A:A 2:3)', '5'],
+    ['SUM(A1:A3 (A1,A3))', '4'],
+    ['SUM((A1,A3) A1:A3 A2:A3)', '3'],
+    ['AREAS((A1,A3) A1:A3)', '2'],
+    ['ISREF((A1:A3) (A2:B2))', 'TRUE'],
+    ['ERROR.TYPE(A1:A3 B1:B3)', '1'],
+    ['ISREF(A1:A3 B1:B3)', 'FALSE'],
+    ['SUM((A1,(A1,A2)),A3)', '7'],
+    ['SUM((INDEX(A:A,2),A3))', '5'],
+    ['SUM((A1,A2):(A3))', '6'],
+    ['SUM((A1,A2%))', '#VALUE!'],
+    ['(A1,A2)%', '#VALUE!'],
+    ['SUM((A1,#REF!))', '#REF!'],
+    ['SUM(A1 : A3) + SUM ( A2 )', '8']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['1', '2', '3'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : /^(TRUE|FALSE)$/.test(expected) ? 'boolean' : undefined);
+  });
+});
+
+describe('implicit intersection', () => {
+  it.each([
+    ['A1:A3', '2'], ['(A1:A3)+1', '3'], ['-A1:A3', '-2'], ['A2:A3', '#VALUE!'],
+    ['@A1:A3^2', '4'], ['@A2:A3', '#VALUE!'], ['@(A2:A3+1)', '6'], ['@{7,8}', '7'],
+    ['@-A2:A3', '-5'], ['-@A1:A3', '-2'], ['@TRUE', 'TRUE'], ['@"a@b"', 'a@b'],
+    ['_xlfn.SINGLE(CHOOSE(1,A1:A3,NA()))', '2'], ['_xlfn.SINGLE(CHOOSE(1,A2:A3))', '#VALUE!'],
+    ['@CHOOSE(1,A2:A3+1)', '6'], ['ISREF(CHOOSE(1,A1:A3))', 'TRUE'],
+    ['ISREF(@A1:A3)', 'FALSE'], ['SUM(A1:CHOOSE(1,A3))', '15']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['2', '5', '8'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected === '#VALUE!' ? 'error' :
+      /^(TRUE|FALSE)$/.test(expected) ? 'boolean' : expected === 'a@b' ? 'text' : undefined);
+  });
+});
+
+describe('formula display text', () => {
+  it.each([
+    ['_xlfn._xlws.SORT(A1:A3)', false, '=SORT(A1:A3)'],
+    ['_xlfn.LET(_xlpm.x,_xlfn.ANCHORARRAY( C1),_xlpm.x)', false, '=LET(x, C1#,x)'],
+    ['_xlfn.SINGLE((_xlfn.ANCHORARRAY(C1)%))', false, '=@(C1#%)'],
+    ['_xlfn.SINGLE(A1:A3+1)', false, '=@(A1:A3+1)'],
+    ['_xlfn.ANCHORARRAY(((C1))) + _xlfn.ANCHORARRAY( D1)', false, '=((C1))# +  D1#'],
+    ['_xlfn.SINGLE(-A1:A3)', false, '=@-A1:A3'],
+    ['$_invalid+_xlfn.SINGLE(', false, '=$_invalid+_xlfn.SINGLE('],
+    ['_xlfn.SINGLE(A1,B1)', false, '=_xlfn.SINGLE(A1,B1)'],
+    ['_xlfn.FUTURE("_xlpm.x",\'_xlfn.SINGLE\'!A1,Table[_xlfn.ANCHORARRAY(C1)])', false,
+      '=FUTURE("_xlpm.x",\'_xlfn.SINGLE\'!A1,Table[_xlfn.ANCHORARRAY(C1)])'],
+    ['A1:A3', true, '=@A1:A3'],
+    ['\'Other Sheet\'!$C$3:$C$9+SUM(A1:A3)-_xlfn.ANCHORARRAY(D1)%', true,
+      '=@\'Other Sheet\'!$C$3:$C$9+SUM(A1:A3)-@D1#%'],
+    ['@-A1:A3+_xlfn.SINGLE(C1:C3)+D1:D3', true, '=@-A1:A3+@C1:C3+@D1:D3'],
+    ['_xlfn.UNIQUE(A1:A3)', true, '=@UNIQUE(A1:A3)'],
+    ['_xlfn.UNIQUE(A1:A3)', false, '=UNIQUE(A1:A3)'],
+    ['(SUM(A:A)+1)+(A1:A1)', true, '=(SUM(A:A)+1)+(A1:A1)']
+  ] as const)('displays %s with legacy rules %s', (formula, legacy, expected) => {
+    const { model, result } = sheet([''], 'FORMULATEXT(A1)');
+    const target = model.rows[0].cells[0];
+    Object.assign(target, { formula, needsCalculation: true });
+    if (!legacy) model.arrayFormulas = [{ firstRow: 1, lastRow: 1, firstColumn: 1, lastColumn: 1, dynamic: true }];
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe('text');
+    expect(target).toMatchObject({ formula, value: '', needsCalculation: true });
   });
 });
 
@@ -137,6 +301,32 @@ describe('MAKEARRAY and array statistics', () => {
     ['CORREL({2,2,2},{1,2,3})', '#DIV/0!'],
     ['CORREL({1,2,#N/A},{1,4,9})', '#N/A'],
     ['ROUND(CORREL(A:A,A:A),14)', '1']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['1', '2', '3'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+  });
+});
+
+describe('paired statistics and linear regression', () => {
+  it.each([
+    ['ROUND(PEARSON({1,2,3},{6,4,2}),14)', '-1'],
+    ['ROUND(RSQ({1,2,3},{1,1,2}),12)', '0.75'],
+    ['ROUND(COVAR({1,2,3},{4,2,0}),10)', '-1.3333333333'],
+    ['_xlfn.COVARIANCE.S({1,2,3},{4,2,0})', '-2'],
+    ['ROUND(_xlfn.COVARIANCE.S(1e13+{4,5,3,6,5,8},1e13+{3,4,2,5,4,7}),12)', '2.966666666667'],
+    ['_xlfn.COVARIANCE.P({1,FALSE,"5"},{4,100,200})', '0'],
+    ['_xlfn.COVARIANCE.S({1,FALSE,"5"},{4,100,200})', '#DIV/0!'],
+    ['_xlfn.COVARIANCE.P(C1:C2,D1:D2)', '#DIV/0!'],
+    ['_xlfn.COVARIANCE.S({1,2},{3,4,#REF!})', '#N/A'],
+    ['_xlfn.COVARIANCE.S({#REF!,2},{3,4})', '#REF!'],
+    ['ROUND(SLOPE({4,6,10},{100000000000000,100000000000001,100000000000003}),12)', '2'],
+    ['INTERCEPT({10,20,30},{2,4,6})', '0'],
+    ['SLOPE({4,4,4},{0,1,2})', '0'],
+    ['SLOPE({1,2,3},{4,4,4})', '#DIV/0!'],
+    ['FORECAST(4,{5;8;11},A1:A3)', '14'],
+    ['FORECAST("bad",{5;8;11},A1:A3)', '#VALUE!'],
+    ['TEXTJOIN("|",FALSE,IFERROR(_xlfn.FORECAST.LINEAR({0,2,"bad",5},{5;8;11},A1:A3),"missing"))', '2|8|missing|17'],
+    ['FORECAST(12,IF(ISNUMBER(A:A),7,3),IF(ISNUMBER(A:A),5,1))', '14']
   ])('evaluates %s', (formula, expected) => {
     const { model, result } = sheet(['1', '2', '3'], formula);
     expect(resolveCellValue(model, result)).toBe(expected);
@@ -478,6 +668,183 @@ describe('LET', () => {
   });
 });
 
+describe('standard deviation, variance and median', () => {
+  it.each([
+    ['STDEV(2,4,6)', 2], ['_xlfn.STDEV.S({2;4;6})', 2],
+    ['STDEVP(2,6)', 2], ['_xlfn.STDEV.P({2,6})', 2],
+    ['VAR(1,3,5)', 4], ['_xlfn.VAR.S({1,3,5})', 4],
+    ['VARP(1,5)', 4], ['_xlfn.VAR.P({1,5})', 4],
+    ['MEDIAN(9,2,3,1)', 2.5], ['MEDIAN({"9",TRUE,2,4})', 3], ['MEDIAN(TRUE,"2",6)', 2],
+    ['STDEVA({3,TRUE,"9"})', Math.sqrt(7 / 3)], ['STDEVPA({3,TRUE,"9"})', Math.sqrt(14 / 9)],
+    ['VARA(A:A)', 7 / 3], ['VARPA(A:A)', 14 / 9], ['MEDIAN(A:A)', 3],
+    ['STDEV.S(TRUE,"2")', Math.SQRT1_2], ['VAR.S(1)', '#DIV/0!'], ['STDEV.P(1)', 0],
+    ['STDEVP(C:C)', '#DIV/0!'], ['MEDIAN(C:C)', '#NUM!'], ['MEDIAN({2,#N/A,4})', '#N/A'],
+    ['VAR.P({2,#REF!},4)', '#REF!'], ['STDEV.S(NA(),1,3)', '#N/A'], ['VAR.S("label",1,3)', '#VALUE!'],
+    ['VAR.S({1000000000000000,1000000000000001,1000000000000003})', 7 / 3],
+    ['STDEV.P(-1E200,1E200)', 1e200], ['VAR.P(-1E200,1E200)', '#NUM!'],
+    ['AGGREGATE(8,4,{-1E200;1E200})', 1e200],
+    ['SUM(BYROW({1,3;2,6},LAMBDA(group,VAR.P(group))))', 5]
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['3', 'TRUE', '9'], formula);
+    model.rows[1].cells[0].valueType = 'boolean';
+    model.rows[2].cells[0].valueType = 'text';
+    const calculated = resolveCellValue(model, result);
+    if (typeof expected === 'number') expect(Number(calculated)).toBeCloseTo(expected, 12);
+    else {
+      expect(calculated).toBe(expected);
+      expect(result.valueType).toBe('error');
+    }
+  });
+
+  it('uses weighted sparse defaults over a full cross-sheet range', async () => {
+    const { sheets: [summary] } = await loadXlsxWorkbook(await createStatisticalFormulaWorkbook());
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    try {
+      const size = 1_048_576 * 16_384;
+      const expected = (16 * 11 / size) * (1 - 11 / size);
+      expect(Number(resolveCellValue(summary, summary.rows[1].cells[3])) / expected).toBeCloseTo(1, 12);
+      expect(resolveCellValue(summary, summary.rows[1].cells[4])).toBe('997');
+      expect(resolveCellValue(summary, summary.rows.at(-1)!.cells[0])).toBe('29.46391572');
+      expect(get.mock.calls.length).toBeLessThan(100);
+    } finally { get.mockRestore(); }
+  });
+});
+
+describe('percentile and quartile formulas', () => {
+  it.each([
+    ['PERCENTILE(A:A,30%)', '1.9'], ['_xlfn.PERCENTILE.INC({1;3;2;4},0.3)', '1.9'],
+    ['_xlfn.PERCENTILE.EXC(A:A,0.3)', '1.5'], ['PERCENTILE.INC(A:A,0)', '1'], ['PERCENTILE.INC(A:A,1)', '4'],
+    ['PERCENTILE.EXC(A:A,1/5)', '1'], ['PERCENTILE.EXC(A:A,4/5)', '4'],
+    ['PERCENTILE.EXC(SEQUENCE(48),1/49)', '1'], ['PERCENTILE.EXC(SEQUENCE(48),48/49)', '48'],
+    ['PERCENTILE.EXC(SEQUENCE(48),1/49-0.000000000001)', '#NUM!'],
+    ['AGGREGATE(18,4,SEQUENCE(48),1/49)', '1'],
+    ['PERCENTILE.EXC({23},0.5)', '23'], ['PERCENTILE.EXC({23},0.4)', '#NUM!'],
+    ['QUARTILE({1,2,4,7,8,9,10,12},1)', '3.5'], ['_xlfn.QUARTILE.INC(A:A,2.9)', '2.5'],
+    ['_xlfn.QUARTILE.EXC({6,7,15,36,39,40,41,42,43,47,49},3)', '43'],
+    ['QUARTILE.EXC(A:A,0)', '#NUM!'], ['QUARTILE.EXC(A:A,4)', '#NUM!'], ['QUARTILE.EXC({1,3},1)', '#NUM!'],
+    ['PERCENTILE.EXC(A:A,0)', '#NUM!'], ['PERCENTILE.EXC(A:A,1)', '#NUM!'],
+    ['PERCENTILE.INC(A:A,-0.1)', '#NUM!'], ['PERCENTILE.INC(D:D,0.5)', '#NUM!'],
+    ['PERCENTILE.INC({1,#DIV/0!,3},0.5)', '#DIV/0!'], ['PERCENTILE.INC(A:A,"invalid")', '#VALUE!'],
+    ['QUARTILE.INC(A:A,)', '#VALUE!'], ['QUARTILE.INC(A:A,1,2)', '#VALUE!'],
+    ['PERCENTILE.INC({1,TRUE,"2",4},0.5)', '2.5'],
+    ['TEXTJOIN("|",FALSE,IFERROR(PERCENTILE.EXC(A:A,{0.2,0.1,0.8}),"out"))', '1|out|4'],
+    ['TEXTJOIN("|",FALSE,QUARTILE.INC(A:A,{0;2;4}))', '1|2.5|4']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['1', '3', '2', '4'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : expected.includes('|') ? 'text' : undefined);
+  });
+
+  it('uses one weighted sample for a sparse whole-sheet calculation with multiple percentiles', async () => {
+    const { sheets: [summary] } = await loadXlsxWorkbook(await createPercentileWorkbook());
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    try {
+      const range = summary.rows.at(-1)!.cells[0];
+      expect(resolveCellValue(summary, range)).toBe('1');
+      expect([16382, 16383, 16384].map(column => displaySpillCell(summary, 1_048_576, column)?.value)).toEqual(['2', '2', '4']);
+      // The condition and selected value each read the source once, across all four output positions.
+      expect(get.mock.calls.filter(([row, column]) => row === 1048576 && column === 1)).toHaveLength(2);
+      expect(get.mock.calls.length).toBeLessThan(50);
+    } finally { get.mockRestore(); }
+  });
+});
+
+describe('rank and percent rank formulas', () => {
+  it.each([
+    ['RANK(9,A:A)', '1'], ['_xlfn.RANK.EQ(5,A:A)', '3'], ['RANK.EQ(9,A:A,-1)', '3'],
+    ['_xlfn.RANK.AVG(9,A:A)', '1.5'], ['RANK.AVG(9,A:A,1)', '3.5'], ['RANK.AVG(3,A:A,0)', '4'],
+    ['RANK(3,(A1,A3,A4))', '3'], ['RANK(9,{3;5;9;9;TRUE;"10"})', '1'],
+    ['RANK(7,A:A)', '#N/A'], ['RANK(1,C:C)', '#N/A'], ['RANK(5,A:A,)', '3'],
+    ['RANK(9,{5,#DIV/0!,9})', '#DIV/0!'], ['RANK(9,A:A,"bad")', '#VALUE!'],
+    ['PERCENTRANK(A:A,9)', '0.666'], ['_xlfn.PERCENTRANK.INC(A:A,7)', '0.5'],
+    ['_xlfn.PERCENTRANK.EXC(A:A,9)', '0.6'], ['PERCENTRANK.EXC(A:A,3)', '0.2'],
+    ['PERCENTRANK.INC(A:A,5,5)', '0.33333'], ['PERCENTRANK.INC(A:A,5,)', '0.333'],
+    ['PERCENTRANK.INC(A:A,5,2.9)', '0.33'], ['PERCENTRANK.INC(A:A,5,0)', '#NUM!'],
+    ['PERCENTRANK.EXC({1,2,3,6,6,6,7,8,9},5.43)', '0.381'],
+    ['PERCENTRANK.EXC({1,2,3,6,6,6,7,8,9},5.43,1)', '0.3'],
+    ['PERCENTRANK.INC({0,0,10,10},5)', '0.5'], ['PERCENTRANK.EXC({0,0,10,10},5)', '0.5'],
+    ['PERCENTRANK.INC({-1E308,1E308},0)', '0.5'], ['PERCENTRANK.INC({3,5},2)', '#N/A'],
+    ['PERCENTRANK.INC({3,5},6)', '#N/A'], ['PERCENTRANK.INC(C:C,0)', '#NUM!'],
+    ['PERCENTRANK.INC(SEQUENCE(101),30,2)', '0.29'],
+    ['TEXTJOIN("|",FALSE,IFNA(RANK.AVG({9,7,3},A:A,{0,0,1}),"absent"))', '1.5|absent|1'],
+    ['TEXTJOIN("|",FALSE,PERCENTRANK.INC(A:A,{3;5;7},{1,2}))', '0|0|0.3|0.33|0.5|0.5']
+  ])('evaluates %s', (formula, expected) => {
+    const { model, result } = sheet(['9', '9', '5', '3'], formula);
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : expected.includes('|') ? 'text' : undefined);
+  });
+
+  it('ranks a weighted whole-sheet sample once for the declared output', async () => {
+    const { sheets: [summary] } = await loadXlsxWorkbook(await createRankingWorkbook());
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    try {
+      const anchor = summary.rows.at(-1)!.cells[0];
+      expect(resolveCellValue(summary, anchor)).toBe('8589934590.5');
+      expect([16382, 16383, 16384].map(column => displaySpillCell(summary, 1_048_576, column)?.value))
+        .toEqual(['#N/A', '17179869182.5', '17179869182.5']);
+      expect(get.mock.calls.filter(([row, column]) => row === 1048576 && column === 1)).toHaveLength(1);
+      expect(get.mock.calls.length).toBeLessThan(50);
+      expect(resolveCellValue(summary, summary.rows[2].cells[0])).toBe('0.99999999');
+    } finally { get.mockRestore(); }
+  });
+
+  it('reuses a cross-sheet rank sample within a render and releases it before the next render', async () => {
+    const { sheets: [summary, data] } = await loadXlsxWorkbook(await createRankingWorkbook());
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'forEachInRange');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const clock = formulaClock(summary), pinnedTime = Date.now();
+      clock.time = pinnedTime;
+      const cells = summary.rows[0].cells;
+      const scans = () => get.mock.calls.filter(([first, last, left, right]) => first === 1 && last === 1048576 && left === 1 && right === 1);
+      expect(withFormulaTime(summary, () => cells.map(cell => resolveCellValue(summary, cell)))).toEqual(['1', '1.5', '1', '0.5']);
+      expect(scans()).toHaveLength(1);
+      data.rows[0].cells[0].value = '10';
+      cells[0].needsCalculation = true;
+      expect(withFormulaTime(summary, () => resolveCellValue(summary, cells[0]))).toBe('2');
+      expect(scans()).toHaveLength(2);
+      expect(clock.time).toBe(pinnedTime);
+    } finally { get.mockRestore(); vi.useRealTimers(); }
+  });
+
+  it('retains clock dependencies for each rank that uses a shared sample', () => {
+    const { model: data } = sheet(['', '1.5'], '');
+    const source = data.rows[0].cells[0];
+    source.formula = 'DAY(TODAY())';
+    source.needsCalculation = true;
+    data.rows[0].cells.splice(1);
+    const { model: summary, result } = sheet(['0', '0'], `RANK(1.5,'${data.name}'!A:A)`);
+    summary.name = 'Summary';
+    const second = { ...result, ref: 'B2', row: 2, formula: `_xlfn.RANK.AVG(1.5,'${data.name}'!A:A)` };
+    summary.rows[1].cells.push(second);
+    registerWorkbookFormulas({ sheets: [summary, data] });
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const ranks = () => withFormulaTime(summary, () => [result, second].map(cell => resolveCellValue(summary, cell)));
+    try {
+      vi.setSystemTime(new Date(2025, 0, 1, 12));
+      expect(ranks()).toEqual(['1', '1']);
+      vi.setSystemTime(new Date(2025, 0, 2, 12));
+      expect(ranks()).toEqual(['2', '2']);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('rescans a sample when a circular dependency forced a formula fallback', () => {
+    const { model, result } = sheet(['', '2'], 'RANK(2,A1:A2)');
+    const source = model.rows[0].cells[0];
+    source.formula = 'B1+1';
+    source.needsCalculation = true;
+    const second = { ...result, ref: 'B2', row: 2 };
+    model.rows[1].cells.push(second);
+    const scan = vi.spyOn(WorksheetCellIndex.prototype, 'forEachInRange');
+    try {
+      expect(withFormulaTime(model, () => [result, second].map(cell => resolveCellValue(model, cell))))
+        .toEqual(['=RANK(2,A1:A2)', '=RANK(2,A1:A2)']);
+      expect(source.value).toBe('=B1+1');
+      expect(scan.mock.calls.filter(([first, last, left, right]) => first === 1 && last === 2 && left === 1 && right === 1)).toHaveLength(2);
+    } finally { scan.mockRestore(); }
+  });
+});
+
 describe('AGGREGATE', () => {
   it.each([
     [1, '', '2.5'], [2, '', '4'], [3, '', '4'], [4, '', '4'], [5, '', '1'],
@@ -645,6 +1012,49 @@ describe('structured table references', () => {
 });
 
 describe('workbook text formulas', () => {
+  it.each([
+    ['de-DE', 'TEXT(1234.567,"#.##0,00 €")', '1.234,57 €'],
+    ['de-DE', 'TEXT(1234.567,"#.##0")', '1.235'],
+    ['de-DE', 'TEXT(1234.567,"#,##0.00")', '1.234,57'],
+    ['de-DE', 'TEXT(1234.567,"#,##0")', '1.235'],
+    ['de-DE', 'TEXT(5,"0,000.00")', '0.005,00'],
+    ['de-DE', 'TEXT(1234.5,"0,000")', '1234,500'],
+    ['de-DE', 'TEXT(1234.5,"0.000")', '1234,500'],
+    ['de-DE', 'TEXT(1234567,"0..")', '1'],
+    ['de-DE', 'TEXT(DATE(2024,2,29),"TT.MM.JJ")', '29.02.24'],
+    ['de-DE', 'TEXT(DATE(2024,2,29),"TTTT, TT. MMMM JJJJ")', 'Donnerstag, 29. Februar 2024'],
+    ['de-DE', 'TEXT(DATE(2024,2,29),"[$-409]TTTT")', 'Thursday'],
+    ['de-DE', 'TEXT(0.285,"0,0\u00a0%")', '28,5\u00a0%'],
+    ['de-DE', 'TEXT(3735.8/86400,"[ss],00")', '3735,80'],
+    ['de-DE', 'TEXT(3735.8/86400,"[ss].00")', '3735.80'],
+    ['de-DE', 'TEXT(12200000,"0,00E+00")', '1,22E+07'],
+    ['de-DE', 'TEXT(1234.5,"Standard")', '1234,5'],
+    ['de-DE', 'TEXT(-1.5,"[Rot][<=-1,5]0,00;0,0")', '1,50'],
+    ['de-DE', 'TEXT(1.25,"[$€-407]0,00")', '€1,25'],
+    ['de-DE', 'TEXT(1.25,"""TT.MM.JJ, ""0,00\\.")', 'TT.MM.JJ, 1,25.'],
+    ['de-DE', 'TEXT(1.25,"0,00*._,")', '1,25 '],
+    ['fr-FR', 'TEXT(1234.567,"#\u00a0##0,00\u00a0€")', '1\u202f234,57\u00a0€'],
+    ['fr-FR', 'TEXT(1234.5,"# ##0,00")', '1\u202f234,50'],
+    ['fr-FR', 'TEXT(1234.5,"0,00")', '1234,50'],
+    ['fr-FR', 'TEXT(1234.5,"#,##0.00")', '1\u202f234,50'],
+    ['fr-FR', 'TEXT(4.34,"# ???/???")', '4  17/50 '],
+    ['fr-FR', 'TEXT(DATE(2024,2,29),"JJ/MM/AAAA")', '29/02/2024'],
+    ['fr-FR', 'TEXT(DATE(2024,2,29),"JJJJ")', 'jeudi'],
+    ['fr-FR', 'TEXT((3600+1.25)/86400,"hh:mm:ss,00")', '01:00:01,25'],
+    ['fr-FR', 'TEXT((3600+1.25)/86400,"hh:mm:ss,00"" s,000""")', '01:00:01,25 s,000'],
+    ['fr-FR', 'TEXT(DATE(2024,2,29),"[$-407]dddd")', 'Donnerstag'],
+    ['fr-FR', 'TEXT(0.285,"0,0 %")', '28,5 %'],
+    ['fr-FR', 'TEXT(12200000,"0,00E+00")', '1,22E+07'],
+    ['fr-FR', 'TEXT(-0.25,"0,00;[Rouge](0,00)")', '(0,25)'],
+    ['en-US', 'TEXT(1234.567,"#,##0.00 €")', '1,234.57 €']
+  ])('recalculates %s TEXT format arguments in %s', (language, formula, expected) => {
+    vi.stubGlobal('navigator', { language });
+    try {
+      const { model, result } = sheet(['1'], formula);
+      expect(resolveCellValue(model, result)).toBe(expected);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
   it('keeps width-dependent number padding out of TEXT results', () => {
     const { model, result } = sheet(['1'], 'TEXT(12.3,"$*·0.00_)")');
     expect(resolveCellValue(model, result)).toBe('$12.30 ');
@@ -754,7 +1164,7 @@ describe('workbook text formulas', () => {
       'February 29, 2024', 'North · South · Far', 'R1C1|||R2C2', '=D3+1', '$1,234.57', date1904 ? '0' : '1462'
     ]);
     expect(labels.rows[1].cells.map(cell => resolveCellValue(labels, cell))).toEqual([
-      'sku 04\n00321', 'A|B|C|TRUE|0', '#VALUE!', '=_xlfn.FORMULATEXT(D2)', '4  17/50 ', '=1/0', 'a/b:c/d'
+      'sku 04\n00321', 'A|B|C|TRUE|0', '#VALUE!', '=FORMULATEXT(D2)', '4  17/50 ', '=1/0', 'a/b:c/d'
     ]);
     expect(source.rows[0].cells.find(cell => cell.ref === 'G1')?.needsCalculation).toBe(true);
     expect(source.rows[2].cells.find(cell => cell.ref === 'E3')?.needsCalculation).toBe(true);
@@ -790,10 +1200,65 @@ describe('workbook date and time formulas', () => {
     expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : expected === 'outside' ? 'text' : undefined);
   });
 
+  it.each([
+    ['WEEKNUM("2012-03-09")', '10'], ['WEEKNUM("2012-03-09",2)', '11'],
+    ['WEEKNUM("2016-07-24",)', '31'], ['WEEKNUM("2016-07-24",17)', '31'],
+    ['TEXTJOIN("|",FALSE,WEEKNUM("2016-07-24",{11,12,13,14,15,16,17,21}))', '30|30|30|30|30|31|31|29'],
+    ['WEEKNUM(DATE(2000,12,31))', '54'], ['WEEKNUM(0)', '0'], ['WEEKNUM(7.9)', '1'], ['WEEKNUM(8)', '2'],
+    ['_xlfn.ISOWEEKNUM("2018-12-31")', '1'], ['WEEKNUM("2021-01-03",21)', '53'],
+    ['_xlfn.ISOWEEKNUM("2021-01-04")', '1'], ['ISOWEEKNUM("2012-03-09")', '10'],
+    ['ISOWEEKNUM(0)', '52'], ['ISOWEEKNUM(1)', '52'], ['ISOWEEKNUM(60.75)', '9'],
+    ['ISOWEEKNUM(2958465)', '52'], ['ISOWEEKNUM(2958466)', '#NUM!'], ['WEEKNUM(-1)', '#NUM!'],
+    ['WEEKNUM(2,3)', '#NUM!'], ['WEEKNUM(2,22)', '#NUM!'], ['WEEKNUM(2,Z1)', '#NUM!'],
+    ['WEEKNUM(TRUE,1)', '#VALUE!'], ['WEEKNUM(2,TRUE)', '#VALUE!'], ['ISOWEEKNUM(TRUE)', '52'],
+    ['WEEKNUM(A1:A2)', '#VALUE!'], ['WEEKNUM(2,A1:A2)', '#VALUE!'],
+    ['WEEKNUM(2,"mode")', '#VALUE!'], ['WEEKNUM("2021-02-29",21)', '#VALUE!'],
+    ['WEEKNUM(#N/A,21)', '#N/A'], ['ISOWEEKNUM(A1)', '#DIV/0!'],
+    ['ISOWEEKNUM()', '#VALUE!'], ['ISOWEEKNUM(2,21)', '#VALUE!'],
+    ['SUM(_xlfn.ISOWEEKNUM(DATE(2021,1,{1;3;4})))', '107']
+  ])('calculates week numbers in %s', (formula, expected) => {
+    const { model, result } = sheet(['#DIV/0!'], formula);
+    model.rows[0].cells[0].valueType = 'error';
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(result.valueType).toBe(expected.startsWith('#') ? 'error' : expected.includes('|') ? 'text' : undefined);
+  });
+
+  it.each([
+    ['DAYS360("2011-01-30","2011-02-01")', 1],
+    ['DAYS360("2011-01-01","2011-12-31")', 360],
+    ['DAYS360("2011-12-31","2011-01-01")', -359],
+    ['DAYS360("2007-02-28","2007-03-28",)', 28],
+    ['DAYS360("2024-02-29T12:30:00","2024-03-01",TRUE)', 2],
+    ['DAYS360("2024-02-29","2024-03-31",FALSE)', 30],
+    ['SUM(DAYS360("2024-02-29","2024-03-01",{FALSE,TRUE}))', 3],
+    ['YEARFRAC("2012-01-01","2012-07-30")', 209 / 360],
+    ['YEARFRAC("2012-01-01","2012-07-30",1)', 211 / 366],
+    ['YEARFRAC("2012-07-30","2012-01-01",2.9)', 211 / 360],
+    ['YEARFRAC("2012-01-01","2012-07-30",3)', 211 / 365],
+    ['YEARFRAC("2012-01-01","2012-07-31",4)', 209 / 360],
+    ['YEARFRAC("2024-02-29","2024-03-31",0)', 31 / 360],
+    ['YEARFRAC("2024-02-29","2025-02-28",0)', 1],
+    ['YEARFRAC("2016-02-29","2017-02-28",1)', 365 / 366],
+    ['YEARFRAC("2003-02-28","2004-02-29",1)', 366 / 365.5],
+    ['YEARFRAC("2024-03-01","2025-03-01",1)', 1],
+    ['YEARFRAC("2024-04-30","2024-09-01",1)', 124 / 366],
+    ['YEARFRAC(45351.5,45351.25,1)', 0],
+    ['YEARFRAC(59,61,2)', 2 / 360],
+    ['YEARFRAC(1,2,5)', '#NUM!'], ['YEARFRAC(-1,2)', '#NUM!'],
+    ['YEARFRAC(1,2,"basis")', '#VALUE!'], ['YEARFRAC(1)', '#VALUE!'],
+    ['DAYS360(#N/A,2)', '#N/A'], ['DAYS360(1,2,"method")', '#VALUE!']
+  ] as const)('calculates date spans with %s', (formula, expected) => {
+    const { model, result } = sheet(['1'], formula);
+    const actual = resolveCellValue(model, result);
+    if (typeof expected === 'number') expect(Number(actual)).toBeCloseTo(expected, 12);
+    else expect(actual).toBe(expected);
+    expect(result.valueType).toBe(typeof expected === 'number' ? undefined : 'error');
+  });
+
   it.each([false, true])('uses the loaded workbook epoch and keeps distant dependencies lazy (1904=%s)', async date1904 => {
     const workbook = await loadXlsxWorkbook(await createDateFormulaWorkbook(date1904));
     const [calendar, inputs] = clonePreviewWorkbook(workbook).sheets;
-    const [distantWorkday, last] = calendar.rows.at(-1)!.cells;
+    const [distantFraction, distantWeek, distantWorkday, last] = calendar.rows.at(-1)!.cells;
     const raw = String(date1904 ? 43889 : 45351);
     expect(calendar.rows[0].cells.map(cell => resolveCellValue(calendar, cell))).toEqual([
       raw, String(Number(raw) + 31), '4', raw, String(7321 / 86_400), 'invalid'
@@ -802,9 +1267,27 @@ describe('workbook date and time formulas', () => {
     expect(calendar.rows[2].cells.map(cell => resolveCellValue(calendar, cell))).toEqual([
       '3', String(Number(raw) + 5), raw, '2', String(Number(raw) + 1), 'invalid weekend'
     ]);
+    expect(calendar.rows[3].cells.map(cell => resolveCellValue(calendar, cell))).toEqual(['1', '53', '1', date1904 ? '53' : '52', '20']);
+    expect([1, 2, 3, 4].map(column => displaySpillCell(calendar, 5, column)?.value)).toEqual(['2', '1', '53', '#NUM!']);
+    expect([1, 2, 3, 4].map(column => displaySpillCell(calendar, 6, column)?.value)).toEqual(['53', '53', '1', '#N/A']);
+    expect([1, 2, 3].map(column => displaySpillCell(calendar, 7, column))).toEqual([
+      expect.objectContaining({ value: '#VALUE!', valueType: 'error' }),
+      expect.objectContaining({ value: '#VALUE!', valueType: 'error' }),
+      expect.objectContaining({ value: '#VALUE!', valueType: 'error' })
+    ]);
+    expect([8, 9].map(row => displaySpillCell(calendar, row, 1)?.value)).toEqual(['9', date1904 ? '53' : '52']);
+    const spans = calendar.rows.find(row => row.index === 10)!.cells;
+    expect([1, 2].map(column => displaySpillCell(calendar, 10, column)?.value)).toEqual(['1', '2']);
+    expect(Number(resolveCellValue(calendar, spans[1]))).toBeCloseTo(211 / 366, 12);
+    expect(resolveCellValue(calendar, spans[2])).toBe('#NUM!');
+    expect(resolveCellValue(calendar, spans[3])).toBe('17');
     expect(workbook.sheets[0].rows[0].cells[0].needsCalculation).toBe(true);
     expect(inputs.rows.at(-1)?.cells[0].value).toBe('2024-02-29T22:10:45');
     expect(distantWorkday.needsCalculation).toBe(true);
+    expect(distantWeek.needsCalculation).toBe(true);
+    expect(distantFraction.needsCalculation).toBe(true);
+    expect(Number(resolveCellValue(calendar, distantFraction))).toBeCloseTo(31 / 366, 12);
+    expect(resolveCellValue(calendar, distantWeek)).toBe('9');
     expect(resolveCellValue(calendar, distantWorkday)).toBe(String(Number(raw) + 5));
     expect(last.needsCalculation).toBe(true);
     expect(Number(resolveCellValue(calendar, last))).toBe(Number(raw) + 365 + 86_399 / 86_400);
@@ -1051,6 +1534,36 @@ describe('conditional workbook aggregates', () => {
       `COUNTIFS('Team''s Ledger'!A:XFD,"",Rates!A:XFD,"=")` };
     expect(resolveCellValue(model, result)).toBe(String(1_048_576 * 16_384 - 29));
   });
+
+  it('evaluates each criterion combination and retains typed errors and sparse full-sheet spills', async () => {
+    const { sheets: [, , , criteria, large] } = await loadXlsxWorkbook(await createCriteriaFormulaWorkbook());
+    const spill = (row: number, column: number) => displaySpillCell(criteria, row, column)?.value;
+    expect([1, 2, 3].map(row => spill(row, 1))).toEqual(['41', '0', '0']);
+    expect([spill(1, 3), spill(1, 4), spill(2, 3), spill(2, 4)]).toEqual(['33', '0', '9', '0']);
+    expect([spill(1, 6), spill(1, 7), spill(2, 6), spill(2, 7)]).toEqual(['3', '1', '1', '0']);
+    expect([1, 2, 3].map(column => spill(4, column))).toEqual(['0', '#DIV/0!', '#N/A']);
+    expect(displaySpillCell(criteria, 4, 2)?.valueType).toBe('error');
+    expect([spill(4, 5), spill(5, 5)]).toEqual(['11', '0']);
+    expect([1, 2, 3].map(column => spill(6, column))).toEqual(['9', '0', '0']);
+    expect([spill(6, 5), spill(6, 6)]).toEqual(['20', '0']);
+    expect([1, 2, 3].map(column => spill(7, column))).toEqual(['33', '0', '#N/A']);
+    expect(large.arrayFormulas?.[0]).toMatchObject({ dynamic: true });
+    const summary = criteria.rows.at(-1)!.cells;
+    const total = String(3 * 1_048_576 * 16_384 - 10);
+    const get = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    const visit = vi.spyOn(WorksheetCellIndex.prototype, 'forEachInRange');
+    try {
+      expect(summary.slice(0, 3).map(cell => resolveCellValue(criteria, cell))).toEqual(['5', '42', total]);
+      visit.mockClear();
+      expect(displaySpillCell(large, 1, 1)?.value).toBe('1');
+      expect(displaySpillCell(large, 1_048_576, 16_384)?.value).toBe('3');
+      expect(get.mock.calls.length).toBeLessThan(85);
+      for (let row = 10; row < 110; row++) expect(displaySpillCell(large, row, 16_384)?.value).toBe('3');
+      expect(visit.mock.calls.filter(([firstRow, lastRow, firstColumn, lastColumn]) =>
+        firstRow === 1 && lastRow === 1_048_576 && firstColumn === 1 && lastColumn === 1)).toHaveLength(2);
+    } finally { get.mockRestore(); visit.mockRestore(); }
+    expect(resolveCellValue(criteria, summary[3])).toBe(total);
+  });
 });
 
 describe('formula range evaluation', () => {
@@ -1089,13 +1602,15 @@ describe('formula range evaluation', () => {
     expect(resolveCellValue(model, result)).toBe(`=${formula}`);
   });
 
-  it.each(['SUM((A1:A2)+1)', 'SUM(A1:A2*0)', 'SUM((A1:A2)', 'SUM(A1:A2,)'])(
-    'keeps dependency evaluation before a range-expression error: %s', formula => {
-      const { model, result } = sheet(['2', ''], formula);
-      Object.assign(model.rows[1].cells[0], { formula: 'A1*3', needsCalculation: true });
-      expect(resolveCellValue(model, result)).toBe(`=${formula}`);
-      expect(model.rows[1].cells[0]).toMatchObject({ value: '6', needsCalculation: false });
-    });
+  it.each([
+    ['SUM((A1:A2)+1)', '3', false], ['SUM(A1:A2*0)', '0', false],
+    ['SUM((A1:A2)', '=SUM((A1:A2)', false], ['SUM(A1:A2,)', '=SUM(A1:A2,)', true]
+  ])('evaluates only the range cells used by %s', (formula, expected, visitsRange) => {
+    const { model, result } = sheet(['2', ''], formula);
+    Object.assign(model.rows[1].cells[0], { formula: 'A1*3', needsCalculation: true });
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(model.rows[1].cells[0]).toMatchObject({ value: visitsRange ? '6' : '', needsCalculation: !visitsRange });
+  });
 
   it('stops reading later dependencies when a streamed range contains nonnumeric data', () => {
     const { model, result } = sheet(['text', ''], 'SUM(A1:A2)');
@@ -1105,16 +1620,16 @@ describe('formula range evaluation', () => {
   });
 
   it.each([
-    ['SUM(A1:A2+C1)', true], ['SUM((A1:A2)*C1)', true],
-    ['SUM((A1:A2)^C1)', false], ['+(A1:A2)+C1', false]
-  ])('preserves right-hand dependency reads for unsupported range arithmetic: %s', (formula, readsRight) => {
+    ['SUM(A1:A2+C1)', '9'], ['SUM((A1:A2)*C1)', '14'],
+    ['SUM((A1:A2)^C1)', '128'], ['+(A1:A2)+C1', '9']
+  ])('keeps the scalar dependency after intersecting the range in %s', (formula, expected) => {
     const { model, result } = sheet(['2', ''], formula);
     Object.assign(model.rows[1].cells[0], { formula: 'A1*3', needsCalculation: true });
     const right: ParsedCell = { ref: 'C1', row: 1, column: 3, value: '', formula: '3+4', needsCalculation: true };
     model.rows[0].cells.push(right);
-    expect(resolveCellValue(model, result)).toBe(`=${formula}`);
-    expect(model.rows[1].cells[0]).toMatchObject({ value: '6', needsCalculation: false });
-    expect(right).toMatchObject({ value: readsRight ? '7' : '', needsCalculation: !readsRight });
+    expect(resolveCellValue(model, result)).toBe(expected);
+    expect(model.rows[1].cells[0]).toMatchObject({ value: '', needsCalculation: true });
+    expect(right).toMatchObject({ value: '7', needsCalculation: false });
   });
 
   it('handles reversed absolute ranges, boolean values and empty cells', () => {
@@ -1189,7 +1704,7 @@ describe('typed workbook formulas', () => {
     const row = (index: number) => summary.rows[index].cells.map(cell => resolveCellValue(summary, cell));
     expect(row(0)).toEqual(['10', '15', '7.5', 'total: 15', 'safe', '2.68', '1', '1', '6']);
     expect(input.rows[0].cells[0].value).toBe('10');
-    expect(row(1)).toEqual(['=Input!B1', 'missing', '#N/A', '4:TRUE', '5', "='[remote.xlsx]Sheet1'!A1"]);
+    expect(row(1)).toEqual(['=Input!B1', 'missing', '#N/A', '4:TRUE', '5', "='[remote.xlsx]Sheet1'!A1", '3.4', '-3.2', '#DIV/0!']);
     const last = summary.rows[2].cells[0];
     expect(resolveCellValue(summary, last)).toBe('225.25');
     expect(summary.rows[0].cells[3].valueType).toBe('text');

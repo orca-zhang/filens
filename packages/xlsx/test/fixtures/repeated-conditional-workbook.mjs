@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { prefixXmlElements } from './worksheet-batches.mjs';
 
-export async function createRepeatedConditionalWorkbook(duplicates = 2000, { storeWorksheet = false, prefixed = false, linkedBar = false } = {}) {
+export async function createRepeatedConditionalWorkbook(duplicates = 2000, { storeWorksheet = false, prefixed = false, linkedBar = false, separateGroups = false } = {}) {
   const zip = new JSZip();
   zip.file('xl/workbook.xml', '<workbook><sheets><sheet name="Repeated Rules" sheetId="1" r:id="s1"/></sheets></workbook>');
   zip.file('xl/_rels/workbook.xml.rels', '<Relationships><Relationship Id="s1" Target="worksheets/s1.xml"/></Relationships>');
@@ -25,13 +25,16 @@ export async function createRepeatedConditionalWorkbook(duplicates = 2000, { sto
     + '<e:cfvo type="autoMin"/><e:cfvo type="autoMax"/><e:fillColor rgb="FF00FF00"/></e:dataBar>'
     + '<m:f>A1&gt;0</m:f></e:cfRule><e:cfRule type="unsupported" priority="13"/>' : '';
   const repetitions = Math.floor(duplicates / 2);
+  const repeatedBase = Array.from({ length: repetitions }, (_, index) => baseRule(index + 20, 0, 'A1&gt;0'));
+  const repeatedExtension = Array.from({ length: duplicates - repetitions }, (_, index) => red(index + repetitions + 20));
   const base = [group(whole, bar + baseRule(2, 1, 'A1&gt;0') + baseRule(3, 2, 'AND(A1&gt;0,COLUMN()=2)', true)
-    + baseRule(4, 3, 'A1&gt;0') + Array.from({ length: repetitions }, (_, index) => baseRule(index + 20, 0, 'A1&gt;0')).join('')),
+    + baseRule(4, 3, 'A1&gt;0') + (separateGroups ? '' : repeatedBase.join(''))),
+  ...(separateGroups ? repeatedBase.map(rule => group(whole, rule)) : []),
   group(values, '<cfRule type="top10" priority="5" rank="1" dxfId="4"/>'),
   group(smaller, baseRule(7, 5, '$C1&gt;0')), group('D4:D5 D1:D2', baseRule(8, 5, '$C1&gt;0')),
   group('F1', baseRule(9, 5, 'TRUE') + baseRule(10, 5, 'TRUE', true) + baseRule(11, 3, 'TRUE'))].join('');
-  const extension = extensionGroup(whole, red(1)
-    + Array.from({ length: duplicates - repetitions }, (_, index) => red(index + repetitions + 20)).join('') + barExtension)
+  const extension = extensionGroup(whole, red(1) + (separateGroups ? '' : repeatedExtension.join('')) + barExtension)
+    + (separateGroups ? repeatedExtension.map(rule => extensionGroup(whole, rule)).join('') : '')
     + extensionGroup(values, '<e:cfRule type="aboveAverage" priority="6"><e:dxf><font><strike/></font></e:dxf></e:cfRule>');
   const worksheet = '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
     + ' xmlns:e="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" xmlns:m="http://schemas.microsoft.com/office/excel/2006/main">'

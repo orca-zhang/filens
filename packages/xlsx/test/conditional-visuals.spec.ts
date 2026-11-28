@@ -99,6 +99,7 @@ describe('conditional visual rules', () => {
     expect(bar(2, 4)).toMatchObject({ start: 37.5, width: 12.5, gradient: 'left', color: '#4466BB' });
     const merged = view(500, 8, cellAt(sheet, 500, 8))?.dataBar;
     expect(merged?.width).toBeCloseTo(77.77778);
+    expect(bar(1_048_576, 16_383)).toEqual(merged);
   });
 
   it('keeps the legacy bar if its linked extension is damaged', async () => {
@@ -112,6 +113,26 @@ describe('conditional visual rules', () => {
     expect(bar).toMatchObject({ start: 0, width: 20, color: '#008866', gradient: 'right' });
     expect(bar?.axis).toBeUndefined();
     expect(warnings).toEqual(['Ignored 2 invalid conditional formatting rules in sheet Visual Rules.']);
+  });
+
+  it('reads extended percent and percentile attributes and prioritizes saved formula elements', async () => {
+    const source = await createConditionalVisualWorkbook();
+    const zip = await JSZip.loadAsync(source);
+    const path = 'xl/worksheets/s1.xml';
+    const xml = await zip.file(path)!.async('string');
+    zip.file(path, xml.replace('<v:cfvo type="autoMin"/><v:cfvo type="autoMax"/>',
+      '<v:cfvo type="percentile" value="0"/><v:cfvo type="percent" value="100"/>')
+      .replace('<v:cfvo type="num"><m:f>-8</m:f>', '<v:cfvo type="num" value="-100"><m:f>-8</m:f>'));
+    const workbook = await loadXlsxWorkbook(await zip.generateAsync({ type: 'uint8array' }));
+    const { sheets: [sheet] } = workbook;
+    expect(workbook.warnings).toEqual(['Ignored 1 invalid conditional formatting rules in sheet Visual Rules.']);
+    expect(sheet.conditionalRules?.find(rule => rule.priority === 3)?.condition).toMatchObject({
+      axis: 'automatic', minLength: 0, maxLength: 100,
+      thresholds: [{ type: 'percentile', value: 0 }, { type: 'percent', value: 100 }]
+    });
+    expect(sheet.conditionalRules?.find(rule => rule.priority === 4)?.condition).toMatchObject({
+      thresholds: [{ type: 'num', value: -8 }, { type: 'formula', formula: 'Upper-2' }]
+    });
   });
 
   it('shares percentile scans per range, preserves fast-path metadata and isolates cached sessions', async () => {

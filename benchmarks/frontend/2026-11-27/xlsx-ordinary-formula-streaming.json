@@ -1,0 +1,195 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Three fresh Node processes per build on each workload, alternating build order. Load file-backed Blobs into XlsxPreviewSession with jsdom. Measure complete load, peak RSS and additional retained V8 heap after two collections. Measure before hashing source cells and first viewport HTML and recalculating the saved cross-sheet summary.",
+  "builds": {
+    "baseline": "3afd441ff02fc7835375297b1184d7499f5fa9f1bb86901eaa91a919df643f14",
+    "direct": "fa75dfaca8e51b78971c409c913a4a187096348ca2c400e0337d7d0bed6c2504"
+  },
+  "workloads": {
+    "formulas": {
+      "contents": "125,000 rows by eight columns. One cached arithmetic formula and three inline strings per row. XlsxWriter 3.2.9 constant_memory.",
+      "archiveBytes": 4614851,
+      "sha256": "35409a346aeed9d6b1062bd0b25e5efbca0057b10a88d1983ccf94e4a13e426a",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 4554.460709,
+            "peakRssKiB": 601200,
+            "heapBytes": 128856168
+          },
+          {
+            "loadMs": 4575.279875,
+            "peakRssKiB": 600000,
+            "heapBytes": 128859664
+          },
+          {
+            "loadMs": 4602.912041,
+            "peakRssKiB": 602000,
+            "heapBytes": 128905080
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1380.082458,
+            "peakRssKiB": 375296,
+            "heapBytes": 129703192
+          },
+          {
+            "loadMs": 1416.1625,
+            "peakRssKiB": 374032,
+            "heapBytes": 129684320
+          },
+          {
+            "loadMs": 1412.053875,
+            "peakRssKiB": 376224,
+            "heapBytes": 129731600
+          }
+        ]
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "4d66dcf5852fbe933a533197ea320ccd4044c038c665444e9eec8e0210818c36",
+        "markupHash": "f99dddd42f0f87e73efbd8496f213516a3b1f6c12733550e43e1e32c5aa63491",
+        "formula": "7812562500"
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 4575.3,
+          "peakRssMiB": 587.1,
+          "retainedHeapMiB": 122.9
+        },
+        "direct": {
+          "loadMs": 1412.1,
+          "peakRssMiB": 366.5,
+          "retainedHeapMiB": 123.7
+        }
+      }
+    },
+    "wide-first": {
+      "contents": "125,000 rows by four columns of formula, numeric and mixed text data with 6,400 extra inline strings in the first row. XlsxWriter 3.2.9 constant_memory.",
+      "archiveBytes": 4467303,
+      "sha256": "0769eb32abb28a6ca66b385bceee2cac8000d94e267849a867dabd41a05068fe",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 3273.133917,
+            "peakRssKiB": 558352,
+            "heapBytes": 108832560
+          },
+          {
+            "loadMs": 3287.434,
+            "peakRssKiB": 567088,
+            "heapBytes": 108818632
+          },
+          {
+            "loadMs": 3253.194833,
+            "peakRssKiB": 499760,
+            "heapBytes": 108678608
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1373.679375,
+            "peakRssKiB": 419936,
+            "heapBytes": 108322488
+          },
+          {
+            "loadMs": 1375.160833,
+            "peakRssKiB": 417488,
+            "heapBytes": 108424568
+          },
+          {
+            "loadMs": 1456.237875,
+            "peakRssKiB": 373488,
+            "heapBytes": 108475456
+          }
+        ]
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 506400,
+        "modelHash": "f9ff9033e9030e8421e5cdf5813e6af37a0f099a4df14414610c8d9d301412f6",
+        "markupHash": "4a94e1bce9d2520aa480b662fe65f77961eab2c61354194c75e6d53c78df6fbf",
+        "formula": "7812562500"
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 3273.1,
+          "peakRssMiB": 545.3,
+          "retainedHeapMiB": 103.8
+        },
+        "direct": {
+          "loadMs": 1375.2,
+          "peakRssMiB": 407.7,
+          "retainedHeapMiB": 103.4
+        }
+      }
+    },
+    "narrow": {
+      "contents": "250,000 rows by four columns of numeric, text and logical values. XlsxWriter 3.2.9 constant_memory.",
+      "archiveBytes": 4772521,
+      "sha256": "01cf9796e3a843d5fe417f5b63c02abf5ddd0835e1356d634b42ffaba64aeadc",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1186.474584,
+            "peakRssKiB": 344032,
+            "heapBytes": 121212112
+          },
+          {
+            "loadMs": 1209.851625,
+            "peakRssKiB": 352416,
+            "heapBytes": 121209984
+          },
+          {
+            "loadMs": 1219.893333,
+            "peakRssKiB": 356592,
+            "heapBytes": 121208624
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1229.926708,
+            "peakRssKiB": 359328,
+            "heapBytes": 121203680
+          },
+          {
+            "loadMs": 1250.2469999999998,
+            "peakRssKiB": 343600,
+            "heapBytes": 121011592
+          },
+          {
+            "loadMs": 1211.619458,
+            "peakRssKiB": 356160,
+            "heapBytes": 121229112
+          }
+        ]
+      },
+      "model": {
+        "rows": 250000,
+        "cells": 1000000,
+        "modelHash": "c28b65b6ad7c3877da73b81d4995b72f760bd91d15d3c456cccb864d5c45a8de",
+        "markupHash": "26b0141d56905c646d4decc3a385fef3858554f4e806d34fdf6aa34573ea6061",
+        "formula": "31250125000"
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1209.9,
+          "peakRssMiB": 344.2,
+          "retainedHeapMiB": 115.6
+        },
+        "direct": {
+          "loadMs": 1229.9,
+          "peakRssMiB": 347.8,
+          "retainedHeapMiB": 115.6
+        }
+      }
+    }
+  }
+}

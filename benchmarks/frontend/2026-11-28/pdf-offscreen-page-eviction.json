@@ -1,0 +1,204 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS 26.6.2 arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "browser": "Chromium 159.0.8154.6",
+  "fixture": {
+    "pageCount": 1025,
+    "bytes": 707322,
+    "jumps": 256,
+    "source": "HTTP ranges",
+    "viewport": {
+      "width": 800,
+      "height": 600
+    }
+  },
+  "method": "Three new browser contexts per variant in alternating order. Each run opens the same PDF through the built standalone PDF driver and visits every fourth page, waiting for its canvas and selectable text and checking the expected page label. Chromium CDP forces garbage collection in the main realm and worker and counts live PDFPageProxy and Page objects by prototype. The worker adds a prototype reference for inspection. Heap counts include the rest of both JavaScript realms, including retained source metadata and viewer state. Navigation timings include frame scheduling and range I/O.",
+  "summaries": {
+    "before": {
+      "finalMainPageProxies": 769,
+      "finalWorkerPages": 769,
+      "finalMedianMainHeapBytes": 5090256,
+      "finalMedianWorkerHeapBytes": 4296036,
+      "medianNavigationMs": 12791.099999904633
+    },
+    "after": {
+      "finalMainPageProxies": 2,
+      "finalWorkerPages": 2,
+      "finalMedianMainHeapBytes": 4842624,
+      "finalMedianWorkerHeapBytes": 3827816,
+      "medianNavigationMs": 12787.300000190735
+    }
+  },
+  "results": [
+    {
+      "variant": "before",
+      "run": 0,
+      "initial": {
+        "main": {
+          "pages": 2,
+          "heapBytes": 4059472
+        },
+        "worker": {
+          "pages": 3,
+          "heapBytes": 2591456
+        }
+      },
+      "final": {
+        "main": {
+          "pages": 769,
+          "heapBytes": 5092772
+        },
+        "worker": {
+          "pages": 769,
+          "heapBytes": 4294476
+        }
+      },
+      "navigation": {
+        "elapsedMs": 12771,
+        "slots": 2
+      }
+    },
+    {
+      "variant": "after",
+      "run": 0,
+      "initial": {
+        "main": {
+          "pages": 2,
+          "heapBytes": 4023332
+        },
+        "worker": {
+          "pages": 3,
+          "heapBytes": 2593320
+        }
+      },
+      "final": {
+        "main": {
+          "pages": 2,
+          "heapBytes": 4844520
+        },
+        "worker": {
+          "pages": 2,
+          "heapBytes": 3827592
+        }
+      },
+      "navigation": {
+        "elapsedMs": 12782.899999856949,
+        "slots": 2
+      }
+    },
+    {
+      "variant": "after",
+      "run": 1,
+      "initial": {
+        "main": {
+          "pages": 1,
+          "heapBytes": 4002028
+        },
+        "worker": {
+          "pages": 3,
+          "heapBytes": 2593036
+        }
+      },
+      "final": {
+        "main": {
+          "pages": 2,
+          "heapBytes": 4842624
+        },
+        "worker": {
+          "pages": 2,
+          "heapBytes": 3827816
+        }
+      },
+      "navigation": {
+        "elapsedMs": 12787.599999904633,
+        "slots": 2
+      }
+    },
+    {
+      "variant": "before",
+      "run": 1,
+      "initial": {
+        "main": {
+          "pages": 2,
+          "heapBytes": 4038076
+        },
+        "worker": {
+          "pages": 3,
+          "heapBytes": 2591720
+        }
+      },
+      "final": {
+        "main": {
+          "pages": 769,
+          "heapBytes": 5090256
+        },
+        "worker": {
+          "pages": 769,
+          "heapBytes": 4296172
+        }
+      },
+      "navigation": {
+        "elapsedMs": 12797.5,
+        "slots": 2
+      }
+    },
+    {
+      "variant": "before",
+      "run": 2,
+      "initial": {
+        "main": {
+          "pages": 1,
+          "heapBytes": 4000844
+        },
+        "worker": {
+          "pages": 3,
+          "heapBytes": 2591720
+        }
+      },
+      "final": {
+        "main": {
+          "pages": 769,
+          "heapBytes": 5087860
+        },
+        "worker": {
+          "pages": 769,
+          "heapBytes": 4296036
+        }
+      },
+      "navigation": {
+        "elapsedMs": 12791.099999904633,
+        "slots": 2
+      }
+    },
+    {
+      "variant": "after",
+      "run": 2,
+      "initial": {
+        "main": {
+          "pages": 1,
+          "heapBytes": 4002028
+        },
+        "worker": {
+          "pages": 3,
+          "heapBytes": 2593036
+        }
+      },
+      "final": {
+        "main": {
+          "pages": 2,
+          "heapBytes": 4841936
+        },
+        "worker": {
+          "pages": 2,
+          "heapBytes": 3829208
+        }
+      },
+      "navigation": {
+        "elapsedMs": 12787.300000190735,
+        "slots": 2
+      }
+    }
+  ]
+}

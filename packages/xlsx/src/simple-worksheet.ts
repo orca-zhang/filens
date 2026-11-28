@@ -3,19 +3,20 @@ import { columnNameToIndex } from './columns';
 import { addHiddenTrack } from './visible-tracks';
 import { createWorksheetCell } from './worksheet-cell';
 import { xlsxRowHeight } from './xlsx-row-heights';
-import { decodeSpreadsheetText } from './xml-values';
+import { decodePlainSpreadsheetXmlText, decodePlainXmlText, decodeSpreadsheetText } from './xml-values';
 
 // Reuse patterns across cells. Every stateful attribute match sets its cursor
 // before execution, including after a previous worksheet rejected the input.
 const attributePattern = /\s+([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"<>&]*)"|'([^'<>&]*)')/gy;
 const valuePattern = /^\s*(?:<v\s*>([\s\S]*?)<\/v\s*>|<v\s*\/>)?\s*$/;
-const inlineTextPattern = /^\s*<is\s*>\s*<t(?:\s+xml:space\s*=\s*(?:"(?:preserve|default)"|'(?:preserve|default)'))?\s*>([^<&\r]*)<\/t\s*>\s*<\/is\s*>\s*$/;
+const formulaPattern = /^\s*<f(?:\s+t\s*=\s*(?:"normal"|'normal'))?\s*>([^<\r]*)<\/f\s*>/;
+const specialFormulaPattern = /^\s*<f(?=\s)([^<>]*?)(?:\/>|>([^<\r]*)<\/f\s*>)/;
+const inlineTextPattern = /^\s*(?:<is\s*\/>|<is\s*>\s*(?:<t(?:\s+xml:space\s*=\s*(?:"(?:preserve|default)"|'(?:preserve|default)'))?\s*(?:\/>|>([^<\r]*)<\/t\s*>))?\s*<\/is\s*>)?\s*$/;
+const richInlinePattern = /^\s*<is\s*>\s*<r(?=[\s/>])[\s\S]*<\/is\s*>\s*$/;
 const numberPattern = /^[\s]*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?\s*$/;
 const booleanPattern = /^\s*(?:true|false)\s*$/;
 const referencePattern = /^([A-Z]+)([1-9]\d*)$/i;
 
-/** Read simple cells directly into the model. Formulas and text that needs XML
- * decoding use the general parser. */
 interface SimpleWorksheetOptions {
   id: string;
   name: string;
@@ -23,7 +24,23 @@ interface SimpleWorksheetOptions {
   styles?: ParsedCellStyle[];
   columnStyle?: (column: number) => number;
   forPreview?: boolean;
-  allowInline?: boolean;
+}
+
+interface WorksheetFormulaEntry {
+  cell: ParsedCell;
+  type: 'shared' | 'array';
+  si?: string;
+  ref?: string;
+  cm?: string;
+  uncached: boolean;
+}
+
+export interface WorksheetBatchState {
+  formulaEntries?: WorksheetFormulaEntry[];
+  inlineEntries?: { cell: ParsedCell; xml: string }[];
+  sharedStrings?: { through: number; missing?: { cell: ParsedCell; index: number }[] };
+  usesTypedValues?: boolean;
+  ambiguousValues?: boolean;
 }
 
 export function readSimpleWorksheet(xml: string, options: SimpleWorksheetOptions): ParsedSheet | undefined {
@@ -37,9 +54,10 @@ export function readSimpleWorksheet(xml: string, options: SimpleWorksheetOptions
   return readSimpleRows(xml.slice(start, end), options);
 }
 
-export function readSimpleRows(data: string, { id, name, sharedStrings, styles, columnStyle, forPreview, allowInline }: SimpleWorksheetOptions,
-  previousRow = 0): ParsedSheet | undefined {
-  if ((allowInline ? /&|<f\b/ : /<(?:f|is)\b/).test(data)) return undefined;
+export function readSimpleRows(data: string, { id, name, sharedStrings, styles, columnStyle, forPreview }: SimpleWorksheetOptions,
+  previousRow = 0, batch?: WorksheetBatchState): ParsedSheet | undefined {
+  if (!batch && /<(?:f|is)\b/.test(data)) return undefined;
+  const formulaEntries = batch?.formulaEntries;
   const rows: ParsedRow[] = [];
   const hiddenRows: ParsedTrackRange[] = [];
   const heights = new Map<number, ParsedRowHeight>();
@@ -73,24 +91,66 @@ export function readSimpleRows(data: string, { id, name, sharedStrings, styles, 
       cellOffset = cellPattern.lastIndex;
       const attrs = attributes(cell[1]);
       if (!attrs) return undefined;
-      const inline = allowInline && attrs.t === 'inlineStr';
-      if (!inline && attrs.t && !['n', 's', 'b'].includes(attrs.t)) return undefined;
-      const valueMatch = (inline ? inlineTextPattern : valuePattern).exec(cell[2] ?? '');
-      if (!valueMatch) return undefined;
-      const raw = inline ? decodeSpreadsheetText(valueMatch[1] ?? '') : valueMatch[1] ?? '';
-      if (!inline && raw.trim() && !numberPattern.test(raw) && !booleanPattern.test(raw)) return undefined;
+      const kind = attrs.t;
+      const body = cell[2] ?? '';
+      const ordinary = formulaEntries ? formulaPattern.exec(body) : null;
+      const special = formulaEntries && !ordinary ? specialFormulaPattern.exec(body) : null;
+      const savedFormula = ordinary ?? special;
+      const formulaAttrs = special ? attributes(special[1]) : undefined;
+      const formulaType = formulaAttrs?.t;
+      const shared = formulaType === 'shared';
+      if (special && !shared && formulaType !== 'array') return undefined;
+      const formula = savedFormula ? decodePlainXmlText(ordinary?.[1] ?? special?.[2] ?? '') : undefined;
+      if (savedFormula && (formula === undefined || (!formula && !shared))) return undefined;
+      const inline = batch && kind === 'inlineStr';
+      if (inline && savedFormula) return undefined;
+      const textValue = batch && (kind === 'str' || kind === 'e' || kind === 'd');
+      if (!inline && !textValue && kind && kind !== 'n' && kind !== 's' && kind !== 'b') return undefined;
+      const valueBody = savedFormula ? body.slice(savedFormula[0].length) : body;
+      const valueMatch = (inline ? inlineTextPattern : valuePattern).exec(valueBody);
+      const richInline = !valueMatch && inline && richInlinePattern.test(valueBody)
+        && valueBody.indexOf('</is') === valueBody.lastIndexOf('</is');
+      if (!valueMatch && !richInline) return undefined;
+      const savedText = valueMatch?.[1];
+      const text = savedText ?? '';
+      if (textValue && /[<\r]/.test(text)) return undefined;
+      const raw = inline ? decodePlainSpreadsheetXmlText(text) : textValue ? decodePlainXmlText(text) : text;
+      if (raw === undefined) return undefined;
+      const trimmed = inline || textValue ? raw : raw.trim();
+      if (!inline && !textValue && trimmed && !numberPattern.test(raw) && !booleanPattern.test(raw)) return undefined;
+      if (batch && (inline || textValue)) batch.usesTypedValues = true;
       const ref = attrs.r === undefined ? undefined : referencePattern.exec(attrs.r);
       if (ref === null) return undefined;
       if (!ref && (column >= 16_384 || index > 1_048_576)) continue;
       column = ref ? columnNameToIndex(ref[1]) : column + 1;
-      const value = attrs.t === 's' ? (raw.trim() ? sharedStrings[Number(raw)] ?? '' : '') :
-        attrs.t === 'b' ? (raw.trim() === '1' || raw.trim() === 'true' ? 'TRUE' : 'FALSE') : copyCellText(raw, valueUnits);
+      const sharedIndex = kind === 's' && trimmed ? Number(raw) : -1;
+      const value = kind === 's' ? sharedStrings[sharedIndex] ?? '' :
+        kind === 'b' ? (trimmed === '1' || trimmed === 'true' ? 'TRUE' : 'FALSE') :
+          copyCellText(kind === 'str' ? decodeSpreadsheetText(raw) : raw, valueUnits);
+      const type = inline || kind === 's' || kind === 'str' ? 'text' : kind === 'b' ? 'boolean'
+        : kind === 'e' ? 'error' : kind === 'd' ? 'date' : undefined;
+      const selfClosingValue = !inline && savedText === undefined && valueBody.includes('<v');
+      const missing = savedText === undefined && (inline ? !valueBody.trim() : !(selfClosingValue && (textValue || savedFormula)));
+      // The older simple reader treats a self-closing shared-string or boolean value as missing.
+      if (batch && selfClosingValue && !savedFormula && (kind === 's' || kind === 'b')) batch.ambiguousValues = true;
+      const uncached = missing || (!type && !trimmed);
+      const waiting = uncached && savedFormula;
       const parsed = createWorksheetCell(attrs.r, ref ? Number(ref[2]) : index, column,
-        typeof value === 'string' ? value : value.value, forPreview);
-      if (typeof value !== 'string') parsed.richText = value;
-      if (inline || attrs.t === 's') parsed.valueType = 'text';
-      if (attrs.t === 'b') parsed.valueType = 'boolean';
-      if (parsed.valueType && valueMatch[1] === undefined) parsed.missingValue = true;
+        waiting ? '' : typeof value === 'string' ? value : value.value, type, forPreview && !savedFormula);
+      if (typeof value !== 'string' && !waiting) parsed.richText = value;
+      if (batch?.sharedStrings && sharedIndex >= 0 && Number.isSafeInteger(sharedIndex)) {
+        batch.sharedStrings.through = Math.max(batch.sharedStrings.through, sharedIndex);
+        if (sharedIndex >= sharedStrings.length && !waiting) (batch.sharedStrings.missing ??= []).push({ cell: parsed, index: sharedIndex });
+      }
+      if (richInline) (batch!.inlineEntries ??= []).push({ cell: parsed, xml: valueBody });
+      if (formula) {
+        parsed.formula = copyCellText(formula, valueUnits);
+        parsed.needsCalculation = uncached;
+      } else if (type && missing) parsed.missingValue = true;
+      if (shared || (formulaType === 'array' && parsed.row === index)) {
+        formulaEntries!.push({ cell: parsed, type: formulaType, si: formulaAttrs?.si,
+          ref: formulaAttrs?.ref, cm: attrs.cm, uncached });
+      }
       if (styles?.length) {
         const styleIndex = attrs.s === undefined ? rowStyleIndex ?? columnStyle?.(column) ?? 0 : Number(attrs.s);
         const font = forPreview ? undefined : styles[styleIndex]?.font;
@@ -127,14 +187,16 @@ function attributes(source: string) {
   // attribute, but store only fields used by the worksheet reader.
   const values = { r: undefined as string | undefined, s: undefined as string | undefined,
     t: undefined as string | undefined, customFormat: undefined as string | undefined, hidden: undefined as string | undefined,
-    ht: undefined as string | undefined, customHeight: undefined as string | undefined };
+    ht: undefined as string | undefined, customHeight: undefined as string | undefined,
+    si: undefined as string | undefined, ref: undefined as string | undefined, cm: undefined as string | undefined };
   let offset = 0;
   while (offset < source.length) {
     attributePattern.lastIndex = offset;
     const match = attributePattern.exec(source);
     if (!match) return source.slice(offset).trim() ? undefined : values;
     const key = match[1];
-    if (key === 'r' || key === 's' || key === 't' || key === 'customFormat' || key === 'hidden' || key === 'ht' || key === 'customHeight') {
+    if (key === 'r' || key === 's' || key === 't' || key === 'customFormat' || key === 'hidden' || key === 'ht' || key === 'customHeight'
+      || key === 'si' || key === 'ref' || key === 'cm') {
       values[key] = match[2] ?? match[3];
     }
     offset = attributePattern.lastIndex;

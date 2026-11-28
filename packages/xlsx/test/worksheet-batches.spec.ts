@@ -2,11 +2,14 @@ import { openZipArchive } from '@filens/core';
 import { XMLParser } from 'fast-xml-parser';
 import JSZip from 'jszip';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import * as formulaRegex from '../src/formula-regex';
+import { displaySpillCell } from '../src/cell-value';
 import { loadXlsxWorkbook, readXlsxWorkbook, resolveCellValue } from '../src/parser';
 import { createImplicitCoordinateWorkbook, createWorksheetBatchWorkbook, prefixXmlElements } from './fixtures/worksheet-batches.mjs';
 import { createColumnStyledWorkbookFixture } from './fixtures/workbook.mjs';
 
 const chunkStart = '<worksheet><sheetData>';
+const inlineBatchStart = '<inlineCells>';
 afterEach(() => vi.restoreAllMocks());
 
 describe('large worksheet XML parsing', () => {
@@ -58,13 +61,14 @@ describe('large worksheet XML parsing', () => {
     expect(new Set(cells).size).toBe(4);
   });
 
-  it('reads plain inline strings directly before and after an escaped string batch', async () => {
+  it('reads standard references directly and preserves other named entities through the general parser', async () => {
     const path = 'xl/worksheets/sheet.xml';
     const zip = await JSZip.loadAsync(await createColumnStyledWorkbookFixture(9500, 4));
     const xml = await zip.file(path)!.async('string');
     const text = ' 跨块\ntext with 😀 and >\t ';
+    const encoded = ' &amp;lt;&lt;&gt;&quot;&apos;&#x26;amp;&#13;&#10;&#9; &#95;x0041_ _x005F_x0041_ &#x1F603; ';
     zip.file(path, xml.replace(/<c r="C(\d+)"><v>\d+<\/v><\/c>/g, (_, row) => {
-      const value = row === '2' ? '' : row === '4500' ? 'Escaped &amp; text' : text;
+      const value = row === '2' ? '' : row === '4' ? encoded : row === '4500' ? 'Named&nbsp;entity' : text;
       return `<c r="C${row}" t="inlineStr"><is><t xml:space='preserve'>${value}</t></is></c>`;
     }));
     const source = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
@@ -74,7 +78,8 @@ describe('large worksheet XML parsing', () => {
     expect(read).not.toHaveBeenCalled();
     const parsedRows = parse.mock.calls.flatMap(([xml]) => typeof xml === 'string' && xml.includes('<row r=') ? [xml] : []);
     expect(parsedRows).toHaveLength(1);
-    expect(parsedRows[0]).toContain('Escaped &amp; text');
+    expect(parsedRows[0]).toContain('Named&nbsp;entity');
+    expect(parsedRows[0]).not.toContain(encoded);
     expect(parsedRows[0]).not.toMatch(/<row r="(?:1|9500)"/);
     entry.chunks = undefined;
     expect(workbook).toEqual(await loadXlsxWorkbook(source, { descriptor: { source }, zipEntries }));
@@ -82,37 +87,153 @@ describe('large worksheet XML parsing', () => {
     expect(first.cells[2]).toMatchObject({ value: text, valueType: 'text', font: { fontFamily: 'Times New Roman' } });
     expect(second.cells[2]).toMatchObject({ value: '', valueType: 'text' });
     expect(second.cells[2].missingValue).toBeUndefined();
-    expect(workbook.sheets[0].rows[4499].cells[2].value).toBe('Escaped & text');
+    expect(workbook.sheets[0].rows[3].cells[2].value).toBe(' &lt;<>"\'&amp;\r\n\t A _x0041_ 😃 ');
+    expect(workbook.sheets[0].rows[4499].cells[2].value).toBe('Named\u00a0entity');
   });
 
-  it('keeps general XML value semantics when inline strings follow ambiguous numeric rows', async () => {
+  it.each(['simple', 'inline', 'date'])('preserves empty value and line endings when later rows are %s', async tail => {
     const path = 'xl/worksheets/sheet.xml';
     const zip = await JSZip.loadAsync(await createColumnStyledWorkbookFixture(6000, 4));
     const xml = await zip.file(path)!.async('string');
-    zip.file(path, xml.replace('<c r="A1" s="0"><v>4</v>', '<c r="A1" s="0"><v>4\r\n</v>')
+    const last = tail === 'inline' ? '<c r="C6000" t="inlineStr"><is><t>Late text</t></is>'
+      : tail === 'date' ? '<c r="C6000" t="d"><v>2024-02-29</v>' : '<c r="C6000"><v>24002</v>';
+    const rows = tail === 'date' ? xml : xml.replace('<c r="A1" s="0"><v>4</v>', '<c r="A1" s="0"><v>4\r\n</v>');
+    zip.file(path, rows
       .replace('<c r="B1" t="s"><v>1</v>', '<c r="B1" t="s"><v/>')
-      .replace('<c r="C6000"><v>24002</v>', '<c r="C6000" t="inlineStr"><is><t>Late text</t></is>'));
+      .replace('<c r="D1"><v>7</v>', '<c r="D1" t="b"><v />')
+      .replace('<c r="C6000"><v>24002</v>', last));
     const source = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
     const { sheets: [sheet] } = await loadXlsxWorkbook(source);
-    expect(sheet.rows[0].cells[0].value).toBe('4\n');
+    expect(sheet.rows[0].cells[0].value).toBe(tail === 'simple' ? '4\r\n' : tail === 'inline' ? '4\n' : '4');
     expect(sheet.rows[0].cells[1]).toMatchObject({ value: '', valueType: 'text' });
-    expect(sheet.rows[0].cells[1].missingValue).toBeUndefined();
-    expect(sheet.rows.at(-1)?.cells[2]).toMatchObject({ value: 'Late text', valueType: 'text' });
+    expect(sheet.rows[0].cells[1].missingValue).toBe(tail === 'simple' ? true : undefined);
+    expect(sheet.rows[0].cells[3]).toMatchObject({ value: 'FALSE', valueType: 'boolean' });
+    expect(sheet.rows[0].cells[3].missingValue).toBe(tail === 'simple' ? true : undefined);
+    expect(sheet.rows.at(-1)?.cells[2].value).toBe(tail === 'simple' ? '24002' : tail === 'inline' ? 'Late text' : '2024-02-29');
   });
 
-  it('produces the same model as whole-sheet parsing across multiple row batches', async () => {
+  it('streams literal dates, errors, and empty or escaped text without parsing row objects', async () => {
+    const path = 'xl/worksheets/sheet.xml';
+    const zip = await JSZip.loadAsync(await createColumnStyledWorkbookFixture(9500, 4));
+    const xml = await zip.file(path)!.async('string');
+    zip.file(path, xml.replace(/<c r="C(\d+)"><v>\d+<\/v><\/c>/g, (_, row) => {
+      const value = row === '1' ? 't="str"><v>_x0041_ &amp; &#x1F603;</v>'
+        : row === '2' ? 't="str"><v/>' : 't="d"><v>2024-02-29T14:30:00</v>';
+      return `<c r="C${row}" ${value}</c>`;
+    }).replace('<c r="D1"><v>7</v></c>', '<c r="D1" t="e"><v>#N/A</v></c>')
+      .replace('<c r="D2"><v>11</v></c>', '<c r="D2" t="inlineStr"><is><t xml:space="preserve"/></is></c>')
+      .replace('<c r="D3"><v>15</v></c>', '<c r="D3" t="inlineStr"><is/></c>')
+      .replace('<c r="D4"><v>19</v></c>', '<c r="D4" t="inlineStr"></c>')
+      .replace('<c r="D9500"><v>38003</v></c>', '<c r="D9500" t="str"/>'));
+    const source = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const zipEntries = await openZipArchive(source), entry = zipEntries.get(path)!;
+    const read = vi.spyOn(entry, 'bytes'), parse = vi.spyOn(XMLParser.prototype, 'parse');
+    const context = { descriptor: { source }, zipEntries };
+    const workbook = await loadXlsxWorkbook(source, context);
+    expect(read).not.toHaveBeenCalled();
+    expect(parse.mock.calls.some(([xml]) => typeof xml === 'string' && xml.includes('<row r='))).toBe(false);
+    entry.chunks = undefined;
+    expect(workbook).toEqual(await loadXlsxWorkbook(source, context));
+    const [sheet] = workbook.sheets;
+    expect(sheet.rows[0].cells[2]).toMatchObject({ value: 'A & 😃', valueType: 'text', font: { fontFamily: 'Times New Roman' } });
+    expect(sheet.rows[0].cells[3]).toMatchObject({ value: '#N/A', valueType: 'error' });
+    expect(sheet.rows[1].cells[2]).toMatchObject({ value: '', valueType: 'text' });
+    expect(sheet.rows[1].cells[2].missingValue).toBeUndefined();
+    expect(sheet.rows[1].cells[3].missingValue).toBeUndefined();
+    expect(sheet.rows[2].cells[3].missingValue).toBeUndefined();
+    expect(sheet.rows[3].cells[3]).toMatchObject({ value: '', valueType: 'text', missingValue: true });
+    expect(sheet.rows.at(-1)?.cells[2]).toMatchObject({ value: '2024-02-29T14:30:00', valueType: 'date' });
+    expect(sheet.rows.at(-1)?.cells[3]).toMatchObject({ value: '', valueType: 'text', missingValue: true });
+  });
+
+  it('streams ordinary, shared and array formulas across a batch that requires XML fallback', async () => {
+    const path = 'xl/worksheets/rows.xml';
+    const zip = await JSZip.loadAsync(await createWorksheetBatchWorkbook(2));
+    const first = '<row r="1"><c r="A1"><v>2</v></c><c r="B1"><f t="normal">A1*2</f></c>'
+      + '<c r="C1" t="str"><f>IF(A1&lt;3,&quot;_x0041_&quot;,&quot;&quot;)</f><v>_x0042_ &amp; &#x1F603;</v></c>'
+      + '<c r="D1" t="b"><f>A1&gt;0</f><v>1</v></c><c r="E1" t="e"><f>1/0</f><v>#DIV/0!</v></c>'
+      + '<c r="F1" t="d"><f>DATE(2024,2,29)</f><v>2024-02-29</v></c>'
+      + '<c r="G1" t="str"><f>""</f><v/></c><c r="H1" t="b"><f>A1&gt;0</f></c>'
+      + '<c r="I1"><f>_xlfn.REGEXTEST("case","c.*")</f></c>'
+      + '<c r="J1"><f ref="J1:K1" t="array" aca="1">{5,6}</f></c></row>';
+    const rows = Array.from({ length: 12_000 }, (_, offset) => {
+      const row = offset + 2;
+      let formula = `<f>A${row}+1</f><v>${row + 1}</v>`, extra = '';
+      if (row === 2) formula = '<f t="shared" si="4" ref="B2:B12000">A2+1</f><v>3</v>';
+      if (row === 3) formula = '<f t="shared" si="4"></f><v>40</v>';
+      if (row === 6000) {
+        formula = '<f t="shared" si="5" ref="B6000:B6001">A6000+1</f>';
+        extra = '<c><f t="array" ref="C6000:D6000">{8,9}</f></c>';
+      } else if (row === 6001) {
+        formula = '<f t="shared" si="5"/>';
+        extra = '<c t="inlineStr"><is><t>Requires general XML&nbsp;</t></is></c>';
+      } else if (row === 12000) formula = '<f t="shared" si="4"/>';
+      else if (row === 12001) extra = '<c cm="1"><f t="array" ref="C12001:F12001">_xlfn.SEQUENCE(1,4)</f></c>';
+      return `<row${row === 12000 ? '' : ` r="${row}"`}><c r="A${row}"><v>${row}</v></c>`
+        + `<c${row === 12000 ? ' t="str"' : ` r="B${row}"`}>${formula}</c>${extra}</row>` + ' '.repeat(65);
+    });
+    const relationships = 'xl/_rels/workbook.xml.rels';
+    zip.file(relationships, (await zip.file(relationships)!.async('string')).replace('</Relationships>',
+      '<Relationship Id="metadata" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata"'
+      + ' Target="metadata.xml"/></Relationships>'));
+    zip.file('xl/metadata.xml', '<metadata xmlns:xda="http://schemas.microsoft.com/office/spreadsheetml/2017/dynamicarray">'
+      + '<metadataTypes><metadataType name="XLDAPR"/></metadataTypes>'
+      + '<futureMetadata name="XLDAPR"><bk><extLst><ext><xda:dynamicArrayProperties fDynamic="1"/></ext></extLst></bk></futureMetadata>'
+      + '<cellMetadata><bk><rc t="1" v="0"/></bk></cellMetadata></metadata>');
+    zip.file(path, '<worksheet><sheetData>' + first + rows.join('') + '</sheetData></worksheet>');
+    const source = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const zipEntries = await openZipArchive(source), entry = zipEntries.get(path)!;
+    const read = vi.spyOn(entry, 'bytes'), parse = vi.spyOn(XMLParser.prototype, 'parse');
+    const prepare = vi.spyOn(formulaRegex, 'prepareFormulaRegex').mockResolvedValue(true);
+    const context = { descriptor: { source }, zipEntries };
+    const workbook = await readXlsxWorkbook(source, context, { onRows: vi.fn() });
+    const parsedBatches = parse.mock.calls.flatMap(([xml]) => typeof xml === 'string' && xml.startsWith(chunkStart)
+      && xml.includes('<row ') ? [xml] : []);
+    expect(read).not.toHaveBeenCalled();
+    expect(prepare).toHaveBeenCalledOnce();
+    expect(parsedBatches).toHaveLength(1);
+    expect(parsedBatches[0]).toContain('Requires general XML');
+    expect(parsedBatches[0]).toContain('si="5" ref=');
+    expect(parsedBatches[0]).not.toMatch(/r="B(?:2|12000)"|cm="1"/);
+    entry.chunks = undefined;
+    expect(workbook).toEqual(await readXlsxWorkbook(source, context, {}));
+    expect(workbook.warnings).toEqual([]);
+    const [sheet] = workbook.sheets;
+    const cells = sheet.rows[0].cells;
+    expect(cells[2]).toMatchObject({ formula: 'IF(A1<3,"_x0041_","")', value: 'B & 😃', valueType: 'text', needsCalculation: false });
+    expect(cells[6]).toMatchObject({ value: '', valueType: 'text', needsCalculation: false });
+    expect(resolveCellValue(sheet, cells[1])).toBe('4');
+    expect(resolveCellValue(sheet, cells[7])).toBe('TRUE');
+    expect(resolveCellValue(sheet, sheet.rows[6000].cells[1])).toBe('6002');
+    expect(resolveCellValue(sheet, sheet.rows[2].cells[1])).toBe('40');
+    const follower = sheet.rows[11999].cells[1];
+    expect(follower).toMatchObject({ ref: 'B12000', sharedFormulaId: 4, value: '', valueType: 'text', missingValue: true, needsCalculation: true });
+    expect(resolveCellValue(sheet, follower)).toBe('12001');
+    expect(sheet.arrayFormulas).toEqual([
+      { firstRow: 1, lastRow: 1, firstColumn: 10, lastColumn: 11 },
+      { firstRow: 6000, lastRow: 6000, firstColumn: 3, lastColumn: 4 },
+      { firstRow: 12001, lastRow: 12001, firstColumn: 3, lastColumn: 6, dynamic: true }
+    ]);
+    expect(sheet.columnCount).toBe(11);
+    expect(displaySpillCell(sheet, 1, 11)?.value).toBe('6');
+    expect(displaySpillCell(sheet, 12001, 6)?.value).toBe('4');
+  });
+
+  it('parses only inline rich text through the general XML reader in streamed row batches', async () => {
     const parse = vi.spyOn(XMLParser.prototype, 'parse');
-    const source = await createWorksheetBatchWorkbook();
+    const source = await createWorksheetBatchWorkbook(6400, { sheetDataAttributes: '', extraInlineRuns: true });
     const zipEntries = await openZipArchive(source);
     const read = vi.spyOn(zipEntries.get('xl/worksheets/rows.xml')!, 'bytes').mockRejectedValue(new Error('Unexpected expanded sheet read'));
     const workbook = await loadXlsxWorkbook(source, { descriptor: { source }, zipEntries });
-    const chunks = parse.mock.calls.map(([xml]) => xml)
-      .filter((xml): xml is string => typeof xml === 'string' && xml.startsWith(chunkStart));
-    expect(chunks.length).toBeGreaterThan(1);
-    expect(chunks.every(xml => xml.length <= 512 * 1024 + 50)).toBe(true);
+    const chunks = parse.mock.calls.flatMap(([xml]) => typeof xml === 'string' && xml.startsWith(inlineBatchStart) ? [xml] : []);
+    expect(chunks).toHaveLength(2);
+    expect(chunks[0]).toContain('North &amp; 南');
+    expect(chunks[0]).toContain('First detail');
+    expect(chunks[1]).toContain('Last &amp; 南');
+    expect(parse.mock.calls.some(([xml]) => typeof xml === 'string' && /<row\b/.test(xml))).toBe(false);
     expect(read).not.toHaveBeenCalled();
     parse.mockRestore();
-    const general = await loadXlsxWorkbook(await createWorksheetBatchWorkbook(6400, { forceGeneral: true }));
+    const general = await loadXlsxWorkbook(await createWorksheetBatchWorkbook(6400, { forceGeneral: true, extraInlineRuns: true }));
     expect(workbook).toEqual(general);
     const sheet = workbook.sheets[0];
     expect(sheet.rows[3999].index).toBe(4000);
@@ -120,8 +241,44 @@ describe('large worksheet XML parsing', () => {
     expect(sheet.rowHeightSource?.rows.get(17)).toMatchObject({ fixed: true });
     expect(sheet.rows[0].cells[1]).toMatchObject({ value: 'North & 南 branch', richText: { value: 'North & 南 branch' },
       font: { fontFamily: 'Courier New' }, styleIndex: 1 });
+    expect(sheet.rows[0].cells[3].richText?.runs[0]).toMatchObject({ text: 'First detail', font: { fontStyle: 'italic' } });
+    expect(sheet.rows.at(-1)?.cells[2].richText?.runs[0]).toMatchObject({ text: 'Last & 南', color: '#336699' });
     expect(resolveCellValue(sheet, sheet.rows[0].cells[2])).toBe('4');
     expect(resolveCellValue(sheet, sheet.rows.at(-1)!.cells.at(-1)!)).toBe('6430');
+  });
+
+  it.each([false, true])('streams a row larger than the XML batch even when its closing tag splits (prefixed: %s)', async prefixed => {
+    const path = 'xl/worksheets/rows.xml';
+    const zip = await JSZip.loadAsync(await createWorksheetBatchWorkbook(10));
+    const text = '南 North &amp; West '.repeat(1250);
+    const cells = Array.from({ length: 40 }, (_, i) => `<c${i ? '' : ' r="CA1"'} t="inlineStr"><is><t>${text}</t></is></c>`).join('');
+    let xml = (await zip.file(path)!.async('string')).replace('</row>', cells + '</row \t\n>');
+    if (prefixed) xml = prefixXmlElements(xml).replaceAll('main:', 'sheet.ml:').replace('xmlns:main=', 'xmlns:sheet.ml=');
+    zip.file(path, xml);
+    const source = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const zipEntries = await openZipArchive(source), entry = zipEntries.get(path)!;
+    const raw = Buffer.from(xml), close = prefixed ? '</sheet.ml:row' : '</row';
+    const offset = raw.indexOf(close + ' \t\n>');
+    expect(offset).toBeGreaterThan(512 * 1024);
+    entry.chunks = async function* () {
+      let start = 0;
+      for (const limit of [offset + 3, offset + close.length + 1, offset + close.length + 3, raw.length]) {
+        while (start < limit) {
+          const end = Math.min(start + 16_384, limit);
+          yield raw.subarray(start, end);
+          start = end;
+        }
+      }
+    };
+    const read = vi.spyOn(entry, 'bytes');
+    const context = { descriptor: { source }, zipEntries };
+    const streamed = await loadXlsxWorkbook(source, context);
+    expect(read).not.toHaveBeenCalled();
+    entry.chunks = undefined;
+    expect(streamed).toEqual(await loadXlsxWorkbook(source, context));
+    const [sheet] = streamed.sheets;
+    expect(sheet.rows[0].cells.at(-1)).toMatchObject({ column: 118, value: '南 North & West '.repeat(1250) });
+    expect(resolveCellValue(sheet, sheet.rows.at(-1)!.cells.at(-1)!)).toBe('40');
   });
 
   it('publishes prefixed rows incrementally and gives the same model when ZIP access is buffered', async () => {
@@ -222,7 +379,7 @@ describe('large worksheet XML parsing', () => {
 
   it('discards partially read rows and inline fonts on a late fallback', async () => {
     const path = 'xl/worksheets/rows.xml';
-    const zip = await JSZip.loadAsync(await createWorksheetBatchWorkbook());
+    const zip = await JSZip.loadAsync(await createWorksheetBatchWorkbook(6400, { sheetDataAttributes: '' }));
     const xml = (await zip.file(path)!.async('string')).replace('<b/>', '<rFont val="Staged-only font"/>')
       .replace('</is>', '<r><rPr><rFont val="Reused face"/></rPr><t>More</t></r></is>');
     zip.file(path, xml + '<worksheet/>');
@@ -237,7 +394,7 @@ describe('large worksheet XML parsing', () => {
     const read = vi.spyOn(zipEntries.get(path)!, 'bytes');
     const parse = vi.spyOn(XMLParser.prototype, 'parse');
     const workbook = await loadXlsxWorkbook(source, { descriptor: { source }, zipEntries });
-    expect(parse.mock.calls.some(([xml]) => typeof xml === 'string' && xml.startsWith(chunkStart) && xml.includes('Staged-only font'))).toBe(true);
+    expect(parse.mock.calls.some(([xml]) => typeof xml === 'string' && xml.startsWith(inlineBatchStart) && xml.includes('Staged-only font'))).toBe(true);
     expect(read).toHaveBeenCalledOnce();
     expect(workbook.sheets[0].rows).toEqual([]);
     expect(workbook.fonts?.map(font => font.fontFamily)).toEqual(['Arial', 'Courier New', 'Reused face']);
@@ -245,20 +402,21 @@ describe('large worksheet XML parsing', () => {
   });
 
   it('yields and aborts before parsing a second batch', async () => {
-    const bytes = await createWorksheetBatchWorkbook();
+    const bytes = await createWorksheetBatchWorkbook(6400, { sheetDataAttributes: '' });
     const controller = new AbortController();
     const parse = XMLParser.prototype.parse;
     let batches = 0, now = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => now += 20);
     vi.spyOn(XMLParser.prototype, 'parse').mockImplementation(function (this: XMLParser, xml, options) {
-      if (typeof xml === 'string' && xml.startsWith(chunkStart) && ++batches === 1) {
+      if (typeof xml === 'string' && xml.startsWith(inlineBatchStart) && ++batches === 1) {
         setTimeout(() => controller.abort(), 0);
       }
       return parse.call(this, xml, options);
     });
-    await expect(loadXlsxWorkbook(bytes, {
+    const outcome = await loadXlsxWorkbook(bytes, {
       descriptor: { source: bytes, extension: 'xlsx' }, signal: controller.signal
-    })).rejects.toMatchObject({ name: 'AbortError' });
+    }).then(() => undefined, error => error);
+    expect(outcome).toMatchObject({ name: 'AbortError' });
     expect(batches).toBe(1);
   });
 
@@ -276,8 +434,7 @@ describe('large worksheet XML parsing', () => {
     expect(read).not.toHaveBeenCalled();
     const batches = parse.mock.calls.map(([xml]) => xml)
       .filter((xml): xml is string => typeof xml === 'string' && xml.startsWith(chunkStart) && xml.includes('<row '));
-    expect(batches.length).toBeGreaterThan(1);
-    expect(batches.every(xml => xml.length <= 512 * 1024 + 50)).toBe(true);
+    expect(batches).toHaveLength(0);
     expect(workbook.sheets[0].rows.map(row => row.cells[0].value)).toEqual(
       Array.from({ length: 26 }, (_, i) => '中😃&<'.repeat(1001) + ` ${i} &#20013;`));
     entry.chunks = undefined;

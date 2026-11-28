@@ -1,5 +1,5 @@
 import { classifyPreviewFont, type PreviewFontReference } from '@filens/core';
-import { formatCellValue } from './number-formats';
+import { formatCellValue, formatGeneralNumber } from './number-formats';
 import { RowRangeIndex } from './row-range-index';
 import { resolveSharedFormula } from './shared-formulas';
 import type { ParsedRichText, ParsedRichTextRun, ParsedWorkbook } from './types';
@@ -137,7 +137,7 @@ export function workbookFontReferences(workbook: ParsedWorkbook, collectSamples:
           for (const part of parts) append(font, part);
           if (parts.length > 1) for (const run of rich.runs) addRun(run, font);
         } else if (cell.value) {
-          append(font, numberFormat === undefined ? cell.value
+          append(font, numberFormat === undefined ? formatGeneralNumber(cell.value, cell.valueType)
             : formattedFontSample(cell.value, cell.valueType, numberFormat, sheet.date1904, sheet.numberFormatPalette));
         }
       }

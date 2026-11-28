@@ -1,4 +1,5 @@
 import { forEachWorksheetRangeValue, resolvedCellScalar } from './cell-value';
+import { deviationMatcher, exactDeviationMatcher, type DeviationMatcher } from './conditional-deviation';
 import { weightedRankReader } from './formula-array';
 import { memoizeWithFormulaTime } from './formula-clock';
 import type { Scalar } from './formula-reader';
@@ -14,6 +15,7 @@ export interface ConditionalRangeValues {
   percentiles: ReadonlyMap<number, number>;
   ranks: ReadonlyMap<RankCondition, number>;
   average: { center: number; scale: number; mean: number; deviation: number };
+  matchesDeviation?: DeviationMatcher;
   frequency: (cell: ParsedCell) => number;
 }
 
@@ -25,7 +27,7 @@ export function numericCellValue(sheet: ParsedSheet, cell?: ParsedCell): number 
 export function createRangeValueReader(sheet: ParsedSheet, ranges: readonly ParsedMerge[], conditions: readonly ParsedCondition[]) {
   const percentiles = new Set<number>();
   const rankRules: RankCondition[] = [];
-  let extrema = false, average = false, frequency = false;
+  let extrema = false, average = false, needsDeviation = false, frequency = false;
   for (const condition of conditions) {
     if ('thresholds' in condition) {
       for (const threshold of condition.thresholds) {
@@ -33,12 +35,21 @@ export function createRangeValueReader(sheet: ParsedSheet, ranges: readonly Pars
         else if (threshold.type !== 'num' && threshold.type !== 'formula') extrema = true;
       }
     } else if (condition.type === 'top10' && condition.rank) rankRules.push(condition);
-    else if (condition.type === 'aboveAverage') average = true;
-    else if (condition.type === 'duplicateValues' || condition.type === 'uniqueValues') frequency = true;
+    else if (condition.type === 'aboveAverage') {
+      average = true;
+      needsDeviation ||= !condition.equal && condition.deviations !== 0;
+    } else if (condition.type === 'duplicateValues' || condition.type === 'uniqueValues') frequency = true;
   }
   const needsSort = percentiles.size > 0 || rankRules.length > 0;
   const needsNumbers = extrema || average || needsSort;
   if (!needsNumbers && !frequency) return undefined;
+  const scan = (visit: (value: Scalar, weight: number) => void) => {
+    let complete = true;
+    visitDisjointAreas(ranges, range => { if (complete) complete = forEachWorksheetRangeValue(sheet, range, visit); });
+    return complete;
+  };
+  const exact = needsDeviation ? memoizeWithFormulaTime(sheet, () => exactDeviationMatcher(add =>
+    scan((value, weight) => { if (typeof value === 'number' && Number.isFinite(value)) add(value, weight); }))) : undefined;
   return memoizeWithFormulaTime(sheet, (): ConditionalRangeValues | undefined => {
     let min = Infinity, max = -Infinity, count = 0;
     let scale = 0, center = 0, sum = 0, correction = 0, mean = 0, squaredDistance = 0;
@@ -81,18 +92,19 @@ export function createRangeValueReader(sheet: ParsedSheet, ranges: readonly Pars
         }
         const normalized = scale ? value / scale : 0;
         if (count === weight) center = normalized;
-        const shifted = normalized - center, delta = shifted - mean;
+        const shifted = normalized - center;
         // Compensated summation keeps cells at the mean eligible for inclusive rules.
         const adjusted = shifted * weight - correction, next = sum + adjusted;
         correction = (next - sum) - adjusted;
         sum = next;
-        mean = sum / count;
-        squaredDistance += weight * delta * (shifted - mean);
+        if (needsDeviation) {
+          const nextMean = sum / count;
+          squaredDistance += weight * (shifted - mean) * (shifted - nextMean);
+          mean = nextMean;
+        }
       }
     };
-    let complete = true;
-    visitDisjointAreas(ranges, range => { if (complete) complete = forEachWorksheetRangeValue(sheet, range, visit); });
-    if (!complete) return undefined;
+    if (!scan(visit)) return undefined;
     const percentileValues = new Map<number, number>();
     const ranks = new Map<RankCondition, number>();
     if (values && repeated && count) {
@@ -107,9 +119,12 @@ export function createRangeValueReader(sheet: ParsedSheet, ranges: readonly Pars
         if (limit) ranks.set(rule, at(rule.bottom ? limit - 1 : count - limit));
       }
     }
+    const stats = { center, scale: scale || 1, mean: count ? sum / count : 0,
+      deviation: needsDeviation && count ? Math.sqrt(Math.max(0, squaredDistance / count)) : 0 };
+    const matchesDeviation = exact && deviationMatcher(stats, count ? max / stats.scale - min / stats.scale : 0, count, exact);
     // Keep the requested order statistics and release the numeric buffer.
     return { min, max, percentiles: percentileValues, ranks, frequency: frequencyReader(sheet, counts),
-      average: { center, scale: scale || 1, mean, deviation: count ? Math.sqrt(Math.max(0, squaredDistance / count)) : 0 } };
+      average: stats, matchesDeviation };
   });
 }
 

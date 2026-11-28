@@ -1,14 +1,33 @@
 import JSZip from 'jszip';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { loadXlsxWorkbook } from '../src/parser';
+import { loadXlsxWorkbook, readXlsxWorkbook } from '../src/parser';
 import { appendSheetRows, createSheetTable, SheetRowWindow } from '../src/table';
 import { SheetMerges } from '../src/merged-cells';
 import { createMergedWorkbookFixture } from './fixtures/workbook.mjs';
+import { createMergeBatchWorkbook } from './fixtures/merge-batch-workbook.mjs';
 
 beforeEach(() => { vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null); });
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
 
 describe('merged workbook cells', () => {
+  it.each([false, true])('batches large merge declarations with source namespaces (prefixed: %s)', async prefixed => {
+    const bytes = await createMergeBatchWorkbook(20_000, { prefixed });
+    const full = await loadXlsxWorkbook(bytes);
+    const partial: number[] = [];
+    const preview = await readXlsxWorkbook(bytes, { descriptor: { source: bytes, extension: 'xlsx' }, signal: new AbortController().signal },
+      { onRows: sheet => partial.push(sheet.merges?.length ?? 0) });
+    const [sheet] = preview.sheets;
+    expect(partial).toEqual([0]);
+    expect(sheet.merges).toEqual(full.sheets[0].merges);
+    expect(sheet.merges).toHaveLength(20_002);
+    expect(preview.warnings).toEqual(['Ignored 1 invalid merged range(s) in sheet Merge batches.']);
+    expect(preview.warnings).toEqual(full.warnings);
+    expect([sheet.rowCount, sheet.columnCount]).toEqual([1_048_576, 16_384]);
+    expect(sheet.conditionalRules).toEqual(full.sheets[0].conditionalRules);
+    const final = new SheetMerges(sheet).window(1_048_575, 1_048_576, 16_383, 16_384).get(1_048_575)?.[0];
+    expect(final?.cell?.value).toBe('8');
+  });
+
   it('splits eager spans at HTML limits and suppresses overlapping declarations', () => {
     const index = new SheetMerges({ id: 'large', name: 'Large', rows: [], rowCount: 100_000, columnCount: 1100,
       merges: [{ firstRow: 1, lastRow: 100_000, firstColumn: 1, lastColumn: 1100 },

@@ -22,5 +22,31 @@
   margin: 0 auto 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
   content-visibility: auto;
-  contain-intrinsic-size: 816px 1056px;
+  contain-intrinsic-size: auto 816px auto 1056px;
+}
+
+@supports (content-visibility: auto) {
+  .docxv-document .docx {
+    /* Paint containment clips the page. A scroll container loses remembered padding in Firefox. */
+    overflow: visible;
+  }
+}
+
+.docxv-column-separator {
+  border-inline-start: 1px solid black;
+  justify-self: center;
+}
+
+.docxv-shared-page > article:not(:last-of-type) {
+  margin-bottom: 0;
+}
+
+.docxv-document p.docxv-continuation {
+  display: block !important;
+  counter-set: none !important;
+}
+
+.docxv-document p.docxv-continuation::before {
+  content: none !important;
+  counter-increment: none !important;
 }

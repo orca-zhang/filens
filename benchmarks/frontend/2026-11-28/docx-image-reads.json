@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-28",
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "transport": "HTTP/1.1 on loopback"
+  },
+  "fixture": {
+    "path": "packages/docx/test/fixtures/document.mjs",
+    "generator": "createDistinctDocxImagesFixture",
+    "uniquePngs": 8,
+    "renderedImages": 9,
+    "archiveBytes": 1960217,
+    "archiveSha256": "6725566c3b25f082e4c2da56e1ebe9ba4b200098ea7330892a38adddf3cce62c"
+  },
+  "method": "Hold each ZIP image payload response before sending any bytes. Count pending HTTP image bodies and sum their declared byte lengths after the reads have been pending for 500 ms. Resume all responses and compare all nine decoded 256 \u00d7 256 RGBA rasters. On a second open in the current HTTP builds, destroy the preview after four image bodies are held and count the cancelled reads. CLI offline HTML exercises the same pictures with network disabled.",
+  "scope": "Pending bytes are response lengths. They measure concurrently requested image data. The full load still reads each referenced image and retains its URL until close. The pixel fingerprint hashes the per-image RGBA checksums in document order.",
+  "results": {
+    "chromium": {
+      "baseline": {
+        "heldReads": 6,
+        "heldBytes": 1364119,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836
+      },
+      "split": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "standalone": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "all-in-one": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "offline": {
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8"
+      }
+    },
+    "firefox": {
+      "baseline": {
+        "heldReads": 6,
+        "heldBytes": 1364119,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836
+      },
+      "split": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "standalone": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "all-in-one": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "offline": {
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8"
+      }
+    },
+    "webkit": {
+      "baseline": {
+        "heldReads": 6,
+        "heldBytes": 1364144,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836
+      },
+      "split": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "standalone": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "all-in-one": {
+        "heldReads": 4,
+        "heldBytes": 909442,
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8",
+        "transferredImageBytes": 1818836,
+        "cancelledReads": 4
+      },
+      "offline": {
+        "pixels": "fc461e24f8123ba12cedc88076c0f64265f51ffb48fb975c45bd8d26dc6975a8"
+      }
+    }
+  }
+}

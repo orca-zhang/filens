@@ -1,8 +1,14 @@
 import type { ParsedSheet } from './types';
+import type { RankSample } from './formula-reader';
 
 export interface FormulaClock {
   time?: number;
   reads: number;
+  rankSamples?: {
+    sheets: Map<ParsedSheet, Map<string, { sample: RankSample; volatile: boolean }>>;
+    ranges: number;
+    storedValues: number;
+  };
 }
 
 const clocks = new WeakMap<ParsedSheet, FormulaClock>();
@@ -20,10 +26,16 @@ export function formulaClock(sheet: ParsedSheet): FormulaClock {
 
 export function withFormulaTime<T>(sheet: ParsedSheet, run: () => T): T {
   const clock = formulaClock(sheet);
-  if (clock.time !== undefined) return run();
-  clock.time = Date.now();
+  if (clock.rankSamples) return run();
+  // The preview can pin the formula time across several render windows.
+  const pinned = clock.time !== undefined;
+  if (!pinned) clock.time = Date.now();
+  clock.rankSamples = { sheets: new Map(), ranges: 0, storedValues: 0 };
   try { return run(); }
-  finally { clock.time = undefined; }
+  finally {
+    if (!pinned) clock.time = undefined;
+    clock.rankSamples = undefined;
+  }
 }
 
 /** A cached range or threshold only expires if its evaluation read the clock. */

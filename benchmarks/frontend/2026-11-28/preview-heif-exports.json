@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-28",
+  "scope": "Matched all-in-one builds with the same preview sources, build settings and compression profiles. The comparison isolates HEIF export pruning before the shared-page DOCX change.",
+  "before": {
+    "wasmBytes": 1457990,
+    "wasmExports": 503,
+    "packedWasmBytes": 339664,
+    "wasmSha256": "2f096bb7c030c2c5da6ea56b48e84229e6d5e94fa542fb9e6b349d477592ffc5",
+    "previewGzipBytes": 3999704,
+    "previewBrotliBytes": 3838753
+  },
+  "after": {
+    "wasmBytes": 1233606,
+    "wasmExports": 45,
+    "packedWasmBytes": 286472,
+    "wasmSha256": "dffc5b7026d5bda58e2495d2281b25acc9e0e4e9461ae078de7d45773d7f4aaa",
+    "previewGzipBytes": 3946106,
+    "previewBrotliBytes": 3785247
+  },
+  "reduction": {
+    "packedWasmBytes": 53192,
+    "previewGzipBytes": 53598,
+    "previewBrotliBytes": 53506
+  },
+  "verification": {
+    "browsers": ["Chromium", "Firefox", "WebKit"],
+    "exactRgbaFixturesPerBrowser": 40,
+    "matchingDecodeErrorsPerBrowser": 2,
+    "exactCliOfflineRgbaFixturesPerBrowser": 3,
+    "networkWasmRequestsPerBrowser": 0,
+    "decodePath": "The browser checks force the HEIF WASM fallback and observe the decoded asset size."
+  }
+}

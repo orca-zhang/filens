@@ -69,7 +69,9 @@ test('renders XLSX scales and signed data bars across sparse windows', async ({ 
 
   await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight * 1000 / 1048576; grid.scrollLeft = 3400; });
   const merge = grid.locator('[data-merge-ref="H500"]');
-  await expect(merge.locator('.xlsxv-data-bar-fill')).toHaveCSS('background-image', /linear-gradient/);
+  const mergedFill = merge.locator('.xlsxv-data-bar-fill');
+  await expect(mergedFill).toHaveCSS('background-image', /linear-gradient/);
+  expect(await mergedFill.evaluate(fill => parseFloat(fill.style.width))).toBeCloseTo(77.7778);
   const geometry = await merge.locator('.xlsxv-data-bar-track').evaluate(track => ({
     width: track.getBoundingClientRect().width, offset: track.getBoundingClientRect().left - track.parentElement!.getBoundingClientRect().left
   }));
@@ -80,6 +82,7 @@ test('renders XLSX scales and signed data bars across sparse windows', async ({ 
   const last = at(1048576, 16384);
   await expect(last).toBeInViewport();
   await expect(last).toHaveAccessibleName('100');
+  expect(await fill(1048576, 16383).evaluate(fill => parseFloat(fill.style.width))).toBeCloseTo(77.7778);
   expect(await fill(1048576, 16384).evaluate(fill => (fill as HTMLElement).style.width)).toBe('80%');
   await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
   expect(await grid.locator('.xlsxv-cell').count()).toBeLessThanOrEqual(2400);

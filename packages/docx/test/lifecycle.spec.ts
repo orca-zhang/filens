@@ -146,6 +146,50 @@ describe('DOCX asynchronous loading and resource lifetime', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
   });
 
+  it('shares four image read slots across body and numbering resources', async () => {
+    const { session } = setup(), held = Array.from({ length: 6 }, () => pending<string>());
+    const started: number[] = [];
+    const read = (id: string) => {
+      const index = Number(id);
+      started.push(index);
+      return held[index].promise;
+    };
+    mocks.parse.mockResolvedValueOnce({ loadDocumentImage: read, loadNumberingImage: read });
+    mocks.render.mockImplementationOnce(async doc => {
+      await Promise.allSettled([doc.loadDocumentImage('0'), doc.loadNumberingImage('1'),
+        doc.loadDocumentImage('2'), doc.loadDocumentImage('3'), doc.loadDocumentImage('4'),
+        doc.loadDocumentImage('5'), doc.loadDocumentImage('4')]);
+    });
+    const source = new Blob(), loading = session.load(source, context(source, 'images.docx'));
+    await vi.waitFor(() => expect(started).toEqual([0, 1, 2, 3]));
+    held[2].reject(new Error('Broken image'));
+    await vi.waitFor(() => expect(started).toEqual([0, 1, 2, 3, 4]));
+    held[4].resolve('blob:4');
+    await vi.waitFor(() => expect(started).toEqual([0, 1, 2, 3, 4, 5]));
+    held.forEach((entry, index) => entry.resolve(`blob:${index}`));
+    await loading;
+    expect(started).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it('discards queued image reads on replacement and revokes late image URLs', async () => {
+    const { session } = setup(), held = pending<string>();
+    const read = vi.fn(() => held.promise);
+    const old = new Blob();
+    mocks.parse.mockResolvedValueOnce({ loadDocumentImage: read });
+    mocks.render.mockImplementationOnce(async doc => {
+      await Promise.allSettled(Array.from({ length: 10 }, (_, id) => doc.loadDocumentImage(String(id))));
+    });
+    const loading = session.load(old, context(old, 'old.docx'));
+    await vi.waitFor(() => expect(read.mock.calls).toHaveLength(4));
+    const next = new Blob();
+    await session.load(next, context(next, 'current.docx'));
+    held.resolve('blob:cancelled');
+    await loading;
+    expect(read).toHaveBeenCalledTimes(4);
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(4);
+    expect(session.getState()).toMatchObject({ title: 'current.docx', error: null, loading: false });
+  });
+
   it('releases a resource which resolves after cancellation', async () => {
     const { session } = setup(), late = pending<string>(), controller = new AbortController();
     mocks.parse.mockResolvedValueOnce({ loadDocumentImage: () => late.promise });

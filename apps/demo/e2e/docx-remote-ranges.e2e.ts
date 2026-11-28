@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { unzipSync, zipSync } from 'fflate';
 import { embeddedFontDocument } from '../../../packages/docx/test/fixtures/embedded-font-document';
+import { createDistinctDocxImagesFixture } from '../../../packages/docx/test/fixtures/document.mjs';
 import { serveZipFixture } from './zip-range-fixture';
 
 const note = 'DOCX attachment opened on demand';
@@ -89,6 +90,41 @@ test('cancels a pending DOCX part range on source replacement', async ({ page })
     await expect(page.locator('.xlsxv-grid')).toBeVisible();
     await expect.poll(() => pending()?.cancelled).toBe(true);
     await expect(firstPage(page)).toHaveCount(0);
+  } finally { await server.close(); }
+});
+
+for (const replace of [false, true]) test(`bounds DOCX image range reads${replace ? ' during source replacement' : ' through completion'}`, async ({ page }) => {
+  const count = 8, bytes = Buffer.from(createDistinctDocxImagesFixture(count));
+  const offsets = Array.from({ length: count }, (_, i) => {
+    const header = bytes.indexOf(`word/media/image-${i}.png`) - 30;
+    expect(bytes.readUInt32LE(header)).toBe(0x04034b50);
+    return header + 30 + bytes.readUInt16LE(header + 26) + bytes.readUInt16LE(header + 28);
+  });
+  const server = await serveZipFixture(bytes, 'docx');
+  const reads = () => server.requests.filter(request => offsets.includes(request.begin));
+  server.pause(...offsets);
+  try {
+    await openRemote(page, server.url);
+    await expect.poll(() => reads().length).toBe(4);
+    await expect(firstPage(page)).toContainText('Image 1');
+    expect(reads().map(request => request.begin).sort((a, b) => a - b)).toEqual(offsets.slice(0, 4));
+    expect(reads().every(request => request.sent === 0)).toBe(true);
+    if (replace) {
+      await page.getByRole('button', { name: 'CSV', exact: true }).click();
+      await expect(page.locator('.xlsxv-grid')).toBeVisible();
+      await expect.poll(() => reads().filter(request => request.cancelled).length).toBe(4);
+      expect(reads()).toHaveLength(4);
+      await expect(firstPage(page)).toHaveCount(0);
+    } else {
+      server.resume();
+      await expect.poll(() => reads().length).toBe(count);
+      const images = page.locator('section.docx img');
+      await expect(images).toHaveCount(count + 1);
+      await expect.poll(() => images.evaluateAll(items => items.map(image => (image as HTMLImageElement).naturalWidth)))
+        .toEqual(Array(count + 1).fill(256));
+      expect(await images.first().getAttribute('src')).toBe(await images.last().getAttribute('src'));
+      expect(reads().map(request => request.begin).sort((a, b) => a - b)).toEqual(offsets);
+    }
   } finally { await server.close(); }
 });
 

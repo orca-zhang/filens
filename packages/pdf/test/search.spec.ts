@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getDocument, type TextLayer } from 'pdfjs-dist';
+import { getDocument, PagesMapper, type TextLayer } from 'pdfjs-dist';
 import { PdfPreviewSession } from '../src';
 import { PDF_SEARCH_MATCH_LIMIT, createPdfTextMatcher, highlightPdfText, indexPdfText, matchPdfTextRuns } from '../src/search';
 
@@ -8,6 +8,7 @@ const selectionLimit = vi.hoisted(() => ({ runs: Infinity }));
 vi.mock('pdfjs-dist/build/pdf.worker.min.mjs?url', () => ({ default: 'pdf-worker.mjs' }));
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {}, getDocument: vi.fn(),
+  PagesMapper: { instance: { getPageId: (pageNumber: number) => pageNumber } },
   AbortException: class extends Error { name = 'AbortException'; },
   TextLayer: vi.fn(function ({ container, textContentSource }: { container: HTMLElement; textContentSource: ReadableStream<{ items: Array<{ str: string }> }> }) {
     const textDivs: HTMLElement[] = [], textContentItemsStr: string[] = [];
@@ -44,7 +45,10 @@ function heldText(...prefix: TextRun[]) {
     start(controller) { pending = controller; controller.enqueue({ items: prefix }); },
     cancel
   }, { highWaterMark: 0 });
-  return { stream, cancel, finish(...items: TextRun[]) { pending.enqueue({ items }); pending.close(); } };
+  return { stream, cancel,
+    finish(...items: TextRun[]) { pending.enqueue({ items }); pending.close(); },
+    fail(error: Error) { pending.error(error); }
+  };
 }
 
 function findPdfText(text: string, query: string, pageIndex: number, limit: number) {
@@ -59,11 +63,13 @@ async function open(texts: (string | TextRun[][])[], sensitive = false) {
     streamTextContent: vi.fn(() => typeof text === 'string' ? textStream(text ? [{ str: text }] : []) : textStream(...text))
   }));
   const destroy = vi.fn(async () => undefined), getPage = vi.fn(async (page: number) => pages[page - 1]);
-  vi.mocked(getDocument).mockReturnValueOnce({ destroy, promise: Promise.resolve({ numPages: pages.length, destroy, getPage }) } as never);
+  const pdf = { numPages: pages.length, destroy, getPage,
+    _transport: undefined as { messageHandler: { sendWithStream(action: string, data: { pageIndex: number }): ReadableStream } } | undefined };
+  vi.mocked(getDocument).mockReturnValueOnce({ destroy, promise: Promise.resolve(pdf) } as never);
   const host = document.body.appendChild(document.createElement('div'));
   const session = new PdfPreviewSession(host);
   await session.load(new Uint8Array(), { descriptor: { source: new Uint8Array(), name: 'find.pdf', sensitive } });
-  return { host, session, pages, getPage };
+  return { host, session, pages, getPage, pdf };
 }
 
 describe('PDF full-document search', () => {
@@ -136,6 +142,30 @@ describe('PDF full-document search', () => {
     } finally { session.destroy(); }
   });
 
+  it('opens mapped text streams for offscreen pages and loads page geometry when navigating to a hit', async () => {
+    const { session, pages, getPage, pdf, host } = await open(['Opening', 'Other', 'Another', 'Far needle']);
+    const pending = heldText();
+    const sendWithStream = vi.fn((_action: string, { pageIndex }: { pageIndex: number }) => pages[pageIndex].streamTextContent());
+    pdf._transport = { messageHandler: { sendWithStream }, pagesMapper: { getPageId: (number: number) => number + 10 } };
+    vi.spyOn(PagesMapper.instance, 'getPageId');
+    pages[3].streamTextContent.mockReturnValueOnce(pending.stream);
+    getPage.mockClear();
+    try {
+      const search = session.find('missing');
+      await vi.waitFor(() => expect(pending.stream.locked).toBe(true));
+      expect(sendWithStream).toHaveBeenCalledWith('GetTextContent', expect.objectContaining({ pageId: 13, pageIndex: 3, filensSearch: true }),
+        expect.objectContaining({ highWaterMark: 100 }));
+      expect(PagesMapper.instance.getPageId).not.toHaveBeenCalled();
+      expect(getPage).not.toHaveBeenCalledWith(4);
+      await session.find('');
+      await search;
+      expect(pending.cancel).toHaveBeenCalledOnce();
+      await session.find('needle');
+      await vi.waitFor(() => expect(host.querySelector('.pdfv-page-slot[data-page-index="3"] mark.is-active')?.textContent).toBe('needle'));
+      expect(getPage).toHaveBeenCalledWith(4);
+    } finally { session.destroy(); }
+  });
+
   it.each([false, true])('publishes visible hits before a held page and keeps explicit match navigation (%s)', async navigated => {
     const { session, host, pages, getPage } = await open(['Opening', 'Earlier needle', 'Visible needle']);
     let resume!: () => void;
@@ -159,25 +189,29 @@ describe('PDF full-document search', () => {
     } finally { resume(); session.destroy(); }
   });
 
-  it('adds newly rendered visible pages in order while the search waits on an earlier page', async () => {
-    const { session, host, pages, getPage } = await open(['Opening', 'Held needle', 'Second needle', 'Last needle']);
+  it('adds newly rendered visible pages in order while both search reads wait', async () => {
+    const { session, host, pages, getPage } = await open(['Opening', 'Held needle', 'Blocked page', 'Second needle', 'Last needle']);
     let resume!: () => void;
-    const held = new Promise<typeof pages[number]>(resolve => { resume = () => resolve(pages[1]); });
+    const held = new Promise<void>(resolve => { resume = resolve; });
     try {
-      getPage.mockImplementation(index => index === 2 ? held : Promise.resolve(pages[index - 1]));
+      getPage.mockImplementation(async index => {
+        if (index === 2 || index === 3) await held;
+        return pages[index - 1];
+      });
       const result = session.find('needle');
-      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ total: 0, pagesScanned: 1, searching: true }));
-      session.goToPage(3);
-      await vi.waitFor(() => expect(host.querySelector('.pdfv-page-slot[data-page-index="3"] mark.is-active')?.textContent).toBe('needle'));
+      await vi.waitFor(() => expect(getPage).toHaveBeenCalledWith(3));
+      expect(session.getState().search).toMatchObject({ total: 0, pagesScanned: 1, searching: true });
+      session.goToPage(4);
+      await vi.waitFor(() => expect(host.querySelector('.pdfv-page-slot[data-page-index="4"] mark.is-active')?.textContent).toBe('needle'));
       session.findNext();
-      session.goToPage(2);
-      await vi.waitFor(() => expect(host.querySelector('.pdfv-page-slot[data-page-index="2"] mark')?.textContent).toBe('needle'));
+      session.goToPage(3);
+      await vi.waitFor(() => expect(host.querySelector('.pdfv-page-slot[data-page-index="3"] mark')?.textContent).toBe('needle'));
       expect(session.getState().search).toMatchObject({ total: 2, activeIndex: 1, pagesScanned: 3, searching: true });
       resume();
       await result;
-      expect(session.getState().search).toMatchObject({ total: 3, activeIndex: 2, pagesScanned: 4, searching: false });
-      expect(pages[2].streamTextContent).toHaveBeenCalledOnce();
+      expect(session.getState().search).toMatchObject({ total: 3, activeIndex: 2, pagesScanned: 5, searching: false });
       expect(pages[3].streamTextContent).toHaveBeenCalledOnce();
+      expect(pages[4].streamTextContent).toHaveBeenCalledOnce();
       session.findNext();
       expect(session.getState().pageIndex).toBe(1);
     } finally { resume(); session.destroy(); }
@@ -187,12 +221,15 @@ describe('PDF full-document search', () => {
     const { session, host, pages, getPage } = await open(['x '.repeat(PDF_SEARCH_MATCH_LIMIT - 1), 'x x', 'Later x']);
     let resume!: () => void;
     const held = new Promise<typeof pages[number]>(resolve => { resume = () => resolve(pages[0]); });
+    const later = heldText();
     try {
       session.goToPage(1);
       await vi.waitFor(() => expect(host.querySelector('.pdfv-text-layer[data-rendered="true"]')?.textContent).toBe('x x'));
       getPage.mockImplementation(index => index === 1 ? held : Promise.resolve(pages[index - 1]));
+      pages[2].streamTextContent.mockReturnValueOnce(later.stream);
       const result = session.find('x');
-      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ total: 2, pagesScanned: 1, searching: true }));
+      await vi.waitFor(() => expect(later.stream.locked).toBe(true));
+      expect(session.getState().search).toMatchObject({ total: 2, pagesScanned: 1, searching: true });
       session.findNext();
       expect(host.querySelectorAll('mark')).toHaveLength(2);
       expect(host.querySelectorAll('mark')[1].classList.contains('is-active')).toBe(true);
@@ -202,24 +239,43 @@ describe('PDF full-document search', () => {
         search: { total: PDF_SEARCH_MATCH_LIMIT, pagesScanned: 2, activeIndex: PDF_SEARCH_MATCH_LIMIT - 1, truncated: true, searching: false } });
       expect(host.querySelectorAll('mark')).toHaveLength(1);
       expect(host.querySelector('mark.is-active')?.textContent).toBe('x');
-      expect(pages[2].streamTextContent).not.toHaveBeenCalled();
+      expect(later.cancel).toHaveBeenCalledWith(expect.objectContaining({ name: 'AbortException' }));
+      expect(later.stream.locked).toBe(false);
     } finally { resume(); session.destroy(); }
   });
 
-  it.each(['replace', 'clear', 'destroy'])('cancels a pending text stream when asked to %s the search', async action => {
-    const { session, pages } = await open(['First page', 'old new']);
-    const pull = vi.fn(), cancel = vi.fn();
+  it('waits for earlier pages when an offscreen page reaches the result limit first', async () => {
+    const { session, pages, getPage } = await open(['Opening', 'First x', 'Later x']);
+    let resume!: () => void;
+    const held = new Promise<typeof pages[number]>(resolve => { resume = () => resolve(pages[1]); });
     try {
-      const stream = new ReadableStream({ pull, cancel }, { highWaterMark: 0 });
-      pages[1].streamTextContent.mockReturnValueOnce(stream);
+      getPage.mockImplementation(index => index === 2 ? held : Promise.resolve(pages[index - 1]));
+      pages[2].streamTextContent.mockReturnValueOnce(textStream([{ str: 'x '.repeat(PDF_SEARCH_MATCH_LIMIT + 1) }]));
+      const result = session.find('x');
+      await vi.waitFor(() => expect(session.getState()).toMatchObject({ pageIndex: 2,
+        search: { total: PDF_SEARCH_MATCH_LIMIT, pagesScanned: 2, truncated: true, searching: true } }));
+      resume();
+      await result;
+      expect(session.getState()).toMatchObject({ pageIndex: 1,
+        search: { total: PDF_SEARCH_MATCH_LIMIT, activeIndex: 0, pagesScanned: 3, truncated: true, searching: false } });
+    } finally { resume(); session.destroy(); }
+  });
+
+  it.each(['replace', 'clear', 'destroy'])('cancels both pending text streams when asked to %s the search', async action => {
+    const { session, pages } = await open(['First page', 'old new', 'Last page']);
+    const streams = [heldText(), heldText()];
+    try {
+      for (const [i, { stream }] of streams.entries()) pages[i + 1].streamTextContent.mockReturnValueOnce(stream);
       const old = session.find('old');
-      await vi.waitFor(() => expect(pull).toHaveBeenCalled());
+      await vi.waitFor(() => expect(streams.every(({ stream }) => stream.locked)).toBe(true));
       if (action === 'destroy') session.destroy();
       else await session.find(action === 'replace' ? 'new' : '');
       await old;
-      expect(cancel).toHaveBeenCalledOnce();
-      expect(cancel).toHaveBeenCalledWith(expect.objectContaining({ name: 'AbortException' }));
-      expect(stream.locked).toBe(false);
+      for (const { cancel, stream } of streams) {
+        expect(cancel).toHaveBeenCalledOnce();
+        expect(cancel).toHaveBeenCalledWith(expect.objectContaining({ name: 'AbortException' }));
+        expect(stream.locked).toBe(false);
+      }
       expect(session.getState().search).toMatchObject(action === 'replace'
         ? { query: 'new', total: 1, searching: false } : { query: '', total: 0, searching: false });
     } finally { session.destroy(); }
@@ -255,6 +311,55 @@ describe('PDF full-document search', () => {
     } finally { session.destroy(); }
   });
 
+  it('publishes hits from a pending search stream and preserves the selected hit on completion', async () => {
+    const { session, pages } = await open(['Other text', 'Needle and needle Needle']);
+    const held = heldText({ str: 'Needle and needle ' });
+    try {
+      pages[1].streamTextContent.mockReturnValueOnce(held.stream);
+      const search = session.find('needle');
+      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ total: 2, pagesScanned: 1, searching: true }));
+      session.findNext();
+      expect(session.getState().search?.activeIndex).toBe(1);
+      held.finish({ str: 'Needle' });
+      await search;
+      expect(session.getState().search).toMatchObject({ total: 3, pagesScanned: 2, activeIndex: 1, searching: false });
+    } finally { session.destroy(); }
+  });
+
+  it('retains earlier hits when a pending page stream fails', async () => {
+    const { session, pages } = await open(['Other text', 'Needle']);
+    const held = heldText({ str: 'Needle' });
+    try {
+      pages[1].streamTextContent.mockReturnValueOnce(held.stream);
+      const search = session.find('needle');
+      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ total: 1, pagesScanned: 1, searching: true }));
+      held.fail(new Error('Missing tail'));
+      await search;
+      expect(session.getState().search).toMatchObject({ total: 1, activeIndex: 0, pagesScanned: 2, searching: false,
+        error: 'PDF page 2: Missing tail' });
+      expect(held.stream.locked).toBe(false);
+    } finally { session.destroy(); }
+  });
+
+  it('cancels a pending prefix after earlier results confirm the document-order limit', async () => {
+    const { session, pages } = await open(['', '', 'x x']);
+    const earlier = heldText(), later = heldText({ str: 'x x' });
+    try {
+      pages[1].streamTextContent.mockReturnValueOnce(earlier.stream);
+      pages[2].streamTextContent.mockReturnValueOnce(later.stream);
+      const search = session.find('x');
+      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ total: 2, pagesScanned: 1, searching: true }));
+      session.findNext(true);
+      session.findNext();
+      earlier.finish({ str: 'x '.repeat(PDF_SEARCH_MATCH_LIMIT - 1) });
+      await search;
+      expect(session.getState().search).toMatchObject({ total: PDF_SEARCH_MATCH_LIMIT,
+        activeIndex: PDF_SEARCH_MATCH_LIMIT - 1, pagesScanned: 3, truncated: true, searching: false });
+      expect(later.cancel).toHaveBeenCalledOnce();
+      expect(later.stream.locked).toBe(false);
+    } finally { session.destroy(); }
+  });
+
   it.each([false, true])('reopens offscreen text only for a sensitive PDF (%s)', async sensitive => {
     const { session, pages, getPage } = await open(['Opening page', [[{ str: 'Prefix', hasEOL: true }], [{ str: '世界 😀' }]]], sensitive);
     try {
@@ -282,10 +387,11 @@ describe('PDF full-document search', () => {
     const shortPage = 'a'.repeat(32_768);
     const { session, pages } = await open(['Opening page', 'needle', shortPage + 'x', ...Array<string>(35).fill(shortPage)]);
     try {
-      const cancelling = heldText({ str: 'incomplete' });
+      const cancelling = heldText({ str: 'incomplete' }), other = heldText();
       pages[1].streamTextContent.mockReturnValueOnce(cancelling.stream);
+      pages[2].streamTextContent.mockReturnValueOnce(other.stream);
       const scan = session.find('absent');
-      await vi.waitFor(() => expect(cancelling.stream.locked).toBe(true));
+      await vi.waitFor(() => expect(cancelling.stream.locked && other.stream.locked).toBe(true));
       await session.find('');
       await scan;
       expect(cancelling.cancel).toHaveBeenCalledOnce();
@@ -293,9 +399,8 @@ describe('PDF full-document search', () => {
       await session.find('missing');
       await session.find('another missing term');
       expect(pages[1].streamTextContent).toHaveBeenCalledTimes(2);
-      expect(pages[2].streamTextContent).toHaveBeenCalledTimes(2);
-      expect(pages[3].streamTextContent).toHaveBeenCalledOnce();
-      expect(pages.at(-1)!.streamTextContent).toHaveBeenCalledTimes(2);
+      expect(pages[2].streamTextContent).toHaveBeenCalledTimes(3);
+      expect(pages.slice(3).filter(page => page.streamTextContent.mock.calls.length === 1)).toHaveLength(31);
       await session.find('needle');
       expect(session.getState().search).toMatchObject({ total: 1, pagesScanned: pages.length });
     } finally { session.destroy(); }
@@ -372,7 +477,8 @@ describe('PDF full-document search', () => {
       session.goToPage(1);
       await vi.waitFor(() => expect(host.querySelector('.pdfv-text-layer')?.textContent).toBe('One needle'));
       const search = session.find('needle');
-      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ searching: true, pagesScanned: 1 }));
+      await vi.waitFor(() => expect(session.getState().search).toMatchObject({ total: 1, searching: true, pagesScanned: 2 }));
+      expect(host.querySelector('mark.is-active')?.textContent).toBe('needle');
       session.goToPage(2);
       await search;
       expect(held.cancel).toHaveBeenCalledOnce();
@@ -447,7 +553,7 @@ describe('PDF full-document search', () => {
     } finally { session.destroy(); }
   });
 
-  it('stops at a confirmed overflow without waiting for more text or opening later pages', async () => {
+  it('stops at a confirmed overflow without waiting for more text', async () => {
     const { session, pages } = await open(['', '', 'x']);
     const cancel = vi.fn(), pull = vi.fn();
     try {
@@ -465,7 +571,6 @@ describe('PDF full-document search', () => {
       expect(cancel).toHaveBeenCalledOnce();
       expect(cancel).toHaveBeenCalledWith(expect.objectContaining({ name: 'AbortException' }));
       expect(stream.locked).toBe(false);
-      expect(pages[2].streamTextContent).not.toHaveBeenCalled();
     } finally { session.destroy(); }
   });
 });

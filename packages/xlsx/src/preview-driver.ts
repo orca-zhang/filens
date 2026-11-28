@@ -48,9 +48,10 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
   private fontReferences: PreviewFontReference[] = [];
   private allFontReferences: PreviewFontReference[] = [];
   private rowWindow?: SheetRowWindow;
+  private readonly bestFitWidths = new Map<string, Map<number, number>>();
   private csvUpdateFrame: number | null = null;
   private pendingCsvSheet?: ParsedSheet;
-  private worksheetPending = false;
+  private readonly worksheetSourceIndices: number[] = [];
   private worksheetUpdateFrame: number | null = null;
   private pendingWorksheetRows?: ParsedSheet;
   private clock?: FormulaClock;
@@ -119,8 +120,8 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
       const canPublish = () => generation === this.loadGeneration && !controller.signal.aborted;
       const workbook = await loadPreviewWorkbook(source, { ...context, signal: controller.signal }, {
         csvRows: sheet => { if (canPublish()) this.previewCsvRows(sheet); },
-        worksheet: sheet => { if (canPublish()) this.previewWorksheet(sheet); },
-        worksheetRows: sheet => { if (canPublish()) this.previewWorksheet(sheet, true); }
+        worksheet: (sheet, index) => { if (canPublish()) this.previewWorksheet(sheet, index); },
+        worksheetRows: (sheet, index) => { if (canPublish()) this.previewWorksheet(sheet, index, true); }
       });
       if (generation !== this.loadGeneration) return;
       if (controller.signal.aborted) throw new DOMException('Workbook preview aborted.', 'AbortError');
@@ -132,6 +133,8 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
         this.updateCsvDimensions(csvSheet, workbook.sheets[0]);
         workbook.sheets[0] = csvSheet;
       }
+      const currentSheet = partialWorkbook?.sheets[this.state.activeSheetIndex];
+      const currentIndex = currentSheet ? workbook.sheets.indexOf(currentSheet) : -1;
       this.workbook = workbook;
       if (workbook.sheets.length) {
         this.clock = formulaClock(workbook.sheets[0]);
@@ -152,6 +155,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
       this.state = {
         ...this.state,
         loading: false,
+        activeSheetIndex: currentIndex >= 0 ? currentIndex : workbook.activeSheetIndex ?? 0,
         error: null,
         warnings: [...new Set([...this.workbook.warnings, ...fontAnalysis.warnings])],
         fonts: fontAnalysis.fonts,
@@ -160,7 +164,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
           name: sheet.name
         }))
       };
-      if (!partialWorkbook) this.render();
+      if (currentIndex < 0 || partialWorkbook?.sheets.length !== workbook.sheets.length) this.render();
       else if (!csvSheet) this.rowWindow?.refresh('fonts');
       if (this.state.warnings.length) {
         this.emit('warnings', this.state.warnings);
@@ -286,10 +290,11 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     });
   }
 
-  private previewWorksheet(sheet: ParsedSheet, pending = false): void {
+  private previewWorksheet(sheet: ParsedSheet, sourceIndex: number, pending = false): void {
     const workbook = this.workbook ??= { sheets: [], warnings: [] };
-    if (this.worksheetPending) {
-      const index = workbook.sheets.length - 1;
+    const next = this.worksheetSourceIndices.findIndex(index => index >= sourceIndex);
+    const index = next < 0 ? workbook.sheets.length : next;
+    if (this.worksheetSourceIndices[index] === sourceIndex) {
       if (pending) {
         this.pendingWorksheetRows = sheet;
         if (this.worksheetUpdateFrame === null) {
@@ -302,26 +307,26 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
         }
       } else {
         this.cancelWorksheetUpdate();
-        this.worksheetPending = false;
         this.replaceWorksheet(workbook, index, sheet);
       }
       return;
     }
-    this.worksheetPending = pending;
-    const index = workbook.sheets.length;
-    workbook.sheets.push(sheet);
-    this.state.sheets = [...this.state.sheets, { id: sheet.id || String(index + 1), name: sheet.name }];
-    this.appendSheetTab(sheet.name, index);
-    if (index === 0) this.renderActiveSheet();
+    const first = workbook.sheets.length === 0;
+    if (!first && index <= this.state.activeSheetIndex) this.state.activeSheetIndex++;
+    this.worksheetSourceIndices.splice(index, 0, sourceIndex);
+    workbook.sheets.splice(index, 0, sheet);
+    const tabs = [...this.state.sheets];
+    tabs.splice(index, 0, { id: sheet.id || String(index + 1), name: sheet.name });
+    this.state.sheets = tabs;
+    this.insertSheetTab(sheet.name, index);
+    if (first) this.renderActiveSheet();
     this.emit('statechange', this.state);
   }
 
   private replaceWorksheet(workbook: ParsedWorkbook, index: number, sheet: ParsedSheet): void {
     workbook.sheets[index] = sheet;
     if (index !== this.state.activeSheetIndex) return;
-    const position = this.rowWindow?.scrollPosition();
-    this.renderActiveSheet();
-    if (position) this.rowWindow?.restoreScrollPosition(position);
+    this.renderActiveSheet(this.rowWindow?.scrollPosition());
   }
 
   private cancelWorksheetUpdate(): void {
@@ -345,31 +350,44 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
   private renderTabs(): void {
     this.tabs.replaceChildren();
     for (const [index, sheet] of this.state.sheets.entries()) {
-      this.appendSheetTab(sheet.name, index);
+      this.insertSheetTab(sheet.name, index);
     }
   }
 
-  private appendSheetTab(name: string, index: number): void {
+  private insertSheetTab(name: string, index: number): void {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'xlsxv-sheet-tab';
     button.classList.toggle('is-active', index === this.state.activeSheetIndex);
     button.textContent = name;
-    button.addEventListener('click', () => this.goToSheet(index));
-    this.tabs.appendChild(button);
+    button.addEventListener('click', () => this.goToSheet(Array.from(this.tabs.children).indexOf(button)));
+    this.tabs.insertBefore(button, this.tabs.children[index] ?? null);
   }
 
-  private renderActiveSheet(): void {
+  private renderActiveSheet(position?: ReturnType<SheetRowWindow['scrollPosition']>): void {
     const sheet = this.workbook?.sheets[this.state.activeSheetIndex];
     this.rowWindow?.destroy();
     this.rowWindow = undefined;
     this.grid.replaceChildren();
+    this.grid.removeAttribute('dir');
     this.grid.scrollTop = this.grid.scrollLeft = 0;
     if (!sheet) {
       return;
     }
-    if (this.state.loading || sheet.columnWidthSource || sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE) {
-      this.rowWindow = new SheetRowWindow(sheet, this.grid, this.grid, { calculationPending: () => this.state.loading });
+    if (this.state.loading || sheet.columnWidthSource || sheet.rightToLeft || sheet.rowCount > ROW_BATCH_SIZE || sheet.columnCount > COLUMN_BATCH_SIZE) {
+      let bestFitWidths: Map<number, number> | undefined;
+      if (sheet.columnWidthSource?.ranges.some(range => range.bestFit) && !sheet.showFormulas) {
+        const key = sheet.id || sheet.name;
+        bestFitWidths = this.bestFitWidths.get(key);
+        if (!bestFitWidths) {
+          bestFitWidths = new Map();
+          this.bestFitWidths.set(key, bestFitWidths);
+        }
+      }
+      this.rowWindow = new SheetRowWindow(sheet, this.grid, this.grid, { calculationPending: () => this.state.loading, bestFitWidths });
+      const origin = sheet.frozenPane?.topLeft ?? sheet.topLeft;
+      if (position) this.rowWindow.restoreScrollPosition(position);
+      else if (origin) this.rowWindow.restoreScrollPosition({ ...origin, rowOffset: 0, columnOffset: 0 });
     } else this.grid.appendChild(createSheetTable(sheet));
   }
 
@@ -412,7 +430,8 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     this.clock = undefined;
     this.cancelCsvUpdate();
     this.cancelWorksheetUpdate();
-    this.worksheetPending = false;
+    this.worksheetSourceIndices.length = 0;
+    this.bestFitWidths.clear();
     this.rowWindow?.destroy();
     this.rowWindow = undefined;
     this.fontReferences = [];
@@ -420,6 +439,7 @@ export class XlsxPreviewSession implements PreviewSession<WorkbookPreviewState> 
     this.workbook = null;
     this.tabs.replaceChildren();
     this.grid.replaceChildren();
+    this.grid.removeAttribute('dir');
     this.grid.scrollTop = this.grid.scrollLeft = 0;
     this.state.activeSheetIndex = 0;
     this.state.sheets = [];

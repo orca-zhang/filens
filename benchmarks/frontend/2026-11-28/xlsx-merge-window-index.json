@@ -1,0 +1,155 @@
+{
+  "date": "2026-11-28",
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "cpu": "Apple M4 Pro",
+    "node": "v20.20.2",
+    "jsdom": "25.0.1",
+    "xlsxWriter": "3.2.9"
+  },
+  "method": "Four fresh Node processes per workload and build, alternating build order. Parse each file-backed Blob in preview mode before timing. Measure index construction and the first 64-row by 20-column window together, then 96 merge-window queries cycling through 16 horizontal positions. Separately time 15 full SheetRowWindow updates in jsdom at 900 by 640. Validate all 15 viewport HTML snapshots by digest outside the timed stages.",
+  "scope": "Time covers index and DOM work with simulated viewport dimensions. It excludes ZIP parsing, browser paint and hardware graphics. The index uses two 16-bit column bounds per tree node for sufficiently large nonuniform ranges. The anchor lookup reuses ordered row cells.",
+  "builds": {
+    "before": "2b3ff166e13c3ce89a24d678850deb24a8ceedc0cde26713715b7f61ad366f39",
+    "after": "90239d7c2a404e255eff731d23ca16e5f09f995fdccd12eb0e8c63f0a3f296c7"
+  },
+  "workloads": {
+    "numeric": {
+      "fixture": "XlsxWriter sheet with 64 rows by 8192 columns, 4096 horizontal two-cell merges per row, and numeric anchors",
+      "archiveBytes": 2671480,
+      "archiveSha256": "19b436098193d35018ce4ad8d18e6b1a0c4e5b86c4eedf41db295ac1b23d8cd7",
+      "sheetXmlBytes": 14955638,
+      "matchingFragments": 61440,
+      "matchingViewportMarkupSha256": "dd89fccff20607650e51e6e90f0b0a83676298121b1c01d3a0a4aa8ee4333fca",
+      "measurements": {
+        "before": {
+          "samples": [
+            {
+              "firstMs": 17.194541999999956,
+              "mergeWindowsMs": 350.5490420000001,
+              "gridWindowsMs": 807.6441670000002
+            },
+            {
+              "firstMs": 16.816124999999943,
+              "mergeWindowsMs": 366.224209,
+              "gridWindowsMs": 762.0834159999999
+            },
+            {
+              "firstMs": 18.485374999999976,
+              "mergeWindowsMs": 349.0621249999999,
+              "gridWindowsMs": 786.5297909999995
+            },
+            {
+              "firstMs": 17.317750000000046,
+              "mergeWindowsMs": 351.983792,
+              "gridWindowsMs": 755.0777920000005
+            }
+          ],
+          "median": {
+            "firstMs": 17.256146,
+            "mergeWindowsMs": 351.26641700000005,
+            "gridWindowsMs": 774.3066034999997
+          }
+        },
+        "after": {
+          "samples": [
+            {
+              "firstMs": 14.807291999999961,
+              "mergeWindowsMs": 19.468208000000004,
+              "gridWindowsMs": 711.3552520000001
+            },
+            {
+              "firstMs": 14.948041999999987,
+              "mergeWindowsMs": 18.60933399999999,
+              "gridWindowsMs": 749.2542079999995
+            },
+            {
+              "firstMs": 13.844124999999963,
+              "mergeWindowsMs": 19.506833999999913,
+              "gridWindowsMs": 685.3603770000002
+            },
+            {
+              "firstMs": 14.218375000000037,
+              "mergeWindowsMs": 20.008958000000007,
+              "gridWindowsMs": 680.3229579999999
+            }
+          ],
+          "median": {
+            "firstMs": 14.5128335,
+            "mergeWindowsMs": 19.48752099999996,
+            "gridWindowsMs": 698.3578145000001
+          }
+        }
+      }
+    },
+    "text": {
+      "fixture": "XlsxWriter sheet with 64 rows by 8192 columns, 4096 horizontal two-cell merges per row, and text anchors",
+      "archiveBytes": 2630721,
+      "archiveSha256": "31ad5a19df785850109bc7965b15a457b88f9e252f43ad8188bd0996449ac389",
+      "sheetXmlBytes": 16528310,
+      "matchingFragments": 61440,
+      "matchingViewportMarkupSha256": "ec4f9742014aa60091103c88ff06110bf599992fe438c0f720b21869f9429406",
+      "measurements": {
+        "before": {
+          "samples": [
+            {
+              "firstMs": 16.709707999999978,
+              "mergeWindowsMs": 344.870542,
+              "gridWindowsMs": 845.0984580000006
+            },
+            {
+              "firstMs": 17.697916000000077,
+              "mergeWindowsMs": 343.61408399999993,
+              "gridWindowsMs": 872.9828740000003
+            },
+            {
+              "firstMs": 17.93033300000002,
+              "mergeWindowsMs": 358.421375,
+              "gridWindowsMs": 832.7480829999993
+            },
+            {
+              "firstMs": 16.823374999999942,
+              "mergeWindowsMs": 366.268333,
+              "gridWindowsMs": 899.0074149999998
+            }
+          ],
+          "median": {
+            "firstMs": 17.26064550000001,
+            "mergeWindowsMs": 351.6459585,
+            "gridWindowsMs": 859.0406660000004
+          }
+        },
+        "after": {
+          "samples": [
+            {
+              "firstMs": 14.377957999999921,
+              "mergeWindowsMs": 17.500124999999912,
+              "gridWindowsMs": 695.7424579999999
+            },
+            {
+              "firstMs": 14.244125000000054,
+              "mergeWindowsMs": 17.780208000000016,
+              "gridWindowsMs": 679.0376250000006
+            },
+            {
+              "firstMs": 13.542749999999955,
+              "mergeWindowsMs": 19.785542000000078,
+              "gridWindowsMs": 708.1233730000002
+            },
+            {
+              "firstMs": 14.05904200000009,
+              "mergeWindowsMs": 18.996291000000042,
+              "gridWindowsMs": 713.4065379999996
+            }
+          ],
+          "median": {
+            "firstMs": 14.151583500000072,
+            "mergeWindowsMs": 18.38824950000003,
+            "gridWindowsMs": 701.9329155
+          }
+        }
+      }
+    }
+  }
+}

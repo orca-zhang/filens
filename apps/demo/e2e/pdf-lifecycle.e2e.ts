@@ -1,7 +1,174 @@
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { createPdfFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
-import { servePdfFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
+import { createPdfFixture, createPdfImagePageFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
+import { createPdfPageTreeRangeFixture, createWidePdfRangeFixture, servePdfFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
+
+test('isolates page navigation and search across simultaneous PDF previews', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const server = await servePdfFixture(createPdfFixture(127, true, 0, undefined, 16));
+  try {
+    await page.goto('./');
+    const moduleUrl = new URL(`@fs${resolve('packages/pdf/src/index.ts')}`, page.url()).href;
+    const short = [...createPdfFixture(3, false, 0, (index, height) =>
+      `1 1 1 rg BT /F1 24 Tf 40 ${height - 60} Td (Short document page ${index + 1}) Tj ET\n`)];
+    await page.evaluate(async ({ moduleUrl, url, short }) => {
+      const { PdfPreviewSession } = await import(/* @vite-ignore */ moduleUrl);
+      const host = (name: string) => {
+        const element = document.createElement('div');
+        element.id = name;
+        element.style.cssText = 'width:600px;height:480px';
+        return element;
+      };
+      const longHost = host('long-pdf'), shortHost = host('short-pdf');
+      document.body.replaceChildren(longHost, shortHost);
+      const long = new PdfPreviewSession(longHost), brief = new PdfPreviewSession(shortHost);
+      await long.load(url, { descriptor: { name: 'long.pdf', source: url } });
+      const bytes = new Uint8Array(short);
+      await brief.load(bytes, { descriptor: { name: 'short.pdf', source: bytes } });
+      Object.assign(window, { concurrentPdfs: { long, brief } });
+      long.goToPage(126);
+      brief.goToPage(2);
+    }, { moduleUrl, url: server.url, short });
+    const text = (id: string, index: number) => page.locator(`#${id} .pdfv-page-slot[data-page-index="${index}"] .pdfv-text-layer[data-rendered="true"]`);
+    await expect(text('long-pdf', 126)).toHaveText('Document page 127');
+    await expect(text('short-pdf', 2)).toHaveText('Short document page 3');
+    const searches = await page.evaluate(async () => {
+      const { long, brief } = (window as any).concurrentPdfs;
+      await Promise.all([long.find('Document page 87'), brief.find('Short document page 2')]);
+      return [long.getState().search, brief.getState().search];
+    });
+    expect(searches).toMatchObject([{ pageCount: 127, total: 1 }, { pageCount: 3, total: 1 }]);
+    await expect(text('long-pdf', 86).locator('mark.is-active')).toHaveText('Document page 87');
+    await expect(text('short-pdf', 1).locator('mark.is-active')).toHaveText('Short document page 2');
+    await page.evaluate(async () => {
+      const { long, brief } = (window as any).concurrentPdfs;
+      await brief.destroy();
+      long.goToPage(112);
+    });
+    await expect(page.locator('#short-pdf')).toBeEmpty();
+    await expect(text('long-pdf', 112)).toHaveText('Document page 113');
+    expect(errors).toEqual([]);
+  } finally { await server.close(); }
+});
+
+test('releases offscreen PDF page proxies and reuses their geometry on return', async ({ page }) => {
+  const server = await servePdfFixture(createPdfFixture(81, true, 0, undefined, 10));
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    await page.goto('./');
+    const moduleUrl = new URL(`@fs${resolve('packages/pdf/src/index.ts')}`, page.url()).href;
+    await page.evaluate(async ({ moduleUrl, source }) => {
+      const { PdfPreviewSession } = await import(/* @vite-ignore */ moduleUrl);
+      const host = document.createElement('div');
+      host.style.cssText = 'width:800px;height:600px';
+      document.body.replaceChildren(host);
+      const session = new PdfPreviewSession(host, { fit: 'none' });
+      await session.load(source, { descriptor: { source, name: 'page-cache.pdf' } });
+      const documentProxy = (session as any).document;
+      Object.assign(window, { pageCachePdf: { session, documentProxy } });
+    }, { moduleUrl, source: server.url });
+    const visit = async (index: number) => {
+      await page.evaluate(index => (window as any).pageCachePdf.session.goToPage(index), index);
+      const slot = page.locator(`.pdfv-page-slot[data-page-index="${index}"]`);
+      await expect(slot.locator('canvas[data-rendered="true"]')).toHaveCount(1);
+      await expect(slot.locator('.pdfv-text-layer[data-rendered="true"]')).toHaveText(`Document page ${index + 1}`);
+    };
+    await visit(40);
+    await page.evaluate(async () => {
+      const state = (window as any).pageCachePdf;
+      state.proxy = await state.documentProxy.getPage(41);
+    });
+    const width = await page.locator('canvas[data-page-index="40"]').evaluate(element => (element as HTMLCanvasElement).width);
+    await visit(80);
+    await expect(page.locator('.pdfv-page-slot[data-page-index="40"]')).toHaveCount(0);
+    expect(await page.evaluate(() => {
+      const { proxy } = (window as any).pageCachePdf;
+      return { destroyed: proxy.destroyed, drawingIntents: proxy._intentStates.size };
+    })).toEqual({ destroyed: true, drawingIntents: 0 });
+    await page.evaluate(() => {
+      const state = (window as any).pageCachePdf;
+      const messages = state.documentProxy._transport.messageHandler;
+      state.geometryReads = 0;
+      for (const method of ['sendWithPromise', 'sendWithStream']) {
+        const send = messages[method].bind(messages);
+        messages[method] = (action: string, data: { pageIndex?: number }, ...rest: unknown[]) => {
+          if (action === 'GetPage' && data?.pageIndex === 40) state.geometryReads++;
+          return send(action, data, ...rest);
+        };
+      }
+    });
+    await visit(40);
+    expect(await page.locator('canvas[data-page-index="40"]').evaluate(element => (element as HTMLCanvasElement).width)).toBe(width);
+    expect(await page.evaluate(async () => {
+      const { documentProxy, proxy, session, geometryReads } = (window as any).pageCachePdf;
+      const reconstructed = await documentProxy.getPage(41);
+      await session.destroy();
+      return { geometryReads, reconstructed: reconstructed !== proxy };
+    })).toEqual({ geometryReads: 0, reconstructed: true });
+    expect(errors).toEqual([]);
+  } finally { await server.close(); }
+});
+
+test('discards late PDF images from a released page proxy when that page is revisited', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('./');
+  const moduleUrl = new URL(`@fs${resolve('packages/pdf/src/index.ts')}`, page.url()).href;
+  await page.evaluate(async ({ moduleUrl, bytes }) => {
+    const state = { messages: [] as any[], worker: undefined as Worker | undefined, replaying: false, closed: 0, session: undefined as any };
+    Object.assign(window, { delayedPdfImages: state });
+    window.Worker = new Proxy(window.Worker, {
+      construct(target, args) {
+        const worker = Reflect.construct(target, args) as Worker;
+        worker.addEventListener('message', event => {
+          if (state.replaying || event.data?.action !== 'obj' || event.data.data[1] !== 4) return;
+          event.stopImmediatePropagation();
+          state.messages.push(event.data);
+          state.worker = worker;
+        });
+        return worker;
+      }
+    });
+    const { PdfPreviewSession } = await import(/* @vite-ignore */ moduleUrl);
+    const host = document.createElement('div');
+    host.style.cssText = 'width:800px;height:600px';
+    document.body.replaceChildren(host);
+    const session = state.session = new PdfPreviewSession(host, { fit: 'none' });
+    const source = new Uint8Array(bytes);
+    await session.load(source, { descriptor: { source, name: 'late-image.pdf' } });
+    session.goToPage(4);
+  }, { moduleUrl, bytes: [...createPdfImagePageFixture()] });
+  const held = () => page.evaluate(() => (window as any).delayedPdfImages.messages.length);
+  const visit = (index: number) => page.evaluate(index => (window as any).delayedPdfImages.session.goToPage(index), index);
+  const canvas = (index: number) => page.locator(`canvas[data-page-index="${index}"][data-rendered="true"]`);
+  await expect.poll(held).toBe(1);
+  await visit(11);
+  await expect(canvas(11)).toHaveCount(1);
+  await expect(page.locator('.pdfv-page-slot[data-page-index="4"]')).toHaveCount(0);
+  await visit(4);
+  await expect.poll(held).toBe(2);
+  expect(await page.evaluate(() => {
+    const state = (window as any).delayedPdfImages;
+    const [stale, current] = state.messages;
+    const [id, index, type, image, proxy] = stale.data;
+    state.replaying = true;
+    state.worker.dispatchEvent(new MessageEvent('message', { data: {
+      ...stale, data: [id, index, type, { ...image, bitmap: { close() { state.closed++; } } }, proxy]
+    } }));
+    state.worker.dispatchEvent(new MessageEvent('message', { data: current }));
+    image.bitmap?.close();
+    return { sameId: id === current.data[0], closed: state.closed };
+  })).toEqual({ sameId: true, closed: 1 });
+  await expect(canvas(4)).toHaveCount(1);
+  expect(await canvas(4).evaluate(element => {
+    const canvas = element as HTMLCanvasElement;
+    return [...canvas.getContext('2d')!.getImageData(canvas.width / 2, canvas.height * 0.3, 1, 1).data];
+  })).toEqual([255, 0, 0, 255]);
+  await page.evaluate(() => (window as any).delayedPdfImages.session.destroy());
+  expect(errors).toEqual([]);
+});
 
 test('renders mixed PDF pages on demand and supports navigation, zoom and resize', async ({ page }) => {
   const errors: string[] = [];
@@ -264,8 +431,139 @@ test('paints other visible PDF pages while one visible page waits for bytes', as
   } finally { await server.close(); }
 });
 
+test('keeps neighboring pages rendering when a PDF range fails and retries the failed page', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const padding = `% ${'x'.repeat(8192)}\n`.repeat(12);
+  const bytes = Buffer.from(createPdfFixture(8, false, 0, (index: number) =>
+    `${padding}% Page ${index + 1} midpoint\n${padding}BT /F1 24 Tf 40 740 Td (Page ${index + 1}) Tj ET\n`, 4, 0));
+  const failedOffset = bytes.indexOf('% Page 2 midpoint'), heldOffset = bytes.indexOf('% Page 3 midpoint');
+  const server = await servePdfFixture(bytes);
+  server.pauseRanges([failedOffset, heldOffset]);
+  const ranges = (offset: number) => server.requests.filter(record => record.partial && record.begin <= offset && offset < record.end);
+  const slot = (index: number) => page.locator(`.pdfv-page-slot[data-page-index="${index}"]`);
+  try {
+    await page.goto('./');
+    const moduleUrl = new URL(`@fs${resolve('packages/pdf/src/index.ts')}`, page.url()).href;
+    await page.evaluate(async ({ moduleUrl, source }) => {
+      const { PdfPreviewSession } = await import(/* @vite-ignore */ moduleUrl);
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;inset:0;width:800px;height:600px';
+      document.body.replaceChildren(host);
+      const session = new PdfPreviewSession(host, { fit: 'none', initialScale: .1 });
+      Object.assign(window, { recoveringPdf: session });
+      await session.load(source, { descriptor: { source, name: 'retry-page.pdf' } });
+    }, { moduleUrl, source: server.url });
+    await expect.poll(() => [ranges(failedOffset)[0]?.bytesSent, ranges(heldOffset)[0]?.bytesSent]).toEqual([0, 0]);
+    server.disconnectRange(failedOffset);
+    const retry = slot(1).getByRole('button', { name: /retry/i });
+    await expect(retry).toBeInViewport();
+    await expect(slot(3).locator('.pdfv-text-layer[data-rendered="true"]')).toHaveText('Page 4');
+    expect(ranges(heldOffset)[0]).toMatchObject({ bytesSent: 0, cancelled: false });
+    expect(await page.evaluate(() => (window as any).recoveringPdf.getState())).toMatchObject({ loading: false, error: null });
+
+    server.resumeRanges();
+    await expect(slot(2).locator('.pdfv-text-layer[data-rendered="true"]')).toHaveText('Page 3');
+    await retry.focus();
+    await retry.press('Enter');
+    await expect(page.locator('.pdfv-preview')).toBeFocused();
+    await expect(slot(1).locator('.pdfv-text-layer[data-rendered="true"]')).toHaveText('Page 2');
+    await expect(slot(1).locator('canvas[data-rendered="true"]')).toBeInViewport();
+    await expect(retry).toHaveCount(0);
+    expect(ranges(failedOffset)).toHaveLength(2);
+    expect(ranges(heldOffset)).toHaveLength(1);
+    await page.evaluate(() => (window as any).recoveringPdf.destroy());
+    expect(errors).toEqual([]);
+  } finally { await server.close(); }
+});
+
+test('retries a failed PDF page lookup after the geometry range reconnects', async ({ page }) => {
+  const { bytes, offset } = createPdfPageTreeRangeFixture(true);
+  const server = await servePdfFixture(bytes);
+  const ranges = () => server.requests.filter(record => record.partial && record.begin <= offset && offset < record.end);
+  server.pauseRanges(offset);
+  try {
+    await page.goto(`./?url=${encodeURIComponent(server.url)}&lang=en`);
+    await expect(page.locator('.pdfv-page[data-page-index="0"][data-rendered="true"]')).toBeInViewport();
+    await page.locator('.pdfv-preview').evaluate(root => {
+      root.scrollTop = 5 * (root.querySelector('.pdfv-page-slot')!.getBoundingClientRect().height + 16);
+    });
+    await expect.poll(() => ranges()[0]?.bytesSent).toBe(0);
+    server.disconnectRange(offset);
+    const target = page.locator('.pdfv-page-slot[data-page-index="5"]');
+    const retry = target.getByRole('button', { name: 'Retry (Page 6)' });
+    await expect(retry).toBeInViewport();
+    server.resumeRanges();
+    await retry.click();
+    await expect(target.locator('.pdfv-text-layer[data-rendered="true"]')).toHaveText('Page 6');
+    await expect(target.locator('canvas[data-rendered="true"]')).toBeInViewport();
+    expect(ranges()).toHaveLength(2);
+  } finally { await server.close(); }
+});
+
 test.describe('large PDF page rasters', () => {
   test.use({ deviceScaleFactor: 2 });
+
+  for (const fit of ['none', 'height'] as const) test(`refines a visible PDF page while the next page waits for bytes (fit ${fit})`, async ({ page }) => {
+    const { bytes, offset } = createWidePdfRangeFixture();
+    const server = await servePdfFixture(bytes);
+    const errors: Error[] = [];
+    page.on('pageerror', error => errors.push(error));
+    server.pauseRanges(offset);
+    try {
+      await page.goto('./');
+      const moduleUrl = new URL(`@fs${resolve('packages/pdf/src/index.ts')}`, page.url()).href;
+      await page.evaluate(async ({ moduleUrl, source, fit }) => {
+        const { PdfPreviewSession } = await import(/* @vite-ignore */ moduleUrl);
+        const host = document.createElement('div');
+        host.style.cssText = 'position:fixed;inset:0;width:800px;height:600px';
+        document.body.replaceChildren(host);
+        const session = new PdfPreviewSession(host, { fit });
+        Object.assign(window, { widePdf: session });
+        await session.load(source, { descriptor: { source, name: 'wide-pages.pdf' } });
+      }, { moduleUrl, source: server.url, fit });
+      const ranges = () => server.requests.filter(request => request.partial && request.begin <= offset && offset < request.end);
+      await expect.poll(() => ranges()[0]?.bytesSent).toBe(0);
+      const root = page.locator('.pdfv-preview');
+      const first = root.locator('.pdfv-page-slot[data-page-index="0"]');
+      const second = root.locator('.pdfv-page-slot[data-page-index="1"]');
+      const waiting = second.locator('canvas.pdfv-page:not([data-rendered])');
+      if (fit === 'height') await expect(waiting).not.toBeInViewport();
+      else await expect(waiting).toBeInViewport();
+      const waitingCanvas = (await waiting.elementHandle())!;
+      const detail = first.locator('.pdfv-page-detail:visible');
+      await expect(detail).toBeInViewport();
+      const old = (await detail.elementHandle())!;
+      const scale = await first.evaluate(slot => parseFloat((slot as HTMLElement).style.width) / 12000);
+      await root.evaluate((element, { scale, fit }) => {
+        element.scrollTop = fit === 'height' ? Math.floor(115 * scale) : 16;
+        element.scrollLeft = Math.floor(4700 * scale - 100);
+      }, { scale, fit });
+      await expect(waiting).toBeInViewport();
+      expect(await waiting.evaluate((canvas, previous) => canvas === previous, waitingCanvas)).toBe(true);
+      await expect.poll(() => old.evaluate((canvas: HTMLCanvasElement) => canvas.width)).toBe(0);
+      await expect(detail).toBeInViewport();
+      const pixels = await detail.evaluate((canvas: HTMLCanvasElement, scale) => {
+        const density = canvas.width / parseFloat(canvas.style.width);
+        const x = (4700 * scale - parseFloat(canvas.style.left)) * density;
+        const y = (140 * scale - parseFloat(canvas.style.top)) * canvas.height / parseFloat(canvas.style.height);
+        return { density, color: Array.from(canvas.getContext('2d')!.getImageData(x, y, 1, 1).data) };
+      }, scale);
+      expect(pixels.density).toBeGreaterThanOrEqual(1.9);
+      expect(pixels.color).toEqual([255, 0, 0, 255]);
+      const use = await root.locator('canvas').evaluateAll(canvases => canvases.reduce((total, element) => {
+        const { width, height } = element as HTMLCanvasElement;
+        return total + width * height;
+      }, 0));
+      expect(use).toBeLessThanOrEqual(16 * 1024 * 1024);
+      expect(ranges()).toMatchObject([{ bytesSent: 0, cancelled: false }]);
+      server.resumeRanges();
+      await expect(second.locator('.pdfv-text-layer[data-rendered="true"]')).toHaveText('Wide page 2');
+      await expect(second.locator('.pdfv-page-detail:visible')).toBeInViewport();
+      await page.evaluate(() => (window as any).widePdf.destroy());
+      expect(errors).toEqual([]);
+    } finally { await server.close(); }
+  });
 
   for (const rotation of [0, 90]) test(`caps page raster memory and redraws selectable detail at rotation ${rotation}`, async ({ page }) => {
     const errors: string[] = [];

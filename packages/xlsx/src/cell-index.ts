@@ -1,10 +1,11 @@
 import type { ParsedCell, ParsedSheet } from './types';
 
-/** A directory over 32-column bitmaps. Each bitmap maps column bits to
- * offsets in a worksheet row's existing cell array. */
+/** Locate cells in the worksheet's ordered arrays. Consecutive rows and
+ * columns use offsets. Gaps in a cell array use 32-column bitmaps. */
 export class WorksheetCellIndex {
-  private readonly rows: Float64Array;
-  private readonly rowPages: Uint32Array;
+  private readonly firstRow: number;
+  private readonly rows?: Uint32Array | Float64Array;
+  private readonly rowPages?: Uint32Array;
   private readonly pages: Float64Array;
   private readonly masks: Uint32Array;
   private readonly offsets: Uint32Array;
@@ -12,8 +13,9 @@ export class WorksheetCellIndex {
   private lastRow = -1;
 
   constructor(sheet: ParsedSheet) {
-    const rows: number[] = [], rowPages: number[] = [], pages: number[] = [];
+    const pages: number[] = [];
     const masks: number[] = [], offsets: number[] = [], rowCells: ParsedCell[][] = [];
+    let firstRow = 0, rows: number[] | undefined, rowPages: number[] | undefined;
     let input = sheet.rows, previousRow = 0;
     for (const row of input) {
       if (!validCoordinate(row.index) || row.index < previousRow) {
@@ -33,9 +35,15 @@ export class WorksheetCellIndex {
       }
       cells = orderedCells(cells);
       if (!cells.length) continue;
-      rows.push(row.index);
-      rowPages.push(pages.length);
+      const rowCount = rowCells.length;
+      if (!rowCount) firstRow = row.index;
+      if (!rows && row.index - firstRow !== rowCount) rows = Array.from({ length: rowCount }, (_, index) => firstRow + index);
+      rows?.push(row.index);
+      const consecutive = cells[cells.length - 1].column - cells[0].column === cells.length - 1;
+      if (!consecutive) rowPages ??= new Array<number>(rowCount).fill(0);
+      rowPages?.push(pages.length);
       rowCells.push(cells);
+      if (consecutive) continue;
       let previousPage = -1;
       for (let i = 0; i < cells.length; i++) {
         const column = cells[i].column - 1, page = Math.floor(column / 32);
@@ -48,9 +56,12 @@ export class WorksheetCellIndex {
         masks[masks.length - 1] |= 1 << (column % 32);
       }
     }
-    rowPages.push(pages.length);
-    this.rows = Float64Array.from(rows);
-    this.rowPages = Uint32Array.from(rowPages);
+    this.firstRow = firstRow;
+    if (rows) this.rows = rows[rows.length - 1] <= 0xffffffff ? Uint32Array.from(rows) : Float64Array.from(rows);
+    if (rowPages) {
+      rowPages.push(pages.length);
+      this.rowPages = Uint32Array.from(rowPages);
+    }
     this.pages = Float64Array.from(pages);
     this.masks = Uint32Array.from(masks);
     this.offsets = Uint32Array.from(offsets);
@@ -60,55 +71,80 @@ export class WorksheetCellIndex {
   get(row: number, column: number): ParsedCell | undefined {
     if (!Number.isSafeInteger(row) || !Number.isSafeInteger(column) || column < 1) return undefined;
     let at = this.lastRow;
-    if (at < 0 || this.rows[at] !== row) {
-      at = lowerBound(this.rows, row, 0, this.rows.length);
-      if (this.rows[at] !== row) return undefined;
+    if (at < 0 || this.rowNumber(at) !== row) {
+      at = this.findRow(row);
+      if (at === this.rowCells.length || this.rowNumber(at) !== row) return undefined;
       this.lastRow = at;
     }
-    const key = Math.floor((column - 1) / 32), end = this.rowPages[at + 1];
-    const page = lowerBound(this.pages, key, this.rowPages[at], end);
+    const cells = this.rowCells[at];
+    const begin = this.rowPages?.[at] ?? 0, end = this.rowPages?.[at + 1] ?? 0;
+    if (begin === end) {
+      const offset = column - cells[0].column;
+      return offset >= 0 && offset < cells.length ? cells[offset] : undefined;
+    }
+    const key = Math.floor((column - 1) / 32);
+    const page = lowerBound(this.pages, key, begin, end);
     if (page === end || this.pages[page] !== key) return undefined;
     const bit = 1 << ((column - 1) % 32), mask = this.masks[page];
-    return mask & bit ? this.rowCells[at][this.offsets[page] + popcount(mask & (bit - 1))] : undefined;
+    return mask & bit ? cells[this.offsets[page] + popcount(mask & (bit - 1))] : undefined;
   }
 
   forEachInRange(firstRow: number, lastRow: number, firstColumn: number, lastColumn: number,
     visit: (cell: ParsedCell, row: number, column: number) => unknown, reverse = false): void {
-    const first = lowerBound(this.rows, firstRow, 0, this.rows.length);
-    const last = reverse ? lowerBound(this.rows, Math.floor(lastRow) + 1, first, this.rows.length) - 1 : first;
+    const first = this.findRow(firstRow);
+    const endRow = this.findRow(Math.floor(lastRow) + 1, first);
+    const start = reverse ? endRow - 1 : first;
     const step = reverse ? -1 : 1;
-    for (let row = last; row >= first && row < this.rows.length && this.rows[row] <= lastRow; row += step) {
+    for (let row = start; row >= first && row < endRow; row += step) {
       const cells = this.rowCells[row];
+      const index = this.rowNumber(row);
       let begin = 0, end = cells.length;
       // Fully covered rows already form a contiguous span. Only clipped ends
       // need a page search and bitmap rank.
       if (cells[0].column < firstColumn) begin = this.boundary(row, firstColumn, false);
       if (cells[end - 1].column > lastColumn) end = this.boundary(row, lastColumn, true);
       if (reverse) {
-        for (let i = end - 1; i >= begin; i--) if (visit(cells[i], this.rows[row], cells[i].column) === false) return;
+        for (let i = end - 1; i >= begin; i--) if (visit(cells[i], index, cells[i].column) === false) return;
       } else {
-        for (let i = begin; i < end; i++) if (visit(cells[i], this.rows[row], cells[i].column) === false) return;
+        for (let i = begin; i < end; i++) if (visit(cells[i], index, cells[i].column) === false) return;
       }
     }
   }
 
   *occupiedPositions(firstRow: number, lastRow: number, firstColumn: number, lastColumn: number, reverse = false): Iterable<number> {
     const width = lastColumn - firstColumn + 1;
-    const first = lowerBound(this.rows, firstRow, 0, this.rows.length);
-    const last = reverse ? lowerBound(this.rows, Math.floor(lastRow) + 1, first, this.rows.length) - 1 : first;
-    for (let row = last; row >= first && row < this.rows.length && this.rows[row] <= lastRow; row += reverse ? -1 : 1) {
+    const first = this.findRow(firstRow);
+    const endRow = this.findRow(Math.floor(lastRow) + 1, first);
+    const start = reverse ? endRow - 1 : first;
+    for (let row = start; row >= first && row < endRow; row += reverse ? -1 : 1) {
       const cells = this.rowCells[row];
       const begin = this.boundary(row, firstColumn, false), end = this.boundary(row, lastColumn, true);
-      const offset = (this.rows[row] - firstRow) * width - firstColumn;
+      const offset = (this.rowNumber(row) - firstRow) * width - firstColumn;
       if (reverse) for (let i = end - 1; i >= begin; i--) yield offset + cells[i].column;
       else for (let i = begin; i < end; i++) yield offset + cells[i].column;
     }
   }
 
+  private rowNumber(at: number): number {
+    return this.rows ? this.rows[at] : this.firstRow + at;
+  }
+
+  private findRow(row: number, start = 0): number {
+    const end = this.rowCells.length;
+    return this.rows ? lowerBound(this.rows, row, start, end)
+      : Math.min(end, Math.max(start, Math.ceil(row - this.firstRow) || 0));
+  }
+
   private boundary(row: number, column: number, inclusive: boolean): number {
-    const key = Math.floor((column - 1) / 32), end = this.rowPages[row + 1];
-    const page = lowerBound(this.pages, key, this.rowPages[row], end);
-    if (page === end) return this.rowCells[row].length;
+    const cells = this.rowCells[row];
+    const begin = this.rowPages?.[row] ?? 0, end = this.rowPages?.[row + 1] ?? 0;
+    if (begin === end) {
+      const target = inclusive ? Math.floor(column) + 1 : Math.ceil(column);
+      return Math.max(0, Math.min(cells.length, target - cells[0].column) || 0);
+    }
+    const key = Math.floor((column - 1) / 32);
+    const page = lowerBound(this.pages, key, begin, end);
+    if (page === end) return cells.length;
     let offset = this.offsets[page];
     if (this.pages[page] === key) {
       // Arithmetic powers also handle the unsigned high bit and a full word.
@@ -143,7 +179,7 @@ function validCoordinate(value: number): boolean {
   return Number.isSafeInteger(value) && value > 0;
 }
 
-function lowerBound(keys: Float64Array, key: number, first: number, last: number): number {
+function lowerBound(keys: Uint32Array | Float64Array, key: number, first: number, last: number): number {
   while (first < last) {
     const middle = first + Math.floor((last - first) / 2);
     if (keys[middle] < key) first = middle + 1;

@@ -33,9 +33,12 @@ export async function createFormulaWorkbook() {
       formula('C2', 'SUM(' + data + 'A1:B4)'),
       formula('D2', data + 'A2 & ":" & ' + data + 'A3'),
       formula('E2', '9*9', '', '<v>5</v>'),
-      formula('F2', "'[remote.xlsx]Sheet1'!A1")
+      formula('F2', "'[remote.xlsx]Sheet1'!A1"),
+      formula('G2', '_xlfn.CEILING.MATH(Input!A1/3,0.2)'),
+      formula('H2', '_xlfn.FLOOR.MATH(-Input!A1/3,0.2,1)'),
+      formula('I2', 'FLOOR(Input!A1,0)')
     ]),
-    row(1048576, [formula('XFD1048576', 'SUM(' + data + 'A:A)*B1+0.25', ' s="1"')])
+    row(1048576, [formula('XFD1048576', 'SUM(' + data + 'A:A)*B1+_xlfn.CEILING.PRECISE(0.21,0.25)', ' s="1"')])
   ]));
   zip.file('xl/worksheets/sheet2.xml', worksheet([
     row(1, [formula('A1', data + 'A1+1'), formula('B1', 'Summary!A2')])

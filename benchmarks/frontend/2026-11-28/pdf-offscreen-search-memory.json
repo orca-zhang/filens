@@ -1,0 +1,386 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "browser": "159.0.8154.6",
+  "method": "Open the built PDF package in a fresh Chromium browser context with a 1200 × 800 viewport and an 800 × 600 preview. Wait for the first text layer, then search a synthetic HTTP-range PDF with one short text line per page. Time find() through completion for two distinct absent queries. Collect garbage via CDP and record JavaScript heap bytes in the renderer and PDF.js worker before and after the first search. Count live renderer PDFPageProxy objects and outgoing GetPage and GetTextContent worker messages. Run four contexts per build and alternate build order. Heap numbers are post-GC JavaScript heap, with range buffers and process peak RSS outside the measurement.",
+  "fixture": {
+    "pageCount": 15000,
+    "bytes": 5200004,
+    "sha256": "15e4c69ca6871689e111ebea48a105ea6baf3491751a46148f35edbb7f0e7b66",
+    "generator": "createPdfFixture(15000, false, 0, undefined, 20, 0)"
+  },
+  "builds": {
+    "baseline": {
+      "index.js": "e010f1a7f50ea81ba82377c4a6861a630264c84cd089c915354b404a54925c90",
+      "pdf.worker.min.mjs": "1c69c14d9cf67dd3aa689201821b28a0458f9b02d6a023b00d7be914b3a2cb21",
+      "bench.js": "c5b9d4d461881e171295b93e935b41dac763fa1c0c74f2d13ccd6abfdf180afa"
+    },
+    "direct": {
+      "index.js": "7c4021d68688bc58d9e47834f6d9e9a7e3c2e29d0710a39619d59e9dc8d8c877",
+      "pdf.worker.min.mjs": "b1214755986d0c12fd119a1a8e2158661ce2f794a6a4d5149e7dc741cf8787cb",
+      "bench.js": "faf22c488ee556ea67f7497ebe4dbcae86272c4c3051d70990fb8641d32a8077"
+    }
+  },
+  "measurements": {
+    "baseline": {
+      "median": {
+        "mainThreadHeapAfterSearchMiB": 10.03,
+        "workerHeapAfterSearchMiB": 25.71,
+        "pageProxiesAfterSearch": 15000,
+        "firstSearchGetPageRequests": 14998,
+        "firstSearchTextStreams": 14999,
+        "firstSearchMs": 1605.1,
+        "repeatSearchGetPageRequests": 0,
+        "repeatSearchTextStreams": 10903,
+        "repeatSearchMs": 352.1
+      },
+      "samples": [
+        {
+          "run": 0,
+          "before": {
+            "main": 3173372,
+            "worker": 4803896,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 10519508,
+            "worker": 26934288,
+            "retainedPages": 15000
+          },
+          "scan": {
+            "elapsedMs": 1587.9000000953674,
+            "pages": 14998,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 352.90000009536743,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        },
+        {
+          "run": 1,
+          "before": {
+            "main": 3154864,
+            "worker": 4850056,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 10518052,
+            "worker": 26961232,
+            "retainedPages": 15000
+          },
+          "scan": {
+            "elapsedMs": 1599.2000000476837,
+            "pages": 14998,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 350.10000014305115,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        },
+        {
+          "run": 2,
+          "before": {
+            "main": 3154864,
+            "worker": 4857968,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 10518420,
+            "worker": 26958732,
+            "retainedPages": 15000
+          },
+          "scan": {
+            "elapsedMs": 1637.7000000476837,
+            "pages": 14998,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 351.2000000476837,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        },
+        {
+          "run": 3,
+          "before": {
+            "main": 3173336,
+            "worker": 4806188,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 10517312,
+            "worker": 26957884,
+            "retainedPages": 15000
+          },
+          "scan": {
+            "elapsedMs": 1611,
+            "pages": 14998,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 369.10000014305115,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        }
+      ]
+    },
+    "direct": {
+      "median": {
+        "mainThreadHeapAfterSearchMiB": 3.28,
+        "workerHeapAfterSearchMiB": 17.67,
+        "pageProxiesAfterSearch": 2,
+        "firstSearchGetPageRequests": 0,
+        "firstSearchTextStreams": 14999,
+        "firstSearchMs": 1533.5,
+        "repeatSearchGetPageRequests": 0,
+        "repeatSearchTextStreams": 10903,
+        "repeatSearchMs": 370.2
+      },
+      "samples": [
+        {
+          "run": 0,
+          "before": {
+            "main": 3155052,
+            "worker": 4856732,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 3444284,
+            "worker": 18537112,
+            "retainedPages": 2
+          },
+          "scan": {
+            "elapsedMs": 1520.7999999523163,
+            "pages": 0,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 369.5,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        },
+        {
+          "run": 1,
+          "before": {
+            "main": 3156456,
+            "worker": 4856700,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 3444356,
+            "worker": 18511640,
+            "retainedPages": 2
+          },
+          "scan": {
+            "elapsedMs": 1546.1000001430511,
+            "pages": 0,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 379,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        },
+        {
+          "run": 2,
+          "before": {
+            "main": 3155088,
+            "worker": 4851036,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 3444372,
+            "worker": 18537840,
+            "retainedPages": 2
+          },
+          "scan": {
+            "elapsedMs": 1516.3999998569489,
+            "pages": 0,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 369.10000014305115,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        },
+        {
+          "run": 3,
+          "before": {
+            "main": 3155052,
+            "worker": 4851036,
+            "retainedPages": 2
+          },
+          "after": {
+            "main": 3444500,
+            "worker": 18514068,
+            "retainedPages": 2
+          },
+          "scan": {
+            "elapsedMs": 1551.5999999046326,
+            "pages": 0,
+            "text": 14999,
+            "state": {
+              "query": "A phrase absent from all the pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          },
+          "repeat": {
+            "elapsedMs": 370.90000009536743,
+            "pages": 0,
+            "text": 10903,
+            "state": {
+              "query": "A different phrase absent from all pages",
+              "searching": false,
+              "total": 0,
+              "activeIndex": -1,
+              "pagesScanned": 15000,
+              "pageCount": 15000,
+              "truncated": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}

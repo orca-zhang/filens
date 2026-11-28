@@ -1,0 +1,179 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS 26.6.2 arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "fixture": {
+    "worksheetRows": 1048576,
+    "storedNumericCells": 400000,
+    "values": "One numeric cell per row in column A. For one-based row r, the stored value is (r - 1) % 997.",
+    "rules": [
+      "Above average",
+      "Equal to or below average"
+    ]
+  },
+  "method": "Three fresh Node processes. Each process alternates the before and after builds, warms each build for eight full scans, then records twenty scans per build. Timing covers construction and first evaluation of a fresh range reader on a worksheet model with the cell index already built. XLSX parsing and DOM rendering are outside the timed section.",
+  "verifiedMean": 497.7985225,
+  "medianOfRunMediansMs": {
+    "before": 10.887728999999979,
+    "after": 9.765687500000013
+  },
+  "runs": [
+    {
+      "medianMs": {
+        "before": 10.887728999999979,
+        "after": 9.765687500000013
+      },
+      "samplesMs": {
+        "before": [
+          10.9303,
+          11.3964,
+          10.9141,
+          10.9443,
+          10.6344,
+          10.9428,
+          10.672,
+          10.697,
+          10.7947,
+          10.7094,
+          10.638,
+          11.0092,
+          11.3605,
+          11.3688,
+          10.8614,
+          11.4995,
+          11.0416,
+          10.5675,
+          10.3969,
+          10.8432
+        ],
+        "after": [
+          9.7656,
+          9.9586,
+          10.6982,
+          21.4148,
+          9.7658,
+          9.7885,
+          9.883,
+          9.7023,
+          9.7697,
+          9.667,
+          9.5781,
+          9.6595,
+          9.6385,
+          9.8121,
+          9.6859,
+          9.6716,
+          9.664,
+          9.8593,
+          9.6996,
+          9.7785
+        ]
+      }
+    },
+    {
+      "medianMs": {
+        "before": 10.875646000000017,
+        "after": 9.714749999999981
+      },
+      "samplesMs": {
+        "before": [
+          10.8643,
+          10.9187,
+          10.7993,
+          10.963,
+          10.667,
+          10.8803,
+          11.1601,
+          10.8498,
+          11.1673,
+          11.3859,
+          10.5547,
+          10.7673,
+          10.8729,
+          11.0873,
+          11.1263,
+          10.8784,
+          10.7751,
+          11.1511,
+          10.7022,
+          10.8432
+        ],
+        "after": [
+          10.1965,
+          9.5785,
+          9.6442,
+          9.6975,
+          9.7299,
+          9.5225,
+          9.6833,
+          9.694,
+          9.8307,
+          9.5336,
+          9.5583,
+          9.9593,
+          9.751,
+          10.0003,
+          9.6996,
+          10.0254,
+          9.7422,
+          10.0265,
+          9.7716,
+          9.6813
+        ]
+      }
+    },
+    {
+      "medianMs": {
+        "before": 11.003499999999946,
+        "after": 9.987062999999978
+      },
+      "samplesMs": {
+        "before": [
+          10.7697,
+          10.9514,
+          10.9896,
+          11.1104,
+          11.1404,
+          11.0625,
+          11.2838,
+          11.4638,
+          10.9566,
+          10.8685,
+          11.131,
+          11.0935,
+          10.8425,
+          11.0784,
+          10.916,
+          10.5277,
+          10.9675,
+          10.8905,
+          11.0174,
+          11.246
+        ],
+        "after": [
+          9.7429,
+          9.7847,
+          10.0954,
+          10.0596,
+          10.1156,
+          9.7008,
+          9.7692,
+          9.9511,
+          9.899,
+          10.4275,
+          9.8375,
+          10.007,
+          9.7547,
+          10.193,
+          9.9672,
+          10.0427,
+          10.0631,
+          10.2347,
+          10.2567,
+          9.7663
+        ]
+      }
+    }
+  ]
+}

@@ -1,6 +1,27 @@
 import { buildPreviewFontStack } from '@filens/core';
 import type { ParsedColumnWidthSource, ParsedSheet } from './types';
 
+function normalFontContext(document: Document, source: ParsedColumnWidthSource): CanvasRenderingContext2D | undefined {
+  const font = source.font;
+  if (!font?.fontFamily) return undefined;
+  const context = document.createElement('canvas').getContext('2d');
+  if (!context) return undefined;
+  const stack = buildPreviewFontStack(font.fontFamily, font.traits, font.resolvedFontFamily ? [font.resolvedFontFamily] : []);
+  context.font = `${font.fontStyle ?? 'normal'} ${font.traits?.weight ?? 400} ${source.fontSize * 96 / 72}px ${stack}`;
+  return context;
+}
+
+export function normalSpaceWidth(sheet: ParsedSheet, document: Document): number {
+  const source = sheet.columnWidthSource;
+  if (source) {
+    try {
+      const width = normalFontContext(document, source)?.measureText(' ').width;
+      if (width && Number.isFinite(width)) return width;
+    } catch { /* Use the Normal-size fallback when a canvas is unavailable. */ }
+  }
+  return (source?.fontSize ?? 11) / 3;
+}
+
 /** ISO 29500 col.width includes padding in character units; baseColWidth does not. */
 export function xlsxColumnWidths(count: number, source: ParsedColumnWidthSource, digitWidth = 7, showFormulas = false): number[] {
   // Formula view doubles the final pixel size, including the grid padding.
@@ -17,21 +38,23 @@ export function xlsxColumnWidths(count: number, source: ParsedColumnWidthSource,
   return widths;
 }
 
-export function sheetColumnWidths(sheet: ParsedSheet, document: Document, count = sheet.columnCount): readonly number[] | undefined {
-  const source = sheet.columnWidthSource;
-  if (!source) return sheet.columnWidths;
+export function normalDigitWidth(source: ParsedColumnWidthSource, document: Document): number {
   let digitWidth = 7;
   if (source.font?.fontFamily) {
     try {
-      const context = document.createElement('canvas').getContext('2d');
+      const context = normalFontContext(document, source);
       if (context) {
-        const font = source.font;
-        const stack = buildPreviewFontStack(font.fontFamily!, font.traits, font.resolvedFontFamily ? [font.resolvedFontFamily] : []);
-        context.font = `${font.fontStyle ?? 'normal'} ${font.traits?.weight ?? 400} ${source.fontSize * 96 / 72}px ${stack}`;
         const measured = Math.round(Math.max(...Array.from('0123456789', digit => context.measureText(digit).width)));
         if (Number.isFinite(measured) && measured > 0) digitWidth = measured;
       }
     } catch { /* Headless hosts without a canvas retain the 11pt Calibri baseline. */ }
   }
+  return digitWidth;
+}
+
+export function sheetColumnWidths(sheet: ParsedSheet, document: Document, count = sheet.columnCount): readonly number[] | undefined {
+  const source = sheet.columnWidthSource;
+  if (!source) return sheet.columnWidths;
+  const digitWidth = normalDigitWidth(source, document);
   return xlsxColumnWidths(count, source, digitWidth, sheet.showFormulas);
 }

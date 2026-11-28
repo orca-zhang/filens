@@ -1,0 +1,544 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Three fresh Node processes per build and workload, alternating build order. Open a file-backed Blob in XlsxPreviewSession with jsdom. Measure complete load time, process peak RSS and retained V8 heap above startup after collection. After timing, hash the cell data, rich-text runs and styles, workbook fonts and first viewport markup. Recalculate the cross-sheet sum and sample row formulas.",
+  "builds": {
+    "baseline": "7f1143ace377e58c32e3c78f5a7d3c17f45d82f51f980fef666b0c1156e55f2b",
+    "direct": "d1cc39e6a25ae02410472173e3e6edaf5b5115a32f884014286e567dbe890b47"
+  },
+  "workloads": {
+    "dense": {
+      "contents": "125,000 rows by eight columns, written by openpyxl 3.1.5 in write-only mode. Each row has a three-run inline value containing bold colored Unicode text and a named run font, three plain text cells, two numbers, a Boolean and an uncached arithmetic formula.",
+      "archiveBytes": 4600025,
+      "sha256": "405a95991c8dcb456ab757fed51734ad4e3b9e945def8e0f89bbb98f3845fa75",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 7013.168042,
+            "peakRssKiB": 721680,
+            "heapBytes": 204538008
+          },
+          {
+            "loadMs": 7050.115374999999,
+            "peakRssKiB": 742976,
+            "heapBytes": 204534160
+          },
+          {
+            "loadMs": 7069.646958,
+            "peakRssKiB": 766688,
+            "heapBytes": 204540552
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 4351.308083,
+            "peakRssKiB": 643744,
+            "heapBytes": 203503368
+          },
+          {
+            "loadMs": 4518.463458,
+            "peakRssKiB": 691856,
+            "heapBytes": 203526104
+          },
+          {
+            "loadMs": 4496.395292,
+            "peakRssKiB": 694112,
+            "heapBytes": 203548448
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 7050.1,
+          "peakRssMiB": 725.6,
+          "retainedHeapMiB": 195.1
+        },
+        "direct": {
+          "loadMs": 4496.4,
+          "peakRssMiB": 675.6,
+          "retainedHeapMiB": 194.1
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "4d4e5d82f3a82617cb88bc37d9aab216adfc913ea0b5778fee4f07c02da22def",
+        "markupHash": "eefde4225e0491c7613e1fe277292fe167e07122817e95aede153a3b2516b14c",
+        "formula": "7812562500",
+        "resolved": [
+          "2",
+          "125000",
+          "250000"
+        ]
+      }
+    },
+    "mixed": {
+      "contents": "Same data as dense, with rich text on one of every 31 rows. The other rows store the same text as a plain inline value.",
+      "archiveBytes": 4544574,
+      "sha256": "7f7326a196561070201fdbc1a09c5609f0265a4310c165c7e4be2de15b15eda4",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 4945.392875,
+            "peakRssKiB": 596608,
+            "heapBytes": 141003680
+          },
+          {
+            "loadMs": 4937.959875,
+            "peakRssKiB": 592816,
+            "heapBytes": 140939584
+          },
+          {
+            "loadMs": 5005.030167,
+            "peakRssKiB": 592800,
+            "heapBytes": 141032464
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1685.211792,
+            "peakRssKiB": 335600,
+            "heapBytes": 135112808
+          },
+          {
+            "loadMs": 1717.8667500000001,
+            "peakRssKiB": 336944,
+            "heapBytes": 135045400
+          },
+          {
+            "loadMs": 1689.197666,
+            "peakRssKiB": 334512,
+            "heapBytes": 135105240
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 4945.4,
+          "peakRssMiB": 578.9,
+          "retainedHeapMiB": 134.5
+        },
+        "direct": {
+          "loadMs": 1689.2,
+          "peakRssMiB": 327.7,
+          "retainedHeapMiB": 128.8
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "588d26817f8fb65b019a3b6eda4c8ad7bae5893fe78c872fb14e10635d7c68ae",
+        "markupHash": "21638f0b633321285e00659934c81243c4c155f2e451a55db5bf1d54f07adedc",
+        "formula": "7812562500",
+        "resolved": [
+          "2",
+          "125000",
+          "250000"
+        ]
+      }
+    },
+    "ordinary": {
+      "contents": "125,000 rows by eight columns, written by XlsxWriter 3.2.9 in constant_memory mode. Each row has one ordinary cached arithmetic formula and three inline text cells.",
+      "archiveBytes": 4614851,
+      "sha256": "35409a346aeed9d6b1062bd0b25e5efbca0057b10a88d1983ccf94e4a13e426a",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1453.84375,
+            "peakRssKiB": 383024,
+            "heapBytes": 129708928
+          },
+          {
+            "loadMs": 1423.0376250000002,
+            "peakRssKiB": 362048,
+            "heapBytes": 129712224
+          },
+          {
+            "loadMs": 1422.8713750000002,
+            "peakRssKiB": 353104,
+            "heapBytes": 129646624
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1434.003959,
+            "peakRssKiB": 347456,
+            "heapBytes": 129662608
+          },
+          {
+            "loadMs": 1465.67075,
+            "peakRssKiB": 384400,
+            "heapBytes": 129825024
+          },
+          {
+            "loadMs": 1416.5837499999998,
+            "peakRssKiB": 360992,
+            "heapBytes": 129739624
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1423,
+          "peakRssMiB": 353.6,
+          "retainedHeapMiB": 123.7
+        },
+        "direct": {
+          "loadMs": 1434,
+          "peakRssMiB": 352.5,
+          "retainedHeapMiB": 123.7
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "511d7357e5baa854f617b274ca6e6036ec9e2702d51b5b5de5b2b083a751ebbc",
+        "markupHash": "f99dddd42f0f87e73efbd8496f213516a3b1f6c12733550e43e1e32c5aa63491",
+        "formula": "7812562500",
+        "resolved": [
+          "2",
+          "125000",
+          "250000"
+        ]
+      }
+    }
+  },
+  "workbookModelComparison": {
+    "files": [
+      {
+        "path": "tmp/xlsx-calendar-formats/exported-calendar-codes.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-flatten/tocol.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-flatten/torow.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/monthly.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-groupby/survey.xlsx",
+        "baselineBatches": 1,
+        "directBatches": 1
+      },
+      {
+        "path": "tmp/xlsx-groupby/weather.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-makearray/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-map/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-map/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-pivotby/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-pivotby/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-pivotby/percentof.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/groupby.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/regexextract.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/regexreplace.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-regex/regextest.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/exceljet-reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/exceljet-scan.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/reduce.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-scan-reduce/scan.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/byrow.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/exceljet.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-trim/row-numbers.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-wrap/ablebits.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-wrap/exceljet-rows.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "tmp/xlsx-wrap/expand.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/filens-observatory.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/filens-observatory.zh-CN.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/rich-xlsx-data-types.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/rich-xlsx-formulas.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      },
+      {
+        "path": "apps/demo/public/samples/rich-xlsx-many-columns.xlsx",
+        "baselineBatches": 0,
+        "directBatches": 0
+      }
+    ],
+    "cells": 206374,
+    "baselineRowBatches": 1,
+    "directRowBatches": 1
+  },
+  "verification": {
+    "date": "2026-11-28",
+    "xlsxUnitTests": 1381,
+    "browserRegressions": 222,
+    "packagedPreviewChecks": "Verify rich runs in the first visible rows, their color and named font, final worksheet rows and calculations, and the cross-sheet summary. Split and all-in-one builds display rich text before the second HTTP worksheet range supplies bytes. Offline HTML emits no HTTP requests.",
+    "packagedPreviews": [
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "split",
+        "scenario": "dense",
+        "earlyRows": 26323,
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "split",
+        "scenario": "mixed",
+        "earlyRows": 28709,
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "all-in-one",
+        "scenario": "dense",
+        "earlyRows": 26323,
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "all-in-one",
+        "scenario": "mixed",
+        "earlyRows": 28709,
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "offline",
+        "scenario": "dense",
+        "ranges": 0
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "offline",
+        "scenario": "mixed",
+        "ranges": 0
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "split",
+        "scenario": "dense",
+        "earlyRows": 26323,
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "split",
+        "scenario": "mixed",
+        "earlyRows": 28709,
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "all-in-one",
+        "scenario": "dense",
+        "earlyRows": 26323,
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "all-in-one",
+        "scenario": "mixed",
+        "earlyRows": 28709,
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "offline",
+        "scenario": "dense",
+        "ranges": 0
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "offline",
+        "scenario": "mixed",
+        "ranges": 0
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "split",
+        "scenario": "dense",
+        "earlyRows": 26323,
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "split",
+        "scenario": "mixed",
+        "earlyRows": 28709,
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "all-in-one",
+        "scenario": "dense",
+        "earlyRows": 26323,
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "all-in-one",
+        "scenario": "mixed",
+        "earlyRows": 28709,
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "offline",
+        "scenario": "dense",
+        "ranges": 0
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "offline",
+        "scenario": "mixed",
+        "ranges": 0
+      }
+    ],
+    "remoteRangeRegressionRerun": 72
+  }
+}

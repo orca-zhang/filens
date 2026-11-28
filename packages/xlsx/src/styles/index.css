@@ -158,6 +158,11 @@
   min-width: 48px;
 }
 
+.xlsxv-table[dir='rtl'] :is(.xlsxv-corner, .xlsxv-row-header) {
+  left: auto;
+  right: 0;
+}
+
 .xlsxv-corner,
 .xlsxv-col-header {
   top: 0;
@@ -174,6 +179,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: top;
+}
+
+.xlsxv-cell[dir='rtl'] {
+  text-align: left;
 }
 
 .xlsxv-source-columns .xlsxv-cell {
@@ -198,7 +207,8 @@
   overflow: hidden;
 }
 
-.xlsxv-rotated-value {
+.xlsxv-rotated-value,
+.xlsxv-overflow-value {
   position: absolute;
   top: 50%;
   width: max-content;
@@ -239,7 +249,8 @@
   overflow: hidden;
 }
 
-.xlsxv-rotated-overflow {
+.xlsxv-rotated-overflow,
+.xlsxv-text-overflow {
   position: absolute;
   inset-block: 0;
   z-index: 1;
@@ -250,20 +261,33 @@
   pointer-events: none;
 }
 
-.xlsxv-rotated-overflow .xlsxv-rotated-value {
+.xlsxv-rotated-overflow .xlsxv-rotated-value,
+.xlsxv-text-overflow .xlsxv-overflow-value {
   pointer-events: auto;
 }
 
-.xlsxv-table:not(.xlsxv-custom-borders) .xlsxv-overflow-edge {
+.xlsxv-table:not(.xlsxv-custom-borders, [dir='rtl']) .xlsxv-overflow-edge {
   border-right-color: transparent;
 }
 
-.xlsxv-table:not(.xlsxv-custom-borders) .xlsxv-overflow-edge + .xlsxv-cell {
+.xlsxv-table:not(.xlsxv-custom-borders, [dir='rtl']) .xlsxv-overflow-edge + .xlsxv-cell {
   border-left-color: transparent;
 }
 
-.xlsxv-custom-borders .xlsxv-overflow-edge {
+.xlsxv-table[dir='rtl']:not(.xlsxv-custom-borders) .xlsxv-overflow-edge {
+  border-left-color: transparent;
+}
+
+.xlsxv-table[dir='rtl']:not(.xlsxv-custom-borders) .xlsxv-overflow-edge + .xlsxv-cell {
+  border-right-color: transparent;
+}
+
+.xlsxv-custom-borders:not([dir='rtl']) .xlsxv-overflow-edge {
   --xlsxv-grid-right: transparent;
+}
+
+.xlsxv-custom-borders[dir='rtl'] .xlsxv-overflow-edge {
+  --xlsxv-grid-left: transparent;
 }
 
 .xlsxv-shrink-text {
@@ -290,6 +314,25 @@
 .xlsxv-number-tabular {
   font-variant-numeric: tabular-nums;
   font-kerning: none;
+}
+
+.xlsxv-fill-line {
+  position: relative;
+  display: inline-flex;
+  direction: ltr;
+  min-height: 1lh;
+  white-space: pre;
+}
+
+.xlsxv-fill-pattern {
+  display: inline-block;
+  flex: none;
+  white-space: pre;
+}
+
+.xlsxv-fill-pattern.is-source {
+  position: absolute;
+  left: 0;
 }
 
 .xlsxv-number-layout {
@@ -345,6 +388,26 @@
 
 .xlsxv-fixed-row > .xlsxv-cell {
   position: relative;
+}
+
+.xlsxv-vertical-cell {
+  position: relative;
+}
+
+.xlsxv-vertical-frame {
+  position: absolute;
+  container-type: size;
+  overflow: hidden;
+}
+
+.xlsxv-vertical-lines {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.xlsxv-vertical-lines,
+.xlsxv-vertical-lines :where(span) {
+  line-height: calc(var(--xlsxv-vertical-line-height) * 1em + var(--xlsxv-vertical-gap, 0px));
 }
 
 .xlsxv-fixed-clip {
@@ -524,6 +587,68 @@
   border-width: 0;
   box-shadow: inset -1px 0 var(--xlsxv-grid-right, #d8dee8), inset 0 -1px var(--xlsxv-grid-bottom, #d8dee8);
 }
+
+.xlsxv-custom-borders[dir='rtl'] .xlsxv-cell {
+  box-shadow: inset 1px 0 var(--xlsxv-grid-left, #d8dee8), inset 0 -1px var(--xlsxv-grid-bottom, #d8dee8);
+}
+
+.xlsxv-has-panes {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.xlsxv-has-panes :is(.xlsxv-corner, .xlsxv-row-header, .xlsxv-col-header) {
+  border-width: 0;
+  border-bottom-width: 1px;
+  border-inline-end-width: 1px;
+}
+
+/* WebKit hit-tests positioned cells at the end of a tall separate-border table. */
+.xlsxv-has-panes .xlsxv-cell { position: relative; }
+
+.xlsxv-has-panes > thead {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: #eef2f7;
+}
+
+.xlsxv-has-panes thead :is(.xlsxv-corner, .xlsxv-col-header) { top: auto; }
+.xlsxv-has-panes :is(.xlsxv-corner, .xlsxv-row-header) { z-index: 4; }
+
+.xlsxv-frozen-rows {
+  position: sticky;
+  z-index: 5;
+  background: #fff;
+  box-shadow: 0 1px #a3adc0;
+}
+
+.xlsxv-table .xlsxv-frozen-column {
+  position: sticky;
+  left: var(--xlsxv-frozen-inset);
+  z-index: 2;
+}
+
+.xlsxv-table[dir='rtl'] .xlsxv-frozen-column {
+  left: auto;
+  right: var(--xlsxv-frozen-inset);
+}
+
+.xlsxv-frozen-column.xlsxv-cell { background-color: #fff; }
+.xlsxv-frozen-column.xlsxv-overflow-host,
+.xlsxv-frozen-column.xlsxv-col-header { z-index: 3; }
+
+.xlsxv-frozen-column-edge::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 1px;
+  background: #a3adc0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.xlsxv-table[dir='rtl'] .xlsxv-frozen-column-edge::after { inset: 0 auto 0 0; }
 
 .xlsxv-source-columns .xlsxv-col-header {
   padding-left: 0;

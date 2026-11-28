@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import { createPdfFixture } from '../../../packages/pdf/test/fixtures/document.mjs';
-import { createPdfAttachmentRangeFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
+import { createPdfAnnotationRangeFixture, createPdfAttachmentRangeFixture, createPdfPageTreeRangeFixture, createPdfSearchRangeFixture } from '../../../packages/pdf/test/fixtures/range-source.mjs';
 
 interface SliceRead { begin: number; end: number; held: boolean; aborted: boolean }
 interface ReadProbe { whole: number; pauseAt: number; reads: SliceRead[] }
@@ -45,6 +45,116 @@ const canvas = (page: Page, index: number) => page.locator(`canvas.pdfv-page[dat
 const scrollToPage = (page: Page, index: number) => page.locator('.pdfv-preview').evaluate((viewport, index) => {
   viewport.scrollTop = viewport.scrollHeight * index / 600;
 }, index);
+
+test('releases a displaced PDF lookup of a page dictionary Blob slice', async ({ page }) => {
+  const { bytes, offset } = createPdfPageTreeRangeFixture();
+  const name = 'page-tree.pdf';
+  const probe = await trackPdfReads(page, name);
+  const go = (index: number) => page.locator('.pdfv-preview').evaluate((viewport, index) => {
+    viewport.scrollTop = viewport.scrollHeight * index / 12;
+  }, index);
+  const pause = (at: number) => page.evaluate(at => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = at; }, at);
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  await expect(canvas(page, 0)).toBeInViewport();
+  await pause(offset);
+  await go(5);
+  const reads = async () => (await probe()).reads.filter(read => read.begin <= offset && offset < read.end);
+  await expect.poll(async () => (await reads())[0]).toMatchObject({ held: true, aborted: false });
+  await expect(page.locator('.pdfv-page[data-page-index="5"]')).toHaveCount(0);
+  await go(10);
+  await expect(canvas(page, 10)).toBeInViewport();
+  await expect.poll(async () => (await reads())[0]?.aborted).toBe(true);
+  await pause(-1);
+  await go(5);
+  await expect(canvas(page, 5)).toBeInViewport();
+  await expect(page.locator('.pdfv-page-slot[data-page-index="5"] .pdfv-text-layer[data-rendered="true"]')).toHaveText('Page 6');
+  expect(await canvas(page, 5).evaluate(canvas => parseFloat(canvas.style.width) / parseFloat(canvas.style.height))).toBeCloseTo(2 / 3, 5);
+  expect(await reads()).toHaveLength(2);
+});
+
+test('releases a displaced PDF annotation appearance resource Blob slice', async ({ page }) => {
+  const { bytes, offset } = createPdfAnnotationRangeFixture('resources');
+  const name = 'annotations.pdf';
+  const probe = await trackPdfReads(page, name);
+  const go = (index: number) => page.locator('.pdfv-preview').evaluate((viewport, index) => {
+    viewport.scrollTop = viewport.scrollHeight * index / 12;
+  }, index);
+  const pause = (at: number) => page.evaluate(at => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = at; }, at);
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  await expect(canvas(page, 0)).toBeInViewport();
+  await pause(offset);
+  await go(5);
+  const reads = async () => (await probe()).reads.filter(read => read.begin <= offset && offset < read.end);
+  await expect.poll(async () => (await reads())[0]).toMatchObject({ held: true, aborted: false });
+  await expect(page.locator('canvas.pdfv-page[data-page-index="5"]:not([data-rendered])')).toBeInViewport();
+  await go(10);
+  await expect(canvas(page, 10)).toBeInViewport();
+  await expect.poll(async () => (await reads())[0]?.aborted).toBe(true);
+  await pause(-1);
+  await go(5);
+  await expect(canvas(page, 5)).toBeInViewport();
+  expect(await canvas(page, 5).evaluate((canvas: HTMLCanvasElement) =>
+    Array.from(canvas.getContext('2d')!.getImageData(canvas.width * .15, canvas.height * .25, 1, 1).data)))
+    .toEqual([255, 0, 0, 255]);
+  expect(await reads()).toHaveLength(2);
+});
+
+test('cancels a displaced PDF page Blob slice and reads the same page on return', async ({ page }) => {
+  const { bytes, offset, match } = createPdfSearchRangeFixture();
+  const name = 'displaced-page.pdf';
+  const probe = await trackPdfReads(page, name);
+  const go = (index: number) => page.locator('.pdfv-preview').evaluate((viewport, index) => {
+    viewport.scrollTop = viewport.scrollHeight * index / 12;
+  }, index);
+  const pause = (at: number) => page.evaluate(at => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = at; }, at);
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  await expect(canvas(page, 0)).toBeInViewport();
+  await pause(offset);
+  await go(5);
+  const reads = async () => (await probe()).reads.filter(read => read.begin <= offset && offset < read.end);
+  await expect.poll(async () => (await reads())[0]).toMatchObject({ held: true, aborted: false });
+  await go(10);
+  await expect(canvas(page, 10)).toBeInViewport();
+  await expect.poll(async () => (await reads())[0]?.aborted).toBe(true);
+  await pause(-1);
+  await go(5);
+  await expect(canvas(page, 5)).toBeInViewport();
+  await expect(page.locator('.pdfv-page-slot[data-page-index="5"] .pdfv-text-layer[data-rendered="true"]')).toHaveText(match);
+  expect(await reads()).toHaveLength(2);
+});
+
+test('cancels a held PDF search Blob slice and can search the same page again', async ({ page }) => {
+  const { bytes, offset, match } = createPdfSearchRangeFixture();
+  const name = 'sliced-search.pdf';
+  const probe = await trackPdfReads(page, name);
+  const errors: Error[] = [];
+  page.on('pageerror', error => errors.push(error));
+  await page.goto('./?view=preview&lang=en');
+  await page.getByLabel('Import files', { exact: true }).setInputFiles({ name, mimeType: 'application/pdf', buffer: bytes });
+  await expect(canvas(page, 0)).toBeVisible();
+  const pause = (at: number) => page.evaluate(at => { (window as Window & { pdfReadProbe: ReadProbe }).pdfReadProbe.pauseAt = at; }, at);
+  await pause(offset);
+  await page.locator('.pdfv-search-controls summary').click();
+  const search = page.getByRole('searchbox', { name: 'Find in document', exact: true });
+  await search.fill('missing phrase');
+  await search.press('Enter');
+  const held = async () => (await probe()).reads.find(read => read.held);
+  await expect.poll(async () => (await held())?.aborted).toBe(false);
+  await search.clear();
+  await expect.poll(async () => (await held())?.aborted).toBe(true);
+  await expect(canvas(page, 0)).toBeVisible();
+  await pause(-1);
+  await search.fill(match);
+  await search.press('Enter');
+  await expect(page.locator('.pdfv-page-slot[data-page-index="5"] .pdfv-search-match.is-active')).toHaveText(match);
+  const reads = await probe();
+  expect(reads.whole).toBe(0);
+  expect(reads.reads.filter(read => read.begin <= offset && offset < read.end)).toHaveLength(2);
+  expect(errors).toEqual([]);
+});
 
 test('reads a large PDF upload by slices and aborts a held distant page read on replacement', async ({ page }, testInfo) => {
   const bytes = Buffer.from(createPdfFixture(600, false, 0, undefined, 20));

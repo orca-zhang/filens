@@ -1,7 +1,9 @@
 import { packageExternals } from '../../scripts/package-externals';
 import { defineConfig } from 'vitest/config';
 import { packageDeclarations } from '../../scripts/package-declarations';
-import { pdfWorkerAsset } from '../../scripts/pdf-worker-asset';
+import { pdfDocumentPages, pdfWorkerAsset } from '../../scripts/pdf-worker-asset';
+
+const external = packageExternals(import.meta.url);
 
 export default defineConfig({
   base: './',
@@ -15,7 +17,7 @@ export default defineConfig({
     cssCodeSplit: false,
     sourcemap: 'hidden',
     rollupOptions: {
-      external: packageExternals(import.meta.url)
+      external: id => id !== 'pdfjs-dist' && external(id)
     }
   },
   test: {
@@ -23,6 +25,7 @@ export default defineConfig({
     globals: true
   },
   plugins: [
+    pdfDocumentPages(),
     pdfWorkerAsset(),
     packageDeclarations({
       include: ['src/**/*.ts'],

@@ -1,7 +1,7 @@
 import { openZipArchive } from '@filens/core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WorksheetCellIndex } from '../src/cell-index';
-import { displaySpillCell, evaluateWorksheetFormula, resolveCellValue } from '../src/cell-value';
+import { displaySpillCell, evaluateWorksheetFormula, forEachWorksheetRangeValue, resolveCellValue } from '../src/cell-value';
 import { withFormulaTime } from '../src/formula-clock';
 import { FormulaError, FormulaReader } from '../src/formula-reader';
 import { captureError, FormulaCalculationLimit, MAX_DENSE_ARRAY_SCAN, mergeOccupiedPositions } from '../src/formula-array';
@@ -10,8 +10,9 @@ import { createSheetTable } from '../src/table';
 import type { ParsedCell, ParsedSheet } from '../src/types';
 import { sheetTracks } from '../src/visible-tracks';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
-import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createCoordinateFormulaWorkbook, createCountBlankWorkbook,
-  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createGroupByWorkbook, createLambdaWorkbook, createMapWorkbook, createOffsetWorkbook, createOrderedConditionalWorkbook, createPivotByWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
+import { createFrequencyWorkbook } from './fixtures/aggregate-workbook.mjs';
+import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createConditionalReferencesWorkbook, createCoordinateFormulaWorkbook, createCountBlankWorkbook,
+  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createFormulaDisplayWorkbook, createGroupByWorkbook, createImplicitIntersectionWorkbook, createLambdaWorkbook, createMapWorkbook, createOffsetWorkbook, createOrderedConditionalWorkbook, createPivotByWorkbook, createReferenceInfoWorkbook, createReferenceOperatorsWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
   createSortSpillWorkbook, createStackSpillWorkbook, createTrimRangeWorkbook, createWorkdayArrayWorkbook, createWrapExpandWorkbook, createXlookupSpillWorkbook, createXmatchWorkbook } from './fixtures/array-selection-workbook.mjs';
 
 afterEach(() => {
@@ -58,6 +59,10 @@ describe('declared worksheet array formulas', () => {
     ['LET(SUM,LAMBDA(acc,item,acc*item),SCAN(2,{3,4},SUM))', 1, 2, [6, 24]],
     ['REDUCE({10;20},{1,2,3},LAMBDA(acc,item,acc+item))', 2, 1, [16, 26]],
     ['REDUCE({0;#N/A},{1,2},LAMBDA(acc,item,IFERROR(acc,10)+item))', 2, 1, [3, 13]],
+    ['FREQUENCY({-1,0,1;2,5,6},{5,1,1,"3",FALSE})', 4, 1, [2, 3, 0, 1]],
+    ['FREQUENCY({"2",TRUE,FALSE},{1;3})', 3, 1, [0, 0, 0]],
+    ['FREQUENCY({-1,TRUE;0,"1"},{TRUE;"3"})', 1, 1, [2]],
+    ['TRANSPOSE(FREQUENCY({1,2,3},{1,2}))', 1, 3, [1, 1, 1]],
     ['GROUPBY({"Alpha","Blue";"Beta","Blue";"alpha","Green";"Beta","Blue"},{1;2;3;4},SUM,0,-2,{-1,2})', 6, 3,
       ['Grand Total', '', 10, 'Beta', '', 6, 'Beta', 'Blue', 6, 'Alpha', '', 4, 'Alpha', 'Blue', 1, 'Alpha', 'Green', 3]],
     ['GROUPBY({"a",2;"z",1;"a",1},{5;2;7},SUM,0,0,{2,-1},,1)', 3, 3, ['z', 1, 2, 'a', 1, 7, 'a', 2, 5]],
@@ -113,9 +118,14 @@ describe('declared worksheet array formulas', () => {
     expect(() => read('TOROW({1},4)')).toThrow('#VALUE!');
     expect(() => read('SUM(MAP(SEQUENCE(262145),LAMBDA(item,item+1)))')).toThrow(FormulaCalculationLimit);
     expect(read('INDEX(TOCOL(SEQUENCE(524288,2)),1048576)')).toBe(1_048_576);
+    expect(() => read('FREQUENCY({1},SEQUENCE(1048576,1,1,0))')).toThrow('#SPILL!');
+    expect(() => read('FREQUENCY(SEQUENCE(262145),{2})')).toThrow(FormulaCalculationLimit);
   });
 
   it.each([
+    ['FREQUENCY({1,#DIV/0!,3},{2})', '#DIV/0!'],
+    ['FREQUENCY({1,2,3},{2,#N/A})', '#N/A'],
+    ['FREQUENCY({1,2,3},)', '#VALUE!'],
     ['BYROW({1,2},LAMBDA(a,b,a+b))', '#VALUE!'],
     ['MAP({1,2},{3,4},LAMBDA(item,item))', '#VALUE!'],
     ['SCAN(0,{1},LAMBDA(item,item))', '#VALUE!'],
@@ -169,6 +179,17 @@ describe('declared worksheet array formulas', () => {
     expect(displaySpillCell(large, 1_048_576, 16_384)?.value).toBe('45');
     expect(resolveCellValue(summary, summary.rows.find(row => row.index === 6)!.cells[0])).toBe('90');
     expect(reads.mock.calls.length).toBeLessThan(180);
+  });
+
+  it('counts sparse whole-sheet values and spills a histogram through the final Excel cell', async () => {
+    const { sheets: [histogram] } = await loadXlsxWorkbook(await createFrequencyWorkbook());
+    const reads = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    const cell = (row: number, column: number) => displaySpillCell(histogram, row, column)?.value;
+    expect([1, 2, 3, 4, 5].map(row => cell(row, 1))).toEqual(['0', '2', '0', '1', '1']);
+    expect([cell(1, 16_384), cell(1_048_575, 16_384), cell(1_048_576, 16_384)]).toEqual(['3', '0', '1']);
+    const summaries = histogram.rows.flatMap(row => row.cells.filter(cell => /^B\d+$/.test(cell.ref)));
+    expect(summaries.map(cell => resolveCellValue(histogram, cell))).toEqual(['4', '17179869176', '4', '997']);
+    expect(reads.mock.calls.length).toBeLessThan(200);
   });
 
   it('groups full sparse columns and spills into the final Excel cell', async () => {
@@ -341,6 +362,64 @@ describe('declared worksheet array formulas', () => {
     expect(reads.mock.calls.length).toBeLessThan(40);
   });
 
+  it('classifies references and errors and sums squares across a sparse full-height spill', async () => {
+    const { sheets: [summary, , large] } = await loadXlsxWorkbook(await createReferenceInfoWorkbook());
+    const read = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    expect(summary.rows[0].cells.map(cell => resolveCellValue(summary, cell))).toEqual(['TRUE', '2', 'TRUE']);
+    expect(summary.rows[1].cells.map(cell => resolveCellValue(summary, cell))).toEqual(['64', '4', '53']);
+    expect(displaySpillCell(summary, 3, 1)?.value).toBe('4');
+    expect(displaySpillCell(summary, 3, 2)).toMatchObject({ value: '#N/A', valueType: 'error' });
+    expect(displaySpillCell(summary, 3, 3)?.value).toBe('7');
+    expect(resolveCellValue(large, large.rows[1].cells[0])).toBe(String((1_048_576 * 16_382 - 2) * 4 + 81 + 441 + 66));
+    expect(read.mock.calls.length).toBeLessThan(50);
+  });
+
+  it('intersects sparse spill and union references without reading outside the overlap', async () => {
+    const { sheets: [summary, , large] } = await loadXlsxWorkbook(await createReferenceOperatorsWorkbook());
+    const read = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    expect(summary.rows[0].cells.map(cell => resolveCellValue(summary, cell))).toEqual([String(2 * 1_048_575 + 21), '1', '2', '7']);
+    expect(summary.rows[1].cells.map(cell => resolveCellValue(summary, cell))).toEqual(['#NULL!', '#REF!']);
+    expect(summary.rows[1].cells.map(cell => cell.valueType)).toEqual(['error', 'error']);
+    expect(resolveCellValue(large, large.rows[1].cells[0])).toBe(String((1_048_576 * 16_382 - 2) * 2 + 39));
+    expect(read.mock.calls.length).toBeLessThan(50);
+  });
+
+  it('passes conditional references to aggregates and metadata checks through the last cell', async () => {
+    const { sheets: [summary, ledger, large] } = await loadXlsxWorkbook(await createConditionalReferencesWorkbook());
+    const read = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    const spillTotal = (1_048_576 * 16_382 - 2) * 2 + 30;
+    expect(summary.rows.map(row => row.cells.map(cell => resolveCellValue(summary, cell)))).toEqual([
+      [String(spillTotal + 9), '7', 'TRUE'], [String(spillTotal), '2', '=NOTIMPLEMENTED(1)']
+    ]);
+    expect(summary.rows[0].cells[2].valueType).toBe('boolean');
+    expect(ledger.rows[0].cells[0].needsCalculation).toBe(true);
+    expect(resolveCellValue(large, large.rows[1].cells[0])).toBe(String(2 * 1_048_575 + 40));
+    expect(read.mock.calls.length).toBeLessThan(50);
+  });
+
+  it('selects the formula row or column in sparse ranges and keeps declared arrays intact', async () => {
+    const { sheets: [summary, , large] } = await loadXlsxWorkbook(await createImplicitIntersectionWorkbook());
+    const read = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    expect(summary.rows.map(row => row.cells.map(cell => resolveCellValue(summary, cell)))).toEqual([
+      ['#VALUE!', '8', '#N/A', '0'], ['12', '8', '12', '19'], ['42']
+    ]);
+    expect(summary.rows[0].cells.map(cell => cell.valueType)).toEqual(['error', undefined, 'error', undefined]);
+    expect(large.rows[1].cells.map(cell => resolveCellValue(large, cell))).toEqual(['12', '12']);
+    expect(resolveCellValue(large, large.rows[2].cells[0])).toBe('40');
+    expect(read.mock.calls.length).toBeLessThan(60);
+  });
+
+  it('displays translated shared and array formulas through the last cell without evaluating them', async () => {
+    const { sheets: [summary, ledger, large] } = await loadXlsxWorkbook(await createFormulaDisplayWorkbook());
+    expect(summary.rows.map(row => row.cells.map(cell => resolveCellValue(summary, cell)))).toEqual([
+      ['=@$G$7:$G$9', '=SORT($G$7:$G$10)'],
+      ['=@(B1#%)', '=FUTURE("_xlpm.x",Table[_xlfn.SINGLE])'],
+      ['=LET(x,C5:C8,x)']
+    ]);
+    expect(resolveCellValue(large, large.rows[0].cells[0])).toBe('=@$G$7:$G$9');
+    expect(ledger.rows.flatMap(row => row.cells).every(cell => cell.needsCalculation)).toBe(true);
+  });
+
   it('keeps OFFSET references sparse and clips legacy outputs to the saved area', async () => {
     const { sheets: [summary, , large] } = await loadXlsxWorkbook(await createOffsetWorkbook());
     const read = vi.spyOn(WorksheetCellIndex.prototype, 'get');
@@ -352,6 +431,26 @@ describe('declared worksheet array formulas', () => {
     expect(displaySpillCell(large, 1048576, 16383)?.value).toBe('0');
     expect(displaySpillCell(large, 1048576, 16384)?.value).toBe('131');
     expect(read.mock.calls.length).toBeLessThan(40);
+  });
+
+  it.each([
+    ['_xlfn.ISOWEEKNUM({1,9})', '52', '2', [[52, 1], [2, 1]]],
+    ['_xlfn.ISOWEEKNUM(NA())', '#N/A', '#N/A', []]
+  ] as const)('keeps unused legacy output positions sparse for %s', (formula, first, second, expected) => {
+    const range = { firstRow: 1, lastRow: 1_048_576, firstColumn: 1, lastColumn: 16_384 };
+    const anchor: ParsedCell = { ref: 'A1', row: 1, column: 1, value: '', formula, needsCalculation: true };
+    const sheet: ParsedSheet = {
+      id: 'legacy', name: 'Legacy', rowCount: range.lastRow, columnCount: range.lastColumn,
+      rows: [{ index: 1, cells: [anchor] }], arrayFormulas: [range]
+    };
+    const read = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    expect(resolveCellValue(sheet, anchor)).toBe(first);
+    expect(displaySpillCell(sheet, 1, 2)?.value).toBe(second);
+    expect(displaySpillCell(sheet, range.lastRow, range.lastColumn)).toMatchObject({ value: '#N/A', valueType: 'error' });
+    const values: unknown[] = [];
+    expect(forEachWorksheetRangeValue(sheet, range, (value, count) => values.push([value, count]))).toBe(true);
+    expect(values).toEqual(expected);
+    expect(read.mock.calls.length).toBeLessThan(20);
   });
 
   it('transposes typed cells and finds exact and wildcard matches for array criteria', async () => {
@@ -425,7 +524,8 @@ describe('declared worksheet array formulas', () => {
       .toEqual(['8', 'North', '-', '31', 'FALSE', '#N/A']);
     expect(cell(2, 1).style.backgroundColor).toBe('rgb(46, 46, 46)');
     expect([cell(4, 1), cell(4, 2), cell(4, 5), cell(5, 2)].map(td => td.textContent)).toEqual(['999', '4.00', '#N/A', '']);
-    expect([cell(2, 11), cell(2, 13), cell(3, 15), cell(3, 16)].map(td => td.textContent)).toEqual(['', '', '', '']);
+    expect([cell(2, 11), cell(3, 11)].map(td => td.textContent)).toEqual(['2', '#N/A']);
+    expect([cell(2, 13), cell(3, 15), cell(3, 16)].map(td => td.textContent)).toEqual(['', '', '']);
     expect(sheet.rows[1].cells[0]).toMatchObject({ ref: 'B2', value: 'FALSE', missingValue: true });
   });
 

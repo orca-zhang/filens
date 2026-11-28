@@ -61,6 +61,25 @@ describe('worksheet cell index', () => {
     expect([...index.occupiedPositions(1, 6, 32, 96)]).toEqual([32, 196, 328]);
   });
 
+  it.each([false, true])('clips consecutive columns beside sparse cells and row offsets (gap: %s)', gap => {
+    const before = Array.from({ length: 40 }, (_, index) => cell(30 + index));
+    const middle = [cell(2), cell(32), cell(65)];
+    const after = [cell(31), cell(32), cell(33)];
+    const input = [{ index: 7, cells: before }, { index: 8, cells: middle }, { index: gap ? 12 : 9, cells: after }];
+    const index = new WorksheetCellIndex(sheet(input));
+    expect(index.get(7, 29)).toBeUndefined();
+    expect(index.get(7, 69)).toBe(before.at(-1));
+    expect(index.get(8, 33)).toBeUndefined();
+    expect(index.get(8, 65)).toBe(middle[2]);
+    expect(index.get(input[2].index, 32)).toBe(after[1]);
+    expect(index.get(input[2].index + 1, 32)).toBeUndefined();
+    const found: ParsedCell[] = [];
+    index.forEachInRange(6, 13, 32, 34, cell => found.push(cell), true);
+    expect(found).toEqual([after[2], after[1], middle[1], before[4], before[3], before[2]]);
+    expect([...index.occupiedPositions(6, 13, 32, 34)]).toEqual([3, 4, 5, 6, (input[2].index - 6) * 3, (input[2].index - 6) * 3 + 1]);
+    expect([...index.occupiedPositions(6, 13, 32, 34, true)]).toEqual([...index.occupiedPositions(6, 13, 32, 34)].reverse());
+  });
+
   it('keeps sparse coordinates above 32 bits distinct without allocating their gaps', () => {
     const first = cell(1), far = cell(2 ** 32 + 32);
     const index = new WorksheetCellIndex(sheet([

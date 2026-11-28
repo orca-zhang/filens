@@ -1,0 +1,180 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "Darwin",
+  "architecture": "arm64",
+  "cpu": "Apple M4 Pro",
+  "method": "Three fresh Node processes per build and workbook, alternating build order with a 1024 MiB old-space limit. Public reader receives the same compressed bytes each time. Parse wall time and peak RSS precede two explicit V8 collections and model hashing. RSS includes the process baseline and compressed bytes. Retained heap includes the workbook and process baseline. Measurements exclude browsers, network and rendering.",
+  "workbooks": {
+    "inline": {
+      "writer": "openpyxl 3.1.5",
+      "rows": 90002,
+      "namedReferences": 450003,
+      "numericReferences": 540003,
+      "fileBytes": 3106547,
+      "fileSha256": "2e12fed6c9432e6a1311edf5c5191ec873d2a73696b301a726a51780ade41820",
+      "model": {
+        "cells": 540013,
+        "rows": 90002,
+        "last": "TRUE",
+        "modelSha256": "94142463a93a580a8108696eac7d2eef44456f243f06856714d0db2c210fcb51"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "parseMs": 2412.926709,
+            "peakRssKiB": 299104,
+            "retainedHeapKiB": 107797.7734375
+          },
+          {
+            "parseMs": 2505.659708,
+            "peakRssKiB": 291568,
+            "retainedHeapKiB": 107757.828125
+          },
+          {
+            "parseMs": 2509.28075,
+            "peakRssKiB": 286832,
+            "retainedHeapKiB": 107750.3671875
+          }
+        ],
+        "direct": [
+          {
+            "parseMs": 628.879417,
+            "peakRssKiB": 247472,
+            "retainedHeapKiB": 107572.7890625
+          },
+          {
+            "parseMs": 646.316792,
+            "peakRssKiB": 245184,
+            "retainedHeapKiB": 107573.21875
+          },
+          {
+            "parseMs": 629.296291,
+            "peakRssKiB": 246304,
+            "retainedHeapKiB": 107580.9765625
+          }
+        ]
+      },
+      "median": {
+        "baseline": {
+          "parseMs": 2505.66,
+          "peakRssKiB": 291568,
+          "retainedHeapKiB": 107757.828
+        },
+        "direct": {
+          "parseMs": 629.296,
+          "peakRssKiB": 246304,
+          "retainedHeapKiB": 107573.219
+        }
+      }
+    },
+    "shared": {
+      "writer": "XlsxWriter 3.2.9",
+      "rows": 60002,
+      "namedReferences": 300003,
+      "numericReferences": 0,
+      "fileBytes": 2503291,
+      "fileSha256": "32f1fc2a614af67e7c120c21a52c810c1c63967dc75a170dbc83cae18f401909",
+      "model": {
+        "cells": 360013,
+        "rows": 60002,
+        "last": "TRUE",
+        "modelSha256": "bd5799c510d4782a50d1f0eb331f9d2edcc8e251bcf91f1b5987fa5d4cf78ded"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "parseMs": 836.726,
+            "peakRssKiB": 211840,
+            "retainedHeapKiB": 75776.59375
+          },
+          {
+            "parseMs": 819.75875,
+            "peakRssKiB": 210016,
+            "retainedHeapKiB": 75841.9296875
+          },
+          {
+            "parseMs": 819.754334,
+            "peakRssKiB": 208992,
+            "retainedHeapKiB": 75895.328125
+          }
+        ],
+        "direct": [
+          {
+            "parseMs": 437.98675000000003,
+            "peakRssKiB": 204864,
+            "retainedHeapKiB": 77526.6796875
+          },
+          {
+            "parseMs": 431.965959,
+            "peakRssKiB": 207936,
+            "retainedHeapKiB": 77607.7734375
+          },
+          {
+            "parseMs": 444.965166,
+            "peakRssKiB": 211136,
+            "retainedHeapKiB": 77764.6796875
+          }
+        ]
+      },
+      "median": {
+        "baseline": {
+          "parseMs": 819.759,
+          "peakRssKiB": 210016,
+          "retainedHeapKiB": 75841.93
+        },
+        "direct": {
+          "parseMs": 437.987,
+          "peakRssKiB": 207936,
+          "retainedHeapKiB": 77607.773
+        }
+      }
+    }
+  },
+  "buildSha256": {
+    "baseline": "53602320b5c5f00d8c3963ab784d7b53d2444072d1b16adba24cbeb74f732e27",
+    "direct": "b37a67fb67f5af51141e07985c075d342697ece0c0fc165742a31bcd65ef9204"
+  },
+  "fixtureValues": {
+    "header": [
+      "ID",
+      "Observation",
+      "Status",
+      "Score",
+      "Category",
+      "Checked"
+    ],
+    "dataRow": [
+      "one-based index i",
+      "Node {i:06} & west < east — 中文 😃",
+      "Test {i:06} > limit & queue \"A\"",
+      "i / 8",
+      "星表 & catalog followed by i modulo 99 for inline, or {i:06} for shared",
+      "i is even"
+    ],
+    "style": "The Observation column has saved width 48 and the generated observations use bold Arial with color #203685.",
+    "lastRow": [
+      "last index + 1",
+      "End & <marker> 星表 😃",
+      "saved",
+      0,
+      "east",
+      true
+    ],
+    "summary": "LEN of the last observation on the first worksheet. The shared workbook saves the result 20. The inline workbook leaves this formula uncached."
+  },
+  "independentVerification": {
+    "reader": "openpyxl 3.1.5 read-only",
+    "comparison": "Hash ordered rows of typed cell values and formula expressions after normalizing numeric spelling. Both workbooks produced equal digests in FiLens and openpyxl.",
+    "workbooks": {
+      "inline": {
+        "cells": 540013,
+        "sha256": "7af4ffc1872509226dd10ef9e8e62789a01763818eadd317a0ce60d47efe2ffe"
+      },
+      "shared": {
+        "cells": 360013,
+        "sha256": "5563c7c8226bc792be0d8ce1bcbcc4fc96264858623b2c3dd7459df764e69f90"
+      }
+    }
+  }
+}

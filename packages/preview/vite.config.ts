@@ -10,7 +10,7 @@ import { xmlParserOnly } from '../../scripts/xml-parser-plugin';
 import { archiveEngineAssets } from '../../scripts/archive-engine-assets';
 import { optionalEngineChunk } from '../../scripts/optional-engine-chunks';
 import { deferredPreviewWorkers, packedPreviewAssets } from '../../scripts/preview-asset-packing.mjs';
-import { isPdfWorker, readPdfWorker } from '../../scripts/pdf-worker-asset';
+import { isPdfWorker, pdfDocumentPages, readPdfWorker } from '../../scripts/pdf-worker-asset';
 import { xlsxRegexAsset } from '../../scripts/xlsx-regex-asset';
 
 const root = path.resolve(__dirname, '../..');
@@ -64,7 +64,7 @@ function embeddedAssets() {
       if (mobile && file === path.join(converterDir, 'converter-core.wasm')) asset = path.join(converterDir, 'converter-core-mobile.wasm');
       if (mobile && file === path.join(root, 'wasm/converter-image/dist/converter-image.wasm')) asset = path.join(root, 'wasm/converter-image/dist/converter-image-mobile.wasm');
       let bytes = isPdfWorker(asset) ? await readPdfWorker(!single && !mobile) : await readFile(asset);
-      if (mobile && file.endsWith(path.join('vendor', 'libheif', 'libheif.wasm'))) {
+      if ((single || mobile) && file.endsWith(path.join('vendor', 'libheif', 'libheif.wasm'))) {
         const { default: binaryen } = await import('binaryen');
         const api = await readFile(path.join(root, 'packages/converter-client/src/heif-decoder.ts'), 'utf8');
         const glue = await readFile(path.join(root, 'packages/converter-client/vendor/libheif/libheif.js'), 'utf8');
@@ -75,8 +75,11 @@ function embeddedAssets() {
         }
         const module = binaryen.readBinary(bytes);
         try {
-          for (const [, name, symbol] of mappings) if (!required.has(name)) module.removeExport(symbol);
-          // Preserve the decoder's baseline features for older mobile WebViews.
+          const live = new Set(mappings.filter(([, name]) => required.has(name)).map(([, , symbol]) => symbol));
+          for (const symbol of new Set(mappings.map(([, , symbol]) => symbol))) {
+            if (!live.has(symbol)) module.removeExport(symbol);
+          }
+          // Preserve the decoder's baseline WebAssembly features.
           module.setFeatures(binaryen.Features.MutableGlobals | binaryen.Features.SignExt);
           module.runPasses(['remove-unused-module-elements', 'remove-unused-types', 'vacuum']);
           if (!module.validate()) throw new Error('Invalid mobile HEIF decoder');
@@ -179,15 +182,17 @@ function packedLocaleDictionaries() {
     resolveId(source: string) { if (source === id) return `\0${id}`; },
     async load(source: string) {
       if (source === `\0${id}`) return `const keys=${JSON.stringify(await keys())};
-        export default values => Object.fromEntries(keys.map((key, index) => [key, values[index]]));`;
+        export default values => Object.fromEntries(keys.flatMap((key, index) => values[index] === null ? [] : [[key, values[index]]]));`;
     },
     async transform(_code: string, source: string) {
       if (!source.endsWith('.json') || path.dirname(path.resolve(source)) !== directory) return;
       const dictionary = JSON.parse(await readFile(source, 'utf8'));
       const expected = await keys();
       const actual = Object.keys(dictionary);
-      const sharedKeys = actual.length === expected.length && actual.every((key, index) => key === expected[index]);
-      const data = JSON.stringify(JSON.stringify(sharedKeys ? Object.values(dictionary) : dictionary));
+      const aligned = expected.filter(key => Object.hasOwn(dictionary, key));
+      const sharedKeys = actual.length === aligned.length && actual.every((key, index) => key === aligned[index] && dictionary[key] !== null);
+      // A missing translation stays absent so the host can apply its usual fallback.
+      const data = JSON.stringify(JSON.stringify(sharedKeys ? expected.map(key => dictionary[key] ?? null) : dictionary));
       // Keep locale data as strings for lossless compression by the all-in-one asset packer.
       const code = sharedKeys
         ? `import dictionary from ${JSON.stringify(id)}; export default dictionary(JSON.parse(${data}));`
@@ -210,7 +215,7 @@ export default defineConfig({
       }
     }
   }] : [])], rollupOptions: { output: { inlineDynamicImports: true } } },
-  plugins: [archiveEngineAssets(), sharedCompression(), docxPreviewZip(), xmlParserOnly(), xlsxRegexAsset(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(),
+  plugins: [archiveEngineAssets(), sharedCompression(), docxPreviewZip(), xmlParserOnly(), xlsxRegexAsset(), pdfDocumentPages(), embeddedAssets(), vue(), embeddedStyles(), minifiedRuntime(),
     ...(single ? [packedLocaleDictionaries(), deferredPreviewWorkers(), packedPreviewAssets()] : [])],
   resolve: { alias, preserveSymlinks: true },
   define: { 'process.env.NODE_ENV': '"production"' },
@@ -227,7 +232,7 @@ export default defineConfig({
         // JSZip also uses fflate. Give shared compression its own boundary so
         // the optional ZIP compatibility engine cannot absorb it into startup.
         if (id.includes('/node_modules/fflate/')) return 'compression';
-        if (id.includes('/node_modules/pdfjs-dist/')) return 'pdf';
+        if (id.includes('/node_modules/pdfjs-dist/') || id.endsWith('/packages/pdf/src/pdf-display.ts')) return 'pdf';
         const optional = optionalEngineChunk(id);
         if (optional) return optional;
         // Keep framework code shared without merging unrelated format engines.

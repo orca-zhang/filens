@@ -28,7 +28,11 @@ export function createPdfFixture(pageCount = 100, mixedSizes = false, rotation =
   }
   const rootKids = groups.length ? groups.map(id => `${id} 0 R`) : pages;
   objects[1] = `<< /Type /Pages /Count ${pageCount} /Kids [${rootKids.join(' ')}] >>`;
-  let text = userUnit === 1 ? '%PDF-1.4\n' : '%PDF-1.7\n', offsets = [0];
+  return encodePdfObjects(objects, userUnit === 1 ? '1.4' : '1.7');
+}
+
+export function encodePdfObjects(objects, version = '1.7') {
+  let text = `%PDF-${version}\n`, offsets = [0];
   for (let index = 0; index < objects.length; index++) {
     offsets.push(text.length);
     text += `${index + 1} 0 obj\n${objects[index]}\nendobj\n`;
@@ -47,4 +51,21 @@ export function createDensePdfSearchFixture() {
     return '1 1 1 rg\n' + Array.from({ length: 101 }, (_, line) =>
       `BT /F1 5 Tf 40 ${height - 55 - line * 7} Td (${hits}) Tj ET\n`).join('');
   }, 0, 0);
+}
+
+export function createPdfImagePageFixture() {
+  const image = 'FF0000'.repeat(4) + '>';
+  const objects = ['<< /Type /Catalog /Pages 2 0 R >>', '',
+    `<< /Type /XObject /Subtype /Image /Width 2 /Height 2 /ColorSpace /DeviceRGB /BitsPerComponent 8
+    /Filter /ASCIIHexDecode /Length ${image.length} >>\nstream\n${image}\nendstream`];
+  const pages = [];
+  for (let index = 0; index < 12; index++) {
+    const id = objects.length + 1;
+    const content = index === 4 ? 'q 240 0 0 240 180 440 cm /Image Do Q\n' : '0.1 0.2 0.3 rg 0 0 600 800 re f\n';
+    pages.push(`${id} 0 R`);
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 800] /Resources << /XObject << /Image 3 0 R >> >>
+      /Contents ${id + 1} 0 R >>`, `<< /Length ${content.length} >>\nstream\n${content}endstream`);
+  }
+  objects[1] = `<< /Type /Pages /Count ${pages.length} /Kids [${pages.join(' ')}] >>`;
+  return encodePdfObjects(objects);
 }

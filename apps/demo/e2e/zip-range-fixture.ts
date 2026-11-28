@@ -2,7 +2,7 @@ import { createServer, type ServerResponse } from 'node:http';
 
 export async function serveZipFixture(bytes: Buffer, format: string, ranged = true) {
   const requests: { range: string | undefined; begin: number; end: number; sent: number; cancelled: boolean }[] = [];
-  let pauseAt = -1;
+  let pauseOffsets: number[] = [];
   const paused = new Map<ServerResponse, () => void>();
   const cors = {
     'Access-Control-Allow-Origin': '*',
@@ -27,7 +27,7 @@ export async function serveZipFixture(bytes: Buffer, format: string, ranged = tr
       ...(range ? { 'Content-Range': `bytes ${begin}-${end - 1}/${bytes.length}` } : {}),
     });
     const send = () => { record.sent = end - begin; response.end(bytes.subarray(begin, end)); };
-    if (begin <= pauseAt && pauseAt < end) {
+    if (pauseOffsets.some(offset => begin <= offset && offset < end)) {
       paused.set(response, send);
       response.flushHeaders();
     } else send();
@@ -40,9 +40,9 @@ export async function serveZipFixture(bytes: Buffer, format: string, ranged = tr
   return {
     url: `http://127.0.0.1:${port}/remote.${format}?signature=a%2Fb`,
     requests,
-    pause: (offset: number) => { pauseAt = offset; },
-    resume: (nextPauseAt = -1) => {
-      pauseAt = nextPauseAt;
+    pause: (...offsets: number[]) => { pauseOffsets = offsets; },
+    resume: (nextPauseAt?: number) => {
+      pauseOffsets = nextPauseAt === undefined ? [] : [nextPauseAt];
       for (const send of paused.values()) send();
       paused.clear();
     },

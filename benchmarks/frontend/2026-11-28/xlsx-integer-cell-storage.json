@@ -1,0 +1,426 @@
+{
+  "date": "2026-11-28",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Four fresh Node processes per build and workbook with alternating build order. Open a file-backed Blob in XlsxPreviewSession with jsdom. Retained heap measures heapUsed above startup after two collections. Peak RSS covers load or load plus the first uncached cross-sheet calculation. Model checks hash every cell address, saved text, value type, formula and style index. The first viewport markup and cross-sheet result are compared separately.",
+  "builds": {
+    "baseline": {
+      "index.js": "4121f2544e05a64a2d00f3dcf6129d9c5a2fd22d32ed7966c36b614c1bd1779a",
+      "routes.js": "c3d7886fd8e739163ce52666193b1a08734556e905dddd28043ea0df714e0883",
+      "table-B26f2G0c.js": "b1d403fa17e62fd4d34632d0d6d82fb08c7f3f2fba511e80d87002b9b4b85184",
+      "table.js": "8b0c72c65e6222d38553ad9d31568ed42d168b1153e10a3782dabf24dc5e3269"
+    },
+    "integerStorage": {
+      "index.js": "2a5011f9d92a95cd539bd4c9fe2df846e5bf440b787a9d5b51b6680231ff8297",
+      "routes.js": "c3d7886fd8e739163ce52666193b1a08734556e905dddd28043ea0df714e0883",
+      "table-B2Wsmxqx.js": "ef5150480505cbcb1dbefc99ed74aabb3ea8edf1d5256b615f5e0ecd69f4961e",
+      "table.js": "380195068fdf069590e66d084e71305c64c81f200805379c6adace96c56d9b44"
+    }
+  },
+  "workloads": {
+    "tall": {
+      "contents": "1,000,000 numeric rows with one cell per row. The summary formula sums the entire source column.",
+      "archiveBytes": 7537396,
+      "sha256": "cfadd010943283841612e5a8af013709c86b81f62813c6ecc27f40fb0fe0cfd7",
+      "matchingResults": {
+        "rows": 1000000,
+        "cells": 1000000,
+        "modelHash": "b597f4e0329308f2f8fa5cd5c96c309ff9c1f7af6f541f646e78e838e266baed",
+        "markupHash": "c3b11d1c917a6fe3ed8aab3754157494d160cc4857d3fa348e4fd916415a45ee",
+        "formula": "500000500000"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1466.541917,
+            "peakLoadRssKiB": 419968,
+            "heapBytes": 195680032,
+            "calcMs": 71.64533400000005,
+            "peakCalcRssKiB": 419968,
+            "calcHeapBytes": 11045184,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1489.9321249999998,
+            "peakLoadRssKiB": 410480,
+            "heapBytes": 195661104,
+            "calcMs": 72.41075000000001,
+            "peakCalcRssKiB": 412768,
+            "calcHeapBytes": 11041048,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1472.132542,
+            "peakLoadRssKiB": 449824,
+            "heapBytes": 195684304,
+            "calcMs": 73.33204100000012,
+            "peakCalcRssKiB": 449824,
+            "calcHeapBytes": 11045536,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1470.974875,
+            "peakLoadRssKiB": 441360,
+            "heapBytes": 195679704,
+            "calcMs": 71.95308299999988,
+            "peakCalcRssKiB": 441360,
+            "calcHeapBytes": 11045536,
+            "calcBufferBytes": 0
+          }
+        ],
+        "integerStorage": [
+          {
+            "loadMs": 1478.6225000000002,
+            "peakLoadRssKiB": 407616,
+            "heapBytes": 171587008,
+            "calcMs": 53.49979200000007,
+            "peakCalcRssKiB": 407616,
+            "calcHeapBytes": 11043984,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1472.809333,
+            "peakLoadRssKiB": 411648,
+            "heapBytes": 171684608,
+            "calcMs": 53.70141699999999,
+            "peakCalcRssKiB": 411648,
+            "calcHeapBytes": 11046528,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1486.909125,
+            "peakLoadRssKiB": 395792,
+            "heapBytes": 171713800,
+            "calcMs": 51.74762499999997,
+            "peakCalcRssKiB": 395792,
+            "calcHeapBytes": 11041520,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1498.5549580000002,
+            "peakLoadRssKiB": 402032,
+            "heapBytes": 171556896,
+            "calcMs": 52.487916999999925,
+            "peakCalcRssKiB": 402032,
+            "calcHeapBytes": 11046624,
+            "calcBufferBytes": 0
+          }
+        ]
+      },
+      "median": {
+        "baseline": {
+          "loadMs": 1471.5537085,
+          "peakLoadRssKiB": 430664.0,
+          "heapBytes": 195679868.0,
+          "calcMs": 72.18191649999994,
+          "peakCalcRssKiB": 430664.0,
+          "calcHeapBytes": 11045360.0,
+          "calcBufferBytes": 0.0
+        },
+        "integerStorage": {
+          "loadMs": 1482.7658125,
+          "peakLoadRssKiB": 404824.0,
+          "heapBytes": 171635808.0,
+          "calcMs": 52.9938545,
+          "peakCalcRssKiB": 404824.0,
+          "calcHeapBytes": 11045256.0,
+          "calcBufferBytes": 0.0
+        }
+      }
+    },
+    "wide": {
+      "contents": "16,000 consecutive numeric rows with 96 consecutive cells per row. The summary formula sums column A.",
+      "archiveBytes": 5568598,
+      "sha256": "1503c750645192e28d2dd1d2711d793cde532ada7b722596f094eb09189feb88",
+      "matchingResults": {
+        "rows": 16000,
+        "cells": 1536000,
+        "modelHash": "7f8999589ee4e309fec2d5da73c4f345465e5418b962cd84557785646e7a4621",
+        "markupHash": "5a0a8bc79ea9c3fc7b93a14078d15a8c69acec1f8bcd55f76d616b0163a77256",
+        "formula": "128008000"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1997.0016249999999,
+            "peakLoadRssKiB": 405824,
+            "heapBytes": 162219048,
+            "calcMs": 12.624207999999726,
+            "peakCalcRssKiB": 406496,
+            "calcHeapBytes": 5265152,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2020.850625,
+            "peakLoadRssKiB": 402128,
+            "heapBytes": 162221856,
+            "calcMs": 13.110125000000153,
+            "peakCalcRssKiB": 402720,
+            "calcHeapBytes": 5265112,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 1998.4501249999998,
+            "peakLoadRssKiB": 393872,
+            "heapBytes": 162228568,
+            "calcMs": 13.065541999999823,
+            "peakCalcRssKiB": 394336,
+            "calcHeapBytes": 5265376,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2006.608625,
+            "peakLoadRssKiB": 397856,
+            "heapBytes": 162183544,
+            "calcMs": 13.100500000000011,
+            "peakCalcRssKiB": 398432,
+            "calcHeapBytes": 5265088,
+            "calcBufferBytes": 0
+          }
+        ],
+        "integerStorage": [
+          {
+            "loadMs": 2007.100208,
+            "peakLoadRssKiB": 371216,
+            "heapBytes": 125312328,
+            "calcMs": 11.582707999999911,
+            "peakCalcRssKiB": 371600,
+            "calcHeapBytes": 5264264,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2024.181584,
+            "peakLoadRssKiB": 389248,
+            "heapBytes": 125365288,
+            "calcMs": 12.028999999999996,
+            "peakCalcRssKiB": 389664,
+            "calcHeapBytes": 5267912,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2038.415458,
+            "peakLoadRssKiB": 377488,
+            "heapBytes": 125367192,
+            "calcMs": 12.312334000000192,
+            "peakCalcRssKiB": 377888,
+            "calcHeapBytes": 5269672,
+            "calcBufferBytes": 0
+          },
+          {
+            "loadMs": 2045.101583,
+            "peakLoadRssKiB": 375248,
+            "heapBytes": 125369200,
+            "calcMs": 12.099249999999756,
+            "peakCalcRssKiB": 375776,
+            "calcHeapBytes": 5277464,
+            "calcBufferBytes": 0
+          }
+        ]
+      },
+      "median": {
+        "baseline": {
+          "loadMs": 2002.529375,
+          "peakLoadRssKiB": 399992.0,
+          "heapBytes": 162220452.0,
+          "calcMs": 13.083020999999917,
+          "peakCalcRssKiB": 400576.0,
+          "calcHeapBytes": 5265132.0,
+          "calcBufferBytes": 0.0
+        },
+        "integerStorage": {
+          "loadMs": 2031.298521,
+          "peakLoadRssKiB": 376368.0,
+          "heapBytes": 125366240.0,
+          "calcMs": 12.064124999999876,
+          "peakCalcRssKiB": 376832.0,
+          "calcHeapBytes": 5268792.0,
+          "calcBufferBytes": 0.0
+        }
+      }
+    },
+    "sparse": {
+      "contents": "125,000 rows spaced four tracks apart, with values in four nonadjacent columns. The summary formula sums column A.",
+      "archiveBytes": 2588451,
+      "sha256": "69d09babf50f1822d5131aef0cea221093422727a587629c03ee33917297d5ee",
+      "matchingResults": {
+        "rows": 125000,
+        "cells": 500000,
+        "modelHash": "428624ecdd4f9d599517064204e086a7c0a5de1ee69430e55e2c412c55855a5e",
+        "markupHash": "76d4dc921d2d7bbc1f8791a52bace0e574ec30c994b23c9f51ec17f682a66378",
+        "formula": "7812562500"
+      },
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1084.8920830000002,
+            "peakLoadRssKiB": 360464,
+            "heapBytes": 87787224,
+            "calcMs": 33.207958999999846,
+            "peakCalcRssKiB": 361584,
+            "calcHeapBytes": 6471656,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1076.381542,
+            "peakLoadRssKiB": 355344,
+            "heapBytes": 87868928,
+            "calcMs": 33.24845800000003,
+            "peakCalcRssKiB": 356368,
+            "calcHeapBytes": 6478360,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1072.649333,
+            "peakLoadRssKiB": 365680,
+            "heapBytes": 87838176,
+            "calcMs": 32.75779200000011,
+            "peakCalcRssKiB": 366800,
+            "calcHeapBytes": 6471560,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1085.292792,
+            "peakLoadRssKiB": 353840,
+            "heapBytes": 87714920,
+            "calcMs": 32.71683400000006,
+            "peakCalcRssKiB": 354976,
+            "calcHeapBytes": 6473888,
+            "calcBufferBytes": 9000004
+          }
+        ],
+        "integerStorage": [
+          {
+            "loadMs": 1094.478083,
+            "peakLoadRssKiB": 351280,
+            "heapBytes": 75720664,
+            "calcMs": 31.54325000000017,
+            "peakCalcRssKiB": 352432,
+            "calcHeapBytes": 6486224,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1096.480792,
+            "peakLoadRssKiB": 353648,
+            "heapBytes": 75845368,
+            "calcMs": 31.965000000000146,
+            "peakCalcRssKiB": 354816,
+            "calcHeapBytes": 6483544,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1083.689459,
+            "peakLoadRssKiB": 349168,
+            "heapBytes": 75860016,
+            "calcMs": 31.265583000000106,
+            "peakCalcRssKiB": 350304,
+            "calcHeapBytes": 6478512,
+            "calcBufferBytes": 9000004
+          },
+          {
+            "loadMs": 1084.779666,
+            "peakLoadRssKiB": 353984,
+            "heapBytes": 75863072,
+            "calcMs": 31.072708000000148,
+            "peakCalcRssKiB": 355184,
+            "calcHeapBytes": 6479592,
+            "calcBufferBytes": 9000004
+          }
+        ]
+      },
+      "median": {
+        "baseline": {
+          "loadMs": 1080.6368125000001,
+          "peakLoadRssKiB": 357904.0,
+          "heapBytes": 87812700.0,
+          "calcMs": 32.98287549999998,
+          "peakCalcRssKiB": 358976.0,
+          "calcHeapBytes": 6472772.0,
+          "calcBufferBytes": 9000004.0
+        },
+        "integerStorage": {
+          "loadMs": 1089.6288745,
+          "peakLoadRssKiB": 352464.0,
+          "heapBytes": 75852692.0,
+          "calcMs": 31.40441650000014,
+          "peakCalcRssKiB": 353624.0,
+          "calcHeapBytes": 6481568.0,
+          "calcBufferBytes": 9000004.0
+        }
+      }
+    }
+  },
+  "packagedBrowserChecks": [
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "split",
+      "scenario": "tall-recalculate",
+      "earlyRows": 112970,
+      "ranges": 13
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "all-in-one",
+      "scenario": "tall-recalculate",
+      "earlyRows": 112970,
+      "ranges": 13
+    },
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "mode": "offline",
+      "scenario": "tall-recalculate",
+      "ranges": 0
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "mode": "split",
+      "scenario": "tall-recalculate",
+      "earlyRows": 112970,
+      "ranges": 13
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "mode": "all-in-one",
+      "scenario": "tall-recalculate",
+      "earlyRows": 112970,
+      "ranges": 13
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "mode": "offline",
+      "scenario": "tall-recalculate",
+      "ranges": 0
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "mode": "split",
+      "scenario": "tall-recalculate",
+      "earlyRows": 112970,
+      "ranges": 13
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "mode": "all-in-one",
+      "scenario": "tall-recalculate",
+      "earlyRows": 112970,
+      "ranges": 13
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "mode": "offline",
+      "scenario": "tall-recalculate",
+      "ranges": 0
+    }
+  ]
+}

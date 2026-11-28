@@ -127,22 +127,23 @@ for (const [locale, numberValue, value] of [['en-US', '125', '1234'], ['de-DE', 
       const grid = page.locator('.xlsxv-grid');
       const at = (row: number, col: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${col + 1}"]`);
       const green = 'rgb(220, 252, 231)';
+      const display = (number: string) => locale === 'de-DE' ? number.replace('.', ',') : number;
       for (const date1904 of [false, true]) {
         await page.getByLabel('导入文件', { exact: true }).setInputFiles({
           name: `numeric-text-${date1904 ? 1904 : 1900}.xlsx`, mimeType,
           buffer: Buffer.from(await createNumericTextWorkbook(date1904))
         });
-        const firstRow = ['2500.27', numberValue, value, '2024-02-29 12:00', '71', '#VALUE!', '0.0009'];
+        const firstRow = [display('2500.27'), display(numberValue), display(value), '2024-02-29 12:00', '71', '#VALUE!', display('0.0009')];
         for (const [index, text] of firstRow.entries()) await expect(at(1, index + 1)).toHaveText(text);
-        await expect(at(2, 1)).toHaveText(date1904 ? '43889.5' : '45351.5');
-        await expect(at(2, 2)).toHaveText('2500.27');
+        await expect(at(2, 1)).toHaveText(display(date1904 ? '43889.5' : '45351.5'));
+        await expect(at(2, 2)).toHaveText(display('2500.27'));
         await expect(at(3, 2)).toHaveText('3000');
         await expect(at(4, 2)).toHaveText('#N/A');
         await expect(at(2, 2)).toHaveCSS('background-color', green);
         await expect(at(3, 2)).toHaveCSS('background-color', green);
         await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
         const last = at(1048576, 16384);
-        await expect(last).toHaveText('6500.29');
+        await expect(last).toHaveText(display('6500.29'));
         await expect(last).toHaveCSS('background-color', green);
         await expect(last).toBeInViewport();
         await expect(grid.locator('tbody tr[aria-rowindex]')).toHaveCount(100);
@@ -219,7 +220,7 @@ test.describe('workbook clock rollover', () => {
   });
 });
 
-test('calculates dates and workdays in both workbook epochs through the final cells', async ({ page }) => {
+test('calculates dates, day counts, week numbers and workdays in both workbook epochs through the final cells', async ({ page }) => {
   await page.goto('./?view=preview');
   await page.setViewportSize({ width: 1250, height: 730 });
   const grid = page.locator('.xlsxv-grid');
@@ -236,7 +237,19 @@ test('calculates dates and workdays in both workbook epochs through the final ce
     await expect(at(2, 2)).toHaveText(date1904 ? '6' : '7');
     const workingDays = ['3', '2024-03-05', '2024-02-29', '2', '2024-03-01', 'invalid weekend'];
     for (const [index, value] of workingDays.entries()) await expect(at(3, index + 1)).toHaveText(value);
+    const weeks = ['1', '53', '1', date1904 ? '53' : '52', '20'];
+    for (const [index, value] of weeks.entries()) await expect(at(4, index + 1)).toHaveText(value);
+    for (const [index, value] of ['2', '1', '53', '#NUM!'].entries()) await expect(at(5, index + 1)).toHaveText(value);
+    await expect(at(6, 4)).toHaveText('#N/A');
+    await expect(at(7, 3)).toHaveText('#VALUE!');
+    await expect(at(8, 1)).toHaveText('9');
+    await expect(at(9, 1)).toHaveText(date1904 ? '53' : '52');
+    for (const [index, value] of ['1', '2', '57.65%', '#NUM!', '17'].entries()) await expect(at(10, index + 1)).toHaveText(value);
     await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+    await expect(at(1048576, 16381)).toHaveText('8.47%');
+    await expect(at(1048576, 16381)).toHaveCSS('color', 'rgb(0, 128, 0)');
+    await expect(at(1048576, 16382)).toHaveText('9');
+    await expect(at(1048576, 16382)).toHaveCSS('color', 'rgb(0, 128, 0)');
     await expect(at(1048576, 16383)).toHaveText('2024-03-05');
     await expect(at(1048576, 16384)).toHaveText('2025-02-28 23:59:59');
     await expect(at(1048576, 16384)).toBeInViewport();
@@ -291,6 +304,9 @@ test('evaluates uncached cross-sheet formulas through Excel’s final cell', asy
   await expect(at(2, 1)).toHaveText('=Input!B1');
   await expect(at(2, 3)).toHaveText('#N/A');
   await expect(at(2, 5)).toHaveText('5');
+  await expect(at(2, 7)).toHaveText('3.4');
+  await expect(at(2, 8)).toHaveText('-3.2');
+  await expect(at(2, 9)).toHaveText('#DIV/0!');
   await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
   await expect(at(1048576, 16384)).toHaveText('225.25');
   await expect(at(1048576, 16384)).toBeInViewport();

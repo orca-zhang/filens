@@ -42,6 +42,92 @@ export async function createOrderedConditionalWorkbook() {
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 }
 
+export async function createReferenceInfoWorkbook() {
+  const zip = await JSZip.loadAsync(await createArraySpillWorkbook());
+  const workbook = await zip.file('xl/workbook.xml').async('string');
+  zip.file('xl/workbook.xml', workbook.replace('</definedNames>',
+    '<definedName name="LedgerAreas">(Ledger!$A$1,Ledger!$B$1:$B$4)</definedName></definedNames>'));
+  zip.file('xl/worksheets/summary.xml', sheet(
+    row(1, formula('A1', "ISREF('Large Spill'!B1#)"), formula('B1', 'AREAS(LedgerAreas)'), formula('C1', 'ISREF(Ledger!A1)')),
+    row(2, formula('A2', "TYPE(_xlfn.ANCHORARRAY('Large Spill'!B1))"), formula('B2', 'TYPE(Ledger!A2)'),
+      formula('C2', 'SUMSQ(Ledger!A4:A7)')),
+    row(3, spill('A3', 'A3:C3', 'ERROR.TYPE({#REF!,5,#N/A})', '', 'n', 2))));
+  zip.file('xl/worksheets/ledger.xml', sheet(
+    row(1, formula('A1', 'NOTIMPLEMENTED(1)'), value('B1', 7)), row(2, value('A2', 1, 'b')),
+    row(4, value('A4', 7)), row(5, value('A5', '8', 'str')), row(6, value('A6', 1, 'b')), row(7, value('A7', -2)),
+    row(1048576, value('XFC1048576', 19))));
+  zip.file('xl/worksheets/large.xml', sheet(
+    row(1, spill('B1', 'B1:XFC1048576', 'Ledger!B:XFC+2', '', 'n', 2)),
+    row(1048576, formula('XFD1048576', 'IF(ISREF(B1#),TYPE(B1#)+AREAS((B1,B1#))+SUMSQ(B1#),NA())'))));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
+export async function createReferenceOperatorsWorkbook() {
+  const zip = await JSZip.loadAsync(await createReferenceInfoWorkbook());
+  zip.file('xl/worksheets/summary.xml', sheet(
+    row(1, formula('A1', "SUM('Large Spill'!B1# 'Large Spill'!XFC:XFC)"),
+      formula('B1', 'ERROR.TYPE(Ledger!A1:A3 Ledger!B1:B3)'),
+      formula('C1', 'AREAS((Ledger!B1,Ledger!XFC1048576) Ledger!B:XFC)'),
+      formula('D1', 'SUM(Ledger!A1:B1 Ledger!B1:C1)')),
+    row(2, formula('A2', "SUM(Ledger!A1:B1 'Large Spill'!A1:B1)"),
+      formula('B2', '_xlfn.ANCHORARRAY((Ledger!B1,Ledger!XFC1048576))'))));
+  zip.file('xl/worksheets/large.xml', sheet(
+    row(1, spill('B1', 'B1:XFC1048576', 'Ledger!B:XFC+2', '', 'n', 2)),
+    row(1048576, formula('XFD1048576', 'SUM((_xlfn.ANCHORARRAY(OFFSET(B1,0,0)) B:XFC,(B1)))'))));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
+export async function createConditionalReferencesWorkbook() {
+  const zip = await JSZip.loadAsync(await createReferenceOperatorsWorkbook());
+  zip.file('xl/worksheets/summary.xml', sheet(
+    row(1, formula('A1', "SUM(('Large Spill'!B1,IF(TRUE,'Large Spill'!B1#,NOTIMPLEMENTED(1))))"),
+      formula('B1', 'SUM(Ledger!B1:SWITCH(2,1,Ledger!A1,2,Ledger!B4))'),
+      formula('C1', 'ISREF(IFS(TRUE,Ledger!A1))')),
+    row(2, formula('A2', "SUM(IFS(FALSE,Ledger!B:XFC,TRUE,'Large Spill'!B1#))"),
+      formula('B2', 'AREAS((Ledger!B1,IFS(TRUE,Ledger!XFC1048576)))'),
+      formula('C2', 'FORMULATEXT(IF(TRUE,Ledger!A1,Ledger!A2))'))));
+  zip.file('xl/worksheets/large.xml', sheet(
+    row(1, spill('B1', 'B1:XFC1048576', 'Ledger!B:XFC+2', '', 'n', 2)),
+    row(1048576, formula('XFD1048576', 'SUM((SWITCH(1,1,INDEX(B1#,0,16382)),IFS(TRUE,Ledger!XFC1048576)))'))));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
+export async function createImplicitIntersectionWorkbook() {
+  const zip = await JSZip.loadAsync(await createReferenceInfoWorkbook());
+  zip.file('xl/worksheets/ledger.xml', sheet(
+    row(1, value('B1', 7), value('C1', '#N/A', 'e')), row(2, value('B2', 12)),
+    row(1048576, value('XFC1048576', 19))));
+  zip.file('xl/worksheets/summary.xml', sheet(
+    row(1, formula('A1', 'Ledger!$B$1:$XFD$1'), formula('B1', 'Ledger!$B$1:$XFD$1+1'),
+      formula('C1', 'Ledger!$B$1:$XFD$1'), formula('D1', 'Ledger!$B$1:$XFD$1')),
+    row(2, formula('A2', '_xlfn.SINGLE(CHOOSE(1,Ledger!B:B,NA()))'), formula('B2', '@(Ledger!B:B+1)'),
+      formula('C2', '@Ledger!B:B'), formula('D2', "SUM('Large Spill'!A1#)")),
+    row(3, '<c r="A3"><f>@Ledger!B:B</f><v>42</v></c>')));
+  zip.file('xl/worksheets/large.xml', sheet(
+    row(1, spill('A1', 'A1:A1048576', 'Ledger!B:B', '', 'n', 2),
+      spill('D1', 'D1:XFC1048576', 'Ledger!D:XFC+2', '', 'n', 2)),
+    row(2, formula('B2', 'A1#'), formula('C2', '@A1#')),
+    row(1048576, formula('XFD1048576', '@CHOOSE(1,INDEX(D1#,0,16380))+@Ledger!XFC:XFC'))));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
+export async function createFormulaDisplayWorkbook() {
+  const zip = await JSZip.loadAsync(await createArraySpillWorkbook());
+  zip.file('xl/worksheets/ledger.xml', sheet(
+    row(1, formula('A1', '$G$7:$G$9'), spill('B1', 'B1:B4', '_xlfn._xlws.SORT($G$7:$G$10)', '', 'n', 2)),
+    row(2, formula('A2', '_xlfn.SINGLE((_xlfn.ANCHORARRAY(B1)%))')),
+    row(3, formula('A3', '_xlfn.FUTURE("_xlpm.x",Table[_xlfn.SINGLE])')),
+    row(4, '<c r="A4"><f t="shared" ref="A4:A5" si="1">_xlfn.LET(_xlpm.x,C4:C7,_xlpm.x)</f></c>'),
+    row(5, '<c r="A5"><f t="shared" si="1"/></c>')));
+  zip.file('xl/worksheets/summary.xml', sheet(
+    row(1, formula('A1', 'FORMULATEXT(Ledger!A1)'), formula('B1', 'FORMULATEXT(Ledger!B1)')),
+    row(2, formula('A2', 'FORMULATEXT(Ledger!A2)'), formula('B2', 'FORMULATEXT(Ledger!A3)')),
+    row(3, formula('A3', 'FORMULATEXT(Ledger!A5)'))));
+  zip.file('xl/worksheets/large.xml', sheet(
+    row(1048576, formula('XFD1048576', 'FORMULATEXT(Ledger!$A$1)'))));
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
 export async function createCountBlankWorkbook() {
   const zip = await JSZip.loadAsync(await createArraySpillWorkbook());
   const workbook = await zip.file('xl/workbook.xml').async('string');

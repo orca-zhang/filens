@@ -1,17 +1,17 @@
 import { columnIndexToName, columnNameToIndex, parseCellRef } from './columns';
-import { countExcelHolidays, countExcelWorkingDays, dayMilliseconds, excelDateParts, excelSerialFromTimestamp,
-  excelWeekday, indexExcelHolidays, isExcelDateSerial, offsetExcelWorkingDays } from './excel-calendar';
+import { countExcelHolidays, countExcelWorkingDays, dayMilliseconds, excelDateParts, excelDays360, excelSerialFromTimestamp,
+  excelWeekday, excelWeekNumber, excelWeekStart, excelYearFraction, indexExcelHolidays, isExcelDateSerial, offsetExcelWorkingDays } from './excel-calendar';
 import { parseFormulaDateText } from './local-date-text';
 import { readNumberText } from './local-number-text';
 import { findLookupIndex, indexExactLookup, type VisitLookupKeys } from './formula-lookup';
-import { captureError, chooseArray, chooseValueArray, expandFormulaArray, filterArray, flattenArray, FormulaCalculationLimit, FormulaError, formulaSortComparator,
+import { captureError, chooseArray, chooseValueArray, expandFormulaArray, filterArray, firstAfter, flattenArray, FormulaCalculationLimit, FormulaError, formulaSortComparator,
   generatedArrayPositions, mapFormulaArray, MAX_DENSE_ARRAY_SCAN, mergeOccupiedPositions, reorderArray, sliceArray, stackArrays, transposeArray, trimArrayBounds, uniqueArray, weightedRankReader, wrapVector,
   type FormulaArray, type SelectedInterval } from './formula-array';
 import { groupFormulaRows } from './formula-groupby';
 import type { GroupAggregate } from './formula-grouping';
 import { pivotFormulaRows } from './formula-pivotby';
 import { runFormulaRegex, type RegexFunction } from './formula-regex';
-import { formatWorkbookValue } from './number-formats';
+import { formatFormulaText } from './number-formats';
 import { structuredBracketEnd, tableReference, type TableReferenceSource } from './structured-references';
 import { wildcardMatcher, wildcardSearch } from './wildcard-matcher';
 
@@ -27,13 +27,30 @@ const rowRef = /^\$?[1-9]\d*$/;
 const numberToken = /^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 export const formulaName = /^[\p{L}_\\][\p{L}\p{M}\p{N}_.]*$/u;
 const anchorArrayName = /^(?:_xlfn\.)?ANCHORARRAY$/i;
+const savedFunctionPrefix = /^_(?:xlfn\.(?:_xlws\.)?|xlws\.)/i;
+const savedParameterPrefix = /^_xlpm\./i;
+const displayArrayFunctions = new Set(['FILTER', 'SEQUENCE', 'SORT', 'SORTBY', 'TRANSPOSE', 'UNIQUE']);
 const lookupReferenceNames = new Set(['INDEX', 'XLOOKUP']);
-const referenceFunctionName = /^(?:_xlfn\.(?:_xlws\.)?)?(OFFSET|INDIRECT|INDEX|XLOOKUP|TRIMRANGE|_TRO_(?:ALL|LEADING|TRAILING))$/i;
+const referenceFunctionName = /^(?:_xlfn\.(?:_xlws\.)?)?(OFFSET|INDIRECT|INDEX|XLOOKUP|CHOOSE|IF|IFS|SWITCH|TRIMRANGE|_TRO_(?:ALL|LEADING|TRAILING))$/i;
 const trimOperators = new Map([['.:', 1], [':.', 2], ['.:.', 3]]);
 const trimReferences = new Map([['_TRO_LEADING', 1], ['_TRO_TRAILING', 2], ['_TRO_ALL', 3]]);
-const aggregateNames = new Set(['SUM', 'PRODUCT', 'AVERAGE', 'MIN', 'MAX', 'COUNT', 'COUNTA', 'AND', 'OR', 'CONCAT']);
+const statisticalAggregateModes = new Map([
+  ['STDEV', 7], ['STDEV.S', 7], ['STDEVA', 7], ['STDEVP', 8], ['STDEV.P', 8], ['STDEVPA', 8],
+  ['VAR', 10], ['VAR.S', 10], ['VARA', 10], ['VARP', 11], ['VAR.P', 11], ['VARPA', 11], ['MEDIAN', 12]
+]);
+const orderStatisticModes = new Map([
+  ['LARGE', 14], ['SMALL', 15], ['PERCENTILE', 16], ['PERCENTILE.INC', 16], ['PERCENTILE.EXC', 18],
+  ['QUARTILE', 17], ['QUARTILE.INC', 17], ['QUARTILE.EXC', 19]
+]);
+const rankNames = new Set(['RANK', 'RANK.EQ', 'RANK.AVG']);
+const percentRankNames = new Set(['PERCENTRANK', 'PERCENTRANK.INC', 'PERCENTRANK.EXC']);
+const pairedStatisticNames = new Set(['CORREL', 'PEARSON', 'RSQ', 'COVAR', 'COVARIANCE.P', 'COVARIANCE.S',
+  'SLOPE', 'INTERCEPT', 'FORECAST', 'FORECAST.LINEAR']);
+const aggregateNames = new Set(['SUM', 'SUMSQ', 'PRODUCT', 'AVERAGE', 'MIN', 'MAX', 'COUNT', 'COUNTA', 'AND', 'OR', 'CONCAT',
+  ...statisticalAggregateModes.keys()]);
 const scalarNames = new Set(['ABS', 'ROUND', 'ROUNDUP', 'ROUNDDOWN', 'TRUE', 'FALSE', 'NA', 'CONCATENATE', 'CHAR']);
-const typeCheckNames = new Set(['ISBLANK', 'ISERR', 'ISERROR', 'ISLOGICAL', 'ISNA', 'ISNONTEXT', 'ISNUMBER', 'ISTEXT']);
+const multipleRoundingNames = new Set(['CEILING', 'FLOOR', 'CEILING.MATH', 'FLOOR.MATH', 'CEILING.PRECISE', 'FLOOR.PRECISE', 'ISO.CEILING']);
+const typeCheckNames = new Set(['ISBLANK', 'ISERR', 'ISERROR', 'ISLOGICAL', 'ISNA', 'ISNONTEXT', 'ISNUMBER', 'ISTEXT', 'ERROR.TYPE']);
 const textPositionNames = new Set(['FIND', 'SEARCH', 'LEFT', 'RIGHT']);
 const dateArgumentCounts = new Map([
   ['DATE', 3], ['TIME', 3], ['YEAR', 1], ['MONTH', 1], ['DAY', 1], ['HOUR', 1], ['MINUTE', 1], ['SECOND', 1],
@@ -73,8 +90,10 @@ interface NameReference {
 }
 
 type ReferenceTarget = ReferenceValue | NameReference | { table?: string; specifier: string; sheet?: string }
-  | { call: string; span: Argument } | { endpoints: [ParsedReference, ParsedReference] };
+  | { call: string; span: Argument } | { endpoints: [ParsedReference, ParsedReference] }
+  | { intersection: ParsedReference[] } | { union: Argument };
 interface ParsedReference { target: ReferenceTarget; end: number; spill?: true; lastSheet?: string; trimMode?: number }
+type FormulaTokens = string[] & { spaces?: Set<number> };
 
 export interface FormulaLambda {
   parameterCount: number;
@@ -84,6 +103,12 @@ export interface FormulaLambda {
 
 export type FormulaOperand = Scalar | ReferenceValue | FormulaLambda | FormulaArray;
 type LookupArea = Reference | FormulaArray;
+
+export interface RankSample {
+  count: number;
+  storedValues: number;
+  rankValue: (rank: number) => number;
+}
 
 export interface DefinitionOrigin {
   sheet: string;
@@ -113,15 +138,16 @@ interface FormulaCriterion {
 }
 
 export class FormulaReader {
-  private readonly tokens: string[];
+  private readonly tokens: FormulaTokens;
   private index = 0;
   private end: number;
   private depth = 0;
   private arrayContext = false;
+  private spillArrayContext = false;
   private letBindings?: Map<string, FormulaOperand | FormulaError>;
   private remainingAccumulation = MAX_DENSE_ARRAY_SCAN;
 
-  constructor(formula: string, private readonly readCell: (ref: Reference) => Scalar,
+  constructor(formula: string | FormulaTokens, private readonly readCell: (ref: Reference) => Scalar,
     private readonly visitCells: VisitFormulaCells,
     private readonly lookupName?: (name: string, sheet?: string | null) => FormulaOperand | undefined,
     private readonly origin?: DefinitionOrigin, private readonly resolveSheetName?: (sheet: string | undefined) => string,
@@ -132,8 +158,9 @@ export class FormulaReader {
     private readonly arrayFromRange?: (range: Reference, compactOnly?: boolean) => FormulaArray | undefined,
     private readonly readSpillRange?: (anchor: Reference) => Reference | undefined,
     private readonly resolveSheetSpan?: (first: string, last: string) => readonly string[],
-    private readonly visitDisplayedRangeValues?: (range: Reference, visit: (value: RangeValue, weight: number) => void) => void) {
-    this.tokens = tokenizeFormula(formula);
+    private readonly visitDisplayedRangeValues?: (range: Reference, visit: (value: RangeValue, weight: number) => void) => void,
+    private readonly reuseRankSample?: (range: Reference, build: () => RankSample) => RankSample) {
+    this.tokens = typeof formula === 'string' ? tokenizeFormula(formula) : formula;
     this.end = this.tokens.length;
   }
 
@@ -175,13 +202,13 @@ export class FormulaReader {
       if (depth || next !== this.end) break;
       this.index++; this.end--;
     }
-    const first = this.referenceArgument(true);
-    if (first === undefined) {
-      const value = this.expression();
-      if (this.index !== this.end || value === undefined || (typeof value === 'number' && !Number.isFinite(value))) {
-        throw new Error('Unsupported formula.');
-      }
-      return value;
+    const member = () => {
+      const reference = this.referenceArgument(true);
+      return reference === undefined ? this.expression() : reference;
+    };
+    const first = member();
+    if (first === undefined || (typeof first === 'number' && !Number.isFinite(first))) {
+      throw new Error('Unsupported formula.');
     }
     if (this.index === this.end) {
       if (isReference(first) && first.isRange && first.areas.length === 1) {
@@ -191,12 +218,14 @@ export class FormulaReader {
       return first;
     }
 
-    if (!isReference(first)) throw new Error('A name union requires references.');
+    if (this.peek() !== ',') throw new Error('Unsupported formula.');
+    if (!isReference(first)) throw new FormulaError('#VALUE!');
     const areas = [...first.areas];
     while (this.index < this.end) {
       this.expect(',');
-      const value = this.referenceArgument(true);
-      if (value === undefined || !isReference(value)) throw new Error('A name union requires references.');
+      const value = member();
+      if (this.index !== this.end && this.peek() !== ',') throw new Error('Unsupported formula.');
+      if (value === undefined || !isReference(value)) throw new FormulaError('#VALUE!');
       for (const area of value.areas) {
         if (areas.length >= MAX_FORMULA_LENGTH) throw new Error('Name contains too many reference areas.');
         areas.push(area);
@@ -275,6 +304,18 @@ export class FormulaReader {
   }
 
   private unary(): Value {
+    if (this.peek() === '@') {
+      this.take();
+      const ref = this.referenceAt(this.index);
+      if (ref) {
+        this.index = ref.end;
+        return this.singleValue(this.referenceValue(ref));
+      }
+      const previous = this.arrayContext;
+      this.arrayContext = true;
+      try { return this.singleValue(this.nested(() => this.unary())); }
+      finally { this.arrayContext = previous; }
+    }
     if (this.peek() !== '+' && this.peek() !== '-') return this.primary();
     const sign = this.take();
     const value = this.nested(() => this.unary());
@@ -294,10 +335,14 @@ export class FormulaReader {
     if (this.arrayContext && this.peek() === '{') return this.arrayConstant();
     const start = this.index;
     const token = this.take();
-    if (formulaName.test(token) && this.peek() === '(' && !anchorArrayName.test(token) && !referenceFunctionName.test(token)) {
+    if (formulaName.test(token) && this.peek() === '(' && !anchorArrayName.test(token) && !referenceFunctionName.test(token)
+      && !(cellRef.test(token) && this.tokens.spaces?.has(this.index))) {
       this.take();
       const name = token.toUpperCase().replace(/^_XLFN\.(?:_XLWS\.)?/, '');
-      return this.nested(() => this.call(name));
+      const previous = this.spillArrayContext;
+      this.spillArrayContext = true;
+      try { return this.nested(() => this.call(name)); }
+      finally { this.spillArrayContext = previous; }
     }
     const ref = this.referenceAt(start);
     if (ref) {
@@ -307,17 +352,13 @@ export class FormulaReader {
       if (!ref.spill && (operand.zeroForBlanks || ('call' in ref.target && lookupReferenceNames.has(ref.target.call)))) {
         return this.lookupValue(operand);
       }
-      const calculated = ref.trimMode !== undefined || 'call' in ref.target || 'endpoints' in ref.target;
-      if (this.arrayContext || ref.spill) {
+      const calculated = ref.trimMode !== undefined || ('call' in ref.target && ref.target.call !== 'IF') ||
+        'endpoints' in ref.target || 'intersection' in ref.target;
+      if (this.arrayContext || (ref.spill && this.spillArrayContext)) {
         const array = this.arrayReference(operand);
         return calculated ? { ...array, zeroForBlanks: true } : array;
       }
-      if (calculated) return this.intersectReference(operand);
-      if (!operand.isRange) return this.readCell(operand.areas[0]);
-      if (operand.implicitCell) return this.readCell(operand.implicitCell);
-      // A bare range is not scalar, but keep its dependency reads on malformed expressions.
-      for (const area of operand.areas) this.visitCells(area, value => { if (value instanceof FormulaError) throw value; });
-      return undefined;
+      return operand.isRange ? this.intersectReference(operand) : this.readCell(operand.areas[0]);
     }
     if (token === '(') {
       const value = this.nested(() => this.expression());
@@ -349,11 +390,14 @@ export class FormulaReader {
     if (name === 'COUNTBLANK') return this.countBlank();
     if (name === 'COUNTIF') return this.countIf();
     if (conditionalAggregateNames.has(name)) return this.conditionalAggregate(name);
-    if (name === 'LARGE' || name === 'SMALL') return this.rank(name === 'LARGE');
-    if (name === 'CORREL') return this.correlation();
-    if (name === 'IF' || name === 'IFERROR' || name === 'IFNA') return this.conditional(name);
-    if (name === 'IFS' || name === 'SWITCH') return this.orderedConditional(name === 'SWITCH');
+    const orderStatistic = orderStatisticModes.get(name);
+    if (orderStatistic !== undefined) return this.orderStatistic(orderStatistic);
+    const percentRank = percentRankNames.has(name);
+    if (percentRank || rankNames.has(name)) return this.rankOfValue(name, percentRank);
+    if (pairedStatisticNames.has(name)) return this.pairedStatistic(name);
+    if (name === 'IFERROR' || name === 'IFNA') return this.conditional(name);
     if (typeCheckNames.has(name)) return this.typeCheck(name);
+    if (name === 'ISREF' || name === 'AREAS' || name === 'TYPE') return this.referenceInfo(name);
     if (textPositionNames.has(name)) return this.textPosition(name);
     if (name === 'TEXTBEFORE' || name === 'TEXTAFTER') return this.textAroundDelimiter(name === 'TEXTAFTER');
     if (name === 'TEXTSPLIT') return this.textSplit();
@@ -397,6 +441,7 @@ export class FormulaReader {
         return Math.floor(value);
       });
     }
+    if (multipleRoundingNames.has(name)) return this.roundToMultiple(name);
     if (name === 'MOD' || name === 'ISEVEN' || name === 'ISODD') {
       const args = this.arguments();
       if (args.length !== (name === 'MOD' ? 2 : 1) || args.some(([start, end]) => start === end)) throw new FormulaError('#VALUE!');
@@ -434,7 +479,6 @@ export class FormulaReader {
     if (name === 'SEQUENCE') return this.sequence();
     if (name === 'FILTER') return this.filter();
     if (name === 'GROUPBY' || name === 'PIVOTBY') return this.groupBy(name === 'PIVOTBY');
-    if (name === 'CHOOSE') return this.chooseValue();
     if (name === 'CHOOSEROWS' || name === 'CHOOSECOLS') return this.choose(name === 'CHOOSEROWS');
     if (name === 'TAKE' || name === 'DROP') return this.slice(name === 'TAKE');
     if (name === 'HSTACK' || name === 'VSTACK') return this.stack(name === 'VSTACK');
@@ -461,11 +505,10 @@ export class FormulaReader {
     if (name === 'SINGLE') {
       const args = this.arguments();
       if (args.length !== 1) throw new FormulaError('#VALUE!');
-      const value = this.arrayOperand(args[0]);
-      if (isReference(value)) return this.intersectReference(value);
-      return isArray(value) ? value.read(0) : value;
+      return this.singleValue(this.arrayOperand(args[0]));
     }
     if (name === 'SUMPRODUCT') return this.sumProduct();
+    if (name === 'FREQUENCY') return this.frequency();
     if (name === 'ADDRESS') return this.address();
     if (this.readClock && (name === 'TODAY' || name === 'NOW')) {
       this.expect(')');
@@ -473,6 +516,8 @@ export class FormulaReader {
     }
     const dateArgs = dateArgumentCounts.get(name);
     if (dateArgs !== undefined) return this.dateFunction(name, dateArgs);
+    if (name === 'WEEKNUM' || name === 'ISOWEEKNUM') return this.weekNumber(name === 'ISOWEEKNUM');
+    if (name === 'DAYS360' || name === 'YEARFRAC') return this.dayCount(name === 'YEARFRAC');
     if (workdayNames.has(name)) return this.workdayFunction(name);
     if (!scalarNames.has(name)) {
       const named = this.lookupName?.(name);
@@ -814,20 +859,29 @@ export class FormulaReader {
     } };
   }
 
-  private arrayArgument(span: Argument): Scalar | FormulaArray {
+  private arrayArgument(span: Argument, singleCellReferences = false): Scalar | FormulaArray {
     const previous = this.arrayContext;
     this.arrayContext = true;
     try {
-      const result = this.argument(span, () => this.expression());
+      const result = this.argument(span, () => {
+        const reference = singleCellReferences ? this.referenceArgument(true) : undefined;
+        if (reference === undefined) return this.expression();
+        if (!isReference(reference)) return reference;
+        const [area] = reference.areas;
+        if (reference.areas.length !== 1 || area.firstRow !== area.lastRow || area.firstColumn !== area.lastColumn) {
+          throw new FormulaError('#VALUE!');
+        }
+        return this.intersectReference(reference);
+      });
       return isArray(result) ? result : scalar(result);
     } finally { this.arrayContext = previous; }
   }
 
   private liftScalar(spans: Argument[], evaluate: (read: (index: number) => Scalar, single: boolean) => Scalar,
-    omitted: Scalar = null): Value {
+    omitted: Scalar = null, singleCellReferences = false): Value {
     const values = spans.map(span => {
       if (span[0] === span[1]) return omitted;
-      const value = captureError(() => this.arrayArgument(span));
+      const value = captureError(() => this.arrayArgument(span, singleCellReferences));
       return value instanceof FormulaError ? asArray(value) : value;
     });
     // Keep single-cell function results scalar, including for aggregate coercion.
@@ -900,7 +954,7 @@ export class FormulaReader {
     return args[2][0] === args[2][1] ? 0 : this.arrayArgument(args[2]);
   }
 
-  private chooseValue(): Value {
+  private chooseValue(): FormulaOperand {
     const [index, ...args] = this.arguments();
     if (!args.length || args.length > 254) throw new FormulaError('#VALUE!');
     const selector = this.arrayArgument(index);
@@ -909,12 +963,12 @@ export class FormulaReader {
       if (!Number.isFinite(choice) || choice < 1 || choice > args.length) throw new FormulaError('#VALUE!');
       return choice - 1;
     };
-    const read = ([start, end]: Argument) => start === end ? 0 : this.arrayArgument([start, end]);
     if (!isArray(selector) || selector.rows * selector.columns === 1) {
-      const value = read(args[pick(scalar(selector))]);
+      const span = args[pick(scalar(selector))];
+      const value = span[0] === span[1] ? 0 : this.arrayOperand(span);
       return isArray(value) ? { ...value, zeroForBlanks: true } : value;
     }
-    const choices = args.map(span => asArray(captureError(() => read(span))));
+    const choices = args.map(span => asArray(captureError(() => span[0] === span[1] ? 0 : this.arrayArgument(span))));
     if (choices.every(choice => choice.rows * choice.columns === 1 ||
       (choice.rows === selector.rows && choice.columns === selector.columns))) {
       return { ...elementwise([selector, ...choices], value => value(1 + pick(value(0)))) as FormulaArray, zeroForBlanks: true };
@@ -1271,10 +1325,10 @@ export class FormulaReader {
           if (parsed) value = (parsed.day ?? 0) + (parsed.time ?? 0);
         }
       }
-      const result = formatWorkbookValue(value, format, this.date1904);
-      if (!result) throw new FormulaError('#VALUE!');
-      checkTextLength(result.text.length);
-      return result.text;
+      const result = formatFormulaText(value, format, this.date1904);
+      if (result === undefined) throw new FormulaError('#VALUE!');
+      checkTextLength(result.length);
+      return result;
     });
   }
 
@@ -1416,15 +1470,65 @@ export class FormulaReader {
     return sortFormulaArray(source, byRow, keys);
   }
 
-  private typeCheck(name: string): boolean | FormulaArray {
+  private referenceInfo(name: string): number | boolean {
     const args = this.arguments();
     if (args.length !== 1 || args[0][0] === args[0][1]) throw new FormulaError('#VALUE!');
-    const operand = captureError(() => this.argument(args[0], () => this.expression()));
+    const operand = captureError(() => {
+      const value = this.arrayOperand(args[0]);
+      if (isReference(value)) for (const area of value.areas) this.resolveSheetName?.(area.sheet);
+      return name === 'TYPE' ? this.lookupValue(value) : value;
+    });
+    if (name === 'ISREF') return !(operand instanceof FormulaError) && isReference(operand);
+    if (name === 'AREAS') {
+      if (operand instanceof FormulaError) throw operand;
+      if (!isReference(operand)) throw new FormulaError('#VALUE!');
+      return operand.areas.length;
+    }
+    if (operand instanceof FormulaError) return 16;
+    if (isArray(operand)) return 64;
+    if (typeof operand === 'string') return 2;
+    return typeof operand === 'boolean' ? 4 : 1;
+  }
+
+  private typeCheck(name: string): boolean | number | FormulaArray {
+    const args = this.arguments();
+    if (args.length !== 1 || args[0][0] === args[0][1]) throw new FormulaError('#VALUE!');
+    const operand = captureError(() => name === 'ERROR.TYPE' ? this.arrayArgument(args[0])
+      : this.argument(args[0], () => this.expression()));
     if (operand instanceof FormulaError) return checkType(name, operand);
     if (isArray(operand) && operand.rows * operand.columns > 1) {
       return mapFormulaArray(operand, (array, position) => checkType(name, captureError(() => array.read(position))));
     }
     return checkType(name, captureError(() => scalar(operand)));
+  }
+
+  private roundToMultiple(name: string): Value {
+    const args = this.arguments(), ceiling = !name.startsWith('FLOOR');
+    const legacy = name === 'CEILING' || name === 'FLOOR';
+    if (args[0][0] === args[0][1] || (legacy && args.length !== 2) || args.length > (name.endsWith('.MATH') ? 3 : 2)) {
+      throw new FormulaError('#VALUE!');
+    }
+    const [stepStart, stepEnd] = args[1] ?? [];
+    return this.liftScalar(args, read => {
+      const value = number(read(0)), significance = legacy || stepStart !== stepEnd ? number(read(1)) : 1;
+      const mode = args.length === 3 ? number(read(2)) : 0;
+      if (!Number.isFinite(value) || !Number.isFinite(significance) || !Number.isFinite(mode)) throw new FormulaError('#NUM!');
+      if (!value) return 0;
+      if (!significance) {
+        if (name === 'FLOOR') throw new FormulaError('#DIV/0!');
+        return 0;
+      }
+      if (legacy && value > 0 && significance < 0) throw new FormulaError('#NUM!');
+      const step = Math.abs(significance);
+      const reverse = value < 0 && (legacy ? significance < 0 : mode !== 0);
+      const ratio = value / step;
+      // At this scale the increment is smaller than the spacing between representable values.
+      if (!Number.isFinite(ratio)) return value;
+      const quotient = excelTruncationInput(ratio) || Math.sign(value) * Number.MIN_VALUE;
+      const result = (ceiling !== reverse ? Math.ceil(quotient) : Math.floor(quotient)) * step;
+      if (!Number.isFinite(result)) throw new FormulaError('#NUM!');
+      return excelTruncationInput(result);
+    });
   }
 
   private textPosition(name: string): Value {
@@ -1461,6 +1565,94 @@ export class FormulaReader {
     const formula = this.readFormula?.(area);
     if (!formula || formula.length > MAX_FORMULA_LENGTH) throw new FormulaError('#N/A');
     return formula.startsWith('=') ? formula : '=' + formula;
+  }
+
+  static displayText(source: string, legacy: boolean): string {
+    if (!/_(?:xlfn|xlws|xlpm)\./i.test(source) && !(legacy && /[:#]/.test(source))) return source;
+    const positions: number[] = [];
+    let tokens: FormulaTokens;
+    try { tokens = tokenizeFormula(source, positions); }
+    catch { return source; }
+
+    const groups = new Map<number, number>();
+    const replacements = new Map<number, string>();
+    const stack: { open: number; comma: boolean; operator: boolean }[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token === '(' || token === '{') {
+        stack.push({ open: i, comma: false, operator: false });
+        continue;
+      }
+      const group = stack.at(-1);
+      if (token === ')' || token === '}') {
+        if (!group || tokens[group.open] !== (token === ')' ? '(' : '{')) return source;
+        stack.pop();
+        groups.set(group.open, i);
+        if (token !== ')') continue;
+        const name = tokens[group.open - 1] ?? '';
+        const displayName = name.replace(savedFunctionPrefix, '');
+        if (displayName === name) continue;
+        const upper = displayName.toUpperCase();
+        if (upper === 'ANCHORARRAY' || upper === 'SINGLE') {
+          if (group.comma || i === group.open + 1) continue;
+          replacements.set(group.open - 1, upper === 'SINGLE' ? '@' : '');
+          replacements.set(group.open, upper === 'SINGLE' && group.operator ? '(' : '');
+          replacements.set(i, upper === 'ANCHORARRAY' ? '#' : group.operator ? ')' : '');
+        } else replacements.set(group.open - 1, displayName);
+      } else if (group) {
+        if (token === ',') group.comma = true;
+        if (/^(?:\*|\/|\^|&|%|=|<>|<=?|>=?)$/.test(token) ||
+          ((token === '+' || token === '-') && !['(', '+', '-'].includes(tokens[i - 1]))) group.operator = true;
+      }
+      const next = tokens[i + 1];
+      if (savedParameterPrefix.test(token) && tokens[i - 1] !== '!' && next !== '!' && !next?.startsWith('[')) {
+        replacements.set(i, token.replace(savedParameterPrefix, ''));
+      }
+    }
+    if (stack.length) return source;
+
+    const intersections = legacy ? new FormulaReader(tokens, () => null, () => {}).displayIntersections(groups) : undefined;
+    if (!replacements.size && !intersections?.size) return source;
+    const fragments: string[] = [];
+    let offset = 0;
+    for (let i = 0; i < tokens.length; i++) {
+      const replacement = replacements.get(i), intersection = intersections?.has(i);
+      if (replacement === undefined && !intersection) continue;
+      fragments.push(source.slice(offset, positions[i]), intersection ? '@' : '', replacement ?? tokens[i]);
+      offset = positions[i] + tokens[i].length;
+    }
+    fragments.push(source.slice(offset));
+    return fragments.join('');
+  }
+
+  private displayIntersections(groups: Map<number, number>): Set<number> {
+    const intersections = new Set<number>();
+    let explicit = false;
+    for (let i = 0; i < this.end; i++) {
+      const token = this.tokens[i];
+      if (token === '@') { explicit = true; continue; }
+      if (explicit && (token === '+' || token === '-')) continue;
+      const close = groups.get(token === '{' ? i : i + 1);
+      const call = formulaName.test(token) && !anchorArrayName.test(token) &&
+        !(cellRef.test(token) && this.tokens.spaces?.has(i + 1));
+      if (close !== undefined && (token === '{' || call)) {
+        if (!explicit && displayArrayFunctions.has(token.replace(savedFunctionPrefix, '').toUpperCase())) intersections.add(i);
+        i = close;
+      } else {
+        let ref: ParsedReference | undefined;
+        try { ref = this.referenceAt(i); }
+        catch { return new Set(); }
+        if (ref) {
+          const area = 'areas' in ref.target ? ref.target.areas[0] : undefined;
+          if (!explicit && (ref.spill || (area && (area.firstRow !== area.lastRow || area.firstColumn !== area.lastColumn)))) {
+            intersections.add(i);
+          }
+          i = ref.end - 1;
+        }
+      }
+      explicit = false;
+    }
+    return intersections;
   }
 
   private isFormula(): boolean | FormulaArray {
@@ -1603,9 +1795,14 @@ export class FormulaReader {
     return operand;
   }
 
+  private singleValue(value: FormulaOperand | undefined): Value {
+    if (value !== undefined && isReference(value)) return this.intersectReference(value);
+    return isArray(value) ? value.read(0) : value;
+  }
+
   private intersectReference(operand: ReferenceValue): Scalar {
     if (operand.areas.length !== 1) throw new FormulaError('#VALUE!');
-    const value = this.readCell(this.implicitReferenceCell(operand.areas[0]));
+    const value = this.readCell(operand.implicitCell ?? this.implicitReferenceCell(operand.areas[0]));
     return operand.zeroForBlanks ? value ?? 0 : value;
   }
 
@@ -1691,27 +1888,129 @@ export class FormulaReader {
     return result;
   }
 
-  private rank(largest: boolean): Value {
+  private orderStatistic(mode: number): Value {
     const args = this.arguments();
     if (args.length !== 2 || args.some(([first, last]) => first === last)) throw new FormulaError('#VALUE!');
     const input = asArray(this.arrayArgument(args[0]));
-    const stats = numericSummary(largest ? 14 : 15);
+    const stats = numericSummary(mode);
     visitFormulaArray(input, stats.add);
     return this.liftScalar([args[1]], read => stats.result(number(read(0))));
   }
 
-  private correlation(): number {
+  private frequency(): FormulaArray {
     const args = this.arguments();
     if (args.length !== 2 || args.some(([first, last]) => first === last)) throw new FormulaError('#VALUE!');
-    const left = asArray(this.arrayArgument(args[0])), right = asArray(this.arrayArgument(args[1]));
+    const visitNumbers = (span: Argument, add: (value: number, weight: number) => void) => {
+      const operand = this.arrayOperand(span);
+      const visit = (value: RangeValue, weight: number) => {
+        if (value instanceof FormulaError) throw value;
+        if (typeof value === 'number') add(value, weight);
+      };
+      if (isReference(operand)) {
+        for (const area of operand.areas) this.visitReferenceValues(area, visit);
+      } else if (isArray(operand)) visitFormulaArray(operand, visit);
+      else visit(scalar(operand), 1);
+    };
+
+    const bins = new Map<number, number>();
+    let binCount = 0;
+    visitNumbers(args[1], (value, weight) => {
+      // Equal bounds share the first bin and leave zero counts in later rows.
+      if (!bins.has(value)) bins.set(value, binCount);
+      binCount += weight;
+      if (binCount >= MAX_ROW) throw new FormulaError('#SPILL!');
+    });
+    const edges = [...bins.keys()].sort((a, b) => a - b);
+    const counts = new Map<number, number>();
+    visitNumbers(args[0], (value, weight) => {
+      const edge = firstAfter(edges.length, index => edges[index] < value);
+      const row = edge === edges.length ? binCount : bins.get(edges[edge])!;
+      counts.set(row, (counts.get(row) ?? 0) + weight);
+    });
+    const occupied = [...counts.keys()].sort((a, b) => a - b);
+    return { rows: binCount + 1, columns: 1, occupied: [() => occupied], read: row => row === undefined ? 0 : counts.get(row) ?? 0 };
+  }
+
+  private rankOfValue(name: string, percentRank: boolean): Value {
+    const args = this.arguments();
+    if (args.length < 2 || args.length > 3 || args.slice(0, 2).some(([first, last]) => first === last)) throw new FormulaError('#VALUE!');
+    const input = this.arrayOperand(args[percentRank ? 0 : 1]);
+    const build = (): RankSample => {
+      const stats = numericSummary(12);
+      if (isReference(input)) {
+        for (const area of input.areas) this.visitReferenceValues(area, stats.add);
+      } else if (isArray(input)) visitFormulaArray(input, stats.add);
+      else stats.add(scalar(input));
+      const { count, rankValue, storedValues } = stats;
+      return { count, rankValue, storedValues };
+    };
+    const range = isReference(input) && input.areas.length === 1 ? input.areas[0] : undefined;
+    const { count, rankValue } = range && this.reuseRankSample ? this.reuseRankSample(range, build) : build();
+    const valueSpan = args[percentRank ? 1 : 0], optionSpan = args[2];
+    return this.liftScalar(optionSpan ? [valueSpan, optionSpan] : [valueSpan], read => {
+      const value = number(read(0)), option = optionSpan ? number(read(1)) : percentRank ? 3 : 0;
+      if (!Number.isFinite(value) || !Number.isFinite(option)) throw new FormulaError('#NUM!');
+      const first = firstAfter(count, index => rankValue(index) < value);
+      if (percentRank) return percentageRank(count, rankValue, first, value, option, name === 'PERCENTRANK.EXC');
+      if (first === count || rankValue(first) !== value) throw new FormulaError('#N/A');
+      if (option && name !== 'RANK.AVG') return first + 1;
+      const after = first + firstAfter(count - first, index => rankValue(index + first) <= value);
+      const rank = name === 'RANK.AVG' ? (first + 1 + after) / 2 : after;
+      return option ? rank : count + 1 - rank;
+    }, percentRank ? 3 : 0);
+  }
+
+  private pairedStatistic(name: string): Value {
+    const args = this.arguments();
+    const forecast = name === 'FORECAST' || name === 'FORECAST.LINEAR';
+    if (args.length !== (forecast ? 3 : 2) || args.some(([first, last]) => first === last)) throw new FormulaError('#VALUE!');
+    const regression = forecast || name === 'SLOPE' || name === 'INTERCEPT';
+    const [first, second] = forecast ? args.slice(1) : args;
+    let moments: ReturnType<FormulaReader['pairedMoments']> | FormulaError | undefined;
+    const calculate = (target = 0) => {
+      moments ??= captureError(() => this.pairedMoments(first, second, regression));
+      if (moments instanceof FormulaError) throw moments;
+      const { count, originX, originY, meanX, meanY, spreadX, spreadY, covariance } = moments;
+      let result: number;
+      if (regression) {
+        if (count < 2 || spreadX <= 0) throw new FormulaError('#DIV/0!');
+        if (!Number.isFinite(spreadX)) throw new FormulaError('#NUM!');
+        const slope = covariance / spreadX;
+        if (forecast) result = originY + (meanY + slope * (target - originX - meanX));
+        else if (name === 'INTERCEPT') result = (originY - slope * originX) + (meanY - slope * meanX);
+        else result = slope;
+      } else if (name === 'COVAR' || name === 'COVARIANCE.P' || name === 'COVARIANCE.S') {
+        const divisor = count - Number(name === 'COVARIANCE.S');
+        if (divisor <= 0) throw new FormulaError('#DIV/0!');
+        result = covariance / divisor;
+      } else {
+        if (count < 2 || spreadX <= 0 || spreadY <= 0) throw new FormulaError('#DIV/0!');
+        result = covariance / Math.sqrt(spreadX) / Math.sqrt(spreadY);
+        if (!Number.isFinite(result)) throw new FormulaError('#NUM!');
+        result = Math.max(-1, Math.min(1, result));
+        if (name === 'RSQ') result *= result;
+      }
+      if (!Number.isFinite(result)) throw new FormulaError('#NUM!');
+      return result;
+    };
+    return forecast ? this.liftScalar([args[0]], read => calculate(number(read(0)))) : calculate();
+  }
+
+  private pairedMoments(first: Argument, second: Argument, yFirst: boolean) {
+    const left = asArray(this.arrayArgument(first)), right = asArray(this.arrayArgument(second));
     const size = left.rows * left.columns;
     if (size !== right.rows * right.columns) throw new FormulaError('#N/A');
     const dense = left.dense || right.dense;
     const positions = dense ? generatedArrayPositions(size) : mergeOccupiedPositions([...left.occupied, ...right.occupied]);
-    let count = 0, meanX = 0, meanY = 0, spreadX = 0, spreadY = 0, covariance = 0;
-    const add = (x: Scalar, y: Scalar, weight = 1) => {
+    let count = 0, originX = 0, originY = 0, meanX = 0, meanY = 0, spreadX = 0, spreadY = 0, covariance = 0;
+    const add = (a: Scalar, b: Scalar, weight = 1) => {
+      let x = yFirst ? b : a, y = yFirst ? a : b;
       if (typeof x !== 'number' || typeof y !== 'number') return;
       if (!Number.isFinite(x) || !Number.isFinite(y)) throw new FormulaError('#NUM!');
+      // Center each series so the running means retain small differences in large values.
+      if (!count) { originX = x; originY = y; }
+      x -= originX;
+      y -= originY;
       const dx = x - meanX, dy = y - meanY;
       const fraction = weight / (count += weight);
       meanX += dx * fraction;
@@ -1727,10 +2026,7 @@ export class FormulaReader {
       next = position + 1;
     }
     if (next < size) add(left.read(), right.read(), size - next);
-    if (count < 2 || spreadX <= 0 || spreadY <= 0) throw new FormulaError('#DIV/0!');
-    const result = covariance / Math.sqrt(spreadX) / Math.sqrt(spreadY);
-    if (!Number.isFinite(result)) throw new FormulaError('#NUM!');
-    return Math.max(-1, Math.min(1, result));
+    return { count, originX, originY, meanX, meanY, spreadX, spreadY, covariance };
   }
 
   private textJoin(): string {
@@ -1826,6 +2122,36 @@ export class FormulaReader {
     return this.liftScalar(spans, read => this.dateResult(name, spans.map((_, index) => read(index))));
   }
 
+  private weekNumber(iso: boolean): Value {
+    const args = this.arguments();
+    if (args[0][0] === args[0][1] || args.length > (iso ? 1 : 2)) throw new FormulaError('#VALUE!');
+    const returnType = args[1];
+    const defaultWeek = !returnType || returnType[0] === returnType[1];
+    // WEEKNUM accepts calculated arrays such as +A1:A3, while its reference operands must be single cells.
+    return this.liftScalar(args, read => {
+      const date = read(0), type = iso ? 21 : defaultWeek ? 1 : read(1);
+      if ((!iso && typeof date === 'boolean') || typeof type === 'boolean') throw new FormulaError('#VALUE!');
+      const day = Math.floor(this.dateSerial(date));
+      const mode = Math.trunc(number(type));
+      const start = mode === 21 ? 'iso' : excelWeekStart(mode);
+      if (start === undefined) throw new FormulaError('#NUM!');
+      return excelWeekNumber(day, start, this.date1904);
+    }, null, !iso);
+  }
+
+  private dayCount(yearFraction: boolean): Value {
+    const args = this.arguments();
+    if (args.length < 2 || args.length > 3) throw new FormulaError('#VALUE!');
+    return this.liftScalar(args, read => {
+      const start = Math.floor(this.dateSerial(read(0))), end = Math.floor(this.dateSerial(read(1)));
+      const method = args.length === 3 ? read(2) : null;
+      if (!yearFraction) return excelDays360(start, end, logical(method) ? 'european' : 'us', this.date1904);
+      const basis = Math.trunc(number(method));
+      if (!(basis >= 0 && basis <= 4)) throw new FormulaError('#NUM!');
+      return excelYearFraction(start, end, basis, this.date1904);
+    });
+  }
+
   private dateResult(name: string, args: Scalar[]): number {
     const midnight = (timestamp: number) => excelSerialFromTimestamp(timestamp, this.date1904);
 
@@ -1861,7 +2187,7 @@ export class FormulaReader {
     if (name === 'DAYS') return day - Math.floor(this.dateSerial(args[1]));
     if (name === 'WEEKDAY') {
       const mode = Math.trunc(number(args[1] ?? 1));
-      const start = mode === 1 || mode === 17 ? 0 : mode === 2 || mode === 3 ? 1 : mode >= 11 && mode <= 16 ? mode - 10 : undefined;
+      const start = mode === 3 ? 1 : excelWeekStart(mode);
       if (start === undefined) throw new FormulaError('#NUM!');
       const weekday = excelWeekday(day, this.date1904);
       return (weekday - start + 7) % 7 + (mode === 3 ? 0 : 1);
@@ -2154,13 +2480,16 @@ export class FormulaReader {
   private arrayOperand(span: Argument): FormulaOperand {
     const previous = this.arrayContext;
     this.arrayContext = true;
-    try {
-      return this.argument(span, () => {
-        const value = this.readOperand();
-        this.index = span[1];
-        return value;
-      });
-    } finally { this.arrayContext = previous; }
+    try { return this.operandArgument(span); }
+    finally { this.arrayContext = previous; }
+  }
+
+  private operandArgument(span: Argument): FormulaOperand {
+    return this.argument(span, () => {
+      const value = this.readOperand();
+      this.index = span[1];
+      return value;
+    });
   }
 
   private lookupSlice(source: LookupArea, row: number, column: number): FormulaOperand {
@@ -2236,33 +2565,54 @@ export class FormulaReader {
     });
   }
 
-  private conditionalAggregate(name: string): number {
+  private conditionalAggregate(name: string): Value {
     const multiple = name.endsWith('IFS'), countOnly = name.startsWith('COUNT');
-    let results = multiple && !countOnly ? this.referenceRange() : undefined;
-    if (results) this.expect(',');
-    const criteria: FormulaCriterion[] = [];
-    do {
-      if (criteria.length === 127) throw new FormulaError('#VALUE!');
-      const range = this.referenceRange();
-      this.expect(',');
-      const matches = formulaCriterion(scalar(this.expression()), name === 'AVERAGEIFS');
-      criteria.push({ range, matches });
-    } while (multiple && this.peek() === ',' && this.take());
-    const first = criteria[0].range;
-    const rows = first.lastRow - first.firstRow, columns = first.lastColumn - first.firstColumn;
-    if (!multiple && !countOnly) {
-      if (this.peek() === ',') {
-        this.take();
-        const start = this.referenceRange();
-        // Single-criterion functions project the criteria shape from the result's top left.
-        results = { ...start, lastRow: Math.min(MAX_ROW, start.firstRow + rows),
-          lastColumn: Math.min(MAX_COLUMN, start.firstColumn + columns) };
-      } else results = first;
+    const args = this.arguments();
+    const offset = Number(multiple && !countOnly), pairArguments = args.length - offset;
+    if ((multiple ? pairArguments < 2 || pairArguments > 254 || pairArguments % 2 !== 0
+      : args.length < 2 || args.length > 3) || args.some(([start, end]) => start === end)) throw new FormulaError('#VALUE!');
+    const readRange = (span: Argument) => this.argument(span, () => this.referenceRange(true));
+    let results = offset ? readRange(args[0]) : undefined;
+    const ranges: Reference[] = [], criterionArgs: Argument[] = [];
+    for (let i = offset; i + 1 < args.length; i += 2) {
+      ranges.push(readRange(args[i]));
+      criterionArgs.push(args[i + 1]);
     }
-    this.expect(')');
-    if (multiple && [...criteria.map(({ range }) => range), ...(results ? [results] : [])].some(range =>
+    const first = ranges[0];
+    const rows = first.lastRow - first.firstRow, columns = first.lastColumn - first.firstColumn;
+    if (!multiple) {
+      const start = args[2] ? readRange(args[2]) : first;
+      // Single-criterion functions project the criteria shape from the result's top left.
+      results = { ...start, lastRow: Math.min(MAX_ROW, start.firstRow + rows),
+        lastColumn: Math.min(MAX_COLUMN, start.firstColumn + columns) };
+    }
+    if (multiple && [...ranges, ...(results ? [results] : [])].some(range =>
       range.lastRow - range.firstRow !== rows || range.lastColumn - range.firstColumn !== columns)) throw new FormulaError('#VALUE!');
 
+    const calculate = (values: Scalar[]) => this.conditionalAggregateResult(name, ranges.map((range, index) =>
+      ({ range, matches: formulaCriterion(values[index], name === 'AVERAGEIFS') })), results);
+    let cached: Map<string, number | FormulaError> | undefined;
+    return this.liftScalar(criterionArgs, (read, single) => {
+      const values = criterionArgs.map((_, index) => read(index));
+      if (single) return calculate(values);
+      // Repeated criterion tuples can share the sparse scan, including for array defaults.
+      const length = values.reduce<number>((total, value) => total + (typeof value === 'string' ? value.length : 0), 0);
+      const key = length <= 1024 && values.every(value => typeof value !== 'number' || Number.isFinite(value))
+        ? JSON.stringify(values) : undefined;
+      if (key === undefined) return calculate(values);
+      const cache = cached ??= new Map();
+      let result = cache.get(key);
+      if (result === undefined) {
+        result = captureError(() => calculate(values));
+        if (key.length <= 1024 && cache.size < 256) cache.set(key, result);
+      }
+      if (result instanceof FormulaError) throw result;
+      return result;
+    });
+  }
+
+  private conditionalAggregateResult(name: string, criteria: FormulaCriterion[], results?: Reference): number {
+    const first = criteria[0].range;
     const matches = (r: number, c: number, before = criteria.length, skip = -1) => {
       for (let i = 0; i < before; i++) {
         if (i === skip) continue;
@@ -2292,7 +2642,7 @@ export class FormulaReader {
           if (clause.matches(value) && matches(row - clause.range.firstRow, column - clause.range.firstColumn, criteria.length, pivot)) count++;
         });
       } else {
-        count = (rows + 1) * (columns + 1);
+        count = (first.lastRow - first.firstRow + 1) * (first.lastColumn - first.firstColumn + 1);
         // Blank positions already match. Subtract an occupied position only at its first failing criterion.
         criteria.forEach((clause, i) => this.visitCells(clause.range, (value, row, column) => {
           if (!clause.matches(value) && matches(row - clause.range.firstRow, column - clause.range.firstColumn, i)) count--;
@@ -2327,19 +2677,25 @@ export class FormulaReader {
   }
 
   private aggregate(name: string): Scalar {
-    return aggregateValues(name, add => {
-      if (this.peek() !== ')') {
-        do {
-          const reference = this.referenceArgument();
-          const operand = reference === undefined ? this.expression() : reference;
-          if (isArray(operand)) visitFormulaArray(operand, (value, weight) => add(value, true, weight));
-          else if (operand !== undefined && isReference(operand)) {
-            for (const area of operand.areas) this.visitReferenceValues(area, (value, weight) => add(value, true, weight));
-          } else add(scalar(operand), false);
-        } while (this.peek() === ',' && this.take());
-      }
-      this.expect(')');
-    });
+    const squares = name === 'SUMSQ';
+    if (squares && this.peek() === ')') throw new FormulaError('#VALUE!');
+    const previous = this.arrayContext;
+    this.arrayContext ||= squares || statisticalAggregateModes.has(name);
+    try {
+      return aggregateValues(name, add => {
+        if (this.peek() !== ')') {
+          do {
+            const reference = this.referenceArgument();
+            const operand = reference === undefined ? this.expression() : reference;
+            if (isArray(operand)) visitFormulaArray(operand, (value, weight) => add(value, true, weight));
+            else if (operand !== undefined && isReference(operand)) {
+              for (const area of operand.areas) this.visitReferenceValues(area, (value, weight) => add(value, true, weight));
+            } else add(scalar(operand), false);
+          } while (this.peek() === ',' && this.take());
+        }
+        this.expect(')');
+      });
+    } finally { this.arrayContext = previous; }
   }
 
   private visitReferenceValues(range: Reference, visit: (value: RangeValue, weight: number) => void): void {
@@ -2348,7 +2704,9 @@ export class FormulaReader {
     else this.visitCells(range, value => visit(value, 1));
   }
 
-  private conditional(name: string): Value {
+  private conditional(name: 'IF'): FormulaOperand;
+  private conditional(name: 'IFERROR' | 'IFNA'): Value;
+  private conditional(name: string): FormulaOperand | undefined {
     const args = this.arguments();
     if (args.some(([first, last]) => first === last)) throw new Error('Missing formula argument.');
     const evaluate = (span: Argument) => this.argument(span, () => this.expression());
@@ -2362,8 +2720,8 @@ export class FormulaReader {
         return elementwise([condition, branch(args[1]), args[2] ? branch(args[2]) : false],
           read => logical(read(0)) ? read(1) : read(2));
       }
-      if (logical(scalar(condition))) return evaluate(args[1]);
-      return args[2] ? evaluate(args[2]) : false;
+      const selected = logical(scalar(condition)) ? args[1] : args[2];
+      return selected ? this.operandArgument(selected) : false;
     }
     if ((name === 'IFERROR' || name === 'IFNA') && args.length === 2) {
       const catches = (error: unknown) => error instanceof FormulaError &&
@@ -2393,22 +2751,47 @@ export class FormulaReader {
     throw new Error('Invalid conditional arguments.');
   }
 
-  private orderedConditional(hasSelector: boolean): Value {
+  private orderedConditional(hasSelector: boolean): FormulaOperand {
     const args = this.arguments();
     const first = hasSelector ? 1 : 0;
     const pairEnd = args.length - ((args.length - first) % 2);
     if (pairEnd < first + 2 || args.length > 254 || (!hasSelector && pairEnd !== args.length) ||
       args.some(([start, end]) => start === end)) throw new FormulaError('#VALUE!');
 
-    return this.liftScalar(args, read => {
+    const pick = (read: (index: number) => Scalar) => {
       const selector = hasSelector ? read(0) : null;
       for (let index = first; index < pairEnd; index += 2) {
         const test = read(index);
-        if (hasSelector ? compareFormulaValues(selector, test, '=') : logical(test)) return read(index + 1) ?? 0;
+        if (hasSelector ? compareFormulaValues(selector, test, '=') : logical(test)) return index + 1;
       }
-      if (pairEnd < args.length) return read(pairEnd) ?? 0;
+      if (pairEnd < args.length) return pairEnd;
       throw new FormulaError('#N/A');
+    };
+    const operands = args.map(span => captureError(() => this.arrayOperand(span)));
+    const values = operands.map(operand => {
+      if (operand instanceof FormulaError) return asArray(operand);
+      const value = captureError(() => isReference(operand) ? this.arrayReference(operand)
+        : isArray(operand) ? operand : scalar(operand));
+      return value instanceof FormulaError ? asArray(value) : value;
     });
+    const matrix = (value: Scalar | FormulaArray): value is FormulaArray => isArray(value) && value.rows * value.columns > 1;
+    const matrices = values.filter(matrix);
+    if (!matrices.length) {
+      const index = pick(i => scalar(values[i])), operand = operands[index];
+      return !(operand instanceof FormulaError) && isReference(operand) ? operand : scalar(values[index]) ?? 0;
+    }
+    const arrayTest = values.some((value, index) =>
+      (index < first || (index < pairEnd && (index - first) % 2 === 0)) && matrix(value));
+    if (!arrayTest) {
+      const index = captureError(() => pick(i => scalar(values[i])));
+      if (typeof index === 'number') {
+        const operand = operands[index], value = values[index];
+        // Keep the selected reference when no other argument expands its result shape.
+        if (!(operand instanceof FormulaError) && isReference(operand) && isArray(value) &&
+          matrices.every(array => array.rows <= value.rows && array.columns <= value.columns)) return operand;
+      }
+    }
+    return elementwise(values, read => read(pick(read)) ?? 0);
   }
 
   private arguments(): Argument[] {
@@ -2439,15 +2822,9 @@ export class FormulaReader {
   }
 
   private referenceArgument(definition = false): FormulaOperand | undefined {
-    let at = this.index, parentheses = 0;
-    let ref = this.referenceAt(at);
-    if (!ref && this.tokens[at] === '(') {
-      while (at < this.end && this.tokens[at] === '(') { at++; parentheses++; }
-      ref = this.referenceAt(at);
-    }
+    const ref = this.referenceAt(this.index);
     if (!ref) return undefined;
-    at = ref.end;
-    while (parentheses-- > 0) if (this.tokens[at++] !== ')') return undefined;
+    const at = ref.end;
     if (at > this.end || (at === this.end ? !definition : this.tokens[at] !== ',' && this.tokens[at] !== ')')) return undefined;
     this.index = at;
     return this.referenceValue(ref);
@@ -2475,23 +2852,36 @@ export class FormulaReader {
   }
 
   private referenceTargetValue(target: ReferenceTarget, indirect: boolean): FormulaOperand {
+    if ('union' in target) return this.nested(() => this.arrayOperand(target.union));
+    if ('intersection' in target) return this.referenceIntersection(target.intersection);
     if ('call' in target) {
       return this.argument(target.span, () => this.nested(() => {
         if (target.call === 'INDEX') return this.indexReference();
         if (target.call === 'XLOOKUP') return this.xlookup();
+        if (target.call === 'CHOOSE') return this.chooseValue();
+        if (target.call === 'IF') {
+          const previous = this.spillArrayContext;
+          this.spillArrayContext = true;
+          try { return this.conditional('IF'); }
+          finally { this.spillArrayContext = previous; }
+        }
+        if (target.call === 'IFS' || target.call === 'SWITCH') return this.orderedConditional(target.call === 'SWITCH');
         if (target.call === 'TRIMRANGE' || trimReferences.has(target.call)) return this.trimRange(trimReferences.get(target.call));
         return target.call === 'OFFSET' ? this.offset() : this.indirect();
       }));
     }
     if ('endpoints' in target) {
       const [left, right] = target.endpoints.map(ref => this.referenceValue(ref));
-      if (!isReference(left) || !isReference(right) || left.areas.length !== 1 || right.areas.length !== 1
-        || left.threeDimensional || right.threeDimensional) throw new FormulaError('#VALUE!');
-      const [a] = left.areas, [b] = right.areas;
-      const sheet = (ref: Reference) => this.resolveSheetName?.(ref.sheet) ?? ref.sheet;
-      if (sheet(a) !== sheet(b)) throw new FormulaError('#REF!');
-      return { areas: [{ sheet: a.sheet, firstRow: Math.min(a.firstRow, b.firstRow), lastRow: Math.max(a.lastRow, b.lastRow),
-        firstColumn: Math.min(a.firstColumn, b.firstColumn), lastColumn: Math.max(a.lastColumn, b.lastColumn) }], isRange: true };
+      if (!isReference(left) || !isReference(right) || left.threeDimensional || right.threeDimensional) throw new FormulaError('#VALUE!');
+      const area = { ...left.areas[0] }, sheet = this.resolveSheetName?.(area.sheet) ?? area.sheet;
+      for (const source of [left, right]) for (const other of source.areas) {
+        if ((this.resolveSheetName?.(other.sheet) ?? other.sheet) !== sheet) throw new FormulaError('#REF!');
+        area.firstRow = Math.min(area.firstRow, other.firstRow);
+        area.lastRow = Math.max(area.lastRow, other.lastRow);
+        area.firstColumn = Math.min(area.firstColumn, other.firstColumn);
+        area.lastColumn = Math.max(area.lastColumn, other.lastColumn);
+      }
+      return { areas: [area], isRange: true };
     }
     if ('specifier' in target) {
       const source = this.lookupTable?.(target.table, target.sheet);
@@ -2519,37 +2909,95 @@ export class FormulaReader {
     return value;
   }
 
-  private referenceAt(at: number, calculated = true): ParsedReference | undefined {
-    const wrapped = this.tokens[at + 1] === '(' && anchorArrayName.test(this.tokens[at]);
-    const call = calculated && !wrapped ? this.referenceCallAt(at) : undefined;
-    const ref = call ?? this.referenceTargetAt(wrapped ? at + 2 : at, calculated && !wrapped);
-    if (!ref || ref.end >= this.end) return wrapped ? undefined : ref;
-    const next = this.tokens[ref.end];
-    if (wrapped && next !== ')') return undefined;
-    if (calculated && !wrapped && next === ':') {
-      const right = this.referenceCallAt(ref.end + 1) ?? this.referenceTargetAt(ref.end + 1);
-      if (right) return { target: { endpoints: [ref, right] }, end: right.end };
+  private referenceIntersection(parts: ParsedReference[]): ReferenceValue {
+    const readAreas = (ref: ParsedReference) => {
+      const value = this.referenceValue(ref);
+      if (!isReference(value) || value.threeDimensional) throw new FormulaError('#VALUE!');
+      return value.areas.map(area => ({ area, sheet: this.resolveSheetName?.(area.sheet) ?? area.sheet }));
+    };
+    let areas = readAreas(parts[0]), remaining = MAX_DENSE_ARRAY_SCAN;
+    for (let i = 1; i < parts.length; i++) {
+      const operand = readAreas(parts[i]);
+      const overlaps: typeof areas = [];
+      for (const { area: a, sheet } of areas) for (const { area: b, sheet: otherSheet } of operand) {
+        if (--remaining < 0) throw new FormulaCalculationLimit('Reference intersection exceeds the preview scan limit.');
+        if (sheet !== otherSheet) continue;
+        const firstRow = Math.max(a.firstRow, b.firstRow), lastRow = Math.min(a.lastRow, b.lastRow);
+        const firstColumn = Math.max(a.firstColumn, b.firstColumn), lastColumn = Math.min(a.lastColumn, b.lastColumn);
+        if (firstRow > lastRow || firstColumn > lastColumn) continue;
+        if (overlaps.length >= MAX_FORMULA_LENGTH) throw new FormulaCalculationLimit('Too many intersecting reference areas.');
+        overlaps.push({ sheet, area: { sheet: a.sheet, firstRow, lastRow, firstColumn, lastColumn } });
+      }
+      if (!overlaps.length) throw new FormulaError('#NULL!');
+      areas = overlaps;
     }
-    return wrapped || next === '#' ? { ...ref, end: ref.end + 1, spill: true } : ref;
+    const first = areas[0].area;
+    return { areas: areas.map(({ area }) => area),
+      isRange: areas.length > 1 || first.firstRow !== first.lastRow || first.firstColumn !== first.lastColumn };
   }
 
-  private referenceCallStart(at: number): number {
-    while (at < this.end && this.tokens[at] === '(') at++;
-    return at + 1 < this.end && this.tokens[at + 1] === '(' && referenceFunctionName.test(this.tokens[at]) ? at : -1;
+  private referenceAt(at: number, calculated = true, depth = 0): ParsedReference | undefined {
+    const first = this.referenceRangeAt(at, calculated, depth);
+    if (!first || !calculated || !this.tokens.spaces?.has(first.end)) return first;
+    let intersection: ParsedReference[] | undefined;
+    let end = first.end;
+    while (end < this.end && this.tokens.spaces.has(end)) {
+      const next = this.referenceRangeAt(end, true, depth);
+      if (!next) break;
+      (intersection ??= [first]).push(next);
+      end = next.end;
+    }
+    return intersection ? { target: { intersection }, end } : first;
+  }
+
+  private referenceRangeAt(at: number, calculated: boolean, depth: number): ParsedReference | undefined {
+    const left = this.referenceTermAt(at, calculated, depth);
+    if (!left || !calculated || left.end >= this.end || this.tokens[left.end] !== ':') return left;
+    const right = this.referenceTermAt(left.end + 1, true, depth);
+    return right ? { target: { endpoints: [left, right] }, end: right.end } : left;
+  }
+
+  private referenceTermAt(at: number, calculated: boolean, depth: number): ParsedReference | undefined {
+    if (at >= this.end) return undefined;
+    if (depth >= MAX_NESTING) throw new Error('Formula nesting exceeds the preview limit.');
+    const token = this.tokens[at], opening = at + 1 < this.end && this.tokens[at + 1] === '(';
+    let ref: ParsedReference | undefined;
+    if (opening && anchorArrayName.test(token)) {
+      const anchor = this.referenceAt(at + 2, calculated, depth + 1);
+      if (!anchor || anchor.end >= this.end || this.tokens[anchor.end] !== ')') return undefined;
+      ref = { ...anchor, end: anchor.end + 1, spill: true };
+    } else if (calculated && token === '(') {
+      const inner = this.referenceAt(at + 1, true, depth + 1);
+      if (inner && inner.end < this.end && this.tokens[inner.end] === ')') ref = { ...inner, end: inner.end + 1 };
+      else ref = this.referenceUnionAt(at);
+    } else {
+      ref = calculated && opening ? this.referenceCallAt(at) : undefined;
+      if (!ref && (!opening || !formulaName.test(token) || (cellRef.test(token) && this.tokens.spaces?.has(at + 1)))) {
+        ref = this.referenceTargetAt(at, calculated);
+      }
+    }
+    return ref && ref.end < this.end && this.tokens[ref.end] === '#' ? { ...ref, end: ref.end + 1, spill: true } : ref;
+  }
+
+  private referenceUnionAt(at: number): ParsedReference | undefined {
+    let depth = 0, union = false;
+    for (let end = at + 1; end < this.end; end++) {
+      const token = this.tokens[end];
+      if (token === ')' && !depth) return union ? { target: { union: [at + 1, end] }, end: end + 1 } : undefined;
+      if (token === '(' || token === '{') depth++;
+      else if (token === ')' || token === '}') depth--;
+      else if (token === ',' && !depth) union = true;
+    }
   }
 
   private referenceCallAt(at: number): ParsedReference | undefined {
-    const start = this.referenceCallStart(at);
-    if (start < 0) return undefined;
-    for (let close = start + 2, depth = 1; close < this.end; close++) {
+    const match = referenceFunctionName.exec(this.tokens[at]);
+    if (!match) return undefined;
+    for (let close = at + 2, depth = 1; close < this.end; close++) {
       const token = this.tokens[close];
       if (token === '(') depth++;
       else if (token === ')' && --depth === 0) {
-        const end = close + 1 + start - at;
-        if (end > this.end) return undefined;
-        for (let i = close + 1; i < end; i++) if (this.tokens[i] !== ')') return undefined;
-        const call = referenceFunctionName.exec(this.tokens[start])![1].toUpperCase();
-        return { target: { call, span: [start + 2, close + 1] }, end };
+        return { target: { call: match[1].toUpperCase(), span: [at + 2, close + 1] }, end: close + 1 };
       }
     }
   }
@@ -2586,8 +3034,10 @@ export class FormulaReader {
     const localEndpoint = calculated && next === ':' && this.letBindings && !(columnRef.test(first) && columnRef.test(right))
       && (this.letBindings.has(bindingName(right)) || (sheet === undefined && this.letBindings.has(bindingName(first))));
     const trimMode = trimOperators.get(next);
-    const isRange = at + 1 < this.end && (trimMode !== undefined || (next === ':' && (!calculated
-      || (!localEndpoint && this.referenceCallStart(at + 2) < 0))));
+    const calculatedEndpoint = right === '(' || (this.tokens[at + 3] === '(' &&
+      (anchorArrayName.test(right) || referenceFunctionName.test(right)));
+    const isRange = at + 1 < this.end && (trimMode !== undefined ||
+      (next === ':' && (!calculated || (!localEndpoint && !calculatedEndpoint))));
     let end = at + 1, last = first;
     if (isRange) {
       end++;
@@ -2772,7 +3222,7 @@ function blankToZero(array: FormulaArray, position?: number): Scalar {
   return array.read(position) ?? 0;
 }
 
-function checkType(name: string, input: RangeValue): boolean {
+function checkType(name: string, input: RangeValue): boolean | number {
   const value = typeof input === 'number' && !Number.isFinite(input) ? new FormulaError('#NUM!') : input;
   switch (name) {
     case 'ISBLANK': return value === null;
@@ -2782,6 +3232,15 @@ function checkType(name: string, input: RangeValue): boolean {
     case 'ISNONTEXT': return typeof value !== 'string';
     case 'ISNA': return value instanceof FormulaError && value.message.toUpperCase() === '#N/A';
     case 'ISERR': return value instanceof FormulaError && value.message.toUpperCase() !== '#N/A';
+    case 'ERROR.TYPE': {
+      if (value instanceof FormulaError) {
+        const code = value.message.toUpperCase();
+        if (code === '#GETTING_DATA') return 8;
+        const index = classicErrors.indexOf(code);
+        if (index >= 0) return index + 1;
+      }
+      throw new FormulaError('#N/A');
+    }
     default: return value instanceof FormulaError;
   }
 }
@@ -2908,7 +3367,7 @@ function sortFormulaArray(source: FormulaArray, byRow: boolean, inputs: readonly
   return mapFormulaArray(reorderArray(source, byRow, ordered, leading), blankToZero);
 }
 
-function elementwise(values: Value[], evaluate: (read: (index: number) => Scalar) => Scalar): Value {
+function elementwise(values: Value[], evaluate: (read: (index: number) => Scalar) => Scalar): Scalar | FormulaArray {
   const arrays = values.filter(isArray);
   if (!arrays.length) return evaluate(index => scalar(values[index]));
   let rows = 1, columns = 1;
@@ -2935,6 +3394,20 @@ function elementwise(values: Value[], evaluate: (read: (index: number) => Scalar
 }
 
 function aggregateValues(name: string, feed: (add: (value: RangeValue, fromReference: boolean, weight?: number) => void) => void): Scalar {
+  const mode = statisticalAggregateModes.get(name);
+  if (mode !== undefined) {
+    const stats = numericSummary(mode), includeTextAndLogicals = name.endsWith('A');
+    feed((value, fromReference, weight) => {
+      if (value === null) return;
+      if (fromReference && includeTextAndLogicals && typeof value === 'string') stats.add(0, weight);
+      else if (!(value instanceof FormulaError) && (!fromReference || (includeTextAndLogicals && typeof value === 'boolean'))) {
+        stats.add(number(value), weight);
+      } else stats.add(value, weight);
+    });
+    const result = stats.result();
+    if (!Number.isFinite(result)) throw new FormulaError('#NUM!');
+    return result;
+  }
   let sum = 0, product = 1, count = 0, min = Infinity, max = -Infinity, length = 0;
   let anyTrue = false, anyFalse = false;
   const strings: string[] = [];
@@ -2963,6 +3436,7 @@ function aggregateValues(name: string, feed: (add: (value: RangeValue, fromRefer
     const n = typeof value === 'number' ? value : number(value);
     count += weight;
     if (name === 'SUM' || name === 'AVERAGE') sum += n * weight;
+    else if (name === 'SUMSQ') sum += n * weight * n;
     else if (name === 'PRODUCT') product *= n ** weight;
     else if (name === 'MIN') min = Math.min(min, n);
     else if (name === 'MAX') max = Math.max(max, n);
@@ -2980,12 +3454,16 @@ function aggregateValues(name: string, feed: (add: (value: RangeValue, fromRefer
     case 'AVERAGE':
       if (!count) throw new FormulaError('#DIV/0!');
       return sum / count;
+    case 'SUMSQ':
+      if (!Number.isFinite(sum)) throw new FormulaError('#NUM!');
+      return sum;
     default: return sum;
   }
 }
 
 function numericSummary(mode: number, ignoreErrors = false) {
-  let count = 0, sum = 0, product = 1, min = Infinity, max = -Infinity, mean = 0, deviation = 0;
+  let count = 0, sum = 0, product = 1, min = Infinity, max = -Infinity;
+  let scale = 0, center = 0, mean = 0, squaredDistance = 0;
   const values = mode >= 12 ? [] as number[] : undefined;
   const gaps = values ? new Map<number, number>() : undefined;
   let readRank: ((rank: number) => number) | undefined;
@@ -2994,6 +3472,9 @@ function numericSummary(mode: number, ignoreErrors = false) {
     return readRank(rank);
   };
   return {
+    get count() { return count; },
+    get storedValues() { return (values?.length ?? 0) + (gaps?.size ?? 0); },
+    rankValue,
     add(value: RangeValue, weight = 1) {
       if (value === null) return;
       if (typeof value === 'number' && !Number.isFinite(value)) value = new FormulaError('#NUM!');
@@ -3013,9 +3494,21 @@ function numericSummary(mode: number, ignoreErrors = false) {
       else if (mode === 5) min = Math.min(min, value);
       else if (mode === 6) product *= value ** weight;
       else if (mode >= 7) {
-        const delta = value - mean;
-        mean += weight === 1 ? delta / count : delta * (weight / count);
-        deviation += delta * (value - mean) * weight;
+        // Center near the observations and scale by powers of two before squaring.
+        const magnitude = Math.abs(value);
+        if (magnitude && (!scale || magnitude / 2 >= scale)) {
+          const next = 2 ** Math.min(1023, Math.floor(Math.log2(magnitude)));
+          const factor = scale / next;
+          center *= factor;
+          mean *= factor;
+          squaredDistance *= factor * factor;
+          scale = next;
+        }
+        const normalized = scale ? value / scale : 0;
+        if (count === weight) center = normalized;
+        const delta = normalized - center - mean;
+        mean += delta * (weight / count);
+        squaredDistance += delta * delta * ((count - weight) / count * weight);
       }
     },
     result(parameter = 0) {
@@ -3028,10 +3521,25 @@ function numericSummary(mode: number, ignoreErrors = false) {
       const sample = mode === 7 || mode === 10;
       if (count <= Number(sample)) throw new FormulaError('#DIV/0!');
       if (mode === 1) return sum / count;
-      const variance = Math.max(0, deviation / (count - Number(sample)));
-      return mode <= 8 ? Math.sqrt(variance) : variance;
+      const variance = squaredDistance / (count - Number(sample));
+      return mode <= 8 ? Math.sqrt(variance) * scale : variance * scale * scale;
     }
   };
+}
+
+function percentageRank(count: number, at: (rank: number) => number, first: number, value: number, digits: number, exclusive: boolean): number {
+  if (!count || digits < 1) throw new FormulaError('#NUM!');
+  if (first === count) throw new FormulaError('#N/A');
+  const upper = at(first);
+  let rank = first;
+  if (value !== upper) {
+    if (!first) throw new FormulaError('#N/A');
+    const lower = at(first - 1), span = upper - lower;
+    const fraction = Number.isFinite(span) ? (value - lower) / span : (value / 2 - lower / 2) / (upper / 2 - lower / 2);
+    rank = first - 1 + fraction;
+  }
+  if (count === 1) return 1;
+  return round('ROUNDDOWN', exclusive ? (rank + 1) / (count + 1) : rank / (count - 1), digits);
 }
 
 function orderedSummary(mode: number, values: number[], gaps: Map<number, number>, count: number, parameter: number,
@@ -3064,8 +3572,12 @@ function orderedSummary(mode: number, values: number[], gaps: Map<number, number
     rank = k < 1 || k > count ? -1 : mode === 14 ? count - k : k - 1;
   } else {
     const fraction = mode === 12 ? 0.5 : mode === 17 || mode === 19 ? Math.floor(parameter) / 4 : parameter;
-    const exclusive = mode >= 18;
-    rank = fraction < 0 || fraction > 1 ? -1 : exclusive ? fraction * (count + 1) - 1 : fraction * (count - 1);
+    if (mode >= 18) {
+      const intervals = count + 1;
+      // A valid endpoint can multiply to just below 1 or just above count.
+      rank = fraction >= 1 / intervals && fraction <= count / intervals
+        ? Math.max(0, Math.min(count - 1, fraction * intervals - 1)) : -1;
+    } else rank = fraction < 0 || fraction > 1 ? -1 : fraction * (count - 1);
   }
   if (!count || !(rank >= 0 && rank <= count - 1)) throw new FormulaError('#NUM!');
   const first = Math.floor(rank), offset = rank - first;
@@ -3076,7 +3588,8 @@ function numericText(value: string): boolean {
   return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim());
 }
 
-const criteriaErrors = ['#NULL!', '#DIV/0!', '#VALUE!', '#REF!', '#NAME?', '#NUM!', '#N/A', '#SPILL!', '#CALC!'];
+const classicErrors = ['#NULL!', '#DIV/0!', '#VALUE!', '#REF!', '#NAME?', '#NUM!', '#N/A'];
+const criteriaErrors = [...classicErrors, '#SPILL!', '#CALC!'];
 
 function formulaCriterion(criterion: Scalar, blankAsZero: boolean): (value: RangeValue) => boolean {
   const source = typeof criterion === 'string' ? criterion : undefined;
@@ -3235,14 +3748,19 @@ function round(name: string, value: number, places: number): number {
   return Math.sign(value) * Number(rounded + 'e' + (Number(shift) - digits));
 }
 
-function tokenizeFormula(source: string): string[] {
+function tokenizeFormula(source: string, positions?: number[]): FormulaTokens {
   if (source.length > MAX_FORMULA_LENGTH) throw new Error('Formula exceeds the preview length limit.');
   const formula = source.trim().replace(/^=/, '').trim();
-  const tokens: string[] = [];
-  const pattern = /\s*("(?:[^"]|"")*"|'(?:[^']|'')*'|\[|#(?:DIV\/0!|N\/A|NAME\?|NULL!|NUM!|REF!|VALUE!|SPILL!|CALC!)|(?:\d+(?:\.(?!:)\d*)?|\.\d+)(?:E[+-]?\d+)?|\$?[A-Z]+\$?\d+(?![\p{L}\p{M}\p{N}_]|\.(?!:))|\$[A-Z]+|\$\d+|[\p{L}_\\](?:[\p{L}\p{M}\p{N}_]|\.(?!:))*|\.:\.?|:\.|<>|<=|>=|[(){};+\-*/^,:!&%=<>#])/iyu;
+  const offset = positions ? source.indexOf(formula) : 0;
+  const tokens: FormulaTokens = [];
+  const pattern = /\s*("(?:[^"]|"")*"|'(?:[^']|'')*'|\[|#(?:DIV\/0!|N\/A|NAME\?|NULL!|NUM!|REF!|VALUE!|SPILL!|CALC!|GETTING_DATA)|(?:\d+(?:\.(?!:)\d*)?|\.\d+)(?:E[+-]?\d+)?|\$?[A-Z]+\$?\d+(?![\p{L}\p{M}\p{N}_]|\.(?!:))|\$[A-Z]+|\$\d+|[\p{L}_\\](?:[\p{L}\p{M}\p{N}_]|\.(?!:))*|\.:\.?|:\.|<>|<=|>=|[(){};+\-*/^,:!&%=<>#@])/iyu;
   while (pattern.lastIndex < formula.length) {
     const match = pattern.exec(formula);
     if (!match) throw new Error('Unsupported formula token.');
+    positions?.push(offset + pattern.lastIndex - match[1].length);
+    if (match[0].length > match[1].length && match[0].slice(0, -match[1].length).includes(' ')) {
+      (tokens.spaces ??= new Set()).add(tokens.length);
+    }
     if (match[1] === '[') {
       const start = pattern.lastIndex - 1, end = structuredBracketEnd(formula, start);
       if (end === undefined) throw new Error('Unclosed table reference.');

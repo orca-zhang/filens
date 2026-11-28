@@ -70,6 +70,60 @@ export function excelWeekday(day: number, date1904?: boolean): number {
   return (day + (date1904 ? 5 : 6)) % 7;
 }
 
+export function excelWeekStart(returnType: number): number | undefined {
+  if (returnType === 1 || returnType === 17) return 0;
+  if (returnType === 2) return 1;
+  if (returnType >= 11 && returnType <= 16) return returnType - 10;
+}
+
+export function excelWeekNumber(day: number, start: number | 'iso', date1904?: boolean): number {
+  // An ISO week belongs to the calendar year of its Thursday.
+  const weekDate = start === 'iso' ? day + 3 - (excelWeekday(day, date1904) + 6) % 7 : day;
+  const { year } = excelDateParts(weekDate, date1904);
+  const january1 = excelSerialFromTimestamp(Date.UTC(year, 0, 1), date1904);
+  const leadingDays = start === 'iso' ? 0 : (excelWeekday(january1, date1904) - start + 7) % 7;
+  return Math.floor((weekDate - january1 + leadingDays) / 7) + 1;
+}
+
+function excelLeapYear(year: number): boolean {
+  return year === 1900 || (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+}
+
+export function excelDays360(first: number, last: number, method: 'us' | 'european' | 'yearfrac', date1904?: boolean): number {
+  const start = excelDateParts(first, date1904), end = excelDateParts(last, date1904);
+  let startDay = Math.min(start.day, 30), endDay = end.day;
+  if (method === 'european') endDay = Math.min(endDay, 30);
+  else {
+    const februaryEnd = start.month === 2 && start.day === (excelLeapYear(start.year) ? 29 : 28);
+    if (februaryEnd) startDay = 30;
+    if (method === 'yearfrac' && februaryEnd) {
+      // YEARFRAC basis 0 keeps a 31st after a February month-end start.
+      if (end.month === 2 && endDay === (excelLeapYear(end.year) ? 29 : 28)) endDay = 30;
+    } else if (endDay === 31 && startDay === 30) endDay = 30;
+  }
+  return (end.year - start.year) * 360 + (end.month - start.month) * 30 + endDay - startDay;
+}
+
+export function excelYearFraction(first: number, last: number, basis: number, date1904?: boolean): number {
+  if (first === last) return 0;
+  const startDay = Math.min(first, last), endDay = Math.max(first, last);
+  const days = endDay - startDay;
+  if (basis === 0 || basis === 4) return excelDays360(startDay, endDay, basis === 0 ? 'yearfrac' : 'european', date1904) / 360;
+  if (basis === 2 || basis === 3) return days / (basis === 2 ? 360 : 365);
+
+  const start = excelDateParts(startDay, date1904), end = excelDateParts(endDay, date1904);
+  const years = end.year - start.year;
+  if (years > 1 || (years === 1 && (end.month > start.month || (end.month === start.month && end.day > start.day)))) {
+    // Use the average length of all calendar years touched by the interval.
+    const firstJanuary = excelSerialFromTimestamp(Date.UTC(start.year, 0, 1), date1904);
+    const lastJanuary = excelSerialFromTimestamp(Date.UTC(end.year + 1, 0, 1), date1904);
+    return days / ((lastJanuary - firstJanuary) / (years + 1));
+  }
+  const leap = (excelLeapYear(start.year) && (years === 0 || start.month <= 2))
+    || (excelLeapYear(end.year) && (end.month > 2 || (end.month === 2 && end.day === 29)));
+  return days / (leap ? 366 : 365);
+}
+
 export function countExcelWorkingDays(first: number, last: number, weekend: number, date1904?: boolean): number {
   if (first > last) return 0;
   const length = last - first + 1, weeks = Math.floor(length / 7), remainder = length % 7;

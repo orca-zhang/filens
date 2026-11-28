@@ -7,7 +7,8 @@ import { withFormulaTime } from '../src/formula-clock';
 import { loadXlsxWorkbook } from '../src/parser';
 import type { ParsedSheet } from '../src/types';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
-import { createConditionalStatisticsWorkbook, createSpillConditionalStatisticsWorkbook } from './fixtures/conditional-statistics-workbook.mjs';
+import { createConditionalStatisticsWorkbook, createDeviationCutoffWorkbook, createSpillConditionalStatisticsWorkbook,
+  createWeightedDeviationCutoffWorkbook } from './fixtures/conditional-statistics-workbook.mjs';
 
 function formatsIn(sheet: ParsedSheet) {
   const format = conditionalFormattingWindow(sheet, 1, 15, 1, 9)!;
@@ -45,6 +46,68 @@ describe('XLSX range statistics', () => {
     expect(format(2, 7)).toEqual({ bold: true });
     expect(format(3, 7)).toMatchObject({ fill: { color: '#FFCDD2' }, bold: true });
     expect(format(3, 8)).toEqual({ bold: true });
+  });
+
+  it('applies signed deviations to base above-average and Office 2010 below-average rules', async () => {
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await createConditionalStatisticsWorkbook());
+    const format = formatsIn(sheet);
+    expect(format(1, 5)).toEqual({ italic: true });
+    const above = { bold: true, fill: { type: 'solid', color: '#DCFCE7' } };
+    expect(format(2, 5)).toEqual({ ...above, italic: true });
+    expect(format(3, 5)).toEqual(above);
+    expect(format(1048576, 16384)).toMatchObject({ italic: true, bold: true, fill: { color: '#FFCDD2' } });
+  });
+
+  it('distinguishes equality and adjacent binary64 numbers at deviation cutoffs', async () => {
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await createDeviationCutoffWorkbook());
+    const format = formatsIn(sheet);
+    expect(format(2, 1)).toEqual({ italic: true });
+    expect(format(2, 2)).toEqual({ bold: true });
+    expect(format(3, 1)).toBeUndefined();
+    expect(format(3, 2)).toBeUndefined();
+    expect(format(3, 3)).toBeUndefined();
+    expect(format(6, 3)?.fill?.color).toBe('#FFCDD2');
+    expect(format(3, 4)?.fill?.color).toBe('#FFCDD2');
+    expect(format(6, 4)).toBeUndefined();
+    expect(format(1048576, 16384)).toBeUndefined();
+  });
+
+  it('refreshes a deviation cutoff when an offscreen date formula changes', async () => {
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await createDeviationCutoffWorkbook({ volatileCutoff: true }));
+    const format = formatsIn(sheet);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(2024, 0, 1));
+      expect(format(1048576, 16384)).toBeUndefined();
+      vi.setSystemTime(new Date(2024, 0, 2));
+      expect(format(3, 1)).toEqual({ italic: true });
+      expect(format(1048576, 16384)?.fill?.color).toBe('#FFCDD2');
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('checks exact cutoff ties in a full-grid range without scanning individual spill cells', async () => {
+    const { sheets: [sheet] } = await loadXlsxWorkbook(await createWeightedDeviationCutoffWorkbook());
+    const index = vi.spyOn(WorksheetCellIndex.prototype, 'get');
+    try {
+      const format = conditionalFormattingWindow(sheet, 1, 15, 1, 9)!;
+      expect(format(1, 1, sheet.rows[0].cells[0])?.fill?.color).toBe('#DCFCE7');
+      const last = displaySpillCell(sheet, 1048576, 16384);
+      expect(last?.value).toBe('2');
+      expect(format(1048576, 16384, last)).toBeUndefined();
+      expect(index.mock.calls.length).toBeLessThan(200);
+    } finally { index.mockRestore(); }
+  });
+
+  it.each([
+    ['-2147483648', '+2147483647', [-2147483648, 2147483647]],
+    ['-2147483649', '2147483648', []],
+    ['-1.5', '--1', []]
+  ] as const)('validates signed 32-bit deviation attributes %s and %s', async (aboveDeviation, belowDeviation, expected) => {
+    const { sheets: [sheet], warnings } = await loadXlsxWorkbook(await createConditionalStatisticsWorkbook({ aboveDeviation, belowDeviation }));
+    const signed = sheet.conditionalRules!.flatMap(rule =>
+      rule.priority >= 18 && rule.condition.type === 'aboveAverage' ? [rule.condition.deviations] : []);
+    expect(signed).toEqual(expected);
+    expect(warnings).toEqual(expected.length ? [] : ['Ignored 2 invalid conditional formatting rules in sheet Statistics.']);
   });
 
   it('counts typed values, case-insensitive text and whole-cell wildcard matches', async () => {

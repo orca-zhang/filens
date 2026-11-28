@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { createConditionalStatisticsWorkbook, createSpillConditionalStatisticsWorkbook } from '../../../packages/xlsx/test/fixtures/conditional-statistics-workbook.mjs';
+import { createConditionalStatisticsWorkbook, createDeviationCutoffWorkbook, createSpillConditionalStatisticsWorkbook,
+  createWeightedDeviationCutoffWorkbook } from '../../../packages/xlsx/test/fixtures/conditional-statistics-workbook.mjs';
 
 test('applies range statistics before and after scrolling a sparse XLSX workbook', async ({ page }) => {
   const errors: string[] = [];
@@ -21,10 +22,19 @@ test('applies range statistics before and after scrolling a sparse XLSX workbook
   await expect(cell(2, 3)).toHaveCSS('font-weight', '700');
   await expect(cell(3, 4)).toHaveCSS('background-color', red);
   await expect(cell(5, 4)).toHaveCSS('background-color', green);
+  await expect(cell(1, 5)).toHaveCSS('font-style', 'italic');
+  await expect(cell(1, 5)).toHaveCSS('font-weight', '400');
+  await expect(cell(2, 5)).toHaveCSS('background-color', green);
+  await expect(cell(2, 5)).toHaveCSS('font-style', 'italic');
+  await expect(cell(2, 5)).toHaveCSS('font-weight', '700');
+  await expect(cell(3, 5)).toHaveCSS('font-style', 'normal');
+  await expect(cell(3, 5)).toHaveCSS('font-weight', '700');
   await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
   const last = cell(1048576, 16384);
   await expect(last).toHaveText('50');
   await expect(last).toHaveCSS('background-color', red);
+  await expect(last).toHaveCSS('font-style', 'italic');
+  await expect(last).toHaveCSS('font-weight', '700');
   await expect(last).toBeInViewport();
   expect(await grid.locator('.xlsxv-cell').count()).toBeLessThanOrEqual(2400);
   expect(errors).toEqual([]);
@@ -58,3 +68,35 @@ test('applies percentile and frequency rules to sparse XLSX spills before and af
   await expect(last).toBeInViewport();
   expect(await grid.locator('.xlsxv-cell').count()).toBeLessThanOrEqual(2400);
 });
+
+for (const [name, createWorkbook] of [
+  ['ordinary cells', createDeviationCutoffWorkbook], ['weighted spills', createWeightedDeviationCutoffWorkbook]
+] as const) {
+  test(`keeps exact standard-deviation cutoff ties unformatted for ${name}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 720 });
+    await page.goto('./?view=preview&lang=en');
+    await page.locator('.wb-upload input[type=file]').setInputFiles({ name: 'deviation-cutoff.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await createWorkbook()) });
+    const grid = page.locator('.xlsxv-grid');
+    const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+    if (name === 'ordinary cells') {
+      const clear = 'rgba(0, 0, 0, 0)', red = 'rgb(255, 205, 210)';
+      await expect(cell(2, 1)).toHaveCSS('font-style', 'italic');
+      await expect(cell(2, 2)).toHaveCSS('font-weight', '700');
+      await expect(cell(3, 1)).toHaveCSS('background-color', clear);
+      await expect(cell(3, 1)).toHaveCSS('font-style', 'normal');
+      await expect(cell(3, 2)).toHaveCSS('background-color', clear);
+      await expect(cell(3, 2)).toHaveCSS('font-weight', '400');
+      await expect(cell(6, 3)).toHaveCSS('background-color', red);
+      await expect(cell(3, 4)).toHaveCSS('background-color', red);
+      await expect(cell(6, 4)).toHaveCSS('background-color', clear);
+    } else await expect(cell(1, 1)).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+
+    await grid.evaluate(grid => { grid.scrollTop = grid.scrollHeight; grid.scrollLeft = grid.scrollWidth; });
+    const last = cell(1048576, 16384);
+    await expect(last).toHaveText(name === 'ordinary cells' ? '1' : '2');
+    await expect(last).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(last).toHaveCSS('font-style', 'normal');
+    await expect(last).toBeInViewport();
+  });
+}

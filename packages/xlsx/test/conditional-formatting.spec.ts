@@ -13,11 +13,13 @@ import { createRepeatedConditionalWorkbook } from './fixtures/repeated-condition
 const getCell = (sheet: ParsedSheet, row: number, column: number) => sheet.rows.find(entry => entry.index === row)?.cells.find(cell => cell.column === column);
 
 describe('XLSX conditional formatting', () => {
-  it.each([false, true])('streams large trailing conditional metadata with prefixed worksheet=%s', async prefixed => {
-    const source = await createRepeatedConditionalWorkbook(16_000, { prefixed, linkedBar: true });
+  it.each([[false, false], [true, false], [false, true], [true, true]])(
+    'batches trailing conditional metadata (prefixed=%s, separate groups=%s)', async (prefixed, separateGroups) => {
+    const source = await createRepeatedConditionalWorkbook(16_000, { prefixed, linkedBar: true, separateGroups });
     const zipEntries = await openZipArchive(source);
     const part = zipEntries.get('xl/worksheets/s1.xml')!;
-    const bytes = Buffer.from(await part.bytes());
+    const data = Buffer.from(await part.bytes());
+    const bytes = prefixed ? Buffer.from(data.toString().replace(/></g, '>\r\n<')) : data;
     const close = prefixed ? '</main:sheetData>' : '</sheetData>';
     const rowsEnd = bytes.indexOf(close) + close.length;
     expect(bytes.length - rowsEnd).toBeGreaterThan(512 * 1024);
@@ -35,11 +37,11 @@ describe('XLSX conditional formatting', () => {
     const parse = vi.spyOn(XMLParser.prototype, 'parse');
     let streamed;
     try {
-      streamed = await readXlsxWorkbook(source, { descriptor: { source }, zipEntries }, { onRows });
+      streamed = await readXlsxWorkbook(source, { descriptor: { source }, zipEntries, signal: new AbortController().signal }, { onRows });
       for (const tag of [prefixed ? 'main:cfRule' : 'cfRule', 'e:cfRule']) {
         const batches = parse.mock.calls.map(([xml]) => String(xml)).filter(xml => xml.includes(`<${tag} `)
-          && !xml.includes('<row ') && !xml.includes('<main:row ') && xml.length < 530_000);
-        expect(batches.length).toBeGreaterThan(1);
+          && xml.length > 10_000 && xml.length < 530_000);
+        expect(batches.length, tag).toBeGreaterThan(1);
       }
     } finally { parse.mockRestore(); }
     expect(read).not.toHaveBeenCalled();
@@ -58,10 +60,30 @@ describe('XLSX conditional formatting', () => {
     const [sheet] = streamed.sheets;
     expect(sheet.conditionalRules).toHaveLength(12);
     expect(sheet.conditionalRules?.at(-1)).toMatchObject({
-      activeFormula: 'A1>0', condition: { type: 'dataBar', gradient: false, direction: 'rightToLeft' }
+      activeFormula: 'A1>0', condition: { type: 'dataBar', gradient: false, rightToLeft: true }
     });
     expect(conditionalFormattingWindow(sheet, 1, 4, 1, 4)!(1_048_576, 16_384, sheet.rows.at(-1)?.cells[0]))
       .toMatchObject({ fill: { color: '#FFCDD2' }, numberFormat: '0.0', strike: true });
+  });
+
+  it.each([false, true])('stops parsing on replacement between conditional batches (separate groups=%s)', async separateGroups => {
+    const source = await createRepeatedConditionalWorkbook(16_000, { separateGroups });
+    const controller = new AbortController();
+    const original = XMLParser.prototype.parse;
+    let batches = 0;
+    const parse = vi.spyOn(XMLParser.prototype, 'parse').mockImplementation(function (this: XMLParser, xml, validation) {
+      const result = original.call(this, xml, validation);
+      if (typeof xml === 'string' && xml.length < 530_000 && xml.includes('<e:cfRule type="expression"')) {
+        batches++;
+        queueMicrotask(() => controller.abort());
+      }
+      return result;
+    });
+    try {
+      await expect(readXlsxWorkbook(source, { descriptor: { source }, signal: controller.signal }, {}))
+        .rejects.toMatchObject({ name: 'AbortError' });
+      expect(batches).toBe(1);
+    } finally { parse.mockRestore(); }
   });
 
   it.each([false, true])('folds duplicate base and Office 2010 rules in the preview model (streamed=%s)', async streamed => {

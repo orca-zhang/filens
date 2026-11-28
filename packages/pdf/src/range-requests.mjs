@@ -1,5 +1,5 @@
 // The PDF.js chunk manager coalesces readers of the same source range.
-export class PdfAttachmentRanges {
+export class PdfRangeRequests {
   flights = new Map();
 
   constructor(manager) {

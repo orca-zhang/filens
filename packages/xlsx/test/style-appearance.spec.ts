@@ -4,13 +4,66 @@ import { createSheetTable, SheetRowWindow } from '../src/table';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
 import { createDiagonalBorderWorkbook, createMergeBorderWorkbook, createStyledWorkbookFixture } from './fixtures/styled-workbook.mjs';
 import { createShrinkTextWorkbook } from './fixtures/shrink-text-workbook.mjs';
-import { createRotatedWorkbook, createTrailingRotatedOverflowWorkbook } from './fixtures/rotated-workbook.mjs';
+import { createRotatedJustificationWorkbook, createRotatedWorkbook, createTrailingRotatedOverflowWorkbook } from './fixtures/rotated-workbook.mjs';
 import { createCenterAcrossWorkbook } from './fixtures/center-across-workbook.mjs';
+import { createPathGradientWorkbook } from './fixtures/path-gradient-workbook.mjs';
+import { createHorizontalJustificationWorkbook } from './fixtures/horizontal-justification-workbook.mjs';
+import { createVerticalJustificationWorkbook } from './fixtures/vertical-justification-workbook.mjs';
+import { createReadingOrderWorkbook } from './fixtures/reading-order-workbook.mjs';
 
 beforeEach(() => { vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null); });
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
 
 describe('XLSX cell appearance', () => {
+  it('retains valid direct and inherited reading order through the workbook cache', async () => {
+    const { sheets: [sheet] } = clonePreviewWorkbook(await loadXlsxWorkbook(await createReadingOrderWorkbook()));
+    expect(sheet.cellStyles!.formats.slice(0, 6).map(style => style.readingOrder)).toEqual([undefined, 0, 1, 2, 2, undefined]);
+  });
+  it('keeps vertical-writing alignment and its last-line flag through the workbook cache', async () => {
+    const { sheets: [sheet] } = clonePreviewWorkbook(await loadXlsxWorkbook(await createRotatedJustificationWorkbook()));
+    const styles = sheet.cellStyles!.formats;
+    expect(styles[1]).toMatchObject({ textRotation: 90, verticalSpacing: 'distributed', wrap: true });
+    expect(styles[2]).toMatchObject({ textRotation: -90, verticalSpacing: 'distributed', wrap: true });
+    expect(styles[6]).toMatchObject({ textRotation: 255, verticalSpacing: 'justify', justifyLastLine: true, wrap: true });
+    expect(createSheetTable(sheet, 4).querySelector('.xlsxv-vertical-lines')?.textContent).toBe('Alpha beta');
+  });
+  it('retains vertical justification and inherited distributed alignment in the cached model', async () => {
+    const { sheets: [sheet] } = clonePreviewWorkbook(await loadXlsxWorkbook(await createVerticalJustificationWorkbook()));
+    expect(sheet.cellStyles!.formats[1]).toMatchObject({ verticalSpacing: 'justify', wrap: true });
+    expect(sheet.cellStyles!.formats[2]).toMatchObject({ verticalSpacing: 'distributed', wrap: true });
+    expect(sheet.cellStyles!.formats[3]).toMatchObject({ verticalSpacing: 'distributed', horizontal: 'distributed', wrap: true });
+    expect(sheet.cellStyles!.variableHeight).toBe(true);
+    const table = createSheetTable(sheet, 6);
+    expect(table.querySelector('.xlsxv-vertical-lines')?.textContent).toBe('First\nSecond\nThird');
+  });
+  it('retains horizontal justification and distributed wrapping in inherited and direct styles', async () => {
+    const { sheets: [sheet] } = clonePreviewWorkbook(await loadXlsxWorkbook(await createHorizontalJustificationWorkbook()));
+    const styles = sheet.cellStyles!.formats;
+    expect(styles[1]).toMatchObject({ horizontal: 'distributed', wrap: true });
+    expect(styles[2]).toMatchObject({ horizontal: 'justify', wrap: true });
+    expect(styles[3]).toMatchObject({ horizontal: 'distributed', wrap: true, indent: 2 });
+    expect(styles[4]).toMatchObject({ horizontal: 'justify', wrap: true, justifyLastLine: true });
+    expect(styles[5]).toMatchObject({ horizontal: 'distributed', wrap: true });
+    expect(sheet.cellStyles!.variableHeight).toBe(true);
+    const table = createSheetTable(sheet, 4);
+    const first = table.querySelector<HTMLTableCellElement>('tr[aria-rowindex="2"] td[aria-colindex="2"]')!;
+    expect(first.style.textAlign).toBe('justify');
+    expect(first.style.textAlignLast).toBe('justify');
+    expect(table.querySelector<HTMLTableCellElement>('tr[aria-rowindex="4"] td[aria-colindex="2"]')!.style.textAlign).toBe('center');
+  });
+  it('keeps rectangular gradient bounds in static, differential and inline extension fills', async () => {
+    const { sheets: [sheet] } = clonePreviewWorkbook(await loadXlsxWorkbook(await createPathGradientWorkbook()));
+    const frame = sheet.cellStyles!.formats[1].fill;
+    expect(frame?.pathRectangle).toEqual({ left: .2, right: .7, top: .25, bottom: .75 });
+    expect(sheet.cellStyles!.formats[2].fill?.pathRectangle).toEqual({ left: 0, right: 0, top: 0, bottom: 0 });
+    expect(sheet.conditionalRules?.map(rule => rule.style?.fill)).toEqual([
+      expect.objectContaining({ pathRectangle: { left: .3, right: .65, top: .28, bottom: .68 }, stops: [
+        { position: 0, color: '#FDE467' }, { position: .4, color: '#02AF89' }, { position: .6, color: '#02AF89' },
+        { position: 1, color: '#4F81BD' }
+      ] }), frame
+    ]);
+  });
+
   it('preserves center across alignment and typed blanks on both XML paths', async () => {
     const workbook = await loadXlsxWorkbook(await createCenterAcrossWorkbook({ numericOnly: true }));
     expect(await loadXlsxWorkbook(await createCenterAcrossWorkbook({ numericOnly: true, forceGeneral: true }))).toEqual(workbook);

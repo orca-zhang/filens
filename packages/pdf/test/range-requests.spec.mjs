@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PdfAttachmentRanges } from '../src/attachment-ranges.mjs';
+import { PdfRangeRequests } from '../src/range-requests.mjs';
 
 function rangeManager() {
   const requests = [];
@@ -25,10 +25,10 @@ function rangeManager() {
     }
     return reject;
   }
-  return { manager, requests, wait, ranges: new PdfAttachmentRanges(manager) };
+  return { manager, requests, wait, ranges: new PdfRangeRequests(manager) };
 }
 
-describe('PDF attachment range cancellation', () => {
+describe('PDF range cancellation', () => {
   it('keeps a shared transfer alive and allows a new request before the cancelled one settles', async () => {
     const { manager, requests, wait, ranges } = rangeManager();
     const reason = new Error('Read cancelled');

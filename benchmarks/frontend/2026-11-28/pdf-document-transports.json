@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS 26.6.2 arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "browser": "Chromium 159.0.8154.6",
+  "pdfjs": "5.4.624",
+  "fixture": {
+    "pages": 3,
+    "bytes": 9661,
+    "cycles": 32
+  },
+  "method": "Three fresh browser contexts per variant with alternating order. Both variants use the same PDF.js worker and file bytes. Each cycle opens the document, paints the first page, verifies its extracted text and awaits loading-task destruction. Chromium CDP forces garbage collection and counts live WorkerTransport objects by prototype after the first and last cycle. Heap bytes cover the main browser JavaScript realm, including the harness.",
+  "variants": {
+    "before": "Upstream PDF.js display module",
+    "after": "Same display module with the FiLens per-document page mapping transform"
+  },
+  "results": [
+    {
+      "variant": "before",
+      "run": 0,
+      "first": {
+        "transports": 1,
+        "heapBytes": 1427280
+      },
+      "final": {
+        "transports": 32,
+        "heapBytes": 1765488
+      }
+    },
+    {
+      "variant": "after",
+      "run": 0,
+      "first": {
+        "transports": 0,
+        "heapBytes": 1420596
+      },
+      "final": {
+        "transports": 0,
+        "heapBytes": 1700192
+      }
+    },
+    {
+      "variant": "after",
+      "run": 1,
+      "first": {
+        "transports": 0,
+        "heapBytes": 1420596
+      },
+      "final": {
+        "transports": 0,
+        "heapBytes": 1700192
+      }
+    },
+    {
+      "variant": "before",
+      "run": 1,
+      "first": {
+        "transports": 1,
+        "heapBytes": 1427280
+      },
+      "final": {
+        "transports": 32,
+        "heapBytes": 1765488
+      }
+    },
+    {
+      "variant": "before",
+      "run": 2,
+      "first": {
+        "transports": 1,
+        "heapBytes": 1427280
+      },
+      "final": {
+        "transports": 32,
+        "heapBytes": 1765488
+      }
+    },
+    {
+      "variant": "after",
+      "run": 2,
+      "first": {
+        "transports": 0,
+        "heapBytes": 1420596
+      },
+      "final": {
+        "transports": 0,
+        "heapBytes": 1700192
+      }
+    }
+  ]
+}

@@ -55,7 +55,7 @@ export interface PdfTextProgress {
 /** Consume rendered runs as they arrive without keeping a second copy of the page. */
 export async function matchPdfTextRuns(runs: readonly string[], offsets: readonly number[], length: number,
   matchChunk: ReturnType<typeof createPdfTextMatcher>, limit: number, signal: AbortSignal,
-  progress?: PdfTextProgress): Promise<PdfTextMatch[] | undefined> {
+  progress?: PdfTextProgress, onMatches?: (found: PdfTextMatch[]) => void): Promise<PdfTextMatch[] | undefined> {
   let i = 0, chunk = '', deadline = performance.now() + 16;
   while (progress?.state !== 'unavailable') {
     for (; i < runs.length; i++) {
@@ -67,6 +67,7 @@ export async function matchPdfTextRuns(runs: readonly string[], offsets: readonl
       if (found.length === limit) return found;
       chunk = '';
       if (performance.now() >= deadline) {
+        onMatches?.(found);
         await new Promise(resolve => setTimeout(resolve, 0));
         signal.throwIfAborted();
         deadline = performance.now() + 16;
@@ -75,6 +76,7 @@ export async function matchPdfTextRuns(runs: readonly string[], offsets: readonl
     if (!progress || progress.state === 'complete') return matchChunk(chunk, true);
     const found = matchChunk(chunk);
     if (found.length === limit) return found;
+    onMatches?.(found);
     chunk = '';
     // A render can be discarded while the search yields between batches.
     if (progress.state) continue;

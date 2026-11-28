@@ -12,7 +12,10 @@ const office2010Icons = new Set(['3Stars', '3Triangles', '5Boxes']);
 
 function readThreshold(node: unknown, extension = false): ConditionalThreshold | undefined {
   const type = readPath(node, ['type']);
-  const value = readPath(node, ['val']) ?? (extension ? readTextValue(readLocalPath(node, ['f'])) : undefined);
+  const formula = extension ? readLocalPath(node, ['f']) : undefined;
+  // Older LibreOffice exports stored x14 thresholds in a value attribute.
+  const value = formula === undefined ? readPath(node, ['val']) ?? (extension ? readPath(node, ['value']) : undefined)
+    : readTextValue(formula);
   switch (type) {
     case 'autoMin': case 'autoMax': return extension ? { type } : undefined;
     case 'min': case 'max': return { type };

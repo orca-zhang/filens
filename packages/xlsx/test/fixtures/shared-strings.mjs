@@ -2,6 +2,47 @@ import JSZip from 'jszip';
 import { prefixXmlElements } from './worksheet-batches.mjs';
 
 export const sharedStringsLastValue = '  Batch & 星表 ²';
+export const deferredSharedString = 'Last & 星表';
+export const oversizedSharedStringValue = 'Large & 星';
+export const laterWorksheetBatch = 'Later worksheet batch';
+
+export function oversizedSharedStringItem() {
+  const emptyRun = '<r><rPr><rFont val="Courier New"/><b/><color rgb="FF336699"/><sz val="11"/></rPr><t/></r>';
+  return '<si>' + emptyRun.repeat(13_000) +
+    '<r><rPr><rFont val="Courier New"/><b/><color rgb="FF336699"/></rPr><t>Large &amp; 星</t></r></si>';
+}
+
+export async function createDeferredSharedStringsWorkbook({
+  malformedTail = false, inlineFirst = false, oversized = false, multipleBatches = false, tailDependency = true, prefixed = false
+} = {}) {
+  const zip = await JSZip.loadAsync(await createSharedStringsWorkbook(2));
+  const padding = Array.from({ length: 12_000 }, (_, index) =>
+    oversized && index === 0 ? oversizedSharedStringItem()
+      : multipleBatches && index === 11_999 ? '<si><r><rPr><rFont val="Cambria"/></rPr><t>Late rich text</t></r></si>'
+        : `<si><t>Catalog item ${index}: ${'A saved observation from the northern sky. '.repeat(5)}</t></si>`).join('');
+  zip.file('xl/catalog-strings.xml', '<sst><si><t>First &amp; &#20013;</t></si>'
+    + '<si><r><rPr><rFont val="Courier New"/><b/><color rgb="FF336699"/></rPr><t>Shared rich text</t></r></si>'
+    + padding + '<si><t>Last &amp; 星表</t></si></sst>' + (malformedTail ? '<sst/>' : ''), { compression: 'STORE' });
+  const first = inlineFirst ? '<c r="A1" t="inlineStr"><is><t>First &amp; &#20013;</t></is></c>' : '<c r="A1" t="s"><v>0</v></c>';
+  const paddingCells = row => Array.from({ length: 12 }, (_, col) =>
+    `<c r="X${String.fromCharCode(65 + col)}${row}" t="inlineStr"><is><t>${'x'.repeat(30_000)}</t></is></c>`).join('');
+  const extraRows = multipleBatches ? `<row r="4">${paddingCells(4)}</row>`
+    + '<row r="5"><c r="A5" t="s"><v>1</v></c><c r="B5" t="str"><f>"Later worksheet batch"</f><v>' + laterWorksheetBatch + '</v></c>'
+    + '<c r="C5" t="inlineStr"><is><r><rPr><rFont val="Cambria"/></rPr><t>Inline Cambria</t></r></is></c>'
+    + paddingCells(5) + '</row>' : '';
+  const tailRow = multipleBatches ? 6 : 4;
+  const tailIndex = tailDependency ? 12002 : 0;
+  const worksheet = '<worksheet><sheetFormatPr defaultColWidth="24"/><sheetData>'
+    + `<row r="1">${first}<c r="B1"><f>1+2</f><v>17</v></c><c r="C1"><f>LEN(A${tailRow})</f></c></row>`
+    + '<row r="2"><c r="A2" t="s"><v>1</v></c></row>'
+    + '<row r="3"><c r="A3" t="inlineStr"><is><r><rPr><rFont val="Georgia"/></rPr><t>Inline rich text</t></r></is></c></row>'
+    + extraRows + `<row r="${tailRow}"><c r="A${tailRow}" t="s"><v>${tailIndex}</v></c>`
+    + (oversized ? '<c r="D4" t="s"><v>2</v></c>' : '') + (multipleBatches ? paddingCells(tailRow) : '') + '</row>'
+    + `<row r="1048576"><c r="XFD1048576" t="s"><v>${tailIndex}</v></c></row>`
+    + '</sheetData></worksheet>';
+  zip.file('xl/worksheets/catalog.xml', prefixed ? prefixXmlElements(worksheet) : worksheet);
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
 
 export async function createSharedStringsWorkbook(count = 12_000, { forceGeneral = false, styled = false, prefixed = false, strict = false } = {}) {
   const zip = new JSZip(), date = new Date('2020-01-01T00:00:00Z');

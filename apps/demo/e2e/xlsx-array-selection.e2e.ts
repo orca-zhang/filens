@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySelectionWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createCoordinateFormulaWorkbook, createCountBlankWorkbook,
-  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createGroupByWorkbook, createLambdaWorkbook, createMakeArrayWorkbook, createMapWorkbook, createOffsetWorkbook, createOrderedConditionalWorkbook, createPivotByWorkbook, createRegexWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
+import { createAccumulationWorkbook, createArrayPredicateWorkbook, createArraySelectionWorkbook, createArraySpillWorkbook, createBroadcastWorkbook, createChoiceCriteriaWorkbook, createConditionalReferencesWorkbook, createCoordinateFormulaWorkbook, createCountBlankWorkbook,
+  createDistinctRecordWorkbook, createFlattenSpillWorkbook, createFormulaDisplayWorkbook, createGroupByWorkbook, createImplicitIntersectionWorkbook, createLambdaWorkbook, createMakeArrayWorkbook, createMapWorkbook, createOffsetWorkbook, createOrderedConditionalWorkbook, createPivotByWorkbook, createReferenceInfoWorkbook, createReferenceOperatorsWorkbook, createRegexWorkbook, createSequenceWorkbook, createSliceSpillWorkbook,
   createSortSpillWorkbook, createStackSpillWorkbook, createTextSplitWorkbook, createTrimRangeWorkbook, createWorkdayArrayWorkbook, createWrapExpandWorkbook, createXlookupSpillWorkbook, createXmatchWorkbook } from '../../../packages/xlsx/test/fixtures/array-selection-workbook.mjs';
 
 test('loads the XLSX regex engine on demand and formats the final spill cell', async ({ page }) => {
@@ -311,6 +311,114 @@ test('recalculates IFS and SWITCH through the final Excel cell', async ({ page }
   const last = cell(1_048_576, 16_384);
   await expect(last).toHaveText('99');
   await expect(last).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+  await expect(last).toBeInViewport();
+});
+
+test('recalculates reference and error information and aggregates a full-height XLSX spill', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'reference-info.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createReferenceInfoWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  const expected = [['TRUE', '2', 'TRUE'], ['64', '4', '53'], ['4', '#N/A', '7']];
+  for (const [row, values] of expected.entries()) {
+    for (const [column, value] of values.entries()) await expect(cell(row + 1, column + 1)).toHaveText(value);
+  }
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill' }).click();
+  await expect(cell(1, 2)).toHaveText('9');
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText(String((1_048_576 * 16_382 - 2) * 4 + 81 + 441 + 66));
+  await expect(last).toBeInViewport();
+});
+
+test('intersects sparse XLSX spill and union references through the final Excel cell', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'reference-operators.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createReferenceOperatorsWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  const expected = [[String(2 * 1_048_575 + 21), '1', '2', '7'], ['#NULL!', '#REF!']];
+  for (const [row, values] of expected.entries()) {
+    for (const [column, value] of values.entries()) await expect(cell(row + 1, column + 1)).toHaveText(value);
+  }
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill' }).click();
+  await expect(cell(1, 2)).toHaveText('9');
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText(String((1_048_576 * 16_382 - 2) * 2 + 39));
+  await expect(last).toBeInViewport();
+});
+
+test('uses XLSX conditional references in range operators through the final Excel cell', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'conditional-references.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createConditionalReferencesWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  const spillTotal = (1_048_576 * 16_382 - 2) * 2 + 30;
+  const expected = [[String(spillTotal + 9), '7', 'TRUE'], [String(spillTotal), '2', '=NOTIMPLEMENTED(1)']];
+  for (const [row, values] of expected.entries()) {
+    for (const [column, value] of values.entries()) await expect(cell(row + 1, column + 1)).toHaveText(value);
+  }
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill' }).click();
+  await expect(cell(1, 2)).toHaveText('9');
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText(String(2 * 1_048_575 + 40));
+  await expect(last).toBeInViewport();
+});
+
+test('selects the formula row or column with implicit intersection through the final Excel cell', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'implicit-intersection.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createImplicitIntersectionWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  const expected = [['#VALUE!', '8', '#N/A', '0'], ['12', '8', '12', '19'], ['42']];
+  for (const [row, values] of expected.entries()) {
+    for (const [column, value] of values.entries()) await expect(cell(row + 1, column + 1)).toHaveText(value);
+  }
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill' }).click();
+  await expect(cell(2, 1)).toHaveText('12');
+  await expect(cell(2, 2)).toHaveText('12');
+  await expect(cell(2, 3)).toHaveText('12');
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText('40');
+  await expect(last).toBeInViewport();
+});
+
+test('renders Excel formula text from shared records and spilled references through the final cell', async ({ page }) => {
+  await page.goto('./?view=preview&lang=en');
+  await page.locator('.wb-upload input[type=file]').setInputFiles({
+    name: 'formula-display.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await createFormulaDisplayWorkbook())
+  });
+  const grid = page.locator('.xlsxv-grid');
+  const cell = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+  await expect(cell(1, 1)).toHaveText('=@$G$7:$G$9');
+  await expect(cell(1, 2)).toHaveText('=SORT($G$7:$G$10)');
+  await expect(cell(2, 1)).toHaveText('=@(B1#%)');
+  await expect(cell(2, 2)).toHaveText('=FUTURE("_xlpm.x",Table[_xlfn.SINGLE])');
+  await expect(cell(3, 1)).toHaveText('=LET(x,C5:C8,x)');
+
+  await page.locator('.xlsxv-sheet-tabs').getByRole('button', { name: 'Large Spill' }).click();
+  await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+  const last = cell(1_048_576, 16_384);
+  await expect(last).toHaveText('=@$G$7:$G$9');
   await expect(last).toBeInViewport();
 });
 

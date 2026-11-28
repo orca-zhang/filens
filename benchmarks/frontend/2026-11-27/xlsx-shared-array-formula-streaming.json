@@ -1,0 +1,378 @@
+{
+  "date": "2026-11-27",
+  "node": "v20.20.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4 Pro",
+  "jsdom": "25.0.1",
+  "method": "Three fresh Node processes per build and workload. Feed a file-backed Blob into XlsxPreviewSession with jsdom. Measure complete load time, process peak RSS and retained V8 heap above startup after collection. After timing, hash cells, shared and array formula metadata, and first viewport markup. Recalculate the cross-sheet sum and check selected shared or array cells.",
+  "builds": {
+    "baseline": "fa75dfaca8e51b78971c409c913a4a187096348ca2c400e0337d7d0bed6c2504",
+    "direct": "89548904dd6e0046a6c44e686e883a4b20db104db8d36b1a5aa1303da7846261"
+  },
+  "workloads": {
+    "shared": {
+      "contents": "125,000 rows by eight columns. The XlsxWriter 3.2.9 arithmetic workbook uses one shared group covering all 125,000 column H formulas. Every 997th follower has no saved value. Each row also has three inline text cells.",
+      "archiveBytes": 4317060,
+      "sha256": "456f50c8220eceae4f1b3d212525e97a9db63c78abda88431a6e9d125d2e0d04",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 4656.9806659999995,
+            "peakRssKiB": 589232,
+            "heapBytes": 125760672
+          },
+          {
+            "loadMs": 4661.867458,
+            "peakRssKiB": 583840,
+            "heapBytes": 125740904
+          },
+          {
+            "loadMs": 4626.974834000001,
+            "peakRssKiB": 551744,
+            "heapBytes": 125819584
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1487.611542,
+            "peakRssKiB": 390320,
+            "heapBytes": 126375016
+          },
+          {
+            "loadMs": 1446.564416,
+            "peakRssKiB": 333344,
+            "heapBytes": 126578720
+          },
+          {
+            "loadMs": 1484.933625,
+            "peakRssKiB": 385152,
+            "heapBytes": 126504144
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 4657,
+          "peakRssMiB": 570.2,
+          "retainedHeapMiB": 119.9
+        },
+        "direct": {
+          "loadMs": 1484.9,
+          "peakRssMiB": 376.1,
+          "retainedHeapMiB": 120.6
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "877396d5fe947e8b3e845f4da8c636bb28900b5c76d14bcf865a71f6368aa3bd",
+        "markupHash": "f99dddd42f0f87e73efbd8496f213516a3b1f6c12733550e43e1e32c5aa63491",
+        "formula": "7812562500",
+        "resolved": [
+          "1994",
+          "125622",
+          "249250"
+        ]
+      }
+    },
+    "arrays": {
+      "contents": "125,000 rows by eight columns, written by XlsxWriter 3.2.9 in constant_memory mode. Every 64 rows include one dynamic SEQUENCE anchor with cell metadata and one legacy array anchor. The remaining rows have ordinary formulas. Each row has three inline text cells.",
+      "archiveBytes": 4639801,
+      "sha256": "349652bda07265ff7495077aa7199ae8dcc23133ec19eb1f870ec79356f8c734",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 4663.71475,
+            "peakRssKiB": 602112,
+            "heapBytes": 129708128
+          },
+          {
+            "loadMs": 4685.670292000001,
+            "peakRssKiB": 589968,
+            "heapBytes": 129815064
+          },
+          {
+            "loadMs": 4649.32875,
+            "peakRssKiB": 569648,
+            "heapBytes": 129850824
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1439.8495,
+            "peakRssKiB": 393776,
+            "heapBytes": 130358440
+          },
+          {
+            "loadMs": 1459.318291,
+            "peakRssKiB": 383440,
+            "heapBytes": 130562536
+          },
+          {
+            "loadMs": 1449.8601669999998,
+            "peakRssKiB": 387072,
+            "heapBytes": 130492936
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 4663.7,
+          "peakRssMiB": 576.1,
+          "retainedHeapMiB": 123.8
+        },
+        "direct": {
+          "loadMs": 1449.9,
+          "peakRssMiB": 378,
+          "retainedHeapMiB": 124.4
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "16a67261f16952122460dbe6c5948349c35fa628592f72e717fee43b13afc51f",
+        "markupHash": "ee06b7153d9737a5bd4d3ff75149e8803feaa4bab1cf5dbdb57c43035ccef6e8",
+        "formula": "7812562500",
+        "resolved": [
+          "1",
+          "4",
+          "1"
+        ]
+      }
+    },
+    "ordinary": {
+      "contents": "125,000 rows by eight columns, written by XlsxWriter 3.2.9 in constant_memory mode. Every row has one ordinary cached arithmetic formula and three inline text cells.",
+      "archiveBytes": 4614851,
+      "sha256": "35409a346aeed9d6b1062bd0b25e5efbca0057b10a88d1983ccf94e4a13e426a",
+      "samples": {
+        "baseline": [
+          {
+            "loadMs": 1402.402791,
+            "peakRssKiB": 357952,
+            "heapBytes": 129675848
+          },
+          {
+            "loadMs": 1419.102291,
+            "peakRssKiB": 371360,
+            "heapBytes": 129661216
+          },
+          {
+            "loadMs": 1421.676333,
+            "peakRssKiB": 377344,
+            "heapBytes": 129683376
+          }
+        ],
+        "direct": [
+          {
+            "loadMs": 1460.158334,
+            "peakRssKiB": 383920,
+            "heapBytes": 129722152
+          },
+          {
+            "loadMs": 1425.900375,
+            "peakRssKiB": 357264,
+            "heapBytes": 129592848
+          },
+          {
+            "loadMs": 1438.540042,
+            "peakRssKiB": 379216,
+            "heapBytes": 129772040
+          }
+        ]
+      },
+      "medians": {
+        "baseline": {
+          "loadMs": 1419.1,
+          "peakRssMiB": 362.7,
+          "retainedHeapMiB": 123.7
+        },
+        "direct": {
+          "loadMs": 1438.5,
+          "peakRssMiB": 370.3,
+          "retainedHeapMiB": 123.7
+        }
+      },
+      "model": {
+        "rows": 125000,
+        "cells": 1000000,
+        "modelHash": "a2723f959f7582e11e8f80983278a6e4aa071a048d594054bda2e8deb9f4fd50",
+        "markupHash": "f99dddd42f0f87e73efbd8496f213516a3b1f6c12733550e43e1e32c5aa63491",
+        "formula": "7812562500",
+        "resolved": []
+      }
+    }
+  },
+  "workbookModelComparison": {
+    "files": [
+      "xlsx-calendar-formats/exported-calendar-codes.xlsx",
+      "xlsx-flatten/tocol.xlsx",
+      "xlsx-flatten/torow.xlsx",
+      "xlsx-groupby/ablebits.xlsx",
+      "xlsx-groupby/exceljet.xlsx",
+      "xlsx-groupby/monthly.xlsx",
+      "xlsx-groupby/reduce.xlsx",
+      "xlsx-groupby/survey.xlsx",
+      "xlsx-groupby/weather.xlsx",
+      "xlsx-makearray/exceljet.xlsx",
+      "xlsx-map/ablebits.xlsx",
+      "xlsx-map/exceljet.xlsx",
+      "xlsx-pivotby/ablebits.xlsx",
+      "xlsx-pivotby/exceljet.xlsx",
+      "xlsx-pivotby/percentof.xlsx",
+      "xlsx-regex/groupby.xlsx",
+      "xlsx-regex/reduce.xlsx",
+      "xlsx-regex/regexextract.xlsx",
+      "xlsx-regex/regexreplace.xlsx",
+      "xlsx-regex/regextest.xlsx",
+      "xlsx-scan-reduce/exceljet-reduce.xlsx",
+      "xlsx-scan-reduce/exceljet-scan.xlsx",
+      "xlsx-scan-reduce/reduce.xlsx",
+      "xlsx-scan-reduce/scan.xlsx",
+      "xlsx-trim/ablebits.xlsx",
+      "xlsx-trim/byrow.xlsx",
+      "xlsx-trim/exceljet.xlsx",
+      "xlsx-trim/row-numbers.xlsx",
+      "xlsx-wrap/ablebits.xlsx",
+      "xlsx-wrap/exceljet-rows.xlsx",
+      "xlsx-wrap/expand.xlsx"
+    ],
+    "cells": 205514,
+    "sharedGroups": 16,
+    "legacyArrays": 0,
+    "dynamicArrays": 766
+  },
+  "verification": {
+    "xlsxUnitTests": 1378,
+    "browserRegressions": 258,
+    "packagedPreviewChecks": "Verify first and final worksheet values, the uncached shared follower or late dynamic array anchor, and the cross-sheet summary. Split and all-in-one builds use HTTP ranges. Offline HTML emits no HTTP requests.",
+    "packagedPreviews": [
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "split",
+        "scenario": "shared",
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "split",
+        "scenario": "arrays",
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "all-in-one",
+        "scenario": "shared",
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "all-in-one",
+        "scenario": "arrays",
+        "ranges": 10
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "offline",
+        "scenario": "shared",
+        "ranges": 0
+      },
+      {
+        "browser": "chromium",
+        "version": "159.0.8154.6",
+        "mode": "offline",
+        "scenario": "arrays",
+        "ranges": 0
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "split",
+        "scenario": "shared",
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "split",
+        "scenario": "arrays",
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "all-in-one",
+        "scenario": "shared",
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "all-in-one",
+        "scenario": "arrays",
+        "ranges": 10
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "offline",
+        "scenario": "shared",
+        "ranges": 0
+      },
+      {
+        "browser": "firefox",
+        "version": "159.0",
+        "mode": "offline",
+        "scenario": "arrays",
+        "ranges": 0
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "split",
+        "scenario": "shared",
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "split",
+        "scenario": "arrays",
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "all-in-one",
+        "scenario": "shared",
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "all-in-one",
+        "scenario": "arrays",
+        "ranges": 10
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "offline",
+        "scenario": "shared",
+        "ranges": 0
+      },
+      {
+        "browser": "webkit",
+        "version": "27.2",
+        "mode": "offline",
+        "scenario": "arrays",
+        "ranges": 0
+      }
+    ]
+  }
+}

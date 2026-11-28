@@ -14,6 +14,7 @@ export function createShrinkTextFitter(document: Document) {
     if (available <= 0) return;
 
     let measured = 0, tallestFont = fontSize;
+    canvas.direction = cell.dir === 'rtl' ? 'rtl' : 'ltr';
     const measure = (value: string, style?: CSSStyleDeclaration) => {
       const size = Number.parseFloat(style?.fontSize ?? '') || fontSize;
       tallestFont = Math.max(tallestFont, size);

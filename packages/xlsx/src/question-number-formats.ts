@@ -38,7 +38,7 @@ function maskedDecimal(digits: string, integerMask: string, fractionalMask: stri
 }
 
 function decimalQuestionNumber(mask: string, value: number, pad: Pad): QuestionNumber | undefined {
-  const match = /^([#0?]+(?:,[#0?]+)*|)(?:\.([#0?]*))?(,*)( *%+|)$/.exec(mask);
+  const match = /^([#0?]+(?:,[#0?]+)*|)(?:\.([#0?]*))?(,*)([ \u00a0\u202f]*%+|)$/.exec(mask);
   if (!match) return undefined;
   const [, integerMask, fractionalMask, commas, percent] = match;
   let scaled = value;

@@ -30,12 +30,15 @@ import { PDF_SEARCH_MATCH_LIMIT, createPdfTextMatcher, highlightPdfRanges, highl
   type PdfTextMatch, type PdfTextProgress } from './search';
 import { bindPdfBlobRangeCancellation, createPdfBlobRange, PDF_RANGE_CHUNK_BYTES } from './blob-range';
 import { createLocalPdfWorker, type LocalPdfWorker } from './local-worker';
+import { PdfOutlineControls, type PdfDestination, type PdfOutlineItem } from './outline';
+import { createPdfPageLinks, type PdfPageLink } from './page-links';
 
 type PreviewListenerMap = {
   [K in PreviewEventName]: Set<(payload: PreviewEventMap[K]) => void>;
 };
 type PdfTextContent = Awaited<ReturnType<PDFPageProxy['getTextContent']>>;
 type PdfTextStyles = PdfTextContent['styles'];
+type PdfDisplay = typeof import('./pdf-display');
 interface PdfAttachmentInfo { id: string; filename: string; content?: Uint8Array | null }
 type PdfAttachments = { entries: PdfAttachmentInfo[] } | PdfAttachmentInfo[] | Record<string, Omit<PdfAttachmentInfo, 'id'>> | null;
 interface PdfAttachmentRead { filens: 'read'; id: string; limit: number; cancelRanges?: boolean }
@@ -44,7 +47,11 @@ interface PdfAttachmentMessages {
   sendWithPromise(action: 'GetAttachments', data: PdfAttachmentRead): Promise<Uint8Array | null>;
   sendWithStream(action: 'GetAttachments', data: PdfAttachmentRead): ReadableStream<Uint8Array>;
 }
-const VISIBLE_PDF_PAINTS = 2;
+interface PdfStreamMessages {
+  sendWithStream(action: string, data?: Record<string, unknown>, strategy?: QueuingStrategy, transfers?: Transferable[]): ReadableStream;
+}
+type PdfPageLookup = (pageNumber: number, signal: AbortSignal) => Promise<PDFPageProxy>;
+const PDF_CONCURRENT_PAINTS = 2;
 const PDF_SEARCH_CACHE_UNITS = 1024 * 1024;
 const PDF_SEARCH_CACHE_PAGE_UNITS = 32 * 1024;
 const PDF_SEARCH_CACHE_PAGES = 4096;
@@ -61,6 +68,7 @@ interface PdfRendererFont {
 
 interface PageArea { left: number; top: number; right: number; bottom: number }
 interface PageWindow { visible: ReadonlySet<number>; needed: ReadonlySet<number> }
+interface PdfBookmarkTarget { index: number; dest: readonly unknown[]; positioned?: boolean }
 type PageViewport = ReturnType<PDFPageProxy['getViewport']>;
 
 interface PageSlot {
@@ -71,6 +79,7 @@ interface PageSlot {
   canvas?: HTMLCanvasElement;
   rasterBudget?: number;
   task?: RenderTask;
+  retry?: HTMLButtonElement;
   detailViewport?: PageViewport;
   detail?: { area: PageArea; canvas: HTMLCanvasElement; task?: RenderTask };
   textRender?: { viewport: PageViewport; cachedPixels?: boolean; started?: boolean };
@@ -80,6 +89,8 @@ interface PageSlot {
   textOffsets?: number[];
   /** UTF-16 length when the selection layer contains the complete page text. */
   textLength?: number;
+  linkRequest?: AbortController;
+  linkLayer?: HTMLDivElement;
 }
 
 export { PDF_FORMAT_ROUTES, createPdfPreviewRoutes } from './routes';
@@ -96,9 +107,11 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private readonly pageTrack = document.createElement('div');
   private readonly container: HTMLDivElement;
   private readonly findControls: PreviewFindControls;
+  private readonly outline?: PdfOutlineControls;
+  private bookmarkTarget?: PdfBookmarkTarget;
+  private linkNavigation?: { slot: PageSlot; controller: AbortController };
   private searchGeneration = 0;
   private searchController?: AbortController;
-  private searchReader?: ReadableStreamDefaultReader<PdfTextContent>;
   private searchFrame?: number;
   private refreshVisibleSearch?: () => void;
   private searchNavigated = false;
@@ -117,20 +130,22 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   private loadGeneration = 0;
   private renderGeneration = 0;
   private rendering: Promise<void> | null = null;
-  private refreshVisiblePaint?: () => void;
+  private refreshPaintWindow?: (needed: ReadonlySet<number>) => void;
   private renderAgain = false;
   private animationFrame: number | null = null;
   private resizeObserver?: ResizeObserver;
+  private resizeFrame?: number;
   private removeAbortListener?: () => void;
   private dimensions = '';
   private contentKey?: string;
   private sensitive = false;
-  private cancelAttachmentRanges = false;
+  private cancelRangeReads = false;
+  private pageLookup?: PdfPageLookup;
   private readonly virtual: boolean;
   private unbindTouch = () => {};
   private readonly containerContext;
   private state: PagedPreviewState;
-  private pdfjs?: typeof import('pdfjs-dist');
+  private pdfjs?: PdfDisplay;
   private readonly fonts = new Map<string, PreviewFontDiagnostic>();
 
   constructor(private readonly host: HTMLElement, private readonly options: PreviewOptions = {}) {
@@ -148,7 +163,12 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.root.addEventListener('scroll', this.scheduleRender, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(() => {
-        if (this.document && this.dimensions !== this.rootDimensions()) this.relayout();
+        if (!this.layout) return;
+        // Resizing the page track can change the observed scroll viewport.
+        this.resizeFrame ??= requestAnimationFrame(() => {
+          this.resizeFrame = undefined;
+          if (this.dimensions !== this.rootDimensions()) this.relayout();
+        });
       });
       this.resizeObserver.observe(this.root);
     }
@@ -178,26 +198,40 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     });
     this.findControls.element.classList.add('pdfv-search-controls');
     this.container.append(this.findControls.element);
+    if (this.virtual) {
+      this.outline = new PdfOutlineControls(this.root, message => this.options.translate?.(message) ?? message);
+      this.container.append(this.outline.element);
+    }
   }
 
-  refreshTranslations(): void { this.findControls.refreshTranslations(); }
+  refreshTranslations(): void {
+    this.findControls.refreshTranslations();
+    this.outline?.refreshTranslations();
+    for (const slot of this.pageSlots.values()) {
+      this.labelPageRetry(slot);
+      for (const link of slot.linkLayer?.querySelectorAll('[data-pdf-link-label]') ?? []) {
+        link.setAttribute('aria-label', this.options.translate?.('Go to destination') ?? 'Go to destination');
+      }
+    }
+  }
 
   private reportSearch(notify = true): void {
-    if (this.searchFrame !== undefined) cancelAnimationFrame(this.searchFrame);
-    this.searchFrame = undefined;
     this.findControls.update();
     if (notify) this.emit('statechange', this.getState());
   }
 
+  private cancelSearchFrame(): void {
+    if (this.searchFrame !== undefined) cancelAnimationFrame(this.searchFrame);
+    this.searchFrame = undefined;
+  }
+
   private resetSearch(query = '', notify = true): number {
     this.findControls.cancelPending();
+    this.cancelSearchFrame();
     const generation = ++this.searchGeneration;
     this.refreshVisibleSearch = undefined;
     this.searchController?.abort();
     this.searchController = undefined;
-    const reader = this.searchReader;
-    this.searchReader = undefined;
-    if (reader && this.pdfjs) void reader.cancel(new this.pdfjs.AbortException('PDF search cancelled.')).catch(() => {});
     this.matches = [];
     this.searchNavigated = false;
     this.pageMatches.clear();
@@ -218,10 +252,43 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     search.searching = true;
     this.reportSearch();
     if (!current()) return;
-    const progress = () => { this.searchFrame ??= requestAnimationFrame(() => this.reportSearch()); };
-    const scanned = new Map<number, number>();
-    let pageIndex = -1, scanningVisible = false, refresh = false;
-    const active = () => current() && search.searching;
+    const visibleScanned = new Set<number>(), pending = new Set<number>();
+    const partialMatches = new Map<number, PdfTextMatch[]>();
+    let nextPage = 0, overflowPage = Infinity, lastErrorPage = -1;
+    let scanningVisible = false, refresh = false;
+    const active = () => current() && !controller.signal.aborted;
+    const confirmLimit = () => {
+      // The first discarded hit defines the cutoff only once every earlier page is accounted for.
+      if (nextPage < overflowPage) return;
+      for (const index of pending) if (index < overflowPage) return;
+      // A prefix at the cutoff accounts for the page even when its remaining text is still pending.
+      if (pending.has(overflowPage)) search.pagesScanned++;
+      controller.abort();
+    };
+    const progress = () => {
+      this.searchFrame ??= requestAnimationFrame(() => {
+        this.searchFrame = undefined;
+        for (const [index, found] of partialMatches) {
+          if (!active()) break;
+          if (index <= overflowPage) publish(index, found, false);
+        }
+        partialMatches.clear();
+        if (current()) this.reportSearch();
+      });
+    };
+    const publish = (index: number, found: PdfTextMatch[], complete = true) => {
+      const before = this.searchMatchOffset(index), remaining = PDF_SEARCH_MATCH_LIMIT - before;
+      const previous = this.pageMatches.get(index)?.length ?? 0;
+      if (complete) search.pagesScanned++;
+      if (found.length > remaining) overflowPage = Math.min(overflowPage, index);
+      const insert = before + previous;
+      const trimmedPage = this.mergeSearchMatches(found.slice(previous, remaining), insert, insert === 0 && !this.searchNavigated);
+      if (!active()) return;
+      overflowPage = Math.min(overflowPage, trimmedPage);
+      search.truncated = overflowPage < Infinity;
+      confirmLimit();
+      if (complete) progress();
+    };
     const scanVisible = async () => {
       if (!active()) return;
       refresh = true;
@@ -232,10 +299,8 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
           refresh = false;
           for (const { index, runs, offsets, length } of this.visibleSearchText()) {
             if (!active()) return;
-            // The ordered scan owns its current page, including any pending reader.
-            if (index <= pageIndex || scanned.has(index)) continue;
+            if (index < nextPage || index >= overflowPage || visibleScanned.has(index)) continue;
             const limit = PDF_SEARCH_MATCH_LIMIT - this.searchMatchOffset(index) + 1;
-            if (limit === 1 && search.truncated) continue;
             let found: PdfTextMatch[] | undefined;
             try {
               found = await matchPdfTextRuns(runs, offsets, length,
@@ -244,14 +309,9 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
               // The ordered scan can retry an unavailable preview result.
             }
             if (!active()) return;
-            if (!found || index <= pageIndex || !this.visibleTextPages?.has(index)) continue;
-            const before = this.searchMatchOffset(index), remaining = PDF_SEARCH_MATCH_LIMIT - before;
-            scanned.set(index, found.length);
-            search.pagesScanned++;
-            this.mergeSearchMatches(found.slice(0, remaining), before);
-            if (!active()) return;
-            search.truncated ||= found.length > remaining;
-            progress();
+            if (!found || index < nextPage || index >= overflowPage || !this.visibleTextPages?.has(index)) continue;
+            visibleScanned.add(index);
+            publish(index, found);
           }
         }
       } finally { scanningVisible = false; }
@@ -259,43 +319,48 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.refreshVisibleSearch = () => { void scanVisible(); };
     await scanVisible();
 
-    // Confirm results in document order, so provisional visible hits cannot displace earlier matches at the cap.
-    let confirmed = 0;
     let deadline = performance.now() + 16;
-    for (pageIndex = 0; pageIndex < pdf.numPages; pageIndex++) {
-      if (!current()) return;
-      const remaining = PDF_SEARCH_MATCH_LIMIT - confirmed;
-      const cached = scanned.get(pageIndex);
-      scanned.delete(pageIndex);
-      let count = cached ?? 0;
-      try {
-        if (cached === undefined) {
-          const found = await this.readSearchMatches(pdf, query, pageIndex, remaining + 1, controller.signal);
-          if (!current()) return;
-          count = found.length;
-          this.mergeSearchMatches(found.slice(0, remaining), confirmed, confirmed === 0 && !this.searchNavigated);
+    const scanPages = async () => {
+      while (active() && nextPage < pdf.numPages && nextPage < overflowPage) {
+        const index = nextPage++;
+        if (visibleScanned.delete(index)) continue;
+        pending.add(index);
+        let found: PdfTextMatch[] = [];
+        try {
+          const limit = PDF_SEARCH_MATCH_LIMIT - this.searchMatchOffset(index) + 1;
+          found = await this.readSearchMatches(pdf, query, index, limit, controller.signal, matches => {
+            const reported = partialMatches.get(index)?.length ?? this.pageMatches.get(index)?.length ?? 0;
+            if (!active() || matches.length <= reported) return;
+            partialMatches.set(index, matches);
+            progress();
+          });
+        } catch (error) {
+          if (active() && index > lastErrorPage) {
+            lastErrorPage = index;
+            search.error = `PDF page ${index + 1}: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        } finally {
+          pending.delete(index);
         }
-      } catch (error) {
-        if (!current()) return;
-        search.error = `PDF page ${pageIndex + 1}: ${error instanceof Error ? error.message : String(error)}`;
+        if (!active()) return;
+        const partial = partialMatches.get(index);
+        partialMatches.delete(index);
+        publish(index, partial && partial.length > found.length ? partial : found);
+        // Cached pages can resolve in one task. Give the browser time to process cancellation and paint.
+        if (performance.now() >= deadline) {
+          deadline = performance.now() + 16;
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
       }
-      if (!current()) return;
-      if (cached === undefined) search.pagesScanned++;
-      confirmed += Math.min(count, remaining);
-      if (count > remaining) { search.truncated = true; break; }
-      if (!current()) return;
-      progress();
-      // Cached pages can resolve in one task. Give the browser time to process cancellation and paint.
-      if (performance.now() >= deadline) {
-        await new Promise(resolve => setTimeout(resolve, 0));
-        deadline = performance.now() + 16;
-      }
-    }
+      if (active()) confirmLimit();
+    };
+    await Promise.all([scanPages(), scanPages()]);
     if (current()) {
       this.refreshVisibleSearch = undefined;
       this.searchController = undefined;
       search.searching = false;
       controller.abort();
+      this.cancelSearchFrame();
       this.reportSearch();
     }
   }
@@ -320,8 +385,8 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     return first;
   }
 
-  private mergeSearchMatches(added: PdfTextMatch[], before: number, selectFirst = false): void {
-    if (!added.length) return;
+  private mergeSearchMatches(added: PdfTextMatch[], before: number, selectFirst: boolean): number {
+    if (!added.length) return Infinity;
     const search = this.state.search!;
     const active = search.activeIndex;
     const keep = PDF_SEARCH_MATCH_LIMIT - added.length;
@@ -336,20 +401,23 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     }
     const page = added[0].pageIndex;
     this.matches.splice(before, 0, ...added);
-    this.pageMatches.set(page, added);
+    const previous = this.pageMatches.get(page);
+    this.pageMatches.set(page, previous ? previous.concat(added) : added);
     search.total = this.matches.length;
     const next = selectFirst ? 0 : active + (before <= active ? added.length : 0);
     if (selectFirst || next < 0 || next >= search.total) {
       this.selectSearchMatch(Math.max(0, Math.min(next, search.total - 1)));
-      return;
+    } else {
+      search.activeIndex = next;
+      for (const slot of this.pageSlots.values()) {
+        if (slot.index === page || slot.index >= trimmedPage) this.highlightPage(slot, false);
+      }
     }
-    search.activeIndex = next;
-    for (const slot of this.pageSlots.values()) {
-      if (slot.index === page || slot.index >= trimmedPage) this.highlightPage(slot);
-    }
+    return trimmedPage;
   }
 
-  private async readSearchMatches(pdf: PDFDocumentProxy, query: string, index: number, limit: number, signal: AbortSignal): Promise<PdfTextMatch[]> {
+  private async readSearchMatches(pdf: PDFDocumentProxy, query: string, index: number, limit: number, signal: AbortSignal,
+    onMatches: (found: PdfTextMatch[]) => void): Promise<PdfTextMatch[]> {
     const cached = this.searchPageText.get(index);
     if (cached !== undefined) return createPdfTextMatcher(query, index, limit)(cached, true);
     const slot = this.pageSlots.get(index);
@@ -358,17 +426,23 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const length = progress?.length ?? slot?.textLength;
     if (length !== undefined && slot?.textLayer && offsets) {
       const found = await matchPdfTextRuns(slot.textLayer.textContentItemsStr, offsets, length,
-        createPdfTextMatcher(query, index, limit), limit, signal, progress);
+        createPdfTextMatcher(query, index, limit), limit, signal, progress, onMatches);
       if (found) return found;
     }
 
+    // A replacement stream replays the same normalized runs, so published offsets survive selection eviction.
     const matchChunk = createPdfTextMatcher(query, index, limit);
-    const page = await waitForContainerTask(pdf.getPage(index + 1), signal);
     signal.throwIfAborted();
+    let stream = !slot?.page ? streamOffscreenPdfText(pdf, this.pdfjs, index) : undefined;
+    if (!stream) {
+      const page = await waitForContainerTask(pdf.getPage(index + 1), signal);
+      signal.throwIfAborted();
+      stream = page.streamTextContent();
+    }
     const AbortException = this.pdfjs?.AbortException ?? Error;
-    const reader: ReadableStreamDefaultReader<PdfTextContent> = page.streamTextContent().getReader();
-    this.searchReader = reader;
-    // Keep complete text within the open document, without evicting earlier pages during a sequential scan.
+    const reader = stream.getReader();
+    const cancel = () => { void reader.cancel(new AbortException('PDF search cancelled.')).catch(() => {}); };
+    signal.addEventListener('abort', cancel, { once: true });
     const capacity = this.sensitive || this.searchPageText.size >= PDF_SEARCH_CACHE_PAGES ? 0
       : Math.min(PDF_SEARCH_CACHE_PAGE_UNITS, PDF_SEARCH_CACHE_UNITS - this.searchTextUnits);
     let completeText = capacity ? '' : undefined;
@@ -377,7 +451,8 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         const { value, done } = await reader.read();
         signal.throwIfAborted();
         if (done) {
-          if (completeText !== undefined) {
+          if (completeText !== undefined && this.searchPageText.size < PDF_SEARCH_CACHE_PAGES
+            && this.searchTextUnits + completeText.length <= PDF_SEARCH_CACHE_UNITS) {
             this.searchPageText.set(index, completeText);
             this.searchTextUnits += completeText.length;
           }
@@ -390,9 +465,10 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
           void reader.cancel(new AbortException('PDF search result limit reached.')).catch(() => {});
           return matches;
         }
+        onMatches(matches);
       }
     } finally {
-      if (this.searchReader === reader) this.searchReader = undefined;
+      signal.removeEventListener('abort', cancel);
       reader.releaseLock();
     }
   }
@@ -411,15 +487,24 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     for (const slot of this.pageSlots.values()) this.highlightPage(slot);
   }
 
-  private highlightPage(slot: PageSlot): void {
-    if (!slot.textLayer || !slot.textOffsets || slot.textElement?.dataset.rendered !== 'true') return;
-    const matches = this.pageMatches.get(slot.index) ?? [];
+  private highlightPage(slot: PageSlot, reveal = true): void {
+    if (!slot.textLayer) return;
+    const progress = slot.textProgress;
+    const offsets = slot.textOffsets ?? (progress?.state !== 'unavailable'
+      && progress?.offsets.length === slot.textLayer.textDivs.length ? progress.offsets : undefined);
+    if (!offsets) return;
+    let matches = this.pageMatches.get(slot.index) ?? [];
+    if (!slot.textOffsets && progress) {
+      let count = matches.length;
+      while (count && matches[count - 1].end > progress.length) count--;
+      if (count !== matches.length) matches = matches.slice(0, count);
+    }
     const match = this.matches[this.state.search?.activeIndex ?? -1];
-    const ranges = highlightPdfRanges(slot.textLayer, slot.textOffsets, matches, match);
-    const active = ranges ? ranges.range : highlightPdfText(slot.textLayer, slot.textOffsets, matches, match);
-    if (active) {
+    const ranges = highlightPdfRanges(slot.textLayer, offsets, matches, match);
+    const active = ranges ? ranges.range : highlightPdfText(slot.textLayer, offsets, matches, match);
+    if (active && reveal) {
       const keepTarget = this.hasPageTarget();
-      if (keepTarget && slot.index !== this.state.pageIndex) return;
+      if (keepTarget && (slot.index !== this.state.pageIndex || this.bookmarkTarget?.index === slot.index)) return;
       const root = this.root.getBoundingClientRect(), rect = active.getBoundingClientRect();
       const top = root.top + this.root.clientTop, left = root.left + this.root.clientLeft;
       const { clientWidth, clientHeight } = this.root;
@@ -458,7 +543,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         const bytes = await readPreviewContainerEntry(async () => {
           const limit = Math.min(PREVIEW_CONTAINER_LIMITS.maxEntryBytes,
             PREVIEW_CONTAINER_LIMITS.maxExpandedBytes - this.containerContext.budget.expandedBytes);
-          const request: PdfAttachmentRead = { filens: 'read', id, limit, cancelRanges: this.cancelAttachmentRanges };
+          const request: PdfAttachmentRead = { filens: 'read', id, limit, cancelRanges: this.cancelRangeReads };
           const data = content ?? (streamed && messages ? await readPdfAttachment(messages, request, loadSignal, signal)
             : Array.isArray(attachments) && messages
               ? await waitForContainerTask(messages.sendWithPromise('GetAttachments', request), loadSignal) : null);
@@ -520,7 +605,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       if (generation !== this.loadGeneration) return;
       const [input, pdfjs, { default: workerSource }] = await waitForContainerTask(Promise.all([
         toPdfSource(source, this.virtual),
-        import('pdfjs-dist'),
+        import('./pdf-display'),
         import('pdfjs-dist/build/pdf.worker.min.mjs?url')
       ]), controller.signal);
       if (signal?.aborted) throw abortError();
@@ -567,8 +652,12 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       const pdf = await waitForContainerTask(task.promise, controller.signal);
       if (generation !== this.loadGeneration) return;
 
-      this.cancelAttachmentRanges = httpRanges || Boolean(blobRange &&
-        bindPdfBlobRangeCancellation(pdf._transport?.messageHandler, blobRange.cancelRange));
+      const messages = pdf._transport?.messageHandler;
+      this.cancelRangeReads = httpRanges || Boolean(blobRange && bindPdfBlobRangeCancellation(messages, blobRange.cancelRange));
+      if (this.virtual && messages?.sendWithStream) {
+        if (this.cancelRangeReads) bindPdfPageRangeCancellation(messages);
+        this.pageLookup = bindPdfPageLookup(pdf, pdfjs);
+      }
       this.document = pdf;
       this.pdfjs = pdfjs;
       this.state.pageCount = pdf.numPages;
@@ -596,6 +685,13 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
 
       this.state.loading = false;
       this.state.error = null;
+      this.outline?.setSource({
+        read: signal => requestPdfNavigation<PdfOutlineItem[]>(pdf, signal) ?? waitForContainerTask(pdf.getOutline(), signal),
+        navigate: (destination, signal) => {
+          this.cancelLinkNavigation();
+          return this.navigateDestination(pdf, destination, signal);
+        }
+      });
       this.unbindTouch = bindPreviewTouchGestures(this.root, {
         getScale: () => this.state.scale,
         setScale: scale => this.setScale(scale),
@@ -649,16 +745,77 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
   }
 
   goToPage(index: number): void {
+    this.outline?.cancelNavigation();
+    this.cancelLinkNavigation();
+    this.movePage(index);
+  }
+
+  private movePage(index: number, target?: PdfBookmarkTarget): void {
     if (!Number.isFinite(index) || !this.layout?.count) return;
     const next = Math.max(0, Math.min(this.layout.count - 1, Math.trunc(index)));
+    this.bookmarkTarget = target;
     this.state.pageIndex = next;
     if (this.virtual) {
       const ratio = this.scrollRatio();
       this.scrollToTop(this.layout.offset(next) / ratio, true);
       if (ratio > 1) this.positionPageWindow();
+      const slot = this.pageSlots.get(next);
+      if (slot?.canvas) this.positionBookmark(slot);
     } else this.root.scrollTop = this.pageSlots.get(next)!.element.offsetTop;
     this.emit('statechange', this.getState());
     this.scheduleRender();
+  }
+
+  private async navigateDestination(pdf: PDFDocumentProxy, destination: PdfDestination, signal: AbortSignal): Promise<boolean> {
+    const request = requestPdfNavigation<PdfBookmarkTarget>(pdf, signal, { destination });
+    let target: PdfBookmarkTarget | null;
+    if (request) {
+      target = await request;
+      if (target) target.index = (pdfPagesMapper(pdf, this.pdfjs)?.getPageNumber(target.index + 1) ?? target.index + 1) - 1;
+    } else {
+      const dest = typeof destination === 'string' ? await waitForContainerTask(pdf.getDestination(destination), signal) : destination;
+      if (!dest) return false;
+      const page = dest[0] as Parameters<PDFDocumentProxy['getPageIndex']>[0] | number;
+      target = { index: typeof page === 'number' ? page : await waitForContainerTask(pdf.getPageIndex(page), signal), dest };
+    }
+    if (signal.aborted || pdf !== this.document || !target || !Number.isInteger(target.index) || target.index < 0 || target.index >= pdf.numPages) return false;
+    this.movePage(target.index, target);
+    return true;
+  }
+
+  private cancelLinkNavigation(slot?: PageSlot): void {
+    const navigation = this.linkNavigation;
+    if (!navigation || (slot && navigation.slot !== slot)) return;
+    this.linkNavigation = undefined;
+    navigation.controller.abort();
+  }
+
+  private async followPageLink(slot: PageSlot, destination: PdfDestination): Promise<void> {
+    const pdf = this.document;
+    if (!pdf || this.pageSlots.get(slot.index) !== slot || !this.visibleTextPages?.has(slot.index)) return;
+    this.outline?.cancelNavigation();
+    this.cancelLinkNavigation();
+    const controller = new AbortController(), navigation = { slot, controller };
+    this.linkNavigation = navigation;
+    let found = false;
+    try { found = await this.navigateDestination(pdf, destination, controller.signal); }
+    catch { /* The document remains readable if a destination cannot be resolved. */ }
+    finally { if (this.linkNavigation === navigation) this.linkNavigation = undefined; }
+    if (controller.signal.aborted) return;
+    if (found) this.root.focus({ preventScroll: true });
+    else this.warn(this.options.translate?.('Link destination unavailable') ?? 'Link destination unavailable');
+  }
+
+  private positionBookmark(slot: PageSlot): void {
+    const target = this.bookmarkTarget, layout = this.layout!;
+    if (!target || target.positioned || target.index !== slot.index || !slot.page || !this.hasPageTarget()) return;
+    target.positioned = true;
+    const point = bookmarkPoint(slot.page, layout.scaleFor(slot.index), target.dest);
+    if (!point) return;
+    const [x, y] = point;
+    this.scrollToTop((layout.offset(slot.index) + y) / this.scrollRatio(), true);
+    this.positionPageWindow();
+    this.root.scrollLeft = slot.element.offsetLeft + x;
   }
 
   next(): void { this.goToPage(this.state.pageIndex + 1); }
@@ -787,8 +944,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.visibleTextPages = visible;
     for (const [index, slot] of this.pageSlots) if (!needed.has(index)) {
       this.clearCanvas(slot);
-      // PDF.js caches page proxies, so removing the canvas alone retains their drawing data.
-      slot.page?.cleanup?.();
+      if (slot.page) releasePdfPage(this.document, slot.page);
       slot.element.remove();
       this.pageSlots.delete(index);
     }
@@ -801,12 +957,19 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.positionPageWindow();
     this.budgetPageWindow(needed, visible);
     for (const slot of this.pageSlots.values()) {
-      if (visible.has(slot.index)) this.startPageText(slot);
-      else if (slot.textRender?.started && slot.textElement?.dataset.rendered !== 'true' && slot.textLength !== 0) {
-        const { viewport, cachedPixels } = slot.textRender;
-        // Invalidate this read before cancellation settles. Reuse the painted page on reentry.
-        slot.textRender = slot.canvas?.dataset.rendered === 'true' ? { viewport, cachedPixels } : undefined;
-        this.clearText(slot);
+      const shown = visible.has(slot.index);
+      if (slot.linkLayer) slot.linkLayer.hidden = !shown;
+      if (shown) this.startPageLayers(slot);
+      else {
+        this.cancelLinkNavigation(slot);
+        slot.linkRequest?.abort();
+        slot.linkRequest = undefined;
+        if (slot.textRender?.started && slot.textElement?.dataset.rendered !== 'true' && slot.textLength !== 0) {
+          const { viewport, cachedPixels } = slot.textRender;
+          // Invalidate this read before cancellation settles. Reuse the painted page on reentry.
+          slot.textRender = slot.canvas?.dataset.rendered === 'true' ? { viewport, cachedPixels } : undefined;
+          this.clearText(slot);
+        }
       }
       if (!slot.detail) continue;
       const visibleArea = this.visiblePageArea(slot);
@@ -823,6 +986,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const visibleRasters = [], nearbyRasters = [];
     let currentRaster: { index: number; pixels: number } | undefined;
     for (const index of needed) {
+      if (this.pageSlots.get(index)?.retry) continue;
       const { width, height } = layout.size(index), scale = layout.scaleFor(index);
       const raster = sizePdfRaster(width * scale, height * scale, density);
       const demand = { index, pixels: raster.limited ? PDF_MAX_RASTER_PIXELS : raster.width * raster.height };
@@ -940,7 +1104,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
       this.updatePageWindow(needed, visible);
       const needsPaint = (index: number) => {
         const slot = this.pageSlots.get(index);
-        return slot?.canvas?.dataset.rendered !== 'true' || (slot.detailViewport && !slot.detail && this.visiblePageArea(slot));
+        return !slot?.retry && (slot?.canvas?.dataset.rendered !== 'true' || (slot.detailViewport && !slot.detail && this.visiblePageArea(slot)));
       };
       const target = this.state.pageIndex;
       const prioritizeTarget = this.hasPageTarget() && visible.has(target) && needsPaint(target);
@@ -951,7 +1115,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
           else if (lowerPriority && (slot.request || slot.task)) this.clearCanvas(slot, true);
         }
       }
-      this.refreshVisiblePaint?.();
+      this.refreshPaintWindow?.(needed);
       return this.rendering;
     }
     const generation = this.loadGeneration;
@@ -963,26 +1127,14 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         const epoch = this.renderGeneration;
         const { needed, visible } = this.visiblePages();
         this.updatePageWindow(needed, visible);
-        const current = () => generation === this.loadGeneration && epoch === this.renderGeneration && !this.renderAgain;
-        const foreground = visible.size ? visible : needed;
-        if (this.virtual && !firstPageOnly && visible.size) {
-          await this.paintVisiblePages(pdf, generation, epoch);
+        if (this.virtual && !firstPageOnly) {
+          await this.paintPageWindow(pdf, generation, epoch, needed);
         } else {
-          for (const index of foreground) {
-            if (!current()) break;
+          for (const index of visible.size ? visible : needed) {
+            if (generation !== this.loadGeneration || epoch !== this.renderGeneration || this.renderAgain) break;
             await this.renderPage(pdf, index, generation, epoch);
             if (firstPageOnly && this.pageSlots.get(index)?.canvas?.dataset.rendered === 'true') break;
           }
-        }
-        if (firstPageOnly) continue;
-        for (const index of visible) {
-          if (!current()) break;
-          const slot = this.pageSlots.get(index);
-          if (slot?.detailViewport && !slot.detail) await this.renderDetail(slot, slot.detailViewport);
-        }
-        for (const index of needed) {
-          if (!current()) break;
-          if (!foreground.has(index)) await this.renderPage(pdf, index, generation, epoch);
         }
       } while (this.renderAgain && generation === this.loadGeneration);
     })();
@@ -991,29 +1143,47 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     finally { if (this.rendering === rendering) this.rendering = null; }
   }
 
-  private async paintVisiblePages(pdf: PDFDocumentProxy, generation: number, epoch: number): Promise<void> {
-    let started = new WeakSet<PageSlot>();
+  private async paintPageWindow(pdf: PDFDocumentProxy, generation: number, epoch: number, needed: ReadonlySet<number>): Promise<void> {
+    let startedPage = new WeakSet<PageSlot>(), startedDetail = new WeakSet<PageSlot>();
     const pending = new Set<PageSlot>();
-    let wake: (() => void) | undefined, failure: { error: unknown } | undefined;
-    const refresh = () => { started = new WeakSet(); wake?.(); };
+    let wake: (() => void) | undefined;
+    const refresh = (window: ReadonlySet<number>) => {
+      needed = window;
+      startedPage = new WeakSet();
+      startedDetail = new WeakSet();
+      wake?.();
+    };
     const settled = (slot: PageSlot) => { pending.delete(slot); wake?.(); };
-    this.refreshVisiblePaint = refresh;
+    const start = (index: number, kind: 'page' | 'detail' | 'nearby') => {
+      if (pending.size >= PDF_CONCURRENT_PAINTS || (kind !== 'nearby' && !this.visibleTextPages?.has(index))) return;
+      const detail = kind === 'detail';
+      const slot = this.pageSlots.get(index), started = detail ? startedDetail : startedPage;
+      if (!slot || slot.retry || slot.rasterBudget === 0 || started.has(slot) || pending.has(slot)) return;
+      const viewport = detail ? slot.detailViewport : undefined;
+      if (detail ? !viewport || slot.detail || slot.canvas?.dataset.rendered !== 'true' : slot.canvas) return;
+      started.add(slot);
+      pending.add(slot);
+      const drawing = viewport ? this.renderDetail(slot, viewport) : this.renderPage(pdf, index, generation, epoch, kind === 'page');
+      void drawing.then(() => settled(slot), () => {
+        if (generation === this.loadGeneration && epoch === this.renderGeneration && this.pageSlots.get(index) === slot) {
+          this.showPageRetry(pdf, slot);
+          this.budgetPageWindow(needed, this.visibleTextPages!);
+        }
+        settled(slot);
+      });
+    };
+    this.refreshPaintWindow = refresh;
     try {
       while (generation === this.loadGeneration && epoch === this.renderGeneration) {
-        if (failure) {
-          for (const slot of pending) this.clearCanvas(slot, true);
-          throw failure.error;
-        }
-        for (const index of this.visibleTextPages ?? []) {
-          if (pending.size >= VISIBLE_PDF_PAINTS) break;
-          const slot = this.pageSlots.get(index);
-          if (!slot || !this.visibleTextPages?.has(index) || started.has(slot) || pending.has(slot)
-            || slot.canvas || slot.rasterBudget === 0) continue;
-          started.add(slot);
-          pending.add(slot);
-          void this.renderPage(pdf, index, generation, epoch, true).then(
-            () => settled(slot), error => { failure ??= { error }; settled(slot); }
-          );
+        const visible = this.visibleTextPages!;
+        if (this.hasPageTarget()) start(this.state.pageIndex, 'detail');
+        for (const index of visible) start(index, 'page');
+        // A free slot can refine an already painted page while another base paint waits for bytes.
+        for (const index of visible) start(index, 'detail');
+        // Prepaint one nearby page when idle. If it becomes visible, its read still owns just one slot.
+        if (!pending.size && !this.renderAgain) for (const index of needed) {
+          if (!visible.has(index)) start(index, 'nearby');
+          if (pending.size) break;
         }
         if (!pending.size) return;
         // A viewport change can fill a free slot even while another page is waiting on PDF.js.
@@ -1021,26 +1191,33 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         wake = undefined;
       }
     } finally {
-      if (this.refreshVisiblePaint === refresh) this.refreshVisiblePaint = undefined;
+      if (this.refreshPaintWindow === refresh) this.refreshPaintWindow = undefined;
     }
   }
 
   private async renderPage(pdf: PDFDocumentProxy, index: number, generation: number, epoch: number,
     concurrent = false): Promise<void> {
     const slot = this.pageSlots.get(index);
-    if (!slot || slot.canvas || slot.rasterBudget === 0) return;
+    if (!slot || slot.canvas || slot.rasterBudget === 0 || generation !== this.loadGeneration || epoch !== this.renderGeneration) return;
     let page = slot.page;
+    let request: AbortController | undefined;
     if (!page) {
-      const request = new AbortController();
+      request = new AbortController();
       slot.request = request;
-      try { page = await waitForContainerTask(pdf.getPage(index + 1), request.signal); }
+      try { page = await (this.pageLookup?.(index + 1, request.signal) ?? waitForContainerTask(pdf.getPage(index + 1), request.signal)); }
       catch (error) {
         if (request.signal.aborted) return;
         throw error;
       } finally { if (slot.request === request) slot.request = undefined; }
+      // A completed lookup belongs to the current slot, including after rapid reentry.
+      if (generation === this.loadGeneration) {
+        const current = this.pageSlots.get(index);
+        if (current) current.page ??= page;
+        else releasePdfPage(pdf, page);
+      }
     }
-    if (generation !== this.loadGeneration || epoch !== this.renderGeneration || this.pageSlots.get(index) !== slot || slot.rasterBudget === 0) return;
-    slot.page = page;
+    if (request?.signal.aborted || generation !== this.loadGeneration || epoch !== this.renderGeneration
+      || this.pageSlots.get(index) !== slot || slot.rasterBudget === 0) return;
     const base = page.getViewport({ scale: 1 });
     const layout = this.layout!, anchorIndex = this.state.pageIndex;
     const anchor = this.pageSlots.get(anchorIndex)?.element;
@@ -1052,6 +1229,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         const keepTarget = this.hasPageTarget();
         this.positionPageWindow();
         this.restorePagePosition(anchorIndex, logicalTop - anchorTop, atEnd, keepTarget);
+        this.positionBookmark(slot);
         // Share the budget using the measured geometry before allocating a canvas.
         this.renderAgain = true;
         if (!concurrent) return;
@@ -1064,6 +1242,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         if (anchor) this.root.scrollTop += anchor.offsetTop - anchorTop;
       }
     }
+    if (this.virtual) this.positionBookmark(slot);
     const scale = layout.scaleFor(index);
     const viewport = page.getViewport({ scale });
     const outputScale = window.devicePixelRatio || 1;
@@ -1086,7 +1265,7 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     if (cacheKey && pdfPageCache.read(cacheKey, canvas)) {
       canvas.dataset.rendered = 'true';
       slot.textRender ??= { viewport, cachedPixels: true };
-      this.startPageText(slot);
+      this.startPageLayers(slot);
       return;
     }
     const transform = raster.limited ? [raster.width / viewport.width, 0, 0, raster.height / viewport.height, 0, 0] : undefined;
@@ -1099,22 +1278,57 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
         if (cacheKey) pdfPageCache.write(cacheKey, canvas);
         canvas.dataset.rendered = 'true';
         slot.textRender ??= { viewport };
-        this.startPageText(slot);
+        this.startPageLayers(slot);
       }
     } catch (error) {
-      if (slot.canvas === canvas) this.clearCanvas(slot);
+      if (slot.canvas !== canvas) return;
+      this.clearCanvas(slot);
       if (generation === this.loadGeneration && epoch === this.renderGeneration && (error as Error)?.name !== 'RenderingCancelledException') throw error;
     } finally { if (slot.task === task) slot.task = undefined; }
   }
 
-  private clearCanvas(slot: PageSlot, keepText = false): void {
+  private showPageRetry(pdf: PDFDocumentProxy, slot: PageSlot): void {
+    this.clearCanvas(slot);
+    // A new proxy must rebuild the failed operator list and its resource readers.
+    if (slot.page) releasePdfPage(pdf, slot.page);
+    slot.page = undefined;
+    const button = document.createElement('button');
+    button.className = 'pdfv-page-retry';
+    button.type = 'button';
+    slot.retry = button;
+    this.labelPageRetry(slot);
+    button.addEventListener('click', () => {
+      if (this.pageSlots.get(slot.index) !== slot || slot.retry !== button) return;
+      if (button.ownerDocument.activeElement === button) this.root.focus({ preventScroll: true });
+      slot.retry = undefined;
+      button.remove();
+      this.scheduleRender();
+    }, { once: true });
+    slot.element.append(button);
+  }
+
+  private labelPageRetry(slot: PageSlot): void {
+    if (!slot.retry) return;
+    const translate = this.options.translate;
+    slot.retry.textContent = translate?.('Retry') ?? 'Retry';
+    slot.retry.setAttribute('aria-label', `${slot.retry.textContent} (${translate?.('Page') ?? 'Page'} ${slot.index + 1})`);
+  }
+
+  private clearCanvas(slot: PageSlot, keepLayers = false): void {
     this.clearDetail(slot);
     slot.detailViewport = undefined;
     // A pending reader belongs to the page, while its raster can be repainted independently.
-    if (!keepText || !slot.textLayer || slot.textElement?.dataset.rendered === 'true') slot.textRender = undefined;
+    if (!keepLayers || !slot.textLayer || slot.textElement?.dataset.rendered === 'true') slot.textRender = undefined;
     slot.request?.abort();
     slot.request = undefined;
-    if (!keepText) this.clearText(slot);
+    if (!keepLayers) {
+      this.clearText(slot);
+      this.cancelLinkNavigation(slot);
+      slot.linkRequest?.abort();
+      slot.linkRequest = undefined;
+      slot.linkLayer?.remove();
+      slot.linkLayer = undefined;
+    }
     slot.task?.cancel();
     slot.task = undefined;
     if (slot.canvas) {
@@ -1196,13 +1410,33 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     detail.canvas.remove();
   }
 
-  private startPageText(slot: PageSlot): void {
+  private startPageLayers(slot: PageSlot): void {
+    if (this.virtual && !this.visibleTextPages?.has(slot.index)) return;
+    if (this.virtual && slot.canvas?.dataset.rendered === 'true') void this.loadPageLinks(slot);
     const { page, textRender } = slot;
-    if (!page || !textRender || textRender.started || (this.virtual && !this.visibleTextPages?.has(slot.index))) return;
+    if (!page || !textRender || textRender.started) return;
     textRender.started = true;
     const generation = this.loadGeneration;
     void this.renderPageText(page, slot, textRender.viewport,
       () => slot.textRender === textRender, generation, textRender.cachedPixels);
+  }
+
+  private async loadPageLinks(slot: PageSlot): Promise<void> {
+    const pdf = this.document, page = slot.page;
+    if (!pdf || !page?.getAnnotations || slot.linkRequest || slot.linkLayer) return;
+    const controller = slot.linkRequest = new AbortController(), signal = controller.signal;
+    try {
+      const pageId = pdfPagesMapper(pdf, this.pdfjs)?.getPageId(slot.index + 1);
+      const request = pageId === undefined ? undefined
+        : requestPdfNavigation<PdfPageLink[]>(pdf, signal, { pageIndex: pageId - 1 });
+      const links = await (request ?? waitForContainerTask(page.getAnnotations(), signal).then(annotations => annotations
+        .filter(({ subtype }) => subtype === 'Link').map(annotation => ({ ...annotation, label: annotation.contentsObj?.str }))));
+      if (signal.aborted || !links) return;
+      const layer = slot.linkLayer = createPdfPageLinks(page, links, destination => { void this.followPageLink(slot, destination); },
+        this.options.translate?.('Go to destination') ?? 'Go to destination');
+      if (layer.childElementCount) slot.element.append(layer);
+    } catch { /* Links must not block the page's canvas or selectable text. */ }
+    finally { if (slot.linkRequest === controller) slot.linkRequest = undefined; }
   }
 
   private async renderPageText(page: PDFPageProxy, slot: PageSlot, viewport: PageViewport,
@@ -1234,11 +1468,12 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     const AbortException = this.pdfjs?.AbortException ?? Error;
     let layer: TextLayer | undefined, cancelled = false, readFailed = false;
     const textContentSource = new ReadableStream<PdfTextContent>({
-      async pull(controller) {
+      pull: async controller => {
         try {
           // With no prefetch, PDF.js has already appended the previous chunk's runs.
           if (offsets.length !== layer?.textDivs.length) progress.state = 'unavailable';
           progress.wake?.();
+          if (!progress.state && this.pageMatches.has(slot.index)) this.highlightPage(slot, this.hasPageTarget());
           const { value, done } = await reader.read();
           if (cancelled) return;
           if (done) {
@@ -1378,25 +1613,30 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
     this.unbindTouch();
     if (this.animationFrame !== null) cancelAnimationFrame(this.animationFrame);
     this.animationFrame = null;
+    if (this.resizeFrame !== undefined) cancelAnimationFrame(this.resizeFrame);
+    this.resizeFrame = undefined;
     this.renderGeneration++;
     for (const slot of this.pageSlots.values()) this.clearCanvas(slot);
     this.pageSlots.clear();
     this.visibleTextPages = undefined;
     this.layout = undefined;
+    this.bookmarkTarget = undefined;
+    this.outline?.setSource();
     this.pageTargetScrollTop = undefined;
     this.pageTrack.replaceChildren();
     this.pageTrack.removeAttribute('style');
     this.fonts.clear();
     this.state.fonts = [];
     this.rendering = null;
-    this.refreshVisiblePaint = undefined;
+    this.refreshPaintWindow = undefined;
     this.renderAgain = false;
     this.root.replaceChildren();
     const task = this.loadingTask, pdf = this.document, worker = this.localWorker;
     this.loadingTask = null;
     this.localWorker = undefined;
     this.document = null;
-    this.cancelAttachmentRanges = false;
+    this.cancelRangeReads = false;
+    this.pageLookup = undefined;
     this.contentKey = undefined;
     this.sensitive = false;
     this.searchPageText.clear();
@@ -1410,6 +1650,109 @@ export class PdfPreviewSession implements PreviewSession<PagedPreviewState> {
 }
 
 function canvasPixels(canvas?: HTMLCanvasElement): number { return canvas ? canvas.width * canvas.height : 0; }
+
+function releasePdfPage(pdf: PDFDocumentProxy | null, page: PDFPageProxy): void {
+  const transport = pdf?._transport as { releasePage?(page: PDFPageProxy): void } | undefined;
+  if (transport?.releasePage) transport.releasePage(page);
+  else page.cleanup?.();
+}
+
+function pdfPagesMapper(pdf: PDFDocumentProxy, pdfjs?: PdfDisplay) {
+  const transport = pdf._transport as { pagesMapper?: Pick<InstanceType<PdfDisplay['PagesMapper']>, 'getPageId' | 'getPageNumber'> } | undefined;
+  return transport?.pagesMapper ?? pdfjs?.PagesMapper?.instance;
+}
+
+function requestPdfNavigation<T>(pdf: PDFDocumentProxy, signal: AbortSignal,
+  request: { destination?: PdfDestination; pageIndex?: number } = {}): Promise<T | null> | undefined {
+  const messages = pdf._transport?.messageHandler as PdfStreamMessages | undefined;
+  if (!messages?.sendWithStream) return;
+  return (async () => {
+    signal.throwIfAborted();
+    const reader = messages.sendWithStream('GetFilensNavigation', request).getReader();
+    const cancel = () => { void reader.cancel(new DOMException('PDF navigation cancelled.', 'AbortError')).catch(() => {}); };
+    signal.addEventListener('abort', cancel, { once: true });
+    try {
+      const { value } = await reader.read();
+      signal.throwIfAborted();
+      return value ?? null;
+    } finally {
+      signal.removeEventListener('abort', cancel);
+      reader.releaseLock();
+    }
+  })();
+}
+
+function bookmarkPoint(page: PDFPageProxy, scale: number, destination: readonly unknown[]): [number, number] | undefined {
+  const [, command, first, second, third, fourth] = destination;
+  const kind = (command as { name?: string } | null)?.name;
+  const viewport = page.getViewport({ scale });
+  const [left, bottom, right, top] = page.view;
+  const number = (value: unknown, fallback: number) => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  let x: number, y: number;
+  if (kind === 'FitR') {
+    const [x1, y1, x2, y2] = viewport.convertToViewportRectangle([
+      number(first, left), number(second, bottom), number(third, right), number(fourth, top)
+    ]);
+    x = Math.min(x1, x2); y = Math.min(y1, y2);
+  } else if (kind === 'XYZ' || kind === 'FitH' || kind === 'FitBH' || kind === 'FitV' || kind === 'FitBV') {
+    const horizontal = kind === 'FitH' || kind === 'FitBH';
+    [x, y] = viewport.convertToViewportPoint(horizontal ? left : number(first, left), number(horizontal ? first : second, top));
+  } else return;
+  return [Math.max(0, Math.min(x, viewport.width - 1)), Math.max(0, Math.min(y, viewport.height - 1))];
+}
+
+function streamOffscreenPdfText(pdf: PDFDocumentProxy, pdfjs: PdfDisplay | undefined,
+  pageIndex: number): ReadableStream<PdfTextContent> | undefined {
+  const messages = pdf._transport?.messageHandler as PdfStreamMessages | undefined;
+  const pageId = pdfPagesMapper(pdf, pdfjs)?.getPageId(pageIndex + 1);
+  if (!messages?.sendWithStream || pageId === undefined) return;
+  // Match PDFPageProxy.streamTextContent's request and queuing strategy.
+  return messages.sendWithStream('GetTextContent', { pageId: pageId - 1, pageIndex, filensSearch: true,
+    includeMarkedContent: false, disableNormalization: false }, { highWaterMark: 100, size: (chunk: PdfTextContent) => chunk.items.length });
+}
+
+function bindPdfPageRangeCancellation(messages: PdfStreamMessages): void {
+  const send = messages.sendWithStream.bind(messages);
+  messages.sendWithStream = (action, data, strategy, transfers) => send(action,
+    action === 'GetTextContent' || action === 'GetOperatorList' ? { ...data, filensCancelRanges: true } : data, strategy, transfers);
+}
+
+function bindPdfPageLookup(pdf: PDFDocumentProxy, pdfjs: PdfDisplay): PdfPageLookup | undefined {
+  const messages = pdf._transport?.messageHandler as (PdfStreamMessages & {
+    sendWithPromise(action: string, data?: Record<string, unknown>, transfers?: Transferable[]): Promise<unknown>;
+  }) | undefined;
+  const mapper = pdfPagesMapper(pdf, pdfjs);
+  if (!messages?.sendWithPromise || !mapper) return;
+  const send = messages.sendWithPromise.bind(messages);
+  const ready = new Set<number>();
+  let metadata: { index: number; value: unknown } | undefined;
+  // Feed completed metadata to PDF.js's own proxy factory and cache in the same call stack.
+  messages.sendWithPromise = (action, data, transfers) => action === 'GetPage' && metadata && data?.pageIndex === metadata.index
+    ? Promise.resolve(metadata.value) : send(action, data, transfers);
+  return async (pageNumber, signal) => {
+    signal.throwIfAborted();
+    const index = mapper.getPageId(pageNumber) - 1;
+    if (pageNumber === 1 || ready.has(index)) return pdf.getPage(pageNumber);
+    const reader = messages.sendWithStream('GetPage', { pageIndex: index }).getReader();
+    const abort = () => { void reader.cancel(new pdfjs.AbortException('PDF page lookup cancelled.')).catch(() => {}); };
+    signal.addEventListener('abort', abort, { once: true });
+    let page: Promise<PDFPageProxy>;
+    try {
+      const { value, done } = await reader.read();
+      signal.throwIfAborted();
+      if (done) throw new Error('PDF page lookup returned no metadata.');
+      metadata = { index, value };
+      try { page = pdf.getPage(pageNumber); }
+      finally { metadata = undefined; }
+    } finally {
+      signal.removeEventListener('abort', abort);
+      reader.releaseLock();
+    }
+    const result = await page;
+    ready.add(index);
+    return result;
+  };
+}
 
 async function readPdfAttachment(messages: PdfAttachmentMessages, request: PdfAttachmentRead, loadSignal?: AbortSignal,
   readSignal?: AbortSignal): Promise<Uint8Array | undefined> {

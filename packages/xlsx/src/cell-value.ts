@@ -1,7 +1,7 @@
 import type { ParsedArrayFormula, ParsedCell, ParsedDefinedName, ParsedMerge, ParsedSheet, ParsedTableRange, ParsedWorkbook } from './types';
 import { WorksheetCellIndex } from './cell-index';
-import { captureError, FormulaCalculationLimit, MAX_DENSE_ARRAY_SCAN, mergeOccupiedPositions, sliceArray, type FormulaArray } from './formula-array';
-import { containsNestedAggregate, FormulaError, FormulaReader, isLambda, type FormulaLambda, type FormulaOperand, type Scalar } from './formula-reader';
+import { captureError, FormulaCalculationLimit, MAX_DENSE_ARRAY_SCAN, mergeOccupiedPositions, sliceArray, stackArrays, type FormulaArray } from './formula-array';
+import { containsNestedAggregate, FormulaError, FormulaReader, isLambda, type FormulaLambda, type FormulaOperand, type RankSample, type Reference, type Scalar } from './formula-reader';
 import { excelDateSerial, excelLocalDateSerial } from './excel-calendar';
 import { formulaClock, shareFormulaClock, type FormulaClock } from './formula-clock';
 import { RowRangeIndex } from './row-range-index';
@@ -12,6 +12,8 @@ import { WorksheetValueCell } from './worksheet-cell';
 
 const MAX_DEPENDENCY_DEPTH = 64;
 const MAX_NAME_EXPANSIONS = 1024;
+const MAX_RANK_SAMPLE_RANGES = 16;
+const MAX_RANK_SAMPLE_VALUES = 1_048_576;
 const cellIndexes = new WeakMap<ParsedSheet, WorksheetCellIndex>();
 const formulaWorkbooks = new WeakMap<ParsedSheet, FormulaWorkbook>();
 const calculatedAt = new WeakMap<ParsedCell, number>();
@@ -211,7 +213,13 @@ function formulaReader(sheet: ParsedSheet, formula: string, current: () => Calcu
     const target = referenceSheet(sheet, ref.sheet);
     const source = formulaIndex(target).get(ref.firstRow, ref.firstColumn);
     const formula = source ? source.formula ?? resolveSharedFormula(target, source) : undefined;
-    if (formula !== undefined || !includeLegacyArray) return formula;
+    if (formula !== undefined) {
+      if (includeLegacyArray) return formula;
+      const spill = spillAt(target, ref.firstRow, ref.firstColumn);
+      const isBlockedSpill = source?.valueType === 'error' && source.value === '#SPILL!';
+      return FormulaReader.displayText(formula, spill?.anchor !== source && !isBlockedSpill);
+    }
+    if (!includeLegacyArray) return undefined;
     const spill = spillAt(target, ref.firstRow, ref.firstColumn);
     return spill && !spill.dynamic ? spill.anchor.formula : undefined;
   }, (name, qualifier) => readTableSource(sheet, caller, cell, name, qualifier), cell, (ref, compactOnly) =>
@@ -221,7 +229,40 @@ function formulaReader(sheet: ParsedSheet, formula: string, current: () => Calcu
     if (!spill?.dynamic || spill.firstRow !== ref.firstRow || spill.firstColumn !== ref.firstColumn) return undefined;
     return { ...ref, lastRow: spill.lastRow, lastColumn: spill.lastColumn };
   }, (first, last) => referenceSheetSpan(sheet, first, last), (ref, visit) =>
-    visitDisplayedRangeValues(referenceSheet(sheet, ref.sheet), ref, current(), visit));
+    visitDisplayedRangeValues(referenceSheet(sheet, ref.sheet), ref, current(), visit),
+  (ref, build) => reuseRankSample(sheet, cell, ref, current(), build));
+}
+
+function reuseRankSample(sheet: ParsedSheet, cell: CellPosition, range: Reference, calculation: Calculation,
+  build: () => RankSample): RankSample {
+  const { clock, time, active } = calculation;
+  const cache = clock.rankSamples;
+  // Nested evaluations still pass through the dependency and circular-reference checks.
+  if (!cache || clock.time !== time || active.size !== 1) return build();
+  const target = referenceSheet(sheet, range.sheet);
+  const { firstRow, lastRow, firstColumn, lastColumn } = range;
+  if (target === sheet) {
+    const spill = spillAt(sheet, cell.row, cell.column);
+    if (firstRow <= (spill?.lastRow ?? cell.row) && lastRow >= (spill?.firstRow ?? cell.row)
+      && firstColumn <= (spill?.lastColumn ?? cell.column) && lastColumn >= (spill?.firstColumn ?? cell.column)) return build();
+  }
+  const key = `${firstRow}:${lastRow}:${firstColumn}:${lastColumn}`;
+  const ranges = cache.sheets.get(target);
+  const entry = ranges?.get(key);
+  if (entry) {
+    if (entry.volatile) clock.reads++;
+    return entry.sample;
+  }
+  const { reads } = clock;
+  const sample = build();
+  if (cache.ranges < MAX_RANK_SAMPLE_RANGES && cache.storedValues + sample.storedValues <= MAX_RANK_SAMPLE_VALUES) {
+    const targetRanges = ranges ?? new Map();
+    if (!ranges) cache.sheets.set(target, targetRanges);
+    targetRanges.set(key, { sample, volatile: clock.reads !== reads });
+    cache.ranges++;
+    cache.storedValues += sample.storedValues;
+  }
+  return sample;
 }
 
 function filterCoversRow(sheet: ParsedSheet, row: number): boolean {
@@ -363,17 +404,17 @@ function intersectSpills(sheet: ParsedSheet, { firstRow, lastRow, firstColumn, l
   visit: (spill: SpillRange) => void): void {
   const index = spillIndex(sheet);
   index?.forEach(firstRow, lastRow, spill => {
-    if (spill.firstColumn > lastColumn || spill.lastColumn < firstColumn || spill.overlaps) return;
+    if (spill.overlaps) return;
     if (spill.overlaps === undefined) {
       spill.overlaps = false;
       index.forEach(spill.firstRow, spill.lastRow, other => {
-        if (other !== spill && other.firstColumn <= spill.lastColumn && other.lastColumn >= spill.firstColumn) {
+        if (other !== spill) {
           other.overlaps = spill.overlaps = true;
         }
-      });
+      }, [spill.firstColumn, spill.lastColumn]);
     }
     if (!spill.overlaps) visit(spill);
-  });
+  }, [firstColumn, lastColumn]);
 }
 
 function spillAt(sheet: ParsedSheet, row: number, column: number): SpillRange | undefined {
@@ -385,7 +426,8 @@ function spillAt(sheet: ParsedSheet, row: number, column: number): SpillRange | 
 
 export function hasSourceValue(cell?: ParsedCell): boolean {
   return cell !== undefined && (cell.formula !== undefined || cell.sharedFormulaId !== undefined ||
-    (!cell.missingValue && Boolean(cell.valueType || cell.value.trim())));
+    (!cell.missingValue && Boolean(cell.valueType ||
+      (cell instanceof WorksheetValueCell && cell.numericValue !== undefined) || cell.value.trim())));
 }
 
 function withSpill<T>(sheet: ParsedSheet, spill: SpillRange, calculation: Calculation, read: (plan: SpillPlan) => T): T {
@@ -399,21 +441,26 @@ function withSpill<T>(sheet: ParsedSheet, spill: SpillRange, calculation: Calcul
   plan.current = calculation;
   try {
     if (fresh) {
+      const rows = spill.lastRow - spill.firstRow + 1, columns = spill.lastColumn - spill.firstColumn + 1;
       try {
         const value = formulaReader(sheet, spill.anchor.formula!, () => plan.current!, sheet, spill.anchor).readResult(true);
         if (value !== null && typeof value === 'object') {
-          const rows = spill.lastRow - spill.firstRow + 1, columns = spill.lastColumn - spill.firstColumn + 1;
           if (value.rows === rows && value.columns === columns) plan.array = value;
-          else if (!spill.dynamic && value.rows >= rows && value.columns >= columns) {
-            // Legacy array formulas display only the portion that fits the declared cells.
-            plan.array = sliceArray(value, 0, 0, rows, columns);
+          else if (!spill.dynamic) {
+            // Fixed legacy output ranges clip excess values and fill missing positions with #N/A.
+            const clipped = sliceArray(value, 0, 0, Math.min(rows, value.rows), Math.min(columns, value.columns));
+            plan.array = clipped.rows === rows && clipped.columns === columns
+              ? clipped : stackArrays([clipped], true, columns, undefined, rows);
           }
-        } else if (spill.firstRow === spill.lastRow && spill.firstColumn === spill.lastColumn) {
+        } else if (rows === 1 && columns === 1) {
           plan.array = { rows: 1, columns: 1, occupied: [], read: () => value ?? 0 };
         }
       } catch (error) {
         if (error instanceof FormulaCalculationLimit || error instanceof CircularReference) throw error;
-        if (error instanceof FormulaError) plan.error = error;
+        if (error instanceof FormulaError) {
+          if (spill.dynamic) plan.error = error;
+          else plan.array = { rows, columns, occupied: [], read: () => { throw error; } };
+        }
       }
       spill.plan = plan;
     }
@@ -679,6 +726,8 @@ export function readCellScalar(sheet: ParsedSheet, cell?: ParsedCell): Scalar {
       case 'boolean': return cell.value === 'TRUE';
     }
   }
+  const packed = cell instanceof WorksheetValueCell ? cell.numericValue : undefined;
+  if (packed !== undefined) return packed;
   const value = cell.value.trim();
   if (!value) return null;
   const numeric = Number(value);

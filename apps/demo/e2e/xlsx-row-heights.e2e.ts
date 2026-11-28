@@ -121,13 +121,13 @@ test('preserves XLSX row heights, fixed cell clipping and sparse navigation', as
   expect(errors).toEqual([]);
 });
 
-test('bounds long wrapped XLSX rows and keeps the final row reachable', async ({ page }) => {
+for (const savedOrigin of [false, true]) test(`bounds long wrapped XLSX rows and keeps the final row reachable (saved origin=${savedOrigin})`, async ({ page }) => {
   await page.clock.setFixedTime(new Date('2024-01-01T12:00:00Z'));
   await page.setViewportSize({ width: 1040, height: 940 });
   await page.goto('./?view=preview');
   await page.getByLabel('导入文件', { exact: true }).setInputFiles({ name: 'long-wrap.xlsx',
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    buffer: Buffer.from(await createRowHeightWorkbook({ tall: true, fractional: true })) });
+    buffer: Buffer.from(await createRowHeightWorkbook({ tall: true, fractional: true, savedOrigin })) });
   const grid = page.locator('.xlsxv-grid');
   const row = (index: number) => grid.locator(`tbody tr[aria-rowindex="${index + 1}"]`);
   const cell = (index: number, column: number) => row(index).locator(`td[aria-colindex="${column + 1}"]`);

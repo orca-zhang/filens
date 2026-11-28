@@ -4,6 +4,8 @@ import type { ConditionalIconSetName } from './conditional-icons';
 export interface ParsedWorkbook {
   sheets: ParsedSheet[];
   warnings: string[];
+  /** Saved active worksheet index in the parsed sheet order. Defaults to zero. */
+  activeSheetIndex?: number;
   fonts?: PreviewFontReference[];
   definedNames?: readonly ParsedDefinedName[];
 }
@@ -33,6 +35,12 @@ export interface ParsedSheet {
   columnWidthSource?: ParsedColumnWidthSource;
   /** Saved XLSX worksheet view displays expressions at twice the normal column widths. */
   showFormulas?: boolean;
+  /** Saved XLSX worksheet view starts with column A on the right. */
+  rightToLeft?: boolean;
+  /** Saved origin of an XLSX worksheet without frozen panes, in source coordinates. */
+  topLeft?: { row: number; column: number };
+  /** Saved XLSX freeze counts and the origin of the scrolling pane, in source coordinates. */
+  frozenPane?: { rows: number; columns: number; topLeft?: { row: number; column: number } };
   /** Whether numeric dates are measured from 1904-01-01. */
   date1904?: boolean;
   /** Workbook RGB overrides for indexed number-format colors. */
@@ -79,7 +87,7 @@ export interface ParsedRowHeightSource extends ParsedRowHeight {
 export interface ParsedTrackRange { first: number; last: number }
 
 export interface ParsedColumnWidthSource {
-  ranges: readonly { firstColumn: number; lastColumn: number; width: number }[];
+  ranges: readonly { firstColumn: number; lastColumn: number; width: number; bestFit?: true }[];
   defaultWidth?: number;
   /** Character count excluding the five pixels of cell/grid padding. */
   baseWidth: number;
@@ -167,7 +175,7 @@ export interface ParsedConditionalRule {
   activeFormula?: string;
 }
 
-export interface ParsedConditionalStyle extends Pick<ParsedCellStyle, 'color' | 'fill' | 'borders' | 'diagonal' | 'numberFormat' | 'underline' | 'strike'> {
+export interface ParsedConditionalStyle extends Pick<ParsedCellStyle, 'color' | 'fill' | 'borders' | 'rtlBorders' | 'diagonal' | 'numberFormat' | 'underline' | 'strike'> {
   bold?: boolean;
   italic?: boolean;
 }
@@ -222,14 +230,21 @@ export interface ParsedCellStyle {
   color?: string;
   underline?: 'single' | 'double' | 'none';
   strike?: boolean;
-  fill?: FillStyle;
+  fill?: FillStyle & { pathRectangle?: { left: number; right: number; top: number; bottom: number } };
   borders?: BorderBox;
+  /** Alternate physical edges when logical start/end are displayed right-to-left. */
+  rtlBorders?: BorderBox;
   diagonal?: { line: LineStyle; up: boolean; down: boolean };
-  horizontal?: 'left' | 'center' | 'right' | 'justify';
+  horizontal?: 'left' | 'center' | 'right' | 'justify' | 'distributed';
+  readingOrder?: 0 | 1 | 2;
+  justifyLastLine?: boolean;
   centerAcross?: boolean;
+  fillAlignment?: boolean;
   vertical?: 'top' | 'middle' | 'bottom';
+  verticalSpacing?: 'justify' | 'distributed';
   wrap?: boolean;
   shrinkToFit?: boolean;
+  clipText?: boolean;
   /** CSS rotation in degrees, or 255 for upright stacked text. */
   textRotation?: number;
   indent?: number;

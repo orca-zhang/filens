@@ -1,42 +1,46 @@
 import { hasSourceValue } from './cell-value';
 import { cellTextFont } from './cell-text-metrics';
 import type { ColumnWidths } from './column-widths';
-import { horizontalBarriers } from './rotated-overflow';
+import { horizontalBarriers } from './horizontal-overflow';
 import type { ParsedCell, ParsedRow, ParsedSheet } from './types';
 
-interface CenteredRange { anchor: ParsedCell; last: number }
-const empty: readonly CenteredRange[] = [];
-const sheets = new WeakMap<ParsedSheet, WeakMap<ParsedRow, readonly CenteredRange[]>>();
+type Alignment = 'center' | 'fill';
+interface AlignedRange { anchor: ParsedCell; last: number; alignment: Alignment }
+const empty: readonly AlignedRange[] = [];
+const sheets = new WeakMap<ParsedSheet, WeakMap<ParsedRow, readonly AlignedRange[]>>();
 
-export function centeredRanges(sheet: ParsedSheet, row: ParsedRow, widths: ColumnWidths): readonly CenteredRange[] {
+export function alignedRanges(sheet: ParsedSheet, row: ParsedRow, widths: ColumnWidths): readonly AlignedRange[] {
   if (row.cells.length < 2) return empty;
   let rows = sheets.get(sheet);
   if (!rows) { rows = new WeakMap(); sheets.set(sheet, rows); }
   const known = rows.get(row);
   if (known) return known;
-  const ranges: CenteredRange[] = [];
+  const ranges: AlignedRange[] = [];
   const formats = sheet.cellStyles!.formats;
   const cells = row.cells.every((cell, index) => !index || cell.column >= row.cells[index - 1].column)
     ? row.cells : [...row.cells].sort((a, b) => a.column - b.column);
-  let anchor: ParsedCell | undefined, last = 0;
+  let anchor: ParsedCell | undefined, alignment: Alignment | undefined, last = 0;
   const finish = () => {
-    if (anchor && last > anchor.column) ranges.push({ anchor, last });
+    if (anchor && alignment && last > anchor.column) ranges.push({ anchor, last, alignment });
     anchor = undefined;
   };
   for (let index = 0; index < cells.length; index++) {
     const cell = cells[index];
     if (cells[index + 1]?.column === cell.column) continue;
     if (cell.column !== last + 1) finish();
-    const centered = formats[cell.styleIndex ?? 0]?.centerAcross;
-    if (!centered || hasSourceValue(cell)) {
+    const style = formats[cell.styleIndex ?? 0];
+    const next = style?.centerAcross ? 'center' : style?.fillAlignment && !style.wrap && !sheet.showFormulas ? 'fill' : undefined;
+    if (next !== alignment || hasSourceValue(cell)) {
       finish();
-      if (centered && widths.tracks.includes(cell.column)) anchor = cell;
+      if (next && widths.tracks.includes(cell.column)) anchor = cell;
     }
+    alignment = next;
     last = cell.column;
   }
   finish();
   if (ranges.length) {
-    const barriers = horizontalBarriers(sheet, row.index).sort((a, b) => a.firstColumn - b.firstColumn);
+    const barriers = horizontalBarriers(sheet, row.index, [ranges[0].anchor.column, ranges.at(-1)!.last])
+      .sort((a, b) => a.firstColumn - b.firstColumn);
     let index = 0;
     for (const range of ranges) {
       while (barriers[index]?.lastColumn < range.anchor.column) index++;
@@ -49,23 +53,33 @@ export function centeredRanges(sheet: ParsedSheet, row: ParsedRow, widths: Colum
   return result;
 }
 
-export function paintCenteredRange(cell: HTMLTableCellElement, host: HTMLTableCellElement, range: CenteredRange,
-  widths: ColumnWidths, first: number, last: number, fixed: boolean, compact: boolean): void {
+export function paintAlignedRange(cell: HTMLTableCellElement, host: HTMLTableCellElement, range: AlignedRange,
+  widths: ColumnWidths, first: number, last: number, fixed: boolean, compact: boolean, rtl: boolean, paneStart: number) {
   const source = widths.before(range.anchor.column), end = widths.before(range.last + 1);
   const left = Math.max(source, widths.before(first)), right = Math.min(end, widths.before(last + 1));
+  const hostEnd = widths.before(host === cell ? range.anchor.column + 1 : first);
+  const hostStart = host === cell ? source : widths.before(paneStart);
+  const clipLeft = rtl ? hostEnd - right : left - hostStart;
   const clip = cell.ownerDocument.createElement('div'), content = cell.ownerDocument.createElement('div');
   clip.className = 'xlsxv-center-across';
+  clip.dir = 'ltr';
   content.className = 'xlsxv-center-across-content';
+  if (cell.dir) content.dir = cell.dir;
+  if (range.alignment === 'fill') content.style.textAlign = 'left';
   clip.style.width = `${right - left}px`;
   content.style.width = `${end - source}px`;
-  content.style.marginLeft = `${source - left}px`;
+  content.style.marginLeft = `${rtl ? right - end : source - left}px`;
   if (fixed) {
     clip.classList.add('is-fixed');
-    clip.style.left = host === cell ? '0' : `${left}px`;
+    clip.style.left = `${clipLeft}px`;
     if (cell.style.verticalAlign === 'middle' || cell.style.verticalAlign === 'bottom') {
       clip.style.alignContent = cell.style.verticalAlign === 'middle' ? 'center' : 'end';
     }
-  } else clip.style.marginLeft = host === cell ? '-8px' : `${left}px`;
+  } else {
+    const padding = host === cell ? 8 : 0;
+    clip.style.marginLeft = `${clipLeft - padding}px`;
+    if (rtl) clip.style.marginRight = `${hostEnd - hostStart - clipLeft - (right - left) - padding}px`;
+  }
   if (host !== cell) {
     if (!fixed) host.style.paddingBlock = compact ? '1px' : '4px';
     host.style.verticalAlign = cell.style.verticalAlign || 'top';
@@ -82,4 +96,5 @@ export function paintCenteredRange(cell: HTMLTableCellElement, host: HTMLTableCe
   clip.append(content);
   host.classList.add('xlsxv-overflow-host');
   host.append(clip);
+  return { clip, content, left: clipLeft };
 }

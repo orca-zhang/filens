@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 
-export async function createRowHeightWorkbook({ forceGeneral = false, formula = false, fractional = false, tall = false } = {}) {
+export async function createRowHeightWorkbook({ forceGeneral = false, formula = false, fractional = false, tall = false, savedOrigin = false } = {}) {
   const zip = new JSZip(), names = ['Row heights', 'Compact', 'Expressions'];
   zip.file('xl/workbook.xml', '<workbook><sheets>' + names.map((name, i) => `<sheet name="${name}" sheetId="${i + 1}" r:id="s${i + 1}"/>`).join('') + '</sheets></workbook>');
   zip.file('xl/_rels/workbook.xml.rels', '<Relationships>' + names.map((_, i) => `<Relationship Id="s${i + 1}" Target="worksheets/s${i + 1}.xml"/>`).join('') + '</Relationships>');
@@ -14,7 +14,8 @@ export async function createRowHeightWorkbook({ forceGeneral = false, formula = 
     + '</cellXfs></styleSheet>');
   const prefix = forceGeneral ? '<!-- general parser -->' : '';
   const long = (ref, style = 1) => `<c r="${ref}" s="${style}" t="s"><v>${tall ? 3 : 1}</v></c>`;
-  zip.file('xl/worksheets/s1.xml', `<worksheet><sheetFormatPr defaultRowHeight="${fractional ? '15.5' : '15'}" defaultColWidth="14"/><sheetData>` + prefix
+  const view = savedOrigin ? '<sheetViews><sheetView topLeftCell="A2" workbookViewId="0"/></sheetViews>' : '';
+  zip.file('xl/worksheets/s1.xml', `<worksheet>${view}<sheetFormatPr defaultRowHeight="${fractional ? '15.5' : '15'}" defaultColWidth="14"/><sheetData>` + prefix
     + '<row r="1"><c r="A1" t="s"><v>0</v></c></row>'
     + `<row r="2" ht="6" customHeight="true">${long('A2')}</row>`
     + `<row r="3" ht="30">${long('A3')}</row>`

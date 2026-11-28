@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadXlsxWorkbook, resolveCellValue } from '../src/parser';
 import { createSheetTable, SheetRowWindow } from '../src/table';
-import { formatCellValue as format } from '../src/number-formats';
+import { formatCellValue as format, formatWorkbookValue } from '../src/number-formats';
 import { clonePreviewWorkbook } from '../src/workbook-cache';
 import { createNumberFormatWorkbook } from './fixtures/number-format-workbook.mjs';
 import { createSystemDateFormatWorkbook } from './fixtures/system-date-format-workbook.mjs';
@@ -15,6 +15,33 @@ const select = (table: HTMLElement, row: number, column: number) =>
 const formatCellValue = (...args: Parameters<typeof format>) => format(...args).text;
 
 describe('XLSX number formats', () => {
+  it('uses the host separators for numbers and preserves explicit punctuation, date fields, and raw text', () => {
+    const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('de-DE');
+    expect(formatCellValue('1234.56', undefined, 4)).toBe('1.234,56');
+    expect(formatCellValue('1234.56', undefined, 62)).toBe('1.234,56');
+    expect(formatCellValue('1234.56', undefined, '[$S/. -fr-FR]#,##0.00')).toBe('S/. 1.234,56');
+    expect(formatCellValue('1234.56', undefined, '"v1.2, total "#,##0.00\\.')).toBe('v1.2, total 1.234,56.');
+    expect(formatCellValue('1234.56', undefined, 'General')).toBe('1234,56');
+    expect(formatCellValue('1234.56', 'text', 4)).toBe('1234.56');
+    expect(formatCellValue('1234.56', 'text', 'General')).toBe('1234.56');
+    expect(formatCellValue('45351', undefined, 'yyyy.mm.dd')).toBe('2024.02.29');
+    const mixed = '[>=1000][$-en-US]#,##0.00;yyyy.mm.dd';
+    expect(formatCellValue('1234.56', undefined, mixed)).toBe('1.234,56');
+    expect(formatCellValue('61', undefined, mixed)).toBe('1900.03.01');
+    expect(formatCellValue('0.125', undefined, '0.0%')).toBe('12,5%');
+    expect(formatCellValue('5.25', undefined, '# ?/?')).toBe('5 1/4');
+    expect(formatCellValue('1200', undefined, '0.0?e+?0')).toBe('1,2 e+ 3');
+    expect(format('1234.5', undefined, '0.00_.\\,')).toEqual({
+      text: '1234,50 ,', spacing: [{ kind: 'pad', glyph: '.', offset: 7 }]
+    });
+    expect(formatWorkbookValue(1234.56, '#,##0.00')?.text).toBe('1.234,56');
+    language.mockReturnValue('fr-FR');
+    expect(formatCellValue('1234.56', undefined, 4)).toBe('1\u202f234,56');
+    expect(formatCellValue('1234.56', undefined, '"v1.2, total "#,##0.00\\.')).toBe('v1.2, total 1\u202f234,56.');
+    language.mockReturnValue('en-US');
+    expect(formatCellValue('1234.56', undefined, 4)).toBe('1,234.56');
+  });
+
   it.each([
     ['10', '[DBNum1][$-411]General', '十'],
     ['10', '[DBNum1][$-411]0', '一〇'],
@@ -308,14 +335,30 @@ describe('XLSX number formats', () => {
     ['1234.5', undefined, '[$T1-th-TH,D00]#,##0.00', false, 'T1๑,๒๓๔.๕๐'],
     ['-12', undefined, '[$-th-TH,D00]0;[Red][$-ar-SA,200]"V2 "0\\7', false, 'V2 ١٢7'],
     ['0.5', undefined, '[$-th-TH,D00]hh:mm:ss "Q2"', false, '๑๒:๐๐:๐๐ Q2'],
+    ['2024-02-29', 'date', '[$-ru-RU-x-genlower]mmmm yyyy', false, 'февраля 2024'],
+    ['2024-02-29', 'date', '[$-ru-RU-x-genupper]dd mmmm yyyy', true, '29 ФЕВРАЛЯ 2024'],
+    ['2024-02-29', 'date', '[$-RU-ru-X-NOMLOWER]dd mmmm yyyy', false, '29 февраль 2024'],
+    ['60', undefined, '[$-ru-RU-x-genlower]dd mmmm yyyy', false, '29 февраля 1900'],
+    ['2024-02-29', 'date', '[$-en-US-x-genupper]mmmm', false, 'February'],
   ] as const)('renders calendar and numeral directives for %s with %s', (value, type, code, date1904, expected) => {
     expect(formatCellValue(value, type, code, date1904)).toBe(expected);
+  });
+
+  it('takes Russian month forms from the active section and changes only full month fields', () => {
+    const code = '[>45000][Blue][$-ru-RU-x-genupper]mmmm;[>0][Red][$-ru-RU-x-genlower]mmmm;0;"mmmm "@';
+    expect(format('45351', undefined, code)).toEqual({ text: 'ФЕВРАЛЯ', color: '#0000FF' });
+    expect(format('43872', undefined, code)).toEqual({ text: 'февраля', color: '#FF0000' });
+    expect(formatCellValue('0', undefined, code)).toBe('0');
+    expect(formatCellValue('Дата', 'text', code)).toBe('mmmm Дата');
+    const fields = 'mmm mmmmm "mmmm" mm hh:mm dddd';
+    expect(formatCellValue('45351.5', undefined, '[$-ru-RU-x-genupper]' + fields))
+      .toBe(formatCellValue('45351.5', undefined, '[$-ru-RU]' + fields));
   });
 
   it.each([false, true])('uses formatCode16 with styles, TEXT and original serials (1904: %s)', async date1904 => {
     vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-GB');
     const sheet = (await loadXlsxWorkbook(await createExtendedLocaleWorkbook(date1904))).sheets[0];
-    const table = createSheetTable(sheet, 2);
+    const table = createSheetTable(sheet, 3);
     expect(Array.from({ length: 6 }, (_, i) => select(table, 1, i + 1)?.textContent)).toEqual([
       '令和元年5月1日', '๑๑-๐๒-๒๕๖๓', '令和元', 'Thursday, 29 February 2024', '14:30:45', '42.00'
     ]);
@@ -323,6 +366,11 @@ describe('XLSX number formats', () => {
     expect(select(table, 2, 1)?.textContent).toBe('平成31年4月30日');
     expect(select(table, 2, 2)?.textContent).toBe(date1904 ? '42411' : '43873');
     expect(select(table, 2, 3)?.textContent).toBe('๑๑-๐๒-๒๕๖๓');
+    expect(Array.from({ length: 4 }, (_, i) => select(table, 3, i + 1)?.textContent)).toEqual([
+      '29 февраля 2024', '29 февраль 2024', '29 ФЕВРАЛЯ 2024', '29 ФЕВРАЛЯ 2024'
+    ]);
+    expect(select(table, 3, 4)?.style.color).toBe('rgb(255, 0, 0)');
+    expect(resolveCellValue(sheet, sheet.rows[2].cells[0])).toBe(date1904 ? '43889' : '45351');
   });
 
   it.each([false, true])('renders system formats from the workbook and differential styles (1904: %s)', async date1904 => {

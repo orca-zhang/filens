@@ -1,5 +1,34 @@
 import JSZip from 'jszip';
 
+export async function createRotatedJustificationWorkbook() {
+  const zip = new JSZip();
+  zip.file('xl/workbook.xml', '<workbook><sheets><sheet name="Vertical writing" sheetId="1" r:id="sheet"/></sheets></workbook>');
+  zip.file('xl/_rels/workbook.xml.rels', '<Relationships><Relationship Id="sheet" Target="worksheets/sheet.xml"/></Relationships>');
+  const style = (rotation, vertical, attrs = '') => `<xf><alignment textRotation="${rotation}" vertical="${vertical}" ${attrs}/></xf>`;
+  zip.file('xl/styles.xml', '<styleSheet><cellXfs><xf/>'
+    + style(180, 'distributed') + style(90, 'distributed') + style(255, 'distributed') + style(180, 'justify')
+    + style(180, 'distributed', 'horizontal="center"') + style(255, 'justify', 'justifyLastLine="1"') + '</cellXfs></styleSheet>');
+  const value = (ref, index, text) => `<c r="${ref}" s="${index}" t="str"><v>${text}</v></c>`;
+  const row = (index, cells, height) => `<row r="${index}"${height ? ` ht="${height}" customHeight="1"` : ''}>${cells}</row>`;
+  const words = 'Alpha beta';
+  const wrapping = 'aaaa bbbb cccc dddd';
+  const rich = '<c r="D3" s="3" t="inlineStr"><is><r><t xml:space="preserve">AB </t></r>'
+    + '<r><rPr><b/><color rgb="FFB91C1C"/></rPr><t>CD</t></r></is></c>';
+  const splitWord = '<c r="B4" s="1" t="inlineStr"><is><r><t>Alpha beta&#10;</t></r>'
+    + '<r><rPr><color rgb="FFB91C1C"/></rPr><t>So</t></r><r><rPr><i/></rPr><t>lo</t></r></is></c>';
+  zip.file('xl/worksheets/sheet.xml', '<worksheet><sheetFormatPr defaultColWidth="17" defaultRowHeight="15"/>'
+    + '<cols><col min="5" max="5" hidden="1"/></cols><sheetData>'
+    + row(1, value('A1', 1, words) + value('B1', 2, words) + value('C1', 3, 'ABC DEF') + value('D1', 4, words), 100)
+    + row(2, value('A2', 1, words) + value('B2', 1, 'A long label makes this row taller'))
+    + row(3, value('A3', 4, wrapping) + value('B3', 1, wrapping) + value('C3', 3, 'Solo') + rich, 80)
+    + row(4, value('A4', 6, 'Up End') + splitWord, 100)
+    + row(5, '<c r="A5" s="1"><v>42</v></c><c r="B5" s="3" t="b"><v>1</v></c>', 90)
+    + row(12, value('A12', 5, 'First Middle Last')) + '<row r="13" hidden="1"/>'
+    + row(1048576, '<c r="XFD1048576" s="3"><f>&quot;UP&quot;&amp;CHAR(32)&amp;&quot;TAIL&quot;</f></c>', 90)
+    + '</sheetData><mergeCells><mergeCell ref="A12:AZ211"/></mergeCells></worksheet>');
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
 export async function createRotatedWorkbook({ forceGeneral = false } = {}) {
   const zip = new JSZip();
   zip.file('xl/workbook.xml', '<workbook><sheets><sheet name="Orientation" sheetId="1" r:id="sheet"/></sheets></workbook>');

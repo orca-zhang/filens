@@ -3,8 +3,67 @@ import { expect, test } from '@playwright/test';
 import { createAccountingWorkbook } from '../../../packages/xlsx/test/fixtures/accounting-workbook.mjs';
 import { createDbNumberWorkbook } from '../../../packages/xlsx/test/fixtures/db-number-workbook.mjs';
 import { createExtendedLocaleWorkbook } from '../../../packages/xlsx/test/fixtures/extended-locale-workbook.mjs';
+import { createLocalizedTextWorkbook } from '../../../packages/xlsx/test/fixtures/localized-text-workbook.mjs';
 import { createNumberFormatWorkbook } from '../../../packages/xlsx/test/fixtures/number-format-workbook.mjs';
+import { createRegionalNumberWorkbook } from '../../../packages/xlsx/test/fixtures/regional-number-workbook.mjs';
 import { createSystemDateFormatWorkbook } from '../../../packages/xlsx/test/fixtures/system-date-format-workbook.mjs';
+
+for (const [locale, amount, currency, date, percent, scientific] of [
+  ['en-US', '1,234.57', '1,234.57 €', 'Thursday, 29/02/2024', '28.5 %', '1.22E+07'],
+  ['de-DE', '1.234,57', '1.234,57 €', 'Donnerstag, 29.02.2024', '28,5\u00a0%', '1,22E+07'],
+  ['fr-FR', '1\u202f234,57', '1\u202f234,57\u00a0€', 'jeudi, 29/02/2024', '28,5\u00a0%', '1,22E+07']
+]) {
+  test.describe(`TEXT format arguments in ${locale}`, () => {
+    test.use({ locale, viewport: { width: 1320, height: 740 } });
+    test('evaluates authored formats and referenced masks through the final cell', async ({ page }) => {
+      await page.goto('./?view=preview&lang=en');
+      await page.getByLabel('Import files', { exact: true }).setInputFiles({ name: 'localized-text.xlsx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await createLocalizedTextWorkbook(locale)) });
+      const grid = page.locator('.xlsxv-grid');
+      const at = (row: number, col: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${col + 1}"]`);
+      for (const [index, text] of [amount, currency, date, percent, 'Saved 1,234.57 €', amount].entries()) {
+        await expect.poll(() => at(1, index + 1).textContent()).toBe(text);
+      }
+      await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+      const last = at(1048576, 16384);
+      await expect(last).toBeInViewport();
+      await expect.poll(() => last.textContent()).toBe(scientific);
+    });
+  });
+}
+
+for (const locale of ['de-DE', 'ru-RU']) {
+  test.describe(`regional XLSX separators for ${locale}`, () => {
+    test.use({ locale });
+    test('formats the visible values and TEXT while retaining source literals and arithmetic', async ({ page }) => {
+      await page.setViewportSize({ width: 1420, height: 740 });
+      await page.goto('./?view=preview&lang=en');
+      await page.getByLabel('Import files', { exact: true }).setInputFiles({ name: 'regional-numbers.xlsx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await createRegionalNumberWorkbook()) });
+      const grid = page.locator('.xlsxv-grid');
+      const at = (row: number, column: number) => grid.locator(`tr[aria-rowindex="${row + 1}"] td[aria-colindex="${column + 1}"]`);
+      const group = locale === 'de-DE' ? '.' : '\u00a0';
+      const amount = `1${group}234,56`;
+      const contents = (row: number, column: number) => at(row, column).textContent();
+      await expect.poll(() => contents(1, 1)).toBe(amount);
+      await expect.poll(() => contents(1, 2)).toBe(amount);
+      expect(await contents(1, 3)).toBe(`2${group}469,12`);
+      expect(await contents(1, 4)).toBe(`v1.2, total ${amount}.`);
+      expect(await contents(1, 5)).toBe('2024.02.29');
+      expect(await contents(1, 6)).toContain(`1${group}234,50`);
+      await expect(at(1, 6).locator('.xlsxv-number-fill')).toHaveCount(1);
+      expect(await contents(1, 7)).toBe('1234.56');
+      expect(await contents(1, 8)).toBe('5,25');
+      expect(await contents(1, 9)).toBe('1,2 e+ 3');
+      await expect(at(1, 9).locator('.xlsxv-number-pad')).toHaveCount(2);
+      await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+      const last = at(1048576, 16384);
+      await expect(last).toBeInViewport();
+      await expect.poll(() => contents(1048576, 16384)).toBe(`1${group}239,81 Q1.2`);
+      await expect(last).toHaveCSS('color', 'rgb(255, 0, 0)');
+    });
+  });
+}
 
 test('fits accounting symbols, repeated glyphs and reserved spacing to source widths', async ({ page }) => {
   await page.setViewportSize({ width: 1060, height: 780 });
@@ -256,12 +315,19 @@ test.describe('XLSX extended locale formats', () => {
       await expect(at(2, 1)).toHaveText('平成31年4月30日');
       await expect(at(2, 2)).toHaveText(date1904 ? '42411' : '43873');
       await expect(at(2, 3)).toHaveText('๑๑-๐๒-๒๕๖๓');
+      await expect(at(3, 1)).toHaveText('29 февраля 2024');
+      await expect(at(3, 2)).toHaveText('29 февраль 2024');
+      await expect(at(3, 3)).toHaveText('29 ФЕВРАЛЯ 2024');
+      await expect(at(3, 4)).toHaveText('29 ФЕВРАЛЯ 2024');
+      await expect(at(3, 4)).toHaveCSS('color', 'rgb(255, 0, 0)');
       const merge = grid.locator('[data-merge-ref="A5"]');
       await expect(merge).toHaveAttribute('aria-colindex', '2');
       await grid.evaluate(element => { element.scrollLeft = 3200; });
       await expect(merge).not.toHaveAttribute('aria-colindex', '2');
       await expect(merge).toHaveText('令和6年5月28日');
       await grid.evaluate(element => { element.scrollTop = element.scrollHeight; element.scrollLeft = element.scrollWidth; });
+      await expect(at(1048576, 16382)).toHaveText('29 ФЕВРАЛЯ 2024');
+      await expect(at(1048576, 16382)).toHaveCSS('color', 'rgb(255, 0, 0)');
       await expect(at(1048576, 16383)).toHaveText('令和元年5月1日');
       await expect(at(1048576, 16384)).toHaveText('๒๙-๐๒-๒๕๖๗');
       await expect(at(1048576, 16384)).toBeInViewport();

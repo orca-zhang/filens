@@ -8,16 +8,19 @@ interface BorderSegment { start: number; end: number; border: string }
 
 export function paintMergeBorders(cell: HTMLTableCellElement, merge: MergeFragment, index: SheetMerges,
   borders: BorderBox | undefined, differential: BorderBox | undefined, widths: ColumnWidths,
-  rows: VisibleTracks, beforeRow: (row: number) => number, authoredRuns?: ParsedSheet['mergeBorderRuns']): void {
+  rows: VisibleTracks, beforeRow: (row: number) => number, authoredRuns: ParsedSheet['mergeBorderRuns'], rtl: boolean, textRtl: boolean): void {
   const { source } = merge, columns = widths.tracks;
+  const clippedStart = columns.before(merge.firstColumn) > columns.before(source.firstColumn);
+  const clippedEnd = columns.before(merge.lastColumn + 1) < columns.before(source.lastColumn + 1);
+  const terminalSide = rtl ? 'left' : 'right';
   const clipped = {
     top: rows.before(merge.firstRow) > rows.before(source.firstRow),
-    right: columns.before(merge.lastColumn + 1) < columns.before(source.lastColumn + 1),
+    right: rtl ? clippedStart : clippedEnd,
     bottom: rows.before(merge.lastRow + 1) < rows.before(source.lastRow + 1),
-    left: columns.before(merge.firstColumn) > columns.before(source.firstColumn)
+    left: rtl ? clippedEnd : clippedStart
   };
-  const terminal = index.hasStoredBorders && ((!clipped.right && !borders?.right) || (!clipped.bottom && !borders?.bottom))
-    ? index.terminalBorders(source) : undefined;
+  const terminal = index.hasStoredBorders && ((!clipped[terminalSide] && !borders?.[terminalSide]) || (!clipped.bottom && !borders?.bottom))
+    ? index.terminalBorders(source, textRtl) : undefined;
   for (const side of ['top', 'right', 'bottom', 'left'] as const) {
     if (clipped[side]) {
       cell.style.setProperty(`border-${side}`, '0px solid transparent');
@@ -29,7 +32,7 @@ export function paintMergeBorders(cell: HTMLTableCellElement, merge: MergeFragme
     const first = horizontal ? merge.firstColumn : merge.firstRow, last = horizontal ? merge.lastColumn : merge.lastRow;
     const authored = authoredRuns?.(source, side, first, last);
     if (!index.hasStoredBorders && !authored?.length) continue;
-    const fallback = borders?.[side] ?? (side === 'right' || side === 'bottom' ? terminal?.[side] : undefined);
+    const fallback = borders?.[side] ?? (side === terminalSide || side === 'bottom' ? terminal?.[side] : undefined);
     const defaultBorder = fallback ? lineStyleToBorder(fallback) : authored ? cell.style.getPropertyValue(`border-${side}`) : '';
     const before = horizontal ? (column: number) => widths.before(column) : beforeRow;
     const origin = before(first), length = before(last + 1) - origin;
@@ -41,7 +44,7 @@ export function paintMergeBorders(cell: HTMLTableCellElement, merge: MergeFragme
       else segments.push({ start, end, border });
     };
     let cursor = 0;
-    for (const [firstTrack, lastTrack, line] of authored ?? index.edgeBorders(merge, side)) {
+    for (const [firstTrack, lastTrack, line] of authored ?? index.edgeBorders(merge, side, textRtl)) {
       const start = before(firstTrack) - origin, end = before(lastTrack + 1) - origin;
       const border = lineStyleToBorder(line);
       if (start >= end || border === defaultBorder) continue;
@@ -60,14 +63,14 @@ export function paintMergeBorders(cell: HTMLTableCellElement, merge: MergeFragme
       cell.style.setProperty(`border-${side}`, '0px solid transparent');
       hideGridLine(cell, side);
       for (const { start, end, border } of segments) {
-        const stroke = border || (!authored && (side === 'right' || side === 'bottom') ? '1px solid #d8dee8' : '');
+        const stroke = border || (!authored && (side === terminalSide || side === 'bottom') ? '1px solid #d8dee8' : '');
         if (!stroke) continue;
         const segment = cell.ownerDocument.createElement('span');
         segment.className = 'xlsxv-merge-border-segment';
         segment.setAttribute('aria-hidden', 'true');
         segment.style.setProperty(side, '0');
         segment.style.setProperty(`border-${side}`, stroke);
-        segment.style[horizontal ? 'left' : 'top'] = `${start / length * 100}%`;
+        segment.style[horizontal ? (rtl ? 'right' : 'left') : 'top'] = `${start / length * 100}%`;
         segment.style[horizontal ? 'width' : 'height'] = `${(end - start) / length * 100}%`;
         cell.append(segment);
       }
@@ -76,5 +79,5 @@ export function paintMergeBorders(cell: HTMLTableCellElement, merge: MergeFragme
 }
 
 function hideGridLine(cell: HTMLTableCellElement, side: MergeBorderSide): void {
-  if (side === 'right' || side === 'bottom') cell.style.setProperty(`--xlsxv-grid-${side}`, 'transparent');
+  if (side !== 'top') cell.style.setProperty(`--xlsxv-grid-${side}`, 'transparent');
 }

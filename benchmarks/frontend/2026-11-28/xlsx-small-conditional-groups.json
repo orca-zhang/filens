@@ -1,0 +1,143 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS 26.6.2 arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "method": "Four fresh Node processes per build and fixture, alternating before/after order. Complete load times cover ZIP opening and preview model parsing with an active AbortSignal. Peak RSS is read at completion. Event-loop delay is the maximum Node monitorEventLoopDelay observation at 5 ms resolution during that load. File reads, output hashing and browser rendering are outside the timed section. Each fixture produced the same complete preview model across builds.",
+  "fixtures": [
+    {
+      "name": "repeated",
+      "description": "createRepeatedConditionalWorkbook(75000, { separateGroups: true, linkedBar: true })",
+      "archiveBytes": 230216,
+      "worksheetXmlBytes": 14766602,
+      "savedGroups": 75007,
+      "savedRules": 75015,
+      "previewRows": 4,
+      "previewRules": 12,
+      "previewDigestSha256": "64a160bf8f2d9cb3c75b148bf57dbc48dd7257f32b441ed7940d7b69523c119e",
+      "timings": {
+        "before": {
+          "medianCompleteLoadMs": 1073.6068335,
+          "medianPeakRssMiB": 279.859375,
+          "medianMaxEventLoopDelayMs": 1002.438655,
+          "runs": [
+            {
+              "completeLoadMs": 1074.384292,
+              "peakRssKiB": 289920,
+              "maxEventLoopDelayMs": 1007.681535
+            },
+            {
+              "completeLoadMs": 1075.65275,
+              "peakRssKiB": 283232,
+              "maxEventLoopDelayMs": 1009.778687
+            },
+            {
+              "completeLoadMs": 1063.02475,
+              "peakRssKiB": 283104,
+              "maxEventLoopDelayMs": 997.195775
+            },
+            {
+              "completeLoadMs": 1072.829375,
+              "peakRssKiB": 291712,
+              "maxEventLoopDelayMs": 987.758591
+            }
+          ]
+        },
+        "after": {
+          "medianCompleteLoadMs": 1194.0044579999999,
+          "medianPeakRssMiB": 257.265625,
+          "medianMaxEventLoopDelayMs": 328.859647,
+          "runs": [
+            {
+              "completeLoadMs": 1197.870208,
+              "peakRssKiB": 286624,
+              "maxEventLoopDelayMs": 336.068607
+            },
+            {
+              "completeLoadMs": 1190.138708,
+              "peakRssKiB": 265136,
+              "maxEventLoopDelayMs": 327.679999
+            },
+            {
+              "completeLoadMs": 1185.620292,
+              "peakRssKiB": 256256,
+              "maxEventLoopDelayMs": 330.039295
+            },
+            {
+              "completeLoadMs": 1209.380584,
+              "peakRssKiB": 261744,
+              "maxEventLoopDelayMs": 326.893567
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "openpyxl",
+      "description": "Openpyxl 3.1.5 workbook with 16,000 numeric triplets. Each row has a three-color scale and three MOD expression rules. One final-cell expression applies a solid fill.",
+      "archiveBytes": 620871,
+      "worksheetXmlBytes": 12380905,
+      "savedGroups": 16001,
+      "savedRules": 64001,
+      "previewRows": 16001,
+      "previewRules": 64001,
+      "previewDigestSha256": "2d6f230520fdf1f66f75868ad66de9b47895ed7baa2fd4371883b400e7ddea62",
+      "timings": {
+        "before": {
+          "medianCompleteLoadMs": 731.7693959999999,
+          "medianPeakRssMiB": 267.328125,
+          "medianMaxEventLoopDelayMs": 634.650623,
+          "runs": [
+            {
+              "completeLoadMs": 728.166917,
+              "peakRssKiB": 274032,
+              "maxEventLoopDelayMs": 631.767039
+            },
+            {
+              "completeLoadMs": 731.6424589999999,
+              "peakRssKiB": 273456,
+              "maxEventLoopDelayMs": 633.339903
+            },
+            {
+              "completeLoadMs": 731.896333,
+              "peakRssKiB": 277360,
+              "maxEventLoopDelayMs": 635.961343
+            },
+            {
+              "completeLoadMs": 737.28025,
+              "peakRssKiB": 271280,
+              "maxEventLoopDelayMs": 637.534207
+            }
+          ]
+        },
+        "after": {
+          "medianCompleteLoadMs": 799.8701045,
+          "medianPeakRssMiB": 267.1796875,
+          "medianMaxEventLoopDelayMs": 234.029055,
+          "runs": [
+            {
+              "completeLoadMs": 798.8598340000001,
+              "peakRssKiB": 272848,
+              "maxEventLoopDelayMs": 230.424575
+            },
+            {
+              "completeLoadMs": 823.770625,
+              "peakRssKiB": 274160,
+              "maxEventLoopDelayMs": 237.240319
+            },
+            {
+              "completeLoadMs": 800.8803750000001,
+              "peakRssKiB": 273088,
+              "maxEventLoopDelayMs": 232.128511
+            },
+            {
+              "completeLoadMs": 798.459917,
+              "peakRssKiB": 274096,
+              "maxEventLoopDelayMs": 235.929599
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -13,7 +13,7 @@ describe('simple worksheet XML reader', () => {
     const inline = `<c r="A1" t="inlineStr"><is><t>${encoded}</t></is></c>`;
     const saved = `<c r="B1" t="str"><f>""</f><v>${encoded}</v></c>`;
     const rich = `<c r="C1" t="inlineStr"><is><r><rPr><b/></rPr><t>${encoded}</t></r></is></c>`;
-    expect(readSimpleRows(`<row r="1">${inline}</row>`, { ...options, allowInline: true })?.rows[0].cells[0].value).toBe(expected);
+    expect(readSimpleRows(`<row r="1">${inline}</row>`, options, 0, {})?.rows[0].cells[0].value).toBe(expected);
     const zip = await JSZip.loadAsync(await createColumnStyledWorkbookFixture(1, 1));
     zip.file('xl/worksheets/sheet.xml', `<worksheet><sheetData><row r="1">${inline}${saved}${rich}</row></sheetData></worksheet>`);
     const { sheets: [sheet] } = await loadXlsxWorkbook(await zip.generateAsync({ type: 'uint8array' }));

@@ -11,6 +11,7 @@ const wasm = Buffer.from([0, 97, 115, 109, 1, 0, 0, 0]);
 const wasmUrl = `data:application/wasm+gzip;base64,${gzipSync(wasm).toString('base64')}`;
 const wasmTwo = Buffer.from([0, 97, 115, 109, 1, 0, 0, 0, 0, 2, 1, 120]);
 const wasmTwoUrl = `data:application/wasm+gzip;base64,${gzipSync(wasmTwo).toString('base64')}`;
+const inlineWasm = `data:application/wasm;base64,${wasm.toString('base64')}`;
 const text = '中文、é、\n"\\及🙂'.repeat(300), lone = '\ud800'.repeat(2000);
 const worker = Buffer.from('self.onmessage = () => postMessage("ready");\n'.repeat(3000)).toString('base64');
 const longName = 'property'.repeat(300), template = 'raw\\n'.repeat(400);
@@ -18,6 +19,7 @@ const external = 'data:text/javascript;base64,' + Buffer.from(`export const item
 const source = `import {item} from ${JSON.stringify(external)};
 export {item};
 export const wasm=()=>${JSON.stringify(wasmUrl)}, wasmTwo=()=>${JSON.stringify(wasmTwoUrl)}, text=${JSON.stringify(text)}, lone=${JSON.stringify(lone)}, worker=()=>${JSON.stringify(worker)};
+export const inlineWasm=()=>${JSON.stringify(inlineWasm)}, inlineLength=${JSON.stringify(inlineWasm)}.length;
 export const object={${JSON.stringify(longName)}:42};
 export class Example { ${JSON.stringify(longName)}(){return 7} }
 export const tagged=String.raw\`${template}\`;
@@ -56,6 +58,8 @@ try {
   assert.equal(result.object[longName], 42);
   assert.equal(new result.Example()[longName](), 7);
   assert.equal(result.tagged, template, 'Tagged template raw strings must remain syntax.');
+  assert.equal(result.inlineWasm(), inlineWasm, 'Packed WASM data URLs must keep their original prefix and bytes.');
+  assert.equal(result.inlineLength, inlineWasm.length);
   assert.equal((await fetch(result.wasm())).headers.get('content-type'), 'application/wasm');
   assert.deepEqual(Buffer.from(await (await fetch(result.wasm())).arrayBuffer()), wasm);
   assert(new WebAssembly.Module(await (await fetch(result.wasm())).arrayBuffer()));
@@ -64,6 +68,7 @@ try {
 
   const decoder = (await readFile('packages/preview/vendor/lzma/decoder.wasm')).toString('base64');
   const report = packed.report;
+  assert(report.assets.some(asset => asset.kind === 'base64' && asset.bytes === wasm.length));
   assert.equal(report.groups.length, 4);
   const reader = (bytes, ...rest) => createPackedAssetReader(decoder, bytes.toString('base64'), ...rest);
   for (const group of report.groups) {

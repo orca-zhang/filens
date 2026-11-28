@@ -1,13 +1,13 @@
 import type { XMLParser, X2jOptions } from 'fast-xml-parser';
 import { openZipArchive, type PreviewFontReference, type ZipEntry, type PreviewLoadContext, type PreviewSource } from '@filens/core';
-import type { ParsedArrayFormula, ParsedCell, ParsedCellStyle, ParsedColumnStyle, ParsedColumnWidthSource, ParsedConditionalStyle, ParsedDefinedName, ParsedMerge, ParsedRichText, ParsedRow, ParsedRowHeight, ParsedSheet, ParsedTableRange, ParsedTrackRange, ParsedWorkbook } from './types';
-import { readSimpleRows, readSimpleWorksheet } from './simple-worksheet';
+import type { ParsedArrayFormula, ParsedCell, ParsedCellStyle, ParsedColumnStyle, ParsedColumnWidthSource, ParsedConditionalStyle, ParsedDefinedName, ParsedMerge, ParsedRichText, ParsedRichTextRun, ParsedRow, ParsedRowHeight, ParsedSheet, ParsedTableRange, ParsedTrackRange, ParsedWorkbook } from './types';
+import { readSimpleRows, readSimpleWorksheet, type WorksheetBatchState } from './simple-worksheet';
 import { xlsxColumnWidths } from './xlsx-column-widths';
 import { xlsxRowHeight } from './xlsx-row-heights';
 import { colorReader, readDifferentialStyles, readFontReference, readIndexedColors, readStyleAppearance } from './style-appearance';
-import { readConditionalRules } from './conditional-rules';
+import { readConditionalRules, type ConditionalRuleBatches } from './conditional-rules';
 import { columnStyleLookup } from './column-styles';
-import { decodeSpreadsheetText, readLocalPath, readPath, toArray } from './xml-values';
+import { decodePlainSpreadsheetXmlText, decodeSpreadsheetText, readLocalPath, readPath, toArray } from './xml-values';
 import { decodeTableColumn } from './structured-references';
 import { registerWorkbookFormulas } from './cell-value';
 import { formulaName, MAX_FORMULA_LENGTH } from './formula-reader';
@@ -26,6 +26,10 @@ const xmlTagTail = String.raw`(?=[ \t\r\n/>])(?:[^<>"']|"[^"<]*"|'[^'<]*')*>`;
 const namespaceAlias = /[ \t\r\n]xmlns:[^ \t\r\n<>"'=:/]+\s*=\s*(['"])(?:http:\/\/(?:schemas\.openxmlformats\.org\/spreadsheetml\/2006|purl\.oclc\.org\/ooxml\/spreadsheetml)\/main|[^&'"]*&[^'"]*)\1/;
 const rowPath = ['worksheet', 'sheetData', 'row'];
 const sharedStringPath = ['sst', 'si'];
+const mergeGroupPath = ['worksheet', 'mergeCells'];
+const mergeCellPath = [...mergeGroupPath, 'mergeCell'];
+const conditionalGroupPath = ['worksheet', 'conditionalFormatting'];
+const extendedConditionalGroupPath = ['worksheet', 'extLst', 'ext', 'conditionalFormattings', 'conditionalFormatting'];
 const xmlOptions = {
   ignoreAttributes: false,
   attributeNamePrefix: '',
@@ -63,17 +67,19 @@ interface WorkbookXmlParsers {
   parser: XMLParser;
   worksheetMetadataParser: XMLParser;
   namespacedParser: XMLParser;
+  validateXml(xml: string): boolean;
 }
 
 let parserPromise: Promise<WorkbookXmlParsers> | undefined;
 function loadXmlParsers() {
-  return parserPromise ??= import('fast-xml-parser').then(({ XMLParser }) => {
+  return parserPromise ??= import('fast-xml-parser').then(({ XMLParser, XMLValidator }) => {
     const namespaces: (ReadonlyMap<string, string> | undefined)[] = [];
     let legacyUnqualified = false;
     let relationshipPart = false;
     return {
       parser: new XMLParser(xmlOptions),
       worksheetMetadataParser: new XMLParser({ ...xmlOptions, stopNodes: ['worksheet.sheetData'] }),
+      validateXml: xml => XMLValidator.validate(xml) === true,
       namespacedParser: new XMLParser({
         ...xmlOptions,
         jPath: false,
@@ -138,6 +144,7 @@ interface WorkbookSheetRef {
   name: string;
   sheetId: string;
   relationshipId: string;
+  hidden: boolean;
 }
 
 interface RelationshipRef {
@@ -151,8 +158,10 @@ export function loadXlsxWorkbook(source: PreviewSource, context?: PreviewLoadCon
   return readXlsxWorkbook(source, context);
 }
 
+export type WorksheetProgress = (sheet: ParsedSheet, sourceIndex: number) => void;
+
 export async function readXlsxWorkbook(source: PreviewSource, context?: PreviewLoadContext,
-  preview?: { onSheet?: (sheet: ParsedSheet) => void; onRows?: (sheet: ParsedSheet) => void }): Promise<ParsedWorkbook> {
+  preview?: { onSheet?: WorksheetProgress; onRows?: WorksheetProgress }): Promise<ParsedWorkbook> {
   checkAborted(context?.signal);
   const format = normalizeFormat(context?.route?.sourceFormat ?? context?.descriptor.extension);
   if (format === 'csv') {
@@ -176,9 +185,34 @@ export async function readXlsxWorkbook(source: PreviewSource, context?: PreviewL
   const workbookStyles = await readWorkbookStyles(zip, relationships, parsers, context?.signal);
   const readRichText = createRichTextReader(workbookStyles.theme, workbookStyles.color, workbookStyles.fonts);
   const sharedPath = resolveWorkbookTarget(relationships.find(rel => rel.type?.endsWith('/sharedStrings'))?.target ?? 'sharedStrings.xml');
-  const sharedStrings = await readSharedStrings(zip.get(sharedPath), parsers, readRichText, context?.signal);
-  const hasRichSharedStrings = sharedStrings.some(value => typeof value !== 'string');
+  const sharedEntry = zip.get(sharedPath);
+  const progressiveStrings = Boolean(preview?.onRows && sharedEntry?.chunks);
+  const stringBatches = readSharedStrings(sharedEntry, parsers, readRichText, context?.signal, progressiveStrings);
+  let sharedStrings: SharedStringTable = [], hasRichSharedStrings = false;
+  let stringBatch: IteratorResult<SharedStringTable, SharedStringTable> | undefined;
+  const readStrings: ReadSharedStrings = async (through = Infinity) => {
+    while (!stringBatch?.done && (stringBatch?.value.length ?? 0) <= through) stringBatch = await stringBatches.next();
+    if (stringBatch?.done && stringBatch.value !== sharedStrings) {
+      sharedStrings = stringBatch.value;
+      hasRichSharedStrings = sharedStrings.some(value => typeof value !== 'string');
+    }
+    return stringBatch ?? { value: sharedStrings, done: false };
+  };
+  if (!progressiveStrings) await readStrings();
   const sheets = readWorkbookSheets(workbook);
+  const view = toArray(readPath(workbook, ['workbook', 'bookViews', 'workbookView']))[0];
+  const activeTab = readPath(view, ['activeTab']);
+  const savedIndex = typeof activeTab === 'string' && /^\d+$/.test(activeTab) ? Number(activeTab) : 0;
+  const canOpen = (sheet?: WorkbookSheetRef) => {
+    if (!sheet?.relationshipId || sheet.hidden) return false;
+    const rel = relationships.find(entry => entry.id === sheet.relationshipId);
+    if (!rel || rel.external || (rel.type && !rel.type.endsWith('/worksheet'))) return false;
+    const entry = zip.get(resolveWorkbookTarget(rel.target));
+    return Boolean(entry && !entry.directory && entry.size !== 0);
+  };
+  const initialIndex = canOpen(sheets[savedIndex]) ? savedIndex : sheets.findIndex(canOpen);
+  const worksheetOrder = [...sheets.entries()];
+  if (preview && initialIndex > 0) worksheetOrder.unshift(worksheetOrder.splice(initialIndex, 1)[0]);
   const definedNames = readDefinedNames(workbook, sheets, warnings);
   let regexPreparation: Promise<void> | undefined;
   const noteRegex = (formula: string) => {
@@ -201,11 +235,11 @@ export async function readXlsxWorkbook(source: PreviewSource, context?: PreviewL
     });
   };
 
-  const parsedSheets: ParsedSheet[] = [];
+  const parsedBySource: ParsedSheet[] = [];
   let dynamicArrays: Promise<ReadonlySet<number> | undefined> | undefined;
   const loadDynamicArrays = () => dynamicArrays ??= readDynamicArrayMetadata(zip, relationships, parser, context?.signal);
-  let lastYield = 0;
-  for (const [index, sheet] of sheets.entries()) {
+  let lastYield = 0, completed = 0;
+  for (const [ordinal, [sourceIndex, sheet]] of worksheetOrder.entries()) {
     checkAborted(context?.signal);
     if (!sheet.relationshipId) continue;
     const relationship = relationships.find((entry) => entry.id === sheet.relationshipId);
@@ -218,13 +252,14 @@ export async function readXlsxWorkbook(source: PreviewSource, context?: PreviewL
     let publishedRows = false;
     const onRows = preview?.onRows ? (partial: ParsedSheet) => {
       publishedRows = true;
-      preview.onRows!(partial);
+      preview.onRows!(partial, sourceIndex);
     } : undefined;
     const parsed = await readWorksheetEntry(zip.get(sheetPath), {
       id: sheet.sheetId,
       name: sheet.name,
       sharedStrings,
       hasRichSharedStrings,
+      pendingSharedStrings: stringBatch?.done ? undefined : readStrings,
       readRichText,
       styles: workbookStyles.styles,
       differentialStyles: workbookStyles.differentialStyles,
@@ -238,26 +273,34 @@ export async function readXlsxWorkbook(source: PreviewSource, context?: PreviewL
       waitForRegex,
       loadDynamicArrays,
       loadTables: ids => readTableParts(zip, sheetPath, ids, parsers, warnings, sheet.name, context?.signal)
-    }, parsers, context?.signal, onRows);
+    }, parsers, context?.signal, onRows).catch(async error => {
+      await stringBatches.return([]);
+      throw error;
+    });
     checkAborted(context?.signal);
     if (!parsed) {
       warnings.push(`Missing worksheet file for sheet ${sheet.name}.`);
       continue;
     }
-    parsedSheets.push(parsed);
+    parsedBySource[sourceIndex] = parsed;
+    completed++;
     if (preview?.onSheet && (sheets.length > 1 || publishedRows)) {
-      preview.onSheet(parsed);
-      if (index + 1 < sheets.length && (parsedSheets.length === 1 || performance.now() - lastYield >= 16)) {
+      preview.onSheet(parsed, sourceIndex);
+      if (ordinal + 1 < sheets.length && (completed === 1 || performance.now() - lastYield >= 16)) {
         await yieldWorksheetPreview();
         lastYield = performance.now();
       }
     }
   }
 
+  await readStrings();
+  const parsedSheets = parsedBySource.filter(Boolean);
+  const activeSheetIndex = parsedSheets.indexOf(parsedBySource[initialIndex]);
   const parsed = {
     sheets: parsedSheets,
     warnings,
     fonts: workbookStyles.fonts,
+    ...(activeSheetIndex > 0 ? { activeSheetIndex } : {}),
     ...(definedNames.length ? { definedNames } : {})
   };
   await waitForRegex();
@@ -501,43 +544,81 @@ async function readRequiredText(zip: ReadonlyMap<string, ZipEntry>, path: string
 
 const sharedStringOpening = new RegExp(String.raw`^[ \t\r\n]*(?:<\?xml[ \t\r\n][^?]*\?>[ \t\r\n]*)?<(${xmlPrefix}sst)${xmlTagTail}`);
 const sharedStringClosing = new RegExp(String.raw`^[ \t\r\n]*</(${xmlPrefix}sst)[ \t\r\n]*>[ \t\r\n]*$`);
+const sharedItemOpening = new RegExp(String.raw`^[ \t\r\n]*<(${xmlPrefix}si)${xmlTagTail}`);
 const plainSharedStringStart = /\s*<si\s*>\s*<t(?:\s+xml:space\s*=\s*(?:"(?:preserve|default)"|'(?:preserve|default)'))?\s*>/y;
 const plainSharedStringEnd = /<\/t\s*>\s*<\/si\s*>/y;
 
-function appendSharedStringBatch(xml: string, values: (string | ParsedRichText)[], parser: XMLParser,
-  readRichText: ReturnType<typeof createRichTextReader>, opening = '<sst>', closing = '</sst>'): void {
+function readPlainSharedString(xml: string, offset: number): string | undefined {
+  plainSharedStringStart.lastIndex = offset;
+  if (!plainSharedStringStart.test(xml)) return undefined;
+  const begin = plainSharedStringStart.lastIndex, end = xml.indexOf('<', begin);
+  if (end < 0) return undefined;
+  plainSharedStringEnd.lastIndex = end;
+  if (!plainSharedStringEnd.test(xml)) return undefined;
+  const text = xml.slice(begin, end);
+  return /[\r>]/.test(text) ? undefined : decodePlainSpreadsheetXmlText(text);
+}
+
+function appendDirectSharedStrings(xml: string, values: SharedStringTable, parser: XMLParser,
+  readRichText: ReturnType<typeof createRichTextReader>, childEnd: ReturnType<typeof xmlChildEnd>): boolean {
   // Force V8 to flatten this batch separately before keeping its text slices.
   const batchXml = '\n' + xml;
   const start = values.length;
+  let complex: { index: number; xml: string }[] | undefined;
   let offset = 0;
-  while (opening === '<sst>' && offset < batchXml.length) {
-    plainSharedStringStart.lastIndex = offset;
-    if (!plainSharedStringStart.test(batchXml)) break;
-    const begin = plainSharedStringStart.lastIndex, end = batchXml.indexOf('<', begin);
-    if (end < 0) break;
-    plainSharedStringEnd.lastIndex = end;
-    if (!plainSharedStringEnd.test(batchXml)) break;
-    const value = batchXml.slice(begin, end);
-    if (/[&\r>]/.test(value)) break;
-    values.push(decodeSpreadsheetText(value));
-    offset = plainSharedStringEnd.lastIndex;
+  while (offset < batchXml.length) {
+    const value = readPlainSharedString(batchXml, offset);
+    if (value !== undefined) {
+      values.push(value);
+      offset = plainSharedStringEnd.lastIndex;
+    } else {
+      const end = childEnd(batchXml, offset);
+      if (end === undefined) break;
+      (complex ??= []).push({ index: values.length, xml: batchXml.slice(offset, end) });
+      values.push('');
+      offset = end;
+    }
   }
-  if (offset === batchXml.length) return;
+  if (offset === batchXml.length) {
+    if (!complex) return true;
+    if (complex.length < values.length - start) {
+      let items: unknown[] | undefined;
+      try {
+        const document = parser.parse('<sst>' + complex.map(item => item.xml).join('') + '</sst>', true);
+        items = toArray(readPath(document, sharedStringPath));
+      } catch { /* Retry the batch in its original context before publishing indices. */ }
+      if (items?.length === complex.length) {
+        // Keep decoded text together without retaining the batch's rich XML and tags through slices.
+        const plain = values.slice(start) as string[];
+        const text = plain.join('');
+        let begin = 0;
+        for (let index = 0; index < plain.length; index++) {
+          const end = begin + plain[index].length;
+          values[start + index] = text.slice(begin, end);
+          begin = end;
+        }
+        for (const [index, entry] of complex.entries()) values[entry.index] = readRichText(items[index]);
+        return true;
+      }
+    }
+  }
   values.length = start;
-  const batch = parser.parse(opening + xml + closing);
-  for (const item of toArray(readPath(batch, sharedStringPath))) values.push(readRichText(item));
+  return false;
 }
 
-async function readSharedStrings(file: ZipEntry | undefined, parsers: WorkbookXmlParsers,
+type SharedStringTable = (string | ParsedRichText)[];
+type ReadSharedStrings = (through?: number) => Promise<IteratorResult<SharedStringTable, SharedStringTable>>;
+
+async function* readSharedStrings(file: ZipEntry | undefined, parsers: WorkbookXmlParsers,
   readRichText: ReturnType<typeof createRichTextReader>,
-  signal?: AbortSignal): Promise<(string | ParsedRichText)[]> {
+  signal?: AbortSignal, exposePrefix = false): AsyncGenerator<SharedStringTable, SharedStringTable> {
   checkAborted(signal);
   if (!file) return [];
   const chunks = file.chunks?.(signal);
   if (chunks) {
     // A late fallback must discard fonts found in the partial table as well as strings.
     const discardFonts = readRichText.checkpoint();
-    const values = await readStreamedSharedStrings(chunks, parsers, readRichText, signal);
+    const values = yield* readStreamedSharedStrings(chunks, parsers, readRichText, signal, exposePrefix);
     if (values) return values;
     discardFonts();
   }
@@ -545,22 +626,34 @@ async function readSharedStrings(file: ZipEntry | undefined, parsers: WorkbookXm
   if (xml === undefined) return [];
   if (!chunks && canBatchXml(xml)) {
     const discardFonts = readRichText.checkpoint();
-    const values = await readStreamedSharedStrings(xmlTextBlocks(xml), parsers, readRichText, signal);
+    const values = yield* readStreamedSharedStrings(xmlTextBlocks(xml), parsers, readRichText, signal);
     if (values) return values;
     discardFonts();
   }
   return toArray(readPath(parseWorkbookPart(xml, parsers), sharedStringPath)).map(readRichText);
 }
 
-async function readStreamedSharedStrings(chunks: AsyncIterable<Uint8Array> | Iterable<string>,
+async function* readStreamedSharedStrings(chunks: AsyncIterable<Uint8Array> | Iterable<string>,
   { parser, namespacedParser }: WorkbookXmlParsers,
-  readRichText: ReturnType<typeof createRichTextReader>, signal?: AbortSignal): Promise<(string | ParsedRichText)[] | undefined> {
+  readRichText: ReturnType<typeof createRichTextReader>, signal?: AbortSignal,
+  exposePrefix = false): AsyncGenerator<SharedStringTable, SharedStringTable | undefined> {
   const decoder = new TextDecoder();
   const childEnd = xmlChildEnd('si');
   let qualifiedChildEnd: ReturnType<typeof xmlChildEnd> | undefined;
+  let wideItem: ReturnType<typeof bufferXmlChild>;
   const values: (string | ParsedRichText)[] = [];
   let pending = '', opening = '', closing = '', tag = '', rootHasAliases = false;
   let lastYield = signal ? performance.now() : 0;
+  function appendChunk(text: string): void {
+    if (!wideItem) pending += text;
+    else {
+      const completed = wideItem(text);
+      if (completed !== undefined) {
+        pending = completed;
+        wideItem = undefined;
+      }
+    }
+  }
   function readBatch(final: boolean): boolean {
     if (pending.includes('<!')) return false;
     if (!opening) {
@@ -575,11 +668,22 @@ async function readStreamedSharedStrings(chunks: AsyncIterable<Uint8Array> | Ite
     }
     if (pending.includes('<?')) return false;
     const namespaced = rootHasAliases || namespaceAlias.test(pending);
-    const offset = xmlBatchEnd(pending, namespaced ? qualifiedChildEnd ??= xmlChildEnd('si', true) : childEnd);
+    const offset = xmlBatchEnd(pending, namespaced ? qualifiedChildEnd ??= xmlChildEnd('si', true) : childEnd, true);
+    if (!offset && !final && pending.length >= XML_BATCH_CHARS) {
+      const item = sharedItemOpening.exec(pending);
+      if (item && !item[0].endsWith('/>') && (namespaced || item[1] === 'si')) {
+        wideItem = bufferXmlChild(pending, item[1]);
+        if (!wideItem) return false;
+        pending = '';
+        return true;
+      }
+    }
     if (offset) {
       const batch = pending.slice(0, offset);
-      if (namespaced) appendSharedStringBatch(batch, values, namespacedParser, readRichText, opening, closing);
-      else appendSharedStringBatch(batch, values, parser, readRichText);
+      if (namespaced || !appendDirectSharedStrings(batch, values, parser, readRichText, childEnd)) {
+        const document = namespaced ? namespacedParser.parse(opening + batch + closing) : parser.parse('<sst>' + batch + '</sst>');
+        for (const item of toArray(readPath(document, sharedStringPath))) values.push(readRichText(item));
+      }
       pending = pending.slice(offset);
     }
     if (final) return sharedStringClosing.exec(pending)?.[1] === tag;
@@ -587,19 +691,25 @@ async function readStreamedSharedStrings(chunks: AsyncIterable<Uint8Array> | Ite
   }
   for await (const chunk of chunks) {
     checkAborted(signal);
-    pending += typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
+    appendChunk(typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true }));
     while (pending.length >= XML_BATCH_CHARS) {
       if (!readBatch(false)) return undefined;
+      if (exposePrefix && !wideItem) yield values;
       if (signal && performance.now() - lastYield >= 16) {
         await new Promise(resolve => setTimeout(resolve, 0));
         checkAborted(signal);
         lastYield = performance.now();
       }
     }
+    if (wideItem && signal && performance.now() - lastYield >= 16) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      checkAborted(signal);
+      lastYield = performance.now();
+    }
   }
   checkAborted(signal);
-  pending += decoder.decode();
-  return readBatch(true) ? values : undefined;
+  appendChunk(decoder.decode());
+  return !wideItem && readBatch(true) ? values : undefined;
 }
 
 function readRelationships(xml: string, parsers: WorkbookXmlParsers): RelationshipRef[] {
@@ -709,11 +819,15 @@ function readActiveFilterRows(document: unknown): ParsedTrackRange | undefined {
 
 function readWorkbookSheets(workbook: Record<string, unknown>): WorkbookSheetRef[] {
   return toArray(readPath(workbook, ['workbook', 'sheets', 'sheet']))
-    .map((sheet) => ({
-      name: String(readPath(sheet, ['name']) ?? 'Sheet'),
-      sheetId: String(readPath(sheet, ['sheetId']) ?? readPath(sheet, ['name']) ?? 'sheet'),
-      relationshipId: String(readPath(sheet, ['r:id']) ?? '')
-    }));
+    .map(sheet => {
+      const state = readPath(sheet, ['state']);
+      return {
+        name: String(readPath(sheet, ['name']) ?? 'Sheet'),
+        sheetId: String(readPath(sheet, ['sheetId']) ?? readPath(sheet, ['name']) ?? 'sheet'),
+        relationshipId: String(readPath(sheet, ['r:id']) ?? ''),
+        hidden: state === 'hidden' || state === 'veryHidden'
+      };
+    });
 }
 
 function readDefinedNames(workbook: unknown, sheets: readonly WorkbookSheetRef[], warnings: string[]): ParsedDefinedName[] {
@@ -779,6 +893,7 @@ interface WorksheetOptions {
   name: string;
   sharedStrings: (string | ParsedRichText)[];
   hasRichSharedStrings: boolean;
+  pendingSharedStrings?: ReadSharedStrings;
   forPreview: boolean;
   readRichText: ReturnType<typeof createRichTextReader>;
   styles: ParsedCellStyle[];
@@ -796,33 +911,101 @@ interface WorksheetOptions {
 
 const worksheetOpening = new RegExp(`<(${xmlPrefix}worksheet)${xmlTagTail}`);
 const sheetDataOpening = new RegExp(`<(${xmlPrefix}sheetData)${xmlTagTail}`);
+const worksheetRowOpening = new RegExp(`^[ \\t\\r\\n]*<(${xmlPrefix}row)${xmlTagTail}`);
 const sheetDataClosing = new RegExp(`^[ \\t\\r\\n]*</(${xmlPrefix}sheetData)[ \\t\\r\\n]*>`);
 const sheetDataEnd = new RegExp(`</${xmlPrefix}sheetData[ \\t\\r\\n]*>`);
 const worksheetEnd = new RegExp(`</${xmlPrefix}worksheet[ \\t\\r\\n]*>[ \\t\\r\\n]*$`);
 const lateWorksheetMetadata = new RegExp(`<${xmlPrefix}(?:sheetData|cols|sheetFormatPr)\\b`);
 const inlineFormatting = new RegExp(`<${xmlPrefix}rPr\\b`);
+const mergeGroupTags = new RegExp(`<(/?)${xmlPrefix}mergeCells${xmlTagTail}`, 'g');
+const conditionalGroupTags = new RegExp(`<(/?)${xmlPrefix}conditionalFormatting${xmlTagTail}`, 'g');
+const xmlOpeningAt = new RegExp(`<(${xmlPrefix}[^ \\t\\r\\n<>"'=:/!?]+)${xmlTagTail}`, 'y');
+const conditionalRuleOpening = new RegExp(`[ \\t\\r\\n]*<(${xmlPrefix}cfRule)${xmlTagTail}`, 'y');
+const mergeCellRef = new RegExp(String.raw`[ \t\r\n]*<(${xmlPrefix}mergeCell)[ \t\r\n]+ref[ \t\r\n]*=[ \t\r\n]*(?:"([^"<>&]*)"|'([^'<>&]*)')[ \t\r\n]*/>`, 'y');
+const conditionalBatchAttribute = 'filensConditionalBatch';
+const mergeBatchAttribute = 'filensMergeBatch';
 // These spellings are accepted by the direct value reader but can differ under general XML parsing.
-const ambiguousSimpleRows = /<v\s*(?:\/>|>[^<]*\r)|<(?:row|c)\b[^<>]*\b(?:c|v|f|is)\s*=/;
+const ambiguousSimpleRows = /<v\s*>[^<]*\r|<(?:row|c)\b[^<>]*\b(?:c|v|f|is)\s*=/;
 
 function* xmlTextBlocks(xml: string): Generator<string> {
   for (let offset = 0; offset < xml.length; offset += XML_BATCH_CHARS) yield xml.slice(offset, offset + XML_BATCH_CHARS);
 }
 
 async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterable<string>, options: WorksheetOptions,
-  { parser, namespacedParser }: WorkbookXmlParsers, signal?: AbortSignal,
+  parsers: WorkbookXmlParsers, signal?: AbortSignal,
   onRows?: (sheet: ParsedSheet) => void): Promise<ParsedSheet | undefined> {
+  const { parser, namespacedParser } = parsers;
   const decoder = new TextDecoder();
   const childEnd = xmlChildEnd('row');
   let qualifiedChildEnd: ReturnType<typeof xmlChildEnd> | undefined;
   let rows: ReturnType<typeof createWorksheetRows> | undefined;
   let columnStyles: ParsedColumnStyle[] = [], columnStyle: (column: number) => number;
   let headerMetadata: object | undefined;
-  let header = '', pending = '', closed = false, simple = false, ambiguous = false, inline = false, general = false, styled = false;
+  let header = '', pending = '', closed = false, simple = false, ambiguous = false, typedValues = false, general = false, styled = false;
+  let wideRow: ReturnType<typeof bufferXmlChild>;
+  const trailingXml: string[] = [];
   let sheetDataTag = '', batchHeader = '', batchFooter = '', headerHasAliases = false;
   let publishedRowCount = 0, nextRowUpdate = 1;
+  let usedStrings: SharedStringTable | undefined;
   let lastYield = signal ? performance.now() : 0;
 
-  function readBatch(final: boolean): boolean {
+  async function resolveStrings(through: number): Promise<boolean> {
+    if (!options.pendingSharedStrings) return true;
+    if (through >= options.sharedStrings.length) {
+      await loadSharedStrings(options, through);
+      checkAborted(signal);
+    }
+    // The general shared-string parser can replace the prefix after seeing the table's tail.
+    if (usedStrings && usedStrings !== options.sharedStrings) return false;
+    if (through >= 0 && options.sharedStrings.length) usedStrings = options.sharedStrings;
+    return true;
+  }
+
+  async function publishRows(snapshot: ParsedSheet, withRichText: boolean) {
+    const first = publishedRowCount === 0;
+    publishedRowCount = snapshot.rows.length;
+    // Geometric snapshots keep the total number of copied row references linear.
+    nextRowUpdate = publishedRowCount + Math.ceil(publishedRowCount / 4);
+    const finish = await finishWorksheet(headerMetadata, headerMetadata, columnStyles, { ...options, warnings: [] }, withRichText);
+    const partial = await finish(snapshot);
+    checkAborted(signal);
+    onRows!(partial);
+    if (first) {
+      await yieldWorksheetPreview();
+      checkAborted(signal);
+      lastYield = performance.now();
+    }
+  }
+
+  function readRowEntries(batch: string, namespaced: boolean): unknown[] | undefined {
+    try {
+      const document = namespaced ? namespacedParser.parse(batchHeader + batch + batchFooter)
+        : parser.parse('<worksheet><sheetData>' + batch + '</sheetData></worksheet>');
+      return toArray(readPath(document, rowPath));
+    } catch { return undefined; }
+  }
+
+  function readInlineItems(entries: NonNullable<WorksheetBatchState['inlineEntries']>): unknown[] | undefined {
+    try {
+      const xml = '<inlineCells>' + entries.map(entry => entry.xml).join('') + '</inlineCells>';
+      const items = toArray(readPath(parser.parse(xml, true), ['inlineCells', 'is']));
+      if (items.length === entries.length) return items;
+    } catch { /* Retry the batch in its original worksheet context. */ }
+    return undefined;
+  }
+
+  function appendChunk(text: string): void {
+    if (closed) trailingXml.push(text);
+    else if (wideRow) {
+      const completed = wideRow(text);
+      if (completed !== undefined) {
+        pending = completed;
+        wideRow = undefined;
+      }
+    } else pending += text;
+  }
+
+  async function readBatch(final: boolean): Promise<boolean> {
     if (pending.includes('<!')) return false;
     if (!rows) {
       const opening = sheetDataOpening.exec(pending);
@@ -850,29 +1033,72 @@ async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterabl
     if (closed) return true;
     if (pending.includes('<?')) return false;
     const namespaced = headerHasAliases || namespaceAlias.test(pending);
-    const offset = xmlBatchEnd(pending, namespaced ? qualifiedChildEnd ??= xmlChildEnd('row', true) : childEnd);
+    const offset = xmlBatchEnd(pending, namespaced ? qualifiedChildEnd ??= xmlChildEnd('row', true) : childEnd, true);
+    if (!offset && !final && pending.length >= XML_BATCH_CHARS) {
+      const opening = worksheetRowOpening.exec(pending);
+      if (opening && !opening[0].endsWith('/>') && (namespaced || opening[1] === 'row')) {
+        wideRow = bufferXmlChild(pending, opening[1]);
+        if (!wideRow) return false;
+        pending = '';
+        return true;
+      }
+    }
     if (offset) {
       const batch = pending.slice(0, offset);
       pending = pending.slice(offset);
-      const direct = simple && !namespaced
-        ? readSimpleRows(batch, { ...options, columnStyle, allowInline: true }, rows.lastRow) : undefined;
-      if (direct) {
-        ambiguous ||= ambiguousSimpleRows.test(batch);
-        inline ||= /<is\b/.test(batch);
-        // Mixed and inline worksheets use the general parser's value semantics.
-        if (ambiguous && (inline || general)) return false;
-        rows.append(direct);
+      let entries: unknown[] | undefined;
+      if (options.pendingSharedStrings && onRows && !rows.count) {
+        entries = readRowEntries(batch, namespaced);
+        if (entries?.length) await previewRowsBeforeSharedStrings(entries, columnStyle, options, sheet => publishRows(sheet, true));
+      }
+      const formulas = simple && !namespaced && /<f\b/.test(batch);
+      const ambiguousBatch = simple && !namespaced && ambiguousSimpleRows.test(batch);
+      // Registration stays local until the entire batch has passed direct parsing.
+      const batchState: WorksheetBatchState = {
+        formulaEntries: formulas ? [] : undefined,
+        sharedStrings: options.pendingSharedStrings ? { through: -1 } : undefined
+      };
+      const direct = simple && !namespaced && !(formulas && ambiguousBatch)
+        ? readSimpleRows(batch, { ...options, columnStyle }, rows.lastRow, batchState) : undefined;
+      const ambiguousValues = ambiguousBatch || batchState.ambiguousValues === true;
+      const typedBatch = batchState.usesTypedValues === true || (direct !== undefined && /<is\b/.test(batch));
+      const canAppend = direct && !(ambiguousValues && (general || typedValues || formulas || typedBatch));
+      const { inlineEntries } = batchState;
+      const inlineItems = canAppend && inlineEntries ? readInlineItems(inlineEntries) : undefined;
+      if (canAppend && (!inlineEntries || inlineItems)) {
+        ambiguous ||= ambiguousValues;
+        typedValues ||= typedBatch;
+        general ||= formulas || inlineItems !== undefined;
+        // Once a worksheet needs general XML semantics, earlier ambiguous values must be reread.
+        if (ambiguous && (typedValues || general)) return false;
+        const strings = batchState.sharedStrings;
+        if (strings && !await resolveStrings(strings.through)) return false;
+        for (const { cell, index } of strings?.missing ?? []) {
+          const text = options.sharedStrings[index] ?? '';
+          cell.value = typeof text === 'string' ? text : text.value;
+          if (typeof text !== 'string') cell.richText = text;
+        }
+        if (inlineEntries && inlineItems) {
+          styled ||= inlineFormatting.test(batch);
+          for (const [index, { cell }] of inlineEntries.entries()) {
+            const text = options.readRichText(inlineItems[index]);
+            cell.value = typeof text === 'string' ? text : text.value;
+            if (typeof text !== 'string') cell.richText = text;
+          }
+        }
+        rows.append(direct, batchState.formulaEntries);
       } else {
         if (ambiguous) return false;
         general = true;
         styled ||= inlineFormatting.test(batch);
-        let document: unknown;
-        try {
-          document = namespaced ? namespacedParser.parse(batchHeader + batch + batchFooter)
-            : parser.parse('<worksheet><sheetData>' + batch + '</sheetData></worksheet>');
+        entries ??= readRowEntries(batch, namespaced);
+        if (!entries) return false;
+        if (options.pendingSharedStrings) {
+          let through = -1;
+          for (const entry of entries) through = lastSharedStringIndex(entry, through);
+          if (!await resolveStrings(through)) return false;
         }
-        catch { return false; }
-        rows.read(toArray(readPath(document, rowPath)));
+        rows.read(entries);
       }
     }
     const closing = sheetDataClosing.exec(pending);
@@ -882,30 +1108,18 @@ async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterabl
       pending = pending.slice(closing[0].length);
       closed = true;
     }
-    return closed || (!final && (offset > 0 || pending.length < XML_BATCH_CHARS));
+    return closed || offset > 0 || (!final && pending.length < XML_BATCH_CHARS);
   }
 
   for await (const chunk of chunks) {
     checkAborted(signal);
-    pending += typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
+    appendChunk(typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true }));
     while (!closed && (pending.length >= XML_BATCH_CHARS || (onRows && sheetDataEnd.test(pending)))) {
       const before = pending.length;
-      if (!readBatch(false) || (!closed && pending.length === before)) return undefined;
+      if (!await readBatch(false) || (!closed && pending.length === before)) return undefined;
       if (onRows && headerMetadata && rows && (closed
-        ? rows.count > publishedRowCount && !worksheetEnd.test(pending) : rows.count >= nextRowUpdate)) {
-        const first = publishedRowCount === 0;
-        publishedRowCount = rows.count;
-        // Geometric snapshots keep the total number of copied row references linear.
-        nextRowUpdate = rows.count + Math.ceil(rows.count / 4);
-        const finish = finishWorksheet(headerMetadata, headerMetadata, columnStyles, { ...options, warnings: [] }, styled);
-        const partial = await finish(rows.snapshot());
-        checkAborted(signal);
-        onRows(partial);
-        if (first) {
-          await yieldWorksheetPreview();
-          checkAborted(signal);
-          lastYield = performance.now();
-        }
+        ? rows.count > publishedRowCount && (options.pendingSharedStrings || !worksheetEnd.test(pending)) : rows.count >= nextRowUpdate)) {
+        await publishRows(rows.snapshot(), styled || Boolean(options.pendingSharedStrings));
       }
       if (signal && performance.now() - lastYield >= 16) {
         await new Promise(resolve => setTimeout(resolve, 0));
@@ -913,22 +1127,325 @@ async function readStreamedWorksheet(chunks: AsyncIterable<Uint8Array> | Iterabl
         lastYield = performance.now();
       }
     }
-    // Trailing XML shares the ZIP entry's expansion limit. Yield while retaining it so rows stay available during the remaining reads.
-    if (closed && signal && performance.now() - lastYield >= 16) {
+    if (closed && pending) {
+      trailingXml.push(pending);
+      pending = '';
+    }
+    if ((closed || wideRow) && signal && performance.now() - lastYield >= 16) {
       await new Promise(resolve => setTimeout(resolve, 0));
       checkAborted(signal);
       lastYield = performance.now();
     }
   }
   checkAborted(signal);
-  pending += decoder.decode();
-  if (!readBatch(true) || !rows || lateWorksheetMetadata.test(pending)) return undefined;
-  const metadata = worksheetMetadata(header + `</${sheetDataTag}>` + pending,
-    headerHasAliases || namespaceAlias.test(pending) ? namespacedParser : parser);
+  appendChunk(decoder.decode());
+  if (wideRow) return undefined;
+  if (!closed) {
+    while (!closed) {
+      const before = pending.length;
+      if (!await readBatch(true) || (!closed && pending.length === before)) return undefined;
+    }
+    trailingXml.push(pending);
+  }
+  if (!rows) return undefined;
+  if (options.pendingSharedStrings) {
+    if (onRows && rows.count > publishedRowCount) await publishRows(rows.snapshot(), true);
+    if (!await resolveStrings(Infinity)) return undefined;
+  }
+  const closing = `</${sheetDataTag}>`;
+  const xml = [header, closing, ...trailingXml].join('');
+  // Join once so validating the tail and parsing the metadata share the same string storage.
+  trailingXml.length = 0;
+  pending = '';
+  const tail = xml.slice(header.length + closing.length);
+  if (tail.includes('<!') || lateWorksheetMetadata.test(tail)) return undefined;
+  const metadataParser = headerHasAliases || namespaceAlias.test(tail) ? namespacedParser : parser;
+  const batched = options.forPreview && tail.length >= XML_BATCH_CHARS &&
+    (hasLargeMetadata(tail, mergeGroupTags) || hasLargeMetadata(tail, conditionalGroupTags))
+    ? batchWorksheetMetadata(xml, metadataParser, parsers, signal) : undefined;
+  const metadata = batched?.metadata ?? worksheetMetadata(xml, metadataParser);
   if (!metadata) return undefined;
-  const finish = finishWorksheet(metadata, metadata, columnStyles, options,
-    general && (styled || inlineFormatting.test(header) || inlineFormatting.test(pending)));
+  const finish = await finishWorksheet(metadata, metadata, columnStyles, options,
+    general && (styled || inlineFormatting.test(header) || inlineFormatting.test(tail)), batched);
   return finish(await rows.finish());
+}
+
+function bufferXmlChild(xml: string, tag: string): ((text: string) => string | undefined) | undefined {
+  const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const end = new RegExp(`</${escaped}[ \\t\\r\\n]*(>|$)`);
+  let overlap = '', awaitingBracket = false;
+  // Search only new text and the split closing tag, then join the item once.
+  function complete(text: string): boolean {
+    if (awaitingBracket) {
+      const first = /[^ \t\r\n]/.exec(text);
+      if (!first) return false;
+      if (first[0] === '>') return true;
+    }
+    const block = overlap + text, match = end.exec(block);
+    if (match?.[1]) return true;
+    awaitingBracket = Boolean(match);
+    overlap = awaitingBracket ? '' : block.slice(-(tag.length + 1));
+    return false;
+  }
+  if (complete(xml)) return undefined;
+  const parts = [xml];
+  return text => {
+    if (text) parts.push(text);
+    return complete(text) ? parts.join('') : undefined;
+  };
+}
+
+async function loadSharedStrings(options: WorksheetOptions, through = Infinity): Promise<void> {
+  if (!options.pendingSharedStrings) return;
+  const { value, done } = await options.pendingSharedStrings(through);
+  options.sharedStrings = value;
+  if (done) {
+    options.hasRichSharedStrings = value.some(text => typeof text !== 'string');
+    options.pendingSharedStrings = undefined;
+  }
+}
+
+function lastSharedStringIndex(entry: unknown, through: number): number {
+  for (const cell of toArray(readPath(entry, ['c']))) {
+    if (readPath(cell, ['t']) !== 's') continue;
+    const raw = readTextValue(readPath(cell, ['v'])).trim(), index = Number(raw);
+    if (raw && Number.isSafeInteger(index) && index >= 0) through = Math.max(through, index);
+  }
+  return through;
+}
+
+async function previewRowsBeforeSharedStrings(entries: unknown[], columnStyle: (column: number) => number,
+  options: WorksheetOptions, publish: (sheet: ParsedSheet) => Promise<void>) {
+  const loader = options.pendingSharedStrings!;
+  let through = -1;
+  const dependencies = entries.map(entry => through = lastSharedStringIndex(entry, through));
+  // A late shared-string fallback can replace text or fonts from the prefix.
+  const previewOptions: WorksheetOptions = { ...options, pendingSharedStrings: undefined, warnings: [],
+    readRichText: options.readRichText.fork(), noteRegex() {}, waitForRegex() { return undefined; } };
+  const rows = createWorksheetRows(previewOptions, columnStyle);
+  let start = 0, next = 1;
+  while (start < entries.length) {
+    const prefix = await loader(dependencies[next - 1]);
+    if (prefix.done) return;
+    let end = next;
+    while (end < entries.length && dependencies[end] < prefix.value.length) end++;
+    previewOptions.sharedStrings = prefix.value;
+    rows.read(entries.slice(start, end));
+    await publish(rows.snapshot());
+    start = end;
+    next = Math.min(entries.length, end + Math.ceil(end / 4));
+  }
+}
+
+function hasLargeMetadata(xml: string, tags: RegExp): boolean {
+  let start: number | undefined, length = 0;
+  for (const tag of xml.matchAll(tags)) {
+    if (tag[1]) {
+      if (start !== undefined && (length += tag.index + tag[0].length - start) >= XML_BATCH_CHARS) return true;
+      start = undefined;
+    } else if (!tag[0].endsWith('/>')) start = tag.index;
+  }
+  return false;
+}
+
+interface WorksheetMetadataBatches {
+  metadata: object;
+  rules: ConditionalRuleBatches;
+  mergeReferences?: AsyncIterable<Iterable<string>>;
+}
+
+function batchWorksheetMetadata(xml: string, parser: XMLParser, { validateXml }: WorkbookXmlParsers,
+  signal?: AbortSignal): WorksheetMetadataBatches | undefined {
+  if (xml.includes('<!') || /<\?(?!xml[ \t\r\n])/.test(xml) || xml.includes(conditionalBatchAttribute)
+    || xml.includes(mergeBatchAttribute)) return undefined;
+  if (!validateXml(xml)) return undefined;
+  const ruleEnd = xmlChildEnd('cfRule', true);
+  const rangeEnd = xmlChildEnd('sqref', true);
+  type Scope = { header: string; footer: string; path: string[]; extended: boolean };
+  type Group = { tag: string; start: number; firstRule: number; ends?: number[]; close: number; end: number; scope: Scope };
+  const batches: Group[] = [];
+  type MergeGroup = { root: RegExpExecArray; opening: RegExpExecArray; start: number; close: number; end: number; ends: number[] };
+  let mergeGroup: MergeGroup | undefined;
+
+  function collect(scope: Scope, opening: RegExpExecArray, close: number, groupEnd: number) {
+    const firstRule = opening.index + opening[0].length;
+    const source = { tag: opening[1], start: opening.index, firstRule, close, end: groupEnd, scope };
+    if (source.end - source.start <= XML_BATCH_CHARS) {
+      // Keep locally rebound group names in the original metadata.
+      if (/\bxmlns(?:[:\s=])/.test(opening[0])) return;
+      const previous = batches.at(-1);
+      if (previous && !previous.ends && previous.tag === source.tag && previous.scope === scope
+        && source.end - previous.start <= XML_BATCH_CHARS && !xml.slice(previous.end, source.start).trim()) {
+        previous.end = source.end;
+      } else batches.push(source);
+      return;
+    }
+    conditionalRuleOpening.lastIndex = firstRule;
+    const tag = conditionalRuleOpening.exec(xml)?.[1];
+    if (!tag) return;
+    const ends: number[] = [];
+    let start = firstRule, end = start;
+    for (let next; (next = ruleEnd(xml, end, tag)) !== undefined && next <= close;) {
+      if (next - start > XML_BATCH_CHARS) {
+        if (start === end || next - end > XML_BATCH_CHARS) return;
+        ends.push(end);
+        start = end;
+      }
+      end = next;
+    }
+    const remainder = scope.extended ? rangeEnd(xml, end) ?? end : end;
+    if (remainder > close || xml.slice(remainder, close).trim() || end === firstRule) return;
+    ends.push(end);
+    // A changed binding can give identical source tags different parsed names within the group.
+    if (scope.extended && /\bxmlns(?:[:\s=])/.test(xml.slice(firstRule, end))) return;
+    batches.push({ ...source, ends });
+  }
+
+  function collectMerges(root: RegExpExecArray, opening: RegExpExecArray, close: number, end: number) {
+    if (mergeGroup || close - opening.index < XML_BATCH_CHARS || /\smergeCell\s*=/.test(opening[0])) return;
+    const childEnd = xmlChildEnd('mergeCell', true);
+    const start = opening.index + opening[0].length;
+    const ends: number[] = [];
+    let batchStart = start, offset = start;
+    for (let next; (next = childEnd(xml, offset)) !== undefined && next <= close;) {
+      if (next - batchStart > XML_BATCH_CHARS) {
+        if (offset === batchStart || next - offset > XML_BATCH_CHARS) return;
+        ends.push(offset);
+        batchStart = offset;
+      }
+      offset = next;
+    }
+    if (!ends.length || xml.slice(offset, close).trim()) return;
+    ends.push(offset);
+    mergeGroup = { root, opening, start, close, end, ends };
+  }
+
+  // The document has been validated. Walk tag positions without materializing one node per group.
+  const ancestors: { opening: RegExpExecArray; local: string; scope?: Scope; childScope?: Scope }[] = [];
+  for (let at = xml.indexOf('<'); at >= 0;) {
+    const kind = xml[at + 1];
+    let end: number;
+    if (kind === '/') {
+      end = xml.indexOf('>', at) + 1;
+      const closed = ancestors.pop();
+      if (closed?.scope) collect(closed.scope, closed.opening, at, end);
+      if (closed?.local === 'mergeCells' && ancestors.length === 1 && ancestors[0].local === 'worksheet') {
+        collectMerges(ancestors[0].opening, closed.opening, at, end);
+      }
+    } else if (kind === '?') {
+      end = xml.indexOf('?>', at) + 2;
+    } else {
+      xmlOpeningAt.lastIndex = at;
+      const opening = xmlOpeningAt.exec(xml);
+      if (!opening) return undefined;
+      end = xmlOpeningAt.lastIndex;
+      if (xml[end - 2] !== '/') {
+        const local = opening[1].slice(opening[1].indexOf(':') + 1);
+        let scope: Scope | undefined;
+        if (local === 'conditionalFormatting') {
+          const extended = ancestors.length === 4;
+          const path = extended ? extendedConditionalGroupPath : conditionalGroupPath;
+          const parent = ancestors.at(-1);
+          if (parent && ancestors.length === path.length - 1 && ancestors.every((node, index) => node.local === path[index])) {
+            scope = parent.childScope ??= { extended, path,
+              header: ancestors.map(node => node.opening[0]).join(''),
+              footer: ancestors.map(node => `</${node.opening[1]}>`).reverse().join('') };
+          }
+        }
+        ancestors.push({ opening, local, scope });
+      }
+    }
+    if (end <= at) return undefined;
+    at = xml.indexOf('<', end);
+  }
+  if (!batches.length && !mergeGroup) return undefined;
+  const edits = batches.map((group, index) => ({
+    start: group.firstRule - 1,
+    end: group.ends?.at(-1) ?? group.end,
+    text: ` ${conditionalBatchAttribute}="${index}">${group.ends ? '' : `</${group.tag}>`}`
+  }));
+  if (mergeGroup) {
+    edits.push({ start: mergeGroup.start - 1, end: mergeGroup.close, text: ` ${mergeBatchAttribute}="1">` });
+    edits.sort((first, second) => first.start - second.start);
+  }
+  let offset = 0;
+  const parts: string[] = [];
+  for (const edit of edits) {
+    parts.push(xml.slice(offset, edit.start), edit.text);
+    offset = edit.end;
+  }
+  const metadata = worksheetMetadata(parts.join('') + xml.slice(offset), parser);
+  if (!metadata) return undefined;
+  let lastYield = performance.now();
+
+  async function yieldAfterBatch() {
+    if (performance.now() - lastYield >= 16) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      lastYield = performance.now();
+    }
+    checkAborted(signal);
+  }
+
+  async function* mergeReferences(group: MergeGroup) {
+    const header = group.root[0] + group.opening[0];
+    const footer = xml.slice(group.close, group.end) + `</${group.root[1]}>`;
+    const child = group.opening[1].slice(0, -1);
+    let start = group.start;
+    for (const end of group.ends) {
+      checkAborted(signal);
+      const batch = xml.slice(start, end);
+      // A child that inherits the group's qualified name can be read without an XML tree.
+      const refs: string[] = [];
+      mergeCellRef.lastIndex = 0;
+      let offset = 0;
+      for (let match; (match = mergeCellRef.exec(batch)) && match[1] === child;) {
+        refs.push(match[2] ?? match[3]);
+        offset = mergeCellRef.lastIndex;
+      }
+      yield offset === batch.length ? refs : readMergeReferences(parser.parse(header + batch + footer));
+      start = end;
+      await yieldAfterBatch();
+    }
+  }
+
+  return {
+    metadata,
+    mergeReferences: mergeGroup && readPath(readPath(metadata, mergeGroupPath), [mergeBatchAttribute]) === '1'
+      ? mergeReferences(mergeGroup) : undefined,
+    rules(node) {
+      const id = readPath(node, [conditionalBatchAttribute]);
+      if (typeof id !== 'string') return undefined;
+      const group = batches[Number(id)];
+      if (!group) return undefined;
+      const { scope, ends } = group;
+      const read = scope.extended ? readLocalPath : readPath;
+      return (async function* () {
+        checkAborted(signal);
+        if (!ends) {
+          const document = parser.parse(scope.header + xml.slice(group.start, group.end) + scope.footer);
+          for (const parsed of toArray(read(document, scope.path))) {
+            checkAborted(signal);
+            yield { group: parsed, entries: [toArray(read(parsed, ['cfRule']))] };
+          }
+          await yieldAfterBatch();
+          return;
+        }
+        const header = scope.header + xml.slice(group.start, group.firstRule);
+        const footer = xml.slice(group.close, group.end) + scope.footer;
+        const entries = (async function* () {
+          let start = group.firstRule;
+          for (const end of ends) {
+            checkAborted(signal);
+            const document = parser.parse(header + xml.slice(start, end) + footer);
+            yield toArray(read(read(document, scope.path), ['cfRule']));
+            start = end;
+            await yieldAfterBatch();
+          }
+        })();
+        yield { group: node, entries };
+      })();
+    }
+  };
 }
 
 function worksheetMetadata(xml: string, parser: XMLParser): object | undefined {
@@ -943,24 +1460,36 @@ function worksheetMetadata(xml: string, parser: XMLParser): object | undefined {
 async function readWorksheetEntry(file: ZipEntry | undefined, options: WorksheetOptions,
   parsers: WorkbookXmlParsers, signal?: AbortSignal,
   onRows?: (sheet: ParsedSheet) => void): Promise<ParsedSheet | undefined> {
+  const stream = async (parts: AsyncIterable<Uint8Array> | Iterable<string>, publish?: typeof onRows) => {
+    if (options.pendingSharedStrings) {
+      // Register inline fonts after the validated shared strings, in workbook order.
+      const runs: ParsedRichTextRun[] = [];
+      const sheet = await readStreamedWorksheet(parts, { ...options, readRichText: options.readRichText.fork(runs) }, parsers, signal, publish);
+      if (sheet) options.readRichText.commit(runs);
+      return sheet;
+    }
+    const discardFonts = options.readRichText.checkpoint();
+    const sheet = await readStreamedWorksheet(parts, options, parsers, signal, publish);
+    if (!sheet) discardFonts();
+    return sheet;
+  };
   const chunks = file?.chunks?.(signal);
   if (chunks) {
-    // Unsupported framing can appear after a batch has already registered inline fonts.
-    const discardFonts = options.readRichText.checkpoint();
-    const sheet = await readStreamedWorksheet(chunks, options, parsers, signal, onRows);
+    const sheet = await stream(chunks, onRows);
     if (sheet) return sheet;
-    discardFonts();
   }
   const xml = await readZipText(file, signal);
-  if (!xml) return undefined;
+  if (!xml) {
+    await loadSharedStrings(options);
+    return undefined;
+  }
   const root = worksheetOpening.exec(xml);
   const namespaced = Boolean(root && root[1] !== 'worksheet') || namespaceAlias.test(xml);
-  if (namespaced && !chunks && canBatchXml(xml)) {
-    const discardFonts = options.readRichText.checkpoint();
-    const sheet = await readStreamedWorksheet(xmlTextBlocks(xml), options, parsers, signal);
+  if (!chunks && (options.pendingSharedStrings || (namespaced && canBatchXml(xml)))) {
+    const sheet = await stream(xmlTextBlocks(xml), options.pendingSharedStrings ? onRows : undefined);
     if (sheet) return sheet;
-    discardFonts();
   }
+  await loadSharedStrings(options);
   return readWorksheet(xml, options, parsers, namespaced, signal);
 }
 
@@ -994,7 +1523,7 @@ async function readWorksheet(xml: string, options: WorksheetOptions,
   const dataEnd = simple ? xml.indexOf('</sheetData>', dataStart) + '</sheetData>'.length : 0;
   const document = batches ? batchedDocument : parser.parse(simple ? xml.slice(0, dataStart) + xml.slice(dataEnd) : xml);
   if (!simple && options.styles.length) columnStyles = readColumnStyles(document);
-  const finish = finishWorksheet(document, simple ? metadata : document, columnStyles, options, !simple && inlineFormatting.test(xml));
+  const finish = await finishWorksheet(document, simple ? metadata : document, columnStyles, options, !simple && inlineFormatting.test(xml));
   if (simple) return finish(simple);
   const rowGroups = batches ? readXmlBatches(rowXml, batches, parser, rowPath) : [toArray(readPath(document, rowPath))];
   const rows = createWorksheetRows(options, columnStyleLookup(columnStyles));
@@ -1010,10 +1539,11 @@ async function readWorksheet(xml: string, options: WorksheetOptions,
   return finish(await rows.finish());
 }
 
-function finishWorksheet(document: unknown, layout: unknown, columnStyles: ParsedColumnStyle[],
-  options: WorksheetOptions, hasInlineFormatting: boolean): (sheet: ParsedSheet) => Promise<ParsedSheet> {
-  const merges = readMergedRanges(document, options.warnings, options.name);
-  const conditionalRules = readConditionalRules(document, options.differentialStyles, options.color, options.warnings, options.name, options.forPreview);
+async function finishWorksheet(document: unknown, layout: unknown, columnStyles: ParsedColumnStyle[],
+  options: WorksheetOptions, hasInlineFormatting: boolean, batches?: WorksheetMetadataBatches) {
+  const merges = await readMergedRanges(document, options.warnings, options.name, batches?.mergeReferences);
+  const conditionalRules = await readConditionalRules(document, options.differentialStyles, options.color, options.warnings,
+    options.name, options.forPreview, batches?.rules);
   for (const { condition, activeFormula } of conditionalRules) {
     if (activeFormula) options.noteRegex(activeFormula);
     if ('formula' in condition) options.noteRegex(condition.formula);
@@ -1025,6 +1555,22 @@ function finishWorksheet(document: unknown, layout: unknown, columnStyles: Parse
   const columnWidthSource = readColumnWidthSource(layout, options);
   const sheetView = toArray(readPath(document, ['worksheet', 'sheetViews', 'sheetView']))[0];
   const showFormulas = xmlTrue(readPath(sheetView, ['showFormulas']));
+  const pane = readPath(sheetView, ['pane']);
+  const paneState = readPath(pane, ['state']);
+  const frozen = paneState === 'frozen' || paneState === 'frozenSplit';
+  const ref = (frozen ? readPath(pane, ['topLeftCell']) : undefined) ?? readPath(sheetView, ['topLeftCell']);
+  const cell = typeof ref === 'string' && /^\$?[A-Z]{1,3}\$?[1-9]\d{0,6}$/i.test(ref)
+    ? parseCellRef(ref.replace(/\$/g, '')) : undefined;
+  const topLeft = cell && cell.row <= 1_048_576 && cell.column <= 16_384 ? cell : undefined;
+  let frozenPane: ParsedSheet['frozenPane'];
+  if (frozen) {
+    const count = (axis: string, max: number) => {
+      const value = Number(readPath(pane, [axis]));
+      return Number.isInteger(value) && value > 0 && value < max ? value : 0;
+    };
+    const rows = count('ySplit', 1_048_576), columns = count('xSplit', 16_384);
+    if (rows || columns) frozenPane = { rows, columns, ...(topLeft ? { topLeft } : {}) };
+  }
   const sheetFormat = readPath(layout, ['worksheet', 'sheetFormatPr']);
   const hideUnusedRows = xmlTrue(readPath(sheetFormat, ['zeroHeight']));
   const defaultRowHeight = xlsxRowHeight(readPath(sheetFormat, ['defaultRowHeight']), readPath(sheetFormat, ['customHeight']));
@@ -1033,7 +1579,7 @@ function finishWorksheet(document: unknown, layout: unknown, columnStyles: Parse
   const tableIds = toArray(readLocalPath(document, ['worksheet', 'tableParts', 'tablePart']))
     .map(part => readLocalPath(part, ['id'])).filter((id): id is string => typeof id === 'string' && Boolean(id));
   const autoFilterRows = readActiveFilterRows(readLocalPath(document, ['worksheet']));
-  return async sheet => {
+  return async (sheet: ParsedSheet): Promise<ParsedSheet> => {
     await options.waitForRegex();
     if (tableIds.length) {
       const tables = await options.loadTables(tableIds);
@@ -1052,6 +1598,9 @@ function finishWorksheet(document: unknown, layout: unknown, columnStyles: Parse
     sheet.columnWidthSource = columnWidthSource;
     sheet.columnWidths = xlsxColumnWidths(sheet.columnCount, columnWidthSource, undefined, showFormulas);
     if (showFormulas) sheet.showFormulas = true;
+    if (xmlTrue(readPath(sheetView, ['rightToLeft']))) sheet.rightToLeft = true;
+    if (frozenPane) sheet.frozenPane = frozenPane;
+    else if (topLeft && (topLeft.row > 1 || topLeft.column > 1)) sheet.topLeft = topLeft;
     if (defaultRowHeight && defaultRowHeight.height !== 0 && (defaultRowHeight.height !== undefined || defaultRowHeight.fixed)) {
       sheet.rowHeightSource = { ...defaultRowHeight, rows: sheet.rowHeightSource?.rows ?? new Map() };
     }
@@ -1085,6 +1634,16 @@ function createWorksheetRows(options: WorksheetOptions, columnStyle: (column: nu
     };
   }
 
+  function addArray(cell: ParsedCell, ref: unknown, cm: unknown): void {
+    const range = parseSheetRange(String(ref ?? '').trim());
+    if (!range || range.firstRow !== cell.row || range.firstColumn !== cell.column) return;
+    const index = Number(cm);
+    const metadataIndex = Number.isSafeInteger(index) && index > 0 ? index : undefined;
+    declaredArrays.push({ range, metadataIndex });
+    maxRow = Math.max(maxRow, range.lastRow);
+    maxColumn = Math.max(maxColumn, range.lastColumn);
+  }
+
   function read(rowEntries: unknown[]): void {
     const cells: ParsedCell[] = [];
     for (const rowEntry of rowEntries) {
@@ -1108,14 +1667,7 @@ function createWorksheetRows(options: WorksheetOptions, columnStyle: (column: nu
         cells[cellCount++] = cell;
         maxColumn = Math.max(maxColumn, cell.column);
         if (cell.formula && cell.row === rowIndex && readPath(cellEntry, ['f', 't']) === 'array') {
-          const range = parseSheetRange(String(readPath(cellEntry, ['f', 'ref']) ?? '').trim());
-          if (range && range.firstRow === cell.row && range.firstColumn === cell.column) {
-            const index = Number(readPath(cellEntry, ['cm']));
-            const metadataIndex = Number.isSafeInteger(index) && index > 0 ? index : undefined;
-            declaredArrays.push({ range, metadataIndex });
-            maxRow = Math.max(maxRow, range.lastRow);
-            maxColumn = Math.max(maxColumn, range.lastColumn);
-          }
+          addArray(cell, readPath(cellEntry, ['f', 'ref']), readPath(cellEntry, ['cm']));
         }
       }
       rows.push({ index: rowIndex, cells: cells.slice(0, cellCount),
@@ -1127,8 +1679,15 @@ function createWorksheetRows(options: WorksheetOptions, columnStyle: (column: nu
     get lastRow() { return rows.at(-1)?.index ?? 0; },
     read,
     snapshot: () => sheet(true),
-    append(batch: ParsedSheet) {
-      for (const row of batch.rows) rows.push(row);
+    append(batch: ParsedSheet, formulaEntries: WorksheetBatchState['formulaEntries']) {
+      for (const row of batch.rows) {
+        rows.push(row);
+        if (formulaEntries) for (const cell of row.cells) if (cell.formula) options.noteRegex(cell.formula);
+      }
+      for (const entry of formulaEntries ?? []) {
+        if (entry.type === 'shared') shared.add(entry, entry.cell, entry.uncached);
+        else addArray(entry.cell, entry.ref, entry.cm);
+      }
       maxColumn = Math.max(maxColumn, batch.columnCount);
       maxRow = Math.max(maxRow, batch.rowCount);
       for (const range of batch.hiddenRows ?? []) {
@@ -1159,14 +1718,15 @@ function canBatchXml(xml: string): boolean {
   return xml.length >= XML_BATCH_CHARS && !xml.includes('<!');
 }
 
-function xmlChildEnd(tag: 'row' | 'si', qualified = false) {
+function xmlChildEnd(tag: 'row' | 'si' | 'cfRule' | 'sqref' | 'mergeCell', qualified = false) {
   const name = qualified ? `(${xmlPrefix}${tag})` : tag;
   const opening = new RegExp(`[ \\t\\r\\n]*<${name}${xmlTagTail}`, 'y');
   const closing = new RegExp(`</${name}[ \\t\\r\\n]*>`, 'g');
-  return (xml: string, offset: number): number | undefined => {
+  return (xml: string, offset: number, expectedTag?: string): number | undefined => {
     opening.lastIndex = offset;
     const start = qualified ? opening.exec(xml) : undefined;
     if (qualified ? !start : !opening.test(xml)) return undefined;
+    if (expectedTag && start?.[1] !== expectedTag) return undefined;
     const end = opening.lastIndex;
     if (xml[end - 2] === '/') return end;
     closing.lastIndex = end;
@@ -1175,11 +1735,12 @@ function xmlChildEnd(tag: 'row' | 'si', qualified = false) {
   };
 }
 
-function xmlBatchEnd(xml: string, childEnd: ReturnType<typeof xmlChildEnd>): number {
+function xmlBatchEnd(xml: string, childEnd: ReturnType<typeof xmlChildEnd>, allowOversizedChild = false): number {
   let offset = 0;
   for (;;) {
     const end = childEnd(xml, offset);
-    if (end === undefined || end > XML_BATCH_CHARS) return offset;
+    if (end === undefined) return offset;
+    if (end > XML_BATCH_CHARS) return allowOversizedChild && !offset ? end : offset;
     offset = end;
   }
 }
@@ -1275,7 +1836,7 @@ function readColumnWidthSource(document: unknown, options: { name: string; warni
     const firstColumn = Number(readPath(column, ['min'])), lastColumn = Number(readPath(column, ['max'])), width = Number(value);
     if (!Number.isInteger(firstColumn) || !Number.isInteger(lastColumn) || firstColumn < 1 || firstColumn > lastColumn
       || lastColumn > 16_384 || !Number.isFinite(width * 256) || width <= 0) { invalid++; continue; }
-    ranges.push({ firstColumn, lastColumn, width });
+    ranges.push({ firstColumn, lastColumn, width, ...(xmlTrue(readPath(column, ['bestFit'])) ? { bestFit: true } : {}) });
   }
   const format = readPath(document, ['worksheet', 'sheetFormatPr']);
   const readWidth = (name: string, allowZero = false) => {
@@ -1290,13 +1851,20 @@ function readColumnWidthSource(document: unknown, options: { name: string; warni
   return { ranges, defaultWidth, baseWidth: baseWidth ?? 8, fontSize: 11, ...options.columnWidthFont };
 }
 
-function readMergedRanges(document: unknown, warnings: string[], name: string): ParsedMerge[] {
+function* readMergeReferences(document: unknown): Generator<string> {
+  for (const entry of toArray(readPath(document, mergeCellPath))) yield String(readPath(entry, ['ref']) ?? '');
+}
+
+async function readMergedRanges(document: unknown, warnings: string[], name: string,
+  batches?: AsyncIterable<Iterable<string>>): Promise<ParsedMerge[]> {
   const ranges: ParsedMerge[] = [];
   let invalid = 0;
-  for (const entry of toArray(readPath(document, ['worksheet', 'mergeCells', 'mergeCell']))) {
-    const range = parseSheetRange(String(readPath(entry, ['ref']) ?? '').trim());
-    if (range) ranges.push(range);
-    else invalid++;
+  for await (const refs of batches ?? [readMergeReferences(document)]) {
+    for (const ref of refs) {
+      const range = parseSheetRange(ref.trim());
+      if (range) ranges.push(range);
+      else invalid++;
+    }
   }
   if (invalid) warnings.push(`Ignored ${invalid} invalid merged range(s) in sheet ${name}.`);
   return ranges;
@@ -1345,9 +1913,8 @@ function readCell(cellEntry: unknown, { sharedStrings, readRichText, forPreview,
   const uncached = rawValue == null || (!parsedType && rawValue.trim() === '');
   const isShared = readPath(entry.f, ['t']) === 'shared';
   const waitingForFormula = uncached && (formula || isShared);
-  const cell = createWorksheetCell(ref, position.row, position.column, waitingForFormula ? '' : value,
+  const cell = createWorksheetCell(ref, position.row, position.column, waitingForFormula ? '' : value, parsedType,
     forPreview && entry.f === undefined);
-  if (parsedType) cell.valueType = parsedType;
   if (!formula && parsedType && rawValue === null && entry.is === undefined) cell.missingValue = true;
   if (richText && !waitingForFormula) cell.richText = richText;
   if (formula) {

@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-28",
+  "platform": "macOS 26.6.2 arm64",
+  "cpu": "Apple M4 Pro",
+  "node": "v20.20.2",
+  "pdfjs": "5.4.624",
+  "method": "Compared production artifacts from npm run build:pdf and npm run build:preview, before and after limiting the private PDF.js display imports and removing its global exports. The final build also stops late image messages after worker termination. Split and standalone chunk gzip sizes use Node zlib level 9. All-in-one entries measure the actual delivered encodings recorded by the build.",
+  "splitDisplayChunk": {
+    "before": {
+      "rawBytes": 449131,
+      "gzipBytes": 131779,
+      "sha256": "f72ac7cea9e86ae5fb3bb3c504fd0852f8d51e1d5caf909186553b8366bb7365"
+    },
+    "after": {
+      "rawBytes": 414210,
+      "gzipBytes": 122295,
+      "sha256": "d5824dfb6f222314c9cce95d31e4036a2cab5fff958c332a993d46993da057d0"
+    }
+  },
+  "standaloneDisplayChunk": {
+    "before": {
+      "rawBytes": 605024,
+      "gzipBytes": 148670,
+      "sha256": "abb8ee8d3d1ea25945af4a5882b57a05e87f68535f847fbdb51f1401e2078f08"
+    },
+    "after": {
+      "rawBytes": 556892,
+      "gzipBytes": 137402,
+      "sha256": "26c1a03f687db710fe7e12025f609b8ad2ed91856328a9d016c2f739021f9421"
+    }
+  },
+  "allInOne": {
+    "before": {
+      "rawBytes": 7518310,
+      "gzipBytes": 3999675,
+      "brotliBytes": 3836796,
+      "gzipHeadroomBytes": 325
+    },
+    "after": {
+      "rawBytes": 7481903,
+      "gzipBytes": 3990183,
+      "brotliBytes": 3832065,
+      "gzipHeadroomBytes": 9817
+    },
+    "deliveryLimitBytes": 4000000,
+    "gzipEncoder": "Zopfli 15 iterations, unrestricted block splitting",
+    "brotliEncoder": "Brotli quality 11",
+    "packedAssets": {
+      "total": 142,
+      "identical": 141,
+      "changed": "PDF.js worker with late-message cleanup",
+      "beforeWorker": {
+        "kind": "text",
+        "bytes": 1022851,
+        "sha256": "71b7bc2bf55ba5beb3743f408441f1d52db25cf78766cc559c763c559dc735b1"
+      },
+      "afterWorker": {
+        "kind": "text",
+        "bytes": 1022893,
+        "sha256": "e547fb75d7d443d87d9a1f995283bca71067047954a3dc7ab4e0d9fcb71f55c0"
+      }
+    }
+  }
+}
